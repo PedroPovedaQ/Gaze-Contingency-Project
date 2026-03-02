@@ -17,11 +17,16 @@ public class FindObjectUI : MonoBehaviour
 
     TextMeshProUGUI m_ObjectiveText;
     TextMeshProUGUI m_ProgressText;
+    TextMeshProUGUI m_TimerText;
     GameObject m_CompletionPanel;
     TextMeshProUGUI m_CompletionText;
 
     float m_WrongFeedbackEndTime;
     string m_CurrentObjectiveString;
+
+    bool m_TimerRunning;
+    float m_TimerStartTime;
+    float m_FinalTime;
 
     public void Initialize()
     {
@@ -33,34 +38,42 @@ public class FindObjectUI : MonoBehaviour
         m_Canvas.renderMode = RenderMode.WorldSpace;
 
         m_CanvasRect = canvasGO.GetComponent<RectTransform>();
-        m_CanvasRect.sizeDelta = new Vector2(400, 200);
+        m_CanvasRect.sizeDelta = new Vector2(400, 240);
         canvasGO.transform.localScale = Vector3.one * 0.001f; // 1 unit = 1mm
 
-        // LazyFollow — floats in front of the camera
+        // LazyFollow — floats above and ahead of the camera so it doesn't block gameplay
         m_LazyFollow = canvasGO.AddComponent<LazyFollow>();
         m_LazyFollow.positionFollowMode = LazyFollow.PositionFollowMode.Follow;
         m_LazyFollow.rotationFollowMode = LazyFollow.RotationFollowMode.LookAtWithWorldUp;
+        m_LazyFollow.targetOffset = new Vector3(0f, 0.25f, 1.2f); // 1.2m forward, 25cm up
+        m_LazyFollow.applyTargetInLocalSpace = true;
 
         // Background panel
         var bgGO = CreatePanel(canvasGO.transform, "Background",
-            new Vector2(400, 200), new Color(0f, 0f, 0f, 0.7f));
+            new Vector2(400, 240), new Color(0f, 0f, 0f, 0.7f));
         var bgRect = bgGO.GetComponent<RectTransform>();
         bgRect.anchoredPosition = Vector2.zero;
 
         // Objective text (top area)
         m_ObjectiveText = CreateText(bgGO.transform, "ObjectiveText",
-            new Vector2(380, 80), new Vector2(0, 30), 36);
+            new Vector2(380, 80), new Vector2(0, 50), 36);
         m_ObjectiveText.alignment = TextAlignmentOptions.Center;
 
-        // Progress text (bottom area)
+        // Progress text (middle area)
         m_ProgressText = CreateText(bgGO.transform, "ProgressText",
-            new Vector2(380, 40), new Vector2(0, -50), 28);
+            new Vector2(380, 40), new Vector2(0, -20), 28);
         m_ProgressText.alignment = TextAlignmentOptions.Center;
         m_ProgressText.color = new Color(0.8f, 0.8f, 0.8f, 1f);
 
+        // Timer text (bottom area)
+        m_TimerText = CreateText(bgGO.transform, "TimerText",
+            new Vector2(380, 40), new Vector2(0, -70), 26);
+        m_TimerText.alignment = TextAlignmentOptions.Center;
+        m_TimerText.color = new Color(1f, 0.9f, 0.5f, 1f);
+
         // Completion panel (hidden initially)
         m_CompletionPanel = CreatePanel(canvasGO.transform, "CompletionPanel",
-            new Vector2(400, 200), new Color(0.05f, 0.3f, 0.05f, 0.85f));
+            new Vector2(400, 240), new Color(0.05f, 0.3f, 0.05f, 0.85f));
         m_CompletionText = CreateText(m_CompletionPanel.transform, "CompletionText",
             new Vector2(380, 180), Vector2.zero, 40);
         m_CompletionText.alignment = TextAlignmentOptions.Center;
@@ -69,6 +82,19 @@ public class FindObjectUI : MonoBehaviour
         canvasGO.SetActive(false);
 
         Debug.Log($"{k_Tag} UI initialized");
+    }
+
+    public void StartTimer()
+    {
+        m_TimerStartTime = Time.time;
+        m_TimerRunning = true;
+    }
+
+    public float StopTimer()
+    {
+        m_TimerRunning = false;
+        m_FinalTime = Time.time - m_TimerStartTime;
+        return m_FinalTime;
     }
 
     public void ShowObjective(Color color, string shapeName, int found, int total)
@@ -88,13 +114,19 @@ public class FindObjectUI : MonoBehaviour
         m_ObjectiveText.text = "<color=#FF4444>Wrong object!</color>";
     }
 
-    public void ShowCompletion(int total)
+    public void ShowCompletion(int total, float elapsedSeconds)
     {
         m_Canvas.gameObject.SetActive(true);
         m_CompletionPanel.SetActive(true);
         m_ObjectiveText.text = "";
         m_ProgressText.text = "";
-        m_CompletionText.text = $"All {total} objects found!";
+        m_TimerText.text = "";
+        int minutes = (int)(elapsedSeconds / 60f);
+        float seconds = elapsedSeconds % 60f;
+        string timeStr = minutes > 0
+            ? $"{minutes}:{seconds:00.0}s"
+            : $"{seconds:F1}s";
+        m_CompletionText.text = $"All {total} objects found!\nTime: {timeStr}";
     }
 
     public void Hide()
@@ -111,6 +143,17 @@ public class FindObjectUI : MonoBehaviour
             m_WrongFeedbackEndTime = 0f;
             if (!string.IsNullOrEmpty(m_CurrentObjectiveString))
                 m_ObjectiveText.text = m_CurrentObjectiveString;
+        }
+
+        // Update live timer
+        if (m_TimerRunning && m_TimerText != null)
+        {
+            float elapsed = Time.time - m_TimerStartTime;
+            int minutes = (int)(elapsed / 60f);
+            float seconds = elapsed % 60f;
+            m_TimerText.text = minutes > 0
+                ? $"{minutes}:{seconds:00.0}s"
+                : $"{seconds:F1}s";
         }
     }
 

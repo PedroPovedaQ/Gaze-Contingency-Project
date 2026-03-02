@@ -247,8 +247,9 @@ public class FindObjectGameManager : MonoBehaviour
             m_Spawner.TrySpawnObject(positions[i], Vector3.up);
         }
 
-        // Show first objective
+        // Show first objective and start timer
         ShowCurrentObjective();
+        m_UI.StartTimer();
 
         Debug.Log($"{k_Tag} Game started with {m_Objectives.Count} objectives");
     }
@@ -308,8 +309,9 @@ public class FindObjectGameManager : MonoBehaviour
             {
                 // All found!
                 m_State = GameState.Completed;
-                m_UI.ShowCompletion(m_Objectives.Count);
-                Debug.Log($"{k_Tag} Game complete! All {m_Objectives.Count} objects found");
+                float elapsed = m_UI.StopTimer();
+                m_UI.ShowCompletion(m_Objectives.Count, elapsed);
+                Debug.Log($"{k_Tag} Game complete! All {m_Objectives.Count} objects found in {elapsed:F1}s");
                 StartCoroutine(ResetAfterDelay());
             }
             else
