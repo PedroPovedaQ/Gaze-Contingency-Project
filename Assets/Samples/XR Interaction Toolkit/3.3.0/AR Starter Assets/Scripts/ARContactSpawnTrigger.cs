@@ -112,16 +112,31 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.ARStarterAssets
             surfacePosition = default;
             surfaceNormal = default;
 
+            // Try AR Foundation ARPlane first
             var arPlane = objectCollider.GetComponent<ARPlane>();
-            if (arPlane == null)
-                return false;
+            if (arPlane != null)
+            {
+                if (m_RequireHorizontalUpSurface && arPlane.alignment != PlaneAlignment.HorizontalUp)
+                    return false;
 
-            if (m_RequireHorizontalUpSurface && arPlane.alignment != PlaneAlignment.HorizontalUp)
-                return false;
+                surfaceNormal = arPlane.normal;
+                surfacePosition = arPlane.center;
+                return true;
+            }
 
-            surfaceNormal = arPlane.normal;
-            surfacePosition = arPlane.center;
-            return true;
+            // Fallback: VIVE native planes
+            var vivePlane = objectCollider.GetComponent<VivePlaneData>();
+            if (vivePlane != null)
+            {
+                if (m_RequireHorizontalUpSurface && !vivePlane.IsHorizontalUp)
+                    return false;
+
+                surfaceNormal = vivePlane.Normal;
+                surfacePosition = vivePlane.Center;
+                return true;
+            }
+
+            return false;
         }
 
         bool IsInteractionBlockingSpawn()
