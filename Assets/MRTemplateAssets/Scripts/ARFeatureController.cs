@@ -86,6 +86,9 @@ namespace UnityEngine.XR.Templates.MR
         /// </summary>
         public bool BoundingBoxVisualsEnabled => m_BoundingBoxVisualsEnabled;
 
+        [SerializeField, Tooltip("Eye gaze interactor GameObject to toggle on/off.")]
+        GameObject m_GazeInteractor;
+
         [SerializeField, Tooltip("Toggle that dictates whether AR Bounding Box visualizations should show additional debug information.")]
         bool m_BoundingBoxDebugInfoEnabled = true;
 
@@ -308,6 +311,23 @@ namespace UnityEngine.XR.Templates.MR
                     visualizer.ShowDebugInfoCanvas(m_BoundingBoxDebugInfoEnabled);
                 }
             }
+        }
+
+        /// <summary>
+        /// Toggles the eye gaze ray visual on and off.
+        /// The underlying XRGazeInteractor and TrackedPoseDriver remain active
+        /// so that gaze telemetry and hover detection continue regardless.
+        /// </summary>
+        /// <param name="enabled">Whether to enable or disable the gaze ray visual.</param>
+        public void ToggleGazeRay(bool enabled)
+        {
+            if (m_GazeInteractor == null) return;
+
+            var lineRenderer = m_GazeInteractor.GetComponent<LineRenderer>();
+            if (lineRenderer != null) lineRenderer.enabled = enabled;
+
+            var lineVisual = m_GazeInteractor.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactors.Visuals.XRInteractorLineVisual>();
+            if (lineVisual != null) lineVisual.enabled = enabled;
         }
 
         void OnPlaneChanged(ARTrackablesChangedEventArgs<ARPlane> eventArgs)
