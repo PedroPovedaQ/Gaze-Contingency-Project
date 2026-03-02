@@ -24,6 +24,10 @@ public class FindObjectUI : MonoBehaviour
     float m_WrongFeedbackEndTime;
     string m_CurrentObjectiveString;
 
+    // --- Public accessors for voice assistant ---
+    public bool IsTimerRunning => m_TimerRunning;
+    public float TimerStartTime => m_TimerStartTime;
+
     bool m_TimerRunning;
     float m_TimerStartTime;
     float m_FinalTime;

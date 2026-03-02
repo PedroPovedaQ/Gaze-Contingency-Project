@@ -20,7 +20,20 @@ public class FindObjectGameManager : MonoBehaviour
     const float k_SpawnHeightOffset = 0.05f; // 5 cm above surface
     const float k_ResetDelay = 5f;
 
-    enum GameState { Idle, Playing, Completed }
+    public enum GameState { Idle, Playing, Completed }
+
+    // --- Events for voice assistant integration ---
+    public event System.Action OnGameStarted;
+    public event System.Action<int> OnObjectFound;
+    public event System.Action<string, string> OnWrongGrab;
+    public event System.Action<float> OnGameCompleted;
+
+    // --- Public read-only state for voice assistant ---
+    public GameState CurrentState => m_State;
+    public IReadOnlyList<(string shape, string color, Color colorValue)> Objectives => m_Objectives;
+    public IReadOnlyList<GameObject> SpawnedObjects => m_SpawnedObjects;
+    public int CurrentObjectiveIndex => m_CurrentObjectiveIndex;
+    public int FoundCount => m_FoundCount;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoAttach()
@@ -252,6 +265,8 @@ public class FindObjectGameManager : MonoBehaviour
         m_UI.StartTimer();
 
         Debug.Log($"{k_Tag} Game started with {m_Objectives.Count} objectives");
+
+        OnGameStarted?.Invoke();
     }
 
     void OnObjectFullyConfigured(GameObject obj)
@@ -289,6 +304,7 @@ public class FindObjectGameManager : MonoBehaviour
             // Correct!
             Debug.Log($"{k_Tag} Correct! Found {info.DisplayName}");
             m_FoundCount++;
+            OnObjectFound?.Invoke(m_CurrentObjectiveIndex);
 
             // Unsubscribe and deactivate
             var grab = obj.GetComponent<XRGrabInteractable>();
@@ -312,6 +328,7 @@ public class FindObjectGameManager : MonoBehaviour
                 float elapsed = m_UI.StopTimer();
                 m_UI.ShowCompletion(m_Objectives.Count, elapsed);
                 Debug.Log($"{k_Tag} Game complete! All {m_Objectives.Count} objects found in {elapsed:F1}s");
+                OnGameCompleted?.Invoke(elapsed);
                 StartCoroutine(ResetAfterDelay());
             }
             else
@@ -324,6 +341,7 @@ public class FindObjectGameManager : MonoBehaviour
             // Wrong object
             Debug.Log($"{k_Tag} Wrong! Grabbed {info.DisplayName}, wanted {current.color}_{current.shape}");
             m_UI.ShowWrongFeedback();
+            OnWrongGrab?.Invoke(info.DisplayName, $"{current.color}_{current.shape}");
         }
     }
 
