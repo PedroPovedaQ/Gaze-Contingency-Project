@@ -137,10 +137,10 @@ public class ShapeObjectFactory : MonoBehaviour
         var anim = obj.GetComponent<Animation>();
         if (anim != null) Destroy(anim);
 
-        // Destroy all child GameObjects (Interaction Affordance, Audio Affordance, etc.)
-        // These carry visual artifacts ("weird circles") from the original prefab.
+        // Destroy all child GameObjects immediately (Interaction Affordance, Audio Affordance, etc.)
+        // DestroyImmediate prevents affordance system from interfering during this frame.
         for (int i = obj.transform.childCount - 1; i >= 0; i--)
-            Destroy(obj.transform.GetChild(i).gameObject);
+            DestroyImmediate(obj.transform.GetChild(i).gameObject);
 
         // Pick random shape
         string shapeName = "Unknown";
@@ -204,6 +204,14 @@ public class ShapeObjectFactory : MonoBehaviour
             // so only the new collider is found here.
             grab.colliders.Clear();
             grab.colliders.AddRange(obj.GetComponentsInChildren<Collider>());
+
+            // Force the XRInteractionManager to rebuild its collider-to-interactable
+            // mapping. Without this, the gaze interactor can't find the interactable
+            // because the old colliders (now destroyed) are still in the manager's map.
+            grab.enabled = false;
+            grab.enabled = true;
+
+            Debug.Log($"{k_Tag} Re-registered grab with {grab.colliders.Count} collider(s), allowGaze={grab.allowGazeInteraction}");
         }
 
         // Add per-object highlight (replaces destroyed affordance children)
@@ -233,20 +241,22 @@ public class ShapeObjectFactory : MonoBehaviour
         foreach (var col in obj.GetComponentsInChildren<Collider>())
             DestroyImmediate(col);
 
-        // Add appropriate collider for the shape
+        // Add colliders slightly larger than mesh for generous gaze targeting.
+        // The visual mesh stays the same size; the collider extends ~30% beyond.
         switch (shapeIdx)
         {
-            case 0: // Sphere
+            case 0: // Sphere — mesh radius is 0.5, collider 0.65
                 var sc = obj.AddComponent<SphereCollider>();
-                sc.radius = 0.5f;
+                sc.radius = 0.65f;
                 break;
-            case 1: // Cube
-                obj.AddComponent<BoxCollider>();
+            case 1: // Cube — mesh is 1x1x1, collider 1.3x1.3x1.3
+                var bc = obj.AddComponent<BoxCollider>();
+                bc.size = new Vector3(1.3f, 1.3f, 1.3f);
                 break;
-            default: // Pyramid or other
-                var mc = obj.AddComponent<MeshCollider>();
-                mc.sharedMesh = mesh;
-                mc.convex = true;
+            default: // Pyramid — use sphere collider for generous targeting
+                var pc = obj.AddComponent<SphereCollider>();
+                pc.center = new Vector3(0f, 0.4f, 0f); // center slightly above base
+                pc.radius = 0.65f;
                 break;
         }
     }
@@ -259,40 +269,89 @@ public class ShapeObjectFactory : MonoBehaviour
         float s = 0.5f; // half-size
         float h = 1f;   // height
 
-        // Unique vertices per face for flat shading normals.
-        // Winding order: clockwise when viewed from outside (Unity front-face convention).
+        // Unique vertices per face for flat shading.
+        // Double-sided base so bottom is visible when picked up.
         var vertices = new Vector3[]
         {
-            // Base (2 triangles) — facing up (visible from above)
-            new(-s, 0, -s), new(s, 0, -s), new(s, 0, s), new(-s, 0, s), // 0-3
-            // Front face (outward normal toward -Z)
-            new(s, 0, -s), new(-s, 0, -s), new(0, h, 0),                // 4-6
-            // Right face (outward normal toward +X)
-            new(s, 0, s), new(s, 0, -s), new(0, h, 0),                  // 7-9
-            // Back face (outward normal toward +Z)
-            new(-s, 0, s), new(s, 0, s), new(0, h, 0),                  // 10-12
-            // Left face (outward normal toward -X)
-            new(-s, 0, -s), new(-s, 0, s), new(0, h, 0),                // 13-15
+            // Base top (visible from above) — 0-3
+            new(-s, 0, -s), new(s, 0, -s), new(s, 0, s), new(-s, 0, s),
+            // Base bottom (visible from below) — 4-7
+            new(-s, 0, -s), new(s, 0, -s), new(s, 0, s), new(-s, 0, s),
+            // Front face — 8-10
+            new(s, 0, -s), new(-s, 0, -s), new(0, h, 0),
+            // Right face — 11-13
+            new(s, 0, s), new(s, 0, -s), new(0, h, 0),
+            // Back face — 14-16
+            new(-s, 0, s), new(s, 0, s), new(0, h, 0),
+            // Left face — 17-19
+            new(-s, 0, -s), new(-s, 0, s), new(0, h, 0),
         };
 
         var triangles = new int[]
         {
-            // Base (facing up)
+            // Base top (facing up)
             0, 2, 1,
             0, 3, 2,
-            // Front
+            // Base bottom (facing down — reversed winding)
             4, 5, 6,
+            4, 6, 7,
+            // Front
+            8, 9, 10,
             // Right
-            7, 8, 9,
+            11, 12, 13,
             // Back
-            10, 11, 12,
+            14, 15, 16,
             // Left
-            13, 14, 15,
+            17, 18, 19,
+        };
+
+        // Explicit normals per vertex.
+        var frontN = Vector3.Cross(
+            vertices[9] - vertices[8], vertices[10] - vertices[8]).normalized;
+        var rightN = Vector3.Cross(
+            vertices[12] - vertices[11], vertices[13] - vertices[11]).normalized;
+        var backN = Vector3.Cross(
+            vertices[15] - vertices[14], vertices[16] - vertices[14]).normalized;
+        var leftN = Vector3.Cross(
+            vertices[18] - vertices[17], vertices[19] - vertices[17]).normalized;
+
+        var normals = new Vector3[]
+        {
+            // Base top — facing up
+            Vector3.up, Vector3.up, Vector3.up, Vector3.up,
+            // Base bottom — facing down
+            Vector3.down, Vector3.down, Vector3.down, Vector3.down,
+            // Front
+            frontN, frontN, frontN,
+            // Right
+            rightN, rightN, rightN,
+            // Back
+            backN, backN, backN,
+            // Left
+            leftN, leftN, leftN,
+        };
+
+        // UVs for shader edge highlight.
+        var uvs = new Vector2[]
+        {
+            // Base top
+            new(0, 0), new(1, 0), new(1, 1), new(0, 1),
+            // Base bottom
+            new(0, 0), new(1, 0), new(1, 1), new(0, 1),
+            // Front
+            new(0, 0), new(1, 0), new(0.5f, 1),
+            // Right
+            new(0, 0), new(1, 0), new(0.5f, 1),
+            // Back
+            new(0, 0), new(1, 0), new(0.5f, 1),
+            // Left
+            new(0, 0), new(1, 0), new(0.5f, 1),
         };
 
         mesh.vertices = vertices;
+        mesh.normals = normals;
+        mesh.uv = uvs;
         mesh.triangles = triangles;
-        mesh.RecalculateNormals();
         mesh.RecalculateBounds();
 
         return mesh;

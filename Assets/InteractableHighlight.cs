@@ -4,27 +4,23 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 /// <summary>
-/// Per-object highlight component. Subscribes to the object's own
-/// XRGrabInteractable hover events and applies _EdgeHighlightColor
-/// via MaterialPropertyBlock.
-///
-/// Gaze hover = orange, controller hover = blue, gaze takes precedence.
-/// No dependency on the affordance system (which was on destroyed children).
+/// Per-object highlight for CONTROLLER hover (blue glow).
+/// Gaze orange glow is handled by GazeHighlightManager (higher execution order).
+/// Replaces the destroyed affordance children.
 /// </summary>
+[DefaultExecutionOrder(100)]
 [RequireComponent(typeof(XRGrabInteractable))]
 public class InteractableHighlight : MonoBehaviour
 {
     static readonly int k_EdgeHighlightColor = Shader.PropertyToID("_EdgeHighlightColor");
     static readonly int k_EdgeHighlightFalloff = Shader.PropertyToID("_EdgeHighlightFalloff");
 
-    static readonly Color k_GazeColor = new Color(1f, 0.5f, 0f, 1f);       // orange
     static readonly Color k_ControllerColor = new Color(0.7f, 0.87f, 1f, 1f); // light blue
     const float k_Falloff = 1.5f;
 
     XRGrabInteractable m_Grab;
     MeshRenderer m_Renderer;
     MaterialPropertyBlock m_PropertyBlock;
-    bool m_IsGazeHovering;
     bool m_IsControllerHovering;
 
     void OnEnable()
@@ -47,40 +43,39 @@ public class InteractableHighlight : MonoBehaviour
             m_Grab.hoverEntered.RemoveListener(OnHoverEntered);
             m_Grab.hoverExited.RemoveListener(OnHoverExited);
         }
+
+        if (m_Renderer != null && m_PropertyBlock != null)
+        {
+            m_Renderer.GetPropertyBlock(m_PropertyBlock);
+            m_PropertyBlock.SetColor(k_EdgeHighlightColor, Color.clear);
+            m_Renderer.SetPropertyBlock(m_PropertyBlock);
+        }
     }
 
     void OnHoverEntered(HoverEnterEventArgs args)
     {
+        // Ignore gaze hovers — GazeHighlightManager handles those
         if (args.interactorObject is XRGazeInteractor)
-            m_IsGazeHovering = true;
-        else
-            m_IsControllerHovering = true;
+            return;
 
-        ApplyHighlight();
+        m_IsControllerHovering = true;
     }
 
     void OnHoverExited(HoverExitEventArgs args)
     {
         if (args.interactorObject is XRGazeInteractor)
-            m_IsGazeHovering = false;
-        else
-            m_IsControllerHovering = false;
+            return;
 
-        ApplyHighlight();
+        m_IsControllerHovering = false;
     }
 
-    void ApplyHighlight()
+    void LateUpdate()
     {
         if (m_Renderer == null) return;
 
         m_Renderer.GetPropertyBlock(m_PropertyBlock);
 
-        if (m_IsGazeHovering)
-        {
-            m_PropertyBlock.SetColor(k_EdgeHighlightColor, k_GazeColor);
-            m_PropertyBlock.SetFloat(k_EdgeHighlightFalloff, k_Falloff);
-        }
-        else if (m_IsControllerHovering)
+        if (m_IsControllerHovering)
         {
             m_PropertyBlock.SetColor(k_EdgeHighlightColor, k_ControllerColor);
             m_PropertyBlock.SetFloat(k_EdgeHighlightFalloff, k_Falloff);

@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 /// <summary>
 /// Applies an orange highlight to objects the eye gaze hovers over.
-/// Overrides the existing _EdgeHighlightColor (controller blue) with orange.
-/// Runs after the affordance system via execution order to take precedence.
+/// Polls interactablesHovered every frame in LateUpdate instead of
+/// relying on events, ensuring it works for dynamically spawned objects.
+/// Runs at high execution order to override controller blue highlights.
 /// </summary>
-[DefaultExecutionOrder(100)]
+[DefaultExecutionOrder(200)]
 public class GazeHighlightManager : MonoBehaviour
 {
     static readonly int k_EdgeHighlightColor = Shader.PropertyToID("_EdgeHighlightColor");
@@ -17,11 +17,13 @@ public class GazeHighlightManager : MonoBehaviour
     const float k_GazeHighlightFalloff = 1.5f;
     const string k_Tag = "[GazeHighlight]";
 
-    [SerializeField] bool m_DebugLog;
-
     XRBaseInputInteractor m_GazeInteractor;
-    readonly HashSet<Renderer> m_HighlightedRenderers = new HashSet<Renderer>();
     MaterialPropertyBlock m_PropertyBlock;
+    float m_NextLogTime;
+
+    // Track previously highlighted renderers so we can clear them
+    readonly HashSet<Renderer> m_PrevHighlighted = new HashSet<Renderer>();
+    readonly HashSet<Renderer> m_CurrentHighlighted = new HashSet<Renderer>();
 
     void OnEnable()
     {
@@ -34,79 +36,63 @@ public class GazeHighlightManager : MonoBehaviour
         }
 
         Debug.Log($"{k_Tag} Initialized on {gameObject.name}, interactor={m_GazeInteractor.GetType().Name}");
-
-        m_GazeInteractor.hoverEntered.AddListener(OnGazeHoverEntered);
-        m_GazeInteractor.hoverExited.AddListener(OnGazeHoverExited);
-
-        if (m_DebugLog)
-            InvokeRepeating(nameof(LogState), 3f, 5f);
-    }
-
-    void OnDisable()
-    {
-        if (m_GazeInteractor != null)
-        {
-            m_GazeInteractor.hoverEntered.RemoveListener(OnGazeHoverEntered);
-            m_GazeInteractor.hoverExited.RemoveListener(OnGazeHoverExited);
-        }
-
-        ClearAllHighlights();
-    }
-
-    void OnGazeHoverEntered(HoverEnterEventArgs args)
-    {
-        var obj = args.interactableObject;
-        if (m_DebugLog)
-            Debug.Log($"{k_Tag} HOVER ENTER: {obj.transform.name}");
-
-        // Skip objects that have their own InteractableHighlight component
-        if (obj.transform.GetComponent<InteractableHighlight>() != null)
-            return;
-
-        var renderers = obj.transform.GetComponentsInChildren<Renderer>();
-        foreach (var r in renderers)
-            m_HighlightedRenderers.Add(r);
-    }
-
-    void OnGazeHoverExited(HoverExitEventArgs args)
-    {
-        var obj = args.interactableObject;
-        if (m_DebugLog)
-            Debug.Log($"{k_Tag} HOVER EXIT: {obj.transform.name}");
-
-        var renderers = obj.transform.GetComponentsInChildren<Renderer>();
-        foreach (var r in renderers)
-            m_HighlightedRenderers.Remove(r);
     }
 
     void LateUpdate()
     {
-        foreach (var r in m_HighlightedRenderers)
-        {
-            if (r == null) continue;
-            r.GetPropertyBlock(m_PropertyBlock);
-            m_PropertyBlock.SetColor(k_EdgeHighlightColor, k_GazeHighlightColor);
-            m_PropertyBlock.SetFloat(k_EdgeHighlightFalloff, k_GazeHighlightFalloff);
-            r.SetPropertyBlock(m_PropertyBlock);
-        }
-    }
+        if (m_GazeInteractor == null) return;
 
-    void ClearAllHighlights()
-    {
-        foreach (var r in m_HighlightedRenderers)
+        m_CurrentHighlighted.Clear();
+
+        // Gather all renderers from currently gaze-hovered interactables
+        var hovered = m_GazeInteractor.interactablesHovered;
+
+        // Periodic debug log to confirm polling is running and see hover count
+        if (Time.time > m_NextLogTime)
+        {
+            m_NextLogTime = Time.time + 3f;
+            if (hovered.Count > 0)
+            {
+                string names = "";
+                for (int i = 0; i < hovered.Count; i++)
+                    names += (i > 0 ? ", " : "") + hovered[i]?.transform.name;
+                Debug.Log($"{k_Tag} Gaze hovering {hovered.Count}: {names}");
+            }
+        }
+
+        for (int i = 0; i < hovered.Count; i++)
+        {
+            var interactable = hovered[i];
+            if (interactable == null) continue;
+
+            var renderers = interactable.transform.GetComponentsInChildren<Renderer>();
+            foreach (var r in renderers)
+            {
+                if (r == null) continue;
+                m_CurrentHighlighted.Add(r);
+
+                // Apply orange highlight
+                r.GetPropertyBlock(m_PropertyBlock);
+                m_PropertyBlock.SetColor(k_EdgeHighlightColor, k_GazeHighlightColor);
+                m_PropertyBlock.SetFloat(k_EdgeHighlightFalloff, k_GazeHighlightFalloff);
+                r.SetPropertyBlock(m_PropertyBlock);
+            }
+        }
+
+        // Clear renderers that were highlighted last frame but aren't anymore
+        foreach (var r in m_PrevHighlighted)
         {
             if (r == null) continue;
+            if (m_CurrentHighlighted.Contains(r)) continue;
+
             r.GetPropertyBlock(m_PropertyBlock);
             m_PropertyBlock.SetColor(k_EdgeHighlightColor, Color.clear);
             r.SetPropertyBlock(m_PropertyBlock);
         }
-        m_HighlightedRenderers.Clear();
-    }
 
-    void LogState()
-    {
-        if (m_GazeInteractor == null) return;
-        Debug.Log($"{k_Tag} state: hoveredByInteractor={m_GazeInteractor.interactablesHovered.Count}, " +
-            $"highlightedRenderers={m_HighlightedRenderers.Count}");
+        // Swap sets
+        m_PrevHighlighted.Clear();
+        foreach (var r in m_CurrentHighlighted)
+            m_PrevHighlighted.Add(r);
     }
 }
