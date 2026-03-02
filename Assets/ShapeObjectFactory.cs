@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
@@ -50,6 +51,28 @@ public class ShapeObjectFactory : MonoBehaviour
 
     const string k_Tag = "[ShapeFactory]";
     ObjectSpawner m_Spawner;
+
+    // Combo queue: when non-empty, OnObjectSpawned uses queued combos instead of random.
+    readonly Queue<(int shapeIdx, int colorIdx)> m_ComboQueue = new();
+
+    /// <summary>Fires after a spawned object is fully configured with metadata.</summary>
+    public event System.Action<GameObject> objectFullyConfigured;
+
+    /// <summary>Pre-specify the next shape+color combo. Call before ObjectSpawner.TrySpawnObject.</summary>
+    public void EnqueueCombo(string shapeName, string colorName)
+    {
+        int si = m_ShapeNames != null ? System.Array.IndexOf(m_ShapeNames, shapeName) : -1;
+        int ci = System.Array.FindIndex(k_Colors, c => c.name == colorName);
+        if (si >= 0 && ci >= 0)
+            m_ComboQueue.Enqueue((si, ci));
+        else
+            Debug.LogWarning($"{k_Tag} Unknown combo: {shapeName}/{colorName}");
+    }
+
+    /// <summary>Public access to shape names for game manager.</summary>
+    public string[] ShapeNames => m_ShapeNames;
+    /// <summary>Public access to color definitions for game manager.</summary>
+    public static (Color color, string name)[] Colors => k_Colors;
 
     void OnEnable()
     {
@@ -143,11 +166,23 @@ public class ShapeObjectFactory : MonoBehaviour
         // interaction to work. Destroying children corrupts interactable state.
         HideChildRenderers(obj);
 
-        // Pick random shape
-        string shapeName = "Unknown";
-        if (m_ShapeMeshes != null && m_ShapeMeshes.Length > 0)
+        // Pick shape and color — use queued combo if available, otherwise random
+        int shapeIdx, colorIdx;
+        if (m_ComboQueue.Count > 0)
         {
-            int shapeIdx = Random.Range(0, m_ShapeMeshes.Length);
+            var combo = m_ComboQueue.Dequeue();
+            shapeIdx = combo.shapeIdx;
+            colorIdx = combo.colorIdx;
+        }
+        else
+        {
+            shapeIdx = Random.Range(0, m_ShapeMeshes?.Length ?? 0);
+            colorIdx = Random.Range(0, k_Colors.Length);
+        }
+
+        string shapeName = "Unknown";
+        if (m_ShapeMeshes != null && shapeIdx < m_ShapeMeshes.Length)
+        {
             var mesh = m_ShapeMeshes[shapeIdx];
 
             if (mesh != null)
@@ -172,8 +207,6 @@ public class ShapeObjectFactory : MonoBehaviour
                 : mesh != null ? mesh.name : "Unknown";
         }
 
-        // Pick random color
-        int colorIdx = Random.Range(0, k_Colors.Length);
         var (color, colorName) = k_Colors[colorIdx];
 
         // Assign per-instance material with random base color
@@ -235,6 +268,8 @@ public class ShapeObjectFactory : MonoBehaviour
         obj.name = info.DisplayName;
 
         Debug.Log($"{k_Tag} Spawned {info.DisplayName}");
+
+        objectFullyConfigured?.Invoke(obj);
     }
 
     static void HideChildRenderers(GameObject obj)
