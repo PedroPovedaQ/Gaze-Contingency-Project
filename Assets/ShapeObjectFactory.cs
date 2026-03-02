@@ -137,10 +137,11 @@ public class ShapeObjectFactory : MonoBehaviour
         var anim = obj.GetComponent<Animation>();
         if (anim != null) Destroy(anim);
 
-        // Destroy all child GameObjects immediately (Interaction Affordance, Audio Affordance, etc.)
-        // DestroyImmediate prevents affordance system from interfering during this frame.
-        for (int i = obj.transform.childCount - 1; i >= 0; i--)
-            DestroyImmediate(obj.transform.GetChild(i).gameObject);
+        // Hide all child renderers (affordance visuals: rings, crosses, etc.)
+        // We keep the child GameObjects alive — the affordance system's
+        // XRInteractableAffordanceStateProvider must remain active for gaze
+        // interaction to work. Destroying children corrupts interactable state.
+        HideChildRenderers(obj);
 
         // Pick random shape
         string shapeName = "Unknown";
@@ -151,7 +152,7 @@ public class ShapeObjectFactory : MonoBehaviour
 
             if (mesh != null)
             {
-                // Swap MeshFilter on root (children are destroyed)
+                // Swap MeshFilter on root
                 var meshFilter = obj.GetComponent<MeshFilter>();
                 if (meshFilter == null)
                     meshFilter = obj.AddComponent<MeshFilter>();
@@ -162,7 +163,7 @@ public class ShapeObjectFactory : MonoBehaviour
                 if (renderer == null)
                     renderer = obj.AddComponent<MeshRenderer>();
 
-                // Swap or replace collider for the shape
+                // Swap collider for the shape (root only)
                 ReplaceCollider(obj, mesh, shapeIdx);
             }
 
@@ -193,28 +194,30 @@ public class ShapeObjectFactory : MonoBehaviour
         rb.useGravity = true;
         rb.isKinematic = false;
 
-        // Enable gaze interaction and fix grab for dragging
+        // Enable gaze interaction and update grab colliders
         var grab = obj.GetComponent<XRGrabInteractable>();
         if (grab != null)
         {
             grab.allowGazeInteraction = true;
             grab.allowGazeSelect = false;
 
-            // Re-register colliders — old ones removed with DestroyImmediate,
-            // so only the new collider is found here.
+            // Update collider list — only root colliders (children hidden, not destroyed)
             grab.colliders.Clear();
-            grab.colliders.AddRange(obj.GetComponentsInChildren<Collider>());
+            grab.colliders.AddRange(obj.GetComponents<Collider>());
 
-            // Force the XRInteractionManager to rebuild its collider-to-interactable
-            // mapping. Without this, the gaze interactor can't find the interactable
-            // because the old colliders (now destroyed) are still in the manager's map.
+            // Force re-registration with XRInteractionManager so the new
+            // colliders appear in the manager's collider-to-interactable map.
+            // Without this, the gaze interactor can't resolve hits on new colliders.
             grab.enabled = false;
             grab.enabled = true;
 
-            Debug.Log($"{k_Tag} Re-registered grab with {grab.colliders.Count} collider(s), allowGaze={grab.allowGazeInteraction}");
+            // The toggle may recreate affordance child renderers — hide them again.
+            HideChildRenderers(obj);
+
+            Debug.Log($"{k_Tag} Grab re-registered with {grab.colliders.Count} collider(s), allowGaze={grab.allowGazeInteraction}");
         }
 
-        // Add per-object highlight (replaces destroyed affordance children)
+        // Add per-object highlight for controller blue glow
         obj.AddComponent<InteractableHighlight>();
 
         // Adjust scale for simple shapes
@@ -234,11 +237,20 @@ public class ShapeObjectFactory : MonoBehaviour
         Debug.Log($"{k_Tag} Spawned {info.DisplayName}");
     }
 
+    static void HideChildRenderers(GameObject obj)
+    {
+        for (int i = 0; i < obj.transform.childCount; i++)
+        {
+            var child = obj.transform.GetChild(i);
+            foreach (var r in child.GetComponentsInChildren<Renderer>(true))
+                r.enabled = false;
+        }
+    }
+
     void ReplaceCollider(GameObject obj, Mesh mesh, int shapeIdx)
     {
-        // Remove existing colliders immediately so they don't appear
-        // in GetComponentsInChildren when re-registering with XRGrabInteractable.
-        foreach (var col in obj.GetComponentsInChildren<Collider>())
+        // Remove existing colliders on root only (children are kept alive).
+        foreach (var col in obj.GetComponents<Collider>())
             DestroyImmediate(col);
 
         // Add colliders slightly larger than mesh for generous gaze targeting.
