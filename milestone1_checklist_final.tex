@@ -1,0 +1,108 @@
+\documentclass[12pt,letterpaper]{article}
+
+% Essential packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{contour}
+\contourlength{0.8pt} % thickness of the black border
+% Formatting
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Pedro Poveda}
+\lhead{Milestone 1 Checklist}
+\cfoot{\thepage}
+
+% Title formatting
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+
+% Custom colors
+\definecolor{primaryyellow}{RGB}{255, 204, 0}
+\definecolor{successgreen}{RGB}{46,125,50}
+
+% Custom checkbox style
+\newcommand{\taskbox}{$\square$}
+
+\begin{document}
+
+% Title Section
+\begin{center}
+{\Huge\bfseries\color{black}{Milestone 1 Project Checklist}}
+
+\vspace{0.5cm}
+
+{\Large Gaze-Contingent AI Assistance in Mixed Reality Object Search Tasks}
+
+\vspace{0.3cm}
+
+{\large Pedro Poveda}\\
+{\normalsize CAP 6117 - Mixed Reality Systems}\\
+{\normalsize University of Central Florida}
+
+\vspace{0.5cm}
+
+\end{center}
+
+\section{Project Overview}
+This milestone establishes the project foundation for the AI assisted object search task. The focus is creating a Mixed Reality environment with objet selection, assisted by a gaze aware LLM agent.
+
+\section{Milestone 1 Deliverables}
+
+\subsection{\taskbox \hspace{0.2cm} Base Mixed Reality Setup for Object Recognition \hfill {\color{successgreen}\bfseries [25 points]}}
+
+\begin{itemize}[leftmargin=1cm, itemsep=0.3cm]
+    \item[\taskbox] Set up Unity project with OpenXR plugin and mixed reality framework \hfill {\small [10 points]}
+    \item[\taskbox] Create 1m × 1m laboratory environment base \hfill {\small [5 points]}
+    \item[\taskbox] Design and implement 9 target objects \hfill {\small [5 points]}
+    \item[\taskbox] Create object recognition system with visual feedback (border highlighting on controller ray cast) \hfill {\small [5 points]}
+\end{itemize}
+
+\subsection{\taskbox \hspace{0.2cm} VR Device Setup and Configuration \hfill {\color{successgreen}\bfseries [10 points]}}
+
+\begin{itemize}[leftmargin=1cm, itemsep=0.3cm]
+    \item[\taskbox] Configure HTC Vive Focus Vision for development and deployment and connect to Unity \hfill {\small [5 points]}
+    \item[\taskbox] Set up controller raycast object selection and interaction \hfill {\small [5 points]}
+\end{itemize}
+
+
+\subsection{\taskbox \hspace{0.2cm} Eye Gaze Detection Setup \hfill {\color{successgreen}\bfseries [25 points]}}
+
+\begin{itemize}[leftmargin=1cm, itemsep=0.3cm]
+    \item[\taskbox] Integrate Tobii eye tracking SDK with Unity OpenXR framework \hfill {\small [10 points]}
+    \item[\taskbox] Create real-time gaze ray calculation and 3D world space projection \hfill {\small [10 points]}
+    \item[\taskbox] Set up gaze-object intersection detection system \hfill {\small [5 points]}
+\end{itemize}
+
+\subsection{\taskbox \hspace{0.2cm} LLM Integration and Agent Assistance \hfill {\color{successgreen}\bfseries [25 points]}}
+
+\begin{itemize}[leftmargin=1cm, itemsep=0.3cm]
+    \item[\taskbox] Set up local LLM integration within Unity scene (Local model with reduced latency preferred) \hfill {\small [7 points]}
+    \item[\taskbox] Create basic AI agent context system with dynamic knowledge (scene awareness, object locations) \hfill {\small [8 points]}
+    \item[\taskbox] Add gaze information to agent context \hfill {\small [5 points]}
+    \item[\taskbox] Implement basic suggestion generation based on user progress \hfill {\small [5 points]}
+\end{itemize}
+
+\subsection{\taskbox \hspace{0.2cm} Voice System for LLM Agent \hfill {\color{successgreen}\bfseries [15 points]}}
+
+\begin{itemize}[leftmargin=1cm, itemsep=0.3cm]
+    \item[\taskbox] Integrate text-to-speech system for LLM responses \hfill {\small [8 points]}
+    \item[\taskbox] Implement voice timing and interruption handling \hfill {\small [7 points]}
+\end{itemize}
+
+\vspace{1cm}
+
+
+\end{document}
