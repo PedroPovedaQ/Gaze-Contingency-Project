@@ -1,0 +1,475 @@
+\documentclass[12pt,letterpaper]{article}
+
+% Essential packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{graphicx}
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{natbib}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+
+% Formatting
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Poveda}
+\lhead{Gaze-Contingent AI Assistance in MR}
+\cfoot{\thepage}
+
+% Title formatting
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+
+% Hyperlink setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    citecolor=blue
+}
+
+\begin{document}
+
+% Title Page
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+
+{\Huge\bfseries Gaze-Contingent AI Assistance in Mixed Reality Object Search Tasks}
+
+\vspace{2cm}
+
+{\Large Team Laser Vision}
+
+\vspace{1cm}
+
+{\large Pedro Poveda}
+
+\vspace{1cm}
+
+{\normalsize CAP 6117 - Mixed Reality Systems\\
+University of Central Florida}
+
+\vspace{3cm}
+
+{\Large\bfseries Abstract}
+
+\vspace{1cm}
+
+\begin{minipage}{0.8\textwidth}
+\justifying
+This study investigates the effectiveness of gaze-contingent AI agents in mixed reality environments for spatial object search tasks. We propose a controlled experiment comparing user performance when receiving suggestions from an AI agent that utilizes real-time gaze data versus a baseline AI agent operating without gaze information. The research aims to understand how eye-tracking integration can enhance AI agent-human collaboration in immersive search scenarios, with implications for training simulations, assistive technologies, and human-computer interaction design. Our mixed reality application will track users' visual attention patterns while they search for target objects in a virtual environment, with an intelligent AI agent providing adaptive feedback based on their current focus of attention. This work explores the potential for more intuitive AI agent assistance in spatial tasks, building on recent advances in MR visual search research and established spatial interaction frameworks.
+\end{minipage}
+
+\vfill
+\end{titlepage}
+
+% Main Content
+\newpage
+\setcounter{page}{1}
+
+\section{Introduction, Motivation, and Related Work}
+
+\subsection{Problem Space and Motivation}
+
+The integration of artificial intelligence with human spatial cognition represents a critical frontier in mixed reality research. As XR environments become more complex and AI systems more sophisticated, understanding how to effectively combine human visual attention with intelligent assistance becomes essential for designing intuitive and efficient interfaces.
+
+Traditional AI agents in search tasks operate independently of the user's current focus, potentially creating cognitive load through irrelevant suggestions or poorly timed interventions, as highlighted in comprehensive reviews of VR information retrieval systems \citep{schleusissinger2021information}. However, the human visual system provides rich information about attention, intention, and cognitive state that could dramatically improve AI agent decision-making and collaboration effectiveness \citep{chiossi2024searching}. By collecting eye tracking data, including gaze, we can develop AI agents that can perceive and respond to human attention patterns in real-time. This way the agent can gain the context of the human user's eye gaze information, creating more intelligent and contextually-aware assistance systems. This addresses key challenges in current MR technology implementations \citep{rokhsaritalemi2020review}. 
+
+This research is significant for several reasons:
+\begin{itemize}
+    \item \textbf{Training and Education}: Gaze-contingent assistance could revolutionize how we design training simulations, building on established MR spatial interaction principles \citep{barba2017primer}
+    \item \textbf{Assistive Technologies}: Visual impairment support systems could benefit from understanding attention patterns, as identified in comprehensive MR technology reviews \citep{rokhsaritalemi2020review}
+    \item \textbf{Human-AI Collaboration}: Understanding optimal timing and relevance of AI suggestions based on visual attention
+\end{itemize}
+
+\subsection{Related Work}
+
+\subsubsection{Gaze-Contingent Displays in VR/AR}
+
+ \citet{han2024utilizing} successfully implemented gaze-contingent rendering to maintain visual attention in educational VR, showing significant improvements in learning outcomes when visual content adapts to user attention patterns.
+
+\subsubsection{Eye Tracking in Mixed Reality Systems}
+
+\citet{plopski2022eye} provided a comprehensive survey of gaze interaction and eye tracking in head-worn extended reality systems, identifying key challenges and opportunities for attention-aware interfaces. Their analysis of current eye tracking capabilities in commercial MR devices revealed both the potential and limitations of current technology.
+
+Technical validation studies have confirmed the viability of eye tracking in mixed reality applications. Recent research has demonstrated clinical applications of MR eye tracking for neurodegenerative disease diagnosis and provided comprehensive technical evaluations of MR sensor suites, including eye tracking accuracy and latency characteristics essential for real-time gaze-contingent applications. Contemporary studies have successfully employed modern standalone VR headsets with integrated eye tracking for research applications, including the HTC Vive Focus Vision (the hardware this proposed project will use) with its 90HZ eye tracking capabilities.
+
+\subsubsection{Spatial Search in Virtual Environments}
+
+Research in spatial search within virtual environments has established validated paradigms for attention measurement. \citet{seeOrHear2023} uses a mixed reality setup with audio and visual cues to assist in visual search, while \citet{chiossi2024searching} conducted visual search entirely in vr.
+
+\citet{kim2020exploring} explored visual perceptions of spatial information for wayfinding in VR environments using eye tracking, revealing how users process spatial information differently in virtual versus real environments. Their findings suggest that gaze patterns in VR can provide meaningful insights into spatial attention allocation.
+
+\subsubsection{Cognitive Load and AI Assistance}
+
+
+\textbf{Mixed Reality Spatial Interaction and Search}
+Recent research has specifically investigated spatial search tasks in mixed reality environments. \citet{chiossi2024searching} conducted a comprehensive study of visual search in mixed reality using ERP and eye-tracking measures, providing direct validation for the feasibility and importance of eye-tracking-based research in MR contexts. Their work demonstrated that mixed reality environments present unique challenges and opportunities for understanding visual attention during search tasks. There was also the "See or Hear?" paper which is highly relevant as it studies using audio or visual queues in a visual search task.
+
+\textbf{Virtual Reality Information Retrieval and Assistance Systems}
+
+The broader field of information retrieval in virtual environments has evolved significantly in recent years. \citet{schleusissinger2021information} conducted a comprehensive scoping review of information retrieval interfaces in VR, and highlighted intelligent assistance systems as a key research direction. This review provides context for understanding how AI agents can be effectively integrated into immersive search scenarios.
+
+\textbf{Cognitive Load in VR/MR Systems}
+\citet{augereau2022open} developed an open platform specifically for cognitive load research in virtual reality, demonstrating the growing recognition that VR contexts require specialized approaches to cognitive load assessment. Their work provides validation for using both objective and subjective measures of cognitive load in VR environments, supporting our methodological approach of combining subjective rating scales with secondary task performance metrics.
+
+\citet{rokhsaritalemi2020review} provided a comprehensive review of mixed reality technologies, identifying cognitive load management as a critical challenge in MR system design. Their analysis highlights the need for intelligent systems that can adapt to user cognitive state, directly supporting the motivation for gaze-contingent AI assistance.
+
+Recent applications of VR for spatial search tasks have explored the integration of intelligent assistance systems. \citet{feder2024visual} investigated visual search for hazardous items using VR to test wearable displays for firefighters, showing how context-aware assistance can improve search performance in high-stakes scenarios.
+
+\subsection{Novelty and Contribution}
+
+This work represents a novel intersection of gaze-aware computing and AI assistance in mixed reality contexts. While previous work has explored gaze-contingent displays and AI assistance separately \citep{schleusissinger2021information}, few studies have systematically compared the effectiveness of gaze-informed versus gaze-agnostic AI assistance in spatial search tasks. This research builds on established MR spatial interaction frameworks \citep{barba2017primer} while addressing key challenges identified in comprehensive MR technology reviews \citep{rokhsaritalemi2020review}.
+
+\section{Research Question and Methods}
+
+\subsection{Primary Research Question}
+\textbf{How does a gaze-contingent AI agent affect user performance, cognitive load, and task satisfaction in mixed reality object search tasks compared to a standard AI agent without gaze awareness?}
+
+\subsection{Methodology}
+
+\subsubsection{Independent Variables}
+\begin{itemize}
+    \item \textbf{AI Agent Type} (Between-subjects):
+    \begin{itemize}
+        \item Condition 1: Gaze-Contingent AI Agent (provides suggestions based on real-time gaze location and attention patterns)
+        \item Condition 2: Standard AI Agent (provides suggestions without access to gaze information)
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Dependent Variables}
+\begin{itemize}
+    \item \textbf{Performance Metrics}:
+    \begin{itemize}
+        \item Task completion time
+        \item Search accuracy (correct objects found)
+        \item Number of incorrect selections
+        \item Path efficiency (spatial movement patterns)
+    \end{itemize}
+    
+    \item \textbf{Cognitive Load Assessment}:
+    \begin{itemize}
+        \item Paas Mental Effort Scale (9-point scale)\citep{augereau2022open}
+ \end{itemize}
+    
+    \item \textbf{User Experience and AI Agent Evaluation}:
+    \begin{itemize}
+        \item System Usability Scale (SUS)
+        \item Custom questionnaire on AI agent helpfulness and appropriateness
+        \item Semi-structured interview on agent assistance timing, relevance, and perceived intelligence
+        \item Agent trust and acceptance ratings (Presence)
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Study Design}
+Between-subjects design with random assignment to conditions. This design minimizes learning effects and allows for cleaner comparison between assistance types, following established protocols for MR spatial interaction studies \citep{chiossi2024searching}.
+
+\textbf{Proposed Sample Size:} 24-32 participants (12-16 per condition) - sufficient for medium effect sizes in HCI research and consistent with recent mixed reality eye-tracking studies
+
+\subsubsection{Initial Hypotheses}
+\begin{enumerate}
+    \item The gaze-contingent AI agent will enable faster task completion times compared to the standard AI agent
+    \item Users will report higher satisfaction, greater trust, and lower mental effort when working with the gaze-contingent AI agent
+    \item The gaze-contingent AI agent will provide more contextually relevant suggestions, resulting in higher suggestion acceptance rates and reduced user frustration
+\end{enumerate}
+
+\section{XR Experience Overview}
+
+\subsection{Hardware Requirements}
+
+\subsubsection{HTC Vive Focus Vision Specifications}
+The study will utilize the HTC Vive Focus Vision, a standalone mixed reality headset with integrated eye tracking capabilities:
+
+\textbf{Key Hardware Features:}
+\begin{itemize}
+    \item \textbf{Eye Tracking}: Integrated Tobii eye tracking with 90hz sampling rate
+    \item \textbf{Display}: 2.5K per eye resolution with 90Hz refresh rate
+    \item \textbf{Spatial Tracking}: 6DOF head tracking with inside-out tracking
+    \item \textbf{Controller}:Controller used for object selection
+    \item \textbf{Standalone Operation}: No external base stations required
+\end{itemize}
+
+The HTC Vive Focus Vision's eye tracking system provides the precision necessary for real-time gaze-contingent applications, with sufficient sampling rate (90hz) to detect gaze and fixations accurately. Recent research has successfully utilized this platform for gaze-based studies, including visual saliency analysis in dynamic environments \citep{zhou2025comparison}. The standalone nature eliminates the complexity of the setup while maintaining research-grade tracking capabilities.
+
+\subsection{Environment/Scene Overview}
+
+\subsubsection{Physical Environment}
+The study will take place in a controlled laboratory space (approximately 4m × 4m) with consistent ambient lighting and minimal visual distractions. The physical environment will be arranged to resemble a realistic indoor setting and will primarily consist of one or more bookshelves that serve as the central search area. The space will include:
+
+\begin{itemize}
+    \item A bookshelf densely populated with physical books to create visual clutter and realistic search conditions
+    \item One or two non-book physical items (e.g., small objects or personal items) placed among the books to increase variability
+    \item Neutral-colored walls and surfaces to ensure reliable eye tracking and spatial tracking performance
+\end{itemize}
+
+\subsubsection{Search Task Design}
+Participants will be instructed to locate specific physical books and, in some trials, one or two non-book items placed on the bookshelf. Target items will be distributed across different shelf levels and depths to require active visual scanning and head movement.
+
+\textbf{Target Items:}
+\begin{itemize}
+    \item Books identified by distinct visual features such as title text, spine color, or size
+    \item Occasional non-book items placed among books to introduce heterogeneity in the search task
+\end{itemize}
+
+\textbf{Distractor Characteristics:}
+\begin{itemize}
+    \item Visually similar books with comparable colors or typography to increase search difficulty
+    \item Dense arrangement of items to induce natural occlusion and clutter
+\end{itemize}
+
+\textbf{Design Principles:}
+\begin{itemize}
+    \item The search environment emphasizes realism by using only physical objects commonly found on bookshelves
+    \item Item placement is held constant across conditions to ensure comparability
+    \item Environmental consistency is maintained to isolate the effects of experimental manipulations on search behavior
+\end{itemize}
+
+\subsection{Tasks}
+
+\subsubsection{Primary Task: Spatial Object Search}
+Participants must locate and select 7 specific target objects within the mixed reality environment within a 15-minute time limit.
+
+\subsubsection{Task Progression}
+\begin{enumerate}
+    \item \textbf{Calibration Phase} (2-3 minutes):
+    \begin{itemize}
+        \item Eye tracking calibration
+        \item Practice selecting 2 simple objects
+        \item Familiarization with UI feedback
+    \end{itemize}
+    
+    \item \textbf{Main Search Phase} (10-12 minutes):
+    \begin{itemize}
+        \item Sequential search for 7 target objects
+        \item Objects revealed through task instruction panel
+        \item No predetermined search order (participant choice)
+    \end{itemize}
+    
+    \item \textbf{Completion Verification}:
+    \begin{itemize}
+        \item Confirmation dialog for each found object
+        \item Progress indicator showing remaining targets
+        \item Optional hint system after prolonged search
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Task Complexity Levels}
+\begin{itemize}
+    \item \textbf{Easy Objects}: Clearly visible from multiple viewpoints
+    \item \textbf{Medium Objects}: Require moderate spatial exploration
+    \item \textbf{Difficult Objects}: Hidden behind/under other objects, require specific angles
+\end{itemize}
+
+\subsection{Implementation of Conditions}
+
+\subsubsection{Condition 1: Gaze-Contingent AI Agent}
+
+\textbf{Agent Architecture:}
+\begin{itemize}
+    \item Real-time gaze ray casting to detect visual attention focus \citep{chiossi2024searching}
+    \item ~200ms fixation threshold before triggering agent response
+    \item Spatial clustering algorithm to identify "areas of interest" (Heatmap?)
+    \item Decision-making module that evaluates gaze patterns and search progress
+\end{itemize}
+
+\textbf{AI Agent Behavior:}
+\begin{itemize}
+    \item Timer-based suggestion system (every 20-30 seconds)
+    \item \textbf{Proximity Hints}: When user gazes near target object
+    \begin{itemize}
+        \item Subtle auditory affirmation
+    \end{itemize}
+    \item \textbf{Directional Guidance}: When user looks away from productive areas
+    \begin{itemize}
+        \item Contextual suggestions: "Try looking behind the blue table"
+    \end{itemize}
+    \item \textbf{Confirmation Feedback}: When user selects item, agent confirms success
+\end{itemize}
+
+
+\subsubsection{Condition 2: Standard AI Agent (Control)}
+
+\textbf{Agent Architecture:}
+\begin{itemize}
+    \item Timer-based suggestion system (every 20-30 seconds)
+    \item Overall progress analysis without access to gaze information
+    \item Spatial reasoning module based on object locations and search duration
+    \item Decision-making limited to temporal and completion-based triggers
+\end{itemize}
+
+\textbf{AI Agent Behavior:}
+\begin{itemize}
+    \item \textbf{Periodic Suggestions}: Timed hints based on elapsed time
+    \begin{itemize}
+        \item "Have you checked the lower surfaces?"
+        \item "Some objects might be partially hidden"
+    \end{itemize}
+    \item \textbf{Progress-Based Hints}: Triggered by completion percentage
+    \begin{itemize}
+        \item At 30\% completion: "Look for objects at different heights"
+        \item At 60\% completion: "Try examining objects from different angles"
+    \end{itemize}
+    \item \textbf{Area Recommendations}: Broad spatial guidance
+    \begin{itemize}
+        \item "The lower area hasn't been fully explored"
+        \item "Check behind and underneath objects"
+    \end{itemize}
+    \item \textbf{Confirmation Feedback}: When user selects item, agent confirms success
+\end{itemize}
+
+\subsubsection{Consistency Controls}
+\begin{itemize}
+    \item Identical visual object set across both conditions, following established MR visual search protocols \citep{chiossi2024searching}
+    \item Same physical environment setup with consistent spatial scale implementation \citep{barba2017primer}
+    \item Equivalent total number of AI suggestions per session
+    \item Standardized success feedback and completion indicators
+\end{itemize}
+
+\subsection{Data Recorded from XR Experience}
+
+\subsubsection{Real-Time Tracking Data}
+\begin{enumerate}
+    \item \textbf{Gaze Tracking} (90hz sampling):
+    \begin{itemize}
+        \item 3D gaze ray origin and direction vectors, following established MR eye-tracking methodologies \citep{chiossi2024searching}
+        \item Fixation duration and direction
+        \item Gaze-object intersection events
+        \item Pupil dilation changes (arousal indicator)
+    \end{itemize}
+    
+    \item \textbf{Spatial Movement Data} (60Hz):
+    \begin{itemize}
+        \item Head position and orientation (6DOF)
+        \item Movement velocity and acceleration patterns
+        \item Spatial coverage maps (areas explored vs. unexplored)
+    \end{itemize}
+    
+    \item \textbf{Interaction Logs} (Event-based):
+    \begin{itemize}
+        \item Object selection attempts (successful/failed)
+        \item AI suggestion display times and user responses
+        \item Task progression timestamps
+        \item UI interaction events (menu navigation, hint requests)
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Performance Metrics}
+\begin{itemize}
+    \item \textbf{Completion Time}: Total time to find all objects
+    \item \textbf{Search Efficiency}: Direct path vs. actual path ratio
+    \item \textbf{Error Rate}: Incorrect object selections
+    \item \textbf{Hint Utilization}: AI suggestion acceptance/dismissal rates
+\end{itemize}
+
+\subsubsection{Cognitive Load Indicators}
+\begin{itemize}
+    \item \textbf{Gaze Stability}: Fixation duration and search patterns
+    \item \textbf{Movement Smoothness}: Jerk and acceleration analysis
+    \item \textbf{Self-Report Measures}: PaaS Scale, perceived difficulty
+\end{itemize}
+
+
+\begin{figure}[H]
+\centering
+\fbox{\begin{minipage}{0.8\textwidth}
+\centering
+\vspace{2cm}
+
+    \includegraphics[width=1\linewidth]{}
+    \centering
+    \includegraphics[width=0.5\linewidth]{}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{image2.png}
+    \label{fig:placeholder}
+\end{figure}
+\vspace{2cm}
+\end{minipage}}
+\caption{Data collection and processing pipeline architecture}
+\label{fig:data_pipeline}
+\end{figure}
+
+\subsubsection{Data Supporting Study Hypotheses}
+\begin{itemize}
+    \item \textbf{H1 (Performance)}: Completion time, search efficiency metrics
+    \item \textbf{H2 (Cognitive Load)}: Mental Effort scores, secondary task performance
+    \item \textbf{H3 (User Satisfaction)}: Hint acceptance rates, post-study interviews
+
+\subsubsection{AI Agent Intelligence Characteristics}
+
+Both experimental conditions employ intelligent AI agents that demonstrate key characteristics of autonomous systems:
+
+\textbf{Intelligent Decision-Making:}
+\begin{itemize}
+    \item \textbf{Context Awareness}: Agents maintain awareness of search progress, remaining objects, and user behavior patterns
+    \item \textbf{Adaptive Timing}: Agents determine optimal moments for intervention based on user state and task progress
+    \item \textbf{Personalized Assistance}: Agents adapt their communication style and suggestion types based on individual user response patterns, following established VR interface design principles \citep{schleusissinger2021information}
+\end{itemize}
+
+\textbf{Agent Differentiation:}
+\begin{itemize}
+    \item \textbf{Gaze-Contingent Agent}: Utilizes real-time attention data to make informed decisions about spatial guidance and timing
+    \item \textbf{Standard Agent}: Relies on temporal and progress-based reasoning without access to attentional state information
+\end{itemize}
+
+The key research question centers on whether access to gaze information enhances the AI agent's ability to provide contextually appropriate and temporally relevant assistance, extending established MR spatial interaction principles \citep{barba2017primer} into the domain of intelligent assistance systems.
+\end{itemize}
+
+\newpage
+% Bibliography
+\bibliographystyle{apalike}
+\bibliography{references}
+
+\newpage
+% Appendices
+\appendix
+
+
+\section{AI Use Disclosure}
+
+\subsection{How AI Was Used in This Proposal}
+
+\subsubsection{Research and Ideation}
+\begin{itemize}
+    \item Helped me refine the project concept from my initial idea
+    \item Helped me solidify the independent and dependent variables
+    \item Helped me evaluate the pros and cons of each hardware choice
+\end{itemize}
+
+\subsubsection{Writing and Structure}
+\begin{itemize}
+    \item Took my notes and compiled research and helped me format them in LaTex
+    \item Provided feedback on academic writing style and tone
+\end{itemize}
+
+\subsubsection{AI Tools Used}
+\begin{itemize}
+    \item Claude (Anthropic) 
+\end{itemize}
+
+\subsubsection{Human Contribution}
+\begin{itemize}
+    \item Original project concept and research questions
+    \item Manual research
+    \item Final technical decisions and methodology choices
+\end{itemize}
+
+
+\end{document}

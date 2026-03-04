@@ -73,3 +73,6 @@ Thumbs.db
 
 # Unity internal
 .utmp
+
+# API keys
+Assets/StreamingAssets/api_keys.json

@@ -37,6 +37,18 @@ namespace UnityEngine.XR.Templates.MR
         [SerializeField, Tooltip("AR Plane Manager that is in charge of spawning new AR Plane prefabs into the scene.")]
         ARPlaneManager m_PlaneManager;
 
+        [SerializeField, Tooltip("VIVE native plane provider, used when AR Foundation plane subsystem is unavailable.")]
+        VivePlaneProvider m_VivePlaneProvider;
+
+        /// <summary>
+        /// VIVE native plane provider fallback.
+        /// </summary>
+        public VivePlaneProvider vivePlaneProvider
+        {
+            get => m_VivePlaneProvider;
+            set => m_VivePlaneProvider = value;
+        }
+
         /// <summary>
         /// AR Plane Manager that is in charge of spawning new AR Plane prefabs into the scene.
         /// </summary>
@@ -73,6 +85,9 @@ namespace UnityEngine.XR.Templates.MR
         /// Toggle that dictates whether AR Bounding Boxes should be visualized at runtime.
         /// </summary>
         public bool BoundingBoxVisualsEnabled => m_BoundingBoxVisualsEnabled;
+
+        [SerializeField, Tooltip("Eye gaze interactor GameObject to toggle on/off.")]
+        GameObject m_GazeInteractor;
 
         [SerializeField, Tooltip("Toggle that dictates whether AR Bounding Box visualizations should show additional debug information.")]
         bool m_BoundingBoxDebugInfoEnabled = true;
@@ -154,17 +169,31 @@ namespace UnityEngine.XR.Templates.MR
             m_PlaneManagerEnabled = enabled;
             m_OnARPlaneFeatureChanged?.Invoke(m_PlaneManagerEnabled);
 
-            if (m_PlaneManagerEnabled)
+            // Use AR Foundation if subsystem is available
+            if (m_PlaneManager.subsystem != null)
             {
-                m_PlaneManager.enabled = m_PlaneManagerEnabled;
-                m_PlaneManager.SetTrackablesActive(m_PlaneManagerEnabled);
-                m_PlaneManager.trackablesChanged.AddListener(OnPlaneChanged);
+                if (m_PlaneManagerEnabled)
+                {
+                    m_PlaneManager.enabled = m_PlaneManagerEnabled;
+                    m_PlaneManager.SetTrackablesActive(m_PlaneManagerEnabled);
+                    m_PlaneManager.trackablesChanged.AddListener(OnPlaneChanged);
+                }
+                else
+                {
+                    m_PlaneManager.trackablesChanged.RemoveListener(OnPlaneChanged);
+                    m_PlaneManager.SetTrackablesActive(m_PlaneManagerEnabled);
+                    m_PlaneManager.enabled = m_PlaneManagerEnabled;
+                }
+                return;
             }
-            else
+
+            // Fallback to VIVE native plane detection
+            if (m_VivePlaneProvider != null)
             {
-                m_PlaneManager.trackablesChanged.RemoveListener(OnPlaneChanged);
-                m_PlaneManager.SetTrackablesActive(m_PlaneManagerEnabled);
-                m_PlaneManager.enabled = m_PlaneManagerEnabled;
+                if (enabled)
+                    m_VivePlaneProvider.EnablePlanes();
+                else
+                    m_VivePlaneProvider.DisablePlanes();
             }
         }
 
@@ -180,17 +209,28 @@ namespace UnityEngine.XR.Templates.MR
             m_PlaneVisualsEnabled = enabled;
             m_OnARPlaneFeatureVisualizationChanged?.Invoke(m_PlaneVisualsEnabled);
 
-            var trackables = m_PlaneManager.trackables;
-            if (trackables.count != m_ARPlanes.Count)
+            // Use AR Foundation if subsystem is available
+            if (m_PlaneManager.subsystem != null)
             {
-                RefreshAllPlanes();
-            }
-            else
-            {
-                foreach (var visualizer in m_ARPlaneMeshVisualizers.Values)
+                var trackables = m_PlaneManager.trackables;
+                if (trackables.count != m_ARPlanes.Count)
                 {
-                    visualizer.enabled = m_PlaneVisualsEnabled;
+                    RefreshAllPlanes();
                 }
+                else
+                {
+                    foreach (var visualizer in m_ARPlaneMeshVisualizers.Values)
+                    {
+                        visualizer.enabled = m_PlaneVisualsEnabled;
+                    }
+                }
+                return;
+            }
+
+            // Fallback to VIVE native plane detection
+            if (m_VivePlaneProvider != null)
+            {
+                m_VivePlaneProvider.SetVisualsEnabled(enabled);
             }
         }
 
@@ -271,6 +311,23 @@ namespace UnityEngine.XR.Templates.MR
                     visualizer.ShowDebugInfoCanvas(m_BoundingBoxDebugInfoEnabled);
                 }
             }
+        }
+
+        /// <summary>
+        /// Toggles the eye gaze ray visual on and off.
+        /// The underlying XRGazeInteractor and TrackedPoseDriver remain active
+        /// so that gaze telemetry and hover detection continue regardless.
+        /// </summary>
+        /// <param name="enabled">Whether to enable or disable the gaze ray visual.</param>
+        public void ToggleGazeRay(bool enabled)
+        {
+            if (m_GazeInteractor == null) return;
+
+            var lineRenderer = m_GazeInteractor.GetComponent<LineRenderer>();
+            if (lineRenderer != null) lineRenderer.enabled = enabled;
+
+            var lineVisual = m_GazeInteractor.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactors.Visuals.XRInteractorLineVisual>();
+            if (lineVisual != null) lineVisual.enabled = enabled;
         }
 
         void OnPlaneChanged(ARTrackablesChangedEventArgs<ARPlane> eventArgs)
