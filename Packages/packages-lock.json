@@ -1,14 +1,13 @@
 {
   "dependencies": {
     "com.coplaydev.unity-mcp": {
-      "version": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main",
+      "version": "file:com.coplaydev.unity-mcp",
       "depth": 0,
-      "source": "git",
+      "source": "embedded",
       "dependencies": {
         "com.unity.nuget.newtonsoft-json": "3.0.2",
         "com.unity.test-framework": "1.1.31"
-      },
-      "hash": "d76a8df311c48263872be0cd3e6a8ef1a0fa8e59"
+      }
     },
     "com.htc.upm.vive.openxr": {
       "version": "https://github.com/ViveSoftware/VIVE-OpenXR-Unity.git?path=/com.htc.upm.vive.openxr#versions/2.5.1",
