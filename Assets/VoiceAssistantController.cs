@@ -16,6 +16,7 @@ public class VoiceAssistantController : MonoBehaviour
     AgentContext m_AgentContext;
     HintGenerator m_HintGenerator;
     VoiceSynthesizer m_VoiceSynthesizer;
+    GazeCoverageTracker m_CoverageTracker;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoAttach()
@@ -59,12 +60,15 @@ public class VoiceAssistantController : MonoBehaviour
         m_VoiceSynthesizer = gameObject.AddComponent<VoiceSynthesizer>();
         m_VoiceSynthesizer.Initialize(elevenLabsKey);
 
+        m_CoverageTracker = gameObject.AddComponent<GazeCoverageTracker>();
+        m_CoverageTracker.Initialize(m_GameManager);
+
         m_AgentContext = gameObject.AddComponent<AgentContext>();
         var ui = GetComponent<FindObjectUI>();
-        m_AgentContext.Initialize(m_GameManager, ui);
+        m_AgentContext.Initialize(m_GameManager, ui, m_CoverageTracker);
 
         m_HintGenerator = gameObject.AddComponent<HintGenerator>();
-        m_HintGenerator.Initialize(openAiKey, m_AgentContext, m_VoiceSynthesizer);
+        m_HintGenerator.Initialize(openAiKey, m_AgentContext, m_VoiceSynthesizer, m_CoverageTracker);
 
         // Subscribe to game events
         m_GameManager.OnGameStarted += HandleGameStarted;
@@ -88,11 +92,13 @@ public class VoiceAssistantController : MonoBehaviour
 
     void HandleGameStarted()
     {
+        m_CoverageTracker?.Reset();
+
         var objectives = m_GameManager.Objectives;
         if (objectives.Count == 0) return;
 
         var first = objectives[0];
-        string welcome = $"Let's play! Find the {first.color} {first.shape}. Look around the table!";
+        string welcome = $"Let's play! Find the {first.color} {first.shape}. Look around the table and shelves!";
 
         Debug.Log($"{k_Tag} Game started, saying welcome");
         m_VoiceSynthesizer.Speak(welcome, "welcome");

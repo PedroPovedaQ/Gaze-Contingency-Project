@@ -17,25 +17,28 @@ public class HintGenerator : MonoBehaviour
     const int k_MaxTokens = 80;
     const float k_Temperature = 0.8f;
 
-    // Timing constants
-    const float k_FirstHintDelay = 15f;    // seconds after objective starts
-    const float k_SubsequentInterval = 20f; // between automatic hints
-    const float k_WrongGrabDelay = 3f;      // hint after wrong grab
-    const float k_GazeNudgeTime = 10f;      // gazing at target without grabbing
-    const float k_MinGap = 8f;              // minimum gap between any hints
+    // Timing constants — adaptive ranges (5-15s based on gaze behavior)
+    const float k_WrongGrabDelay = 3f;
+    const float k_GazeNudgeTime = 10f;
+    const float k_ZoneNeglectThreshold = 20f; // seconds without scanning a zone
+    const int k_RevisitConfusionCount = 3;     // same object viewed 3+ times
+    const float k_MinGap = 5f;
 
     const string k_SystemPrompt =
-        "You are a friendly VR game assistant helping a player find colored shapes on a table. " +
-        "Give SHORT hints (1-2 sentences, under 30 words). Use spatial directions (left, right, ahead, behind). " +
+        "You are a friendly VR game assistant helping a player find colored shapes on a table and shelves. " +
+        "Give SHORT hints (1-2 sentences, under 30 words). Use spatial directions (left, right, ahead, behind) " +
+        "and vertical directions (table level, lower shelf, upper shelf). " +
         "Be warm and encouraging. Don't give exact answers immediately — get more specific if the player " +
         "has been struggling longer. Vary your phrasing. " +
         "You have access to the player's eye gaze data — use it to guide them. " +
-        "If they're looking in the wrong direction, gently redirect. " +
+        "If they're looking in the wrong area or zone, gently redirect. " +
+        "If they haven't checked a shelf level, suggest it. " +
         "If they're close to the target, encourage them.";
 
     string m_ApiKey;
     AgentContext m_Context;
     VoiceSynthesizer m_Voice;
+    GazeCoverageTracker m_CoverageTracker;
 
     float m_ObjectiveStartTime;
     float m_LastHintTime;
@@ -45,11 +48,12 @@ public class HintGenerator : MonoBehaviour
     bool m_CancelRequested;
     Coroutine m_GenerateCoroutine;
 
-    public void Initialize(string apiKey, AgentContext context, VoiceSynthesizer voice)
+    public void Initialize(string apiKey, AgentContext context, VoiceSynthesizer voice, GazeCoverageTracker coverageTracker = null)
     {
         m_ApiKey = apiKey;
         m_Context = context;
         m_Voice = voice;
+        m_CoverageTracker = coverageTracker;
         Debug.Log($"{k_Tag} Initialized");
     }
 
@@ -97,13 +101,12 @@ public class HintGenerator : MonoBehaviour
         if (m_GenerateCoroutine != null || m_Voice.IsSpeaking) return;
 
         float now = Time.time;
-        float sinceObjective = now - m_ObjectiveStartTime;
         float sinceLastHint = now - m_LastHintTime;
 
         // Enforce minimum gap
         if (sinceLastHint < k_MinGap) return;
 
-        // Track gaze on target for nudge
+        // --- Priority 1: Gaze nudge (staring at target without grabbing) ---
         if (m_Context.IsGazingAtTarget())
         {
             if (m_GazeOnTargetStart <= 0f)
@@ -121,7 +124,7 @@ public class HintGenerator : MonoBehaviour
             m_GazeOnTargetStart = 0f;
         }
 
-        // After wrong grab — hint after short delay
+        // --- Priority 2: Wrong grab redirect ---
         if (m_WrongGrabTime > 0f && (now - m_WrongGrabTime) >= k_WrongGrabDelay)
         {
             m_WrongGrabTime = 0f;
@@ -129,22 +132,118 @@ public class HintGenerator : MonoBehaviour
             return;
         }
 
-        // First hint after delay
-        if (m_LastHintTime < m_ObjectiveStartTime && sinceObjective >= k_FirstHintDelay)
+        // --- Priority 3: Zone neglect (haven't looked at a shelf level) ---
+        if (m_CoverageTracker != null)
         {
-            RequestHint("The player has been searching for a while. Give a helpful spatial hint.");
+            string[] zoneNames = { "table", "lower shelf", "upper shelf" };
+            for (int level = 0; level < 3; level++)
+            {
+                float lastScan = m_CoverageTracker.GetZoneLastScanTime(level);
+                // Only trigger if the zone was previously scanned (lastScan > 0) and neglected,
+                // or if enough time has passed since objective start and zone was never scanned
+                float sinceObjective = now - m_ObjectiveStartTime;
+                bool neverScanned = lastScan <= 0f && sinceObjective > k_ZoneNeglectThreshold;
+                bool neglected = lastScan > 0f && (now - lastScan) > k_ZoneNeglectThreshold;
+
+                if (neverScanned || neglected)
+                {
+                    RequestHint($"The player has not looked at the {zoneNames[level]} for a while. Suggest they check that area — the target might be there.");
+                    return;
+                }
+            }
+        }
+
+        // --- Priority 4: Revisit confusion (same wrong object viewed repeatedly) ---
+        if (m_CoverageTracker != null)
+        {
+            string confused = m_CoverageTracker.GetMostRevisitedNonTarget();
+            if (confused != null)
+            {
+                int count = m_CoverageTracker.GetRevisitCount(confused);
+                if (count >= k_RevisitConfusionCount)
+                {
+                    RequestHint($"The player keeps looking at {confused} repeatedly ({count} times). They seem confused about whether it's the target. Help redirect them clearly.");
+                    return;
+                }
+            }
+        }
+
+        // --- Priority 5: Adaptive timed hints ---
+        float adaptiveInterval = ComputeAdaptiveInterval();
+        float timeSinceObjective = now - m_ObjectiveStartTime;
+
+        // First hint after adaptive delay
+        if (m_LastHintTime < m_ObjectiveStartTime && timeSinceObjective >= adaptiveInterval * 0.75f)
+        {
+            RequestHint(GetBehaviorSituationDescription());
             return;
         }
 
-        // Subsequent hints at interval
-        if (sinceLastHint >= k_SubsequentInterval && sinceObjective >= k_FirstHintDelay)
+        // Subsequent hints at adaptive interval
+        if (sinceLastHint >= adaptiveInterval)
         {
-            float totalSearchTime = sinceObjective;
-            string urgency = totalSearchTime > 60f
-                ? "The player has been struggling for over a minute. Give a more specific, direct hint."
-                : "Give another helpful hint. Be a bit more specific than before.";
-            RequestHint(urgency);
+            RequestHint(GetBehaviorSituationDescription());
         }
+    }
+
+    float ComputeAdaptiveInterval()
+    {
+        if (m_CoverageTracker == null) return 10f; // fallback mid-range
+
+        var behavior = m_CoverageTracker.ClassifyBehavior();
+        return behavior switch
+        {
+            GazeCoverageTracker.GazeBehavior.Systematic => Random.Range(12f, 15f),
+            GazeCoverageTracker.GazeBehavior.Normal     => Random.Range(9f, 12f),
+            GazeCoverageTracker.GazeBehavior.Erratic    => Random.Range(5f, 7f),
+            GazeCoverageTracker.GazeBehavior.Stuck      => Random.Range(7f, 10f),
+            _                                           => 10f,
+        };
+    }
+
+    string GetBehaviorSituationDescription()
+    {
+        if (m_CoverageTracker == null)
+            return "Give a helpful spatial hint.";
+
+        var behavior = m_CoverageTracker.ClassifyBehavior();
+        float searchTime = Time.time - m_ObjectiveStartTime;
+
+        return behavior switch
+        {
+            GazeCoverageTracker.GazeBehavior.Erratic =>
+                "The player's gaze is erratic and unfocused — they seem lost. Give a clear, calming directional hint.",
+            GazeCoverageTracker.GazeBehavior.Stuck =>
+                $"The player has only been searching one area. {GetStuckZoneDescription()} Suggest they look elsewhere.",
+            GazeCoverageTracker.GazeBehavior.Systematic when searchTime > 45f =>
+                "The player is searching methodically but hasn't found it yet. Give a more specific hint.",
+            GazeCoverageTracker.GazeBehavior.Systematic =>
+                "The player is searching methodically. Give a gentle nudge without being pushy.",
+            _ when searchTime > 60f =>
+                "The player has been struggling for over a minute. Give a more direct, specific hint.",
+            _ =>
+                "Give another helpful hint. Be a bit more specific than before.",
+        };
+    }
+
+    string GetStuckZoneDescription()
+    {
+        if (m_CoverageTracker == null) return "";
+
+        // Find which zone has the least coverage
+        string[] zoneNames = { "table", "lower shelf", "upper shelf" };
+        float minFixation = float.MaxValue;
+        string leastZone = "";
+        for (int i = 0; i < 3; i++)
+        {
+            float total = m_CoverageTracker.GetZoneTotalFixation(i);
+            if (total < minFixation)
+            {
+                minFixation = total;
+                leastZone = zoneNames[i];
+            }
+        }
+        return $"They haven't checked the {leastZone} much.";
     }
 
     void RequestHint(string situationDescription)

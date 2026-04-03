@@ -101,8 +101,8 @@ public class ShapeObjectFactory : MonoBehaviour
         if (m_ShapeMeshes == null || m_ShapeMeshes.Length == 0)
         {
             Debug.Log($"{k_Tag} Auto-initializing shape meshes");
-            m_ShapeMeshes = new Mesh[3];
-            m_ShapeNames = new[] { "Sphere", "Cube", "Pyramid" };
+            m_ShapeMeshes = new Mesh[5];
+            m_ShapeNames = new[] { "Sphere", "Cube", "Pyramid", "Cylinder", "Star" };
 
             // Sphere
             var tempSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -116,6 +116,14 @@ public class ShapeObjectFactory : MonoBehaviour
 
             // Pyramid (procedural)
             m_ShapeMeshes[2] = CreatePyramidMesh();
+
+            // Cylinder
+            var tempCylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            m_ShapeMeshes[3] = tempCylinder.GetComponent<MeshFilter>().sharedMesh;
+            Destroy(tempCylinder);
+
+            // Star (procedural)
+            m_ShapeMeshes[4] = CreateStarMesh();
         }
 
         // Auto-find material if not assigned
@@ -300,10 +308,19 @@ public class ShapeObjectFactory : MonoBehaviour
                 var bc = obj.AddComponent<BoxCollider>();
                 bc.size = new Vector3(1.3f, 1.3f, 1.3f);
                 break;
-            default: // Pyramid — use sphere collider for generous targeting
+            case 2: // Pyramid — use sphere collider for generous targeting
                 var pc = obj.AddComponent<SphereCollider>();
                 pc.center = new Vector3(0f, 0.4f, 0f); // center slightly above base
                 pc.radius = 0.65f;
+                break;
+            case 3: // Cylinder — capsule collider matching cylinder shape
+                var cc = obj.AddComponent<CapsuleCollider>();
+                cc.radius = 0.65f;
+                cc.height = 2.6f; // mesh height is 2.0, generous
+                break;
+            default: // Star — sphere collider for generous targeting
+                var stc = obj.AddComponent<SphereCollider>();
+                stc.radius = 0.7f;
                 break;
         }
     }
@@ -399,6 +416,102 @@ public class ShapeObjectFactory : MonoBehaviour
         mesh.normals = normals;
         mesh.uv = uvs;
         mesh.triangles = triangles;
+        mesh.RecalculateBounds();
+
+        return mesh;
+    }
+
+    /// <summary>
+    /// Creates a 5-pointed star extruded into 3D.
+    /// Outer radius 0.5, inner radius 0.2, depth 0.2.
+    /// </summary>
+    static Mesh CreateStarMesh()
+    {
+        var mesh = new Mesh();
+        mesh.name = "Star";
+
+        const int points = 5;
+        const float outerR = 0.5f;
+        const float innerR = 0.2f;
+        const float halfDepth = 0.1f;
+
+        // Generate 2D star outline (10 vertices: alternating outer/inner)
+        var outline = new Vector2[points * 2];
+        for (int i = 0; i < points * 2; i++)
+        {
+            float angle = Mathf.PI / 2f + i * Mathf.PI / points;
+            float r = (i % 2 == 0) ? outerR : innerR;
+            outline[i] = new Vector2(Mathf.Cos(angle) * r, Mathf.Sin(angle) * r);
+        }
+
+        // Build mesh: front face, back face, and side quads
+        var verts = new List<Vector3>();
+        var tris = new List<int>();
+        var norms = new List<Vector3>();
+        var uvs = new List<Vector2>();
+
+        // Front face — fan from center
+        int frontCenter = verts.Count;
+        verts.Add(new Vector3(0, 0, -halfDepth));
+        norms.Add(Vector3.back);
+        uvs.Add(new Vector2(0.5f, 0.5f));
+
+        for (int i = 0; i < outline.Length; i++)
+        {
+            verts.Add(new Vector3(outline[i].x, outline[i].y, -halfDepth));
+            norms.Add(Vector3.back);
+            uvs.Add(new Vector2(outline[i].x + 0.5f, outline[i].y + 0.5f));
+        }
+        for (int i = 0; i < outline.Length; i++)
+        {
+            int next = (i + 1) % outline.Length;
+            tris.Add(frontCenter);
+            tris.Add(frontCenter + 1 + next);
+            tris.Add(frontCenter + 1 + i);
+        }
+
+        // Back face — fan from center (reversed winding)
+        int backCenter = verts.Count;
+        verts.Add(new Vector3(0, 0, halfDepth));
+        norms.Add(Vector3.forward);
+        uvs.Add(new Vector2(0.5f, 0.5f));
+
+        for (int i = 0; i < outline.Length; i++)
+        {
+            verts.Add(new Vector3(outline[i].x, outline[i].y, halfDepth));
+            norms.Add(Vector3.forward);
+            uvs.Add(new Vector2(outline[i].x + 0.5f, outline[i].y + 0.5f));
+        }
+        for (int i = 0; i < outline.Length; i++)
+        {
+            int next = (i + 1) % outline.Length;
+            tris.Add(backCenter);
+            tris.Add(backCenter + 1 + i);
+            tris.Add(backCenter + 1 + next);
+        }
+
+        // Side faces — quads connecting front and back outlines
+        for (int i = 0; i < outline.Length; i++)
+        {
+            int next = (i + 1) % outline.Length;
+            var a = new Vector3(outline[i].x, outline[i].y, -halfDepth);
+            var b = new Vector3(outline[next].x, outline[next].y, -halfDepth);
+            var c = new Vector3(outline[next].x, outline[next].y, halfDepth);
+            var d = new Vector3(outline[i].x, outline[i].y, halfDepth);
+
+            var sideNormal = Vector3.Cross(b - a, d - a).normalized;
+
+            int si = verts.Count;
+            verts.AddRange(new[] { a, b, c, d });
+            norms.AddRange(new[] { sideNormal, sideNormal, sideNormal, sideNormal });
+            uvs.AddRange(new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) });
+            tris.AddRange(new[] { si, si + 1, si + 2, si, si + 2, si + 3 });
+        }
+
+        mesh.SetVertices(verts);
+        mesh.SetNormals(norms);
+        mesh.SetUVs(0, uvs);
+        mesh.SetTriangles(tris, 0);
         mesh.RecalculateBounds();
 
         return mesh;

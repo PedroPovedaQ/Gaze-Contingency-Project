@@ -14,13 +14,15 @@ public class AgentContext : MonoBehaviour
 
     FindObjectGameManager m_GameManager;
     FindObjectUI m_UI;
+    GazeCoverageTracker m_CoverageTracker;
     XRBaseInputInteractor m_GazeInteractor;
     readonly StringBuilder m_Builder = new();
 
-    public void Initialize(FindObjectGameManager gameManager, FindObjectUI ui)
+    public void Initialize(FindObjectGameManager gameManager, FindObjectUI ui, GazeCoverageTracker coverageTracker = null)
     {
         m_GameManager = gameManager;
         m_UI = ui;
+        m_CoverageTracker = coverageTracker;
     }
 
     void Start()
@@ -91,7 +93,7 @@ public class AgentContext : MonoBehaviour
         }
 
         // Remaining objects with spatial descriptions
-        m_Builder.AppendLine("\nOBJECTS ON TABLE:");
+        m_Builder.AppendLine("\nOBJECTS ON DISPLAY:");
         var spawnedObjects = m_GameManager.SpawnedObjects;
         for (int i = 0; i < spawnedObjects.Count; i++)
         {
@@ -107,7 +109,70 @@ public class AgentContext : MonoBehaviour
                             info.colorName == objectives[idx].color;
 
             string marker = isTarget ? " [TARGET]" : "";
-            m_Builder.AppendLine($"  - {info.colorName} {info.shapeName}: {spatial}{marker}");
+            m_Builder.AppendLine($"  - {info.colorName} {info.shapeName}: {spatial}, on {info.LevelName}{marker}");
+        }
+
+        // Gaze coverage data (if tracker available)
+        if (m_CoverageTracker != null)
+        {
+            // Gaze history
+            var recent = m_CoverageTracker.GetRecentFixations(8);
+            if (recent.Count > 0)
+            {
+                m_Builder.Append("\nGAZE HISTORY (recent): ");
+                for (int i = 0; i < recent.Count; i++)
+                {
+                    if (i > 0) m_Builder.Append(" → ");
+                    m_Builder.Append($"{recent[i].objectId} ({recent[i].duration:F1}s)");
+                }
+                m_Builder.AppendLine();
+            }
+
+            // Objects examined
+            var examined = m_CoverageTracker.GetExaminedObjects();
+            if (examined.Count > 0)
+            {
+                m_Builder.Append("OBJECTS EXAMINED: ");
+                int cap = Mathf.Min(examined.Count, 10);
+                for (int i = 0; i < cap; i++)
+                {
+                    if (i > 0) m_Builder.Append(", ");
+                    m_Builder.Append($"{examined[i].name} ({examined[i].duration:F1}s)");
+                }
+                if (examined.Count > 10)
+                    m_Builder.Append($" [and {examined.Count - 10} more]");
+                m_Builder.AppendLine();
+            }
+
+            // Objects not yet examined
+            var unexamined = m_CoverageTracker.GetUnexaminedObjects();
+            if (unexamined.Count > 0)
+            {
+                m_Builder.Append("OBJECTS NOT YET EXAMINED: ");
+                int cap = Mathf.Min(unexamined.Count, 5);
+                for (int i = 0; i < cap; i++)
+                {
+                    if (i > 0) m_Builder.Append(", ");
+                    m_Builder.Append(unexamined[i]);
+                }
+                if (unexamined.Count > 5)
+                    m_Builder.Append($" [and {unexamined.Count - 5} more]");
+                m_Builder.AppendLine();
+            }
+
+            // Zone coverage
+            m_Builder.Append("ZONE COVERAGE: ");
+            string[] zoneNames = { "table", "lower shelf", "upper shelf" };
+            for (int z = 0; z < 3; z++)
+            {
+                if (z > 0) m_Builder.Append(", ");
+                float total = m_CoverageTracker.GetZoneTotalFixation(z);
+                string label = total < 1f ? "NOT SCANNED" :
+                               total < 5f ? "briefly glanced" :
+                               total < 15f ? "partially scanned" : "well-scanned";
+                m_Builder.Append($"{zoneNames[z]}={label}");
+            }
+            m_Builder.AppendLine();
         }
 
         return m_Builder.ToString();
@@ -180,6 +245,12 @@ public class AgentContext : MonoBehaviour
         // Forward/behind
         if (Mathf.Abs(local.z) > 0.1f)
             parts.Add(local.z > 0 ? $"{Mathf.Abs(local.z):F1}m ahead" : $"{Mathf.Abs(local.z):F1}m behind you");
+
+        // Vertical
+        if (local.y > 0.15f)
+            parts.Add("above eye level");
+        else if (local.y < -0.15f)
+            parts.Add("below eye level");
 
         if (parts.Count == 0)
             return "directly in front of you";

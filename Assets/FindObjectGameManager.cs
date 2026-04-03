@@ -8,16 +8,13 @@ using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 /// <summary>
 /// Orchestrates the "Find the Object" game mode.
 /// Auto-attaches to ObjectSpawner. Intercepts the first tap-spawn to start a game:
-/// spawns 9 distinct shape-color combos spread across the detected plane,
-/// then cycles through objectives as the player grabs each one.
+/// spawns 20 distinct shape-color combos spread across the detected plane and
+/// virtual shelves, then cycles through objectives as the player grabs each one.
 /// </summary>
 public class FindObjectGameManager : MonoBehaviour
 {
     const string k_Tag = "[FindObjectGame]";
-    const int k_ObjectCount = 9;
-    const float k_Margin = 0.05f;     // 5 cm inset from plane edges
-    const float k_Jitter = 0.02f;     // ±2 cm random jitter
-    const float k_SpawnHeightOffset = 0.05f; // 5 cm above surface
+    const int k_ObjectCount = 20;
     const float k_ResetDelay = 5f;
 
     public enum GameState { Idle, Playing, Completed }
@@ -34,6 +31,9 @@ public class FindObjectGameManager : MonoBehaviour
     public IReadOnlyList<GameObject> SpawnedObjects => m_SpawnedObjects;
     public int CurrentObjectiveIndex => m_CurrentObjectiveIndex;
     public int FoundCount => m_FoundCount;
+    public float GameStartTime => m_GameStartTime;
+
+    float m_GameStartTime;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoAttach()
@@ -53,6 +53,8 @@ public class FindObjectGameManager : MonoBehaviour
 
     readonly List<(string shape, string color, Color colorValue)> m_Objectives = new();
     readonly List<GameObject> m_SpawnedObjects = new();
+    readonly List<GameObject> m_ShelfObjects = new();
+    readonly List<int> m_LevelAssignments = new();
     int m_CurrentObjectiveIndex;
     int m_FoundCount;
     int m_ExpectedSpawnCount;
@@ -204,46 +206,34 @@ public class FindObjectGameManager : MonoBehaviour
         m_Objectives.Clear();
         m_Objectives.AddRange(findOrder);
 
-        // Compute 3×3 grid positions on the plane
-        float usableW = planeSize.x - k_Margin * 2;
-        float usableH = planeSize.y - k_Margin * 2;
-        float cellW = usableW / 3f;
-        float cellH = usableH / 3f;
+        // Create shelves and compute multi-level spawn positions
+        var (shelfObjs, positionsPerLevel) = ShelfSpawner.CreateShelvesAndPositions(
+            spawnCenter, planeSize, planeRight, planeForward, m_Objectives.Count);
+        m_ShelfObjects.AddRange(shelfObjs);
 
+        // Flatten positions and track level assignments
         var positions = new List<Vector3>();
-        for (int row = 0; row < 3; row++)
+        m_LevelAssignments.Clear();
+        for (int level = 0; level < positionsPerLevel.Count; level++)
         {
-            for (int col = 0; col < 3; col++)
+            foreach (var pos in positionsPerLevel[level])
             {
-                // Position within the plane's local coordinate system
-                float localX = -usableW / 2f + cellW * (col + 0.5f);
-                float localY = -usableH / 2f + cellH * (row + 0.5f);
-
-                // Add jitter
-                localX += Random.Range(-k_Jitter, k_Jitter);
-                localY += Random.Range(-k_Jitter, k_Jitter);
-
-                // Convert to world space using plane axes
-                Vector3 worldPos = spawnCenter
-                    + planeRight * localX
-                    + planeForward * localY;
-
-                // Spawn slightly above the surface
-                worldPos.y = spawnCenter.y + k_SpawnHeightOffset;
-
-                positions.Add(worldPos);
+                positions.Add(pos);
+                m_LevelAssignments.Add(level);
             }
         }
 
-        // Shuffle positions so layout doesn't correlate with objective order
+        // Shuffle positions (keeping level assignments in sync)
         for (int i = positions.Count - 1; i > 0; i--)
         {
             int j = Random.Range(0, i + 1);
             (positions[i], positions[j]) = (positions[j], positions[i]);
+            (m_LevelAssignments[i], m_LevelAssignments[j]) = (m_LevelAssignments[j], m_LevelAssignments[i]);
         }
 
         // Enter playing state before spawning
         m_State = GameState.Playing;
+        m_GameStartTime = Time.time;
         m_SpawnedObjects.Clear();
         m_CurrentObjectiveIndex = 0;
         m_FoundCount = 0;
@@ -273,7 +263,16 @@ public class FindObjectGameManager : MonoBehaviour
     {
         if (m_State != GameState.Playing) return;
 
+        int idx = m_SpawnedObjects.Count;
         m_SpawnedObjects.Add(obj);
+
+        // Assign shelf level from pre-computed assignments
+        if (idx < m_LevelAssignments.Count)
+        {
+            var info = obj.GetComponent<SpawnableObjectInfo>();
+            if (info != null)
+                info.shelfLevel = m_LevelAssignments[idx];
+        }
 
         // Wire grab detection
         var grab = obj.GetComponent<XRGrabInteractable>();
@@ -282,7 +281,7 @@ public class FindObjectGameManager : MonoBehaviour
             grab.selectEntered.AddListener(OnObjectGrabbed);
         }
 
-        Debug.Log($"{k_Tag} Tracked spawned object: {obj.name} ({m_SpawnedObjects.Count}/{m_Objectives.Count})");
+        Debug.Log($"{k_Tag} Tracked spawned object: {obj.name} level={m_LevelAssignments[idx]} ({m_SpawnedObjects.Count}/{m_Objectives.Count})");
 
         // Unsubscribe after all objects are configured
         if (m_SpawnedObjects.Count >= m_Objectives.Count)
@@ -359,13 +358,20 @@ public class FindObjectGameManager : MonoBehaviour
 
         Debug.Log($"{k_Tag} Resetting game");
 
-        // Cleanup all spawned objects
+        // Cleanup all spawned objects and shelves
         foreach (var obj in m_SpawnedObjects)
         {
             if (obj != null)
                 Destroy(obj);
         }
         m_SpawnedObjects.Clear();
+        foreach (var shelf in m_ShelfObjects)
+        {
+            if (shelf != null)
+                Destroy(shelf);
+        }
+        m_ShelfObjects.Clear();
+        m_LevelAssignments.Clear();
         m_Objectives.Clear();
 
         m_UI.Hide();
