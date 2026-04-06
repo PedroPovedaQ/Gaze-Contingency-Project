@@ -156,14 +156,12 @@ public class HintGenerator : MonoBehaviour
 
             if (sameCol && rowDist <= 1)
                 return Pick(k_GA_Warm);     // right bookcase, close row
+            else if (sameCol && rowDist <= 3)
+                return Pick(k_GA_Tepid);    // right bookcase, medium row
             else if (sameCol)
                 return Pick(k_GA_Tepid);    // right bookcase, far row
-            else if (rowDist == 0)
-                return Pick(k_GA_Tepid);    // wrong bookcase, but right row height
-            else if (rowDist <= 2)
-                return Pick(k_GA_Tepid);    // wrong bookcase, close-ish row
             else
-                return Pick(k_GA_Cold);     // wrong bookcase AND far row
+                return Pick(k_GA_Cold);     // WRONG bookcase — always cold
         }
 
         // Not hovering any object — generic encouragement, NOT cold
