@@ -193,7 +193,7 @@ public class ShapeObjectFactory : MonoBehaviour
         {
             0 => new Vector3(0.08f, 0.08f, 0.08f), // Sphere
             1 => new Vector3(0.08f, 0.08f, 0.08f), // Cube
-            2 => new Vector3(0.08f, 0.08f, 0.08f), // Pyramid
+            2 => new Vector3(0.10f, 0.08f, 0.10f), // Pyramid (wider base, shorter height)
             3 => new Vector3(0.08f, 0.04f, 0.08f), // Cylinder
             4 => new Vector3(0.096f, 0.096f, 0.096f), // Star
             5 => new Vector3(0.035f, 0.035f, 0.035f), // Capsule (pill — rotated on side, uniform scale)
@@ -207,7 +207,7 @@ public class ShapeObjectFactory : MonoBehaviour
         if (shapeIdx == 2)
         {
             var pos = obj.transform.position;
-            pos.y -= 0.04f;
+            pos.y -= 0.09f; // 5cm lower than before (was 0.04)
             obj.transform.position = pos;
         }
 
