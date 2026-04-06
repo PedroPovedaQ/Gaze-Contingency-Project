@@ -189,12 +189,12 @@ public class FindObjectGameManager : MonoBehaviour
         var round = ChallengeSet.Rounds[m_CurrentRound];
         m_CurrentTarget = (round.target.shape, round.target.color, round.target.colorValue);
 
-        // Switch gaze-aware/unaware based on block and participant number
-        int participantNum = GetParticipantNumber();
-        bool gazeAware = ChallengeSet.IsGazeAware(m_CurrentRound, participantNum);
+        // Determine gaze-aware/unaware for this round
+        bool gazeAware = ChallengeSet.IsGazeAware(m_CurrentRound, GetParticipantNumber());
         var hints = GetComponent<HintGenerator>();
         if (hints != null) hints.gazeAwareTips = gazeAware;
-        Debug.Log($"{k_Tag} Round {m_CurrentRound + 1}: block={round.blockIndex}, condition={ChallengeSet.GetConditionLabel(m_CurrentRound, participantNum)}");
+        Debug.Log($"{k_Tag} Round {m_CurrentRound}: gazeAware={gazeAware}");
+        Debug.Log($"{k_Tag} Round {m_CurrentRound + 1}: block={round.blockIndex}, condition={ChallengeSet.GetConditionLabel(m_CurrentRound, GetParticipantNumber())}");
 
         m_Objectives.Clear();
         m_Objectives.Add(m_CurrentTarget);
@@ -213,11 +213,21 @@ public class FindObjectGameManager : MonoBehaviour
         {
             var def = round.objects[i];
             m_Factory.EnqueueCombo(def.shape, def.color);
-            var obj = Instantiate(prefabs[0]); // always use same prefab for consistency
+
+            var obj = Instantiate(prefabs[0]);
+
+            // IMMEDIATELY destroy the prefab's XRGrabInteractable before it
+            // registers stale colliders with the interaction manager.
+            var oldGrab = obj.GetComponent<XRGrabInteractable>();
+            if (oldGrab != null) DestroyImmediate(oldGrab);
+
             obj.transform.position = m_SpawnPoints[i].position;
             obj.transform.rotation = Quaternion.identity;
+
+            // Configure: swap mesh, replace colliders, set material, scale
             m_Factory.ConfigureObject(obj);
 
+            // Position at designated spawn point
             var sp = m_SpawnPoints[i];
             obj.transform.position = sp.position;
             obj.transform.rotation = ShelfSpawner.ObjectFacingRotation;
@@ -225,29 +235,38 @@ public class FindObjectGameManager : MonoBehaviour
             var info = obj.GetComponent<SpawnableObjectInfo>();
             if (info != null) { info.shelfLevel = sp.row; info.shelfColumn = sp.col; }
 
+            // Set layer 8 on everything
+            foreach (Transform child in obj.GetComponentsInChildren<Transform>(true))
+                child.gameObject.layer = 8;
+
+            // Hide child renderers, keep root visible
+            HideChildRenderers(obj);
+            var rootRenderer = obj.GetComponent<MeshRenderer>();
+            if (rootRenderer != null) rootRenderer.enabled = true;
+
             m_SpawnedObjects.Add(obj);
         }
 
-        // --- Wait for collider changes to propagate ---
-        yield return null;
+        // Wait for DestroyImmediate to fully process
         yield return null;
 
-        // --- Phase 1: Disable all grabs, set up colliders (no registration yet) ---
+        // Add FRESH XRGrabInteractable with correct colliders — never touches stale prefab state
         foreach (var obj in m_SpawnedObjects)
         {
             if (obj == null) continue;
-            ShapeObjectFactory.PrepareInteractable(obj);
+            var grab = obj.AddComponent<XRGrabInteractable>();
+            grab.allowGazeInteraction = true;
+            grab.allowGazeSelect = false;
+            grab.allowGazeAssistance = false;
+            grab.movementType = XRGrabInteractable.MovementType.Kinematic;
+            grab.throwOnDetach = false;
+
+            grab.colliders.Clear();
+            foreach (var col in obj.GetComponents<Collider>())
+                grab.colliders.Add(col);
         }
 
-        yield return null;
-
-        // --- Phase 2: Enable all grabs at once (single batch registration) ---
-        foreach (var obj in m_SpawnedObjects)
-        {
-            if (obj == null) continue;
-            ShapeObjectFactory.ActivateInteractable(obj);
-        }
-
+        // Wait for interaction manager to register all new interactables
         yield return null;
         yield return null;
 
@@ -365,6 +384,16 @@ public class FindObjectGameManager : MonoBehaviour
         if (!string.IsNullOrEmpty(id) && id.Length > 1 && int.TryParse(id.Substring(1), out int num))
             return num;
         return 1; // default
+    }
+
+    static void HideChildRenderers(GameObject obj)
+    {
+        for (int i = 0; i < obj.transform.childCount; i++)
+        {
+            var child = obj.transform.GetChild(i);
+            foreach (var r in child.GetComponentsInChildren<Renderer>(true))
+                r.enabled = false;
+        }
     }
 
     static void Shuffle<T>(List<T> list)

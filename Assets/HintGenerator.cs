@@ -148,35 +148,26 @@ public class HintGenerator : MonoBehaviour
         var (targetRow, targetCol) = GetTargetPosition();
         var (playerRow, playerCol) = GetPlayerPosition();
 
-        if (targetRow >= 0 && playerRow >= 0)
+        // Can only give temperature when we know both positions
+        if (targetRow >= 0 && playerRow >= 0 && targetCol >= 0 && playerCol >= 0)
         {
             int rowDist = Mathf.Abs(targetRow - playerRow);
-            bool sameCol = targetCol >= 0 && playerCol >= 0 && targetCol == playerCol;
-
-            // Score: same column = big bonus, close row = bonus
-            // HOT: on the target object (handled above)
-            // WARM: same column AND within 1 row (right area, very close)
-            // TEPID: same column but far row, OR different column but same row
-            // COLD: different column AND far row
+            bool sameCol = targetCol == playerCol;
 
             if (sameCol && rowDist <= 1)
-                return Pick(k_GA_Warm);
-            else if (sameCol || rowDist == 0)
-                return Pick(k_GA_Tepid);
+                return Pick(k_GA_Warm);     // right bookcase, close row
+            else if (sameCol)
+                return Pick(k_GA_Tepid);    // right bookcase, far row
+            else if (rowDist == 0)
+                return Pick(k_GA_Tepid);    // wrong bookcase, but right row height
             else if (rowDist <= 2)
-                return Pick(k_GA_Tepid);
+                return Pick(k_GA_Tepid);    // wrong bookcase, close-ish row
             else
-                return Pick(k_GA_Cold);
+                return Pick(k_GA_Cold);     // wrong bookcase AND far row
         }
 
-        // --- Stuck too long in one area ---
-        if (m_TimeOnCurrentZone > 6f)
-        {
-            m_TimeOnCurrentZone = 0f;
-            return Pick(k_GA_Cold);
-        }
-
-        return Pick(k_GA_Cold);
+        // Not hovering any object — generic encouragement, NOT cold
+        return Pick(k_GA_Tepid);
     }
 
     // =====================================================================

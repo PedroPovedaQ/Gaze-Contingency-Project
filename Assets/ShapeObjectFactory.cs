@@ -59,14 +59,12 @@ public class ShapeObjectFactory : MonoBehaviour
         m_Spawner = GetComponent<ObjectSpawner>();
         if (m_Spawner == null) return;
         EnsureInitialized();
-        m_Spawner.objectSpawned += OnObjectSpawned;
+        // Don't subscribe to objectSpawned — we call ConfigureObject directly
+        // from DoSpawnRound. The spawner only creates the initial trigger object
+        // which gets destroyed immediately and shouldn't be configured.
     }
 
-    void OnDisable()
-    {
-        if (m_Spawner != null)
-            m_Spawner.objectSpawned -= OnObjectSpawned;
-    }
+    void OnDisable() { }
 
     void EnsureInitialized()
     {
@@ -195,7 +193,7 @@ public class ShapeObjectFactory : MonoBehaviour
         {
             0 => new Vector3(0.08f, 0.08f, 0.08f), // Sphere
             1 => new Vector3(0.08f, 0.08f, 0.08f), // Cube
-            2 => new Vector3(0.07f, 0.06f, 0.07f), // Pyramid (shorter to fit in row)
+            2 => new Vector3(0.08f, 0.08f, 0.08f), // Pyramid
             3 => new Vector3(0.08f, 0.04f, 0.08f), // Cylinder
             4 => new Vector3(0.096f, 0.096f, 0.096f), // Star
             5 => new Vector3(0.035f, 0.035f, 0.035f), // Capsule (pill — rotated on side, uniform scale)
@@ -209,7 +207,7 @@ public class ShapeObjectFactory : MonoBehaviour
         if (shapeIdx == 2)
         {
             var pos = obj.transform.position;
-            pos.y -= 0.06f;
+            pos.y -= 0.04f;
             obj.transform.position = pos;
         }
 
