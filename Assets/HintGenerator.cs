@@ -1,338 +1,386 @@
-using System.Collections;
-using System.Text;
 using UnityEngine;
-using UnityEngine.Networking;
-using Newtonsoft.Json.Linq;
 
 /// <summary>
-/// Decides when to request a hint and calls OpenAI GPT-4o-mini.
-/// Uses timing/debounce logic to avoid spammy hints.
-/// Incorporates eye gaze context for spatially aware suggestions.
+/// Tip system — fires every 5 seconds. Two conditions:
+///
+/// GAZE-AWARE: Responds to the player's real-time gaze behavior.
+/// Warmer/colder feedback, "you already checked there," "go back,
+/// you just passed it," behavioral coaching. NEVER reveals the
+/// target's location (shelf, direction, column).
+///
+/// GAZE-UNAWARE (control): Generic encouragement only. "Keep looking."
+/// "Stay focused." No gaze reactivity, no location info, no
+/// warmer/colder. Same tip regardless of what the player is doing.
+///
+/// Both conditions have identical information about WHERE the target is —
+/// neither tells the player. The only variable is whether the agent
+/// can see and respond to the player's gaze.
 /// </summary>
 public class HintGenerator : MonoBehaviour
 {
     const string k_Tag = "[HintGen]";
-    const string k_ApiUrl = "https://api.openai.com/v1/chat/completions";
-    const string k_Model = "gpt-4o-mini";
-    const int k_MaxTokens = 80;
-    const float k_Temperature = 0.8f;
+    const float k_TipInterval = 5f;
+    const float k_WrongCaptureWindow = 6f;
 
-    // Timing constants — adaptive ranges (5-15s based on gaze behavior)
-    const float k_WrongGrabDelay = 3f;
-    const float k_GazeNudgeTime = 10f;
-    const float k_ZoneNeglectThreshold = 20f; // seconds without scanning a zone
-    const int k_RevisitConfusionCount = 3;     // same object viewed 3+ times
-    const float k_MinGap = 5f;
+    /// <summary>
+    /// When true, tips respond to gaze (warmer/colder, coaching, redundancy).
+    /// When false, tips are generic encouragement only (control).
+    /// Neither condition reveals the target's location.
+    /// </summary>
+    /// <summary>Always gaze-aware for now. Toggle for experiments later.</summary>
+    public bool gazeAwareTips = true; // TODO: set via SessionConfig for experiment conditions
 
-    const string k_SystemPrompt =
-        "You are a friendly VR game assistant helping a player find colored shapes on a table and shelves. " +
-        "Give SHORT hints (1-2 sentences, under 30 words). Use spatial directions (left, right, ahead, behind) " +
-        "and vertical directions (table level, lower shelf, upper shelf). " +
-        "Be warm and encouraging. Don't give exact answers immediately — get more specific if the player " +
-        "has been struggling longer. Vary your phrasing. " +
-        "You have access to the player's eye gaze data — use it to guide them. " +
-        "If they're looking in the wrong area or zone, gently redirect. " +
-        "If they haven't checked a shelf level, suggest it. " +
-        "If they're close to the target, encourage them.";
-
-    string m_ApiKey;
     AgentContext m_Context;
     VoiceSynthesizer m_Voice;
     GazeCoverageTracker m_CoverageTracker;
+    FindObjectGameManager m_GameManager;
 
     float m_ObjectiveStartTime;
-    float m_LastHintTime;
-    float m_WrongGrabTime;
-    float m_GazeOnTargetStart;
-    bool m_GazeNudgeGiven;
-    bool m_CancelRequested;
-    Coroutine m_GenerateCoroutine;
+    float m_LastTipTime;
+    float m_WrongCaptureTime;
+    int m_LastPickIndex = -1;
+
+    // Track what the player has already scanned (for "you already checked there")
+    int m_LastGazedZone = -1;
+    float m_TimeOnCurrentZone;
+    bool m_WasGazingAtTarget;
+    float m_LeftTargetTime;
 
     public void Initialize(string apiKey, AgentContext context, VoiceSynthesizer voice, GazeCoverageTracker coverageTracker = null)
     {
-        m_ApiKey = apiKey;
         m_Context = context;
         m_Voice = voice;
         m_CoverageTracker = coverageTracker;
-        Debug.Log($"{k_Tag} Initialized");
     }
 
-    /// <summary>
-    /// Call when a new objective starts (game start or object found).
-    /// Resets all hint timers.
-    /// </summary>
+    void Start()
+    {
+        m_GameManager = GetComponent<FindObjectGameManager>();
+    }
+
     public void OnNewObjective()
     {
         CancelPending();
         m_ObjectiveStartTime = Time.time;
-        m_WrongGrabTime = 0f;
-        m_GazeOnTargetStart = 0f;
-        m_GazeNudgeGiven = false;
+        m_WrongCaptureTime = 0f;
+        m_LastPickIndex = -1;
+        m_WasGazingAtTarget = false;
+        m_LeftTargetTime = 0f;
+        m_LastGazedZone = -1;
+        m_TimeOnCurrentZone = 0f;
     }
 
-    /// <summary>
-    /// Call when the player grabs the wrong object.
-    /// </summary>
-    public void OnWrongGrab()
+    public void OnWrongCapture()
     {
-        m_WrongGrabTime = Time.time;
+        m_WrongCaptureTime = Time.time;
     }
 
-    /// <summary>
-    /// Cancel any in-flight hint generation.
-    /// </summary>
-    public void CancelPending()
-    {
-        m_CancelRequested = true;
-        if (m_GenerateCoroutine != null)
-        {
-            StopCoroutine(m_GenerateCoroutine);
-            m_GenerateCoroutine = null;
-        }
-        m_CancelRequested = false;
-    }
+    public void CancelPending() { }
 
     void Update()
     {
-        if (m_Context == null || m_Voice == null) return;
-        if (string.IsNullOrEmpty(m_ApiKey)) return;
+        if (m_Voice == null || m_Context == null) return;
+        if (m_GameManager == null || m_GameManager.CurrentState != FindObjectGameManager.GameState.Playing) return;
 
-        // Don't queue if already generating or voice is playing
-        if (m_GenerateCoroutine != null || m_Voice.IsSpeaking) return;
+        // Track gaze-near-target state for "go back" detection
+        bool gazingAtTarget = m_Context.IsGazingAtTarget();
+        if (gazingAtTarget)
+        {
+            m_WasGazingAtTarget = true;
+            m_LeftTargetTime = 0f;
+        }
+        else if (m_WasGazingAtTarget)
+        {
+            m_WasGazingAtTarget = false;
+            m_LeftTargetTime = Time.time; // just looked away from target
+        }
+
+        // Track zone dwell for "you already checked there"
+        int currentZone = GetPlayerCurrentZone();
+        if (currentZone >= 0 && currentZone == m_LastGazedZone)
+        {
+            m_TimeOnCurrentZone += Time.deltaTime;
+        }
+        else if (currentZone >= 0)
+        {
+            m_LastGazedZone = currentZone;
+            m_TimeOnCurrentZone = 0f;
+        }
+
+        if (m_Voice.IsSpeaking) return;
 
         float now = Time.time;
-        float sinceLastHint = now - m_LastHintTime;
+        if (now - m_LastTipTime < k_TipInterval) return;
 
-        // Enforce minimum gap
-        if (sinceLastHint < k_MinGap) return;
+        string tip = gazeAwareTips ? EvaluateGazeAware(now) : EvaluateGazeUnaware(now);
+        if (string.IsNullOrEmpty(tip)) return;
 
-        // --- Priority 1: Gaze nudge (staring at target without grabbing) ---
+        m_LastTipTime = now;
+        m_Voice.Speak(tip, "tip");
+        Debug.Log($"{k_Tag} [{(gazeAwareTips ? "AWARE" : "UNAWARE")}] \"{tip}\"");
+    }
+
+    // =====================================================================
+    //  GAZE-AWARE — responds to behavior, never reveals location
+    // =====================================================================
+
+    string EvaluateGazeAware(float now)
+    {
+        // --- Wrong capture ---
+        if (m_WrongCaptureTime > 0f && (now - m_WrongCaptureTime) < k_WrongCaptureWindow)
+        {
+            m_WrongCaptureTime = 0f;
+            return Pick(k_GA_WrongCapture);
+        }
+
+        // --- HOT: looking directly at the target ---
         if (m_Context.IsGazingAtTarget())
-        {
-            if (m_GazeOnTargetStart <= 0f)
-                m_GazeOnTargetStart = now;
+            return Pick(k_GA_Hot);
 
-            if (!m_GazeNudgeGiven && (now - m_GazeOnTargetStart) >= k_GazeNudgeTime)
-            {
-                m_GazeNudgeGiven = true;
-                RequestHint("The player has been looking at the target object for a while but hasn't grabbed it. Give an encouraging nudge to pick it up.");
-                return;
-            }
-        }
-        else
+        // --- MISSED: just looked away from the target ---
+        if (m_LeftTargetTime > 0f && (now - m_LeftTargetTime) < 5f)
         {
-            m_GazeOnTargetStart = 0f;
+            m_LeftTargetTime = 0f;
+            return Pick(k_GA_Missed);
         }
 
-        // --- Priority 2: Wrong grab redirect ---
-        if (m_WrongGrabTime > 0f && (now - m_WrongGrabTime) >= k_WrongGrabDelay)
+        // --- Temperature based on BOTH row and column proximity ---
+        var (targetRow, targetCol) = GetTargetPosition();
+        var (playerRow, playerCol) = GetPlayerPosition();
+
+        if (targetRow >= 0 && playerRow >= 0)
         {
-            m_WrongGrabTime = 0f;
-            RequestHint("The player just grabbed the wrong object. Help redirect them to the correct one.");
-            return;
+            int rowDist = Mathf.Abs(targetRow - playerRow);
+            bool sameCol = targetCol >= 0 && playerCol >= 0 && targetCol == playerCol;
+
+            // Score: same column = big bonus, close row = bonus
+            // HOT: on the target object (handled above)
+            // WARM: same column AND within 1 row (right area, very close)
+            // TEPID: same column but far row, OR different column but same row
+            // COLD: different column AND far row
+
+            if (sameCol && rowDist <= 1)
+                return Pick(k_GA_Warm);
+            else if (sameCol || rowDist == 0)
+                return Pick(k_GA_Tepid);
+            else if (rowDist <= 2)
+                return Pick(k_GA_Tepid);
+            else
+                return Pick(k_GA_Cold);
         }
 
-        // --- Priority 3: Zone neglect (haven't looked at a shelf level) ---
-        if (m_CoverageTracker != null)
+        // --- Stuck too long in one area ---
+        if (m_TimeOnCurrentZone > 6f)
         {
-            string[] zoneNames = { "table", "lower shelf", "upper shelf" };
-            for (int level = 0; level < 3; level++)
-            {
-                float lastScan = m_CoverageTracker.GetZoneLastScanTime(level);
-                // Only trigger if the zone was previously scanned (lastScan > 0) and neglected,
-                // or if enough time has passed since objective start and zone was never scanned
-                float sinceObjective = now - m_ObjectiveStartTime;
-                bool neverScanned = lastScan <= 0f && sinceObjective > k_ZoneNeglectThreshold;
-                bool neglected = lastScan > 0f && (now - lastScan) > k_ZoneNeglectThreshold;
-
-                if (neverScanned || neglected)
-                {
-                    RequestHint($"The player has not looked at the {zoneNames[level]} for a while. Suggest they check that area — the target might be there.");
-                    return;
-                }
-            }
+            m_TimeOnCurrentZone = 0f;
+            return Pick(k_GA_Cold);
         }
 
-        // --- Priority 4: Revisit confusion (same wrong object viewed repeatedly) ---
-        if (m_CoverageTracker != null)
-        {
-            string confused = m_CoverageTracker.GetMostRevisitedNonTarget();
-            if (confused != null)
-            {
-                int count = m_CoverageTracker.GetRevisitCount(confused);
-                if (count >= k_RevisitConfusionCount)
-                {
-                    RequestHint($"The player keeps looking at {confused} repeatedly ({count} times). They seem confused about whether it's the target. Help redirect them clearly.");
-                    return;
-                }
-            }
-        }
-
-        // --- Priority 5: Adaptive timed hints ---
-        float adaptiveInterval = ComputeAdaptiveInterval();
-        float timeSinceObjective = now - m_ObjectiveStartTime;
-
-        // First hint after adaptive delay
-        if (m_LastHintTime < m_ObjectiveStartTime && timeSinceObjective >= adaptiveInterval * 0.75f)
-        {
-            RequestHint(GetBehaviorSituationDescription());
-            return;
-        }
-
-        // Subsequent hints at adaptive interval
-        if (sinceLastHint >= adaptiveInterval)
-        {
-            RequestHint(GetBehaviorSituationDescription());
-        }
+        return Pick(k_GA_Cold);
     }
 
-    float ComputeAdaptiveInterval()
+    // =====================================================================
+    //  GAZE-UNAWARE (control) — generic encouragement, no gaze reactivity
+    // =====================================================================
+
+    string EvaluateGazeUnaware(float now)
     {
-        if (m_CoverageTracker == null) return 10f; // fallback mid-range
-
-        var behavior = m_CoverageTracker.ClassifyBehavior();
-        return behavior switch
+        if (m_WrongCaptureTime > 0f && (now - m_WrongCaptureTime) < k_WrongCaptureWindow)
         {
-            GazeCoverageTracker.GazeBehavior.Systematic => Random.Range(12f, 15f),
-            GazeCoverageTracker.GazeBehavior.Normal     => Random.Range(9f, 12f),
-            GazeCoverageTracker.GazeBehavior.Erratic    => Random.Range(5f, 7f),
-            GazeCoverageTracker.GazeBehavior.Stuck      => Random.Range(7f, 10f),
-            _                                           => 10f,
-        };
+            m_WrongCaptureTime = 0f;
+            return Pick(k_GU_WrongCapture);
+        }
+
+        return Pick(k_GU_General);
     }
 
-    string GetBehaviorSituationDescription()
+    // =====================================================================
+    //  Helpers
+    // =====================================================================
+
+    (int row, int col) GetPlayerPosition()
     {
-        if (m_CoverageTracker == null)
-            return "Give a helpful spatial hint.";
+        var highlighter = FindObjectOfType<GazeHighlightManager>();
+        if (highlighter == null) return (-1, -1);
+        var interactor = highlighter.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactors.XRBaseInputInteractor>();
+        if (interactor == null) return (-1, -1);
 
-        var behavior = m_CoverageTracker.ClassifyBehavior();
-        float searchTime = Time.time - m_ObjectiveStartTime;
-
-        return behavior switch
+        var hovered = interactor.interactablesHovered;
+        if (hovered.Count > 0 && hovered[0] != null && hovered[0].transform != null)
         {
-            GazeCoverageTracker.GazeBehavior.Erratic =>
-                "The player's gaze is erratic and unfocused — they seem lost. Give a clear, calming directional hint.",
-            GazeCoverageTracker.GazeBehavior.Stuck =>
-                $"The player has only been searching one area. {GetStuckZoneDescription()} Suggest they look elsewhere.",
-            GazeCoverageTracker.GazeBehavior.Systematic when searchTime > 45f =>
-                "The player is searching methodically but hasn't found it yet. Give a more specific hint.",
-            GazeCoverageTracker.GazeBehavior.Systematic =>
-                "The player is searching methodically. Give a gentle nudge without being pushy.",
-            _ when searchTime > 60f =>
-                "The player has been struggling for over a minute. Give a more direct, specific hint.",
-            _ =>
-                "Give another helpful hint. Be a bit more specific than before.",
-        };
+            var info = hovered[0].transform.GetComponent<SpawnableObjectInfo>();
+            if (info != null) return (info.shelfLevel, info.shelfColumn);
+        }
+        return (-1, -1);
     }
 
-    string GetStuckZoneDescription()
+    (int row, int col) GetTargetPosition()
     {
-        if (m_CoverageTracker == null) return "";
+        if (m_GameManager == null) return (-1, -1);
+        var objectives = m_GameManager.Objectives;
+        int idx = m_GameManager.CurrentObjectiveIndex;
+        if (idx >= objectives.Count) return (-1, -1);
 
-        // Find which zone has the least coverage
-        string[] zoneNames = { "table", "lower shelf", "upper shelf" };
-        float minFixation = float.MaxValue;
-        string leastZone = "";
-        for (int i = 0; i < 3; i++)
+        var target = objectives[idx];
+        foreach (var obj in m_GameManager.SpawnedObjects)
         {
-            float total = m_CoverageTracker.GetZoneTotalFixation(i);
-            if (total < minFixation)
-            {
-                minFixation = total;
-                leastZone = zoneNames[i];
-            }
+            if (obj == null || !obj.activeSelf) continue;
+            var info = obj.GetComponent<SpawnableObjectInfo>();
+            if (info != null && info.shapeName == target.shape && info.colorName == target.color)
+                return (info.shelfLevel, info.shelfColumn);
         }
-        return $"They haven't checked the {leastZone} much.";
+        return (-1, -1);
     }
 
-    void RequestHint(string situationDescription)
+    // Keep for zone tracking in Update
+    int GetPlayerCurrentZone()
     {
-        m_GenerateCoroutine = StartCoroutine(GenerateHint(situationDescription));
+        var (row, _) = GetPlayerPosition();
+        return row;
     }
 
-    IEnumerator GenerateHint(string situationDescription)
+    string Pick(string[] pool)
     {
-        string contextPrompt = m_Context.BuildContextPrompt();
-        if (string.IsNullOrEmpty(contextPrompt))
-        {
-            m_GenerateCoroutine = null;
-            yield break;
-        }
-
-        string userMessage = $"{situationDescription}\n\nCurrent scene state:\n{contextPrompt}";
-
-        // Build JSON manually to avoid serialization issues with nested arrays
-        var sb = new StringBuilder();
-        sb.Append("{");
-        sb.Append($"\"model\":\"{k_Model}\",");
-        sb.Append($"\"max_tokens\":{k_MaxTokens},");
-        sb.Append($"\"temperature\":{k_Temperature},");
-        sb.Append("\"messages\":[");
-        sb.Append($"{{\"role\":\"system\",\"content\":{EscapeJson(k_SystemPrompt)}}},");
-        sb.Append($"{{\"role\":\"user\",\"content\":{EscapeJson(userMessage)}}}");
-        sb.Append("]}");
-
-        string jsonBody = sb.ToString();
-
-        var request = new UnityWebRequest(k_ApiUrl, "POST");
-        byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonBody);
-        request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-        request.downloadHandler = new DownloadHandlerBuffer();
-        request.SetRequestHeader("Content-Type", "application/json");
-        request.SetRequestHeader("Authorization", $"Bearer {m_ApiKey}");
-        request.timeout = 10;
-
-        yield return request.SendWebRequest();
-
-        if (m_CancelRequested)
-        {
-            m_GenerateCoroutine = null;
-            yield break;
-        }
-
-        if (request.result != UnityWebRequest.Result.Success)
-        {
-            Debug.LogWarning($"{k_Tag} OpenAI request failed: {request.error} (HTTP {request.responseCode})");
-            m_GenerateCoroutine = null;
-            yield break;
-        }
-
-        // Parse response using Newtonsoft.Json
-        string hintText = null;
-        try
-        {
-            var json = JObject.Parse(request.downloadHandler.text);
-            hintText = json["choices"]?[0]?["message"]?["content"]?.ToString()?.Trim();
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogWarning($"{k_Tag} Failed to parse OpenAI response: {e.Message}");
-        }
-
-        if (string.IsNullOrEmpty(hintText))
-        {
-            Debug.LogWarning($"{k_Tag} Empty hint from OpenAI");
-            m_GenerateCoroutine = null;
-            yield break;
-        }
-
-        Debug.Log($"{k_Tag} Generated hint: \"{hintText}\"");
-
-        m_LastHintTime = Time.time;
-        m_Voice.Speak(hintText, "hint");
-
-        m_GenerateCoroutine = null;
+        int idx;
+        if (pool.Length <= 1) { idx = 0; }
+        else { do { idx = Random.Range(0, pool.Length); } while (idx == m_LastPickIndex); }
+        m_LastPickIndex = idx;
+        return pool[idx];
     }
 
-    static string EscapeJson(string s)
+    // =================================================================
+    //  GAZE-AWARE TIPS — hot/cold/missed temperature system
+    // =================================================================
+
+    // --- HOT: looking directly at the target ---
+    static readonly string[] k_GA_Hot =
     {
-        return "\"" + s
-            .Replace("\\", "\\\\")
-            .Replace("\"", "\\\"")
-            .Replace("\n", "\\n")
-            .Replace("\r", "\\r")
-            .Replace("\t", "\\t")
-            + "\"";
-    }
+        "Hot! Stay right there.",
+        "That's it! Hold your gaze.",
+        "You're on it! Don't look away.",
+        "Hot hot hot! Keep looking.",
+        "Yes! Stay focused right there.",
+        "You've found it. Hold steady.",
+        "That's the one! Keep your eyes on it.",
+        "Burning hot! Don't move.",
+        "Right on it! Almost captured.",
+        "Lock in! That's it!",
+    };
+
+    // --- WARM: same shelf row as target but not on the exact object ---
+    static readonly string[] k_GA_Warm =
+    {
+        "Warm! You're on the right row.",
+        "Getting warmer. Keep scanning this row.",
+        "Warm. It's right around here.",
+        "You're close. Stay on this level.",
+        "Getting hotter. Keep looking here.",
+        "Warm! Check the other objects on this row.",
+        "You're in the right area. Look more carefully.",
+        "Almost. It's on this row somewhere.",
+        "Warmer. Scan left and right on this level.",
+        "Good area. Keep checking this row.",
+    };
+
+    // --- TEPID: one row away from target ---
+    static readonly string[] k_GA_Tepid =
+    {
+        "Lukewarm. You're close but try a nearby row.",
+        "Getting warmer. Try the row above or below.",
+        "Tepid. Almost the right area.",
+        "Not quite. But you're in the neighborhood.",
+        "Close. Try shifting up or down a level.",
+        "You're near it. Check the adjacent rows.",
+        "Warm-ish. Just a row off.",
+        "Almost the right zone. Shift up or down.",
+        "You're one row away. Getting closer.",
+        "Not bad. But look at the rows next to this one.",
+    };
+
+    // --- COLD: far from target (2+ rows away) ---
+    static readonly string[] k_GA_Cold =
+    {
+        "Cold. Try a different area.",
+        "Getting colder. Move away from here.",
+        "Cold. It's not in this zone.",
+        "Ice cold. Try somewhere else entirely.",
+        "Not even close. Search a different section.",
+        "Cold. You're far from it.",
+        "Freezing. Try the other side.",
+        "Way off. Keep searching other areas.",
+        "Cold. Move on.",
+        "Not here. Look somewhere completely different.",
+    };
+
+    // --- MISSED: player just looked away from the target ---
+    static readonly string[] k_GA_Missed =
+    {
+        "Wait! Go back! You just passed it.",
+        "You were just looking at it! Go back.",
+        "Back up! You had it a moment ago.",
+        "You were so close! Retrace your gaze.",
+        "Go back to where you just were!",
+        "You looked right past it! Go back.",
+        "Stop! Go back!",
+        "You missed it! It was right there!",
+        "Turn back! You were on it!",
+        "You just saw it! Go back!",
+    };
+
+    // --- Wrong capture ---
+    static readonly string[] k_GA_WrongCapture =
+    {
+        "That wasn't it. Look more carefully.",
+        "Wrong one. Check both shape and color.",
+        "Not quite. Slow down.",
+        "That's not it. Compare more carefully.",
+        "Wrong pick. Take a closer look.",
+        "Not it. Both shape and color must match.",
+        "That wasn't right. Don't rush.",
+        "Wrong one. Double check before locking in.",
+        "Not the target. Look again.",
+        "Missed it. Try again.",
+    };
+
+    // =================================================================
+    //  GAZE-UNAWARE (CONTROL) — no gaze, no location, just encouragement
+    // =================================================================
+
+    static readonly string[] k_GU_General =
+    {
+        "Keep looking. You'll find it.",
+        "Take your time.",
+        "Stay focused.",
+        "You've got this.",
+        "Keep searching.",
+        "Don't give up.",
+        "Be patient.",
+        "Stay sharp.",
+        "You're doing fine. Keep going.",
+        "Concentrate.",
+        "Keep at it.",
+        "Stay calm and search.",
+        "You'll get it.",
+        "No rush.",
+        "Keep your focus.",
+        "Almost there.",
+        "Hang in there.",
+        "Steady.",
+        "Keep going.",
+        "You can do this.",
+    };
+
+    static readonly string[] k_GU_WrongCapture =
+    {
+        "Not quite. Try again.",
+        "That wasn't it. Keep trying.",
+        "Wrong one. You'll get it.",
+        "Not this one. Try again.",
+        "Almost. Keep looking.",
+        "That's not it. No worries.",
+        "Wrong pick. Keep going.",
+        "Not quite right. Try another.",
+        "That wasn't the one.",
+        "Not it. Keep going.",
+    };
 }

@@ -2,161 +2,307 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Static utility that creates virtual shelf platforms above a detected table
-/// and computes grid spawn positions per level for object distribution.
+/// Creates two traditional bookshelf units on the detected table and computes
+/// designated spawn points for objects. Layout is computed once and cached
+/// so spawn points are consistent across rounds.
 /// </summary>
 public static class ShelfSpawner
 {
-    const float k_ShelfSpacing = 0.25f;    // 25cm between levels
-    const float k_ShelfThickness = 0.015f; // 1.5cm visual thickness
-    const float k_ShelfInset = 0.03f;      // 3cm inset from table edges
-    const float k_ShelfAlpha = 0.3f;       // semi-transparent
-    const float k_Jitter = 0.02f;          // ±2cm random jitter
-    const float k_SpawnHeightOffset = 0.05f;
-    const float k_Margin = 0.05f;
+    const int k_Rows = 7;
+    const int k_Cols = 2;
+    const float k_MinBookcaseWidth = 0.30f;
+    const float k_BookcaseHeight = 0.84f;  // 7 rows × 12cm each
+    const float k_BookcaseDepth = 0.18f;
+    const float k_ColGap = 0.03f;
+    const float k_DepthSetback = 0.06f;
+    const float k_PlankThickness = 0.012f;
+    const float k_PanelThickness = 0.012f;
 
-    /// <summary>
-    /// Creates shelf platforms and computes spawn positions across all levels.
-    /// </summary>
-    /// <param name="tableCenter">World-space center of the detected table plane.</param>
-    /// <param name="tableSize">Width/height of the table plane.</param>
-    /// <param name="planeRight">Table's local right axis in world space.</param>
-    /// <param name="planeForward">Table's local forward axis in world space.</param>
-    /// <param name="totalObjects">Total number of objects to distribute.</param>
-    /// <returns>
-    /// shelfObjects: GameObjects to destroy on cleanup.
-    /// positionsPerLevel: list of position lists indexed by level (0=table, 1=lower shelf, 2=upper shelf).
-    /// levelPerPosition: flat list of level indices parallel to the flattened positions.
-    /// </returns>
-    public static (List<GameObject> shelfObjects, List<List<Vector3>> positionsPerLevel)
-        CreateShelvesAndPositions(
+    static float RowHeight => k_BookcaseHeight / k_Rows;
+
+    public static int RowCount => k_Rows;
+    public static int ColCount => k_Cols;
+
+    /// <summary>Rotation objects should have to face straight out of the shelf.</summary>
+    public static Quaternion ObjectFacingRotation { get; private set; } = Quaternion.identity;
+
+    /// <summary>The shelf's right axis in world space (along bookcase width).</summary>
+    public static Vector3 ShelfRight { get; private set; } = Vector3.right;
+
+    /// <summary>The direction the shelf opens toward (toward the player).</summary>
+    public static Vector3 ShelfFacing { get; private set; } = Vector3.forward;
+
+    public struct SpawnPoint
+    {
+        public Vector3 position;
+        public int row;
+        public int col;
+    }
+
+    // Cached layout — computed once in CreateShelvesAndSpawnPoints, reused by ComputeSpawnPoints
+    static bool s_LayoutCached;
+    static Vector3[] s_ColCenters;
+    static Vector3 s_ShelfRight;
+    static Vector3 s_ShelfForward;
+    static float s_BookcaseWidth;
+    static float s_TableY;
+
+    /// <summary>Reuse cached layout to get spawn points. Call for rounds after the first.</summary>
+    public static List<SpawnPoint> ComputeSpawnPoints(
+        Vector3 tableCenter, Vector2 tableSize,
+        Vector3 planeRight, Vector3 planeForward,
+        int totalObjects)
+    {
+        if (!s_LayoutCached)
+        {
+            // Fallback: compute fresh (shouldn't happen if CreateShelvesAndSpawnPoints was called first)
+            ComputeLayout(tableCenter, tableSize, planeRight, planeForward,
+                out _, out var sr, out var sf, out var cc, out float bw);
+            CacheLayout(sr, sf, cc, bw, tableCenter.y);
+        }
+        return BuildSpawnPoints(s_ColCenters, s_ShelfRight, s_ShelfForward,
+            s_BookcaseWidth, s_TableY, totalObjects);
+    }
+
+    /// <summary>Build shelf geometry AND compute spawn points. Call once at game start.</summary>
+    public static (List<GameObject> shelfObjects, List<SpawnPoint> spawnPoints)
+        CreateShelvesAndSpawnPoints(
             Vector3 tableCenter, Vector2 tableSize,
             Vector3 planeRight, Vector3 planeForward,
             int totalObjects)
     {
+        ComputeLayout(tableCenter, tableSize, planeRight, planeForward,
+            out var baseCenter, out var shelfRight, out var shelfForward,
+            out var colCenters, out float bookcaseWidth);
+
+        CacheLayout(shelfRight, shelfForward, colCenters, bookcaseWidth, tableCenter.y);
+
+        // Build geometry
         var shelfObjects = new List<GameObject>();
-        int levelCount = 3;
-
-        // Create shelf platforms for levels 1 and 2 (level 0 is the table itself)
-        for (int level = 1; level < levelCount; level++)
+        for (int col = 0; col < k_Cols; col++)
         {
-            float yOffset = level * k_ShelfSpacing;
-            Vector3 shelfCenter = tableCenter + Vector3.up * yOffset;
-
-            float shelfW = tableSize.x - k_ShelfInset * 2;
-            float shelfH = tableSize.y - k_ShelfInset * 2;
-
-            var shelfGO = new GameObject($"VirtualShelf_Level{level}");
-            shelfGO.transform.position = shelfCenter;
-            shelfGO.transform.rotation = Quaternion.identity;
-
-            // Box collider for physics (objects land on this)
-            var col = shelfGO.AddComponent<BoxCollider>();
-            col.size = new Vector3(shelfW, k_ShelfThickness, shelfH);
-
-            // Add physics material with friction to prevent sliding
-            var physicMat = new PhysicsMaterial("ShelfFriction")
-            {
-                staticFriction = 0.8f,
-                dynamicFriction = 0.6f,
-                frictionCombine = PhysicsMaterialCombine.Maximum
-            };
-            col.material = physicMat;
-
-            // Visual mesh — simple cube scaled to shelf dimensions
-            var meshFilter = shelfGO.AddComponent<MeshFilter>();
-            var tempCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            meshFilter.sharedMesh = tempCube.GetComponent<MeshFilter>().sharedMesh;
-            Object.Destroy(tempCube);
-
-            var renderer = shelfGO.AddComponent<MeshRenderer>();
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.SetFloat("_Surface", 1); // transparent
-            mat.SetFloat("_Blend", 0);
-            mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            mat.SetInt("_ZWrite", 0);
-            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            mat.renderQueue = 3000;
-            mat.color = new Color(0.8f, 0.8f, 0.9f, k_ShelfAlpha);
-            renderer.material = mat;
-
-            shelfGO.transform.localScale = new Vector3(shelfW, k_ShelfThickness, shelfH);
-
-            shelfObjects.Add(shelfGO);
-            Debug.Log($"[ShelfSpawner] Created shelf level {level} at y={shelfCenter.y:F2}, size=({shelfW:F2}, {shelfH:F2})");
+            var parts = BuildBookcase(colCenters[col], shelfRight, shelfForward, col, bookcaseWidth);
+            shelfObjects.AddRange(parts);
         }
 
-        // Distribute objects across levels
-        int perLevel = totalObjects / levelCount;
-        int remainder = totalObjects % levelCount;
-        var objectsPerLevel = new int[levelCount];
-        for (int i = 0; i < levelCount; i++)
-        {
-            objectsPerLevel[i] = perLevel + (i < remainder ? 1 : 0);
-        }
+        var spawnPoints = BuildSpawnPoints(colCenters, shelfRight, shelfForward,
+            bookcaseWidth, tableCenter.y, totalObjects);
 
-        // Compute grid positions per level
-        var positionsPerLevel = new List<List<Vector3>>();
-        for (int level = 0; level < levelCount; level++)
-        {
-            float yBase = tableCenter.y + level * k_ShelfSpacing;
-            int count = objectsPerLevel[level];
-            var positions = ComputeGridPositions(
-                tableCenter, tableSize, planeRight, planeForward,
-                yBase, count);
-            positionsPerLevel.Add(positions);
-        }
-
-        return (shelfObjects, positionsPerLevel);
+        Debug.Log($"[ShelfSpawner] Built {k_Cols} bookcases ({bookcaseWidth:F2}m wide), " +
+                  $"{k_Rows} rows, {spawnPoints.Count} spawn points");
+        return (shelfObjects, spawnPoints);
     }
 
-    static List<Vector3> ComputeGridPositions(
-        Vector3 center, Vector2 tableSize,
-        Vector3 planeRight, Vector3 planeForward,
-        float yBase, int count)
+    /// <summary>Clears cached layout. Call on full game reset.</summary>
+    public static void ClearCache() { s_LayoutCached = false; }
+
+    // Keep old signature for compat
+    public static (List<GameObject>, List<List<Vector3>>) CreateShelvesAndPositions(
+        Vector3 tableCenter, Vector2 tableSize, Vector3 planeRight, Vector3 planeForward,
+        int totalObjects, bool buildGeometry = true)
     {
-        if (count <= 0) return new List<Vector3>();
-
-        float usableW = tableSize.x - k_Margin * 2;
-        float usableH = tableSize.y - k_Margin * 2;
-
-        // Determine grid dimensions
-        int cols = Mathf.CeilToInt(Mathf.Sqrt(count));
-        int rows = Mathf.CeilToInt((float)count / cols);
-
-        float cellW = usableW / cols;
-        float cellH = usableH / rows;
-
-        var positions = new List<Vector3>();
-        for (int row = 0; row < rows; row++)
+        if (buildGeometry)
         {
-            for (int col = 0; col < cols; col++)
+            var (objs, pts) = CreateShelvesAndSpawnPoints(tableCenter, tableSize, planeRight, planeForward, totalObjects);
+            return (objs, SpawnPointsToLevels(pts));
+        }
+        var sp = ComputeSpawnPoints(tableCenter, tableSize, planeRight, planeForward, totalObjects);
+        return (new List<GameObject>(), SpawnPointsToLevels(sp));
+    }
+
+    static List<List<Vector3>> SpawnPointsToLevels(List<SpawnPoint> pts)
+    {
+        var levels = new List<List<Vector3>>();
+        for (int r = 0; r < k_Rows; r++) levels.Add(new List<Vector3>());
+        foreach (var sp in pts)
+            if (sp.row < levels.Count) levels[sp.row].Add(sp.position);
+        return levels;
+    }
+
+    static void CacheLayout(Vector3 shelfRight, Vector3 shelfForward,
+        Vector3[] colCenters, float bookcaseWidth, float tableY)
+    {
+        s_ShelfRight = shelfRight;
+        s_ShelfForward = shelfForward;
+        s_ColCenters = colCenters;
+        s_BookcaseWidth = bookcaseWidth;
+        s_TableY = tableY;
+        s_LayoutCached = true;
+    }
+
+    // =====================================================================
+    //  Layout computation
+    // =====================================================================
+
+    static void ComputeLayout(
+        Vector3 tableCenter, Vector2 tableSize,
+        Vector3 planeRight, Vector3 planeForward,
+        out Vector3 baseCenter, out Vector3 shelfRight, out Vector3 shelfForward,
+        out Vector3[] colCenters, out float bookcaseWidth)
+    {
+        // Snap shelf facing to nearest table axis relative to the player
+        Vector3 facingDir = -planeForward;
+        var cam = Camera.main;
+        if (cam != null)
+        {
+            Vector3 toPlayer = cam.transform.position - tableCenter;
+            toPlayer.y = 0;
+            if (toPlayer.sqrMagnitude > 0.01f)
             {
-                if (positions.Count >= count) break;
-
-                float localX = -usableW / 2f + cellW * (col + 0.5f);
-                float localY = -usableH / 2f + cellH * (row + 0.5f);
-
-                localX += Random.Range(-k_Jitter, k_Jitter);
-                localY += Random.Range(-k_Jitter, k_Jitter);
-
-                Vector3 worldPos = center
-                    + planeRight * localX
-                    + planeForward * localY;
-                worldPos.y = yBase + k_SpawnHeightOffset;
-
-                positions.Add(worldPos);
+                float dotFwd = Vector3.Dot(toPlayer.normalized, planeForward);
+                float dotRight = Vector3.Dot(toPlayer.normalized, planeRight);
+                if (Mathf.Abs(dotFwd) >= Mathf.Abs(dotRight))
+                    facingDir = dotFwd > 0 ? planeForward : -planeForward;
+                else
+                    facingDir = dotRight > 0 ? planeRight : -planeRight;
             }
         }
 
-        // Shuffle positions within this level
-        for (int i = positions.Count - 1; i > 0; i--)
+        shelfRight = Vector3.Cross(Vector3.up, facingDir).normalized;
+        if (shelfRight.sqrMagnitude < 0.001f) shelfRight = planeRight;
+        shelfForward = -facingDir;
+
+        ObjectFacingRotation = Quaternion.LookRotation(facingDir, Vector3.up);
+        ShelfRight = shelfRight;
+        ShelfFacing = facingDir;
+
+        float tableW = Mathf.Max(
+            Mathf.Abs(Vector3.Dot(planeRight * tableSize.x, shelfRight)),
+            Mathf.Abs(Vector3.Dot(planeForward * tableSize.y, shelfRight)));
+        if (tableW < 0.2f) tableW = tableSize.x;
+
+        bookcaseWidth = Mathf.Max((tableW - k_ColGap - 0.04f) / k_Cols, k_MinBookcaseWidth);
+        float totalWidth = k_Cols * bookcaseWidth + (k_Cols - 1) * k_ColGap;
+
+        baseCenter = tableCenter + Vector3.up * 0.001f + shelfForward * k_DepthSetback;
+
+        colCenters = new Vector3[k_Cols];
+        for (int col = 0; col < k_Cols; col++)
         {
-            int j = Random.Range(0, i + 1);
-            (positions[i], positions[j]) = (positions[j], positions[i]);
+            float xOff = -totalWidth / 2f + bookcaseWidth / 2f + col * (bookcaseWidth + k_ColGap);
+            colCenters[col] = baseCenter + shelfRight * xOff;
+        }
+    }
+
+    // =====================================================================
+    //  Spawn points
+    // =====================================================================
+
+    static List<SpawnPoint> BuildSpawnPoints(
+        Vector3[] colCenters, Vector3 shelfRight, Vector3 shelfForward,
+        float bookcaseWidth, float tableY, int totalObjects)
+    {
+        float innerWidth = bookcaseWidth - 2 * k_PanelThickness;
+        float rowH = RowHeight;
+        int slotCount = k_Rows * k_Cols;
+        int perSlot = totalObjects / slotCount;
+        int remainder = totalObjects % slotCount;
+
+        var points = new List<SpawnPoint>();
+        int slotIdx = 0;
+
+        for (int row = 0; row < k_Rows; row++)
+        {
+            // Half-height of objects after 20% size reduction (8cm objects → 4cm center)
+            float y = tableY + row * rowH + k_PlankThickness + 0.04f;
+
+            for (int col = 0; col < k_Cols; col++)
+            {
+                int count = perSlot + (slotIdx < remainder ? 1 : 0);
+                slotIdx++;
+
+                for (int i = 0; i < count; i++)
+                {
+                    float t = count == 1 ? 0.5f : (float)(i + 1) / (count + 1);
+                    float localX = Mathf.Lerp(-innerWidth / 2f, innerWidth / 2f, t);
+                    float localZ = -k_BookcaseDepth * 0.15f;
+
+                    Vector3 pos = colCenters[col]
+                        + shelfRight * localX
+                        + shelfForward * localZ
+                        + Vector3.up * (y - tableY);
+
+                    points.Add(new SpawnPoint { position = pos, row = row, col = col });
+                }
+            }
         }
 
-        return positions;
+        return points;
+    }
+
+    // =====================================================================
+    //  Bookcase geometry
+    // =====================================================================
+
+    static List<GameObject> BuildBookcase(Vector3 center, Vector3 right, Vector3 forward, int colIndex, float width)
+    {
+        var parts = new List<GameObject>();
+        var parent = new GameObject($"Bookcase_Col{colIndex}");
+        parent.transform.position = center;
+
+        Quaternion rot = Quaternion.LookRotation(forward, Vector3.up);
+        float rowH = RowHeight;
+        float innerWidth = width - 2 * k_PanelThickness;
+
+        for (int side = 0; side < 2; side++)
+        {
+            float xSign = side == 0 ? -1f : 1f;
+            float xPos = xSign * (width / 2f - k_PanelThickness / 2f);
+            Vector3 pos = center + right * xPos + Vector3.up * (k_BookcaseHeight / 2f);
+            parts.Add(CreateBox($"Side_{colIndex}_{side}", pos, rot,
+                new Vector3(k_PanelThickness, k_BookcaseHeight, k_BookcaseDepth), parent.transform));
+        }
+
+        {
+            float zPos = k_BookcaseDepth / 2f - k_PanelThickness / 2f;
+            Vector3 pos = center + forward * zPos + Vector3.up * (k_BookcaseHeight / 2f);
+            parts.Add(CreateBox($"Back_{colIndex}", pos, rot,
+                new Vector3(width, k_BookcaseHeight, k_PanelThickness), parent.transform));
+        }
+
+        for (int p = 0; p <= k_Rows; p++)
+        {
+            float yPos = p * rowH + k_PlankThickness / 2f;
+            Vector3 pos = center + Vector3.up * yPos;
+            // Top plank spans full width (sits on top of side panels)
+            float plankWidth = p == k_Rows ? width : innerWidth;
+            parts.Add(CreateBox($"Plank_{colIndex}_{p}", pos, rot,
+                new Vector3(plankWidth, k_PlankThickness, k_BookcaseDepth), parent.transform));
+        }
+
+        parts.Add(parent);
+        return parts;
+    }
+
+    static GameObject CreateBox(string name, Vector3 position, Quaternion rotation,
+        Vector3 scale, Transform parent)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent, true);
+        go.transform.position = position;
+        go.transform.rotation = rotation;
+        go.transform.localScale = scale;
+
+        var mf = go.AddComponent<MeshFilter>();
+        var tmp = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        mf.sharedMesh = tmp.GetComponent<MeshFilter>().sharedMesh;
+        Object.Destroy(tmp);
+
+        var renderer = go.AddComponent<MeshRenderer>();
+        var shader = Shader.Find("Universal Render Pipeline/Lit")
+                  ?? Shader.Find("Shader Graphs/InteractablePrimitive");
+        var mat = new Material(shader);
+        mat.SetOverrideTag("RenderType", "Opaque");
+        mat.SetFloat("_Surface", 0);
+        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+        mat.SetInt("_ZWrite", 1);
+        mat.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
+        mat.renderQueue = -1;
+        mat.SetColor("_BaseColor", new Color(0.92f, 0.92f, 0.94f, 1f));
+        mat.color = new Color(0.92f, 0.92f, 0.94f, 1f);
+        renderer.material = mat;
+
+        return go;
     }
 }

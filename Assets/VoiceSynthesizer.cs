@@ -1,12 +1,13 @@
 using System;
 using System.Collections;
+using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
 
 /// <summary>
 /// Calls ElevenLabs TTS API and plays audio via a non-spatialized AudioSource.
-/// Supports interruption for clean speech cutoff when the player finds an object.
-/// Uses PCM format for direct AudioClip creation without MP3 decoding.
+/// Caches generated MP3 files on disk so repeated phrases (tips, congrats, etc.)
+/// play instantly from local storage after the first synthesis.
 /// </summary>
 public class VoiceSynthesizer : MonoBehaviour
 {
@@ -14,11 +15,13 @@ public class VoiceSynthesizer : MonoBehaviour
     const string k_BaseUrl = "https://api.elevenlabs.io/v1/text-to-speech/";
     const string k_VoiceId = "21m00Tcm4TlvDq8ikWAM"; // Rachel — warm, clear
     const string k_Model = "eleven_turbo_v2_5";
+    const string k_CacheFolder = "tts_cache";
 
     string m_ApiKey;
+    string m_CacheDir;
     AudioSource m_AudioSource;
     Coroutine m_SpeakCoroutine;
-    string m_CurrentContext; // what the current speech is about
+    string m_CurrentContext;
 
     public bool IsSpeaking => m_AudioSource != null && m_AudioSource.isPlaying;
 
@@ -27,18 +30,18 @@ public class VoiceSynthesizer : MonoBehaviour
         m_ApiKey = apiKey;
 
         m_AudioSource = gameObject.AddComponent<AudioSource>();
-        m_AudioSource.spatialBlend = 0f; // 2D — voice "in the head"
+        m_AudioSource.spatialBlend = 0f;
         m_AudioSource.volume = 0.7f;
         m_AudioSource.playOnAwake = false;
 
-        Debug.Log($"{k_Tag} Initialized");
+        // Persistent cache directory for MP3 files
+        m_CacheDir = Path.Combine(Application.persistentDataPath, k_CacheFolder);
+        if (!Directory.Exists(m_CacheDir))
+            Directory.CreateDirectory(m_CacheDir);
+
+        Debug.Log($"{k_Tag} Initialized, cache at {m_CacheDir}");
     }
 
-    /// <summary>
-    /// Speak the given text. Cancels any in-progress speech.
-    /// </summary>
-    /// <param name="text">Text to synthesize</param>
-    /// <param name="context">Optional context tag for interruption matching</param>
     public void Speak(string text, string context = null)
     {
         if (string.IsNullOrEmpty(m_ApiKey))
@@ -52,9 +55,6 @@ public class VoiceSynthesizer : MonoBehaviour
         m_SpeakCoroutine = StartCoroutine(SpeakCoroutine(text));
     }
 
-    /// <summary>
-    /// Immediately stop any playing or in-progress speech.
-    /// </summary>
     public void Stop()
     {
         if (m_SpeakCoroutine != null)
@@ -69,9 +69,6 @@ public class VoiceSynthesizer : MonoBehaviour
         m_CurrentContext = null;
     }
 
-    /// <summary>
-    /// Stop speech only if it's about the given context (e.g., the object just found).
-    /// </summary>
     public void InterruptIfAbout(string context)
     {
         if (!string.IsNullOrEmpty(m_CurrentContext) &&
@@ -84,18 +81,28 @@ public class VoiceSynthesizer : MonoBehaviour
 
     IEnumerator SpeakCoroutine(string text)
     {
-        Debug.Log($"{k_Tag} Requesting TTS: \"{text}\"");
+        string cachePath = GetCachePath(text);
 
-        // Use default mp3 format (available on all ElevenLabs tiers)
+        // Check cache first
+        if (File.Exists(cachePath))
+        {
+            Debug.Log($"{k_Tag} Cache hit: \"{Truncate(text, 40)}\"");
+            yield return PlayFromFile(cachePath);
+            m_SpeakCoroutine = null;
+            m_CurrentContext = null;
+            yield break;
+        }
+
+        // Cache miss — download from ElevenLabs
+        Debug.Log($"{k_Tag} Cache miss, requesting TTS: \"{Truncate(text, 40)}\"");
+
         string url = $"{k_BaseUrl}{k_VoiceId}";
-
         string jsonBody = JsonUtility.ToJson(new TtsRequest
         {
             text = text,
             model_id = k_Model
         });
 
-        // First request: get MP3 bytes
         var request = new UnityWebRequest(url, "POST");
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
         request.uploadHandler = new UploadHandlerRaw(bodyRaw);
@@ -122,11 +129,27 @@ public class VoiceSynthesizer : MonoBehaviour
             yield break;
         }
 
-        // Save MP3 to temp file and load via DownloadHandlerAudioClip
-        string tempPath = System.IO.Path.Combine(Application.temporaryCachePath, "tts_temp.mp3");
-        System.IO.File.WriteAllBytes(tempPath, mp3Data);
+        // Save to cache
+        try
+        {
+            File.WriteAllBytes(cachePath, mp3Data);
+            Debug.Log($"{k_Tag} Cached: \"{Truncate(text, 40)}\" ({mp3Data.Length} bytes)");
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"{k_Tag} Failed to cache: {e.Message}");
+        }
 
-        string fileUrl = "file://" + tempPath;
+        // Play from cached file
+        yield return PlayFromFile(cachePath);
+
+        m_SpeakCoroutine = null;
+        m_CurrentContext = null;
+    }
+
+    IEnumerator PlayFromFile(string filePath)
+    {
+        string fileUrl = "file://" + filePath;
         using (var audioRequest = UnityWebRequestMultimedia.GetAudioClip(fileUrl, AudioType.MPEG))
         {
             yield return audioRequest.SendWebRequest();
@@ -134,7 +157,6 @@ public class VoiceSynthesizer : MonoBehaviour
             if (audioRequest.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogWarning($"{k_Tag} Failed to decode MP3: {audioRequest.error}");
-                m_SpeakCoroutine = null;
                 yield break;
             }
 
@@ -142,25 +164,101 @@ public class VoiceSynthesizer : MonoBehaviour
             if (clip == null || clip.length < 0.1f)
             {
                 Debug.LogWarning($"{k_Tag} Decoded clip is empty");
-                m_SpeakCoroutine = null;
                 yield break;
             }
 
             m_AudioSource.clip = clip;
             m_AudioSource.Play();
 
-            Debug.Log($"{k_Tag} Playing TTS ({clip.length:F1}s)");
+            Debug.Log($"{k_Tag} Playing ({clip.length:F1}s)");
 
-            // Wait for playback to finish
             while (m_AudioSource.isPlaying)
                 yield return null;
         }
+    }
 
-        // Cleanup temp file
-        try { System.IO.File.Delete(tempPath); } catch { }
+    /// <summary>
+    /// Pre-generates and caches audio for a list of phrases in the background.
+    /// Call at game start so tips play instantly during gameplay.
+    /// </summary>
+    public void PreCachePhrases(string[] phrases)
+    {
+        StartCoroutine(PreCacheCoroutine(phrases));
+    }
 
-        m_SpeakCoroutine = null;
-        m_CurrentContext = null;
+    IEnumerator PreCacheCoroutine(string[] phrases)
+    {
+        int cached = 0;
+        int skipped = 0;
+
+        foreach (string phrase in phrases)
+        {
+            string path = GetCachePath(phrase);
+            if (File.Exists(path))
+            {
+                skipped++;
+                continue;
+            }
+
+            // Throttle: one request at a time, small delay between
+            string url = $"{k_BaseUrl}{k_VoiceId}";
+            string jsonBody = JsonUtility.ToJson(new TtsRequest
+            {
+                text = phrase,
+                model_id = k_Model
+            });
+
+            var request = new UnityWebRequest(url, "POST");
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.SetRequestHeader("xi-api-key", m_ApiKey);
+            request.timeout = 15;
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success &&
+                request.downloadHandler.data != null &&
+                request.downloadHandler.data.Length >= 100)
+            {
+                try
+                {
+                    File.WriteAllBytes(path, request.downloadHandler.data);
+                    cached++;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"{k_Tag} PreCache write failed: {e.Message}");
+                }
+            }
+
+            // Small yield to avoid blocking
+            yield return null;
+        }
+
+        Debug.Log($"{k_Tag} PreCache complete: {cached} new, {skipped} already cached, {phrases.Length} total");
+    }
+
+    /// <summary>
+    /// Generates a deterministic cache file path from the text content.
+    /// Uses a simple hash to avoid filesystem issues with long/special-char filenames.
+    /// </summary>
+    string GetCachePath(string text)
+    {
+        // Stable hash: FNV-1a
+        uint hash = 2166136261;
+        foreach (char c in text)
+        {
+            hash ^= c;
+            hash *= 16777619;
+        }
+        return Path.Combine(m_CacheDir, $"tts_{hash:X8}.mp3");
+    }
+
+    static string Truncate(string s, int maxLen)
+    {
+        return s.Length <= maxLen ? s : s.Substring(0, maxLen) + "...";
     }
 
     [Serializable]

@@ -5,22 +5,13 @@ using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
 /// <summary>
 /// Post-processes spawned objects to assign a random shape and color.
-/// Attaches to the same GameObject as ObjectSpawner. Subscribes to
-/// ObjectSpawner.objectSpawned to transform each object after instantiation.
+/// Also configures gaze interaction and colliders.
 ///
-/// Also enables gaze interaction on the XRGrabInteractable so that
-/// GazeHighlightManager can apply the orange glow on eye gaze hover.
-///
-/// If mesh and material references are not assigned in the Inspector,
-/// the factory auto-initializes using Unity primitives and the
-/// InteractablePrimitive shader.
+/// Call <see cref="FinalizeInteractable"/> after positioning to ensure
+/// the XRGrabInteractable is properly registered with the interaction manager.
 /// </summary>
 public class ShapeObjectFactory : MonoBehaviour
 {
-    /// <summary>
-    /// Auto-attaches ShapeObjectFactory to the ObjectSpawner at scene load.
-    /// No manual Inspector setup required.
-    /// </summary>
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoAttach()
     {
@@ -32,13 +23,8 @@ public class ShapeObjectFactory : MonoBehaviour
         }
     }
 
-    [Tooltip("Meshes to randomly pick from (Sphere, Cube, Pyramid). Auto-initialized if empty.")]
     [SerializeField] Mesh[] m_ShapeMeshes;
-
-    [Tooltip("Names corresponding to each mesh in m_ShapeMeshes.")]
     [SerializeField] string[] m_ShapeNames;
-
-    [Tooltip("Base material using InteractablePrimitive shader. Auto-initialized if null.")]
     [SerializeField] Material m_BaseMaterial;
 
     static readonly (Color color, string name)[] k_Colors =
@@ -51,14 +37,10 @@ public class ShapeObjectFactory : MonoBehaviour
 
     const string k_Tag = "[ShapeFactory]";
     ObjectSpawner m_Spawner;
-
-    // Combo queue: when non-empty, OnObjectSpawned uses queued combos instead of random.
     readonly Queue<(int shapeIdx, int colorIdx)> m_ComboQueue = new();
 
-    /// <summary>Fires after a spawned object is fully configured with metadata.</summary>
     public event System.Action<GameObject> objectFullyConfigured;
 
-    /// <summary>Pre-specify the next shape+color combo. Call before ObjectSpawner.TrySpawnObject.</summary>
     public void EnqueueCombo(string shapeName, string colorName)
     {
         int si = m_ShapeNames != null ? System.Array.IndexOf(m_ShapeNames, shapeName) : -1;
@@ -69,24 +51,15 @@ public class ShapeObjectFactory : MonoBehaviour
             Debug.LogWarning($"{k_Tag} Unknown combo: {shapeName}/{colorName}");
     }
 
-    /// <summary>Public access to shape names for game manager.</summary>
     public string[] ShapeNames => m_ShapeNames;
-    /// <summary>Public access to color definitions for game manager.</summary>
     public static (Color color, string name)[] Colors => k_Colors;
 
     void OnEnable()
     {
         m_Spawner = GetComponent<ObjectSpawner>();
-        if (m_Spawner == null)
-        {
-            Debug.LogWarning($"{k_Tag} No ObjectSpawner found on {gameObject.name}");
-            return;
-        }
-
+        if (m_Spawner == null) return;
         EnsureInitialized();
-
         m_Spawner.objectSpawned += OnObjectSpawned;
-        Debug.Log($"{k_Tag} Attached to ObjectSpawner, meshes={m_ShapeMeshes?.Length}, material={m_BaseMaterial?.name}");
     }
 
     void OnDisable()
@@ -97,84 +70,69 @@ public class ShapeObjectFactory : MonoBehaviour
 
     void EnsureInitialized()
     {
-        // Auto-create meshes from Unity primitives if not assigned
         if (m_ShapeMeshes == null || m_ShapeMeshes.Length == 0)
         {
-            Debug.Log($"{k_Tag} Auto-initializing shape meshes");
-            m_ShapeMeshes = new Mesh[5];
-            m_ShapeNames = new[] { "Sphere", "Cube", "Pyramid", "Cylinder", "Star" };
+            m_ShapeMeshes = new Mesh[6];
+            m_ShapeNames = new[] { "Sphere", "Cube", "Pyramid", "Cylinder", "Star", "Capsule" };
 
-            // Sphere
             var tempSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             m_ShapeMeshes[0] = tempSphere.GetComponent<MeshFilter>().sharedMesh;
             Destroy(tempSphere);
 
-            // Cube
             var tempCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             m_ShapeMeshes[1] = tempCube.GetComponent<MeshFilter>().sharedMesh;
             Destroy(tempCube);
 
-            // Pyramid (procedural)
             m_ShapeMeshes[2] = CreatePyramidMesh();
 
-            // Cylinder
             var tempCylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             m_ShapeMeshes[3] = tempCylinder.GetComponent<MeshFilter>().sharedMesh;
             Destroy(tempCylinder);
 
-            // Star (procedural)
             m_ShapeMeshes[4] = CreateStarMesh();
+
+            var tempCapsule = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            m_ShapeMeshes[5] = tempCapsule.GetComponent<MeshFilter>().sharedMesh;
+            Destroy(tempCapsule);
         }
 
-        // Auto-find material if not assigned
         if (m_BaseMaterial == null)
         {
-            // Try to find an existing InteractablePrimitive material in the scene
             var renderers = FindObjectsOfType<MeshRenderer>();
             foreach (var r in renderers)
             {
-                if (r.sharedMaterial != null &&
-                    r.sharedMaterial.shader != null &&
+                if (r.sharedMaterial != null && r.sharedMaterial.shader != null &&
                     r.sharedMaterial.shader.name.Contains("InteractablePrimitive"))
                 {
                     m_BaseMaterial = r.sharedMaterial;
-                    Debug.Log($"{k_Tag} Auto-found material: {m_BaseMaterial.name}");
                     break;
                 }
             }
-
-            // Fallback: create material from shader
             if (m_BaseMaterial == null)
             {
                 var shader = Shader.Find("Shader Graphs/InteractablePrimitive");
                 if (shader != null)
-                {
                     m_BaseMaterial = new Material(shader);
-                    Debug.Log($"{k_Tag} Created material from InteractablePrimitive shader");
-                }
                 else
-                {
-                    // Last resort: use standard shader
                     m_BaseMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-                    Debug.LogWarning($"{k_Tag} InteractablePrimitive shader not found, using URP/Lit fallback");
-                }
             }
         }
     }
 
+    /// <summary>
+    /// Configures a spawned object with shape, color, collider, material.
+    /// Call this directly when bypassing ObjectSpawner.
+    /// </summary>
+    public void ConfigureObject(GameObject obj) => OnObjectSpawned(obj);
+
     void OnObjectSpawned(GameObject obj)
     {
-        // Remove SittingCylinder animation if present
         var anim = obj.GetComponent<Animation>();
         if (anim != null) Destroy(anim);
 
-        // Hide all child renderers (affordance visuals: rings, crosses, etc.)
-        // We keep the child GameObjects alive — the affordance system's
-        // XRInteractableAffordanceStateProvider must remain active for gaze
-        // interaction to work. Destroying children corrupts interactable state.
         HideChildRenderers(obj);
 
-        // Pick shape and color — use queued combo if available, otherwise random
+        // Pick shape and color
         int shapeIdx, colorIdx;
         if (m_ComboQueue.Count > 0)
         {
@@ -192,32 +150,25 @@ public class ShapeObjectFactory : MonoBehaviour
         if (m_ShapeMeshes != null && shapeIdx < m_ShapeMeshes.Length)
         {
             var mesh = m_ShapeMeshes[shapeIdx];
-
             if (mesh != null)
             {
-                // Swap MeshFilter on root
                 var meshFilter = obj.GetComponent<MeshFilter>();
-                if (meshFilter == null)
-                    meshFilter = obj.AddComponent<MeshFilter>();
+                if (meshFilter == null) meshFilter = obj.AddComponent<MeshFilter>();
                 meshFilter.sharedMesh = mesh;
 
-                // Ensure MeshRenderer exists on root
                 var renderer = obj.GetComponent<MeshRenderer>();
-                if (renderer == null)
-                    renderer = obj.AddComponent<MeshRenderer>();
+                if (renderer == null) renderer = obj.AddComponent<MeshRenderer>();
 
-                // Swap collider for the shape (root only)
                 ReplaceCollider(obj, mesh, shapeIdx);
             }
 
             shapeName = (m_ShapeNames != null && shapeIdx < m_ShapeNames.Length)
-                ? m_ShapeNames[shapeIdx]
-                : mesh != null ? mesh.name : "Unknown";
+                ? m_ShapeNames[shapeIdx] : "Unknown";
         }
 
         var (color, colorName) = k_Colors[colorIdx];
 
-        // Assign per-instance material with random base color
+        // Material
         var renderer2 = obj.GetComponent<MeshRenderer>();
         if (renderer2 != null && m_BaseMaterial != null)
         {
@@ -228,56 +179,111 @@ public class ShapeObjectFactory : MonoBehaviour
             renderer2.material = mat;
         }
 
-        // Ensure Rigidbody exists with gravity for physics drop
+        // Set layer 8 on root AND all children so nothing blocks gaze on wrong layer
+        obj.layer = 8;
+        foreach (Transform child in obj.GetComponentsInChildren<Transform>(true))
+            child.gameObject.layer = 8;
+
+        // Kinematic rigidbody
         var rb = obj.GetComponent<Rigidbody>();
-        if (rb == null)
-            rb = obj.AddComponent<Rigidbody>();
-        rb.useGravity = true;
-        rb.isKinematic = false;
+        if (rb == null) rb = obj.AddComponent<Rigidbody>();
+        rb.useGravity = false;
+        rb.isKinematic = true;
 
-        // Enable gaze interaction and update grab colliders
-        var grab = obj.GetComponent<XRGrabInteractable>();
-        if (grab != null)
+        // Scale (20% smaller — 8cm objects)
+        Vector3 scale = shapeIdx switch
         {
-            grab.allowGazeInteraction = true;
-            grab.allowGazeSelect = false;
+            0 => new Vector3(0.08f, 0.08f, 0.08f), // Sphere
+            1 => new Vector3(0.08f, 0.08f, 0.08f), // Cube
+            2 => new Vector3(0.07f, 0.06f, 0.07f), // Pyramid (shorter to fit in row)
+            3 => new Vector3(0.08f, 0.04f, 0.08f), // Cylinder
+            4 => new Vector3(0.096f, 0.096f, 0.096f), // Star
+            5 => new Vector3(0.035f, 0.035f, 0.035f), // Capsule (pill — rotated on side, uniform scale)
+            _ => new Vector3(0.08f, 0.08f, 0.08f),
+        };
+        obj.transform.localScale = scale;
 
-            // Update collider list — only root colliders (children hidden, not destroyed)
-            grab.colliders.Clear();
-            grab.colliders.AddRange(obj.GetComponents<Collider>());
-
-            // Force re-registration with XRInteractionManager so the new
-            // colliders appear in the manager's collider-to-interactable map.
-            // Without this, the gaze interactor can't resolve hits on new colliders.
-            grab.enabled = false;
-            grab.enabled = true;
-
-            // The toggle may recreate affordance child renderers — hide them again.
-            HideChildRenderers(obj);
-
-            Debug.Log($"{k_Tag} Grab re-registered with {grab.colliders.Count} collider(s), allowGaze={grab.allowGazeInteraction}");
+        // Pyramid: origin at base (y=0), need to lower so base sits on shelf.
+        // Other shapes have origin at center so spawn Y puts them on the shelf.
+        // Pyramid needs to come down by the full half-height offset (0.04m).
+        if (shapeIdx == 2)
+        {
+            var pos = obj.transform.position;
+            pos.y -= 0.06f;
+            obj.transform.position = pos;
         }
 
-        // Add per-object highlight for controller blue glow
-        obj.AddComponent<InteractableHighlight>();
 
-        // Adjust scale for simple shapes
-        obj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-
-        // Raise object 5cm above surface and let gravity drop it
-        var pos = obj.transform.position;
-        pos.y += 0.05f;
-        obj.transform.position = pos;
-
-        // Add metadata for gaze data logging
+        // Metadata
         var info = obj.AddComponent<SpawnableObjectInfo>();
         info.shapeName = shapeName;
         info.colorName = colorName;
         obj.name = info.DisplayName;
 
-        Debug.Log($"{k_Tag} Spawned {info.DisplayName}");
-
         objectFullyConfigured?.Invoke(obj);
+    }
+
+    /// <summary>
+    /// Centralized function to set up gaze interaction on a fully positioned object.
+    /// Call AFTER the object is at its final position/rotation/scale.
+    /// This ensures colliders, interactable registration, and renderer state are all correct.
+    /// </summary>
+    /// <summary>
+    /// Phase 1: Disable grab and set up colliders. Call on ALL objects first.
+    /// </summary>
+    public static void PrepareInteractable(GameObject obj)
+    {
+        var grab = obj.GetComponent<XRGrabInteractable>();
+        if (grab == null) return;
+
+        // Disable to unregister from interaction manager
+        grab.enabled = false;
+
+        // Destroy ALL child colliders — only keep the root shape collider
+        foreach (var col in obj.GetComponentsInChildren<Collider>(true))
+            if (col.gameObject != obj)
+                DestroyImmediate(col);
+
+        // Set layer 8 everywhere
+        foreach (Transform child in obj.GetComponentsInChildren<Transform>(true))
+            child.gameObject.layer = 8;
+
+        // Set collider list to ONLY the root shape collider
+        grab.colliders.Clear();
+        foreach (var col in obj.GetComponents<Collider>())
+            grab.colliders.Add(col);
+
+        grab.allowGazeInteraction = true;
+        grab.allowGazeSelect = false;
+        grab.allowGazeAssistance = false;
+
+        // Hide child renderers, keep root visible
+        HideChildRenderers(obj);
+        var rootRenderer = obj.GetComponent<MeshRenderer>();
+        if (rootRenderer != null) rootRenderer.enabled = true;
+    }
+
+    /// <summary>
+    /// Phase 2: Enable grab to register with the interaction manager.
+    /// Call on ALL objects AFTER PrepareInteractable has run on all of them.
+    /// </summary>
+    public static void ActivateInteractable(GameObject obj)
+    {
+        var grab = obj.GetComponent<XRGrabInteractable>();
+        if (grab == null) return;
+        grab.enabled = true;
+
+        // OnEnable may recreate child renderers — hide them again
+        HideChildRenderers(obj);
+        var rootRenderer = obj.GetComponent<MeshRenderer>();
+        if (rootRenderer != null) rootRenderer.enabled = true;
+    }
+
+    // Keep for backward compat
+    public static void FinalizeInteractable(GameObject obj)
+    {
+        PrepareInteractable(obj);
+        ActivateInteractable(obj);
     }
 
     static void HideChildRenderers(GameObject obj)
@@ -292,150 +298,102 @@ public class ShapeObjectFactory : MonoBehaviour
 
     void ReplaceCollider(GameObject obj, Mesh mesh, int shapeIdx)
     {
-        // Remove existing colliders on root only (children are kept alive).
-        foreach (var col in obj.GetComponents<Collider>())
+        // Destroy ALL colliders — root AND children. Stale child colliders from
+        // the prefab can block the gaze raycast without being mapped to the
+        // interactable, causing some objects to not highlight.
+        foreach (var col in obj.GetComponentsInChildren<Collider>(true))
             DestroyImmediate(col);
 
-        // Add colliders slightly larger than mesh for generous gaze targeting.
-        // The visual mesh stays the same size; the collider extends ~30% beyond.
         switch (shapeIdx)
         {
-            case 0: // Sphere — mesh radius is 0.5, collider 0.65
+            case 0:
                 var sc = obj.AddComponent<SphereCollider>();
                 sc.radius = 0.65f;
                 break;
-            case 1: // Cube — mesh is 1x1x1, collider 1.3x1.3x1.3
+            case 1:
                 var bc = obj.AddComponent<BoxCollider>();
                 bc.size = new Vector3(1.3f, 1.3f, 1.3f);
                 break;
-            case 2: // Pyramid — use sphere collider for generous targeting
+            case 2:
                 var pc = obj.AddComponent<SphereCollider>();
-                pc.center = new Vector3(0f, 0.4f, 0f); // center slightly above base
+                pc.center = new Vector3(0f, 0.4f, 0f);
                 pc.radius = 0.65f;
                 break;
-            case 3: // Cylinder — capsule collider matching cylinder shape
+            case 3:
                 var cc = obj.AddComponent<CapsuleCollider>();
                 cc.radius = 0.65f;
-                cc.height = 2.6f; // mesh height is 2.0, generous
+                cc.height = 2.6f;
                 break;
-            default: // Star — sphere collider for generous targeting
+            case 4: // Star
                 var stc = obj.AddComponent<SphereCollider>();
                 stc.radius = 0.7f;
+                break;
+            case 5: // Capsule — very generous collider to match other shapes' hit areas
+                var capc = obj.AddComponent<SphereCollider>();
+                capc.radius = 2.0f;
+                break;
+            default:
+                var defc = obj.AddComponent<SphereCollider>();
+                defc.radius = 0.65f;
                 break;
         }
     }
 
     static Mesh CreatePyramidMesh()
     {
-        var mesh = new Mesh();
-        mesh.name = "Pyramid";
-
-        float s = 0.5f; // half-size
-        float h = 1f;   // height
-
-        // Unique vertices per face for flat shading.
-        // Double-sided base so bottom is visible when picked up.
+        var mesh = new Mesh { name = "Pyramid" };
+        float s = 0.5f;
+        float h = 1f;
         var vertices = new Vector3[]
         {
-            // Base top (visible from above) — 0-3
             new(-s, 0, -s), new(s, 0, -s), new(s, 0, s), new(-s, 0, s),
-            // Base bottom (visible from below) — 4-7
             new(-s, 0, -s), new(s, 0, -s), new(s, 0, s), new(-s, 0, s),
-            // Front face — 8-10
             new(s, 0, -s), new(-s, 0, -s), new(0, h, 0),
-            // Right face — 11-13
             new(s, 0, s), new(s, 0, -s), new(0, h, 0),
-            // Back face — 14-16
             new(-s, 0, s), new(s, 0, s), new(0, h, 0),
-            // Left face — 17-19
             new(-s, 0, -s), new(-s, 0, s), new(0, h, 0),
         };
-
         var triangles = new int[]
         {
-            // Base top (facing up)
-            0, 2, 1,
-            0, 3, 2,
-            // Base bottom (facing down — reversed winding)
-            4, 5, 6,
-            4, 6, 7,
-            // Front
-            8, 9, 10,
-            // Right
-            11, 12, 13,
-            // Back
-            14, 15, 16,
-            // Left
-            17, 18, 19,
+            0, 2, 1, 0, 3, 2,
+            4, 5, 6, 4, 6, 7,
+            8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
         };
-
-        // Explicit normals per vertex.
-        var frontN = Vector3.Cross(
-            vertices[9] - vertices[8], vertices[10] - vertices[8]).normalized;
-        var rightN = Vector3.Cross(
-            vertices[12] - vertices[11], vertices[13] - vertices[11]).normalized;
-        var backN = Vector3.Cross(
-            vertices[15] - vertices[14], vertices[16] - vertices[14]).normalized;
-        var leftN = Vector3.Cross(
-            vertices[18] - vertices[17], vertices[19] - vertices[17]).normalized;
-
+        var frontN = Vector3.Cross(vertices[9] - vertices[8], vertices[10] - vertices[8]).normalized;
+        var rightN = Vector3.Cross(vertices[12] - vertices[11], vertices[13] - vertices[11]).normalized;
+        var backN = Vector3.Cross(vertices[15] - vertices[14], vertices[16] - vertices[14]).normalized;
+        var leftN = Vector3.Cross(vertices[18] - vertices[17], vertices[19] - vertices[17]).normalized;
         var normals = new Vector3[]
         {
-            // Base top — facing up
             Vector3.up, Vector3.up, Vector3.up, Vector3.up,
-            // Base bottom — facing down
             Vector3.down, Vector3.down, Vector3.down, Vector3.down,
-            // Front
-            frontN, frontN, frontN,
-            // Right
-            rightN, rightN, rightN,
-            // Back
-            backN, backN, backN,
-            // Left
-            leftN, leftN, leftN,
+            frontN, frontN, frontN, rightN, rightN, rightN,
+            backN, backN, backN, leftN, leftN, leftN,
         };
-
-        // UVs for shader edge highlight.
         var uvs = new Vector2[]
         {
-            // Base top
             new(0, 0), new(1, 0), new(1, 1), new(0, 1),
-            // Base bottom
             new(0, 0), new(1, 0), new(1, 1), new(0, 1),
-            // Front
             new(0, 0), new(1, 0), new(0.5f, 1),
-            // Right
             new(0, 0), new(1, 0), new(0.5f, 1),
-            // Back
             new(0, 0), new(1, 0), new(0.5f, 1),
-            // Left
             new(0, 0), new(1, 0), new(0.5f, 1),
         };
-
         mesh.vertices = vertices;
         mesh.normals = normals;
         mesh.uv = uvs;
         mesh.triangles = triangles;
         mesh.RecalculateBounds();
-
         return mesh;
     }
 
-    /// <summary>
-    /// Creates a 5-pointed star extruded into 3D.
-    /// Outer radius 0.5, inner radius 0.2, depth 0.2.
-    /// </summary>
     static Mesh CreateStarMesh()
     {
-        var mesh = new Mesh();
-        mesh.name = "Star";
-
+        var mesh = new Mesh { name = "Star" };
         const int points = 5;
         const float outerR = 0.5f;
         const float innerR = 0.2f;
-        const float halfDepth = 0.1f;
-
-        // Generate 2D star outline (10 vertices: alternating outer/inner)
+        const float halfDepth = 0.25f;
         var outline = new Vector2[points * 2];
         for (int i = 0; i < points * 2; i++)
         {
@@ -443,19 +401,14 @@ public class ShapeObjectFactory : MonoBehaviour
             float r = (i % 2 == 0) ? outerR : innerR;
             outline[i] = new Vector2(Mathf.Cos(angle) * r, Mathf.Sin(angle) * r);
         }
-
-        // Build mesh: front face, back face, and side quads
         var verts = new List<Vector3>();
         var tris = new List<int>();
         var norms = new List<Vector3>();
         var uvs = new List<Vector2>();
-
-        // Front face — fan from center
         int frontCenter = verts.Count;
         verts.Add(new Vector3(0, 0, -halfDepth));
         norms.Add(Vector3.back);
         uvs.Add(new Vector2(0.5f, 0.5f));
-
         for (int i = 0; i < outline.Length; i++)
         {
             verts.Add(new Vector3(outline[i].x, outline[i].y, -halfDepth));
@@ -465,17 +418,12 @@ public class ShapeObjectFactory : MonoBehaviour
         for (int i = 0; i < outline.Length; i++)
         {
             int next = (i + 1) % outline.Length;
-            tris.Add(frontCenter);
-            tris.Add(frontCenter + 1 + next);
-            tris.Add(frontCenter + 1 + i);
+            tris.Add(frontCenter); tris.Add(frontCenter + 1 + next); tris.Add(frontCenter + 1 + i);
         }
-
-        // Back face — fan from center (reversed winding)
         int backCenter = verts.Count;
         verts.Add(new Vector3(0, 0, halfDepth));
         norms.Add(Vector3.forward);
         uvs.Add(new Vector2(0.5f, 0.5f));
-
         for (int i = 0; i < outline.Length; i++)
         {
             verts.Add(new Vector3(outline[i].x, outline[i].y, halfDepth));
@@ -485,12 +433,8 @@ public class ShapeObjectFactory : MonoBehaviour
         for (int i = 0; i < outline.Length; i++)
         {
             int next = (i + 1) % outline.Length;
-            tris.Add(backCenter);
-            tris.Add(backCenter + 1 + i);
-            tris.Add(backCenter + 1 + next);
+            tris.Add(backCenter); tris.Add(backCenter + 1 + i); tris.Add(backCenter + 1 + next);
         }
-
-        // Side faces — quads connecting front and back outlines
         for (int i = 0; i < outline.Length; i++)
         {
             int next = (i + 1) % outline.Length;
@@ -498,22 +442,18 @@ public class ShapeObjectFactory : MonoBehaviour
             var b = new Vector3(outline[next].x, outline[next].y, -halfDepth);
             var c = new Vector3(outline[next].x, outline[next].y, halfDepth);
             var d = new Vector3(outline[i].x, outline[i].y, halfDepth);
-
             var sideNormal = Vector3.Cross(b - a, d - a).normalized;
-
             int si = verts.Count;
             verts.AddRange(new[] { a, b, c, d });
             norms.AddRange(new[] { sideNormal, sideNormal, sideNormal, sideNormal });
             uvs.AddRange(new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) });
             tris.AddRange(new[] { si, si + 1, si + 2, si, si + 2, si + 3 });
         }
-
         mesh.SetVertices(verts);
         mesh.SetNormals(norms);
         mesh.SetUVs(0, uvs);
         mesh.SetTriangles(tris, 0);
         mesh.RecalculateBounds();
-
         return mesh;
     }
 }

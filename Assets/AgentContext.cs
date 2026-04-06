@@ -162,8 +162,8 @@ public class AgentContext : MonoBehaviour
 
             // Zone coverage
             m_Builder.Append("ZONE COVERAGE: ");
-            string[] zoneNames = { "table", "lower shelf", "upper shelf" };
-            for (int z = 0; z < 3; z++)
+            string[] zoneNames = { "bottom shelf", "second shelf", "middle shelf", "fourth shelf", "top shelf" };
+            for (int z = 0; z < zoneNames.Length; z++)
             {
                 if (z > 0) m_Builder.Append(", ");
                 float total = m_CoverageTracker.GetZoneTotalFixation(z);
@@ -225,6 +225,73 @@ public class AgentContext : MonoBehaviour
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Returns a short spatial hint like "to your left" or "ahead and to the right"
+    /// describing where the current target is relative to the player. Returns null
+    /// if the target can't be found.
+    /// </summary>
+    public string GetTargetDirectionHint()
+    {
+        if (m_GameManager == null || m_GameManager.CurrentState != FindObjectGameManager.GameState.Playing)
+            return null;
+        var cam = Camera.main;
+        if (cam == null) return null;
+
+        var objectives = m_GameManager.Objectives;
+        int idx = m_GameManager.CurrentObjectiveIndex;
+        if (idx >= objectives.Count) return null;
+        var target = objectives[idx];
+
+        // Find the target object
+        foreach (var obj in m_GameManager.SpawnedObjects)
+        {
+            if (obj == null || !obj.activeSelf) continue;
+            var info = obj.GetComponent<SpawnableObjectInfo>();
+            if (info != null && info.shapeName == target.shape && info.colorName == target.color)
+            {
+                Vector3 local = cam.transform.InverseTransformPoint(obj.transform.position);
+
+                // Horizontal direction
+                string horiz = null;
+                if (local.x > 0.15f) horiz = "to your right";
+                else if (local.x < -0.15f) horiz = "to your left";
+
+                // Vertical / shelf
+                string vert = null;
+                if (local.y > 0.15f) vert = "higher up";
+                else if (local.y < -0.15f) vert = "lower down";
+
+                if (horiz != null && vert != null) return $"{horiz} and {vert}";
+                if (horiz != null) return horiz;
+                if (vert != null) return vert;
+                return "right in front of you";
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Returns the shelf level name of the current target, or null.
+    /// </summary>
+    public string GetTargetShelfName()
+    {
+        if (m_GameManager == null || m_GameManager.CurrentState != FindObjectGameManager.GameState.Playing)
+            return null;
+        var objectives = m_GameManager.Objectives;
+        int idx = m_GameManager.CurrentObjectiveIndex;
+        if (idx >= objectives.Count) return null;
+        var target = objectives[idx];
+
+        foreach (var obj in m_GameManager.SpawnedObjects)
+        {
+            if (obj == null || !obj.activeSelf) continue;
+            var info = obj.GetComponent<SpawnableObjectInfo>();
+            if (info != null && info.shapeName == target.shape && info.colorName == target.color)
+                return info.LevelName;
+        }
+        return null;
     }
 
     string DescribeObjectRelativeToPlayer(Vector3 worldPos, Transform playerTransform)

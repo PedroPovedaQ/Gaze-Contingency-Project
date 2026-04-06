@@ -10,7 +10,7 @@ public class EyeGazeRayVisual : MonoBehaviour
     static readonly Color k_OrangeColor = new Color(1f, 0.5f, 0f, 1f);
 
     [Tooltip("Flip the X position to correct left/right eye swap on VIVE.")]
-    [SerializeField] bool m_FlipX = true;
+    [SerializeField] bool m_FlipX = false;
 
     const string k_Tag = "[EyeGazeRay]";
 
@@ -23,6 +23,7 @@ public class EyeGazeRayVisual : MonoBehaviour
             lineRenderer = gameObject.AddComponent<LineRenderer>();
 
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        lineRenderer.enabled = false; // gaze ray hidden by default
         lineRenderer.widthMultiplier = 0.02f;
         lineRenderer.numCornerVertices = 4;
         lineRenderer.numCapVertices = 4;
@@ -53,7 +54,10 @@ public class EyeGazeRayVisual : MonoBehaviour
         lineVisual.invalidColorGradient = alwaysOnGradient;
         lineVisual.blockedColorGradient = alwaysOnGradient;
 
-        Debug.Log($"{k_Tag} Setup complete. LineRenderer={lineRenderer != null}, LineVisual={lineVisual != null}");
+        // Gaze ray hidden by default — gaze tracking still works, just no visible ray
+        lineVisual.enabled = false;
+
+        Debug.Log($"{k_Tag} Setup complete, ray hidden by default");
     }
 
     void Start()

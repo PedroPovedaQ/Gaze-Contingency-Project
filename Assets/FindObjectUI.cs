@@ -1,11 +1,10 @@
 using UnityEngine;
 using TMPro;
-using LazyFollow = UnityEngine.XR.Interaction.Toolkit.UI.LazyFollow;
 
 /// <summary>
-/// Runtime-created world-space HUD for the Find Object game.
-/// Shows current objective, progress, wrong-pick feedback, and completion.
-/// Uses LazyFollow to float in front of the user's view.
+/// World-space HUD for the Find Object game.
+/// Positioned statically to the left of the bookshelf so it's always visible
+/// without following the player's head.
 /// </summary>
 public class FindObjectUI : MonoBehaviour
 {
@@ -13,18 +12,19 @@ public class FindObjectUI : MonoBehaviour
 
     Canvas m_Canvas;
     RectTransform m_CanvasRect;
-    LazyFollow m_LazyFollow;
+    GameObject m_CanvasGO;
 
     TextMeshProUGUI m_ObjectiveText;
     TextMeshProUGUI m_ProgressText;
     TextMeshProUGUI m_TimerText;
     GameObject m_CompletionPanel;
     TextMeshProUGUI m_CompletionText;
+    GameObject m_CrossCanvasGO;
+    TextMeshProUGUI m_FixationCross;
 
     float m_WrongFeedbackEndTime;
     string m_CurrentObjectiveString;
 
-    // --- Public accessors for voice assistant ---
     public bool IsTimerRunning => m_TimerRunning;
     public float TimerStartTime => m_TimerStartTime;
 
@@ -34,58 +34,116 @@ public class FindObjectUI : MonoBehaviour
 
     public void Initialize()
     {
-        // World-space Canvas
-        var canvasGO = new GameObject("FindObjectCanvas");
-        canvasGO.transform.SetParent(transform, false);
+        m_CanvasGO = new GameObject("FindObjectCanvas");
+        m_CanvasGO.transform.SetParent(transform, false);
 
-        m_Canvas = canvasGO.AddComponent<Canvas>();
+        m_Canvas = m_CanvasGO.AddComponent<Canvas>();
         m_Canvas.renderMode = RenderMode.WorldSpace;
 
-        m_CanvasRect = canvasGO.GetComponent<RectTransform>();
-        m_CanvasRect.sizeDelta = new Vector2(400, 240);
-        canvasGO.transform.localScale = Vector3.one * 0.001f; // 1 unit = 1mm
+        m_CanvasRect = m_CanvasGO.GetComponent<RectTransform>();
+        m_CanvasRect.sizeDelta = new Vector2(400, 260);
+        m_CanvasGO.transform.localScale = Vector3.one * 0.001f;
 
-        // LazyFollow — floats above and ahead of the camera so it doesn't block gameplay
-        m_LazyFollow = canvasGO.AddComponent<LazyFollow>();
-        m_LazyFollow.positionFollowMode = LazyFollow.PositionFollowMode.Follow;
-        m_LazyFollow.rotationFollowMode = LazyFollow.RotationFollowMode.LookAtWithWorldUp;
-        m_LazyFollow.targetOffset = new Vector3(0f, 0.25f, 1.2f); // 1.2m forward, 25cm up
-        m_LazyFollow.applyTargetInLocalSpace = true;
+        // Background
+        var bgGO = CreatePanel(m_CanvasGO.transform, "Background",
+            new Vector2(400, 260), new Color(0f, 0f, 0f, 0.75f));
+        bgGO.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
 
-        // Background panel
-        var bgGO = CreatePanel(canvasGO.transform, "Background",
-            new Vector2(400, 240), new Color(0f, 0f, 0f, 0.7f));
-        var bgRect = bgGO.GetComponent<RectTransform>();
-        bgRect.anchoredPosition = Vector2.zero;
-
-        // Objective text (top area)
+        // Objective text
         m_ObjectiveText = CreateText(bgGO.transform, "ObjectiveText",
-            new Vector2(380, 80), new Vector2(0, 50), 36);
+            new Vector2(380, 80), new Vector2(0, 60), 38);
         m_ObjectiveText.alignment = TextAlignmentOptions.Center;
 
-        // Progress text (middle area)
+        // Progress text
         m_ProgressText = CreateText(bgGO.transform, "ProgressText",
-            new Vector2(380, 40), new Vector2(0, -20), 28);
+            new Vector2(380, 40), new Vector2(0, -10), 28);
         m_ProgressText.alignment = TextAlignmentOptions.Center;
         m_ProgressText.color = new Color(0.8f, 0.8f, 0.8f, 1f);
 
-        // Timer text (bottom area)
+        // Timer text
         m_TimerText = CreateText(bgGO.transform, "TimerText",
-            new Vector2(380, 40), new Vector2(0, -70), 26);
+            new Vector2(380, 40), new Vector2(0, -60), 26);
         m_TimerText.alignment = TextAlignmentOptions.Center;
         m_TimerText.color = new Color(1f, 0.9f, 0.5f, 1f);
 
-        // Completion panel (hidden initially)
-        m_CompletionPanel = CreatePanel(canvasGO.transform, "CompletionPanel",
-            new Vector2(400, 240), new Color(0.05f, 0.3f, 0.05f, 0.85f));
+        // Completion panel
+        m_CompletionPanel = CreatePanel(m_CanvasGO.transform, "CompletionPanel",
+            new Vector2(400, 260), new Color(0.05f, 0.3f, 0.05f, 0.85f));
         m_CompletionText = CreateText(m_CompletionPanel.transform, "CompletionText",
-            new Vector2(380, 180), Vector2.zero, 40);
+            new Vector2(380, 200), Vector2.zero, 40);
         m_CompletionText.alignment = TextAlignmentOptions.Center;
         m_CompletionPanel.SetActive(false);
 
-        canvasGO.SetActive(false);
+        // Fixation cross — separate canvas centered in front of shelf
+        m_CrossCanvasGO = new GameObject("FixationCrossCanvas");
+        m_CrossCanvasGO.transform.SetParent(transform, false);
+        var crossCanvas = m_CrossCanvasGO.AddComponent<Canvas>();
+        crossCanvas.renderMode = RenderMode.WorldSpace;
+        var crossRect = m_CrossCanvasGO.GetComponent<RectTransform>();
+        crossRect.sizeDelta = new Vector2(200, 200);
+        m_CrossCanvasGO.transform.localScale = Vector3.one * 0.002f;
+        m_FixationCross = CreateText(m_CrossCanvasGO.transform, "FixationCross",
+            new Vector2(200, 200), Vector2.zero, 140);
+        m_FixationCross.alignment = TextAlignmentOptions.Center;
+        m_FixationCross.color = Color.white;
+        m_FixationCross.text = "+";
+        m_CrossCanvasGO.SetActive(false);
+
+        m_CanvasGO.SetActive(false);
 
         Debug.Log($"{k_Tag} UI initialized");
+    }
+
+    /// <summary>
+    /// Places the UI panel above the bookshelf, facing the player.
+    /// </summary>
+    public void PositionStaticLeft(Vector3 shelfCenter, Quaternion facingRotation)
+    {
+        if (m_CanvasGO == null) return;
+
+        // Position: above the top of the shelf, centered
+        Vector3 pos = shelfCenter + Vector3.up * 0.85f;
+        m_CanvasGO.transform.position = pos;
+
+        // Face the canvas text toward the player.
+        // Unity world-space Canvas: text is readable from the -Z side.
+        // So canvas +Z must point AWAY from the camera.
+        var cam = Camera.main;
+        if (cam != null)
+        {
+            Vector3 awayFromCam = pos - cam.transform.position;
+            awayFromCam.y = 0;
+            if (awayFromCam.sqrMagnitude > 0.01f)
+                m_CanvasGO.transform.rotation = Quaternion.LookRotation(awayFromCam.normalized, Vector3.up);
+        }
+
+        // Position fixation cross: centered in front of shelf, at mid-height
+        if (m_CrossCanvasGO != null)
+        {
+            Vector3 facing = facingRotation * Vector3.forward;
+            Vector3 crossPos = shelfCenter + Vector3.up * 0.40f + facing * 0.25f;
+            m_CrossCanvasGO.transform.position = crossPos;
+
+            if (cam != null)
+            {
+                Vector3 away = crossPos - cam.transform.position;
+                away.y = 0;
+                if (away.sqrMagnitude > 0.01f)
+                    m_CrossCanvasGO.transform.rotation = Quaternion.LookRotation(away.normalized, Vector3.up);
+            }
+        }
+
+        Debug.Log($"{k_Tag} UI positioned above shelf at {pos}");
+    }
+
+    public void ShowFixationCross()
+    {
+        if (m_CrossCanvasGO != null) m_CrossCanvasGO.SetActive(true);
+    }
+
+    public void HideFixationCross()
+    {
+        if (m_CrossCanvasGO != null) m_CrossCanvasGO.SetActive(false);
     }
 
     public void StartTimer()
@@ -103,13 +161,13 @@ public class FindObjectUI : MonoBehaviour
 
     public void ShowObjective(Color color, string shapeName, int found, int total)
     {
-        m_Canvas.gameObject.SetActive(true);
+        m_CanvasGO.SetActive(true);
         m_CompletionPanel.SetActive(false);
 
         string hex = ColorUtility.ToHtmlStringRGB(color);
         m_CurrentObjectiveString = $"Find: <color=#{hex}>{shapeName}</color>";
         m_ObjectiveText.text = m_CurrentObjectiveString;
-        m_ProgressText.text = $"{found} / {total} found";
+        m_ProgressText.text = $"Round {found + 1} / {total}";
     }
 
     public void ShowWrongFeedback()
@@ -120,28 +178,25 @@ public class FindObjectUI : MonoBehaviour
 
     public void ShowCompletion(int total, float elapsedSeconds)
     {
-        m_Canvas.gameObject.SetActive(true);
+        m_CanvasGO.SetActive(true);
         m_CompletionPanel.SetActive(true);
         m_ObjectiveText.text = "";
         m_ProgressText.text = "";
         m_TimerText.text = "";
         int minutes = (int)(elapsedSeconds / 60f);
         float seconds = elapsedSeconds % 60f;
-        string timeStr = minutes > 0
-            ? $"{minutes}:{seconds:00.0}s"
-            : $"{seconds:F1}s";
-        m_CompletionText.text = $"All {total} objects found!\nTime: {timeStr}";
+        string timeStr = minutes > 0 ? $"{minutes}:{seconds:00.0}s" : $"{seconds:F1}s";
+        m_CompletionText.text = $"All {total} rounds complete!\nTime: {timeStr}";
     }
 
     public void Hide()
     {
-        if (m_Canvas != null)
-            m_Canvas.gameObject.SetActive(false);
+        if (m_CanvasGO != null)
+            m_CanvasGO.SetActive(false);
     }
 
     void Update()
     {
-        // Restore objective text after wrong feedback
         if (m_WrongFeedbackEndTime > 0f && Time.time > m_WrongFeedbackEndTime)
         {
             m_WrongFeedbackEndTime = 0f;
@@ -149,15 +204,12 @@ public class FindObjectUI : MonoBehaviour
                 m_ObjectiveText.text = m_CurrentObjectiveString;
         }
 
-        // Update live timer
         if (m_TimerRunning && m_TimerText != null)
         {
             float elapsed = Time.time - m_TimerStartTime;
             int minutes = (int)(elapsed / 60f);
             float seconds = elapsed % 60f;
-            m_TimerText.text = minutes > 0
-                ? $"{minutes}:{seconds:00.0}s"
-                : $"{seconds:F1}s";
+            m_TimerText.text = minutes > 0 ? $"{minutes}:{seconds:00.0}s" : $"{seconds:F1}s";
         }
     }
 
@@ -165,14 +217,11 @@ public class FindObjectUI : MonoBehaviour
     {
         var go = new GameObject(name);
         go.transform.SetParent(parent, false);
-
         var rect = go.AddComponent<RectTransform>();
         rect.sizeDelta = size;
         rect.anchoredPosition = Vector2.zero;
-
         var img = go.AddComponent<UnityEngine.UI.Image>();
         img.color = color;
-
         return go;
     }
 
@@ -181,17 +230,14 @@ public class FindObjectUI : MonoBehaviour
     {
         var go = new GameObject(name);
         go.transform.SetParent(parent, false);
-
         var rect = go.AddComponent<RectTransform>();
         rect.sizeDelta = size;
         rect.anchoredPosition = position;
-
         var tmp = go.AddComponent<TextMeshProUGUI>();
         tmp.fontSize = fontSize;
         tmp.color = Color.white;
         tmp.enableWordWrapping = true;
         tmp.overflowMode = TextOverflowModes.Ellipsis;
-
         return tmp;
     }
 }

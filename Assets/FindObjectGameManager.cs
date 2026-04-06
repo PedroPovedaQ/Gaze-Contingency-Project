@@ -1,36 +1,39 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.Video;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
 /// <summary>
-/// Orchestrates the "Find the Object" game mode.
-/// Auto-attaches to ObjectSpawner. Intercepts the first tap-spawn to start a game:
-/// spawns 20 distinct shape-color combos spread across the detected plane and
-/// virtual shelves, then cycles through objectives as the player grabs each one.
+/// 7-round conjunction search game. Each round spawns 42 objects on bookcases.
+/// Player finds 1 target via gaze dwell. On correct capture: show fixation cross,
+/// destroy objects, wait, spawn fresh, finalize gaze interactables, go.
 /// </summary>
 public class FindObjectGameManager : MonoBehaviour
 {
     const string k_Tag = "[FindObjectGame]";
-    const int k_ObjectCount = 20;
+    static int k_ObjectsPerRound => ChallengeSet.ObjectsPerRound;
+    static int k_TotalRounds => ChallengeSet.RoundCount;
+    const float k_TransitionPause = 4f;
     const float k_ResetDelay = 5f;
 
-    public enum GameState { Idle, Playing, Completed }
+    public enum GameState { Idle, Playing, Transitioning, Completed }
 
-    // --- Events for voice assistant integration ---
     public event System.Action OnGameStarted;
     public event System.Action<int> OnObjectFound;
-    public event System.Action<string, string> OnWrongGrab;
+    public event System.Action<string, string> OnWrongCapture;
     public event System.Action<float> OnGameCompleted;
+    /// <summary>Fires when a new round's target is set and objects are ready.</summary>
+    public event System.Action<int, string, string> OnRoundReady; // round, color, shape
 
-    // --- Public read-only state for voice assistant ---
     public GameState CurrentState => m_State;
     public IReadOnlyList<(string shape, string color, Color colorValue)> Objectives => m_Objectives;
     public IReadOnlyList<GameObject> SpawnedObjects => m_SpawnedObjects;
-    public int CurrentObjectiveIndex => m_CurrentObjectiveIndex;
-    public int FoundCount => m_FoundCount;
+    public int CurrentObjectiveIndex => m_CurrentRound;
+    public int FoundCount => m_CurrentRound;
+    public int TotalRounds => k_TotalRounds;
     public float GameStartTime => m_GameStartTime;
 
     float m_GameStartTime;
@@ -42,7 +45,33 @@ public class FindObjectGameManager : MonoBehaviour
         if (spawner != null && spawner.GetComponent<FindObjectGameManager>() == null)
         {
             spawner.gameObject.AddComponent<FindObjectGameManager>();
-            Debug.Log($"{k_Tag} Auto-attached to {spawner.gameObject.name}");
+            Debug.Log($"{k_Tag} Auto-attached");
+        }
+        DisableTemplateSystems();
+    }
+
+    static void DisableTemplateSystems()
+    {
+        foreach (var mb in Object.FindObjectsOfType<MonoBehaviour>())
+            if (mb.GetType().Name == "GoalManager")
+            {
+                foreach (var c in mb.GetComponentsInChildren<Canvas>(true)) c.gameObject.SetActive(false);
+                mb.enabled = false;
+            }
+        foreach (var vp in Object.FindObjectsOfType<VideoPlayer>())
+        {
+            vp.Stop(); vp.enabled = false;
+            foreach (var c in vp.GetComponentsInChildren<Canvas>(true)) c.gameObject.SetActive(false);
+        }
+
+        // Hide OK button from coaching UI
+        foreach (var go in Object.FindObjectsOfType<GameObject>())
+        {
+            if (go.name == "Text Poke Button OK")
+            {
+                go.SetActive(false);
+                Debug.Log($"{k_Tag} Hid OK button");
+            }
         }
     }
 
@@ -50,333 +79,297 @@ public class FindObjectGameManager : MonoBehaviour
     ObjectSpawner m_Spawner;
     ShapeObjectFactory m_Factory;
     FindObjectUI m_UI;
+    GazeHighlightManager m_GazeDwell;
 
     readonly List<(string shape, string color, Color colorValue)> m_Objectives = new();
     readonly List<GameObject> m_SpawnedObjects = new();
+    readonly List<ShelfSpawner.SpawnPoint> m_SpawnPoints = new();
     readonly List<GameObject> m_ShelfObjects = new();
-    readonly List<int> m_LevelAssignments = new();
-    int m_CurrentObjectiveIndex;
-    int m_FoundCount;
-    int m_ExpectedSpawnCount;
+    int m_CurrentRound;
+    (string shape, string color, Color colorValue) m_CurrentTarget;
+    bool m_ShelvesBuilt;
+
+    Vector3 m_SpawnCenter;
+    Vector2 m_PlaneSize;
+    Vector3 m_PlaneRight;
+    Vector3 m_PlaneForward;
 
     void OnEnable()
     {
+        Physics.IgnoreLayerCollision(8, 8, true);
         m_Spawner = GetComponent<ObjectSpawner>();
-        if (m_Spawner == null)
-        {
-            Debug.LogWarning($"{k_Tag} No ObjectSpawner found on {gameObject.name}");
-            return;
-        }
-
-        // Create UI
-        if (m_UI == null)
-        {
-            m_UI = gameObject.AddComponent<FindObjectUI>();
-            m_UI.Initialize();
-        }
-
+        if (m_Spawner == null) return;
+        if (m_UI == null) { m_UI = gameObject.AddComponent<FindObjectUI>(); m_UI.Initialize(); }
         m_Spawner.objectSpawned += OnObjectSpawned;
-        Debug.Log($"{k_Tag} Initialized, waiting for first spawn to start game");
     }
 
     void OnDisable()
     {
-        if (m_Spawner != null)
-            m_Spawner.objectSpawned -= OnObjectSpawned;
+        if (m_Spawner != null) m_Spawner.objectSpawned -= OnObjectSpawned;
+        if (m_GazeDwell != null) m_GazeDwell.OnObjectCaptured -= OnObjectCaptured;
     }
 
     void OnObjectSpawned(GameObject obj)
     {
-        switch (m_State)
+        if (m_State == GameState.Idle)
         {
-            case GameState.Idle:
-                // First spawn triggers a new game — capture position, destroy trigger object
-                StartGame(obj);
-                break;
-
-            case GameState.Playing:
-                // During game: if this is one of our batch spawns, track it; otherwise block
-                if (m_ExpectedSpawnCount > 0)
-                {
-                    m_ExpectedSpawnCount--;
-                    // objectFullyConfigured will fire after ShapeObjectFactory finishes
-                }
-                else
-                {
-                    // Stray spawn during gameplay — destroy it
-                    Debug.Log($"{k_Tag} Blocking stray spawn during game");
-                    Destroy(obj);
-                }
-                break;
-
-            case GameState.Completed:
-                // Block spawns during completion screen
-                Debug.Log($"{k_Tag} Blocking spawn during completion");
-                Destroy(obj);
-                break;
+            var voice = GetComponent<VoiceAssistantController>();
+            if (voice != null && !voice.IsReady) { StartCoroutine(WaitThenStart(obj)); return; }
+            StartGame(obj);
         }
+        else Destroy(obj);
     }
+
+    IEnumerator WaitThenStart(GameObject obj)
+    {
+        var voice = GetComponent<VoiceAssistantController>();
+        while (voice != null && !voice.IsReady) yield return null;
+        if (obj != null) StartGame(obj);
+    }
+
+    // =====================================================================
 
     void StartGame(GameObject triggerObj)
     {
-        // Lazily resolve factory — may not have been attached yet during OnEnable
-        if (m_Factory == null)
-            m_Factory = GetComponent<ShapeObjectFactory>();
-        if (m_Factory == null)
-        {
-            Debug.LogError($"{k_Tag} No ShapeObjectFactory found, cannot start game");
-            return;
-        }
+        if (m_Factory == null) m_Factory = GetComponent<ShapeObjectFactory>();
+        if (m_Factory == null) return;
 
-        Debug.Log($"{k_Tag} Starting game from spawn at {triggerObj.transform.position}");
-
-        // Find the nearest horizontal plane for spawn distribution
-        Vector3 spawnCenter = triggerObj.transform.position;
-        Vector2 planeSize = new Vector2(0.5f, 0.5f); // fallback
-        Vector3 planeNormal = Vector3.up;
-        Vector3 planeRight = Vector3.right;
-        Vector3 planeForward = Vector3.forward;
+        m_SpawnCenter = triggerObj.transform.position;
+        m_PlaneSize = new Vector2(0.5f, 0.5f);
+        m_PlaneRight = Vector3.right;
+        m_PlaneForward = Vector3.forward;
 
         var planes = FindObjectsOfType<VivePlaneData>();
-        VivePlaneData bestPlane = null;
-        float bestDist = float.MaxValue;
+        float best = float.MaxValue;
+        VivePlaneData bestP = null;
         foreach (var p in planes)
         {
             if (!p.IsHorizontalUp) continue;
-            float dist = Vector3.Distance(spawnCenter, p.Center);
-            if (dist < bestDist)
-            {
-                bestDist = dist;
-                bestPlane = p;
-            }
+            float d = Vector3.Distance(m_SpawnCenter, p.Center);
+            if (d < best) { best = d; bestP = p; }
         }
-
-        if (bestPlane != null)
+        if (bestP != null)
         {
-            spawnCenter = bestPlane.Center;
-            planeSize = bestPlane.Size;
-            planeNormal = bestPlane.Normal;
-            // VivePlaneData: mesh in local XY, normal = local +Z
-            planeRight = bestPlane.transform.right;
-            planeForward = bestPlane.transform.up; // local Y = forward on horizontal plane
-            Debug.Log($"{k_Tag} Using plane: size={planeSize}, center={spawnCenter}");
+            m_SpawnCenter = bestP.Center;
+            m_PlaneSize = bestP.Size;
+            m_PlaneRight = bestP.transform.right;
+            m_PlaneForward = bestP.transform.up;
         }
-        else
-        {
-            Debug.LogWarning($"{k_Tag} No horizontal plane found, using fallback area");
-        }
-
-        // Destroy the trigger object — it was just used to start the game
         Destroy(triggerObj);
 
-        // Pick 9 distinct combos from 3 shapes × 4 colors = 12 possible
-        var allCombos = new List<(string shape, string color, Color colorValue)>();
-        string[] shapes = m_Factory.ShapeNames;
-        var colors = ShapeObjectFactory.Colors;
+        m_GazeDwell = FindObjectOfType<GazeHighlightManager>();
+        if (m_GazeDwell != null)
+            m_GazeDwell.OnObjectCaptured += OnObjectCaptured;
 
-        if (shapes == null || shapes.Length == 0)
-        {
-            Debug.LogError($"{k_Tag} No shapes available from factory");
-            return;
-        }
-
-        foreach (var s in shapes)
-            foreach (var c in colors)
-                allCombos.Add((s, c.name, c.color));
-
-        // Fisher-Yates shuffle
-        for (int i = allCombos.Count - 1; i > 0; i--)
-        {
-            int j = Random.Range(0, i + 1);
-            (allCombos[i], allCombos[j]) = (allCombos[j], allCombos[i]);
-        }
-
-        // Take first 9
-        m_Objectives.Clear();
-        for (int i = 0; i < Mathf.Min(k_ObjectCount, allCombos.Count); i++)
-            m_Objectives.Add(allCombos[i]);
-
-        // Shuffle objectives again for the find order (different from spawn layout)
-        var findOrder = new List<(string shape, string color, Color colorValue)>(m_Objectives);
-        for (int i = findOrder.Count - 1; i > 0; i--)
-        {
-            int j = Random.Range(0, i + 1);
-            (findOrder[i], findOrder[j]) = (findOrder[j], findOrder[i]);
-        }
-        m_Objectives.Clear();
-        m_Objectives.AddRange(findOrder);
-
-        // Create shelves and compute multi-level spawn positions
-        var (shelfObjs, positionsPerLevel) = ShelfSpawner.CreateShelvesAndPositions(
-            spawnCenter, planeSize, planeRight, planeForward, m_Objectives.Count);
-        m_ShelfObjects.AddRange(shelfObjs);
-
-        // Flatten positions and track level assignments
-        var positions = new List<Vector3>();
-        m_LevelAssignments.Clear();
-        for (int level = 0; level < positionsPerLevel.Count; level++)
-        {
-            foreach (var pos in positionsPerLevel[level])
-            {
-                positions.Add(pos);
-                m_LevelAssignments.Add(level);
-            }
-        }
-
-        // Shuffle positions (keeping level assignments in sync)
-        for (int i = positions.Count - 1; i > 0; i--)
-        {
-            int j = Random.Range(0, i + 1);
-            (positions[i], positions[j]) = (positions[j], positions[i]);
-            (m_LevelAssignments[i], m_LevelAssignments[j]) = (m_LevelAssignments[j], m_LevelAssignments[i]);
-        }
-
-        // Enter playing state before spawning
         m_State = GameState.Playing;
         m_GameStartTime = Time.time;
-        m_SpawnedObjects.Clear();
-        m_CurrentObjectiveIndex = 0;
-        m_FoundCount = 0;
-        m_ExpectedSpawnCount = m_Objectives.Count;
-
-        // Subscribe to factory event for tracking spawned objects
-        m_Factory.objectFullyConfigured += OnObjectFullyConfigured;
-
-        // Enqueue combos and spawn
-        for (int i = 0; i < m_Objectives.Count; i++)
-        {
-            var combo = m_Objectives[i];
-            m_Factory.EnqueueCombo(combo.shape, combo.color);
-            m_Spawner.TrySpawnObject(positions[i], Vector3.up);
-        }
-
-        // Show first objective and start timer
-        ShowCurrentObjective();
+        m_CurrentRound = 0;
         m_UI.StartTimer();
 
-        Debug.Log($"{k_Tag} Game started with {m_Objectives.Count} objectives");
+        if (!m_ShelvesBuilt)
+        {
+            var (shelfObjs, _) = ShelfSpawner.CreateShelvesAndSpawnPoints(
+                m_SpawnCenter, m_PlaneSize, m_PlaneRight, m_PlaneForward, k_ObjectsPerRound);
+            m_ShelfObjects.AddRange(shelfObjs);
+            m_ShelvesBuilt = true;
+            m_UI.PositionStaticLeft(m_SpawnCenter, ShelfSpawner.ObjectFacingRotation);
+        }
 
         OnGameStarted?.Invoke();
+        StartCoroutine(DoSpawnRound());
     }
 
-    void OnObjectFullyConfigured(GameObject obj)
+    // =====================================================================
+    //  Spawn round — instantiate, configure, wait, finalize
+    // =====================================================================
+
+    IEnumerator DoSpawnRound()
     {
-        if (m_State != GameState.Playing) return;
+        // --- Deterministic challenge from ChallengeSet ---
+        var round = ChallengeSet.Rounds[m_CurrentRound];
+        m_CurrentTarget = (round.target.shape, round.target.color, round.target.colorValue);
 
-        int idx = m_SpawnedObjects.Count;
-        m_SpawnedObjects.Add(obj);
+        // Switch gaze-aware/unaware based on block and participant number
+        int participantNum = GetParticipantNumber();
+        bool gazeAware = ChallengeSet.IsGazeAware(m_CurrentRound, participantNum);
+        var hints = GetComponent<HintGenerator>();
+        if (hints != null) hints.gazeAwareTips = gazeAware;
+        Debug.Log($"{k_Tag} Round {m_CurrentRound + 1}: block={round.blockIndex}, condition={ChallengeSet.GetConditionLabel(m_CurrentRound, participantNum)}");
 
-        // Assign shelf level from pre-computed assignments
-        if (idx < m_LevelAssignments.Count)
+        m_Objectives.Clear();
+        m_Objectives.Add(m_CurrentTarget);
+
+        // --- Get spawn points ---
+        m_SpawnPoints.Clear();
+        m_SpawnPoints.AddRange(ShelfSpawner.ComputeSpawnPoints(
+            m_SpawnCenter, m_PlaneSize, m_PlaneRight, m_PlaneForward, ChallengeSet.ObjectsPerRound));
+
+        // --- Instantiate and configure (deterministic order = deterministic shelf positions) ---
+        m_SpawnedObjects.Clear();
+        var prefabs = m_Spawner.objectPrefabs;
+        int count = Mathf.Min(round.objects.Length, m_SpawnPoints.Count);
+
+        for (int i = 0; i < count; i++)
         {
+            var def = round.objects[i];
+            m_Factory.EnqueueCombo(def.shape, def.color);
+            var obj = Instantiate(prefabs[0]); // always use same prefab for consistency
+            obj.transform.position = m_SpawnPoints[i].position;
+            obj.transform.rotation = Quaternion.identity;
+            m_Factory.ConfigureObject(obj);
+
+            var sp = m_SpawnPoints[i];
+            obj.transform.position = sp.position;
+            obj.transform.rotation = ShelfSpawner.ObjectFacingRotation;
+
             var info = obj.GetComponent<SpawnableObjectInfo>();
-            if (info != null)
-                info.shelfLevel = m_LevelAssignments[idx];
+            if (info != null) { info.shelfLevel = sp.row; info.shelfColumn = sp.col; }
+
+            m_SpawnedObjects.Add(obj);
         }
 
-        // Wire grab detection
-        var grab = obj.GetComponent<XRGrabInteractable>();
-        if (grab != null)
+        // --- Wait for collider changes to propagate ---
+        yield return null;
+        yield return null;
+
+        // --- Phase 1: Disable all grabs, set up colliders (no registration yet) ---
+        foreach (var obj in m_SpawnedObjects)
         {
-            grab.selectEntered.AddListener(OnObjectGrabbed);
+            if (obj == null) continue;
+            ShapeObjectFactory.PrepareInteractable(obj);
         }
 
-        Debug.Log($"{k_Tag} Tracked spawned object: {obj.name} level={m_LevelAssignments[idx]} ({m_SpawnedObjects.Count}/{m_Objectives.Count})");
+        yield return null;
 
-        // Unsubscribe after all objects are configured
-        if (m_SpawnedObjects.Count >= m_Objectives.Count)
-            m_Factory.objectFullyConfigured -= OnObjectFullyConfigured;
+        // --- Phase 2: Enable all grabs at once (single batch registration) ---
+        foreach (var obj in m_SpawnedObjects)
+        {
+            if (obj == null) continue;
+            ShapeObjectFactory.ActivateInteractable(obj);
+        }
+
+        yield return null;
+        yield return null;
+
+        // Reset gaze dwell so it starts fresh on these new objects
+        if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
+
+        ShowCurrentObjective();
+        string condition = ChallengeSet.GetConditionLabel(m_CurrentRound, GetParticipantNumber());
+        OnRoundReady?.Invoke(m_CurrentRound, m_CurrentTarget.color, m_CurrentTarget.shape);
+        Debug.Log($"{k_Tag} Round {m_CurrentRound + 1}/{k_TotalRounds}: find {m_CurrentTarget.color} {m_CurrentTarget.shape} ({m_SpawnedObjects.Count} spawned)");
     }
 
-    void OnObjectGrabbed(SelectEnterEventArgs args)
+    // =====================================================================
+    //  Capture
+    // =====================================================================
+
+    void OnObjectCaptured(GameObject obj)
     {
         if (m_State != GameState.Playing) return;
+        if (obj == null || !obj.activeInHierarchy) return;
 
-        var obj = args.interactableObject.transform.gameObject;
         var info = obj.GetComponent<SpawnableObjectInfo>();
         if (info == null) return;
 
-        var current = m_Objectives[m_CurrentObjectiveIndex];
-
-        if (info.shapeName == current.shape && info.colorName == current.color)
+        if (info.shapeName == m_CurrentTarget.shape && info.colorName == m_CurrentTarget.color)
         {
-            // Correct!
-            Debug.Log($"{k_Tag} Correct! Found {info.DisplayName}");
-            m_FoundCount++;
-            OnObjectFound?.Invoke(m_CurrentObjectiveIndex);
+            Debug.Log($"{k_Tag} Round {m_CurrentRound + 1} correct: {info.DisplayName}");
+            m_CurrentRound++;
+            OnObjectFound?.Invoke(m_CurrentRound - 1);
+            if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
 
-            // Unsubscribe and deactivate
-            var grab = obj.GetComponent<XRGrabInteractable>();
-            if (grab != null)
+            if (m_CurrentRound >= k_TotalRounds)
             {
-                // Force drop before deactivating
-                if (grab.isSelected)
-                {
-                    grab.enabled = false;
-                }
-                grab.selectEntered.RemoveListener(OnObjectGrabbed);
-            }
-            obj.SetActive(false);
-
-            // Advance objective
-            m_CurrentObjectiveIndex++;
-            if (m_CurrentObjectiveIndex >= m_Objectives.Count)
-            {
-                // All found!
                 m_State = GameState.Completed;
                 float elapsed = m_UI.StopTimer();
-                m_UI.ShowCompletion(m_Objectives.Count, elapsed);
-                Debug.Log($"{k_Tag} Game complete! All {m_Objectives.Count} objects found in {elapsed:F1}s");
+                m_UI.ShowCompletion(k_TotalRounds, elapsed);
                 OnGameCompleted?.Invoke(elapsed);
                 StartCoroutine(ResetAfterDelay());
             }
             else
             {
-                ShowCurrentObjective();
+                StartCoroutine(TransitionToNextRound());
             }
         }
         else
         {
-            // Wrong object
-            Debug.Log($"{k_Tag} Wrong! Grabbed {info.DisplayName}, wanted {current.color}_{current.shape}");
+            Debug.Log($"{k_Tag} Wrong: {info.DisplayName}, wanted {m_CurrentTarget.color}_{m_CurrentTarget.shape}");
             m_UI.ShowWrongFeedback();
-            OnWrongGrab?.Invoke(info.DisplayName, $"{current.color}_{current.shape}");
+            OnWrongCapture?.Invoke(info.DisplayName, $"{m_CurrentTarget.color}_{m_CurrentTarget.shape}");
+            if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
         }
+    }
+
+    // =====================================================================
+    //  Round transition — simple: destroy, cross, wait, respawn
+    // =====================================================================
+
+    IEnumerator TransitionToNextRound()
+    {
+        m_State = GameState.Transitioning;
+        if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
+
+        // Destroy all objects
+        foreach (var obj in m_SpawnedObjects)
+            if (obj != null) Destroy(obj);
+        m_SpawnedObjects.Clear();
+        m_SpawnPoints.Clear();
+
+        // Show fixation cross
+        m_UI.ShowFixationCross();
+
+        // Pause
+        yield return new WaitForSeconds(k_TransitionPause);
+
+        // Hide cross
+        m_UI.HideFixationCross();
+
+        // Wait for destroys to fully process
+        yield return null;
+        yield return null;
+
+        if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
+
+        // Spawn next round
+        m_State = GameState.Playing;
+        yield return DoSpawnRound();
     }
 
     void ShowCurrentObjective()
     {
-        if (m_CurrentObjectiveIndex >= m_Objectives.Count) return;
-
-        var obj = m_Objectives[m_CurrentObjectiveIndex];
-        m_UI.ShowObjective(obj.colorValue, $"{obj.color} {obj.shape}", m_FoundCount, m_Objectives.Count);
+        m_UI.ShowObjective(m_CurrentTarget.colorValue,
+            $"{m_CurrentTarget.color} {m_CurrentTarget.shape}",
+            m_CurrentRound, k_TotalRounds);
     }
 
     IEnumerator ResetAfterDelay()
     {
         yield return new WaitForSeconds(k_ResetDelay);
-
-        Debug.Log($"{k_Tag} Resetting game");
-
-        // Cleanup all spawned objects and shelves
-        foreach (var obj in m_SpawnedObjects)
-        {
-            if (obj != null)
-                Destroy(obj);
-        }
+        foreach (var obj in m_SpawnedObjects) if (obj != null) Destroy(obj);
         m_SpawnedObjects.Clear();
-        foreach (var shelf in m_ShelfObjects)
-        {
-            if (shelf != null)
-                Destroy(shelf);
-        }
+        foreach (var s in m_ShelfObjects) if (s != null) Destroy(s);
         m_ShelfObjects.Clear();
-        m_LevelAssignments.Clear();
+        m_ShelvesBuilt = false;
+        ShelfSpawner.ClearCache();
+        m_SpawnPoints.Clear();
         m_Objectives.Clear();
-
+        if (m_GazeDwell != null) m_GazeDwell.OnObjectCaptured -= OnObjectCaptured;
         m_UI.Hide();
         m_State = GameState.Idle;
+    }
 
-        Debug.Log($"{k_Tag} Game reset, ready for next round");
+    static int GetParticipantNumber()
+    {
+        string id = SessionConfig.ParticipantId;
+        if (!string.IsNullOrEmpty(id) && id.Length > 1 && int.TryParse(id.Substring(1), out int num))
+            return num;
+        return 1; // default
+    }
+
+    static void Shuffle<T>(List<T> list)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        { int j = Random.Range(0, i + 1); (list[i], list[j]) = (list[j], list[i]); }
     }
 }

@@ -13,7 +13,7 @@ public class GazeCoverageTracker : MonoBehaviour
     const int k_RingCapacity = 20;
     const float k_MinFixationDuration = 0.1f; // ignore sub-100ms glances
     const int k_ClassifyWindow = 10; // last N events for behavior classification
-    const int k_ZoneCount = 3;
+    const int k_ZoneCount = 7;
 
     public enum GazeBehavior { Systematic, Normal, Erratic, Stuck }
 
