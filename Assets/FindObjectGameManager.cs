@@ -329,6 +329,9 @@ public class FindObjectGameManager : MonoBehaviour
         m_State = GameState.Transitioning;
         if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
 
+        // Pause timer until the new objective is announced
+        m_UI.PauseTimer();
+
         // Destroy all objects
         foreach (var obj in m_SpawnedObjects)
             if (obj != null) Destroy(obj);

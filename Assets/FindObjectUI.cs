@@ -31,6 +31,9 @@ public class FindObjectUI : MonoBehaviour
     bool m_TimerRunning;
     float m_TimerStartTime;
     float m_FinalTime;
+    bool m_TimerPaused;
+    float m_TimerPauseStart;
+    float m_TotalPausedTime;
 
     public void Initialize()
     {
@@ -74,7 +77,7 @@ public class FindObjectUI : MonoBehaviour
         m_CompletionText.alignment = TextAlignmentOptions.Center;
         m_CompletionPanel.SetActive(false);
 
-        // Fixation cross — separate canvas centered in front of shelf
+        // Fixation cross — separate canvas, positioned later between the bookshelves
         m_CrossCanvasGO = new GameObject("FixationCrossCanvas");
         m_CrossCanvasGO.transform.SetParent(transform, false);
         var crossCanvas = m_CrossCanvasGO.AddComponent<Canvas>();
@@ -82,10 +85,19 @@ public class FindObjectUI : MonoBehaviour
         var crossRect = m_CrossCanvasGO.GetComponent<RectTransform>();
         crossRect.sizeDelta = new Vector2(200, 200);
         m_CrossCanvasGO.transform.localScale = Vector3.one * 0.002f;
+
+        // White background panel behind the cross so the black "+" is visible
+        var crossBg = new GameObject("CrossBg");
+        crossBg.transform.SetParent(m_CrossCanvasGO.transform, false);
+        var crossBgRect = crossBg.AddComponent<RectTransform>();
+        crossBgRect.sizeDelta = new Vector2(200, 200);
+        var crossBgImg = crossBg.AddComponent<UnityEngine.UI.Image>();
+        crossBgImg.color = Color.white;
+
         m_FixationCross = CreateText(m_CrossCanvasGO.transform, "FixationCross",
             new Vector2(200, 200), Vector2.zero, 140);
         m_FixationCross.alignment = TextAlignmentOptions.Center;
-        m_FixationCross.color = Color.white;
+        m_FixationCross.color = Color.black;
         m_FixationCross.text = "+";
         m_CrossCanvasGO.SetActive(false);
 
@@ -117,20 +129,20 @@ public class FindObjectUI : MonoBehaviour
                 m_CanvasGO.transform.rotation = Quaternion.LookRotation(awayFromCam.normalized, Vector3.up);
         }
 
-        // Position fixation cross: centered in front of shelf, at mid-height
+        // Position fixation cross: between the two bookcases, at mid-shelf height,
+        // facing the SAME direction as the shelf fronts (toward the player)
         if (m_CrossCanvasGO != null)
         {
+            // Center between the two bookcases (shelfCenter is the table center)
+            // and slightly forward so it's visible
             Vector3 facing = facingRotation * Vector3.forward;
-            Vector3 crossPos = shelfCenter + Vector3.up * 0.40f + facing * 0.25f;
+            Vector3 crossPos = shelfCenter + Vector3.up * 0.40f + facing * 0.04f;
             m_CrossCanvasGO.transform.position = crossPos;
 
-            if (cam != null)
-            {
-                Vector3 away = crossPos - cam.transform.position;
-                away.y = 0;
-                if (away.sqrMagnitude > 0.01f)
-                    m_CrossCanvasGO.transform.rotation = Quaternion.LookRotation(away.normalized, Vector3.up);
-            }
+            // Use the shelf's facing rotation directly (same as the bookcases)
+            // World-space Canvas renders on -Z, so we need +Z pointing away from player.
+            // facingRotation has +Z pointing toward player, so flip 180° around Y.
+            m_CrossCanvasGO.transform.rotation = facingRotation * Quaternion.Euler(0f, 180f, 0f);
         }
 
         Debug.Log($"{k_Tag} UI positioned above shelf at {pos}");
@@ -150,13 +162,38 @@ public class FindObjectUI : MonoBehaviour
     {
         m_TimerStartTime = Time.time;
         m_TimerRunning = true;
+        m_TimerPaused = false;
+        m_TotalPausedTime = 0f;
     }
 
     public float StopTimer()
     {
         m_TimerRunning = false;
-        m_FinalTime = Time.time - m_TimerStartTime;
+        if (m_TimerPaused)
+        {
+            m_TotalPausedTime += Time.time - m_TimerPauseStart;
+            m_TimerPaused = false;
+        }
+        m_FinalTime = Time.time - m_TimerStartTime - m_TotalPausedTime;
         return m_FinalTime;
+    }
+
+    public void PauseTimer()
+    {
+        if (m_TimerRunning && !m_TimerPaused)
+        {
+            m_TimerPaused = true;
+            m_TimerPauseStart = Time.time;
+        }
+    }
+
+    public void ResumeTimer()
+    {
+        if (m_TimerRunning && m_TimerPaused)
+        {
+            m_TotalPausedTime += Time.time - m_TimerPauseStart;
+            m_TimerPaused = false;
+        }
     }
 
     public void ShowObjective(Color color, string shapeName, int found, int total)
@@ -206,7 +243,8 @@ public class FindObjectUI : MonoBehaviour
 
         if (m_TimerRunning && m_TimerText != null)
         {
-            float elapsed = Time.time - m_TimerStartTime;
+            float pausedAdjust = m_TimerPaused ? (Time.time - m_TimerPauseStart) : 0f;
+            float elapsed = Time.time - m_TimerStartTime - m_TotalPausedTime - pausedAdjust;
             int minutes = (int)(elapsed / 60f);
             float seconds = elapsed % 60f;
             m_TimerText.text = minutes > 0 ? $"{minutes}:{seconds:00.0}s" : $"{seconds:F1}s";

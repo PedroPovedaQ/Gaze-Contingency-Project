@@ -43,6 +43,9 @@ public class TrialDataLogger : MonoBehaviour
         public float fixationTimeOnDistractors;
         public int fixationCountOnTarget;
         public int fixationCountOnDistractors;
+        // Saccade metrics — sum and count for averaging
+        public int saccadeCount;
+        public float totalSaccadeAmplitudeDeg;
         public bool completed;
     }
 
@@ -63,6 +66,9 @@ public class TrialDataLogger : MonoBehaviour
     string m_CurrentFixationObject;
     bool m_CurrentFixationIsTarget;
     float m_FixationStartTime;
+    Vector3 m_CurrentFixationGazeDir;
+    Vector3 m_LastFixationEndGazeDir;
+    bool m_HasLastFixation;
 
     void OnEnable()
     {
@@ -178,6 +184,9 @@ public class TrialDataLogger : MonoBehaviour
                 $"wrong_attempts={rec.wrongCaptures},time_to_find={timeToFind:F2}s");
         }
 
+        // Reset saccade tracking between rounds (don't count cross-round saccades)
+        m_HasLastFixation = false;
+
         // Start next objective
         int next = objectiveIndex + 1;
         if (next < m_ObjectiveRecords.Count)
@@ -264,6 +273,18 @@ public class TrialDataLogger : MonoBehaviour
                 m_CurrentFixationObject = hoveredId;
                 m_CurrentFixationIsTarget = hoveredIsTarget;
                 m_FixationStartTime = Time.time;
+                m_CurrentFixationGazeDir = m_GazeInteractor.transform.forward;
+
+                // Saccade: angular distance from previous fixation to this one
+                if (m_HasLastFixation && m_ActiveObjectiveIndex >= 0
+                    && m_ActiveObjectiveIndex < m_ObjectiveRecords.Count)
+                {
+                    float angle = Vector3.Angle(m_LastFixationEndGazeDir, m_CurrentFixationGazeDir);
+                    var rec = m_ObjectiveRecords[m_ActiveObjectiveIndex];
+                    rec.saccadeCount++;
+                    rec.totalSaccadeAmplitudeDeg += angle;
+                    m_ObjectiveRecords[m_ActiveObjectiveIndex] = rec;
+                }
 
                 WriteEvent("fixation_start",
                     "", "", hoveredId, hoveredLevel, hoveredIsTarget, 0f, "");
@@ -308,6 +329,11 @@ public class TrialDataLogger : MonoBehaviour
                 rec.fixationCountOnDistractors++;
             m_ObjectiveRecords[m_ActiveObjectiveIndex] = rec;
         }
+
+        // Save gaze dir for next saccade computation
+        m_LastFixationEndGazeDir = m_GazeInteractor != null
+            ? m_GazeInteractor.transform.forward : Vector3.forward;
+        m_HasLastFixation = true;
 
         WriteEvent("fixation_end",
             "", "", m_CurrentFixationObject, -1, m_CurrentFixationIsTarget, duration,
@@ -418,6 +444,12 @@ public class TrialDataLogger : MonoBehaviour
                 ? "\"" + string.Join("\", \"", rec.wrongCapturedObjects) + "\""
                 : "";
 
+            int totalFixations = rec.fixationCountOnTarget + rec.fixationCountOnDistractors;
+            float totalFixDuration = rec.fixationTimeOnTarget + rec.fixationTimeOnDistractors;
+            float avgFixDuration = totalFixations > 0 ? totalFixDuration / totalFixations : 0f;
+            float saccadeFreq = timeToFind > 0 ? rec.saccadeCount / timeToFind : 0f;
+            float avgSaccadeAmp = rec.saccadeCount > 0 ? rec.totalSaccadeAmplitudeDeg / rec.saccadeCount : 0f;
+
             sb.AppendLine("    {");
             sb.AppendLine($"      \"index\": {rec.index},");
             sb.AppendLine($"      \"shape\": \"{rec.shape}\",");
@@ -429,7 +461,12 @@ public class TrialDataLogger : MonoBehaviour
             sb.AppendLine($"      \"fixation_time_on_target_seconds\": {rec.fixationTimeOnTarget:F2},");
             sb.AppendLine($"      \"fixation_time_on_distractors_seconds\": {rec.fixationTimeOnDistractors:F2},");
             sb.AppendLine($"      \"fixation_count_on_target\": {rec.fixationCountOnTarget},");
-            sb.AppendLine($"      \"fixation_count_on_distractors\": {rec.fixationCountOnDistractors}");
+            sb.AppendLine($"      \"fixation_count_on_distractors\": {rec.fixationCountOnDistractors},");
+            sb.AppendLine($"      \"fixation_count_total\": {totalFixations},");
+            sb.AppendLine($"      \"avg_fixation_duration_seconds\": {avgFixDuration:F3},");
+            sb.AppendLine($"      \"saccade_count\": {rec.saccadeCount},");
+            sb.AppendLine($"      \"saccade_frequency_hz\": {saccadeFreq:F3},");
+            sb.AppendLine($"      \"avg_saccade_amplitude_deg\": {avgSaccadeAmp:F2}");
             sb.Append("    }");
             if (i < m_ObjectiveRecords.Count - 1) sb.Append(",");
             sb.AppendLine();

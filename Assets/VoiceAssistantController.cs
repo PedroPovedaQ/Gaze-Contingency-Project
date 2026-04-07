@@ -135,8 +135,25 @@ public class VoiceAssistantController : MonoBehaviour
     void HandleRoundReady(int round, string color, string shape)
     {
         // Fired by game manager AFTER objects are spawned and finalized — target is correct
+        StartCoroutine(AnnounceAndResumeTimer(round, color, shape));
+    }
+
+    System.Collections.IEnumerator AnnounceAndResumeTimer(int round, string color, string shape)
+    {
         if (m_VoiceSynthesizer != null)
+        {
             m_VoiceSynthesizer.Speak($"Round {round + 1}. Find the {color} {shape}.", "round");
+
+            // Wait for the speech to start, then for it to finish
+            yield return new WaitForSeconds(0.2f);
+            while (m_VoiceSynthesizer.IsSpeaking)
+                yield return null;
+        }
+
+        // Resume the timer now that the participant knows the objective
+        var ui = GetComponent<FindObjectUI>();
+        if (ui != null) ui.ResumeTimer();
+
         if (m_HintGenerator != null)
             m_HintGenerator.OnNewObjective();
         Debug.Log($"{k_Tag} Round {round + 1} ready: {color} {shape}");

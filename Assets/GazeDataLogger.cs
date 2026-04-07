@@ -136,6 +136,11 @@ public class GazeDataLogger : MonoBehaviour
         if (m_GameManager == null)
             m_GameManager = FindObjectOfType<FindObjectGameManager>();
 
+        // Don't log during round transitions (fixation cross period)
+        if (m_GameManager != null &&
+            m_GameManager.CurrentState == FindObjectGameManager.GameState.Transitioning)
+            return;
+
         // Try to find eye tracking device
         if (!m_EyeDeviceSearched)
         {
