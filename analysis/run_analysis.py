@@ -14,7 +14,8 @@ Example:
 import sys
 from pathlib import Path
 
-from load_data import load_all_summaries
+from load_data import (load_all_summaries, load_event_logs,
+                       compute_last_fixation_durations, load_nasa_tlx)
 from plots import generate_all
 from stats import save_report
 
@@ -44,8 +45,22 @@ def main():
     df.to_csv(csv_path, index=False)
     print(f"  saved {csv_path}")
 
+    # Compute last fixation duration on target from event logs
+    print("\nLoading event logs for last-fixation-duration analysis...")
+    events_df = load_event_logs(data_dir)
+    last_fix_df = compute_last_fixation_durations(events_df)
+    if not last_fix_df.empty:
+        last_fix_path = out_dir / "last_fixation_durations.csv"
+        last_fix_df.to_csv(last_fix_path, index=False)
+        print(f"  saved {last_fix_path}")
+
+    # Load NASA-TLX scores (manually entered)
+    tlx_df = load_nasa_tlx(data_dir)
+    if not tlx_df.empty:
+        print(f"  loaded NASA-TLX scores ({len(tlx_df)} rows)")
+
     # Generate plots
-    generate_all(df, out_dir)
+    generate_all(df, out_dir, last_fix_df=last_fix_df, tlx_df=tlx_df)
 
     # Run statistical tests
     print("\nRunning statistical tests...")

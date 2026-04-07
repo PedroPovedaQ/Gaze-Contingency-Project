@@ -32,11 +32,30 @@ In the `results/` folder:
   - `wrong_captures.png`
   - `fixation_count.png`
   - `avg_fixation_duration.png`
+  - `last_fixation_duration.png` — duration of final fixation on target
   - `saccade_frequency.png`
   - `saccade_amplitude.png`
   - `target_vs_distractor_fixation.png`
   - `learning_curve.png`
+  - `nasa_tlx.png` — raw workload (only if `nasa_tlx.csv` is present)
+  - `nasa_tlx_subscales.png` — 6 subscale breakdown
 - `summary_grid.png` — 4x2 grid of all metrics, paper-ready
+
+## NASA-TLX Workflow
+
+NASA-TLX is a paper questionnaire collected manually after each block.
+After each session:
+
+1. Have the participant rate the 6 subscales (0-100 each):
+   mental demand, physical, temporal, performance, effort, frustration
+2. Add a row to a file named **`nasa_tlx.csv`** in your `GazeData/` folder
+3. Use this column order: `participant_id, condition, mental, physical,
+   temporal, performance, effort, frustration`
+4. See `nasa_tlx_template.csv` in the analysis folder for an example
+
+The analysis pipeline auto-detects this file. If present, it generates
+`nasa_tlx.png` (raw workload box plot) and `nasa_tlx_subscales.png`
+(6-subscale grouped bar chart).
 
 ## File Structure
 

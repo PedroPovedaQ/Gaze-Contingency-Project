@@ -153,6 +153,59 @@ def plot_learning_curve(df: pd.DataFrame, out_dir: Path):
     _save(fig, out_dir, "learning_curve")
 
 
+def plot_last_fixation_duration(last_fix_df: pd.DataFrame, out_dir: Path):
+    """Box plot: duration of the last fixation on target before capture."""
+    if last_fix_df.empty:
+        print("  skipping last_fixation_duration: no data")
+        return
+    fig, ax = plt.subplots(figsize=(6, 5))
+    sns.boxplot(data=last_fix_df, x="condition", y="last_fix_on_target_s",
+                order=ORDER, palette=PALETTE, ax=ax)
+    sns.stripplot(data=last_fix_df, x="condition", y="last_fix_on_target_s",
+                  order=ORDER, color="black", alpha=0.4, size=4, ax=ax)
+    ax.set_xlabel("Condition")
+    ax.set_ylabel("Last Fixation on Target (seconds)")
+    ax.set_title("Last Fixation Duration")
+    _save(fig, out_dir, "last_fixation_duration")
+
+
+def plot_nasa_tlx(tlx_df: pd.DataFrame, out_dir: Path):
+    """Box plot: NASA-TLX raw workload score by condition."""
+    if tlx_df.empty or "raw_tlx" not in tlx_df.columns:
+        print("  skipping nasa_tlx: no data (need analysis/nasa_tlx.csv)")
+        return
+    fig, ax = plt.subplots(figsize=(6, 5))
+    sns.boxplot(data=tlx_df, x="condition", y="raw_tlx",
+                order=ORDER, palette=PALETTE, ax=ax)
+    sns.stripplot(data=tlx_df, x="condition", y="raw_tlx",
+                  order=ORDER, color="black", alpha=0.5, size=6, ax=ax)
+    ax.set_xlabel("Condition")
+    ax.set_ylabel("Raw NASA-TLX (0-600)")
+    ax.set_title("Perceived Workload")
+    _save(fig, out_dir, "nasa_tlx")
+
+
+def plot_nasa_tlx_subscales(tlx_df: pd.DataFrame, out_dir: Path):
+    """Grouped bar: NASA-TLX subscale means by condition."""
+    if tlx_df.empty:
+        return
+    subscales = ["mental", "physical", "temporal",
+                 "performance", "effort", "frustration"]
+    if not all(c in tlx_df.columns for c in subscales):
+        return
+
+    means = tlx_df.groupby("condition")[subscales].mean().reindex(ORDER).reset_index()
+    melted = means.melt(id_vars="condition", var_name="subscale", value_name="score")
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    sns.barplot(data=melted, x="subscale", y="score", hue="condition",
+                hue_order=ORDER, palette=PALETTE, ax=ax)
+    ax.set_xlabel("NASA-TLX Subscale")
+    ax.set_ylabel("Mean Score (0-100)")
+    ax.set_title("NASA-TLX Subscale Breakdown")
+    _save(fig, out_dir, "nasa_tlx_subscales")
+
+
 def plot_summary_grid(df: pd.DataFrame, out_dir: Path):
     """4x2 grid of all key metrics for the paper figure."""
     fig, axes = plt.subplots(2, 4, figsize=(20, 10))
@@ -184,7 +237,9 @@ def plot_summary_grid(df: pd.DataFrame, out_dir: Path):
     _save(fig, out_dir, "summary_grid")
 
 
-def generate_all(df: pd.DataFrame, out_dir: Path):
+def generate_all(df: pd.DataFrame, out_dir: Path,
+                 last_fix_df: pd.DataFrame = None,
+                 tlx_df: pd.DataFrame = None):
     """Run every plot. Add new plots here when you write them."""
     if df.empty:
         print("No data to plot.")
@@ -199,5 +254,10 @@ def generate_all(df: pd.DataFrame, out_dir: Path):
     plot_saccade_amplitude(df, out_dir)
     plot_target_vs_distractor_fixation(df, out_dir)
     plot_learning_curve(df, out_dir)
+    if last_fix_df is not None:
+        plot_last_fixation_duration(last_fix_df, out_dir)
+    if tlx_df is not None:
+        plot_nasa_tlx(tlx_df, out_dir)
+        plot_nasa_tlx_subscales(tlx_df, out_dir)
     plot_summary_grid(df, out_dir)
     print("Done.")

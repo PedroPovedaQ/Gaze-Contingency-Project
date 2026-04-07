@@ -1,0 +1,5 @@
+participant_id,condition,mental,physical,temporal,performance,effort,frustration
+P001,gaze_unaware,50,20,40,30,45,25
+P001,gaze_aware,40,20,35,20,40,15
+P002,gaze_aware,35,15,30,15,35,10
+P002,gaze_unaware,55,25,45,40,50,30

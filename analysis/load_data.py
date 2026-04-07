@@ -100,6 +100,68 @@ def load_event_logs(data_dir: Path) -> pd.DataFrame:
     return pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
 
 
+def compute_last_fixation_durations(events_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    For each (participant, run, round), find the last fixation_end event
+    where is_target=1 and return its duration. This is the "last fixation
+    duration on target before trial ends" metric (Chiossi et al. 2024).
+
+    Returns columns: participant_id, condition, round_index, last_fix_on_target_s
+    """
+    if events_df.empty:
+        return pd.DataFrame()
+
+    target_fix_ends = events_df[
+        (events_df["event_type"] == "fixation_end")
+        & (events_df["is_target"] == 1)
+    ].copy()
+
+    if target_fix_ends.empty:
+        return pd.DataFrame()
+
+    # Last fixation per (participant, run, round)
+    last = (target_fix_ends
+            .sort_values("timestamp")
+            .groupby(["participant_id", "run_folder", "objective_index"])
+            .last()
+            .reset_index())
+
+    result = last[[
+        "participant_id", "run_folder", "condition",
+        "objective_index", "dwell_duration"
+    ]].rename(columns={
+        "objective_index": "round_index",
+        "dwell_duration": "last_fix_on_target_s",
+    })
+    return result
+
+
+def load_nasa_tlx(data_dir: Path) -> pd.DataFrame:
+    """
+    Load manually-entered NASA-TLX scores. Expected file:
+        <data_dir>/nasa_tlx.csv
+
+    Columns: participant_id, condition, mental, physical, temporal,
+             performance, effort, frustration
+
+    Raw TLX = sum of all 6 subscale scores (each 0-100).
+    """
+    tlx_path = data_dir / "nasa_tlx.csv"
+    if not tlx_path.exists():
+        return pd.DataFrame()
+
+    try:
+        df = pd.read_csv(tlx_path)
+        subscales = ["mental", "physical", "temporal",
+                     "performance", "effort", "frustration"]
+        if all(c in df.columns for c in subscales):
+            df["raw_tlx"] = df[subscales].sum(axis=1)
+        return df
+    except Exception as e:
+        print(f"Skipping {tlx_path}: {e}")
+        return pd.DataFrame()
+
+
 def load_gaze_logs(data_dir: Path) -> pd.DataFrame:
     """
     Load all gaze_log.csv files (per-frame gaze samples).
