@@ -271,34 +271,34 @@ public class HintGenerator : MonoBehaviour
         "Good area. Keep checking this row.",
     };
 
-    // --- TEPID: one row away from target ---
+    // --- TEPID: getting closer but not on target ---
     static readonly string[] k_GA_Tepid =
     {
-        "Lukewarm. You're close but try a nearby row.",
-        "Getting warmer. Try the row above or below.",
-        "Tepid. Almost the right area.",
-        "Not quite. But you're in the neighborhood.",
-        "Close. Try shifting up or down a level.",
-        "You're near it. Check the adjacent rows.",
-        "Warm-ish. Just a row off.",
-        "Almost the right zone. Shift up or down.",
-        "You're one row away. Getting closer.",
-        "Not bad. But look at the rows next to this one.",
+        "Lukewarm. Getting closer.",
+        "Tepid. Keep adjusting.",
+        "Almost there. Not quite.",
+        "Warm-ish. Keep trying.",
+        "You're getting closer.",
+        "Tepid. Closer than before.",
+        "Not bad. A bit more.",
+        "Warmer than cold. Keep going.",
+        "Almost the right area.",
+        "You're warming up.",
     };
 
-    // --- COLD: far from target (2+ rows away) ---
+    // --- COLD: wrong bookcase entirely ---
     static readonly string[] k_GA_Cold =
     {
-        "Cold. Try a different area.",
-        "Getting colder. Move away from here.",
-        "Cold. It's not in this zone.",
-        "Ice cold. Try somewhere else entirely.",
-        "Not even close. Search a different section.",
-        "Cold. You're far from it.",
-        "Freezing. Try the other side.",
-        "Way off. Keep searching other areas.",
-        "Cold. Move on.",
-        "Not here. Look somewhere completely different.",
+        "Cold.",
+        "Getting colder.",
+        "Cold. Not here.",
+        "Ice cold.",
+        "Freezing.",
+        "Way off.",
+        "Brrr. Cold.",
+        "Cold. Way off.",
+        "Frozen.",
+        "Ice cold. Not even close.",
     };
 
     // --- MISSED: player just looked away from the target ---
@@ -335,41 +335,45 @@ public class HintGenerator : MonoBehaviour
     //  GAZE-UNAWARE (CONTROL) — no gaze, no location, just encouragement
     // =================================================================
 
+    // Generic encouragement only — no proximity, no warmth, no spatial info,
+    // no fake "you're close". Pure placebo presence so the participant gets
+    // the same number of voice prompts as the gaze-aware condition without
+    // any actual help finding the target.
     static readonly string[] k_GU_General =
     {
-        "Keep looking. You'll find it.",
+        "Keep looking.",
         "Take your time.",
         "Stay focused.",
-        "You've got this.",
         "Keep searching.",
         "Don't give up.",
         "Be patient.",
         "Stay sharp.",
-        "You're doing fine. Keep going.",
         "Concentrate.",
         "Keep at it.",
-        "Stay calm and search.",
-        "You'll get it.",
+        "Stay calm.",
         "No rush.",
         "Keep your focus.",
-        "Almost there.",
         "Hang in there.",
         "Steady.",
         "Keep going.",
-        "You can do this.",
+        "Look carefully.",
+        "Focus.",
+        "Take a breath.",
+        "Patience.",
+        "Stay with it.",
     };
 
     static readonly string[] k_GU_WrongCapture =
     {
-        "Not quite. Try again.",
-        "That wasn't it. Keep trying.",
-        "Wrong one. You'll get it.",
-        "Not this one. Try again.",
-        "Almost. Keep looking.",
-        "That's not it. No worries.",
-        "Wrong pick. Keep going.",
-        "Not quite right. Try another.",
-        "That wasn't the one.",
-        "Not it. Keep going.",
+        "Not it. Try again.",
+        "Wrong one.",
+        "Not this one.",
+        "That wasn't the target.",
+        "Wrong pick.",
+        "Not the target. Try another.",
+        "Not it.",
+        "Wrong. Try again.",
+        "That wasn't right.",
+        "Try another one.",
     };
 }
