@@ -17,6 +17,7 @@ public class VoiceAssistantController : MonoBehaviour
     HintGenerator m_HintGenerator;
     VoiceSynthesizer m_VoiceSynthesizer;
     GazeCoverageTracker m_CoverageTracker;
+    Coroutine m_RoundAnnounceCoroutine;
 
     /// <summary>True once API keys are loaded and all sub-systems are ready.</summary>
     public bool IsReady { get; private set; }
@@ -58,6 +59,7 @@ public class VoiceAssistantController : MonoBehaviour
         m_GameManager.OnObjectFound += HandleObjectFound;
         m_GameManager.OnWrongCapture += HandleWrongCapture;
         m_GameManager.OnGameCompleted += HandleGameCompleted;
+        m_GameManager.OnRoundTransitionStarted += HandleRoundTransitionStarted;
         m_GameManager.OnRoundReady += HandleRoundReady;
 
         // Load API keys — blocks game start until ready
@@ -99,12 +101,19 @@ public class VoiceAssistantController : MonoBehaviour
 
     void OnDisable()
     {
+        if (m_RoundAnnounceCoroutine != null)
+        {
+            StopCoroutine(m_RoundAnnounceCoroutine);
+            m_RoundAnnounceCoroutine = null;
+        }
+
         if (m_GameManager != null)
         {
             m_GameManager.OnGameStarted -= HandleGameStarted;
             m_GameManager.OnObjectFound -= HandleObjectFound;
             m_GameManager.OnWrongCapture -= HandleWrongCapture;
             m_GameManager.OnGameCompleted -= HandleGameCompleted;
+            m_GameManager.OnRoundTransitionStarted -= HandleRoundTransitionStarted;
             m_GameManager.OnRoundReady -= HandleRoundReady;
         }
     }
@@ -112,20 +121,18 @@ public class VoiceAssistantController : MonoBehaviour
     void HandleGameStarted()
     {
         m_CoverageTracker?.Reset();
-
-        var objectives = m_GameManager.Objectives;
-        if (objectives.Count == 0) return;
-
-        var first = objectives[0];
-        if (m_VoiceSynthesizer != null)
-            m_VoiceSynthesizer.Speak($"Great, let's begin! Find the {first.color} {first.shape}.", "welcome");
+        // First-round goal announcement is now triggered by
+        // FindObjectGameManager via OnRoundTransitionStarted, after the
+        // fixation cross appears.
         if (m_HintGenerator != null)
-            m_HintGenerator.OnNewObjective();
+            m_HintGenerator.CancelPending();
     }
 
     void HandleObjectFound(int roundIndex)
     {
-        if (m_VoiceSynthesizer != null) m_VoiceSynthesizer.InterruptIfAbout("tip");
+        // Round ended: hard-stop any ongoing speech so we don't carry audio
+        // across the round transition.
+        if (m_VoiceSynthesizer != null) m_VoiceSynthesizer.Stop();
         if (m_HintGenerator != null) m_HintGenerator.CancelPending();
 
         if (m_VoiceSynthesizer != null)
@@ -134,20 +141,37 @@ public class VoiceAssistantController : MonoBehaviour
 
     void HandleRoundReady(int round, string color, string shape)
     {
-        // Fired by game manager AFTER objects are spawned and finalized — target is correct
-        StartCoroutine(AnnounceAndResumeTimer(round, color, shape));
+        // Fired AFTER objects are spawned and finalized.
+        // Voice for this round is already started during fixation-cross phase.
+        if (m_RoundAnnounceCoroutine != null)
+            StopCoroutine(m_RoundAnnounceCoroutine);
+        m_RoundAnnounceCoroutine = StartCoroutine(WaitForAnnouncementAndResumeTimer(round, color, shape));
     }
 
-    System.Collections.IEnumerator AnnounceAndResumeTimer(int round, string color, string shape)
+    void HandleRoundTransitionStarted(int round, string color, string shape)
     {
-        if (m_VoiceSynthesizer != null)
-        {
-            m_VoiceSynthesizer.Speak($"Round {round + 1}. Find the {color} {shape}.", "round");
+        // Cross is visible now: start the next round instruction immediately.
+        if (m_VoiceSynthesizer != null) m_VoiceSynthesizer.Stop();
+        if (m_HintGenerator != null) m_HintGenerator.CancelPending();
 
-            // Wait for the speech to start, then for it to finish
-            yield return new WaitForSeconds(0.2f);
-            while (m_VoiceSynthesizer.IsSpeaking)
-                yield return null;
+        if (m_VoiceSynthesizer != null)
+            m_VoiceSynthesizer.Speak($"Round {round + 1}. Find the {color} {shape}.", "round");
+    }
+
+    System.Collections.IEnumerator WaitForAnnouncementAndResumeTimer(int round, string color, string shape)
+    {
+        // Wait until the transition-phase round announcement finishes.
+        while (m_VoiceSynthesizer != null && m_VoiceSynthesizer.IsBusy)
+            yield return null;
+
+        // If the round has already changed or game left Playing state while waiting,
+        // this coroutine is stale and must not touch timer/hint state.
+        if (m_GameManager == null ||
+            m_GameManager.CurrentState != FindObjectGameManager.GameState.Playing ||
+            m_GameManager.CurrentObjectiveIndex != round)
+        {
+            m_RoundAnnounceCoroutine = null;
+            yield break;
         }
 
         // Resume the timer now that the participant knows the objective
@@ -157,6 +181,7 @@ public class VoiceAssistantController : MonoBehaviour
         if (m_HintGenerator != null)
             m_HintGenerator.OnNewObjective();
         Debug.Log($"{k_Tag} Round {round + 1} ready: {color} {shape}");
+        m_RoundAnnounceCoroutine = null;
     }
 
     void HandleWrongCapture(string capturedName, string wantedName)
@@ -176,7 +201,10 @@ public class VoiceAssistantController : MonoBehaviour
             string timeStr = minutes > 0
                 ? $"{minutes} minutes and {seconds:F0} seconds"
                 : $"{seconds:F0} seconds";
-            m_VoiceSynthesizer.Speak($"Excellent! You found all the objects in {timeStr}. Great job!", "completion");
+            m_VoiceSynthesizer.Speak(
+                $"Excellent! You found all the objects in {timeStr}. Great job! " +
+                "Please submit the NASA T L X questionnaire now.",
+                "completion");
         }
     }
 

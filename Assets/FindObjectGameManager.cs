@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Video;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -17,6 +18,8 @@ public class FindObjectGameManager : MonoBehaviour
     static int k_ObjectsPerRound => ChallengeSet.ObjectsPerRound;
     static int k_TotalRounds => ChallengeSet.RoundCount;
     const float k_TransitionPause = 4f;
+    const float k_BlankPauseMin = 0.2f;
+    const float k_BlankPauseMax = 1.3f;
     const float k_ResetDelay = 5f;
 
     public enum GameState { Idle, Playing, Transitioning, Completed }
@@ -27,6 +30,8 @@ public class FindObjectGameManager : MonoBehaviour
     public event System.Action<float> OnGameCompleted;
     /// <summary>Fires when a new round's target is set and objects are ready.</summary>
     public event System.Action<int, string, string> OnRoundReady; // round, color, shape
+    /// <summary>Fires when fixation cross appears and next goal can be announced.</summary>
+    public event System.Action<int, string, string> OnRoundTransitionStarted; // next round, color, shape
 
     public GameState CurrentState => m_State;
     public IReadOnlyList<(string shape, string color, Color colorValue)> Objectives => m_Objectives;
@@ -35,6 +40,9 @@ public class FindObjectGameManager : MonoBehaviour
     public int FoundCount => m_CurrentRound;
     public int TotalRounds => k_TotalRounds;
     public float GameStartTime => m_GameStartTime;
+    public (string shape, string color, Color colorValue) CurrentTarget => m_CurrentTarget;
+    public bool CurrentRoundGazeAware { get; private set; }
+    public string CurrentRoundConditionLabel { get; private set; } = "";
 
     float m_GameStartTime;
 
@@ -64,15 +72,58 @@ public class FindObjectGameManager : MonoBehaviour
             foreach (var c in vp.GetComponentsInChildren<Canvas>(true)) c.gameObject.SetActive(false);
         }
 
-        // Hide OK button from coaching UI
+        // Hide tutorial/coaching windows from the MR template startup flow.
         foreach (var go in Object.FindObjectsOfType<GameObject>())
         {
-            if (go.name == "Text Poke Button OK")
+            string n = go.name;
+            bool isTemplateTutorialUi =
+                n == "Text Poke Button OK" ||
+                n == "Text Poke Button" ||
+                n == "Text Poke Button Continue" ||
+                n.IndexOf("Tutorial Player", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                n.IndexOf("TutorialPlayer", System.StringComparison.OrdinalIgnoreCase) >= 0;
+
+            if (isTemplateTutorialUi)
             {
                 go.SetActive(false);
-                Debug.Log($"{k_Tag} Hid OK button");
+                Debug.Log($"{k_Tag} Hid template UI: {go.name}");
             }
         }
+
+        // Some template tutorial panels can be re-enabled by internal scripts and
+        // are easiest to identify by their visible text labels.
+        foreach (var tmp in Object.FindObjectsOfType<TMP_Text>(true))
+        {
+            string t = tmp.text != null ? tmp.text.Trim() : "";
+            if (string.IsNullOrEmpty(t)) continue;
+
+            bool isTemplateText =
+                t == "Default Input Controls" ||
+                t == "Continue";
+            if (!isTemplateText) continue;
+
+            if (IsUnderTutorialUi(tmp.transform))
+            {
+                tmp.gameObject.SetActive(false);
+                if (tmp.transform.parent != null)
+                    tmp.transform.parent.gameObject.SetActive(false);
+                Debug.Log($"{k_Tag} Hid template text UI: '{t}' ({tmp.gameObject.name})");
+            }
+        }
+    }
+
+    static bool IsUnderTutorialUi(Transform t)
+    {
+        while (t != null)
+        {
+            string n = t.name;
+            if (n.IndexOf("Tutorial", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                n.IndexOf("Coaching", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                n.IndexOf("Goal", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            t = t.parent;
+        }
+        return false;
     }
 
     GameState m_State = GameState.Idle;
@@ -80,6 +131,10 @@ public class FindObjectGameManager : MonoBehaviour
     ShapeObjectFactory m_Factory;
     FindObjectUI m_UI;
     GazeHighlightManager m_GazeDwell;
+    TrialDataLogger m_TrialLogger;
+    Coroutine m_ResetCoroutine;
+    float m_LastCompletedElapsed;
+    bool m_NasaTlxSubmittedForRun;
 
     readonly List<(string shape, string color, Color colorValue)> m_Objectives = new();
     readonly List<GameObject> m_SpawnedObjects = new();
@@ -100,6 +155,15 @@ public class FindObjectGameManager : MonoBehaviour
         m_Spawner = GetComponent<ObjectSpawner>();
         if (m_Spawner == null) return;
         if (m_UI == null) { m_UI = gameObject.AddComponent<FindObjectUI>(); m_UI.Initialize(); }
+        if (m_UI != null)
+        {
+            m_UI.OnNasaTlxSubmitted -= HandleNasaTlxSubmitted;
+            m_UI.OnNasaTlxSubmitted += HandleNasaTlxSubmitted;
+            m_UI.OnSurveyCompletedAcknowledged -= HandleSurveyCompletedAcknowledged;
+            m_UI.OnSurveyCompletedAcknowledged += HandleSurveyCompletedAcknowledged;
+            m_UI.OnStatsDismissed -= HandleStatsDismissed;
+            m_UI.OnStatsDismissed += HandleStatsDismissed;
+        }
         m_Spawner.objectSpawned += OnObjectSpawned;
     }
 
@@ -107,6 +171,12 @@ public class FindObjectGameManager : MonoBehaviour
     {
         if (m_Spawner != null) m_Spawner.objectSpawned -= OnObjectSpawned;
         if (m_GazeDwell != null) m_GazeDwell.OnObjectCaptured -= OnObjectCaptured;
+        if (m_UI != null)
+        {
+            m_UI.OnNasaTlxSubmitted -= HandleNasaTlxSubmitted;
+            m_UI.OnSurveyCompletedAcknowledged -= HandleSurveyCompletedAcknowledged;
+            m_UI.OnStatsDismissed -= HandleStatsDismissed;
+        }
     }
 
     void OnObjectSpawned(GameObject obj)
@@ -160,11 +230,25 @@ public class FindObjectGameManager : MonoBehaviour
         m_GazeDwell = FindObjectOfType<GazeHighlightManager>();
         if (m_GazeDwell != null)
             m_GazeDwell.OnObjectCaptured += OnObjectCaptured;
+        m_NasaTlxSubmittedForRun = false;
 
-        m_State = GameState.Playing;
+        // Start with the same transition ritual as between rounds:
+        // fixation cross + announced goal, then spawn.
+        m_State = GameState.Transitioning;
         m_GameStartTime = Time.time;
         m_CurrentRound = 0;
         m_UI.StartTimer();
+        m_UI.PauseTimer();
+        BuildObjectiveList();
+
+        // Initialize round-1 condition before emitting start events so loggers
+        // and assistants observe the correct initial mode.
+        int participantNumber = GetParticipantNumber();
+        CurrentRoundGazeAware = ChallengeSet.IsGazeAware(m_CurrentRound, participantNumber);
+        CurrentRoundConditionLabel = ChallengeSet.GetConditionLabel(m_CurrentRound, participantNumber);
+        var hints = GetComponent<HintGenerator>();
+        if (hints != null) hints.gazeAwareTips = CurrentRoundGazeAware;
+        m_UI.SetAgentState(CurrentRoundGazeAware, CurrentRoundConditionLabel);
 
         if (!m_ShelvesBuilt)
         {
@@ -176,7 +260,7 @@ public class FindObjectGameManager : MonoBehaviour
         }
 
         OnGameStarted?.Invoke();
-        StartCoroutine(DoSpawnRound());
+        StartCoroutine(BeginFirstRoundTransition());
     }
 
     // =====================================================================
@@ -190,14 +274,15 @@ public class FindObjectGameManager : MonoBehaviour
         m_CurrentTarget = (round.target.shape, round.target.color, round.target.colorValue);
 
         // Determine gaze-aware/unaware for this round
-        bool gazeAware = ChallengeSet.IsGazeAware(m_CurrentRound, GetParticipantNumber());
+        int participantNumber = GetParticipantNumber();
+        bool gazeAware = ChallengeSet.IsGazeAware(m_CurrentRound, participantNumber);
+        CurrentRoundGazeAware = gazeAware;
+        CurrentRoundConditionLabel = ChallengeSet.GetConditionLabel(m_CurrentRound, participantNumber);
+
         var hints = GetComponent<HintGenerator>();
         if (hints != null) hints.gazeAwareTips = gazeAware;
-        Debug.Log($"{k_Tag} Round {m_CurrentRound}: gazeAware={gazeAware}");
-        Debug.Log($"{k_Tag} Round {m_CurrentRound + 1}: block={round.blockIndex}, condition={ChallengeSet.GetConditionLabel(m_CurrentRound, GetParticipantNumber())}");
-
-        m_Objectives.Clear();
-        m_Objectives.Add(m_CurrentTarget);
+        m_UI.SetAgentState(gazeAware, CurrentRoundConditionLabel);
+        Debug.Log($"{k_Tag} Round {m_CurrentRound + 1}: participant={participantNumber}, scheduleIndex={round.blockIndex}, condition={CurrentRoundConditionLabel}");
 
         // --- Get spawn points ---
         m_SpawnPoints.Clear();
@@ -233,7 +318,20 @@ public class FindObjectGameManager : MonoBehaviour
             obj.transform.rotation = ShelfSpawner.ObjectFacingRotation;
 
             var info = obj.GetComponent<SpawnableObjectInfo>();
-            if (info != null) { info.shelfLevel = sp.row; info.shelfColumn = sp.col; }
+            if (info != null)
+            {
+                info.shelfLevel = sp.row;
+                info.shelfColumn = sp.col;
+
+                // Pyramid mesh pivot is at its base (others are centered), so after
+                // spawn-positioning we lower by half height to align bases on planks.
+                if (info.shapeName == "Pyramid")
+                {
+                    var p = obj.transform.position;
+                    p.y -= obj.transform.localScale.y * 0.5f;
+                    obj.transform.position = p;
+                }
+            }
 
             // Set layer 8 on everything
             foreach (Transform child in obj.GetComponentsInChildren<Transform>(true))
@@ -274,7 +372,6 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
 
         ShowCurrentObjective();
-        string condition = ChallengeSet.GetConditionLabel(m_CurrentRound, GetParticipantNumber());
         OnRoundReady?.Invoke(m_CurrentRound, m_CurrentTarget.color, m_CurrentTarget.shape);
         Debug.Log($"{k_Tag} Round {m_CurrentRound + 1}/{k_TotalRounds}: find {m_CurrentTarget.color} {m_CurrentTarget.shape} ({m_SpawnedObjects.Count} spawned)");
     }
@@ -301,10 +398,11 @@ public class FindObjectGameManager : MonoBehaviour
             if (m_CurrentRound >= k_TotalRounds)
             {
                 m_State = GameState.Completed;
+                ClearPlayfieldForPostRunSurvey();
                 float elapsed = m_UI.StopTimer();
+                m_LastCompletedElapsed = elapsed;
                 m_UI.ShowCompletion(k_TotalRounds, elapsed);
                 OnGameCompleted?.Invoke(elapsed);
-                StartCoroutine(ResetAfterDelay());
             }
             else
             {
@@ -337,15 +435,29 @@ public class FindObjectGameManager : MonoBehaviour
             if (obj != null) Destroy(obj);
         m_SpawnedObjects.Clear();
         m_SpawnPoints.Clear();
+        m_UI.HideObjectiveDuringTransition();
 
-        // Show fixation cross
-        m_UI.ShowFixationCross();
+        // Show fixation cross with next-goal text in the top-left.
+        if (m_CurrentRound >= 0 && m_CurrentRound < ChallengeSet.RoundCount)
+        {
+            var nextTarget = ChallengeSet.Rounds[m_CurrentRound].target;
+            m_UI.ShowFixationCross(nextTarget.color, nextTarget.shape);
+            OnRoundTransitionStarted?.Invoke(m_CurrentRound, nextTarget.color, nextTarget.shape);
+        }
+        else
+        {
+            m_UI.ShowFixationCross();
+        }
 
         // Pause
         yield return new WaitForSeconds(k_TransitionPause);
 
         // Hide cross
         m_UI.HideFixationCross();
+
+        // Randomized blank interval to reduce anticipation before objects appear.
+        float blankPause = Random.Range(k_BlankPauseMin, k_BlankPauseMax);
+        yield return new WaitForSeconds(blankPause);
 
         // Wait for destroys to fully process
         yield return null;
@@ -354,6 +466,37 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
 
         // Spawn next round
+        m_State = GameState.Playing;
+        yield return DoSpawnRound();
+    }
+
+    IEnumerator BeginFirstRoundTransition()
+    {
+        if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
+        m_UI.HideObjectiveDuringTransition();
+
+        if (m_CurrentRound >= 0 && m_CurrentRound < ChallengeSet.RoundCount)
+        {
+            var firstTarget = ChallengeSet.Rounds[m_CurrentRound].target;
+            m_UI.ShowFixationCross(firstTarget.color, firstTarget.shape);
+            OnRoundTransitionStarted?.Invoke(m_CurrentRound, firstTarget.color, firstTarget.shape);
+        }
+        else
+        {
+            m_UI.ShowFixationCross();
+        }
+
+        yield return new WaitForSeconds(k_TransitionPause);
+        m_UI.HideFixationCross();
+
+        float blankPause = Random.Range(k_BlankPauseMin, k_BlankPauseMax);
+        yield return new WaitForSeconds(blankPause);
+
+        yield return null;
+        yield return null;
+
+        if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
+
         m_State = GameState.Playing;
         yield return DoSpawnRound();
     }
@@ -379,6 +522,77 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_GazeDwell != null) m_GazeDwell.OnObjectCaptured -= OnObjectCaptured;
         m_UI.Hide();
         m_State = GameState.Idle;
+        m_ResetCoroutine = null;
+    }
+
+    void HandleSurveyCompletedAcknowledged()
+    {
+        if (m_State != GameState.Completed || m_UI == null) return;
+        if (!m_NasaTlxSubmittedForRun)
+        {
+            Debug.LogWarning($"{k_Tag} Ignoring survey ack before NASA-TLX submission");
+            return;
+        }
+        if (m_TrialLogger == null) m_TrialLogger = GetComponent<TrialDataLogger>();
+
+        string statsText;
+        if (m_TrialLogger != null && m_TrialLogger.TryGetLastRunStatsText(out string runStats))
+            statsText = runStats;
+        else
+            statsText = BuildFallbackStatsText();
+
+        m_UI.ShowPostSurveyStats(statsText);
+    }
+
+    void HandleNasaTlxSubmitted(FindObjectUI.NasaTlxResult tlx)
+    {
+        if (m_State != GameState.Completed) return;
+        if (m_NasaTlxSubmittedForRun) return;
+        if (m_TrialLogger == null) m_TrialLogger = GetComponent<TrialDataLogger>();
+        if (m_TrialLogger != null)
+            m_TrialLogger.RecordNasaTlx(
+                tlx.mental, tlx.physical, tlx.temporal,
+                tlx.performance, tlx.effort, tlx.frustration);
+        m_NasaTlxSubmittedForRun = true;
+        HandleSurveyCompletedAcknowledged();
+    }
+
+    void HandleStatsDismissed()
+    {
+        if (m_State != GameState.Completed) return;
+        if (m_ResetCoroutine == null)
+            m_ResetCoroutine = StartCoroutine(ResetAfterDelay());
+    }
+
+    string BuildFallbackStatsText()
+    {
+        int minutes = (int)(m_LastCompletedElapsed / 60f);
+        float seconds = m_LastCompletedElapsed % 60f;
+        string timeStr = minutes > 0 ? $"{minutes}:{seconds:00.0}s" : $"{seconds:F1}s";
+        return
+            "Session Stats\n" +
+            $"Rounds completed: {m_CurrentRound}/{k_TotalRounds}\n" +
+            $"Total time: {timeStr}\n" +
+            "Detailed metrics saved to trial_summary.json";
+    }
+
+    void ClearPlayfieldForPostRunSurvey()
+    {
+        // End-of-run should show only post-run UI (NASA-TLX prompt),
+        // not the searchable scene content.
+        if (m_UI != null) m_UI.HideFixationCross();
+        if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
+
+        foreach (var obj in m_SpawnedObjects)
+            if (obj != null) Destroy(obj);
+        m_SpawnedObjects.Clear();
+        m_SpawnPoints.Clear();
+
+        foreach (var shelf in m_ShelfObjects)
+            if (shelf != null) Destroy(shelf);
+        m_ShelfObjects.Clear();
+        m_ShelvesBuilt = false;
+        ShelfSpawner.ClearCache();
     }
 
     static int GetParticipantNumber()
@@ -403,5 +617,16 @@ public class FindObjectGameManager : MonoBehaviour
     {
         for (int i = list.Count - 1; i > 0; i--)
         { int j = Random.Range(0, i + 1); (list[i], list[j]) = (list[j], list[i]); }
+    }
+
+    void BuildObjectiveList()
+    {
+        m_Objectives.Clear();
+        var rounds = ChallengeSet.Rounds;
+        for (int i = 0; i < rounds.Length; i++)
+        {
+            var t = rounds[i].target;
+            m_Objectives.Add((t.shape, t.color, t.colorValue));
+        }
     }
 }

@@ -24,6 +24,7 @@ public class VoiceSynthesizer : MonoBehaviour
     string m_CurrentContext;
 
     public bool IsSpeaking => m_AudioSource != null && m_AudioSource.isPlaying;
+    public bool IsBusy => m_SpeakCoroutine != null || IsSpeaking;
 
     public void Initialize(string apiKey)
     {

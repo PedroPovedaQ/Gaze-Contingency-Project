@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${SKIP_UNITY_LINT:-0}" == "1" ]]; then
+  exit 0
+fi
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+
+# Only run when changes include files that can affect script compilation.
+if ! git diff --cached --name-only | rg -q '\.(cs|asmdef|asmref|unity|prefab)$'; then
+  exit 0
+fi
+
+"$ROOT_DIR/scripts/unity-compile-check.sh"

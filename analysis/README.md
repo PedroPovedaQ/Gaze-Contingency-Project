@@ -2,6 +2,35 @@
 
 Generates plots and statistics from the experiment data collected by Unity.
 
+## One-Command Runner (Recommended)
+
+From the project root:
+
+```bash
+scripts/run-analysis-pipeline.sh
+```
+
+What it does:
+
+- Auto-selects a data directory (`./GazeData` first, then macOS Editor path)
+- Auto-pulls from headset only if local trial summaries are missing
+- Creates/uses `.venv-analysis` and installs `analysis/requirements.txt`
+- Runs `analysis/run_analysis.py`
+- Writes results to `analysis/results` by default
+
+Common variants:
+
+```bash
+# Force a fresh pull from headset first
+scripts/run-analysis-pipeline.sh --pull
+
+# Local-only analysis (never adb pull)
+scripts/run-analysis-pipeline.sh --no-pull --data-dir "~/Library/Application Support/DefaultCompany/GazeContingencyProject/GazeData"
+
+# Custom output folder
+scripts/run-analysis-pipeline.sh --output-dir ./analysis/results_m2
+```
+
 ## Setup
 
 ```bash

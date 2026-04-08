@@ -28,6 +28,24 @@ A mixed reality research study investigating how gaze-contingent AI assistance a
 4. Connect Vive Focus Vision via USB with **Developer Mode** and **USB Debugging** enabled
 5. Build and Run
 
+## Compile Lint Guard
+
+To catch C# compile errors automatically before commits:
+
+1. Install hooks once:
+   ```bash
+   ./scripts/install-git-hooks.sh
+   ```
+2. Run manual check anytime:
+   ```bash
+   ./scripts/unity-compile-check.sh
+   ```
+
+Notes:
+- If Unity Editor is open, the script reads the latest compiler output from `Editor.log`.
+- If Unity Editor is closed, it runs a headless batch compile check.
+- Emergency bypass for one commit: `SKIP_UNITY_LINT=1 git commit ...`
+
 ## How It Works
 
 The player taps a detected table surface to start the game. 20 colored shapes (5 shapes x 4 colors) spawn across 3 vertical levels — the table surface and two virtual shelves above it. The player must find each target object in sequence by grabbing it.
@@ -94,4 +112,5 @@ All components auto-attach at runtime to `ObjectSpawner` via `[RuntimeInitialize
 
 - [`agents.md`](agents.md) — Technical architecture, assembly structure, VIVE-specific workarounds
 - [`FUNCTIONALITY_GUIDE.md`](FUNCTIONALITY_GUIDE.md) — Detailed code walkthroughs for all systems
+- [`docs/guide/README.md`](docs/guide/README.md) — Multi-part practical guide set (system overview, round flow, gaze/telemetry, build/debug workflow)
 - [`docs/enhanced-gaze-contingency-plan.md`](docs/enhanced-gaze-contingency-plan.md) — Implementation plan for the gaze contingency enhancement

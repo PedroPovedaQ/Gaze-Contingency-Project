@@ -8,6 +8,62 @@ from pathlib import Path
 import pandas as pd
 
 
+SUMMARY_COLUMNS = [
+    "participant_id", "run_number", "condition", "block", "round_index",
+    "shape", "color", "completed", "time_to_find", "wrong_captures",
+    "fixation_time_on_target", "fixation_time_on_distractors",
+    "fixation_count_total", "fixation_count_on_target", "fixation_count_on_distractors",
+    "avg_fixation_duration", "saccade_count", "saccade_frequency_hz",
+    "avg_saccade_amplitude_deg", "first_try_correct",
+]
+
+
+def _condition_for_round(round_idx: int, run_condition_label: str, rounds_per_block: int = 7) -> str:
+    """
+    Resolve per-round condition label from run-level metadata.
+
+    Supports:
+      - alternating_gaze_unaware_then_gaze_aware  -> even rounds unaware, odd rounds aware
+      - mixed_gaze_unaware_then_gaze_aware        -> first block unaware, second block aware
+      - gaze_aware / gaze_unaware                 -> fixed per run
+    """
+    label = (run_condition_label or "").lower()
+    if not label:
+        return "unknown"
+
+    try:
+        idx = int(round_idx)
+    except (TypeError, ValueError):
+        return "unknown"
+
+    if "alternating" in label:
+        return "gaze_aware" if idx % 2 == 1 else "gaze_unaware"
+
+    if "gaze_unaware" in label and "gaze_aware" in label:
+        return "gaze_unaware" if idx < int(rounds_per_block) else "gaze_aware"
+
+    if label == "gaze_aware":
+        return "gaze_aware"
+    if label == "gaze_unaware":
+        return "gaze_unaware"
+
+    # Fallback: preserve unknown labels for troubleshooting.
+    return label
+
+
+def _normalize_tlx_condition(label: str) -> str:
+    """Map TLX condition labels to plotting categories without inventing per-condition rows."""
+    low = (label or "").lower()
+    if low == "gaze_aware":
+        return "gaze_aware"
+    if low == "gaze_unaware":
+        return "gaze_unaware"
+    # Alternating/mixed runs represent overall workload unless manually split.
+    if "alternating" in low or ("gaze_unaware" in low and "gaze_aware" in low):
+        return "overall"
+    return low or "unknown"
+
+
 def load_all_summaries(data_dir: Path) -> pd.DataFrame:
     """
     Walk GazeData/ recursively, find every trial_summary.json,
@@ -26,11 +82,11 @@ def load_all_summaries(data_dir: Path) -> pd.DataFrame:
 
     if not summary_files:
         print(f"No trial_summary.json files found under {data_dir}")
-        return pd.DataFrame()
+        return pd.DataFrame(columns=SUMMARY_COLUMNS)
 
     for path in summary_files:
         try:
-            with open(path) as f:
+            with open(path, encoding="utf-8-sig") as f:
                 data = json.load(f)
         except (json.JSONDecodeError, OSError) as e:
             print(f"Skipping {path}: {e}")
@@ -43,11 +99,12 @@ def load_all_summaries(data_dir: Path) -> pd.DataFrame:
 
         for r in data.get("objectives", []):
             round_idx = r.get("index", 0)
+            per_round_condition = _condition_for_round(round_idx, condition, rounds_per_block)
             block = "A" if round_idx < rounds_per_block else "B"
             records.append({
                 "participant_id": participant,
                 "run_number": run,
-                "condition": condition,
+                "condition": per_round_condition,
                 "block": block,
                 "round_index": round_idx,
                 "shape": r.get("shape", ""),
@@ -67,8 +124,11 @@ def load_all_summaries(data_dir: Path) -> pd.DataFrame:
                 "first_try_correct": r.get("completed", False) and r.get("wrong_captures", 0) == 0,
             })
 
-    df = pd.DataFrame(records)
+    df = pd.DataFrame(records, columns=SUMMARY_COLUMNS)
     print(f"Loaded {len(df)} round records from {len(summary_files)} sessions")
+    if df.empty:
+        print("No valid round records found after parsing summaries.")
+        return df
     print(f"Participants: {df['participant_id'].nunique()}")
     print(f"Conditions: {df['condition'].value_counts().to_dict()}")
     return df
@@ -86,13 +146,18 @@ def load_event_logs(data_dir: Path) -> pd.DataFrame:
     dfs = []
     for path in csv_files:
         try:
-            df = pd.read_csv(path)
+            df = pd.read_csv(path, encoding="utf-8-sig")
             # Extract participant info from path:
             # GazeData/P001/run_001_gaze_aware_<timestamp>/trial_events.csv
             df["participant_id"] = path.parent.parent.name
             run_folder = path.parent.name
             df["run_folder"] = run_folder
-            df["condition"] = "gaze_aware" if "gaze_aware" in run_folder else "gaze_unaware"
+            rounds_per_block = 7
+            if "objective_index" in df.columns:
+                df["condition"] = df["objective_index"].apply(
+                    lambda idx: _condition_for_round(idx, run_folder, rounds_per_block))
+            else:
+                df["condition"] = _condition_for_round(0, run_folder, rounds_per_block)
             dfs.append(df)
         except Exception as e:
             print(f"Skipping {path}: {e}")
@@ -151,9 +216,12 @@ def load_nasa_tlx(data_dir: Path) -> pd.DataFrame:
         return pd.DataFrame()
 
     try:
-        df = pd.read_csv(tlx_path)
+        df = pd.read_csv(tlx_path, encoding="utf-8-sig")
         subscales = ["mental", "physical", "temporal",
                      "performance", "effort", "frustration"]
+        if "condition" in df.columns:
+            # Keep compatible labels for grouping/plots where possible.
+            df["condition"] = df["condition"].apply(_normalize_tlx_condition)
         if all(c in df.columns for c in subscales):
             df["raw_tlx"] = df[subscales].sum(axis=1)
         return df
@@ -174,7 +242,7 @@ def load_gaze_logs(data_dir: Path) -> pd.DataFrame:
     dfs = []
     for path in csv_files:
         try:
-            df = pd.read_csv(path)
+            df = pd.read_csv(path, encoding="utf-8-sig")
             df["participant_id"] = path.parent.parent.name
             df["run_folder"] = path.parent.name
             dfs.append(df)

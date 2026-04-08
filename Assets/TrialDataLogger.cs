@@ -58,9 +58,11 @@ public class TrialDataLogger : MonoBehaviour
     StreamWriter m_EventWriter;
     string m_SessionId;
     string m_OutputDir;
+    static readonly UTF8Encoding s_Utf8NoBom = new UTF8Encoding(false);
 
     readonly List<ObjectiveRecord> m_ObjectiveRecords = new();
     int m_ActiveObjectiveIndex = -1;
+    string m_LastRunStatsText;
 
     // Fixation tracking (for per-objective fixation breakdown)
     string m_CurrentFixationObject;
@@ -119,17 +121,19 @@ public class TrialDataLogger : MonoBehaviour
 
     void OnGameStarted()
     {
-        // Determine condition from HintGenerator
-        var hints = GetComponent<HintGenerator>();
-        bool gazeAware = hints != null && hints.gazeAwareTips;
+        // Determine run-level condition label.
+        // Current protocol alternates aware/unaware every round.
+        string firstCondition = ChallengeSet.GetConditionLabel(0, 1);
+        string secondCondition = ChallengeSet.GetConditionLabel(1, 1);
+        string runConditionLabel = $"alternating_{firstCondition}_then_{secondCondition}";
 
         // Begin a new run — creates the output folder
-        m_OutputDir = SessionConfig.BeginRun(gazeAware);
+        m_OutputDir = SessionConfig.BeginRun(runConditionLabel);
         m_SessionId = $"{SessionConfig.ParticipantId}_run{SessionConfig.RunNumber:D3}";
 
         // Open events CSV inside the run folder
         string eventsPath = SessionConfig.GetFilePath("trial_events.csv");
-        m_EventWriter = new StreamWriter(eventsPath, false, Encoding.UTF8);
+        m_EventWriter = new StreamWriter(eventsPath, false, s_Utf8NoBom);
         m_EventWriter.WriteLine(string.Join(",",
             "timestamp", "elapsed", "event_type",
             "objective_index", "objective_shape", "objective_color",
@@ -223,9 +227,12 @@ public class TrialDataLogger : MonoBehaviour
 
         WriteEvent("game_end", "", "", "", -1, false, elapsedSeconds,
             $"total_time={elapsedSeconds:F2}s,found={m_GameManager.FoundCount}");
+        WriteEvent("nasa_tlx_prompt_shown", "", "", "", -1, false, 0f,
+            "prompted_after_run_completion=1");
 
         // Write summary JSON
         WriteSummary(elapsedSeconds);
+        m_LastRunStatsText = BuildParticipantStatsText(elapsedSeconds);
 
         CloseEventWriter();
         m_ActiveObjectiveIndex = -1;
@@ -391,6 +398,7 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine($"  \"session_id\": \"{m_SessionId}\",");
         sb.AppendLine($"  \"timestamp\": \"{System.DateTime.Now:O}\",");
         sb.AppendLine($"  \"challenge_set\": \"deterministic_seed_42\",");
+        sb.AppendLine($"  \"round_schedule\": \"alternating_gaze_unaware_gaze_aware\",");
         sb.AppendLine($"  \"total_rounds\": {ChallengeSet.TotalRounds},");
         sb.AppendLine($"  \"rounds_per_block\": {ChallengeSet.RoundsPerBlock},");
         sb.AppendLine($"  \"objects_per_round\": {ChallengeSet.ObjectsPerRound},");
@@ -474,7 +482,7 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine("  ]");
         sb.AppendLine("}");
 
-        File.WriteAllText(summaryPath, sb.ToString(), Encoding.UTF8);
+        File.WriteAllText(summaryPath, sb.ToString(), s_Utf8NoBom);
         Debug.Log($"{k_Tag} Trial summary written to {summaryPath}");
     }
 
@@ -492,5 +500,98 @@ public class TrialDataLogger : MonoBehaviour
     {
         if (string.IsNullOrEmpty(s)) return "";
         return s.Replace(",", ";").Replace("\n", " ").Replace("\r", "");
+    }
+
+    public bool TryGetLastRunStatsText(out string text)
+    {
+        text = m_LastRunStatsText;
+        return !string.IsNullOrEmpty(text);
+    }
+
+    public void RecordNasaTlx(int mental, int physical, int temporal,
+        int performance, int effort, int frustration)
+    {
+        string root = SessionConfig.RootPath;
+        if (!Directory.Exists(root))
+            Directory.CreateDirectory(root);
+
+        string path = Path.Combine(root, "nasa_tlx.csv");
+        bool needsHeader = !File.Exists(path);
+
+        using (var writer = new StreamWriter(path, true, s_Utf8NoBom))
+        {
+            if (needsHeader)
+            {
+                writer.WriteLine("participant_id,condition,mental,physical,temporal,performance,effort,frustration");
+            }
+
+            writer.WriteLine(string.Join(",",
+                Sanitize(SessionConfig.ParticipantId),
+                Sanitize(SessionConfig.ConditionLabel),
+                mental.ToString(),
+                physical.ToString(),
+                temporal.ToString(),
+                performance.ToString(),
+                effort.ToString(),
+                frustration.ToString()));
+        }
+
+        Debug.Log($"{k_Tag} NASA-TLX recorded: {path}");
+    }
+
+    string BuildParticipantStatsText(float totalTime)
+    {
+        int completed = 0;
+        int correctFirstTry = 0;
+        int totalWrong = 0;
+        float totalFixTarget = 0f;
+        float totalFixDistractor = 0f;
+        float totalFindTime = 0f;
+
+        for (int i = 0; i < m_ObjectiveRecords.Count; i++)
+        {
+            var rec = m_ObjectiveRecords[i];
+            if (rec.completed)
+            {
+                completed++;
+                totalFindTime += Mathf.Max(0f, rec.completionTime - rec.startTime);
+                if (rec.wrongCaptures == 0) correctFirstTry++;
+            }
+
+            totalWrong += rec.wrongCaptures;
+            totalFixTarget += rec.fixationTimeOnTarget;
+            totalFixDistractor += rec.fixationTimeOnDistractors;
+        }
+
+        float firstTryPct = completed > 0 ? (100f * correctFirstTry / completed) : 0f;
+        float avgFind = completed > 0 ? (totalFindTime / completed) : 0f;
+        float fixTotal = totalFixTarget + totalFixDistractor;
+        float targetFixPct = fixTotal > 0f ? (100f * totalFixTarget / fixTotal) : 0f;
+        float distractorFixPct = fixTotal > 0f ? (100f * totalFixDistractor / fixTotal) : 0f;
+
+        int blinkCount = m_GazeDataLogger != null ? m_GazeDataLogger.BlinkCount : -1;
+        float blinksPerMinute = totalTime > 0f && blinkCount >= 0
+            ? blinkCount / (totalTime / 60f) : -1f;
+        string behavior = m_CoverageTracker != null
+            ? m_CoverageTracker.ClassifyBehavior().ToString()
+            : "unknown";
+
+        int minutes = (int)(totalTime / 60f);
+        float seconds = totalTime % 60f;
+        string timeStr = minutes > 0 ? $"{minutes}:{seconds:00.0}s" : $"{seconds:F1}s";
+
+        var sb = new StringBuilder();
+        sb.AppendLine("Session Stats");
+        sb.AppendLine($"Rounds completed: {completed}/{ChallengeSet.TotalRounds}");
+        sb.AppendLine($"Total time: {timeStr}");
+        sb.AppendLine($"First-try accuracy: {firstTryPct:F1}%");
+        sb.AppendLine($"Wrong captures: {totalWrong}");
+        sb.AppendLine($"Avg time to find target: {avgFind:F1}s");
+        sb.AppendLine($"Fixation time on target: {targetFixPct:F1}%");
+        sb.AppendLine($"Fixation time on distractors: {distractorFixPct:F1}%");
+        if (blinkCount >= 0 && blinksPerMinute >= 0f)
+            sb.AppendLine($"Blink rate: {blinksPerMinute:F1}/min");
+        sb.AppendLine($"Gaze pattern: {behavior}");
+        return sb.ToString().TrimEnd();
     }
 }

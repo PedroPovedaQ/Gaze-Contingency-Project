@@ -1,0 +1,86 @@
+\documentclass[12pt,letterpaper]{article}
+
+% Essential packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{xcolor}
+
+% Formatting
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Pedro Poveda}
+\lhead{Milestone 2 Checklist}
+\cfoot{\thepage}
+
+% Title formatting
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+
+% Custom colors
+\definecolor{successgreen}{RGB}{46,125,50}
+
+% Custom checkbox style
+\newcommand{\taskbox}{$\square$}
+
+\begin{document}
+
+% Title Section
+\begin{center}
+{\Huge\bfseries\color{black}{Milestone 2 Project Checklist}}
+
+\vspace{0.5cm}
+
+{\Large Gaze-Contingent AI Assistance in Mixed Reality Object Search Tasks}
+
+\vspace{0.3cm}
+
+{\large Pedro Poveda}\\
+{\normalsize CAP 6117 - Mixed Reality Systems}\\
+{\normalsize University of Central Florida}
+
+\vspace{0.5cm}
+\end{center}
+
+\section{Project Overview}
+This milestone focuses on completing a reliable end-to-end study loop: deterministic trial generation, accurate gaze-aware vs. gaze-unaware assistance, and complete post-trial data collection/visualization for analysis readiness.
+
+\section{Milestone 2 Deliverables}
+
+\begin{enumerate}[leftmargin=0.8cm, itemsep=0.45cm, label=\textbf{\arabic*.}]
+    \item \taskbox\ Build a virtual shelf anchored above the real table with stable object placement and readable goal UI surfaces \hfill {\color{successgreen}\bfseries [12 points]}
+
+    \item \taskbox\ Create a deterministic challenge generation pipeline (fixed seed, reproducible rounds, and reproducible object placements) \hfill {\color{successgreen}\bfseries [12 points]}
+
+    \item \taskbox\ Implement round-state timing flow: fixation cross, transition display, randomized blank pause, then spawn/search \hfill {\color{successgreen}\bfseries [10 points]}
+
+    \item \taskbox\ Alternate condition assignment by round (gaze-aware vs. gaze-unaware) with explicit runtime state tracking/debug display \hfill {\color{successgreen}\bfseries [10 points]}
+
+    \item \taskbox\ Improve gaze-contingent hint reliability so spatial guidance maps correctly to user gaze and target location \hfill {\color{successgreen}\bfseries [12 points]}
+
+    \item \taskbox\ Refine voice agent behavior: interrupt speech at round end, announce next-round goal during transition, and remove repeated phrasing \hfill {\color{successgreen}\bfseries [10 points]}
+
+    \item \taskbox\ Integrate NASA-TLX submission at session end and persist responses with participant/session identifiers \hfill {\color{successgreen}\bfseries [10 points]}
+
+    \item \taskbox\ Logging of data for analysis \hfill {\color{successgreen}\bfseries [12 points]}
+
+    \item \taskbox\ Present an end-of-session participant summary (e.g., completion time, per-round performance, hint usage trends) \hfill {\color{successgreen}\bfseries [6 points]}
+
+    \item \taskbox\ Basic charting of data for presentation and sanity checks (e.g., bar charts for completion time/error by condition) \hfill {\color{successgreen}\bfseries [6 points]}
+\end{enumerate}
+
+\vspace{0.4cm}
+\textbf{Total: 100 points}
+
+\end{document}

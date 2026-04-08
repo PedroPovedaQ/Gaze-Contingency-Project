@@ -175,3 +175,12 @@ VIVE package source: `https://github.com/ViveSoftware/VIVE-OpenXR-Unity.git?path
 - Manager pattern for subsystem controllers
 - Prefab-based spawning with Layer 7 physics interaction
 - VIVE scoped registry: `https://npm-registry.vive.com` (scopes: `com.htc.upm`)
+
+## Codex Session Preference
+
+- After completing code/design changes for a request, run:
+  - `./scripts/refocus-unity-and-build-device.sh`
+- This should both:
+  - bring Unity to the foreground, and
+  - trigger Android Build And Run (`Tools > Codex > Build And Run Android`) via menu automation.
+- Do this by default unless the user explicitly asks not to.

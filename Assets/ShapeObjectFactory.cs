@@ -201,17 +201,6 @@ public class ShapeObjectFactory : MonoBehaviour
         };
         obj.transform.localScale = scale;
 
-        // Pyramid: origin at base (y=0), need to lower so base sits on shelf.
-        // Other shapes have origin at center so spawn Y puts them on the shelf.
-        // Pyramid needs to come down by the full half-height offset (0.04m).
-        if (shapeIdx == 2)
-        {
-            var pos = obj.transform.position;
-            pos.y -= 0.09f; // 5cm lower than before (was 0.04)
-            obj.transform.position = pos;
-        }
-
-
         // Metadata
         var info = obj.AddComponent<SpawnableObjectInfo>();
         info.shapeName = shapeName;

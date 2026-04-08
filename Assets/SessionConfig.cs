@@ -47,11 +47,23 @@ public static class SessionConfig
     /// <param name="gazeAware">True if the gaze-aware condition is active.</param>
     public static string BeginRun(bool gazeAware)
     {
+        string conditionLabel = gazeAware ? "gaze_aware" : "gaze_unaware";
+        return BeginRun(conditionLabel);
+    }
+
+    /// <summary>
+    /// Begins a new run with an explicit condition label.
+    /// Use this when a run contains multiple blocks/conditions.
+    /// </summary>
+    public static string BeginRun(string conditionLabel)
+    {
         // Auto-assign participant ID if not set
         if (string.IsNullOrEmpty(ParticipantId))
             ParticipantId = FindNextParticipantId();
 
-        ConditionLabel = gazeAware ? "gaze_aware" : "gaze_unaware";
+        ConditionLabel = string.IsNullOrWhiteSpace(conditionLabel)
+            ? "unspecified"
+            : conditionLabel;
 
         // Find next run number for this participant
         string participantDir = Path.Combine(RootPath, ParticipantId);

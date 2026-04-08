@@ -4,17 +4,18 @@ using UnityEngine;
 /// <summary>
 /// Deterministic challenge definitions for the conjunction search experiment.
 ///
-/// Design: 14 rounds total per session, split into two blocks of 7.
-/// Block A = rounds 0-6, Block B = rounds 7-13.
-/// One block is gaze-aware, the other is gaze-unaware.
-/// Counterbalancing: even participant numbers do aware-first, odd do unaware-first.
+/// Design: 14 rounds total per session.
+/// Tip condition alternates every round:
+/// - odd-numbered rounds (1,3,5,...) are gaze-unaware
+/// - even-numbered rounds (2,4,6,...) are gaze-aware
 ///
 /// All challenges are fixed (seed 42) so every participant gets the exact same
-/// targets, distractors, and shelf positions. The ONLY variable is which block
-/// gets which tip condition.
+/// targets, distractors, and shelf positions. The ONLY variable is the
+/// round-level gaze-aware/unaware alternation schedule.
 /// </summary>
 public static class ChallengeSet
 {
+    // Legacy constants kept for compatibility with logging/analysis code.
     public const int RoundsPerBlock = 7;
     public const int BlockCount = 2;
     public const int TotalRounds = RoundsPerBlock * BlockCount; // 14
@@ -41,7 +42,7 @@ public static class ChallengeSet
     public struct RoundDef
     {
         public int roundIndex;       // 0-13
-        public int blockIndex;       // 0 or 1
+        public int blockIndex;       // 0 or 1 (alternating schedule index)
         public ObjectDef target;
         public ObjectDef[] objects;  // all 42
     }
@@ -60,17 +61,14 @@ public static class ChallengeSet
 
     /// <summary>
     /// Returns whether a given round should use gaze-aware tips.
-    /// Block 0 = rounds 0-6, Block 1 = rounds 7-13.
-    /// Even participant numbers: Block 0 = aware, Block 1 = unaware.
-    /// Odd participant numbers: Block 0 = unaware, Block 1 = aware.
+    /// Alternating schedule: round 0 (round 1 shown to participant) is unaware,
+    /// round 1 is aware, and so on.
     /// </summary>
     public static bool IsGazeAware(int roundIndex, int participantNumber)
     {
-        int block = roundIndex < RoundsPerBlock ? 0 : 1;
-        bool evenParticipant = participantNumber % 2 == 0;
-        // Even: block 0 = aware, block 1 = unaware
-        // Odd:  block 0 = unaware, block 1 = aware
-        return evenParticipant ? (block == 0) : (block == 1);
+        // participantNumber intentionally unused in fixed alternating mode
+        _ = participantNumber;
+        return (roundIndex % 2) == 1;
     }
 
     /// <summary>
@@ -139,13 +137,13 @@ public static class ChallengeSet
             s_Rounds[r] = new RoundDef
             {
                 roundIndex = r,
-                blockIndex = r < RoundsPerBlock ? 0 : 1,
+                blockIndex = r % 2,
                 target = target,
                 objects = objects.ToArray()
             };
         }
 
-        Debug.Log($"[ChallengeSet] Generated {TotalRounds} deterministic rounds ({BlockCount} blocks × {RoundsPerBlock})");
+        Debug.Log($"[ChallengeSet] Generated {TotalRounds} deterministic rounds (alternating gaze-aware/unaware by round)");
     }
 
     static ObjectDef MakeObj(int si, int ci) => new ObjectDef

@@ -76,3 +76,10 @@ Thumbs.db
 
 # API keys
 Assets/StreamingAssets/api_keys.json
+
+# Runtime study data / analysis artifacts
+GazeData/
+analysis/results/
+analysis/__pycache__/
+captures/
+session.mkv
