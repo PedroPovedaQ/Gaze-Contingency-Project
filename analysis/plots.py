@@ -22,12 +22,61 @@ def _save(fig, out_dir: Path, name: str):
     print(f"  saved {path}")
 
 
+def _safe_condition_boxplot(ax, data: pd.DataFrame, y_col: str):
+    """
+    Draw a condition plot that doesn't crash on tiny samples.
+    Falls back to strip plot + mean marker when boxplot isn't meaningful.
+    """
+    plot_df = data[["condition", y_col]].dropna().copy()
+    if plot_df.empty:
+        ax.text(0.5, 0.5, "No data", ha="center", va="center", transform=ax.transAxes)
+        ax.set_xticks([])
+        return
+
+    counts = plot_df.groupby("condition")[y_col].count()
+    has_enough_for_box = (counts >= 2).sum() >= 1 and len(plot_df) >= 3
+
+    if has_enough_for_box:
+        sns.boxplot(
+            data=plot_df,
+            x="condition",
+            y=y_col,
+            order=ORDER,
+            hue="condition",
+            hue_order=ORDER,
+            palette=PALETTE,
+            dodge=False,
+            legend=False,
+            ax=ax,
+        )
+    else:
+        # Sparse-data fallback (e.g., a single NASA-TLX row)
+        sns.stripplot(
+            data=plot_df,
+            x="condition",
+            y=y_col,
+            order=ORDER,
+            hue="condition",
+            hue_order=ORDER,
+            palette=PALETTE,
+            dodge=False,
+            alpha=0.9,
+            size=8,
+            legend=False,
+            ax=ax,
+        )
+        means = plot_df.groupby("condition")[y_col].mean().reindex(ORDER)
+        for i, cond in enumerate(ORDER):
+            m = means.get(cond)
+            if pd.notna(m):
+                ax.plot(i, m, marker="_", markersize=20, color="black", linewidth=2)
+
+
 def plot_search_time(df: pd.DataFrame, out_dir: Path):
     """Box plot: search time by condition. Like Fig. 6a in Chiossi et al."""
     fig, ax = plt.subplots(figsize=(6, 5))
     completed = df[df["completed"] & (df["time_to_find"] > 0)]
-    sns.boxplot(data=completed, x="condition", y="time_to_find",
-                order=ORDER, palette=PALETTE, ax=ax)
+    _safe_condition_boxplot(ax, completed, "time_to_find")
     sns.stripplot(data=completed, x="condition", y="time_to_find",
                   order=ORDER, color="black", alpha=0.4, size=4, ax=ax)
     ax.set_xlabel("Condition")
@@ -44,7 +93,8 @@ def plot_first_try_accuracy(df: pd.DataFrame, out_dir: Path):
 
     fig, ax = plt.subplots(figsize=(6, 5))
     sns.barplot(data=by_condition, x="condition", y="accuracy_pct",
-                order=ORDER, palette=PALETTE, ax=ax)
+                order=ORDER, hue="condition", hue_order=ORDER,
+                palette=PALETTE, legend=False, ax=ax)
     ax.set_xlabel("Condition")
     ax.set_ylabel("First-Try Accuracy (%)")
     ax.set_title("Search Accuracy")
@@ -58,8 +108,7 @@ def plot_first_try_accuracy(df: pd.DataFrame, out_dir: Path):
 def plot_wrong_captures(df: pd.DataFrame, out_dir: Path):
     """Box plot: number of wrong selections per round."""
     fig, ax = plt.subplots(figsize=(6, 5))
-    sns.boxplot(data=df, x="condition", y="wrong_captures",
-                order=ORDER, palette=PALETTE, ax=ax)
+    _safe_condition_boxplot(ax, df, "wrong_captures")
     sns.stripplot(data=df, x="condition", y="wrong_captures",
                   order=ORDER, color="black", alpha=0.4, size=4, ax=ax)
     ax.set_xlabel("Condition")
@@ -71,8 +120,7 @@ def plot_wrong_captures(df: pd.DataFrame, out_dir: Path):
 def plot_fixation_count(df: pd.DataFrame, out_dir: Path):
     """Box plot: total fixations per round."""
     fig, ax = plt.subplots(figsize=(6, 5))
-    sns.boxplot(data=df, x="condition", y="fixation_count_total",
-                order=ORDER, palette=PALETTE, ax=ax)
+    _safe_condition_boxplot(ax, df, "fixation_count_total")
     sns.stripplot(data=df, x="condition", y="fixation_count_total",
                   order=ORDER, color="black", alpha=0.4, size=4, ax=ax)
     ax.set_xlabel("Condition")
@@ -86,8 +134,7 @@ def plot_avg_fixation_duration(df: pd.DataFrame, out_dir: Path):
     fig, ax = plt.subplots(figsize=(6, 5))
     df = df.copy()
     df["avg_fix_ms"] = df["avg_fixation_duration"] * 1000
-    sns.boxplot(data=df, x="condition", y="avg_fix_ms",
-                order=ORDER, palette=PALETTE, ax=ax)
+    _safe_condition_boxplot(ax, df, "avg_fix_ms")
     ax.set_xlabel("Condition")
     ax.set_ylabel("Average Fixation Duration (ms)")
     ax.set_title("Average Fixation Duration")
@@ -97,8 +144,7 @@ def plot_avg_fixation_duration(df: pd.DataFrame, out_dir: Path):
 def plot_saccade_frequency(df: pd.DataFrame, out_dir: Path):
     """Box plot: saccades per second per round."""
     fig, ax = plt.subplots(figsize=(6, 5))
-    sns.boxplot(data=df, x="condition", y="saccade_frequency_hz",
-                order=ORDER, palette=PALETTE, ax=ax)
+    _safe_condition_boxplot(ax, df, "saccade_frequency_hz")
     sns.stripplot(data=df, x="condition", y="saccade_frequency_hz",
                   order=ORDER, color="black", alpha=0.4, size=4, ax=ax)
     ax.set_xlabel("Condition")
@@ -110,8 +156,7 @@ def plot_saccade_frequency(df: pd.DataFrame, out_dir: Path):
 def plot_saccade_amplitude(df: pd.DataFrame, out_dir: Path):
     """Box plot: average saccade amplitude per round (degrees)."""
     fig, ax = plt.subplots(figsize=(6, 5))
-    sns.boxplot(data=df, x="condition", y="avg_saccade_amplitude_deg",
-                order=ORDER, palette=PALETTE, ax=ax)
+    _safe_condition_boxplot(ax, df, "avg_saccade_amplitude_deg")
     ax.set_xlabel("Condition")
     ax.set_ylabel("Average Saccade Amplitude (degrees)")
     ax.set_title("Saccade Amplitude")
@@ -159,8 +204,7 @@ def plot_last_fixation_duration(last_fix_df: pd.DataFrame, out_dir: Path):
         print("  skipping last_fixation_duration: no data")
         return
     fig, ax = plt.subplots(figsize=(6, 5))
-    sns.boxplot(data=last_fix_df, x="condition", y="last_fix_on_target_s",
-                order=ORDER, palette=PALETTE, ax=ax)
+    _safe_condition_boxplot(ax, last_fix_df, "last_fix_on_target_s")
     sns.stripplot(data=last_fix_df, x="condition", y="last_fix_on_target_s",
                   order=ORDER, color="black", alpha=0.4, size=4, ax=ax)
     ax.set_xlabel("Condition")
@@ -175,8 +219,7 @@ def plot_nasa_tlx(tlx_df: pd.DataFrame, out_dir: Path):
         print("  skipping nasa_tlx: no data (need analysis/nasa_tlx.csv)")
         return
     fig, ax = plt.subplots(figsize=(6, 5))
-    sns.boxplot(data=tlx_df, x="condition", y="raw_tlx",
-                order=ORDER, palette=PALETTE, ax=ax)
+    _safe_condition_boxplot(ax, tlx_df, "raw_tlx")
     sns.stripplot(data=tlx_df, x="condition", y="raw_tlx",
                   order=ORDER, color="black", alpha=0.5, size=6, ax=ax)
     ax.set_xlabel("Condition")
@@ -226,8 +269,7 @@ def plot_summary_grid(df: pd.DataFrame, out_dir: Path):
     ]
 
     for ax, data, ycol, title in plots:
-        sns.boxplot(data=data, x="condition", y=ycol,
-                    order=ORDER, palette=PALETTE, ax=ax)
+        _safe_condition_boxplot(ax, data, ycol)
         ax.set_title(title)
         ax.set_xlabel("")
 
