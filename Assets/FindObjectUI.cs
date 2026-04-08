@@ -3,6 +3,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.XR;
+using UnityEngine.EventSystems;
+using XRInputDevice = UnityEngine.XR.InputDevice;
+using XRCommonUsages = UnityEngine.XR.CommonUsages;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
+using UnityEngine.InputSystem.UI;
+using ISInputDevice = UnityEngine.InputSystem.InputDevice;
+#endif
 
 /// <summary>
 /// World-space HUD for the Find Object game.
@@ -13,6 +22,8 @@ public class FindObjectUI : MonoBehaviour
 {
     const string k_Tag = "[FindObjectUI]";
     const int k_NasaTlxQuestionCount = 6;
+    const float k_NavAxisThreshold = 0.35f;
+    const float k_AnalogButtonThreshold = 0.75f;
 
     Canvas m_Canvas;
     RectTransform m_CanvasRect;
@@ -28,6 +39,7 @@ public class FindObjectUI : MonoBehaviour
     readonly Slider[] m_NasaTlxSliders = new Slider[k_NasaTlxQuestionCount];
     readonly TextMeshProUGUI[] m_NasaTlxValueTexts = new TextMeshProUGUI[k_NasaTlxQuestionCount];
     readonly TextMeshProUGUI[] m_NasaTlxLabelTexts = new TextMeshProUGUI[k_NasaTlxQuestionCount];
+    Button m_NasaSubmitButton;
     TextMeshProUGUI m_NasaSubmitText;
     GameObject m_CrossCanvasGO;
     TextMeshProUGUI m_FixationCross;
@@ -57,6 +69,8 @@ public class FindObjectUI : MonoBehaviour
     bool m_DownPressedLastFrame;
     bool m_LeftPressedLastFrame;
     bool m_RightPressedLastFrame;
+    bool m_IncreasePressedLastFrame;
+    bool m_DecreasePressedLastFrame;
     int m_SelectedTlxRow;
     readonly int[] m_NasaTlxScores = new int[k_NasaTlxQuestionCount];
     int m_CompletionTotalRounds;
@@ -71,6 +85,37 @@ public class FindObjectUI : MonoBehaviour
     bool m_TimerPaused;
     float m_TimerPauseStart;
     float m_TotalPausedTime;
+
+#if ENABLE_INPUT_SYSTEM
+    static readonly string[] k_UiScrollActionNames =
+    {
+        "XRI Right Interaction/UI Scroll",
+        "XRI Left Interaction/UI Scroll",
+        "XRI UI/Navigate",
+    };
+
+    static readonly string[] k_UiSubmitActionNames =
+    {
+        "XRI UI/Submit",
+    };
+
+    static readonly string[] k_UiPressActionNames =
+    {
+        "XRI Right Interaction/UI Press",
+        "XRI Left Interaction/UI Press",
+        "XRI Right Interaction/Activate",
+        "XRI Left Interaction/Activate",
+    };
+
+    static readonly string[] k_GripSelectActionNames =
+    {
+        "XRI Right Interaction/Select",
+        "XRI Left Interaction/Select",
+    };
+
+    static readonly List<InputActionAsset> s_CachedActionAssets = new List<InputActionAsset>(4);
+    static float s_NextActionAssetRefreshTime;
+#endif
 
     public void Initialize()
     {
@@ -87,43 +132,43 @@ public class FindObjectUI : MonoBehaviour
             m_CanvasGO.AddComponent(trackedRaycasterType);
 
         m_CanvasRect = m_CanvasGO.GetComponent<RectTransform>();
-        m_CanvasRect.sizeDelta = new Vector2(400, 260);
-        m_CanvasGO.transform.localScale = Vector3.one * 0.001f;
+        m_CanvasRect.sizeDelta = new Vector2(640, 460);
+        m_CanvasGO.transform.localScale = Vector3.one * 0.00065f;
 
         // Background
         var bgGO = CreatePanel(m_CanvasGO.transform, "Background",
-            new Vector2(400, 260), new Color(0f, 0f, 0f, 0.75f));
+            new Vector2(640, 460), new Color(0f, 0f, 0f, 0.75f));
         bgGO.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
 
         // Agent state debug
         m_AgentStateText = CreateText(bgGO.transform, "AgentStateText",
-            new Vector2(380, 28), new Vector2(0, 102), 20);
+            new Vector2(608, 34), new Vector2(0, 188), 24);
         m_AgentStateText.alignment = TextAlignmentOptions.Center;
         m_AgentStateText.color = new Color(0.7f, 0.95f, 1f, 1f);
         m_AgentStateText.text = "Agent: --";
 
         // Objective text
         m_ObjectiveText = CreateText(bgGO.transform, "ObjectiveText",
-            new Vector2(380, 80), new Vector2(0, 48), 38);
+            new Vector2(608, 118), new Vector2(0, 106), 52);
         m_ObjectiveText.alignment = TextAlignmentOptions.Center;
 
         // Progress text
         m_ProgressText = CreateText(bgGO.transform, "ProgressText",
-            new Vector2(380, 40), new Vector2(0, -10), 28);
+            new Vector2(608, 52), new Vector2(0, 28), 34);
         m_ProgressText.alignment = TextAlignmentOptions.Center;
         m_ProgressText.color = new Color(0.8f, 0.8f, 0.8f, 1f);
 
         // Timer text
         m_TimerText = CreateText(bgGO.transform, "TimerText",
-            new Vector2(380, 40), new Vector2(0, -60), 26);
+            new Vector2(608, 52), new Vector2(0, -28), 30);
         m_TimerText.alignment = TextAlignmentOptions.Center;
         m_TimerText.color = new Color(1f, 0.9f, 0.5f, 1f);
 
         // Completion panel
         m_CompletionPanel = CreatePanel(m_CanvasGO.transform, "CompletionPanel",
-            new Vector2(400, 260), new Color(0.05f, 0.3f, 0.05f, 0.85f));
+            new Vector2(640, 460), new Color(0.08f, 0.12f, 0.16f, 0.94f));
         m_CompletionText = CreateText(m_CompletionPanel.transform, "CompletionText",
-            new Vector2(380, 78), new Vector2(0, 82), 24);
+            new Vector2(608, 118), new Vector2(0, 164), 24);
         m_CompletionText.alignment = TextAlignmentOptions.Center;
         CreateNasaTlxSurveyUi(m_CompletionPanel.transform);
         m_CompletionPanel.SetActive(false);
@@ -315,7 +360,7 @@ public class FindObjectUI : MonoBehaviour
         string timeStr = minutes > 0 ? $"{minutes}:{seconds:00.0}s" : $"{seconds:F1}s";
         if (m_CompletionText != null)
         {
-            m_CompletionText.fontSize = 20f;
+            m_CompletionText.fontSize = 24f;
             m_CompletionText.overflowMode = TextOverflowModes.Overflow;
             m_CompletionText.enableWordWrapping = true;
         }
@@ -326,7 +371,7 @@ public class FindObjectUI : MonoBehaviour
             m_CompletionText.text =
                 $"All {total} rounds complete!\n" +
                 $"Time: {timeStr}\n" +
-                "NASA-TLX: adjust each slider (0-100), then submit.";
+                "Complete NASA-TLX below.";
         }
         InitializeNasaTlxSurvey();
         m_WaitingForSurveyAck = true;
@@ -410,6 +455,8 @@ public class FindObjectUI : MonoBehaviour
         m_DownPressedLastFrame = false;
         m_LeftPressedLastFrame = false;
         m_RightPressedLastFrame = false;
+        m_IncreasePressedLastFrame = false;
+        m_DecreasePressedLastFrame = false;
         for (int i = 0; i < k_NasaTlxQuestionCount; i++)
         {
             if (m_NasaTlxSliders[i] != null)
@@ -421,15 +468,19 @@ public class FindObjectUI : MonoBehaviour
     void HandleNasaTlxSurveyInput(bool confirmPressed)
     {
         Vector2 axis = ReadPrimary2DAxis();
-        bool upPressed = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W) || axis.y > 0.6f;
-        bool downPressed = Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S) || axis.y < -0.6f;
-        bool leftPressed = Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A) || axis.x < -0.6f;
-        bool rightPressed = Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D) || axis.x > 0.6f;
+        bool upPressed = IsKeyboardOrDpadUpPressed() || axis.y > k_NavAxisThreshold;
+        bool downPressed = IsKeyboardOrDpadDownPressed() || axis.y < -k_NavAxisThreshold;
+        bool leftPressed = IsKeyboardOrDpadLeftPressed() || axis.x < -k_NavAxisThreshold;
+        bool rightPressed = IsKeyboardOrDpadRightPressed() || axis.x > k_NavAxisThreshold;
+        bool increasePressed = IsIncreasePressed();
+        bool decreasePressed = IsDecreasePressed();
 
         bool upRising = upPressed && !m_UpPressedLastFrame;
         bool downRising = downPressed && !m_DownPressedLastFrame;
         bool leftRising = leftPressed && !m_LeftPressedLastFrame;
         bool rightRising = rightPressed && !m_RightPressedLastFrame;
+        bool increaseRising = increasePressed && !m_IncreasePressedLastFrame;
+        bool decreaseRising = decreasePressed && !m_DecreasePressedLastFrame;
         bool confirmRising = confirmPressed && !m_ConfirmPressedLastFrame;
 
         bool changed = false;
@@ -447,14 +498,14 @@ public class FindObjectUI : MonoBehaviour
 
         if (m_SelectedTlxRow < k_NasaTlxQuestionCount)
         {
-            if (leftRising)
+            if (leftRising || decreaseRising)
             {
                 m_NasaTlxScores[m_SelectedTlxRow] = Mathf.Clamp(m_NasaTlxScores[m_SelectedTlxRow] - 5, 0, 100);
                 if (m_NasaTlxSliders[m_SelectedTlxRow] != null)
                     m_NasaTlxSliders[m_SelectedTlxRow].value = m_NasaTlxScores[m_SelectedTlxRow];
                 changed = true;
             }
-            if (rightRising)
+            if (rightRising || increaseRising)
             {
                 m_NasaTlxScores[m_SelectedTlxRow] = Mathf.Clamp(m_NasaTlxScores[m_SelectedTlxRow] + 5, 0, 100);
                 if (m_NasaTlxSliders[m_SelectedTlxRow] != null)
@@ -477,17 +528,7 @@ public class FindObjectUI : MonoBehaviour
 
         if (confirmRising && m_SelectedTlxRow == k_NasaTlxQuestionCount)
         {
-            m_ShowingNasaTlxSurvey = false;
-            m_WaitingForSurveyAck = false;
-            OnNasaTlxSubmitted?.Invoke(new NasaTlxResult
-            {
-                mental = m_NasaTlxScores[0],
-                physical = m_NasaTlxScores[1],
-                temporal = m_NasaTlxScores[2],
-                performance = m_NasaTlxScores[3],
-                effort = m_NasaTlxScores[4],
-                frustration = m_NasaTlxScores[5],
-            });
+            SubmitNasaTlxSurvey();
         }
         else if (changed)
         {
@@ -499,6 +540,24 @@ public class FindObjectUI : MonoBehaviour
         m_DownPressedLastFrame = downPressed;
         m_LeftPressedLastFrame = leftPressed;
         m_RightPressedLastFrame = rightPressed;
+        m_IncreasePressedLastFrame = increasePressed;
+        m_DecreasePressedLastFrame = decreasePressed;
+    }
+
+    void SubmitNasaTlxSurvey()
+    {
+        if (!m_ShowingNasaTlxSurvey) return;
+        m_ShowingNasaTlxSurvey = false;
+        m_WaitingForSurveyAck = false;
+        OnNasaTlxSubmitted?.Invoke(new NasaTlxResult
+        {
+            mental = m_NasaTlxScores[0],
+            physical = m_NasaTlxScores[1],
+            temporal = m_NasaTlxScores[2],
+            performance = m_NasaTlxScores[3],
+            effort = m_NasaTlxScores[4],
+            frustration = m_NasaTlxScores[5],
+        });
     }
 
     void RefreshNasaTlxSurveyText()
@@ -530,23 +589,144 @@ public class FindObjectUI : MonoBehaviour
         if (m_NasaSubmitText != null)
         {
             bool selected = m_SelectedTlxRow == k_NasaTlxQuestionCount;
-            m_NasaSubmitText.text = selected ? "> [ SUBMIT NASA-TLX ]" : "  [ SUBMIT NASA-TLX ]";
+            m_NasaSubmitText.text = selected ? "> Submit NASA-TLX" : "Submit NASA-TLX";
             m_NasaSubmitText.color = selected
                 ? new Color(1f, 0.95f, 0.65f, 1f)
                 : Color.white;
         }
+
+        if (m_NasaSubmitButton != null)
+        {
+            var target = m_NasaSubmitButton.targetGraphic as Image;
+            if (target != null)
+            {
+                target.color = m_SelectedTlxRow == k_NasaTlxQuestionCount
+                    ? new Color(0.09f, 0.46f, 0.84f, 1f)
+                    : new Color(0.16f, 0.2f, 0.24f, 1f);
+            }
+        }
     }
+
+#if ENABLE_INPUT_SYSTEM
+    static void RefreshActionAssetsCacheIfNeeded()
+    {
+        if (Time.unscaledTime < s_NextActionAssetRefreshTime && s_CachedActionAssets.Count > 0)
+            return;
+
+        s_CachedActionAssets.Clear();
+        if (InputSystem.actions != null)
+            s_CachedActionAssets.Add(InputSystem.actions);
+
+        s_NextActionAssetRefreshTime = Time.unscaledTime + 1f;
+    }
+
+    static bool IsAnyActionPressed(params string[] actionNames)
+    {
+        RefreshActionAssetsCacheIfNeeded();
+        for (int i = 0; i < s_CachedActionAssets.Count; i++)
+        {
+            var asset = s_CachedActionAssets[i];
+            if (asset == null) continue;
+            for (int j = 0; j < actionNames.Length; j++)
+            {
+                var action = asset.FindAction(actionNames[j], false);
+                if (action != null && action.IsPressed())
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    static bool TryReadActionVector2(out Vector2 value, params string[] actionNames)
+    {
+        value = Vector2.zero;
+        float bestMag = 0f;
+        RefreshActionAssetsCacheIfNeeded();
+        for (int i = 0; i < s_CachedActionAssets.Count; i++)
+        {
+            var asset = s_CachedActionAssets[i];
+            if (asset == null) continue;
+            for (int j = 0; j < actionNames.Length; j++)
+            {
+                var action = asset.FindAction(actionNames[j], false);
+                if (action == null) continue;
+                Vector2 axis = action.ReadValue<Vector2>();
+                float mag = axis.sqrMagnitude;
+                if (mag > bestMag)
+                {
+                    bestMag = mag;
+                    value = axis;
+                }
+            }
+        }
+        return bestMag > 0.0001f;
+    }
+
+    static bool ReadAnyButtonControl(ISInputDevice device, params string[] controlNames)
+    {
+        if (device == null) return false;
+        for (int i = 0; i < controlNames.Length; i++)
+        {
+            var control = device.TryGetChildControl<ButtonControl>(controlNames[i]);
+            if (control != null && control.isPressed)
+                return true;
+        }
+        return false;
+    }
+
+    static float ReadAnyAxisControl(ISInputDevice device, params string[] controlNames)
+    {
+        if (device == null) return 0f;
+        float best = 0f;
+        for (int i = 0; i < controlNames.Length; i++)
+        {
+            var control = device.TryGetChildControl<AxisControl>(controlNames[i]);
+            if (control == null) continue;
+            float value = control.ReadValue();
+            if (value > best) best = value;
+        }
+        return best;
+    }
+#endif
 
     static Vector2 ReadPrimary2DAxis()
     {
-        var devices = GetControllerDevices();
         Vector2 best = Vector2.zero;
         float bestMag = 0f;
+
+#if ENABLE_INPUT_SYSTEM
+        if (TryReadActionVector2(out Vector2 scrollAxis, k_UiScrollActionNames))
+        {
+            float mag = scrollAxis.sqrMagnitude;
+            if (mag > bestMag)
+            {
+                bestMag = mag;
+                best = scrollAxis;
+            }
+        }
+
+        // Use the same mapped UI Navigate action as the Player Settings panel.
+        if (EventSystem.current != null &&
+            EventSystem.current.currentInputModule is InputSystemUIInputModule uiModule &&
+            uiModule.move != null &&
+            uiModule.move.action != null)
+        {
+            Vector2 move = uiModule.move.action.ReadValue<Vector2>();
+            float moveMag = move.sqrMagnitude;
+            if (moveMag > bestMag)
+            {
+                bestMag = moveMag;
+                best = move;
+            }
+        }
+#endif
+
+        var devices = GetControllerDevices();
         for (int i = 0; i < devices.Count; i++)
         {
             var d = devices[i];
             if (!d.isValid) continue;
-            if (d.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 axis))
+            if (d.TryGetFeatureValue(XRCommonUsages.primary2DAxis, out Vector2 axis))
             {
                 float mag = axis.sqrMagnitude;
                 if (mag > bestMag)
@@ -557,7 +737,7 @@ public class FindObjectUI : MonoBehaviour
                 continue;
             }
 
-            if (d.TryGetFeatureValue(CommonUsages.secondary2DAxis, out Vector2 altAxis))
+            if (d.TryGetFeatureValue(XRCommonUsages.secondary2DAxis, out Vector2 altAxis))
             {
                 float mag = altAxis.sqrMagnitude;
                 if (mag > bestMag)
@@ -567,54 +747,331 @@ public class FindObjectUI : MonoBehaviour
                 }
             }
         }
+
+#if ENABLE_INPUT_SYSTEM
+        // Fallback path: query Input System controls directly.
+        if (bestMag < 0.0001f)
+        {
+            foreach (var device in InputSystem.devices)
+            {
+                if (device == null || !device.enabled) continue;
+
+                Vector2 axis = Vector2.zero;
+                bool hasAxis = TryReadVector2Control(device, "primary2DAxis", out axis)
+                               || TryReadVector2Control(device, "secondary2DAxis", out axis)
+                               || TryReadVector2Control(device, "thumbstick", out axis)
+                               || TryReadVector2Control(device, "joystick", out axis);
+                if (!hasAxis) continue;
+
+                float mag = axis.sqrMagnitude;
+                if (mag > bestMag)
+                {
+                    bestMag = mag;
+                    best = axis;
+                }
+            }
+        }
+#endif
+
         return best;
     }
 
     static bool IsConfirmPressed()
     {
-        if (Input.GetKey(KeyCode.Return) || Input.GetKey(KeyCode.KeypadEnter) || Input.GetKey(KeyCode.Space))
+        if (IsKeyboardSubmitPressed() || IsMouseSubmitPressed())
             return true;
 
-        if (Input.GetMouseButton(0))
+#if ENABLE_INPUT_SYSTEM
+        if (IsAnyActionPressed(k_UiSubmitActionNames) || IsAnyActionPressed(k_UiPressActionNames))
             return true;
+
+        if (EventSystem.current != null &&
+            EventSystem.current.currentInputModule is InputSystemUIInputModule uiModule &&
+            uiModule.submit != null &&
+            uiModule.submit.action != null &&
+            uiModule.submit.action.IsPressed())
+        {
+            return true;
+        }
+
+        if (EventSystem.current != null &&
+            EventSystem.current.currentInputModule is InputSystemUIInputModule clickModule)
+        {
+            if (clickModule.leftClick != null && clickModule.leftClick.action != null && clickModule.leftClick.action.IsPressed())
+                return true;
+            if (clickModule.rightClick != null && clickModule.rightClick.action != null && clickModule.rightClick.action.IsPressed())
+                return true;
+        }
+#endif
 
         var devices = GetControllerDevices();
         for (int i = 0; i < devices.Count; i++)
         {
             var d = devices[i];
             if (!d.isValid) continue;
-            if (d.TryGetFeatureValue(CommonUsages.primaryButton, out bool primary) && primary)
+            if (d.TryGetFeatureValue(XRCommonUsages.primaryButton, out bool primary) && primary)
                 return true;
-            if (d.TryGetFeatureValue(CommonUsages.secondaryButton, out bool secondary) && secondary)
+            if (d.TryGetFeatureValue(XRCommonUsages.secondaryButton, out bool secondary) && secondary)
                 return true;
-            if (d.TryGetFeatureValue(CommonUsages.triggerButton, out bool trigger) && trigger)
+            if (d.TryGetFeatureValue(XRCommonUsages.triggerButton, out bool trigger) && trigger)
                 return true;
-            if (d.TryGetFeatureValue(CommonUsages.menuButton, out bool menu) && menu)
+            if (d.TryGetFeatureValue(XRCommonUsages.menuButton, out bool menu) && menu)
                 return true;
-            if (d.TryGetFeatureValue(CommonUsages.primary2DAxisClick, out bool stickClick) && stickClick)
+            if (d.TryGetFeatureValue(XRCommonUsages.primary2DAxisClick, out bool stickClick) && stickClick)
                 return true;
-            if (d.TryGetFeatureValue(CommonUsages.gripButton, out bool gripButton) && gripButton)
+            if (d.TryGetFeatureValue(XRCommonUsages.gripButton, out bool gripButton) && gripButton)
                 return true;
-            if (d.TryGetFeatureValue(CommonUsages.trigger, out float triggerValue) && triggerValue > 0.75f)
+            if (d.TryGetFeatureValue(XRCommonUsages.trigger, out float triggerValue) && triggerValue > k_AnalogButtonThreshold)
                 return true;
-            if (d.TryGetFeatureValue(CommonUsages.grip, out float gripValue) && gripValue > 0.75f)
+            if (d.TryGetFeatureValue(XRCommonUsages.grip, out float gripValue) && gripValue > k_AnalogButtonThreshold)
                 return true;
         }
+
+#if ENABLE_INPUT_SYSTEM
+        // Fallback path: query Input System controls directly.
+        foreach (var device in InputSystem.devices)
+        {
+            if (device == null || !device.enabled) continue;
+
+            if (ReadAnyButtonControl(device,
+                "triggerPressed", "gripPressed", "primaryButton", "secondaryButton", "menuButton",
+                "primary2DAxisClick", "selectPressed", "select", "activatePressed", "squeezePressed",
+                "pointerActivated", "press"))
+                return true;
+
+            if (ReadAnyAxisControl(device, "trigger", "grip", "select", "squeeze", "activate") > k_AnalogButtonThreshold)
+                return true;
+        }
+#endif
 
         return false;
     }
 
-    static List<InputDevice> GetControllerDevices()
+    static bool IsKeyboardSubmitPressed()
     {
-        var devices = new List<InputDevice>();
-        InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.Controller, devices);
-
-        var left = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
-        if (left.isValid && !devices.Contains(left)) devices.Add(left);
-        var right = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
-        if (right.isValid && !devices.Contains(right)) devices.Add(right);
-        return devices;
+#if ENABLE_INPUT_SYSTEM
+        var keyboard = Keyboard.current;
+        if (keyboard != null && (keyboard.enterKey.isPressed || keyboard.numpadEnterKey.isPressed || keyboard.spaceKey.isPressed))
+            return true;
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+        if (Input.GetKey(KeyCode.Return) || Input.GetKey(KeyCode.KeypadEnter) || Input.GetKey(KeyCode.Space))
+            return true;
+#endif
+        return false;
     }
+
+    static bool IsMouseSubmitPressed()
+    {
+#if ENABLE_INPUT_SYSTEM
+        var mouse = Mouse.current;
+        if (mouse != null && mouse.leftButton.isPressed)
+            return true;
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+        if (Input.GetMouseButton(0))
+            return true;
+#endif
+        return false;
+    }
+
+    static bool IsKeyboardOrDpadUpPressed()
+    {
+#if ENABLE_INPUT_SYSTEM
+        var keyboard = Keyboard.current;
+        if (keyboard != null && (keyboard.upArrowKey.isPressed || keyboard.wKey.isPressed))
+            return true;
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
+            return true;
+#endif
+        return false;
+    }
+
+    static bool IsKeyboardOrDpadDownPressed()
+    {
+#if ENABLE_INPUT_SYSTEM
+        var keyboard = Keyboard.current;
+        if (keyboard != null && (keyboard.downArrowKey.isPressed || keyboard.sKey.isPressed))
+            return true;
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+        if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
+            return true;
+#endif
+        return false;
+    }
+
+    static bool IsKeyboardOrDpadLeftPressed()
+    {
+#if ENABLE_INPUT_SYSTEM
+        var keyboard = Keyboard.current;
+        if (keyboard != null && (keyboard.leftArrowKey.isPressed || keyboard.aKey.isPressed))
+            return true;
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
+            return true;
+#endif
+        return false;
+    }
+
+    static bool IsKeyboardOrDpadRightPressed()
+    {
+#if ENABLE_INPUT_SYSTEM
+        var keyboard = Keyboard.current;
+        if (keyboard != null && (keyboard.rightArrowKey.isPressed || keyboard.dKey.isPressed))
+            return true;
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+        if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
+            return true;
+#endif
+        return false;
+    }
+
+    static bool IsIncreasePressed()
+    {
+#if ENABLE_INPUT_SYSTEM
+        if (IsAnyActionPressed(k_UiPressActionNames))
+            return true;
+
+        if (EventSystem.current != null &&
+            EventSystem.current.currentInputModule is InputSystemUIInputModule uiModule &&
+            uiModule.leftClick != null &&
+            uiModule.leftClick.action != null &&
+            uiModule.leftClick.action.IsPressed())
+        {
+            return true;
+        }
+#endif
+
+        var devices = GetControllerDevices();
+        for (int i = 0; i < devices.Count; i++)
+        {
+            var d = devices[i];
+            if (!d.isValid) continue;
+            if (d.TryGetFeatureValue(XRCommonUsages.primaryButton, out bool primary) && primary)
+                return true;
+            if (d.TryGetFeatureValue(XRCommonUsages.triggerButton, out bool trigger) && trigger)
+                return true;
+            if (d.TryGetFeatureValue(XRCommonUsages.trigger, out float triggerValue) && triggerValue > k_AnalogButtonThreshold)
+                return true;
+        }
+
+#if ENABLE_INPUT_SYSTEM
+        foreach (var device in InputSystem.devices)
+        {
+            if (device == null || !device.enabled) continue;
+            if (ReadAnyButtonControl(device, "primaryButton", "triggerPressed", "activatePressed", "pointerActivated", "press"))
+                return true;
+            if (ReadAnyAxisControl(device, "trigger", "activate", "pointerActivateValue") > k_AnalogButtonThreshold)
+                return true;
+        }
+#endif
+        return false;
+    }
+
+    static bool IsDecreasePressed()
+    {
+#if ENABLE_INPUT_SYSTEM
+        if (IsAnyActionPressed(k_GripSelectActionNames))
+            return true;
+
+        if (EventSystem.current != null &&
+            EventSystem.current.currentInputModule is InputSystemUIInputModule uiModule &&
+            uiModule.rightClick != null &&
+            uiModule.rightClick.action != null &&
+            uiModule.rightClick.action.IsPressed())
+        {
+            return true;
+        }
+#endif
+
+        var devices = GetControllerDevices();
+        for (int i = 0; i < devices.Count; i++)
+        {
+            var d = devices[i];
+            if (!d.isValid) continue;
+            if (d.TryGetFeatureValue(XRCommonUsages.secondaryButton, out bool secondary) && secondary)
+                return true;
+            if (d.TryGetFeatureValue(XRCommonUsages.gripButton, out bool gripButton) && gripButton)
+                return true;
+            if (d.TryGetFeatureValue(XRCommonUsages.grip, out float gripValue) && gripValue > k_AnalogButtonThreshold)
+                return true;
+        }
+
+#if ENABLE_INPUT_SYSTEM
+        foreach (var device in InputSystem.devices)
+        {
+            if (device == null || !device.enabled) continue;
+            if (ReadAnyButtonControl(device, "secondaryButton", "gripPressed", "selectPressed", "select", "squeezePressed", "graspFirm"))
+                return true;
+            if (ReadAnyAxisControl(device, "grip", "select", "squeeze", "graspValue") > k_AnalogButtonThreshold)
+                return true;
+        }
+#endif
+        return false;
+    }
+
+    static List<XRInputDevice> GetControllerDevices()
+    {
+        var allDevices = new List<XRInputDevice>();
+        InputDevices.GetDevices(allDevices);
+
+        var controllers = new List<XRInputDevice>();
+        for (int i = 0; i < allDevices.Count; i++)
+        {
+            var d = allDevices[i];
+            if (!d.isValid) continue;
+            var c = d.characteristics;
+            bool likelyController =
+                (c & InputDeviceCharacteristics.Controller) != 0 ||
+                (c & InputDeviceCharacteristics.HeldInHand) != 0 ||
+                (c & InputDeviceCharacteristics.TrackedDevice) != 0 ||
+                (c & InputDeviceCharacteristics.Left) != 0 ||
+                (c & InputDeviceCharacteristics.Right) != 0;
+            if (likelyController)
+                controllers.Add(d);
+        }
+
+        if (controllers.Count > 0)
+            return controllers;
+
+        for (int i = 0; i < allDevices.Count; i++)
+        {
+            if (allDevices[i].isValid)
+                controllers.Add(allDevices[i]);
+        }
+        return controllers;
+    }
+
+#if ENABLE_INPUT_SYSTEM
+    static bool TryReadVector2Control(ISInputDevice device, string controlName, out Vector2 value)
+    {
+        value = Vector2.zero;
+        if (device == null) return false;
+        var control = device.TryGetChildControl<Vector2Control>(controlName);
+        if (control == null) return false;
+        value = control.ReadValue();
+        return true;
+    }
+
+    static bool ReadButtonControl(ISInputDevice device, string controlName)
+    {
+        if (device == null) return false;
+        var control = device.TryGetChildControl<ButtonControl>(controlName);
+        return control != null && control.isPressed;
+    }
+
+    static float ReadAxisControl(ISInputDevice device, string controlName)
+    {
+        if (device == null) return 0f;
+        var control = device.TryGetChildControl<AxisControl>(controlName);
+        return control != null ? control.ReadValue() : 0f;
+    }
+#endif
 
     static GameObject CreatePanel(Transform parent, string name, Vector2 size, Color color)
     {
@@ -633,8 +1090,18 @@ public class FindObjectUI : MonoBehaviour
         m_NasaTlxSurveyRoot = new GameObject("NasaTlxSurvey");
         m_NasaTlxSurveyRoot.transform.SetParent(parent, false);
         var rootRect = m_NasaTlxSurveyRoot.AddComponent<RectTransform>();
-        rootRect.sizeDelta = new Vector2(380, 156);
-        rootRect.anchoredPosition = new Vector2(0f, -32f);
+        rootRect.sizeDelta = new Vector2(604, 332);
+        rootRect.anchoredPosition = new Vector2(0f, -36f);
+
+        var surveyBg = CreatePanel(m_NasaTlxSurveyRoot.transform, "SurveyCard",
+            new Vector2(604f, 332f), new Color(0.06f, 0.09f, 0.12f, 0.98f));
+        surveyBg.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+
+        var title = CreateText(m_NasaTlxSurveyRoot.transform, "NasaTitle",
+            new Vector2(580f, 28f), new Vector2(0f, 144f), 21f);
+        title.alignment = TextAlignmentOptions.Center;
+        title.color = new Color(0.82f, 0.92f, 1f, 1f);
+        title.text = "NASA-TLX (0 to 100)";
 
         var labels = new[]
         {
@@ -644,15 +1111,19 @@ public class FindObjectUI : MonoBehaviour
 
         for (int i = 0; i < k_NasaTlxQuestionCount; i++)
         {
-            float y = 62f - i * 22f;
+            float y = 98f - i * 40f;
+
+            var rowBg = CreatePanel(m_NasaTlxSurveyRoot.transform, $"NasaRowBg{i}",
+                new Vector2(576f, 34f), new Color(0.12f, 0.16f, 0.2f, 0.72f));
+            rowBg.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, y);
 
             var label = CreateText(m_NasaTlxSurveyRoot.transform, $"NasaLabel{i}",
-                new Vector2(138, 20), new Vector2(-116, y), 15);
+                new Vector2(216, 30), new Vector2(-184, y), 19);
             label.alignment = TextAlignmentOptions.MidlineLeft;
             m_NasaTlxLabelTexts[i] = label;
 
             var slider = CreateSlider(m_NasaTlxSurveyRoot.transform, $"NasaSlider{i}",
-                new Vector2(170, 16), new Vector2(8, y));
+                new Vector2(282, 22), new Vector2(36, y));
             slider.minValue = 0f;
             slider.maxValue = 100f;
             slider.wholeNumbers = true;
@@ -660,15 +1131,18 @@ public class FindObjectUI : MonoBehaviour
             m_NasaTlxSliders[i] = slider;
 
             var value = CreateText(m_NasaTlxSurveyRoot.transform, $"NasaValue{i}",
-                new Vector2(36, 20), new Vector2(96, y), 15);
+                new Vector2(64, 30), new Vector2(254, y), 20);
             value.alignment = TextAlignmentOptions.Center;
             m_NasaTlxValueTexts[i] = value;
         }
 
-        m_NasaSubmitText = CreateText(m_NasaTlxSurveyRoot.transform, "NasaSubmit",
-            new Vector2(360, 22), new Vector2(0f, -78f), 17);
+        m_NasaSubmitButton = CreateButton(m_NasaTlxSurveyRoot.transform, "NasaSubmitButton",
+            new Vector2(326f, 40f), new Vector2(0f, -138f), new Color(0.16f, 0.2f, 0.24f, 1f));
+        m_NasaSubmitButton.onClick.AddListener(SubmitNasaTlxSurvey);
+        m_NasaSubmitText = CreateText(m_NasaSubmitButton.transform, "NasaSubmitText",
+            new Vector2(300f, 30f), Vector2.zero, 20f);
         m_NasaSubmitText.alignment = TextAlignmentOptions.Center;
-        m_NasaSubmitText.text = "[ SUBMIT NASA-TLX ]";
+        m_NasaSubmitText.text = "Submit NASA-TLX";
         m_NasaTlxSurveyRoot.SetActive(false);
     }
 
@@ -756,19 +1230,28 @@ public class FindObjectUI : MonoBehaviour
         slider.handleRect = handleRect;
         slider.targetGraphic = handleImage;
 
-        var minText = CreateText(sliderGO.transform, "MinLabel",
-            new Vector2(24, 14), new Vector2(-size.x * 0.5f + 14f, -12f), 10);
-        minText.alignment = TextAlignmentOptions.Center;
-        minText.color = new Color(0.85f, 0.88f, 0.92f, 1f);
-        minText.text = "0";
-
-        var maxText = CreateText(sliderGO.transform, "MaxLabel",
-            new Vector2(30, 14), new Vector2(size.x * 0.5f - 14f, -12f), 10);
-        maxText.alignment = TextAlignmentOptions.Center;
-        maxText.color = new Color(0.85f, 0.88f, 0.92f, 1f);
-        maxText.text = "100";
-
         return slider;
+    }
+
+    static Button CreateButton(Transform parent, string name, Vector2 size, Vector2 position, Color normalColor)
+    {
+        var buttonGO = new GameObject(name);
+        buttonGO.transform.SetParent(parent, false);
+        var rect = buttonGO.AddComponent<RectTransform>();
+        rect.sizeDelta = size;
+        rect.anchoredPosition = position;
+        var image = buttonGO.AddComponent<Image>();
+        image.color = normalColor;
+        var button = buttonGO.AddComponent<Button>();
+        button.transition = Selectable.Transition.ColorTint;
+        var colors = button.colors;
+        colors.normalColor = normalColor;
+        colors.highlightedColor = new Color(0.2f, 0.55f, 0.9f, 1f);
+        colors.pressedColor = new Color(0.15f, 0.45f, 0.78f, 1f);
+        colors.selectedColor = new Color(0.2f, 0.55f, 0.9f, 1f);
+        colors.disabledColor = new Color(0.32f, 0.32f, 0.32f, 0.8f);
+        button.colors = colors;
+        return button;
     }
 
     void MoveCanvasInFrontOfUser()
