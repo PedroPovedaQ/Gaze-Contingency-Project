@@ -14,9 +14,11 @@ Options:
   -d, --duration SECONDS   Per-chunk duration, 1-180 (default: 180)
   -b, --bitrate BPS        screenrecord bitrate in bits/sec (default: 8000000)
   -s, --size WxH           Recording size (default: 1920x1080)
-      --with-mic           Capture macOS default microphone and mux into final MP4
-      --mic-device NAME    Override microphone device name for ffmpeg avfoundation
-      --audio-advance SEC  Shift mic audio earlier by SEC during mux (default: 1.0)
+  --with-mic           Capture macOS default microphone and mux into final MP4
+  --mic-device NAME    Override microphone device name for ffmpeg avfoundation
+  --audio-advance SEC  Shift mic audio earlier by SEC during mux (default: 1.0)
+      --audio-gain-db DB   Mic gain in dB for final mux (default: 2.0)
+      --no-denoise         Disable denoise filter (enabled by default)
       --serial SERIAL      Target specific adb device serial
       --keep-remote        Keep remote chunk files on device
   -h, --help               Show this help
@@ -37,6 +39,8 @@ KEEP_REMOTE=0
 WITH_MIC=0
 MIC_DEVICE=""
 AUDIO_ADVANCE_SEC="1.0"
+AUDIO_GAIN_DB="2.0"
+DENOISE_ENABLED=1
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -72,6 +76,14 @@ while [[ $# -gt 0 ]]; do
     --audio-advance)
       AUDIO_ADVANCE_SEC="$2"
       shift 2
+      ;;
+    --audio-gain-db)
+      AUDIO_GAIN_DB="$2"
+      shift 2
+      ;;
+    --no-denoise)
+      DENOISE_ENABLED=0
+      shift
       ;;
     --keep-remote)
       KEEP_REMOTE=1
@@ -116,6 +128,11 @@ fi
 
 if ! [[ "$AUDIO_ADVANCE_SEC" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
   echo "Error: --audio-advance must be a non-negative number of seconds." >&2
+  exit 1
+fi
+
+if ! [[ "$AUDIO_GAIN_DB" =~ ^-?[0-9]+([.][0-9]+)?$ ]]; then
+  echo "Error: --audio-gain-db must be a number (e.g. 2.0)." >&2
   exit 1
 fi
 
@@ -240,7 +257,11 @@ trap stop_mic_capture EXIT
 echo "Recording started. Press Ctrl+C to stop and stitch."
 echo "Chunks: ${DURATION}s, size: ${SIZE}, bitrate: ${BITRATE}, output: ${OUTPUT}"
 if (( WITH_MIC == 1 )); then
-  echo "Mic audio: enabled (default input device unless --mic-device is set), advance: ${AUDIO_ADVANCE_SEC}s"
+  if (( DENOISE_ENABLED == 1 )); then
+    echo "Mic audio: enabled, advance: ${AUDIO_ADVANCE_SEC}s, gain: ${AUDIO_GAIN_DB}dB, denoise: on"
+  else
+    echo "Mic audio: enabled, advance: ${AUDIO_ADVANCE_SEC}s, gain: ${AUDIO_GAIN_DB}dB, denoise: off"
+  fi
 fi
 
 record_one_chunk() {
@@ -366,9 +387,14 @@ if (( WITH_MIC == 1 )); then
 
   if [[ -s "$AUDIO_FILE" ]]; then
     echo "Muxing stitched video with microphone audio..."
+    if (( DENOISE_ENABLED == 1 )); then
+      AUDIO_FILTER="highpass=f=80,lowpass=f=12000,afftdn=nf=-25,volume=${AUDIO_GAIN_DB}dB"
+    else
+      AUDIO_FILTER="volume=${AUDIO_GAIN_DB}dB"
+    fi
     ffmpeg -y -i "$VIDEO_STITCHED" -itsoffset "-${AUDIO_ADVANCE_SEC}" -i "$AUDIO_FILE" \
       -map 0:v:0 -map 1:a:0 -dn \
-      -c:v copy -c:a aac -shortest \
+      -c:v copy -c:a aac -af "$AUDIO_FILTER" -shortest \
       "$OUTPUT"
   else
     echo "Warning: no microphone audio captured. Final output will be video-only." >&2
