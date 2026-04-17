@@ -2,13 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Video;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
 /// <summary>
-/// 7-round conjunction search game. Each round spawns 42 objects on bookcases.
+/// 14-round conjunction search game. Each round spawns 56 objects on bookcases.
 /// Player finds 1 target via gaze dwell. On correct capture: show fixation cross,
 /// destroy objects, wait, spawn fresh, finalize gaze interactables, go.
 /// </summary>
@@ -21,6 +22,7 @@ public class FindObjectGameManager : MonoBehaviour
     const float k_BlankPauseMin = 0.2f;
     const float k_BlankPauseMax = 1.3f;
     const float k_ResetDelay = 5f;
+    const float k_ExitAfterThankYouDelay = 9f;
 
     public enum GameState { Idle, Playing, Transitioning, Completed }
 
@@ -43,6 +45,10 @@ public class FindObjectGameManager : MonoBehaviour
     public (string shape, string color, Color colorValue) CurrentTarget => m_CurrentTarget;
     public bool CurrentRoundGazeAware { get; private set; }
     public string CurrentRoundConditionLabel { get; private set; } = "";
+
+    [Header("Debug")]
+    [SerializeField] bool m_UseDebugRoundCountOverride;
+    [SerializeField, Min(1)] int m_DebugRoundCount = ChallengeSet.TotalRounds;
 
     float m_GameStartTime;
 
@@ -133,6 +139,7 @@ public class FindObjectGameManager : MonoBehaviour
     GazeHighlightManager m_GazeDwell;
     TrialDataLogger m_TrialLogger;
     Coroutine m_ResetCoroutine;
+    Coroutine m_AppExitCoroutine;
     float m_LastCompletedElapsed;
     bool m_NasaTlxSubmittedForRun;
 
@@ -151,6 +158,7 @@ public class FindObjectGameManager : MonoBehaviour
 
     void OnEnable()
     {
+        ApplyDebugOverrides();
         Physics.IgnoreLayerCollision(8, 8, true);
         m_Spawner = GetComponent<ObjectSpawner>();
         if (m_Spawner == null) return;
@@ -159,23 +167,21 @@ public class FindObjectGameManager : MonoBehaviour
         {
             m_UI.OnNasaTlxSubmitted -= HandleNasaTlxSubmitted;
             m_UI.OnNasaTlxSubmitted += HandleNasaTlxSubmitted;
-            m_UI.OnSurveyCompletedAcknowledged -= HandleSurveyCompletedAcknowledged;
-            m_UI.OnSurveyCompletedAcknowledged += HandleSurveyCompletedAcknowledged;
-            m_UI.OnStatsDismissed -= HandleStatsDismissed;
-            m_UI.OnStatsDismissed += HandleStatsDismissed;
+            m_UI.OnResetRequested -= HandleResetRequested;
+            m_UI.OnResetRequested += HandleResetRequested;
         }
         m_Spawner.objectSpawned += OnObjectSpawned;
     }
 
     void OnDisable()
     {
+        ChallengeSet.DebugRoundCountOverride = 0;
         if (m_Spawner != null) m_Spawner.objectSpawned -= OnObjectSpawned;
         if (m_GazeDwell != null) m_GazeDwell.OnObjectCaptured -= OnObjectCaptured;
         if (m_UI != null)
         {
             m_UI.OnNasaTlxSubmitted -= HandleNasaTlxSubmitted;
-            m_UI.OnSurveyCompletedAcknowledged -= HandleSurveyCompletedAcknowledged;
-            m_UI.OnStatsDismissed -= HandleStatsDismissed;
+            m_UI.OnResetRequested -= HandleResetRequested;
         }
     }
 
@@ -195,6 +201,19 @@ public class FindObjectGameManager : MonoBehaviour
         var voice = GetComponent<VoiceAssistantController>();
         while (voice != null && !voice.IsReady) yield return null;
         if (obj != null) StartGame(obj);
+    }
+
+    void ApplyDebugOverrides()
+    {
+        int overrideCount = m_UseDebugRoundCountOverride
+            ? Mathf.Clamp(m_DebugRoundCount, 1, ChallengeSet.TotalRounds)
+            : 0;
+        ChallengeSet.DebugRoundCountOverride = overrideCount;
+
+        if (overrideCount > 0)
+        {
+            Debug.Log($"{k_Tag} Debug round override active: {ChallengeSet.RoundCount}/{ChallengeSet.TotalRounds} rounds");
+        }
     }
 
     // =====================================================================
@@ -525,28 +544,9 @@ public class FindObjectGameManager : MonoBehaviour
         m_ResetCoroutine = null;
     }
 
-    void HandleSurveyCompletedAcknowledged()
-    {
-        if (m_State != GameState.Completed || m_UI == null) return;
-        if (!m_NasaTlxSubmittedForRun)
-        {
-            Debug.LogWarning($"{k_Tag} Ignoring survey ack before NASA-TLX submission");
-            return;
-        }
-        if (m_TrialLogger == null) m_TrialLogger = GetComponent<TrialDataLogger>();
-
-        string statsText;
-        if (m_TrialLogger != null && m_TrialLogger.TryGetLastRunStatsText(out string runStats))
-            statsText = runStats;
-        else
-            statsText = BuildFallbackStatsText();
-
-        m_UI.ShowPostSurveyStats(statsText);
-    }
-
     void HandleNasaTlxSubmitted(FindObjectUI.NasaTlxResult tlx)
     {
-        if (m_State != GameState.Completed) return;
+        if (m_State != GameState.Completed || m_UI == null) return;
         if (m_NasaTlxSubmittedForRun) return;
         if (m_TrialLogger == null) m_TrialLogger = GetComponent<TrialDataLogger>();
         if (m_TrialLogger != null)
@@ -554,14 +554,42 @@ public class FindObjectGameManager : MonoBehaviour
                 tlx.mental, tlx.physical, tlx.temporal,
                 tlx.performance, tlx.effort, tlx.frustration);
         m_NasaTlxSubmittedForRun = true;
-        HandleSurveyCompletedAcknowledged();
+        m_UI.ShowThankYouMessage();
+
+        var voiceAssistant = GetComponent<VoiceAssistantController>();
+        if (voiceAssistant != null)
+            voiceAssistant.SpeakClosingThankYou();
+
+        if (m_AppExitCoroutine != null)
+            StopCoroutine(m_AppExitCoroutine);
+        m_AppExitCoroutine = StartCoroutine(QuitApplicationAfterThankYouDelay());
     }
 
-    void HandleStatsDismissed()
+    IEnumerator QuitApplicationAfterThankYouDelay()
     {
-        if (m_State != GameState.Completed) return;
-        if (m_ResetCoroutine == null)
-            m_ResetCoroutine = StartCoroutine(ResetAfterDelay());
+        yield return new WaitForSeconds(k_ExitAfterThankYouDelay);
+        Debug.Log($"{k_Tag} Closing application after thank-you message");
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+        m_AppExitCoroutine = null;
+    }
+
+    void HandleResetRequested()
+    {
+        if (m_ResetCoroutine != null)
+        {
+            StopCoroutine(m_ResetCoroutine);
+            m_ResetCoroutine = null;
+        }
+
+        SessionConfig.ResetForNewParticipant();
+
+        Debug.Log($"{k_Tag} Reset requested from completion UI; reloading scene to restart onboarding for a new participant");
+        Scene activeScene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(activeScene.buildIndex);
     }
 
     string BuildFallbackStatsText()
@@ -623,7 +651,7 @@ public class FindObjectGameManager : MonoBehaviour
     {
         m_Objectives.Clear();
         var rounds = ChallengeSet.Rounds;
-        for (int i = 0; i < rounds.Length; i++)
+        for (int i = 0; i < k_TotalRounds; i++)
         {
             var t = rounds[i].target;
             m_Objectives.Add((t.shape, t.color, t.colorValue));

@@ -197,9 +197,11 @@ public static class ShelfSpawner
         int slotCount = k_Rows * k_Cols;
         int perSlot = totalObjects / slotCount;
         int remainder = totalObjects % slotCount;
+        int pairedExtraRows = remainder / k_Cols;
+        int leftoverSingles = remainder % k_Cols;
+        var rowsWithExtraPair = BuildExtraRowMask(pairedExtraRows);
 
         var points = new List<SpawnPoint>();
-        int slotIdx = 0;
 
         for (int row = 0; row < k_Rows; row++)
         {
@@ -208,8 +210,11 @@ public static class ShelfSpawner
 
             for (int col = 0; col < k_Cols; col++)
             {
-                int count = perSlot + (slotIdx < remainder ? 1 : 0);
-                slotIdx++;
+                int count = perSlot;
+                if (rowsWithExtraPair[row])
+                    count++;
+                if (leftoverSingles > 0 && row == k_Rows / 2 && col < leftoverSingles)
+                    count++;
 
                 for (int i = 0; i < count; i++)
                 {
@@ -228,6 +233,28 @@ public static class ShelfSpawner
         }
 
         return points;
+    }
+
+    static bool[] BuildExtraRowMask(int pairedExtraRows)
+    {
+        var mask = new bool[k_Rows];
+        if (pairedExtraRows <= 0)
+            return mask;
+
+        pairedExtraRows = Mathf.Min(pairedExtraRows, k_Rows);
+
+        // Spread denser rows across the shelf so the extra left/right objects stay
+        // visually balanced instead of all accumulating in the same band.
+        for (int i = 0; i < pairedExtraRows; i++)
+        {
+            int row = Mathf.Clamp(
+                Mathf.FloorToInt((i + 0.5f) * k_Rows / pairedExtraRows),
+                0,
+                k_Rows - 1);
+            mask[row] = true;
+        }
+
+        return mask;
     }
 
     // =====================================================================

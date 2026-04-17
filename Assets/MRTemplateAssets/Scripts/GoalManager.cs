@@ -24,6 +24,9 @@ namespace UnityEngine.XR.Templates.MR
 
     public class GoalManager : MonoBehaviour
     {
+        public static event Action InitialStartPressed;
+        public static event Action<bool> TutorialPlayerVisibilityChanged;
+
         public enum OnboardingGoals
         {
             Empty,
@@ -321,6 +324,13 @@ namespace UnityEngine.XR.Templates.MR
 
         public void ForceCompleteGoal()
         {
+            if (!m_AllGoalsFinished &&
+                m_CurrentGoalIndex == 0 &&
+                m_CurrentGoal.CurrentGoal == OnboardingGoals.Empty)
+            {
+                InitialStartPressed?.Invoke();
+            }
+
             CompleteGoal();
         }
 
@@ -411,6 +421,8 @@ namespace UnityEngine.XR.Templates.MR
 
         public void TooglePlayer(bool visibility)
         {
+            TutorialPlayerVisibilityChanged?.Invoke(visibility);
+
             if (visibility)
             {
                 TurnOnVideoPlayer();

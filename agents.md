@@ -4,7 +4,7 @@
 
 Unity 6 mixed reality project targeting the **HTC Vive Focus Vision**. Passthrough (video see-through) MR environment for a research study on gaze-contingent AI assistance. Built from Unity's MR Template with HTC Vive OpenXR integration.
 
-**Study**: Participants search for 7 virtual objects on a real 1m x 1m table wearing the headset. Two conditions compare gaze-aware AI hints vs. standard AI hints.
+**Study**: Participants perform a deterministic mixed-reality conjunction-search task on a real table with a virtual bookshelf layout. The current experiment runs 14 rounds, alternates gaze-unaware and gaze-aware hinting by round, and asks participants to find one target object among 42 spawned objects per round using eye-gaze dwell capture.
 
 ## Hardware & Build
 

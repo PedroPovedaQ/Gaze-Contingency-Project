@@ -19,8 +19,12 @@ public static class ChallengeSet
     public const int RoundsPerBlock = 7;
     public const int BlockCount = 2;
     public const int TotalRounds = RoundsPerBlock * BlockCount; // 14
-    public const int ObjectsPerRound = 42;
-    public static int RoundCount => TotalRounds;
+    public const int ObjectsPerRound = 56;
+    public static int DebugRoundCountOverride { get; set; }
+    public static int RoundCount =>
+        DebugRoundCountOverride > 0
+            ? Mathf.Clamp(DebugRoundCountOverride, 1, TotalRounds)
+            : TotalRounds;
 
     static readonly string[] Shapes = { "Sphere", "Cube", "Pyramid", "Cylinder", "Star", "Capsule" };
     static readonly string[] ColorNames = { "Red", "Blue", "Yellow", "Purple" };
@@ -44,7 +48,7 @@ public static class ChallengeSet
         public int roundIndex;       // 0-13
         public int blockIndex;       // 0 or 1 (alternating schedule index)
         public ObjectDef target;
-        public ObjectDef[] objects;  // all 42
+        public ObjectDef[] objects;  // all 56
     }
 
     static RoundDef[] s_Rounds;

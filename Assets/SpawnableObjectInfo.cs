@@ -8,7 +8,7 @@ public class SpawnableObjectInfo : MonoBehaviour
 {
     public string shapeName;   // "Sphere", "Cube", "Pyramid", "Cylinder", "Star"
     public string colorName;   // "Red", "Blue", "Yellow", "Purple"
-    public int shelfLevel;     // 0-4: bottom to top shelf row
+    public int shelfLevel;     // 0-6: bottom to top shelf row
     public int shelfColumn;    // 0=left bookcase, 1=right bookcase
 
     /// <summary>Returns a display name like "Red_Sphere" for logging.</summary>

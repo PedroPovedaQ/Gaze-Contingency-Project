@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.XR;
 using UnityEngine.EventSystems;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using XRInputDevice = UnityEngine.XR.InputDevice;
 using XRCommonUsages = UnityEngine.XR.CommonUsages;
 #if ENABLE_INPUT_SYSTEM
@@ -41,6 +42,8 @@ public class FindObjectUI : MonoBehaviour
     readonly TextMeshProUGUI[] m_NasaTlxLabelTexts = new TextMeshProUGUI[k_NasaTlxQuestionCount];
     Button m_NasaSubmitButton;
     TextMeshProUGUI m_NasaSubmitText;
+    Button m_ResetButton;
+    TextMeshProUGUI m_ResetButtonText;
     GameObject m_CrossCanvasGO;
     TextMeshProUGUI m_FixationCross;
     TextMeshProUGUI m_CrossGoalText;
@@ -48,6 +51,7 @@ public class FindObjectUI : MonoBehaviour
     public event System.Action OnSurveyCompletedAcknowledged;
     public event System.Action OnStatsDismissed;
     public event System.Action<NasaTlxResult> OnNasaTlxSubmitted;
+    public event System.Action OnResetRequested;
 
     public struct NasaTlxResult
     {
@@ -65,6 +69,8 @@ public class FindObjectUI : MonoBehaviour
     bool m_ShowingPostSurveyStats;
     bool m_ShowingNasaTlxSurvey;
     bool m_ConfirmPressedLastFrame;
+    bool m_ResetPressedLastFrame;
+    bool m_ResetRequestedThisFrame;
     bool m_UpPressedLastFrame;
     bool m_DownPressedLastFrame;
     bool m_LeftPressedLastFrame;
@@ -75,6 +81,8 @@ public class FindObjectUI : MonoBehaviour
     readonly int[] m_NasaTlxScores = new int[k_NasaTlxQuestionCount];
     int m_CompletionTotalRounds;
     string m_CompletionTimeText;
+    readonly List<XRRayInteractor> m_ControllerRayInteractors = new List<XRRayInteractor>(4);
+    int m_DraggingSliderIndex = -1;
 
     public bool IsTimerRunning => m_TimerRunning;
     public float TimerStartTime => m_TimerStartTime;
@@ -171,6 +179,7 @@ public class FindObjectUI : MonoBehaviour
             new Vector2(608, 118), new Vector2(0, 164), 24);
         m_CompletionText.alignment = TextAlignmentOptions.Center;
         CreateNasaTlxSurveyUi(m_CompletionPanel.transform);
+        CreateResetButton(m_CompletionPanel.transform);
         m_CompletionPanel.SetActive(false);
 
         // Fixation cross — separate canvas, positioned later between the bookshelves
@@ -282,11 +291,10 @@ public class FindObjectUI : MonoBehaviour
     public void SetAgentState(bool gazeAware, string conditionLabel = null)
     {
         if (m_AgentStateText == null) return;
-        string mode = gazeAware ? "GAZE-AWARE" : "GAZE-UNAWARE";
-        if (!string.IsNullOrEmpty(conditionLabel))
-            m_AgentStateText.text = $"Agent: {mode} ({conditionLabel})";
-        else
-            m_AgentStateText.text = $"Agent: {mode}";
+        string participantId = SessionConfig.ParticipantId;
+        m_AgentStateText.text = !string.IsNullOrEmpty(participantId)
+            ? $"Participant: {participantId}"
+            : "Participant: --";
     }
 
     public void StartTimer()
@@ -363,6 +371,8 @@ public class FindObjectUI : MonoBehaviour
             m_CompletionText.fontSize = 24f;
             m_CompletionText.overflowMode = TextOverflowModes.Overflow;
             m_CompletionText.enableWordWrapping = true;
+            m_CompletionText.rectTransform.sizeDelta = new Vector2(608f, 118f);
+            m_CompletionText.rectTransform.anchoredPosition = new Vector2(0f, 164f);
         }
         m_CompletionTotalRounds = total;
         m_CompletionTimeText = timeStr;
@@ -373,6 +383,7 @@ public class FindObjectUI : MonoBehaviour
                 $"Time: {timeStr}\n" +
                 "Complete NASA-TLX below.";
         }
+        SetResetButtonVisible(false);
         InitializeNasaTlxSurvey();
         m_WaitingForSurveyAck = true;
         m_ShowingPostSurveyStats = false;
@@ -387,18 +398,50 @@ public class FindObjectUI : MonoBehaviour
         m_CompletionText.fontSize = 24f;
         m_CompletionText.overflowMode = TextOverflowModes.Overflow;
         m_CompletionText.enableWordWrapping = true;
-        m_CompletionText.text = statsText + "\n\nPress trigger / A / Enter to finish.";
+        m_CompletionText.rectTransform.sizeDelta = new Vector2(608f, 118f);
+        m_CompletionText.rectTransform.anchoredPosition = new Vector2(0f, 164f);
+        m_CompletionText.text =
+            statsText +
+            "\n\nPress trigger / A / Enter to finish, or use Reset to Start.";
         if (m_NasaTlxSurveyRoot != null) m_NasaTlxSurveyRoot.SetActive(false);
+        SetResetButtonVisible(true);
         m_WaitingForSurveyAck = false;
         m_ShowingPostSurveyStats = true;
         m_ShowingNasaTlxSurvey = false;
         m_ConfirmPressedLastFrame = false;
+        m_ResetPressedLastFrame = false;
+        m_ResetRequestedThisFrame = false;
+    }
+
+    public void ShowThankYouMessage()
+    {
+        if (m_CanvasGO == null || m_CompletionPanel == null || m_CompletionText == null) return;
+        MoveCanvasInFrontOfUser();
+        m_CanvasGO.SetActive(true);
+        m_CompletionPanel.SetActive(true);
+        m_CompletionText.fontSize = 28f;
+        m_CompletionText.overflowMode = TextOverflowModes.Overflow;
+        m_CompletionText.enableWordWrapping = true;
+        m_CompletionText.rectTransform.sizeDelta = new Vector2(608f, 180f);
+        m_CompletionText.rectTransform.anchoredPosition = new Vector2(0f, 80f);
+        m_CompletionText.text =
+            "Thank you for your participation in this experiment.\n\n" +
+            "Please remove the headset now and have a great day.";
+        if (m_NasaTlxSurveyRoot != null) m_NasaTlxSurveyRoot.SetActive(false);
+        SetResetButtonVisible(false);
+        m_WaitingForSurveyAck = false;
+        m_ShowingPostSurveyStats = false;
+        m_ShowingNasaTlxSurvey = false;
+        m_ConfirmPressedLastFrame = false;
+        m_ResetPressedLastFrame = false;
+        m_ResetRequestedThisFrame = false;
     }
 
     public void Hide()
     {
         if (m_CanvasGO != null)
             m_CanvasGO.SetActive(false);
+        SetResetButtonVisible(false);
     }
 
     void Update()
@@ -422,22 +465,37 @@ public class FindObjectUI : MonoBehaviour
         if (m_CompletionPanel != null && m_CompletionPanel.activeSelf)
         {
             bool confirmPressed = IsConfirmPressed();
+            HandleDirectControllerRayInteraction(confirmPressed);
             if (m_WaitingForSurveyAck && m_ShowingNasaTlxSurvey)
             {
                 HandleNasaTlxSurveyInput(confirmPressed);
             }
             else
             {
+                bool resetPressed = IsResetPressed();
                 bool rising = confirmPressed && !m_ConfirmPressedLastFrame;
-                m_ConfirmPressedLastFrame = confirmPressed;
+                bool resetRising = resetPressed && !m_ResetPressedLastFrame;
+                bool resetSelected = rising && IsResetButtonSelected();
+                bool shouldReset = m_ShowingPostSurveyStats &&
+                    (m_ResetRequestedThisFrame || resetRising || resetSelected);
 
-                if (rising)
+                m_ConfirmPressedLastFrame = confirmPressed;
+                m_ResetPressedLastFrame = resetPressed;
+
+                if (shouldReset)
+                {
+                    m_ResetRequestedThisFrame = false;
+                    OnResetRequested?.Invoke();
+                }
+                else if (rising)
                 {
                     if (m_WaitingForSurveyAck)
                         OnSurveyCompletedAcknowledged?.Invoke();
                     else if (m_ShowingPostSurveyStats)
                         OnStatsDismissed?.Invoke();
                 }
+
+                m_ResetRequestedThisFrame = false;
             }
         }
     }
@@ -451,6 +509,8 @@ public class FindObjectUI : MonoBehaviour
         m_ShowingNasaTlxSurvey = true;
         if (m_NasaTlxSurveyRoot != null) m_NasaTlxSurveyRoot.SetActive(true);
         m_ConfirmPressedLastFrame = false;
+        m_ResetPressedLastFrame = false;
+        m_ResetRequestedThisFrame = false;
         m_UpPressedLastFrame = false;
         m_DownPressedLastFrame = false;
         m_LeftPressedLastFrame = false;
@@ -1091,7 +1151,7 @@ public class FindObjectUI : MonoBehaviour
         m_NasaTlxSurveyRoot.transform.SetParent(parent, false);
         var rootRect = m_NasaTlxSurveyRoot.AddComponent<RectTransform>();
         rootRect.sizeDelta = new Vector2(604, 332);
-        rootRect.anchoredPosition = new Vector2(0f, -36f);
+        rootRect.anchoredPosition = new Vector2(0f, -52f);
 
         var surveyBg = CreatePanel(m_NasaTlxSurveyRoot.transform, "SurveyCard",
             new Vector2(604f, 332f), new Color(0.06f, 0.09f, 0.12f, 0.98f));
@@ -1143,7 +1203,242 @@ public class FindObjectUI : MonoBehaviour
             new Vector2(300f, 30f), Vector2.zero, 20f);
         m_NasaSubmitText.alignment = TextAlignmentOptions.Center;
         m_NasaSubmitText.text = "Submit NASA-TLX";
+        ConfigureButtonFeedback(
+            m_NasaSubmitButton,
+            m_NasaSubmitText,
+            new Color(0.16f, 0.2f, 0.24f, 1f),
+            new Color(0.2f, 0.55f, 0.9f, 1f),
+            new Color(0.15f, 0.45f, 0.78f, 1f),
+            new Color(1f, 0.95f, 0.7f, 1f));
         m_NasaTlxSurveyRoot.SetActive(false);
+    }
+
+    void CreateResetButton(Transform parent)
+    {
+        m_ResetButton = CreateButton(parent, "ResetButton",
+            new Vector2(326f, 44f), new Vector2(0f, -178f), new Color(0.42f, 0.2f, 0.12f, 1f));
+        m_ResetButton.onClick.AddListener(HandleResetButtonClicked);
+        m_ResetButtonText = CreateText(m_ResetButton.transform, "ResetButtonText",
+            new Vector2(300f, 30f), Vector2.zero, 20f);
+        m_ResetButtonText.alignment = TextAlignmentOptions.Center;
+        m_ResetButtonText.text = "Reset to Start";
+        ConfigureButtonFeedback(
+            m_ResetButton,
+            m_ResetButtonText,
+            new Color(0.42f, 0.2f, 0.12f, 1f),
+            new Color(0.88f, 0.42f, 0.18f, 1f),
+            new Color(0.7f, 0.28f, 0.12f, 1f),
+            Color.white);
+        SetResetButtonVisible(false);
+    }
+
+    void HandleResetButtonClicked()
+    {
+        if (!m_ShowingPostSurveyStats) return;
+        m_ResetRequestedThisFrame = true;
+    }
+
+    void SetResetButtonVisible(bool visible)
+    {
+        if (m_ResetButton != null)
+            m_ResetButton.gameObject.SetActive(visible);
+    }
+
+    bool IsResetButtonSelected()
+    {
+        return EventSystem.current != null &&
+               m_ResetButton != null &&
+               EventSystem.current.currentSelectedGameObject == m_ResetButton.gameObject;
+    }
+
+    static bool IsResetPressed()
+    {
+#if ENABLE_INPUT_SYSTEM
+        var keyboard = Keyboard.current;
+        if (keyboard != null &&
+            (keyboard.rKey.isPressed || keyboard.backspaceKey.isPressed || keyboard.escapeKey.isPressed))
+        {
+            return true;
+        }
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+        if (Input.GetKey(KeyCode.R) || Input.GetKey(KeyCode.Backspace) || Input.GetKey(KeyCode.Escape))
+            return true;
+#endif
+
+        return IsDecreasePressed();
+    }
+
+    void HandleDirectControllerRayInteraction(bool confirmPressed)
+    {
+        if (m_CanvasGO == null || !m_CanvasGO.activeInHierarchy)
+        {
+            SetButtonForcedHighlight(m_ResetButton, false);
+            SetButtonForcedHighlight(m_NasaSubmitButton, false);
+            m_DraggingSliderIndex = -1;
+            return;
+        }
+
+        if (!TryGetControllerRayCanvasHit(out Vector3 hitWorld))
+        {
+            SetButtonForcedHighlight(m_ResetButton, false);
+            SetButtonForcedHighlight(m_NasaSubmitButton, false);
+            if (!confirmPressed)
+                m_DraggingSliderIndex = -1;
+            return;
+        }
+
+        bool hoveringReset = m_ShowingPostSurveyStats && IsWorldPointInsideRect(m_ResetButton, hitWorld);
+        bool hoveringSubmit = m_ShowingNasaTlxSurvey && IsWorldPointInsideRect(m_NasaSubmitButton, hitWorld);
+        int hoveredSlider = m_ShowingNasaTlxSurvey ? GetHoveredSliderIndex(hitWorld) : -1;
+
+        SetButtonForcedHighlight(m_ResetButton, hoveringReset);
+        SetButtonForcedHighlight(m_NasaSubmitButton, hoveringSubmit);
+
+        if (!confirmPressed)
+        {
+            m_DraggingSliderIndex = -1;
+            return;
+        }
+
+        if (hoveredSlider >= 0 || m_DraggingSliderIndex >= 0)
+        {
+            if (m_DraggingSliderIndex < 0)
+                m_DraggingSliderIndex = hoveredSlider;
+
+            if (m_DraggingSliderIndex >= 0)
+                SetSliderValueFromWorldPoint(m_DraggingSliderIndex, hitWorld);
+
+            return;
+        }
+
+        if (hoveringReset)
+        {
+            m_ResetRequestedThisFrame = true;
+            return;
+        }
+
+        if (hoveringSubmit)
+        {
+            SubmitNasaTlxSurvey();
+        }
+    }
+
+    bool TryGetControllerRayCanvasHit(out Vector3 hitWorld)
+    {
+        hitWorld = default;
+        RefreshControllerRayInteractors();
+
+        if (m_CanvasRect == null) return false;
+
+        var plane = new Plane(m_CanvasGO.transform.forward, m_CanvasGO.transform.position);
+        bool found = false;
+        float closestDistance = float.MaxValue;
+
+        for (int i = 0; i < m_ControllerRayInteractors.Count; i++)
+        {
+            var interactor = m_ControllerRayInteractors[i];
+            if (interactor == null || !interactor.isActiveAndEnabled)
+                continue;
+
+            Transform rayTransform = interactor.attachTransform != null
+                ? interactor.attachTransform
+                : interactor.transform;
+
+            var ray = new Ray(rayTransform.position, rayTransform.forward);
+            if (!plane.Raycast(ray, out float distance) || distance < 0f)
+                continue;
+
+            Vector3 candidate = ray.GetPoint(distance);
+            if (!IsWorldPointInsideRect(m_CanvasRect, candidate))
+                continue;
+
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                hitWorld = candidate;
+                found = true;
+            }
+        }
+
+        return found;
+    }
+
+    void RefreshControllerRayInteractors()
+    {
+        m_ControllerRayInteractors.Clear();
+        var rays = FindObjectsOfType<XRRayInteractor>(true);
+        for (int i = 0; i < rays.Length; i++)
+        {
+            var ray = rays[i];
+            if (ray == null || !ray.isActiveAndEnabled)
+                continue;
+            m_ControllerRayInteractors.Add(ray);
+        }
+    }
+
+    int GetHoveredSliderIndex(Vector3 worldPoint)
+    {
+        for (int i = 0; i < m_NasaTlxSliders.Length; i++)
+        {
+            if (IsWorldPointInsideRect(m_NasaTlxSliders[i], worldPoint))
+                return i;
+        }
+
+        return -1;
+    }
+
+    void SetSliderValueFromWorldPoint(int sliderIndex, Vector3 worldPoint)
+    {
+        if (sliderIndex < 0 || sliderIndex >= m_NasaTlxSliders.Length)
+            return;
+
+        var slider = m_NasaTlxSliders[sliderIndex];
+        if (slider == null) return;
+
+        var rect = slider.GetComponent<RectTransform>();
+        if (rect == null) return;
+
+        Vector3 localPoint3 = rect.InverseTransformPoint(worldPoint);
+        var localPoint = new Vector2(localPoint3.x, localPoint3.y);
+        Rect bounds = rect.rect;
+        float t = Mathf.InverseLerp(bounds.xMin, bounds.xMax, localPoint.x);
+        int score = Mathf.RoundToInt(Mathf.Lerp(slider.minValue, slider.maxValue, t));
+        score = Mathf.Clamp(score, Mathf.RoundToInt(slider.minValue), Mathf.RoundToInt(slider.maxValue));
+
+        if (m_NasaTlxScores[sliderIndex] != score)
+        {
+            m_NasaTlxScores[sliderIndex] = score;
+            slider.value = score;
+            m_SelectedTlxRow = sliderIndex;
+            RefreshNasaTlxSurveyText();
+        }
+    }
+
+    static bool IsWorldPointInsideRect(Button button, Vector3 worldPoint)
+    {
+        return button != null && IsWorldPointInsideRect(button.GetComponent<RectTransform>(), worldPoint);
+    }
+
+    static bool IsWorldPointInsideRect(Slider slider, Vector3 worldPoint)
+    {
+        return slider != null && IsWorldPointInsideRect(slider.GetComponent<RectTransform>(), worldPoint);
+    }
+
+    static bool IsWorldPointInsideRect(RectTransform rect, Vector3 worldPoint)
+    {
+        if (rect == null) return false;
+        Vector3 localPoint3 = rect.InverseTransformPoint(worldPoint);
+        var localPoint = new Vector2(localPoint3.x, localPoint3.y);
+        return rect.rect.Contains(localPoint);
+    }
+
+    static void SetButtonForcedHighlight(Button button, bool forcedHighlight)
+    {
+        if (button == null) return;
+        var proxy = button.GetComponent<ButtonFeedbackProxy>();
+        if (proxy != null)
+            proxy.SetForcedHighlight(forcedHighlight);
     }
 
     static TextMeshProUGUI CreateText(Transform parent, string name,
@@ -1252,6 +1547,153 @@ public class FindObjectUI : MonoBehaviour
         colors.disabledColor = new Color(0.32f, 0.32f, 0.32f, 0.8f);
         button.colors = colors;
         return button;
+    }
+
+    static void ConfigureButtonFeedback(
+        Button button,
+        TextMeshProUGUI label,
+        Color normalColor,
+        Color highlightColor,
+        Color pressedColor,
+        Color textHighlightColor)
+    {
+        if (button == null) return;
+
+        var feedback = button.gameObject.GetComponent<ButtonFeedbackProxy>();
+        if (feedback == null)
+            feedback = button.gameObject.AddComponent<ButtonFeedbackProxy>();
+
+        feedback.Initialize(
+            button.targetGraphic as Image,
+            label,
+            normalColor,
+            highlightColor,
+            pressedColor,
+            Color.white,
+            textHighlightColor);
+    }
+
+    sealed class ButtonFeedbackProxy : MonoBehaviour,
+        IPointerEnterHandler, IPointerExitHandler,
+        IPointerDownHandler, IPointerUpHandler,
+        ISelectHandler, IDeselectHandler
+    {
+        Image m_Background;
+        TextMeshProUGUI m_Label;
+        Color m_NormalColor;
+        Color m_HighlightColor;
+        Color m_PressedColor;
+        Color m_NormalTextColor;
+        Color m_HighlightTextColor;
+        Vector3 m_BaseScale;
+        bool m_IsHovered;
+        bool m_IsSelected;
+        bool m_IsPressed;
+        bool m_Initialized;
+        bool m_ForcedHighlight;
+
+        public void Initialize(
+            Image background,
+            TextMeshProUGUI label,
+            Color normalColor,
+            Color highlightColor,
+            Color pressedColor,
+            Color normalTextColor,
+            Color highlightTextColor)
+        {
+            m_Background = background;
+            m_Label = label;
+            m_NormalColor = normalColor;
+            m_HighlightColor = highlightColor;
+            m_PressedColor = pressedColor;
+            m_NormalTextColor = normalTextColor;
+            m_HighlightTextColor = highlightTextColor;
+            m_BaseScale = transform.localScale;
+            m_Initialized = true;
+            ApplyVisualState();
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            m_IsHovered = true;
+            ApplyVisualState();
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            m_IsHovered = false;
+            m_IsPressed = false;
+            ApplyVisualState();
+        }
+
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            m_IsPressed = true;
+            ApplyVisualState();
+        }
+
+        public void OnPointerUp(PointerEventData eventData)
+        {
+            m_IsPressed = false;
+            ApplyVisualState();
+        }
+
+        public void OnSelect(BaseEventData eventData)
+        {
+            m_IsSelected = true;
+            ApplyVisualState();
+        }
+
+        public void OnDeselect(BaseEventData eventData)
+        {
+            m_IsSelected = false;
+            m_IsPressed = false;
+            ApplyVisualState();
+        }
+
+        public void SetForcedHighlight(bool forcedHighlight)
+        {
+            m_ForcedHighlight = forcedHighlight;
+            ApplyVisualState();
+        }
+
+        void OnDisable()
+        {
+            m_IsHovered = false;
+            m_IsSelected = false;
+            m_IsPressed = false;
+            ApplyVisualState();
+        }
+
+        void ApplyVisualState()
+        {
+            if (!m_Initialized) return;
+
+            bool active = m_IsHovered || m_IsSelected || m_ForcedHighlight;
+            Color backgroundColor = m_NormalColor;
+            Color textColor = m_NormalTextColor;
+            float scale = 1f;
+
+            if (m_IsPressed)
+            {
+                backgroundColor = m_PressedColor;
+                textColor = m_HighlightTextColor;
+                scale = 0.97f;
+            }
+            else if (active)
+            {
+                backgroundColor = m_HighlightColor;
+                textColor = m_HighlightTextColor;
+                scale = 1.06f;
+            }
+
+            if (m_Background != null)
+                m_Background.color = backgroundColor;
+            if (m_Label != null)
+                m_Label.color = textColor;
+
+            transform.localScale = m_BaseScale * scale;
+        }
     }
 
     void MoveCanvasInFrontOfUser()

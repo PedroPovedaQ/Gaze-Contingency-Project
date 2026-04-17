@@ -10,7 +10,11 @@ from pathlib import Path
 
 # Academic theme — black/white/yellow consistent with presentation
 sns.set_theme(style="whitegrid")
-PALETTE = {"gaze_aware": "#FFC107", "gaze_unaware": "#666666"}
+PALETTE = {
+    "gaze_aware": "#FFC107",
+    "gaze_unaware": "#666666",
+    "overall": "#1F1F1F",
+}
 ORDER = ["gaze_aware", "gaze_unaware"]
 
 
@@ -22,7 +26,27 @@ def _save(fig, out_dir: Path, name: str):
     print(f"  saved {path}")
 
 
-def _safe_condition_boxplot(ax, data: pd.DataFrame, y_col: str):
+def _conditions_in_plot_order(data: pd.DataFrame, preferred_order=None):
+    preferred_order = preferred_order or ORDER
+    present = [
+        condition for condition in preferred_order
+        if condition in set(data["condition"].dropna().astype(str))
+    ]
+    extras = sorted(
+        condition for condition in data["condition"].dropna().astype(str).unique()
+        if condition not in present
+    )
+    return present + extras
+
+
+def _palette_for_conditions(conditions):
+    return {
+        condition: PALETTE.get(condition, "#4D4D4D")
+        for condition in conditions
+    }
+
+
+def _safe_condition_boxplot(ax, data: pd.DataFrame, y_col: str, order=None):
     """
     Draw a condition plot that doesn't crash on tiny samples.
     Falls back to strip plot + mean marker when boxplot isn't meaningful.
@@ -33,43 +57,66 @@ def _safe_condition_boxplot(ax, data: pd.DataFrame, y_col: str):
         ax.set_xticks([])
         return
 
+    plot_order = order or _conditions_in_plot_order(plot_df)
+    palette = _palette_for_conditions(plot_order)
     counts = plot_df.groupby("condition")[y_col].count()
     has_enough_for_box = (counts >= 2).sum() >= 1 and len(plot_df) >= 3
 
     if has_enough_for_box:
-        sns.boxplot(
-            data=plot_df,
-            x="condition",
-            y=y_col,
-            order=ORDER,
-            hue="condition",
-            hue_order=ORDER,
-            palette=PALETTE,
-            dodge=False,
-            legend=False,
-            ax=ax,
-        )
+        series = []
+        positions = []
+        for index, condition in enumerate(plot_order):
+            values = plot_df.loc[plot_df["condition"] == condition, y_col]
+            if not values.empty:
+                series.append(values.to_numpy())
+                positions.append(index)
+
+        if series:
+            boxplot = ax.boxplot(
+                series,
+                positions=positions,
+                widths=0.55,
+                patch_artist=True,
+                medianprops={"color": "black", "linewidth": 1.5},
+                whiskerprops={"color": "black", "linewidth": 1.2},
+                capprops={"color": "black", "linewidth": 1.2},
+                boxprops={"edgecolor": "black", "linewidth": 1.2},
+                flierprops={
+                    "marker": "o",
+                    "markersize": 4,
+                    "markerfacecolor": "black",
+                    "markeredgecolor": "black",
+                    "alpha": 0.5,
+                },
+            )
+
+            for patch, condition in zip(boxplot["boxes"], [plot_order[i] for i in positions]):
+                patch.set_facecolor(palette[condition])
+                patch.set_alpha(0.8)
     else:
         # Sparse-data fallback (e.g., a single NASA-TLX row)
         sns.stripplot(
             data=plot_df,
             x="condition",
             y=y_col,
-            order=ORDER,
+            order=plot_order,
             hue="condition",
-            hue_order=ORDER,
-            palette=PALETTE,
-            dodge=False,
+            hue_order=plot_order,
+            palette=palette,
+            legend=False,
             alpha=0.9,
             size=8,
-            legend=False,
             ax=ax,
         )
-        means = plot_df.groupby("condition")[y_col].mean().reindex(ORDER)
-        for i, cond in enumerate(ORDER):
+        means = plot_df.groupby("condition")[y_col].mean().reindex(plot_order)
+        for i, cond in enumerate(plot_order):
             m = means.get(cond)
             if pd.notna(m):
                 ax.plot(i, m, marker="_", markersize=20, color="black", linewidth=2)
+
+    ax.set_xticks(range(len(plot_order)))
+    ax.set_xticklabels(plot_order)
+    ax.set_xlim(-0.5, len(plot_order) - 0.5)
 
 
 def plot_search_time(df: pd.DataFrame, out_dir: Path):
@@ -218,10 +265,11 @@ def plot_nasa_tlx(tlx_df: pd.DataFrame, out_dir: Path):
     if tlx_df.empty or "raw_tlx" not in tlx_df.columns:
         print("  skipping nasa_tlx: no data (need analysis/nasa_tlx.csv)")
         return
+    tlx_order = _conditions_in_plot_order(tlx_df)
     fig, ax = plt.subplots(figsize=(6, 5))
-    _safe_condition_boxplot(ax, tlx_df, "raw_tlx")
+    _safe_condition_boxplot(ax, tlx_df, "raw_tlx", order=tlx_order)
     sns.stripplot(data=tlx_df, x="condition", y="raw_tlx",
-                  order=ORDER, color="black", alpha=0.5, size=6, ax=ax)
+                  order=tlx_order, color="black", alpha=0.5, size=6, ax=ax)
     ax.set_xlabel("Condition")
     ax.set_ylabel("Raw NASA-TLX (0-600)")
     ax.set_title("Perceived Workload")
@@ -237,12 +285,13 @@ def plot_nasa_tlx_subscales(tlx_df: pd.DataFrame, out_dir: Path):
     if not all(c in tlx_df.columns for c in subscales):
         return
 
-    means = tlx_df.groupby("condition")[subscales].mean().reindex(ORDER).reset_index()
+    tlx_order = _conditions_in_plot_order(tlx_df)
+    means = tlx_df.groupby("condition")[subscales].mean().reindex(tlx_order).reset_index()
     melted = means.melt(id_vars="condition", var_name="subscale", value_name="score")
 
     fig, ax = plt.subplots(figsize=(10, 5))
     sns.barplot(data=melted, x="subscale", y="score", hue="condition",
-                hue_order=ORDER, palette=PALETTE, ax=ax)
+                hue_order=tlx_order, palette=_palette_for_conditions(tlx_order), ax=ax)
     ax.set_xlabel("NASA-TLX Subscale")
     ax.set_ylabel("Mean Score (0-100)")
     ax.set_title("NASA-TLX Subscale Breakdown")

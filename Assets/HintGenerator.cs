@@ -3,7 +3,8 @@ using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 /// <summary>
-/// Tip system — fires every 5 seconds. Two conditions:
+/// Tip system — gaze-aware tips begin after a short initial delay, then repeat
+/// on a fixed cadence. Two conditions:
 ///
 /// GAZE-AWARE: Responds to the player's real-time gaze behavior with
 /// temperature-only feedback (hot/cold). NEVER reveals the target's
@@ -24,6 +25,7 @@ public class HintGenerator : MonoBehaviour
     const int k_WarmthTrack = 1;
     const int k_WarmthVeryClose = 2;
     const float k_TipInterval = 5f;
+    const float k_FirstTipDelayAware = 3f;
     const float k_TipIntervalUnaware = 9f;
     const float k_FirstTipDelayUnaware = 5f;
     const float k_WrongCaptureWindow = 6f;
@@ -97,7 +99,7 @@ public class HintGenerator : MonoBehaviour
         m_ObjectiveStartTime = Time.time;
         bool resolvedMode = m_GameManager != null ? m_GameManager.CurrentRoundGazeAware : gazeAwareTips;
         float tipInterval = resolvedMode ? k_TipInterval : k_TipIntervalUnaware;
-        float firstDelay = resolvedMode ? k_TipInterval : k_FirstTipDelayUnaware;
+        float firstDelay = resolvedMode ? k_FirstTipDelayAware : k_FirstTipDelayUnaware;
         m_LastTipTime = Time.time - Mathf.Max(0f, tipInterval - firstDelay);
         m_WrongCaptureTime = 0f;
         m_LastHotEvidenceTime = -999f;

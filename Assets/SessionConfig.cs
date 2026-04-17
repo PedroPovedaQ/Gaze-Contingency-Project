@@ -98,6 +98,19 @@ public static class SessionConfig
     }
 
     /// <summary>
+    /// Clears the active run/session identity so the next started run is logged
+    /// as a fresh participant with a fresh run number.
+    /// </summary>
+    public static void ResetForNewParticipant()
+    {
+        Debug.Log($"{k_Tag} Resetting session state for a new participant");
+        ParticipantId = "";
+        RunNumber = 0;
+        CurrentRunFolder = "";
+        ConditionLabel = "";
+    }
+
+    /// <summary>
     /// Scans the root folder for the next available participant ID.
     /// </summary>
     static string FindNextParticipantId()

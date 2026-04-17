@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
+using UnityEngine.XR.Templates.MR;
 
 /// <summary>
 /// Orchestrates the game assistant. Loads API keys at startup (before game can start),
@@ -11,6 +12,14 @@ public class VoiceAssistantController : MonoBehaviour
 {
     const string k_Tag = "[VoiceAssist]";
     const string k_KeysFile = "api_keys.json";
+    const string k_IntroLine =
+        "Hi, my name is Ava and I will guide you through this task. " +
+        "Your goal in this experiment is to find the target object by its color and shape as quickly and accurately as you can. " +
+        "By staring at an object for an extended period of time, you can select it. " +
+        "To begin, tap a nearby surface with your controller. " +
+        "Your goal will be displayed in the center of your view each round.";
+    const string k_ClosingLine =
+        "Thank you for your participation in this experiment, please remove the headset now and have a great day";
 
     FindObjectGameManager m_GameManager;
     AgentContext m_AgentContext;
@@ -18,6 +27,12 @@ public class VoiceAssistantController : MonoBehaviour
     VoiceSynthesizer m_VoiceSynthesizer;
     GazeCoverageTracker m_CoverageTracker;
     Coroutine m_RoundAnnounceCoroutine;
+    bool m_IntroRequested;
+    bool m_IntroPlayed;
+    bool m_IntroPlayingOrQueued;
+    int m_PendingRound = -1;
+    string m_PendingRoundColor;
+    string m_PendingRoundShape;
 
     /// <summary>True once API keys are loaded and all sub-systems are ready.</summary>
     public bool IsReady { get; private set; }
@@ -61,6 +76,8 @@ public class VoiceAssistantController : MonoBehaviour
         m_GameManager.OnGameCompleted += HandleGameCompleted;
         m_GameManager.OnRoundTransitionStarted += HandleRoundTransitionStarted;
         m_GameManager.OnRoundReady += HandleRoundReady;
+        GoalManager.InitialStartPressed += HandleInitialStartPressed;
+        GoalManager.TutorialPlayerVisibilityChanged += HandleTutorialPlayerVisibilityChanged;
 
         // Load API keys — blocks game start until ready
         StartCoroutine(LoadKeys());
@@ -97,6 +114,9 @@ public class VoiceAssistantController : MonoBehaviour
 
         IsReady = true;
         Debug.Log($"{k_Tag} Ready. Key={(!string.IsNullOrEmpty(elevenLabsKey) ? "present" : "MISSING")}");
+
+        if (m_IntroRequested && !m_IntroPlayed)
+            PlayIntroIfPossible();
     }
 
     void OnDisable()
@@ -116,6 +136,46 @@ public class VoiceAssistantController : MonoBehaviour
             m_GameManager.OnRoundTransitionStarted -= HandleRoundTransitionStarted;
             m_GameManager.OnRoundReady -= HandleRoundReady;
         }
+
+        GoalManager.InitialStartPressed -= HandleInitialStartPressed;
+        GoalManager.TutorialPlayerVisibilityChanged -= HandleTutorialPlayerVisibilityChanged;
+    }
+
+    void HandleInitialStartPressed()
+    {
+        if (m_IntroPlayed)
+            return;
+
+        m_IntroRequested = true;
+        PlayIntroIfPossible();
+    }
+
+    void HandleTutorialPlayerVisibilityChanged(bool visible)
+    {
+        if (!visible || m_IntroPlayed)
+            return;
+
+        m_IntroRequested = true;
+        PlayIntroIfPossible();
+    }
+
+    void PlayIntroIfPossible()
+    {
+        if (m_IntroPlayed)
+            return;
+
+        m_IntroPlayingOrQueued = true;
+
+        if (!IsReady || m_VoiceSynthesizer == null)
+            return;
+
+        m_VoiceSynthesizer.Stop();
+        m_VoiceSynthesizer.Speak(k_IntroLine, "intro");
+        m_IntroPlayed = true;
+        m_IntroRequested = false;
+        if (m_RoundAnnounceCoroutine != null)
+            StopCoroutine(m_RoundAnnounceCoroutine);
+        m_RoundAnnounceCoroutine = StartCoroutine(FinishIntroThenAnnouncePendingRound());
     }
 
     void HandleGameStarted()
@@ -150,12 +210,48 @@ public class VoiceAssistantController : MonoBehaviour
 
     void HandleRoundTransitionStarted(int round, string color, string shape)
     {
+        // If the intro is still queued or speaking, let it finish and then
+        // announce the round so the startup instructions remain audible.
+        if (m_IntroPlayingOrQueued)
+        {
+            m_PendingRound = round;
+            m_PendingRoundColor = color;
+            m_PendingRoundShape = shape;
+            if (m_RoundAnnounceCoroutine != null)
+                StopCoroutine(m_RoundAnnounceCoroutine);
+            m_RoundAnnounceCoroutine = StartCoroutine(FinishIntroThenAnnouncePendingRound());
+            return;
+        }
+
         // Cross is visible now: start the next round instruction immediately.
         if (m_VoiceSynthesizer != null) m_VoiceSynthesizer.Stop();
         if (m_HintGenerator != null) m_HintGenerator.CancelPending();
 
         if (m_VoiceSynthesizer != null)
             m_VoiceSynthesizer.Speak($"Round {round + 1}. Find the {color} {shape}.", "round");
+    }
+
+    IEnumerator FinishIntroThenAnnouncePendingRound()
+    {
+        while (m_VoiceSynthesizer != null && m_VoiceSynthesizer.IsBusy)
+            yield return null;
+
+        m_IntroPlayingOrQueued = false;
+
+        if (m_PendingRound >= 0 && m_VoiceSynthesizer != null)
+        {
+            int round = m_PendingRound;
+            string color = m_PendingRoundColor;
+            string shape = m_PendingRoundShape;
+            m_PendingRound = -1;
+            m_PendingRoundColor = null;
+            m_PendingRoundShape = null;
+
+            if (m_HintGenerator != null) m_HintGenerator.CancelPending();
+            m_VoiceSynthesizer.Speak($"Round {round + 1}. Find the {color} {shape}.", "round");
+        }
+
+        m_RoundAnnounceCoroutine = null;
     }
 
     System.Collections.IEnumerator WaitForAnnouncementAndResumeTimer(int round, string color, string shape)
@@ -203,9 +299,18 @@ public class VoiceAssistantController : MonoBehaviour
                 : $"{seconds:F0} seconds";
             m_VoiceSynthesizer.Speak(
                 $"Excellent! You found all the objects in {timeStr}. Great job! " +
-                "Please submit the NASA T L X questionnaire now.",
+                "Please complete the NASA T L X questionnaire now by using the analog stick, then confirm with the trigger button.",
                 "completion");
         }
+    }
+
+    public void SpeakClosingThankYou()
+    {
+        if (m_VoiceSynthesizer == null)
+            return;
+
+        m_VoiceSynthesizer.Stop();
+        m_VoiceSynthesizer.Speak(k_ClosingLine, "closing");
     }
 
     [System.Serializable]

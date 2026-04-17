@@ -12,6 +12,8 @@ using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 /// </summary>
 public class ShapeObjectFactory : MonoBehaviour
 {
+    const float k_GazeHitboxScale = 1.1f;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoAttach()
     {
@@ -295,33 +297,33 @@ public class ShapeObjectFactory : MonoBehaviour
         {
             case 0:
                 var sc = obj.AddComponent<SphereCollider>();
-                sc.radius = 0.65f;
+                sc.radius = 0.65f * k_GazeHitboxScale;
                 break;
             case 1:
                 var bc = obj.AddComponent<BoxCollider>();
-                bc.size = new Vector3(1.3f, 1.3f, 1.3f);
+                bc.size = Vector3.one * (1.3f * k_GazeHitboxScale);
                 break;
             case 2:
                 var pc = obj.AddComponent<SphereCollider>();
                 pc.center = new Vector3(0f, 0.4f, 0f);
-                pc.radius = 0.65f;
+                pc.radius = 0.65f * k_GazeHitboxScale;
                 break;
             case 3:
                 var cc = obj.AddComponent<CapsuleCollider>();
-                cc.radius = 0.65f;
-                cc.height = 2.6f;
+                cc.radius = 0.65f * k_GazeHitboxScale;
+                cc.height = 2.6f * k_GazeHitboxScale;
                 break;
             case 4: // Star
                 var stc = obj.AddComponent<SphereCollider>();
-                stc.radius = 0.7f;
+                stc.radius = 0.7f * k_GazeHitboxScale;
                 break;
             case 5: // Capsule — very generous collider to match other shapes' hit areas
                 var capc = obj.AddComponent<SphereCollider>();
-                capc.radius = 2.0f;
+                capc.radius = 2.0f * k_GazeHitboxScale;
                 break;
             default:
                 var defc = obj.AddComponent<SphereCollider>();
-                defc.radius = 0.65f;
+                defc.radius = 0.65f * k_GazeHitboxScale;
                 break;
         }
     }

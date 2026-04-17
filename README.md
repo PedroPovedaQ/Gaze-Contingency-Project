@@ -48,7 +48,7 @@ Notes:
 
 ## How It Works
 
-The player taps a detected table surface to start the game. 20 colored shapes (5 shapes x 4 colors) spawn across 3 vertical levels — the table surface and two virtual shelves above it. The player must find each target object in sequence by grabbing it.
+The player taps a detected table surface to start the game. Each round spawns 42 virtual objects arranged on a deterministic bookshelf layout (2 columns × 7 rows) anchored to the detected table. The object pool currently uses 6 shapes × 4 colors, and the player must find the current target object via eye-gaze dwell capture.
 
 An AI voice assistant watches the player's eye gaze in real-time and provides spoken hints:
 

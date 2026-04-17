@@ -15,6 +15,7 @@ SUMMARY_COLUMNS = [
     "fixation_count_total", "fixation_count_on_target", "fixation_count_on_distractors",
     "avg_fixation_duration", "saccade_count", "saccade_frequency_hz",
     "avg_saccade_amplitude_deg", "first_try_correct",
+    "run_total_blinks", "run_blinks_per_minute",
 ]
 
 
@@ -96,6 +97,18 @@ def load_all_summaries(data_dir: Path) -> pd.DataFrame:
         run = data.get("run_number", 0)
         condition = data.get("condition", "unknown")
         rounds_per_block = data.get("rounds_per_block", 7)
+        total_blinks = data.get("total_blinks", -1)
+        blinks_per_minute = data.get("blinks_per_minute", -1)
+
+        try:
+            total_blinks = int(total_blinks)
+        except (TypeError, ValueError):
+            total_blinks = -1
+
+        try:
+            blinks_per_minute = float(blinks_per_minute)
+        except (TypeError, ValueError):
+            blinks_per_minute = -1.0
 
         for r in data.get("objectives", []):
             round_idx = r.get("index", 0)
@@ -122,6 +135,8 @@ def load_all_summaries(data_dir: Path) -> pd.DataFrame:
                 "saccade_frequency_hz": r.get("saccade_frequency_hz", 0),
                 "avg_saccade_amplitude_deg": r.get("avg_saccade_amplitude_deg", 0),
                 "first_try_correct": r.get("completed", False) and r.get("wrong_captures", 0) == 0,
+                "run_total_blinks": total_blinks,
+                "run_blinks_per_minute": blinks_per_minute,
             })
 
     df = pd.DataFrame(records, columns=SUMMARY_COLUMNS)

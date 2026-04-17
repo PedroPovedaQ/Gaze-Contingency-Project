@@ -105,6 +105,12 @@ namespace UnityEngine.XR.Templates.MR
             if (m_AnchorManager == null)
                 m_AnchorManager = FindAnyObjectByType<ARAnchorManager>();
 
+            if (!HasWorkingAnchorSubsystem())
+            {
+                m_SpawnAsPersistentAnchor = false;
+                Debug.Log("[SpawnedObjectsManager] ARAnchor subsystem unavailable. Persistent anchors disabled for this runtime.", this);
+            }
+
             if (m_ObjectSelectorDropdown != null)
             {
                 OnObjectSelectorDropdownValueChanged(m_ObjectSelectorDropdown.value);
@@ -159,6 +165,12 @@ namespace UnityEngine.XR.Templates.MR
         /// </summary>
         public async void DeleteAnchors()
         {
+            if (!HasWorkingAnchorSubsystem())
+            {
+                m_AnchorText.text = "Persistent anchors are unavailable on this runtime.";
+                return;
+            }
+
             m_AnchorText.text = "<b><u><align=center>- Deleted Persistent Anchors -</b></u></align>\n";
             await EraseAnchorsAsync();
 
@@ -182,6 +194,12 @@ namespace UnityEngine.XR.Templates.MR
         /// </summary>
         public async void LoadAnchors()
         {
+            if (!HasWorkingAnchorSubsystem())
+            {
+                m_AnchorText.text = "Persistent anchors are unavailable on this runtime.";
+                return;
+            }
+
             m_AnchorText.text = "<b><u><align=center>- Loaded Persistent Anchors -</b></u></align>\n";
             await LoadAnchorsAsync();
         }
@@ -192,6 +210,12 @@ namespace UnityEngine.XR.Templates.MR
         /// </summary>
         public async void SaveAnchors()
         {
+            if (!HasWorkingAnchorSubsystem())
+            {
+                m_AnchorText.text = "Persistent anchors are unavailable on this runtime.";
+                return;
+            }
+
             if (!m_AnchorManager.descriptor.supportsSaveAnchor)
             {
                 Debug.LogWarning("Save anchor is not supported on this device.", this);
@@ -234,12 +258,16 @@ namespace UnityEngine.XR.Templates.MR
 
             m_SpawnedObjects.Add(spawnedObjectHelper);
 
-            CreateAndParentAnchorForObject();
+            if (m_SpawnAsPersistentAnchor && HasWorkingAnchorSubsystem())
+                CreateAndParentAnchorForObject();
         }
 
         // This method Adds the spawned object to an anchor.
         async void CreateAndParentAnchorForObject()
         {
+            if (!HasWorkingAnchorSubsystem())
+                return;
+
             SpawnedObjectHelper spawnedObjectHelper = m_SpawnedObjects[^1];
             var result = await m_AnchorManager.TryAddAnchorAsync(new Pose(spawnedObjectHelper.gameObject.transform.position, spawnedObjectHelper.gameObject.transform.rotation));
             if (result.status.IsSuccess())
@@ -249,6 +277,11 @@ namespace UnityEngine.XR.Templates.MR
                 spawnedObjectHelper.attachedAnchor = anchor;
                 m_SpawnedObjects[^1] = spawnedObjectHelper;
             }
+        }
+
+        bool HasWorkingAnchorSubsystem()
+        {
+            return m_AnchorManager != null && m_AnchorManager.subsystem != null;
         }
 
         // This method deletes all anchors from the saved anchor data list.

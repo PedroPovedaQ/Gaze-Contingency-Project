@@ -15,7 +15,7 @@ The Gaze Contingency Project is a VR research study testing whether gaze-aware A
 
 | Area | What | Files |
 |------|------|-------|
-| Task difficulty | 20 objects, 2 new shapes, virtual shelves (3 levels) | `ShapeObjectFactory.cs`, `FindObjectGameManager.cs`, `SpawnableObjectInfo.cs`, new `ShelfSpawner.cs` |
+| Task difficulty | 56 objects per round on a deterministic 2-column × 7-row bookshelf layout | `ShapeObjectFactory.cs`, `FindObjectGameManager.cs`, `SpawnableObjectInfo.cs`, `ShelfSpawner.cs` |
 | Gaze tracking | Per-object fixation tracking, gaze history, behavior classification | New `GazeCoverageTracker.cs` |
 | LLM context | Add gaze history, examined/unexamined objects, zone coverage to prompt | `AgentContext.cs` |
 | Adaptive timing | Dynamic hint intervals based on gaze behavior, new triggers | `HintGenerator.cs` |
@@ -31,7 +31,7 @@ Add **Cylinder** (Unity built-in `PrimitiveType.Cylinder`) and **Star** (procedu
 
 - `m_ShapeMeshes` grows from 3 → 5
 - `m_ShapeNames` becomes `{ "Sphere", "Cube", "Pyramid", "Cylinder", "Star" }`
-- 5 shapes x 4 colors = **20 distinct combos**
+- 6 shapes x 4 colors = **24 distinct combos**
 - Add collider cases in `ReplaceCollider()`: Cylinder → CapsuleCollider, Star → SphereCollider
 
 ### 1B. Add shelf level field — `Assets/SpawnableObjectInfo.cs`
@@ -178,13 +178,13 @@ Behavior-specific situation descriptions:
 ## Verification
 
 1. **Shelf spawning**: Start game → verify 2 transparent shelf platforms appear above table → objects distributed across 3 levels
-2. **Shape variety**: Verify all 5 shapes render correctly, colliders are targetable by gaze
+2. **Shape variety**: Verify all 6 shapes render correctly, colliders are targetable by gaze
 3. **Coverage tracking**: Add `Debug.Log` in GazeCoverageTracker → verify fixation records accumulate → verify behavior classification changes as you look around systematically vs. erratically
 4. **Enhanced prompts**: Log `BuildContextPrompt()` output → verify GAZE HISTORY, EXAMINED, UNEXAMINED, ZONE COVERAGE sections appear with correct data
 5. **Adaptive timing**: Compare hint timing with systematic scanning (should be 25-30s intervals) vs. erratic looking (should be 8-12s intervals)
 6. **Zone neglect trigger**: Avoid looking at one shelf level for 20s+ → verify hint fires directing you there
 7. **Revisit confusion**: Look at the same wrong object 3+ times → verify hint fires redirecting you
-8. **End-to-end**: Play full game, find all 20 objects → verify hints are contextual, reference gaze behavior, mention shelf levels
+8. **End-to-end**: Play a full run and verify hints are contextual, reference gaze behavior appropriately, and the round flow/logging remain stable across the deterministic shelf layout
 
 ---
 
@@ -193,8 +193,8 @@ Behavior-specific situation descriptions:
 1. `ShapeObjectFactory.cs` — add Cylinder + Star meshes and colliders
 2. `SpawnableObjectInfo.cs` — add `shelfLevel` field
 3. `ShelfSpawner.cs` — new static utility
-4. `FindObjectGameManager.cs` — 20 objects + multi-level spawning
-5. *Test: game runs with 20 objects on 3 levels*
+4. `FindObjectGameManager.cs` — deterministic 56-object round spawning on the bookshelf layout
+5. *Test: game runs with the current deterministic 56-object round setup and shelf layout*
 6. `GazeCoverageTracker.cs` — new component
 7. `VoiceAssistantController.cs` — wire tracker
 8. *Test: tracker accumulates data*

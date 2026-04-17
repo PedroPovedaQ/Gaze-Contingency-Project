@@ -1,0 +1,239 @@
+Gaze Contingency Project Walkthrough
+
+What this project is
+This is a Unity 6 mixed reality research experiment for the HTC Vive Focus Vision. A participant sees a passthrough view of a real table and a virtual bookshelf anchored to that table. On each round, they must find one target object among 56 spawned objects using eye-gaze dwell.
+
+Presentation order in person
+1. Show SampleScene and explain that most systems auto-attach at runtime.
+2. Enter Play mode and show the first tap that starts the task.
+3. Walk the code in this order:
+- FindObjectGameManager.cs
+- ChallengeSet.cs
+- ShelfSpawner.cs
+- ShapeObjectFactory.cs
+- SpawnableObjectInfo.cs
+- GazeHighlightManager.cs
+- GazeCoverageTracker.cs
+- HintGenerator.cs
+- VoiceAssistantController.cs
+- VoiceSynthesizer.cs
+- GazeDataLogger.cs
+- TrialDataLogger.cs
+- SessionConfig.cs
+- FindObjectUI.cs
+
+Runtime architecture
+Real table / Vive plane detection -> VivePlaneProvider + VivePlaneData -> FindObjectGameManager
+FindObjectGameManager -> ChallengeSet for deterministic rounds
+FindObjectGameManager -> ShelfSpawner for bookshelf layout and spawn points
+FindObjectGameManager -> ShapeObjectFactory for shape/color object construction
+User gaze -> XRGazeInteractor -> GazeHighlightManager for dwell and capture
+User gaze history -> GazeCoverageTracker for fixation and search behavior
+Round state + gaze state -> HintGenerator for aware vs unaware hints
+HintGenerator -> VoiceAssistantController -> VoiceSynthesizer -> spoken feedback
+All runtime state -> GazeDataLogger and TrialDataLogger -> CSV and JSON output
+SessionConfig organizes participant/run folders
+
+File breakdown
+
+FindObjectGameManager.cs
+This is the experiment brain. It owns the game state machine, the current round, current target, session start, transitions, spawning, and completion.
+Key snippet:
+[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+static void AutoAttach()
+{
+    var spawner = FindObjectOfType<ObjectSpawner>();
+    if (spawner != null && spawner.GetComponent<FindObjectGameManager>() == null)
+        spawner.gameObject.AddComponent<FindObjectGameManager>();
+    DisableTemplateSystems();
+}
+Meaning: the scene is intentionally minimal because the experiment logic attaches itself at runtime.
+Key snippet:
+void StartGame(GameObject triggerObj)
+{
+    var planes = FindObjectsOfType<VivePlaneData>();
+    ... choose nearest upward plane ...
+    CurrentRoundGazeAware = ChallengeSet.IsGazeAware(m_CurrentRound, participantNumber);
+    CurrentRoundConditionLabel = ChallengeSet.GetConditionLabel(m_CurrentRound, participantNumber);
+    var (shelfObjs, _) = ShelfSpawner.CreateShelvesAndSpawnPoints(...);
+}
+Meaning: the first tap triggers experiment startup, table selection, condition assignment, and shelf creation.
+
+ChallengeSet.cs
+This defines the deterministic experiment schedule.
+Key snippet:
+public static bool IsGazeAware(int roundIndex, int participantNumber)
+{
+    _ = participantNumber;
+    return (roundIndex % 2) == 1;
+}
+Meaning: rounds alternate unaware, aware, unaware, aware.
+Key snippet:
+var rng = new System.Random(42);
+Meaning: every participant gets the same deterministic challenge generation.
+Key snippet:
+objects.Add(target);
+for (int i = 0; i < 13; i++) objects.Add(sameColor[rng.Next(sameColor.Count)]);
+for (int i = 0; i < 13; i++) objects.Add(sameShape[rng.Next(sameShape.Count)]);
+Meaning: each round is a conjunction search with 56 objects total.
+
+ShelfSpawner.cs
+This computes the bookshelf geometry and object spawn points from the real table.
+Key snippet:
+static void ComputeLayout(...)
+{
+    ... choose facing direction relative to player ...
+    ObjectFacingRotation = Quaternion.LookRotation(facingDir, Vector3.up);
+}
+Meaning: the shelves are aligned to the user and the table, not dropped randomly into the world.
+Key snippet:
+for (int row = 0; row < k_Rows; row++)
+  for (int col = 0; col < k_Cols; col++)
+    points.Add(new SpawnPoint { position = pos, row = row, col = col });
+Meaning: the experiment uses a stable 2-column by 7-row layout.
+
+ShapeObjectFactory.cs
+This transforms generic spawned prefabs into the real stimuli.
+Key snippet:
+if (m_ComboQueue.Count > 0)
+{
+    var combo = m_ComboQueue.Dequeue();
+    shapeIdx = combo.shapeIdx;
+    colorIdx = combo.colorIdx;
+}
+Meaning: the game manager can deterministically choose each object's shape and color.
+Key snippet:
+var info = obj.AddComponent<SpawnableObjectInfo>();
+info.shapeName = shapeName;
+info.colorName = colorName;
+obj.name = info.DisplayName;
+Meaning: each object gets metadata used by gaze logic and logging.
+Key snippet:
+grab.allowGazeInteraction = true;
+grab.allowGazeSelect = false;
+grab.allowGazeAssistance = false;
+Meaning: objects can be hovered by gaze, but selection is handled by custom dwell logic.
+
+SpawnableObjectInfo.cs
+Simple metadata component. Stores shape, color, shelf level, shelf column, and display name.
+This is what lets the rest of the system know exactly what the user is looking at.
+
+GazeHighlightManager.cs
+This is the dwell-based selector.
+Key snippet:
+const float k_DwellDuration = 1.6f;
+if (hoveredObj != null && hoveredObj == m_DwellTarget && !m_CapturedThisTarget)
+{
+    m_DwellTime += Time.deltaTime;
+    if (m_DwellTime >= k_DwellDuration)
+        CaptureObject(hoveredObj);
+}
+Meaning: the participant must maintain gaze on the same object long enough to capture it.
+This script also handles progressive highlight glow and the capture flash.
+
+GazeCoverageTracker.cs
+This summarizes recent fixation behavior.
+Key snippet:
+public enum GazeBehavior { Systematic, Normal, Erratic, Stuck }
+Important rule examples:
+if (avgDuration < 0.6f && zoneSwitches > 4) return GazeBehavior.Erratic;
+if (dominantZonePct > 0.7f && searchTime > 15f) return GazeBehavior.Stuck;
+if (avgDuration > 1.5f && uniqueRatio > 0.6f) return GazeBehavior.Systematic;
+Meaning: it turns raw gaze behavior into interpretable search-state labels.
+
+HintGenerator.cs
+This is the core of the experimental manipulation.
+Key snippet:
+bool resolvedMode = m_GameManager.CurrentRoundGazeAware;
+gazeAwareTips = resolvedMode;
+Meaning: each round chooses the hint behavior mode.
+Key snippet:
+if (hasLooked && IsWrongBookcase(targetInfo, lookedInfo))
+    return PickAwareByWarmth(k_WarmthCold);
+if (veryCloseNow || nearNow)
+    return PickAwareByWarmth(veryCloseNow ? k_WarmthVeryClose : k_WarmthTrack);
+Meaning: aware mode gives hot/cold style guidance based on actual gaze evidence.
+Key snippet:
+string EvaluateGazeUnaware(float now)
+{
+    if (m_WrongCaptureTime > 0f && (now - m_WrongCaptureTime) < k_WrongCaptureWindow)
+        return PickUnaware(k_GU_WrongCapture);
+    return PickUnaware(k_GU_General);
+}
+Meaning: unaware mode gives generic encouragement, not gaze-sensitive support.
+
+VoiceAssistantController.cs
+This is the orchestrator.
+Key snippet:
+m_CoverageTracker = gameObject.AddComponent<GazeCoverageTracker>();
+m_AgentContext = gameObject.AddComponent<AgentContext>();
+m_VoiceSynthesizer = gameObject.AddComponent<VoiceSynthesizer>();
+m_HintGenerator = gameObject.AddComponent<HintGenerator>();
+Meaning: the whole assistant stack is constructed at runtime.
+Key snippet:
+m_GameManager.OnRoundTransitionStarted += HandleRoundTransitionStarted;
+m_GameManager.OnRoundReady += HandleRoundReady;
+Meaning: the assistant is synchronized to round transitions and spawn readiness.
+
+VoiceSynthesizer.cs
+This handles TTS generation/playback. It uses ElevenLabs, caches speech, and interrupts current playback when needed.
+
+GazeDataLogger.cs
+This writes per-frame telemetry.
+Key snippet:
+m_Writer.WriteLine(string.Join(",",
+    "timestamp", "frame",
+    "gaze_origin_x", "gaze_origin_y", "gaze_origin_z",
+    ...
+    "hovered_object", "hovered_shape", "hovered_color", "hovered_shelf_level",
+    "is_target", "dwell_progress",
+    ...
+    "blink", "blink_count"
+));
+Meaning: each frame records what the eyes were doing and what object was under gaze.
+
+TrialDataLogger.cs
+This logs event-level experiment data.
+Key snippet:
+WriteEvent("capture_correct", ...);
+WriteEvent("capture_wrong", ...);
+Meaning: it records the behavioral events used later for analysis. It also writes per-run trial_summary.json files.
+
+SessionConfig.cs
+This defines where all run outputs go.
+Key snippet:
+string folderName = $"run_{RunNumber:D3}_{ConditionLabel}_{timestamp}";
+CurrentRunFolder = Path.Combine(participantDir, folderName);
+Meaning: every participant/run gets a clean output folder.
+
+FindObjectUI.cs
+This builds the world-space HUD, completion screen, fixation cross, and NASA-TLX flow.
+Key snippet:
+public void ShowFixationCross(string color = null, string shape = null)
+Meaning: round transitions are intentionally structured and visible.
+Key snippet:
+m_CompletionText.text =
+    $"All {total} rounds complete!\n" +
+    $"Time: {timeStr}\n\n" +
+    "Please submit NASA-TLX now.";
+Meaning: the UI is part of the experiment procedure, not just decoration.
+
+How to explain the aware vs unaware modes
+Gaze-unaware mode: the assistant gives generic support and pacing. It does not react to what the participant is actually looking at.
+Gaze-aware mode: the assistant uses gaze evidence and proximity logic to say whether the participant is on track, very close, or off target.
+
+Data and state diagram
+User taps detected table
+  -> FindObjectGameManager.StartGame
+  -> ShelfSpawner builds shelf layout
+  -> ChallengeSet provides deterministic round target + distractors
+  -> ShapeObjectFactory configures spawned objects
+  -> User searches with gaze
+  -> GazeHighlightManager accumulates dwell and captures object
+  -> GazeCoverageTracker summarizes behavior
+  -> HintGenerator chooses hint style depending on mode
+  -> VoiceAssistantController sends text to VoiceSynthesizer
+  -> VoiceSynthesizer plays spoken feedback
+  -> GazeDataLogger writes per-frame CSV
+  -> TrialDataLogger writes events and summary JSON
+  -> SessionConfig organizes participant/run folders

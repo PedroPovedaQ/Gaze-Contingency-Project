@@ -6,6 +6,13 @@ using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.XR.Interaction.Toolkit.Interactors.Visuals;
+using XRCommonUsages = UnityEngine.XR.CommonUsages;
+using XRInputDevice = UnityEngine.XR.InputDevice;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
+using ISXRHMD = UnityEngine.InputSystem.XR.XRHMD;
+#endif
 
 /// <summary>
 /// Logs comprehensive per-frame eye tracking and gaze data to CSV.
@@ -22,6 +29,7 @@ public class GazeDataLogger : MonoBehaviour
     const float k_BlinkClosedThreshold = 0.2f;  // eye openness below this = closed
     const float k_BlinkMaxDuration = 0.5f;       // max blink duration in seconds
     const float k_BlinkMinDuration = 0.04f;      // min blink duration (debounce noise)
+    const float k_EyeDeviceSearchRetryInterval = 2f;
 
     XRBaseInputInteractor m_Interactor;
     StreamWriter m_Writer;
@@ -30,8 +38,16 @@ public class GazeDataLogger : MonoBehaviour
     // Cached references
     GazeHighlightManager m_DwellSelector;
     FindObjectGameManager m_GameManager;
-    InputDevice m_EyeDevice;
+    XRInputDevice m_EyeDevice;
     bool m_EyeDeviceSearched;
+    float m_NextEyeDeviceSearchTime;
+#if ENABLE_INPUT_SYSTEM
+    ISXRHMD m_InputSystemHmd;
+    AxisControl m_LeftEyeOpenControl;
+    AxisControl m_RightEyeOpenControl;
+    float m_NextInputSystemEyeSearchTime;
+#endif
+    bool m_HasEyeOpennessSignal;
 
     // Hover state
     string m_HoveredObject = "";
@@ -47,6 +63,7 @@ public class GazeDataLogger : MonoBehaviour
 
     /// <summary>Total blinks detected since logging started.</summary>
     public int BlinkCount => m_BlinkCount;
+    public bool HasBlinkSignal => m_HasEyeOpennessSignal;
 
     void OnEnable()
     {
@@ -142,14 +159,40 @@ public class GazeDataLogger : MonoBehaviour
             return;
 
         // Try to find eye tracking device
-        if (!m_EyeDeviceSearched)
+        if ((!m_EyeDeviceSearched || !m_EyeDevice.isValid) && Time.time >= m_NextEyeDeviceSearchTime)
         {
-            var devices = new List<InputDevice>();
+            var devices = new List<XRInputDevice>();
             InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.EyeTracking, devices);
             if (devices.Count > 0)
+            {
                 m_EyeDevice = devices[0];
+                Debug.Log($"{k_Tag} Eye tracking device connected: {m_EyeDevice.name}");
+            }
+            else if (!m_EyeDeviceSearched)
+            {
+                Debug.LogWarning($"{k_Tag} Eye tracking device not ready yet; will retry");
+            }
+
             m_EyeDeviceSearched = true;
+            m_NextEyeDeviceSearchTime = Time.time + k_EyeDeviceSearchRetryInterval;
         }
+
+#if ENABLE_INPUT_SYSTEM
+        if ((m_InputSystemHmd == null || !m_InputSystemHmd.added) && Time.time >= m_NextInputSystemEyeSearchTime)
+        {
+            m_InputSystemHmd = InputSystem.GetDevice<ISXRHMD>();
+            if (m_InputSystemHmd != null)
+            {
+                m_LeftEyeOpenControl = m_InputSystemHmd.TryGetChildControl<AxisControl>("leftEyeOpenAmount");
+                m_RightEyeOpenControl = m_InputSystemHmd.TryGetChildControl<AxisControl>("rightEyeOpenAmount");
+
+                if (m_LeftEyeOpenControl != null && m_RightEyeOpenControl != null)
+                    Debug.Log($"{k_Tag} Input System eye-open controls connected: {m_InputSystemHmd.displayName}");
+            }
+
+            m_NextInputSystemEyeSearchTime = Time.time + k_EyeDeviceSearchRetryInterval;
+        }
+#endif
 
         // Gaze interactor transform
         var t = transform;
@@ -165,7 +208,7 @@ public class GazeDataLogger : MonoBehaviour
 
         if (m_EyeDevice.isValid)
         {
-            if (m_EyeDevice.TryGetFeatureValue(CommonUsages.eyesData, out Eyes eyes))
+            if (m_EyeDevice.TryGetFeatureValue(XRCommonUsages.eyesData, out Eyes eyes))
             {
                 if (eyes.TryGetLeftEyePosition(out Vector3 leftPos))
                 { lx = leftPos.x; ly = leftPos.y; lz = leftPos.z; }
@@ -180,10 +223,21 @@ public class GazeDataLogger : MonoBehaviour
             }
         }
 
+#if ENABLE_INPUT_SYSTEM
+        if ((float.IsNaN(leftOpen) || float.IsNaN(rightOpen)) &&
+            m_InputSystemHmd != null && m_InputSystemHmd.added &&
+            m_LeftEyeOpenControl != null && m_RightEyeOpenControl != null)
+        {
+            leftOpen = m_LeftEyeOpenControl.ReadValue();
+            rightOpen = m_RightEyeOpenControl.ReadValue();
+        }
+#endif
+
         // Blink detection
         m_BlinkThisFrame = false;
         if (!float.IsNaN(leftOpen) && !float.IsNaN(rightOpen))
         {
+            m_HasEyeOpennessSignal = true;
             bool bothClosed = leftOpen < k_BlinkClosedThreshold && rightOpen < k_BlinkClosedThreshold;
 
             if (bothClosed && !m_EyesClosed)

@@ -399,7 +399,9 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine($"  \"timestamp\": \"{System.DateTime.Now:O}\",");
         sb.AppendLine($"  \"challenge_set\": \"deterministic_seed_42\",");
         sb.AppendLine($"  \"round_schedule\": \"alternating_gaze_unaware_gaze_aware\",");
-        sb.AppendLine($"  \"total_rounds\": {ChallengeSet.TotalRounds},");
+        sb.AppendLine($"  \"total_rounds\": {ChallengeSet.RoundCount},");
+        sb.AppendLine($"  \"nominal_total_rounds\": {ChallengeSet.TotalRounds},");
+        sb.AppendLine($"  \"debug_round_override\": {ChallengeSet.DebugRoundCountOverride},");
         sb.AppendLine($"  \"rounds_per_block\": {ChallengeSet.RoundsPerBlock},");
         sb.AppendLine($"  \"objects_per_round\": {ChallengeSet.ObjectsPerRound},");
         sb.AppendLine($"  \"total_time_seconds\": {totalTime:F2},");
@@ -430,7 +432,8 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine($"  \"total_fixation_on_distractors_seconds\": {totalFixationOnDistractors:F2},");
 
         // Blink stats
-        int blinkCount = m_GazeDataLogger != null ? m_GazeDataLogger.BlinkCount : -1;
+        bool hasBlinkSignal = m_GazeDataLogger != null && m_GazeDataLogger.HasBlinkSignal;
+        int blinkCount = hasBlinkSignal ? m_GazeDataLogger.BlinkCount : -1;
         float blinksPerMinute = totalTime > 0 && blinkCount >= 0
             ? blinkCount / (totalTime / 60f) : -1f;
         sb.AppendLine($"  \"total_blinks\": {blinkCount},");
@@ -569,7 +572,8 @@ public class TrialDataLogger : MonoBehaviour
         float targetFixPct = fixTotal > 0f ? (100f * totalFixTarget / fixTotal) : 0f;
         float distractorFixPct = fixTotal > 0f ? (100f * totalFixDistractor / fixTotal) : 0f;
 
-        int blinkCount = m_GazeDataLogger != null ? m_GazeDataLogger.BlinkCount : -1;
+        bool hasBlinkSignal = m_GazeDataLogger != null && m_GazeDataLogger.HasBlinkSignal;
+        int blinkCount = hasBlinkSignal ? m_GazeDataLogger.BlinkCount : -1;
         float blinksPerMinute = totalTime > 0f && blinkCount >= 0
             ? blinkCount / (totalTime / 60f) : -1f;
         string behavior = m_CoverageTracker != null
@@ -582,7 +586,7 @@ public class TrialDataLogger : MonoBehaviour
 
         var sb = new StringBuilder();
         sb.AppendLine("Session Stats");
-        sb.AppendLine($"Rounds completed: {completed}/{ChallengeSet.TotalRounds}");
+        sb.AppendLine($"Rounds completed: {completed}/{ChallengeSet.RoundCount}");
         sb.AppendLine($"Total time: {timeStr}");
         sb.AppendLine($"First-try accuracy: {firstTryPct:F1}%");
         sb.AppendLine($"Wrong captures: {totalWrong}");

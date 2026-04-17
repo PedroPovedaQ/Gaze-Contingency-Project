@@ -9,7 +9,7 @@ The short version is:
 3. Shelf geometry is created once and cached.
 4. A deterministic 14-round challenge set is generated from a fixed seed.
 5. Round 1 starts with fixation cross + spoken goal (same as later rounds).
-6. Each round spawns 42 configured objects on the shelf grid.
+6. Each round spawns 56 configured objects on the shelf grid.
 7. Eye-gaze dwell captures the target after sustained focus.
 8. A transition cross appears, the next goal is shown, then the game pauses briefly.
 9. The next round spawns.
@@ -17,7 +17,7 @@ The short version is:
 
 ## What this game is doing
 
-The game is a controlled visual-search task. Every round places one target and 41 distractors into a fixed 42-object array. The participant must use gaze to find and dwell on the correct object.
+The game is a controlled visual-search task. Every round places one target and 55 distractors into a fixed 56-object array. The participant must use gaze to find and dwell on the correct object.
 
 The important design property is that the run is not improvisational. The shelf layout, target schedule, and object combinations are deterministic. That makes the study repeatable and makes the analytics interpretable.
 
@@ -130,7 +130,7 @@ Each round contains:
 - 1 target object,
 - 13 same-color distractors,
 - 13 same-shape distractors,
-- the remaining neutral distractors needed to bring the total to 42 objects.
+- the remaining neutral distractors needed to bring the total to 56 objects.
 
 The round record stores both the target and the full object array:
 
