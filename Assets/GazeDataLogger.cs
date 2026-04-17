@@ -3,9 +3,11 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 using UnityEngine.XR;
+using UnityEngine.XR.OpenXR;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.XR.Interaction.Toolkit.Interactors.Visuals;
+using VIVE.OpenXR.FacialTracking;
 using XRCommonUsages = UnityEngine.XR.CommonUsages;
 using XRInputDevice = UnityEngine.XR.InputDevice;
 #if ENABLE_INPUT_SYSTEM
@@ -30,7 +32,6 @@ public class GazeDataLogger : MonoBehaviour
     const float k_BlinkMaxDuration = 0.5f;       // max blink duration in seconds
     const float k_BlinkMinDuration = 0.04f;      // min blink duration (debounce noise)
     const float k_EyeDeviceSearchRetryInterval = 2f;
-
     XRBaseInputInteractor m_Interactor;
     StreamWriter m_Writer;
     int m_FrameCount;
@@ -47,6 +48,9 @@ public class GazeDataLogger : MonoBehaviour
     AxisControl m_RightEyeOpenControl;
     float m_NextInputSystemEyeSearchTime;
 #endif
+    ViveFacialTracking m_ViveFacialTracking;
+    float m_NextViveFacialTrackingSearchTime;
+    bool m_LoggedViveFacialTrackingReady;
     bool m_HasEyeOpennessSignal;
 
     // Hover state
@@ -193,6 +197,19 @@ public class GazeDataLogger : MonoBehaviour
             m_NextInputSystemEyeSearchTime = Time.time + k_EyeDeviceSearchRetryInterval;
         }
 #endif
+        if (m_ViveFacialTracking == null && Time.time >= m_NextViveFacialTrackingSearchTime)
+        {
+            m_ViveFacialTracking = OpenXRSettings.Instance != null
+                ? OpenXRSettings.Instance.GetFeature<ViveFacialTracking>()
+                : null;
+            if (m_ViveFacialTracking != null && !m_LoggedViveFacialTrackingReady)
+            {
+                Debug.Log($"{k_Tag} Vive facial tracking feature connected");
+                m_LoggedViveFacialTrackingReady = true;
+            }
+
+            m_NextViveFacialTrackingSearchTime = Time.time + k_EyeDeviceSearchRetryInterval;
+        }
 
         // Gaze interactor transform
         var t = transform;
@@ -232,6 +249,10 @@ public class GazeDataLogger : MonoBehaviour
             rightOpen = m_RightEyeOpenControl.ReadValue();
         }
 #endif
+        if (float.IsNaN(leftOpen) || float.IsNaN(rightOpen))
+        {
+            TryReadViveEyeOpenness(ref leftOpen, ref rightOpen);
+        }
 
         // Blink detection
         m_BlinkThisFrame = false;
@@ -329,4 +350,34 @@ public class GazeDataLogger : MonoBehaviour
     }
 
     static string F(float v) => float.IsNaN(v) ? "" : v.ToString("F5");
+
+    void TryReadViveEyeOpenness(ref float leftOpen, ref float rightOpen)
+    {
+        if (m_ViveFacialTracking == null)
+            return;
+
+        if (!m_ViveFacialTracking.GetFacialExpressions(
+            XrFacialTrackingTypeHTC.XR_FACIAL_TRACKING_TYPE_EYE_DEFAULT_HTC,
+            out float[] expressions))
+        {
+            return;
+        }
+
+        int leftBlinkIndex = (int)XrEyeExpressionHTC.XR_EYE_EXPRESSION_LEFT_BLINK_HTC;
+        int leftSqueezeIndex = (int)XrEyeExpressionHTC.XR_EYE_EXPRESSION_LEFT_SQUEEZE_HTC;
+        int rightBlinkIndex = (int)XrEyeExpressionHTC.XR_EYE_EXPRESSION_RIGHT_BLINK_HTC;
+        int rightSqueezeIndex = (int)XrEyeExpressionHTC.XR_EYE_EXPRESSION_RIGHT_SQUEEZE_HTC;
+
+        if (expressions == null ||
+            expressions.Length <= Mathf.Max(leftSqueezeIndex, rightSqueezeIndex))
+        {
+            return;
+        }
+
+        float leftClosed = Mathf.Clamp01(Mathf.Max(expressions[leftBlinkIndex], expressions[leftSqueezeIndex]));
+        float rightClosed = Mathf.Clamp01(Mathf.Max(expressions[rightBlinkIndex], expressions[rightSqueezeIndex]));
+
+        leftOpen = 1f - leftClosed;
+        rightOpen = 1f - rightClosed;
+    }
 }

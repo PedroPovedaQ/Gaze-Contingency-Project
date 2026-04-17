@@ -6,6 +6,7 @@ One row per (participant, run, round). Easy to filter/aggregate by condition.
 import json
 from pathlib import Path
 import pandas as pd
+import csv
 
 
 SUMMARY_COLUMNS = [
@@ -17,6 +18,55 @@ SUMMARY_COLUMNS = [
     "avg_saccade_amplitude_deg", "first_try_correct",
     "run_total_blinks", "run_blinks_per_minute",
 ]
+
+
+def _load_blink_metrics(run_dir: Path, total_time_seconds: float) -> tuple[int, float]:
+    """
+    Recompute run-level blink metrics from gaze_log.csv when possible.
+
+    Returns:
+        (blink_count, blinks_per_minute)
+
+    Semantics:
+      - returns (-1, -1.0) if the run has no usable eye-openness signal
+      - otherwise returns the blink sum from the per-frame `blink` column
+    """
+    gaze_log = run_dir / "gaze_log.csv"
+    if not gaze_log.exists():
+        return -1, -1.0
+
+    blink_count = 0
+    has_eye_signal = False
+
+    try:
+        with open(gaze_log, encoding="utf-8-sig", newline="") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                left_open = (row.get("left_eye_open") or "").strip()
+                right_open = (row.get("right_eye_open") or "").strip()
+                if left_open or right_open:
+                    has_eye_signal = True
+
+                blink_raw = (row.get("blink") or "").strip()
+                if blink_raw:
+                    try:
+                        blink_count += int(float(blink_raw))
+                    except ValueError:
+                        pass
+    except OSError as e:
+        print(f"Skipping blink recompute for {gaze_log}: {e}")
+        return -1, -1.0
+
+    if not has_eye_signal:
+        return -1, -1.0
+
+    try:
+        duration_seconds = float(total_time_seconds)
+    except (TypeError, ValueError):
+        duration_seconds = 0.0
+
+    blinks_per_minute = blink_count / (duration_seconds / 60.0) if duration_seconds > 0 else -1.0
+    return blink_count, blinks_per_minute
 
 
 def _condition_for_round(round_idx: int, run_condition_label: str, rounds_per_block: int = 7) -> str:
@@ -97,6 +147,7 @@ def load_all_summaries(data_dir: Path) -> pd.DataFrame:
         run = data.get("run_number", 0)
         condition = data.get("condition", "unknown")
         rounds_per_block = data.get("rounds_per_block", 7)
+        total_time_seconds = data.get("total_time_seconds", 0)
         total_blinks = data.get("total_blinks", -1)
         blinks_per_minute = data.get("blinks_per_minute", -1)
 
@@ -108,6 +159,14 @@ def load_all_summaries(data_dir: Path) -> pd.DataFrame:
         try:
             blinks_per_minute = float(blinks_per_minute)
         except (TypeError, ValueError):
+            blinks_per_minute = -1.0
+
+        recomputed_blinks, recomputed_bpm = _load_blink_metrics(path.parent, total_time_seconds)
+        if recomputed_blinks >= 0:
+            total_blinks = recomputed_blinks
+            blinks_per_minute = recomputed_bpm
+        elif total_blinks == 0 and blinks_per_minute == 0:
+            total_blinks = -1
             blinks_per_minute = -1.0
 
         for r in data.get("objectives", []):

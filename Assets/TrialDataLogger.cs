@@ -437,7 +437,7 @@ public class TrialDataLogger : MonoBehaviour
         float blinksPerMinute = totalTime > 0 && blinkCount >= 0
             ? blinkCount / (totalTime / 60f) : -1f;
         sb.AppendLine($"  \"total_blinks\": {blinkCount},");
-        sb.AppendLine($"  \"blinks_per_minute\": {(blinksPerMinute >= 0 ? blinksPerMinute.ToString("F1") : "\"-1\"")},");
+        sb.AppendLine($"  \"blinks_per_minute\": {blinksPerMinute:F1},");
 
         // Gaze behavior
         string behavior = m_CoverageTracker != null
