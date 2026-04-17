@@ -58,6 +58,9 @@ def main():
     tlx_df = load_nasa_tlx(data_dir)
     if not tlx_df.empty:
         print(f"  loaded NASA-TLX scores ({len(tlx_df)} rows)")
+        tlx_csv_path = out_dir / "nasa_tlx_scores.csv"
+        tlx_df.to_csv(tlx_csv_path, index=False)
+        print(f"  saved {tlx_csv_path}")
 
     # Generate plots
     generate_all(df, out_dir, last_fix_df=last_fix_df, tlx_df=tlx_df)

@@ -69,6 +69,7 @@ In the `results/` folder:
   - `nasa_tlx.png` — raw workload (only if `nasa_tlx.csv` is present)
   - `nasa_tlx_subscales.png` — 6 subscale breakdown
 - `summary_grid.png` — 4x2 grid of all metrics, paper-ready
+- `nasa_tlx_scores.csv` — the loaded NASA-TLX responses with `raw_tlx` added
 
 ## NASA-TLX Workflow
 
@@ -84,7 +85,8 @@ After each session:
 
 The analysis pipeline auto-detects this file. If present, it generates
 `nasa_tlx.png` (raw workload box plot) and `nasa_tlx_subscales.png`
-(6-subscale grouped bar chart).
+(6-subscale grouped bar chart), and it copies the loaded questionnaire
+data into `results/nasa_tlx_scores.csv`.
 
 ## File Structure
 
