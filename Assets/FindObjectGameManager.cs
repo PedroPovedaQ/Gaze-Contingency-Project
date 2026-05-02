@@ -79,13 +79,18 @@ public class FindObjectGameManager : MonoBehaviour
         }
 
         // Hide tutorial/coaching windows from the MR template startup flow.
-        foreach (var go in Object.FindObjectsOfType<GameObject>())
+        foreach (var go in Resources.FindObjectsOfTypeAll<GameObject>())
         {
+            if (go == null || !go.scene.IsValid())
+                continue;
+
             string n = go.name;
             bool isTemplateTutorialUi =
                 n == "Text Poke Button OK" ||
                 n == "Text Poke Button" ||
                 n == "Text Poke Button Continue" ||
+                n == "Spatial Panel Manipulator" ||
+                n == "Video Player Slider" ||
                 n.IndexOf("Tutorial Player", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
                 n.IndexOf("TutorialPlayer", System.StringComparison.OrdinalIgnoreCase) >= 0;
 
@@ -140,6 +145,7 @@ public class FindObjectGameManager : MonoBehaviour
     TrialDataLogger m_TrialLogger;
     Coroutine m_ResetCoroutine;
     Coroutine m_AppExitCoroutine;
+    Coroutine m_StartAfterIntroCoroutine;
     float m_LastCompletedElapsed;
     bool m_NasaTlxSubmittedForRun;
 
@@ -164,6 +170,8 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_Spawner == null) return;
         if (m_UI == null) { m_UI = gameObject.AddComponent<FindObjectUI>(); m_UI.Initialize(); }
         if (m_UI != null)
+            m_UI.ShowStartPrompt();
+        if (m_UI != null)
         {
             m_UI.OnNasaTlxSubmitted -= HandleNasaTlxSubmitted;
             m_UI.OnNasaTlxSubmitted += HandleNasaTlxSubmitted;
@@ -178,6 +186,11 @@ public class FindObjectGameManager : MonoBehaviour
         ChallengeSet.DebugRoundCountOverride = 0;
         if (m_Spawner != null) m_Spawner.objectSpawned -= OnObjectSpawned;
         if (m_GazeDwell != null) m_GazeDwell.OnObjectCaptured -= OnObjectCaptured;
+        if (m_StartAfterIntroCoroutine != null)
+        {
+            StopCoroutine(m_StartAfterIntroCoroutine);
+            m_StartAfterIntroCoroutine = null;
+        }
         if (m_UI != null)
         {
             m_UI.OnNasaTlxSubmitted -= HandleNasaTlxSubmitted;
@@ -250,6 +263,37 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_GazeDwell != null)
             m_GazeDwell.OnObjectCaptured += OnObjectCaptured;
         m_NasaTlxSubmittedForRun = false;
+
+        var voice = GetComponent<VoiceAssistantController>();
+        if (voice != null && voice.IsIntroBlockingExperimentStart)
+        {
+            if (m_UI != null)
+                m_UI.ShowStartPromptWaiting();
+            m_StartAfterIntroCoroutine = StartCoroutine(StartGameAfterIntroCoroutine(voice));
+            return;
+        }
+
+        if (m_UI != null)
+            m_UI.HideStartPrompt();
+        BeginSessionStart();
+    }
+
+    IEnumerator StartGameAfterIntroCoroutine(VoiceAssistantController voice)
+    {
+        while (voice != null && voice.IsIntroBlockingExperimentStart)
+            yield return null;
+
+        m_StartAfterIntroCoroutine = null;
+        BeginSessionStart();
+    }
+
+    void BeginSessionStart()
+    {
+        if (m_State != GameState.Idle)
+            return;
+
+        if (m_UI != null)
+            m_UI.HideStartPrompt();
 
         // Start with the same transition ritual as between rounds:
         // fixation cross + announced goal, then spawn.
@@ -539,7 +583,7 @@ public class FindObjectGameManager : MonoBehaviour
         m_SpawnPoints.Clear();
         m_Objectives.Clear();
         if (m_GazeDwell != null) m_GazeDwell.OnObjectCaptured -= OnObjectCaptured;
-        m_UI.Hide();
+        if (m_UI != null) m_UI.ShowStartPrompt();
         m_State = GameState.Idle;
         m_ResetCoroutine = null;
     }

@@ -20,12 +20,16 @@ public class VoiceAssistantController : MonoBehaviour
         "Your goal will be displayed in the center of your view each round.";
     const string k_ClosingLine =
         "Thank you for your participation in this experiment, please remove the headset now and have a great day";
+    const int k_WrongCueSampleRate = 22050;
+    const float k_WrongCueDurationSeconds = 0.22f;
 
     FindObjectGameManager m_GameManager;
     AgentContext m_AgentContext;
     HintGenerator m_HintGenerator;
     VoiceSynthesizer m_VoiceSynthesizer;
     GazeCoverageTracker m_CoverageTracker;
+    AudioSource m_EffectAudioSource;
+    AudioClip m_WrongCaptureCue;
     Coroutine m_RoundAnnounceCoroutine;
     bool m_IntroRequested;
     bool m_IntroPlayed;
@@ -36,6 +40,7 @@ public class VoiceAssistantController : MonoBehaviour
 
     /// <summary>True once API keys are loaded and all sub-systems are ready.</summary>
     public bool IsReady { get; private set; }
+    public bool IsIntroBlockingExperimentStart => m_IntroPlayingOrQueued;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void AutoAttach()
@@ -65,6 +70,12 @@ public class VoiceAssistantController : MonoBehaviour
         m_AgentContext = gameObject.AddComponent<AgentContext>();
         var ui = GetComponent<FindObjectUI>();
         m_AgentContext.Initialize(m_GameManager, ui, m_CoverageTracker);
+
+        m_EffectAudioSource = gameObject.AddComponent<AudioSource>();
+        m_EffectAudioSource.spatialBlend = 0f;
+        m_EffectAudioSource.playOnAwake = false;
+        m_EffectAudioSource.volume = 0.26f;
+        m_WrongCaptureCue = CreateWrongCaptureCue();
 
         m_VoiceSynthesizer = gameObject.AddComponent<VoiceSynthesizer>();
         m_HintGenerator = gameObject.AddComponent<HintGenerator>();
@@ -283,6 +294,8 @@ public class VoiceAssistantController : MonoBehaviour
     void HandleWrongCapture(string capturedName, string wantedName)
     {
         Debug.Log($"{k_Tag} Wrong capture: {capturedName} instead of {wantedName}");
+        if (m_EffectAudioSource != null && m_WrongCaptureCue != null)
+            m_EffectAudioSource.PlayOneShot(m_WrongCaptureCue);
         if (m_HintGenerator != null) m_HintGenerator.OnWrongCapture();
     }
 
@@ -318,5 +331,34 @@ public class VoiceAssistantController : MonoBehaviour
     {
         public string openai_key;
         public string elevenlabs_key;
+    }
+
+    static AudioClip CreateWrongCaptureCue()
+    {
+        int sampleCount = Mathf.CeilToInt(k_WrongCueSampleRate * k_WrongCueDurationSeconds);
+        float[] samples = new float[sampleCount];
+        float phaseA = 0f;
+        float phaseB = 0f;
+
+        for (int i = 0; i < sampleCount; i++)
+        {
+            float t = i / (float)k_WrongCueSampleRate;
+            float normalized = sampleCount > 1 ? i / (float)(sampleCount - 1) : 1f;
+            float envelope = Mathf.Pow(1f - normalized, 1.8f);
+            float freqA = Mathf.Lerp(210f, 165f, normalized);
+            float freqB = Mathf.Lerp(320f, 245f, normalized);
+
+            phaseA += 2f * Mathf.PI * freqA / k_WrongCueSampleRate;
+            phaseB += 2f * Mathf.PI * freqB / k_WrongCueSampleRate;
+
+            float toneA = Mathf.Sin(phaseA);
+            float toneB = Mathf.Sin(phaseB);
+            float buzz = Mathf.Sign(Mathf.Sin(phaseA * 0.5f)) * 0.12f;
+            samples[i] = (toneA * 0.42f + toneB * 0.20f + buzz) * envelope;
+        }
+
+        var clip = AudioClip.Create("WrongCaptureCue", sampleCount, 1, k_WrongCueSampleRate, false);
+        clip.SetData(samples, 0);
+        return clip;
     }
 }

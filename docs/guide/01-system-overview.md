@@ -28,7 +28,7 @@ The code is organized around that flow, not around a traditional player-controll
 
 The project assumes:
 
-- only `Assets/Scenes/SampleScene.unity` is in the build
+- only `Assets/Scenes/GazeContingencyStudyScene.unity` is in the build
 - the headset is HTC Vive Focus Vision
 - the app uses MR passthrough
 - the task starts from an `ObjectSpawner`-driven interaction

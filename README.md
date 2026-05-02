@@ -11,13 +11,14 @@ A mixed reality research study investigating how gaze-contingent AI assistance a
 - **Unity** 6000.3.10f1 (Unity 6 LTS)
 - **Hardware:** HTC Vive Focus Vision (standalone Android ARM64, integrated eye tracking)
 - **Android SDK:** minimum API level 32
-- **Scene:** `Assets/Scenes/SampleScene.unity` (single scene build)
+- **Scene:** `Assets/Scenes/GazeContingencyStudyScene.unity` (single scene build)
 
 ## Getting Started
 
-1. Open the project in Unity 6000.3.10f1
-2. Switch build target to **Android** (File > Build Settings)
-3. Place API keys in `Assets/StreamingAssets/api_keys.json`:
+1. Open the project in Unity `6000.3.10f1`
+2. Confirm the build scene is `Assets/Scenes/GazeContingencyStudyScene.unity`
+3. Switch build target to **Android** in Build Settings
+4. Place API keys in `Assets/StreamingAssets/api_keys.json`:
    ```json
    {
      "openai_key": "sk-...",
@@ -25,8 +26,19 @@ A mixed reality research study investigating how gaze-contingent AI assistance a
    }
    ```
    This file is gitignored and must be created locally.
-4. Connect Vive Focus Vision via USB with **Developer Mode** and **USB Debugging** enabled
-5. Build and Run
+5. Connect the Vive Focus Vision over USB with **Developer Mode** and **USB Debugging** enabled
+6. Verify the headset is visible to `adb`:
+   ```bash
+   adb devices
+   ```
+7. Build and deploy from the repo root:
+   ```bash
+   ./scripts/refocus-unity-and-build-device.sh
+   ```
+8. After the run, pull the recorded data if needed:
+   ```bash
+   adb pull /sdcard/Android/data/com.DefaultCompany.MixedRealityTemplate/files/GazeData ./GazeData
+   ```
 
 ## Compile Lint Guard
 

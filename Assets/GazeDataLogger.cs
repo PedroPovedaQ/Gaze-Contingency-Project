@@ -27,10 +27,17 @@ public class GazeDataLogger : MonoBehaviour
     const string k_Tag = "[GazeLog]";
     const int k_FlushInterval = 300;
 
-    // Blink detection thresholds
-    const float k_BlinkClosedThreshold = 0.2f;  // eye openness below this = closed
-    const float k_BlinkMaxDuration = 0.5f;       // max blink duration in seconds
-    const float k_BlinkMinDuration = 0.04f;      // min blink duration (debounce noise)
+    // Blink detection thresholds. We detect blinks from a smoothed bilateral closure
+    // signal so brief tracking noise or one-eye squints do not count as true blinks.
+    const float k_BlinkClosedThreshold = 0.55f;
+    const float k_BlinkReopenThreshold = 0.30f;
+    const float k_BlinkMinEyeClosureThreshold = 0.40f;
+    const float k_BlinkPeakMinEyeClosureThreshold = 0.50f;
+    const float k_BlinkMaxInterEyeAsymmetry = 0.45f;
+    const float k_BlinkMaxDuration = 0.45f;
+    const float k_BlinkMinDuration = 0.05f;
+    const float k_BlinkSmoothingTime = 0.03f;
+    const float k_BlinkMissingSignalResetDelay = 0.10f;
     const float k_EyeDeviceSearchRetryInterval = 2f;
     XRBaseInputInteractor m_Interactor;
     StreamWriter m_Writer;
@@ -62,6 +69,13 @@ public class GazeDataLogger : MonoBehaviour
     // Blink detection state
     bool m_EyesClosed;
     float m_EyesClosedStart;
+    float m_LeftClosedFiltered;
+    float m_RightClosedFiltered;
+    float m_BlinkPeakAverageClosure;
+    float m_BlinkPeakMinEyeClosure;
+    float m_BlinkPeakAsymmetry;
+    float m_LastBlinkSignalTime;
+    bool m_HasBlinkFilterState;
     int m_BlinkCount;
     bool m_BlinkThisFrame;
 
@@ -249,35 +263,33 @@ public class GazeDataLogger : MonoBehaviour
             rightOpen = m_RightEyeOpenControl.ReadValue();
         }
 #endif
+        bool hasViveBlinkMetrics = TryReadViveEyeMetrics(
+            out float viveLeftOpen, out float viveRightOpen,
+            out float viveLeftClosed, out float viveRightClosed);
+
         if (float.IsNaN(leftOpen) || float.IsNaN(rightOpen))
         {
-            TryReadViveEyeOpenness(ref leftOpen, ref rightOpen);
+            if (hasViveBlinkMetrics)
+            {
+                leftOpen = viveLeftOpen;
+                rightOpen = viveRightOpen;
+            }
         }
 
         // Blink detection
         m_BlinkThisFrame = false;
-        if (!float.IsNaN(leftOpen) && !float.IsNaN(rightOpen))
+        if (TryGetBlinkClosureSample(
+            leftOpen, rightOpen,
+            hasViveBlinkMetrics, viveLeftClosed, viveRightClosed,
+            out float leftClosed, out float rightClosed))
         {
             m_HasEyeOpennessSignal = true;
-            bool bothClosed = leftOpen < k_BlinkClosedThreshold && rightOpen < k_BlinkClosedThreshold;
-
-            if (bothClosed && !m_EyesClosed)
-            {
-                // Eyes just closed
-                m_EyesClosed = true;
-                m_EyesClosedStart = Time.time;
-            }
-            else if (!bothClosed && m_EyesClosed)
-            {
-                // Eyes just opened — check if it was a valid blink duration
-                float closedDuration = Time.time - m_EyesClosedStart;
-                if (closedDuration >= k_BlinkMinDuration && closedDuration <= k_BlinkMaxDuration)
-                {
-                    m_BlinkCount++;
-                    m_BlinkThisFrame = true;
-                }
-                m_EyesClosed = false;
-            }
+            m_LastBlinkSignalTime = Time.time;
+            UpdateBlinkDetection(leftClosed, rightClosed);
+        }
+        else if (Time.time - m_LastBlinkSignalTime > k_BlinkMissingSignalResetDelay)
+        {
+            ResetBlinkDetectionState();
         }
 
         // Objective and target state
@@ -351,33 +363,149 @@ public class GazeDataLogger : MonoBehaviour
 
     static string F(float v) => float.IsNaN(v) ? "" : v.ToString("F5");
 
-    void TryReadViveEyeOpenness(ref float leftOpen, ref float rightOpen)
+    void UpdateBlinkDetection(float leftClosed, float rightClosed)
     {
-        if (m_ViveFacialTracking == null)
+        float dt = Mathf.Clamp(Time.unscaledDeltaTime, 0.001f, 0.1f);
+        float alpha = 1f - Mathf.Exp(-dt / k_BlinkSmoothingTime);
+
+        if (!m_HasBlinkFilterState)
+        {
+            m_LeftClosedFiltered = leftClosed;
+            m_RightClosedFiltered = rightClosed;
+            m_HasBlinkFilterState = true;
+        }
+        else
+        {
+            m_LeftClosedFiltered = Mathf.Lerp(m_LeftClosedFiltered, leftClosed, alpha);
+            m_RightClosedFiltered = Mathf.Lerp(m_RightClosedFiltered, rightClosed, alpha);
+        }
+
+        float averageClosure = (m_LeftClosedFiltered + m_RightClosedFiltered) * 0.5f;
+        float minEyeClosure = Mathf.Min(m_LeftClosedFiltered, m_RightClosedFiltered);
+        float asymmetry = Mathf.Abs(m_LeftClosedFiltered - m_RightClosedFiltered);
+        bool bothClosed = averageClosure >= k_BlinkClosedThreshold &&
+                          minEyeClosure >= k_BlinkMinEyeClosureThreshold &&
+                          asymmetry <= k_BlinkMaxInterEyeAsymmetry;
+        bool bothReopened = averageClosure <= k_BlinkReopenThreshold;
+
+        if (bothClosed && !m_EyesClosed)
+        {
+            m_EyesClosed = true;
+            m_EyesClosedStart = Time.time;
+            m_BlinkPeakAverageClosure = averageClosure;
+            m_BlinkPeakMinEyeClosure = minEyeClosure;
+            m_BlinkPeakAsymmetry = asymmetry;
             return;
+        }
+
+        if (!m_EyesClosed)
+            return;
+
+        m_BlinkPeakAverageClosure = Mathf.Max(m_BlinkPeakAverageClosure, averageClosure);
+        m_BlinkPeakMinEyeClosure = Mathf.Max(m_BlinkPeakMinEyeClosure, minEyeClosure);
+        m_BlinkPeakAsymmetry = Mathf.Max(m_BlinkPeakAsymmetry, asymmetry);
+
+        if (!bothReopened)
+            return;
+
+        float closedDuration = Time.time - m_EyesClosedStart;
+        bool validBlink =
+            closedDuration >= k_BlinkMinDuration &&
+            closedDuration <= k_BlinkMaxDuration &&
+            m_BlinkPeakAverageClosure >= k_BlinkClosedThreshold &&
+            m_BlinkPeakMinEyeClosure >= k_BlinkPeakMinEyeClosureThreshold &&
+            m_BlinkPeakAsymmetry <= k_BlinkMaxInterEyeAsymmetry;
+
+        if (validBlink)
+        {
+            m_BlinkCount++;
+            m_BlinkThisFrame = true;
+        }
+
+        m_EyesClosed = false;
+        m_BlinkPeakAverageClosure = 0f;
+        m_BlinkPeakMinEyeClosure = 0f;
+        m_BlinkPeakAsymmetry = 0f;
+    }
+
+    void ResetBlinkDetectionState()
+    {
+        m_EyesClosed = false;
+        m_HasBlinkFilterState = false;
+        m_BlinkPeakAverageClosure = 0f;
+        m_BlinkPeakMinEyeClosure = 0f;
+        m_BlinkPeakAsymmetry = 0f;
+        m_LeftClosedFiltered = 0f;
+        m_RightClosedFiltered = 0f;
+    }
+
+    bool TryGetBlinkClosureSample(
+        float leftOpen, float rightOpen,
+        bool hasViveBlinkMetrics, float viveLeftClosed, float viveRightClosed,
+        out float leftClosed, out float rightClosed)
+    {
+        leftClosed = float.NaN;
+        rightClosed = float.NaN;
+
+        if (hasViveBlinkMetrics)
+        {
+            leftClosed = viveLeftClosed;
+            rightClosed = viveRightClosed;
+            return true;
+        }
+
+        if (float.IsNaN(leftOpen) || float.IsNaN(rightOpen))
+            return false;
+
+        leftClosed = Mathf.Clamp01(1f - leftOpen);
+        rightClosed = Mathf.Clamp01(1f - rightOpen);
+        return true;
+    }
+
+    bool TryReadViveEyeMetrics(
+        out float leftOpen, out float rightOpen,
+        out float leftClosed, out float rightClosed)
+    {
+        leftOpen = float.NaN;
+        rightOpen = float.NaN;
+        leftClosed = float.NaN;
+        rightClosed = float.NaN;
+
+        if (m_ViveFacialTracking == null)
+            return false;
 
         if (!m_ViveFacialTracking.GetFacialExpressions(
             XrFacialTrackingTypeHTC.XR_FACIAL_TRACKING_TYPE_EYE_DEFAULT_HTC,
             out float[] expressions))
         {
-            return;
+            return false;
         }
 
         int leftBlinkIndex = (int)XrEyeExpressionHTC.XR_EYE_EXPRESSION_LEFT_BLINK_HTC;
         int leftSqueezeIndex = (int)XrEyeExpressionHTC.XR_EYE_EXPRESSION_LEFT_SQUEEZE_HTC;
         int rightBlinkIndex = (int)XrEyeExpressionHTC.XR_EYE_EXPRESSION_RIGHT_BLINK_HTC;
         int rightSqueezeIndex = (int)XrEyeExpressionHTC.XR_EYE_EXPRESSION_RIGHT_SQUEEZE_HTC;
+        int leftWideIndex = (int)XrEyeExpressionHTC.XR_EYE_EXPRESSION_LEFT_WIDE_HTC;
+        int rightWideIndex = (int)XrEyeExpressionHTC.XR_EYE_EXPRESSION_RIGHT_WIDE_HTC;
 
         if (expressions == null ||
-            expressions.Length <= Mathf.Max(leftSqueezeIndex, rightSqueezeIndex))
+            expressions.Length <= Mathf.Max(
+                Mathf.Max(leftSqueezeIndex, rightSqueezeIndex),
+                Mathf.Max(leftWideIndex, rightWideIndex)))
         {
-            return;
+            return false;
         }
 
-        float leftClosed = Mathf.Clamp01(Mathf.Max(expressions[leftBlinkIndex], expressions[leftSqueezeIndex]));
-        float rightClosed = Mathf.Clamp01(Mathf.Max(expressions[rightBlinkIndex], expressions[rightSqueezeIndex]));
+        leftClosed = Mathf.Clamp01(Mathf.Max(expressions[leftBlinkIndex], expressions[leftSqueezeIndex]));
+        rightClosed = Mathf.Clamp01(Mathf.Max(expressions[rightBlinkIndex], expressions[rightSqueezeIndex]));
+        float leftWide = Mathf.Clamp01(expressions[leftWideIndex]);
+        float rightWide = Mathf.Clamp01(expressions[rightWideIndex]);
 
-        leftOpen = 1f - leftClosed;
-        rightOpen = 1f - rightClosed;
+        // Use a conservative openness estimate for logging; the blink detector itself
+        // works on the closure channels above because they are the most reliable
+        // VIVE-provided blink signal.
+        leftOpen = Mathf.Clamp01(Mathf.Max(1f - leftClosed, leftWide * 0.5f));
+        rightOpen = Mathf.Clamp01(Mathf.Max(1f - rightClosed, rightWide * 0.5f));
+        return true;
     }
 }

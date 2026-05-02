@@ -261,7 +261,7 @@ PlayerSettings:
   shaderPrecisionModel: 0
   clonedFromGUID: 14e3da668dfd3496fb0ecd9272fcff02
   templatePackageId: com.unity.template.mixed-reality@2.2.2
-  templateDefaultScene: Assets/Scenes/SampleScene.unity
+  templateDefaultScene: Assets/Scenes/GazeContingencyStudyScene.unity
   useCustomMainManifest: 0
   useCustomLauncherManifest: 0
   useCustomMainGradleTemplate: 0

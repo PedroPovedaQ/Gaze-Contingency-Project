@@ -24,10 +24,10 @@ public class HintGenerator : MonoBehaviour
     const int k_WarmthCold = 0;
     const int k_WarmthTrack = 1;
     const int k_WarmthVeryClose = 2;
-    const float k_TipInterval = 5f;
-    const float k_FirstTipDelayAware = 3f;
+    const float k_TipInterval = 4f;
+    const float k_FirstTipDelayAware = 2f;
     const float k_TipIntervalUnaware = 9f;
-    const float k_FirstTipDelayUnaware = 5f;
+    const float k_FirstTipDelayUnaware = 3.5f;
     const float k_WrongCaptureWindow = 6f;
     const float k_HotMemoryWindow = 5.5f;
     const int k_UnawareNoRepeatWindow = 3;

@@ -1,0 +1,36 @@
+flowchart TD
+    A["Launch app<br/>GazeContingencyStudyScene.unity"] --> B["Detect table plane<br/>VivePlaneProvider.cs"]
+    A --> C["Show start prompt<br/>FindObjectUI.cs"]
+    A --> D["Prepare voice + game systems<br/>VoiceAssistantController.cs<br/>FindObjectGameManager.cs"]
+
+    B --> E["User taps table<br/>FindObjectGameManager.cs"]
+    E --> F{"Intro still speaking?"}
+
+    F -->|Yes| G["Show: Please wait...<br/>FindObjectUI.cs"]
+    G --> H["Wait for intro to finish<br/>VoiceAssistantController.cs"]
+    F -->|No| I["Start experiment<br/>FindObjectGameManager.cs"]
+    H --> I
+
+    I --> J["Show fixation cross + announce goal<br/>FindObjectUI.cs<br/>VoiceAssistantController.cs"]
+    J --> K["Spawn bookshelf objects<br/>ShelfSpawner.cs<br/>ShapeObjectFactory.cs"]
+
+    K --> L["Eye gaze tracks hovered object<br/>GazeHighlightManager.cs"]
+    L --> M["Dwell captures object<br/>GazeHighlightManager.cs"]
+
+    M --> N{"Correct object?"}
+    N -->|Yes| O["Next round or finish<br/>FindObjectGameManager.cs"]
+    N -->|No| P["Show wrong feedback + play buzz<br/>FindObjectUI.cs<br/>VoiceAssistantController.cs"]
+
+    L --> Q["Generate hints<br/>HintGenerator.cs"]
+    Q --> R{"Gaze-aware round?"}
+    R -->|Yes| S["Use gaze to say cold / on-track / very-close<br/>HintGenerator.cs"]
+    R -->|No| T["Give generic encouragement<br/>HintGenerator.cs"]
+
+    I --> U["Log data<br/>GazeDataLogger.cs<br/>TrialDataLogger.cs"]
+    U --> V["gaze_log.csv<br/>GazeDataLogger.cs"]
+    U --> W["trial_events.csv<br/>TrialDataLogger.cs"]
+    U --> X["trial_summary.json<br/>TrialDataLogger.cs"]
+
+    X --> Y["Pull GazeData from headset<br/>adb pull"]
+    Y --> Z["Run analysis script<br/>scripts/run-analysis-pipeline.sh<br/>analysis/run_analysis.py"]
+    Z --> AA["Plots + stats in analysis/results<br/>analysis/plots.py<br/>analysis/stats.py"]

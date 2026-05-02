@@ -25,6 +25,12 @@ public class FindObjectUI : MonoBehaviour
     const int k_NasaTlxQuestionCount = 6;
     const float k_NavAxisThreshold = 0.35f;
     const float k_AnalogButtonThreshold = 0.75f;
+    const float k_StartPromptDistance = 1.55f;
+    const float k_StartPromptVerticalOffset = -0.12f;
+    const string k_StartPromptDefaultText =
+        "Tap the table to begin the simulation.\n\n" +
+        "Once the round starts, the current goal will appear on the table.";
+    const string k_StartPromptWaitingText = "Please wait...";
 
     Canvas m_Canvas;
     RectTransform m_CanvasRect;
@@ -34,6 +40,8 @@ public class FindObjectUI : MonoBehaviour
     TextMeshProUGUI m_ProgressText;
     TextMeshProUGUI m_TimerText;
     TextMeshProUGUI m_AgentStateText;
+    GameObject m_StartPromptPanel;
+    TextMeshProUGUI m_StartPromptText;
     GameObject m_CompletionPanel;
     TextMeshProUGUI m_CompletionText;
     GameObject m_NasaTlxSurveyRoot;
@@ -172,6 +180,17 @@ public class FindObjectUI : MonoBehaviour
         m_TimerText.alignment = TextAlignmentOptions.Center;
         m_TimerText.color = new Color(1f, 0.9f, 0.5f, 1f);
 
+        m_StartPromptPanel = CreatePanel(bgGO.transform, "StartPromptPanel",
+            new Vector2(560f, 180f), new Color(0.07f, 0.12f, 0.18f, 0.96f));
+        m_StartPromptPanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, 20f);
+        m_StartPromptText = CreateText(m_StartPromptPanel.transform, "StartPromptText",
+            new Vector2(500f, 136f), Vector2.zero, 34f);
+        m_StartPromptText.alignment = TextAlignmentOptions.Center;
+        m_StartPromptText.color = new Color(0.86f, 0.96f, 1f, 1f);
+        m_StartPromptText.overflowMode = TextOverflowModes.Overflow;
+        m_StartPromptText.text = k_StartPromptDefaultText;
+        m_StartPromptPanel.SetActive(false);
+
         // Completion panel
         m_CompletionPanel = CreatePanel(m_CanvasGO.transform, "CompletionPanel",
             new Vector2(640, 460), new Color(0.08f, 0.12f, 0.16f, 0.94f));
@@ -219,6 +238,7 @@ public class FindObjectUI : MonoBehaviour
         m_CrossCanvasGO.SetActive(false);
 
         m_CanvasGO.SetActive(false);
+        ShowStartPrompt();
 
         Debug.Log($"{k_Tag} UI initialized");
     }
@@ -282,10 +302,12 @@ public class FindObjectUI : MonoBehaviour
     public void HideObjectiveDuringTransition()
     {
         if (m_CanvasGO == null) return;
+        HideStartPrompt();
         m_CanvasGO.SetActive(true);
         if (m_ObjectiveText != null) m_ObjectiveText.enabled = false;
         if (m_ProgressText != null) m_ProgressText.enabled = false;
         if (m_TimerText != null) m_TimerText.enabled = false;
+        if (m_AgentStateText != null) m_AgentStateText.enabled = true;
     }
 
     public void SetAgentState(bool gazeAware, string conditionLabel = null)
@@ -337,11 +359,13 @@ public class FindObjectUI : MonoBehaviour
 
     public void ShowObjective(Color color, string shapeName, int found, int total)
     {
+        HideStartPrompt();
         m_CanvasGO.SetActive(true);
         m_CompletionPanel.SetActive(false);
         m_ObjectiveText.enabled = true;
         m_ProgressText.enabled = true;
         m_TimerText.enabled = true;
+        if (m_AgentStateText != null) m_AgentStateText.enabled = true;
 
         string hex = ColorUtility.ToHtmlStringRGB(color);
         m_CurrentObjectiveString = $"Find: <color=#{hex}>{shapeName}</color>";
@@ -357,6 +381,7 @@ public class FindObjectUI : MonoBehaviour
 
     public void ShowCompletion(int total, float elapsedSeconds)
     {
+        HideStartPrompt();
         MoveCanvasInFrontOfUser();
         m_CanvasGO.SetActive(true);
         m_CompletionPanel.SetActive(true);
@@ -392,6 +417,7 @@ public class FindObjectUI : MonoBehaviour
     public void ShowPostSurveyStats(string statsText)
     {
         if (m_CanvasGO == null || m_CompletionPanel == null || m_CompletionText == null) return;
+        HideStartPrompt();
         MoveCanvasInFrontOfUser();
         m_CanvasGO.SetActive(true);
         m_CompletionPanel.SetActive(true);
@@ -416,6 +442,7 @@ public class FindObjectUI : MonoBehaviour
     public void ShowThankYouMessage()
     {
         if (m_CanvasGO == null || m_CompletionPanel == null || m_CompletionText == null) return;
+        HideStartPrompt();
         MoveCanvasInFrontOfUser();
         m_CanvasGO.SetActive(true);
         m_CompletionPanel.SetActive(true);
@@ -441,7 +468,37 @@ public class FindObjectUI : MonoBehaviour
     {
         if (m_CanvasGO != null)
             m_CanvasGO.SetActive(false);
+        if (m_StartPromptPanel != null)
+            m_StartPromptPanel.SetActive(false);
         SetResetButtonVisible(false);
+    }
+
+    public void ShowStartPrompt()
+    {
+        if (m_CanvasGO == null) return;
+
+        MoveCanvasInFrontOfUser(k_StartPromptDistance, k_StartPromptVerticalOffset);
+        m_CanvasGO.SetActive(true);
+        if (m_CompletionPanel != null) m_CompletionPanel.SetActive(false);
+        if (m_StartPromptPanel != null) m_StartPromptPanel.SetActive(true);
+        if (m_StartPromptText != null) m_StartPromptText.text = k_StartPromptDefaultText;
+        if (m_ObjectiveText != null) m_ObjectiveText.enabled = false;
+        if (m_ProgressText != null) m_ProgressText.enabled = false;
+        if (m_TimerText != null) m_TimerText.enabled = false;
+        if (m_AgentStateText != null) m_AgentStateText.enabled = false;
+        HideFixationCross();
+    }
+
+    public void ShowStartPromptWaiting()
+    {
+        ShowStartPrompt();
+        if (m_StartPromptText != null) m_StartPromptText.text = k_StartPromptWaitingText;
+    }
+
+    public void HideStartPrompt()
+    {
+        if (m_StartPromptPanel != null)
+            m_StartPromptPanel.SetActive(false);
     }
 
     void Update()
@@ -1698,13 +1755,18 @@ public class FindObjectUI : MonoBehaviour
 
     void MoveCanvasInFrontOfUser()
     {
+        MoveCanvasInFrontOfUser(0.7f, -0.08f);
+    }
+
+    void MoveCanvasInFrontOfUser(float distance, float verticalOffset)
+    {
         if (m_CanvasGO == null) return;
         var cam = Camera.main;
         if (cam == null) return;
         if (m_Canvas != null) m_Canvas.worldCamera = cam;
 
         // Completion + survey prompts should be unmistakable and directly visible.
-        Vector3 pos = cam.transform.position + cam.transform.forward * 0.7f - cam.transform.up * 0.08f;
+        Vector3 pos = cam.transform.position + cam.transform.forward * distance + cam.transform.up * verticalOffset;
         m_CanvasGO.transform.position = pos;
 
         // World-space Canvas front face is -Z, so set +Z away from the viewer.
