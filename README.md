@@ -126,3 +126,16 @@ All components auto-attach at runtime to `ObjectSpawner` via `[RuntimeInitialize
 - [`FUNCTIONALITY_GUIDE.md`](FUNCTIONALITY_GUIDE.md) — Detailed code walkthroughs for all systems
 - [`docs/guide/README.md`](docs/guide/README.md) — Multi-part practical guide set (system overview, round flow, gaze/telemetry, build/debug workflow)
 - [`docs/enhanced-gaze-contingency-plan.md`](docs/enhanced-gaze-contingency-plan.md) — Implementation plan for the gaze contingency enhancement
+
+## Key Files
+
+- `Assets/FindObjectGameManager.cs` — main experiment state machine and round flow
+- `Assets/FindObjectUI.cs` — world-space study UI, start prompt, timer, completion flow
+- `Assets/HintGenerator.cs` — gaze-aware and gaze-unaware hint timing and content
+- `Assets/VoiceAssistantController.cs` — spoken instructions, round announcements, and feedback cues
+- `Assets/GazeDataLogger.cs` — per-frame gaze logging and blink metrics
+- `Assets/TrialDataLogger.cs` — event log and per-run summary metrics
+- `Assets/Scenes/GazeContingencyStudyScene.unity` — main Unity scene in the build
+- `Assets/Scripts/VivePlaneProvider.cs` — Vive plane detection bridge used instead of AR Foundation plane subsystems
+- `analysis/run_analysis.py` — main analysis entry point
+- `scripts/refocus-unity-and-build-device.sh` — default build-and-run command for the headset
