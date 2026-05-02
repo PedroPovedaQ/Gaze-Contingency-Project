@@ -1,6 +1,6 @@
 # Gaze Contingency Project
 
-A mixed reality research study investigating how gaze-contingent AI assistance affects user performance, cognitive load, and task satisfaction in spatial search tasks.
+A mixed reality research study investigating how gaze-contingent AI assistance affects user performance, cognitive load, and task satisfaction in spatial search tasks for **CAP 6117**- Mixed Reality Project at UCF.
 
 ## Research Question
 
