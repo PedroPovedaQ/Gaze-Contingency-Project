@@ -1,0 +1,11 @@
+participant_id,run_folder,condition,round_index,last_fix_on_target_s
+P002,run_001_alternating_gaze_unaware_then_gaze_aware_2026-04-17_11-55-35,gaze_unaware,0,1.6101
+P002,run_001_alternating_gaze_unaware_then_gaze_aware_2026-04-17_11-55-35,gaze_aware,1,1.6155
+P002,run_001_alternating_gaze_unaware_then_gaze_aware_2026-04-17_11-55-35,gaze_unaware,2,1.6057
+P002,run_001_alternating_gaze_unaware_then_gaze_aware_2026-04-17_11-55-35,gaze_aware,3,1.6006
+P002,run_001_alternating_gaze_unaware_then_gaze_aware_2026-04-17_11-55-35,gaze_unaware,4,1.6046
+P002,run_001_alternating_gaze_unaware_then_gaze_aware_2026-04-17_11-55-35,gaze_aware,5,1.6071
+P002,run_001_alternating_gaze_unaware_then_gaze_aware_2026-04-17_11-55-35,gaze_unaware,6,1.6122
+P002,run_001_alternating_gaze_unaware_then_gaze_aware_2026-04-17_11-55-35,gaze_aware,7,1.6233
+P002,run_001_alternating_gaze_unaware_then_gaze_aware_2026-04-17_11-55-35,gaze_unaware,8,1.6143
+P002,run_001_alternating_gaze_unaware_then_gaze_aware_2026-04-17_11-55-35,gaze_aware,9,1.6164

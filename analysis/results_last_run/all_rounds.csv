@@ -1,0 +1,11 @@
+participant_id,run_number,condition,block,round_index,shape,color,completed,time_to_find,wrong_captures,fixation_time_on_target,fixation_time_on_distractors,fixation_count_total,fixation_count_on_target,fixation_count_on_distractors,avg_fixation_duration,saccade_count,saccade_frequency_hz,avg_saccade_amplitude_deg,first_try_correct,run_total_blinks,run_blinks_per_minute
+P002,1,gaze_unaware,A,0,Pyramid,Blue,True,7.33,0,1.63,1.14,7,1,6,0.397,6,0.819,0.0,True,-1,-1.0
+P002,1,gaze_aware,A,1,Cube,Blue,True,6.93,0,1.64,0.0,1,1,0,1.637,0,0.0,0.0,True,-1,-1.0
+P002,1,gaze_unaware,A,2,Cylinder,Yellow,True,9.93,0,2.58,0.9,8,3,5,0.435,14,1.411,12.62,True,-1,-1.0
+P002,1,gaze_aware,A,3,Sphere,Blue,True,7.44,0,1.8,0.85,7,2,5,0.379,9,1.21,2.19,True,-1,-1.0
+P002,1,gaze_unaware,A,4,Capsule,Purple,True,13.68,0,1.63,7.08,29,1,28,0.3,35,2.559,2.8,True,-1,-1.0
+P002,1,gaze_aware,A,5,Cube,Purple,True,12.29,0,1.66,4.87,21,1,20,0.311,25,2.034,2.01,True,-1,-1.0
+P002,1,gaze_unaware,A,6,Sphere,Red,True,11.77,0,3.53,1.6,11,3,8,0.466,12,1.02,1.2,True,-1,-1.0
+P002,1,gaze_aware,B,7,Star,Yellow,True,11.35,0,1.65,4.03,16,1,15,0.355,21,1.85,4.51,True,-1,-1.0
+P002,1,gaze_unaware,B,8,Cylinder,Purple,True,12.21,0,3.36,2.94,16,4,12,0.393,22,1.802,6.06,True,-1,-1.0
+P002,1,gaze_aware,B,9,Capsule,Red,True,8.71,0,1.64,2.01,11,1,10,0.332,12,1.378,2.11,True,-1,-1.0

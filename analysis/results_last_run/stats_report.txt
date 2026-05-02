@@ -1,0 +1,29 @@
+======================================================================
+PAIRED T-TEST RESULTS (within-subjects, gaze_aware vs gaze_unaware)
+======================================================================
+
+time_to_find:
+  insufficient data (n=1)
+
+wrong_captures:
+  insufficient data (n=1)
+
+fixation_count_total:
+  insufficient data (n=1)
+
+avg_fixation_duration:
+  insufficient data (n=1)
+
+saccade_frequency_hz:
+  insufficient data (n=1)
+
+avg_saccade_amplitude_deg:
+  insufficient data (n=1)
+
+fixation_time_on_target:
+  insufficient data (n=1)
+
+fixation_time_on_distractors:
+  insufficient data (n=1)
+
+Significance: * p<.05  ** p<.01  *** p<.001

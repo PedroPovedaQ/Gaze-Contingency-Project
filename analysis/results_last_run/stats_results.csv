@@ -1,0 +1,9 @@
+metric,n,t,p,mean_aware,mean_unaware
+time_to_find,1,,,9.344,10.984
+wrong_captures,1,,,0.0,0.0
+fixation_count_total,1,,,11.2,14.2
+avg_fixation_duration,1,,,0.6028,0.3982
+saccade_frequency_hz,1,,,1.2944,1.5222000000000002
+avg_saccade_amplitude_deg,1,,,2.1639999999999997,4.536
+fixation_time_on_target,1,,,1.6780000000000002,2.5460000000000003
+fixation_time_on_distractors,1,,,2.352,2.732
