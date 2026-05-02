@@ -15,7 +15,7 @@ A mixed reality research study investigating how gaze-contingent AI assistance a
 
 ## Getting Started
 
-1. Open the project in Unity `6000.3.10f1`
+1. Open the project in Unity 
 2. Confirm the build scene is `Assets/Scenes/GazeContingencyStudyScene.unity`
 3. Switch build target to **Android** in Build Settings
 4. Place API keys in `Assets/StreamingAssets/api_keys.json`:
