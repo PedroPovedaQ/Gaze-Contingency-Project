@@ -18,10 +18,9 @@ A mixed reality research study investigating how gaze-contingent AI assistance a
 1. Open the project in Unity 
 2. Confirm the build scene is `Assets/Scenes/GazeContingencyStudyScene.unity`
 3. Switch build target to **Android** in Build Settings
-4. Place API keys in `Assets/StreamingAssets/api_keys.json`:
+4. Place the ElevenLabs key in `Assets/StreamingAssets/api_keys.json`:
    ```json
    {
-     "openai_key": "sk-...",
      "elevenlabs_key": "..."
    }
    ```
@@ -86,7 +85,7 @@ All components auto-attach at runtime to `ObjectSpawner` via `[RuntimeInitialize
 |-----------|------|------|
 | `VoiceAssistantController` | `Assets/VoiceAssistantController.cs` | Orchestrator — wires all sub-components, subscribes to game events |
 | `AgentContext` | `Assets/AgentContext.cs` | Builds structured text prompt for LLM (scene state, gaze data, coverage) |
-| `HintGenerator` | `Assets/HintGenerator.cs` | Adaptive timing + OpenAI GPT-4o-mini calls with gaze-aware situation descriptions |
+| `HintGenerator` | `Assets/HintGenerator.cs` | Adaptive timing plus local gaze-aware and gaze-unaware hint selection |
 | `VoiceSynthesizer` | `Assets/VoiceSynthesizer.cs` | ElevenLabs TTS (eleven_turbo_v2_5, "Rachel" voice) with interruption support |
 
 ### Eye Gaze System
@@ -108,12 +107,12 @@ All components auto-attach at runtime to `ObjectSpawner` via `[RuntimeInitialize
 
 `GazeCoverageTracker` classifies the player's gaze pattern every frame based on the last 10 fixation events:
 
-| Behavior | Criteria | Hint Interval |
-|----------|----------|---------------|
-| **Systematic** | Long fixations (>1.5s), mostly unique objects | 12-15s |
-| **Normal** | Default / moderate patterns | 9-12s |
-| **Erratic** | Short fixations (<0.6s), rapid zone switching | 5-7s |
-| **Stuck** | >70% of gaze in one zone, searching >15s | 7-10s |
+| Behavior | Criteria |
+|----------|----------|
+| **Systematic** | Long fixations (>1.5s), mostly unique objects |
+| **Normal** | Default / moderate patterns |
+| **Erratic** | Short fixations (<0.6s), rapid zone switching |
+| **Stuck** | >70% of gaze in one zone, searching >15s |
 
 ## Data Collection
 

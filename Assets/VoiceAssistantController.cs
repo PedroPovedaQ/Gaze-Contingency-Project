@@ -329,7 +329,6 @@ public class VoiceAssistantController : MonoBehaviour
     [System.Serializable]
     struct ApiKeys
     {
-        public string openai_key;
         public string elevenlabs_key;
     }
 
