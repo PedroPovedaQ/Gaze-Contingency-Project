@@ -22,7 +22,7 @@ The environment is organized around the participant rather than around a table. 
 
 Each object placement is defined by four spatial parameters: radius, azimuth, elevation, and sector. Radius determines the object's distance from the participant. Azimuth determines horizontal angle around the participant, with 0 degrees in the forward direction, positive angles to the participant's right, and negative angles to the participant's left. Elevation determines vertical placement relative to seated eye height. Sector groups azimuths into coarse regions such as front, front-right, right, back-right, back, back-left, left, and front-left.
 
-The first pilot version should use a 180-degree field centered on the participant's forward direction. This version can place objects from -90 degrees to +90 degrees, using multiple elevation bands and distances. This layout is safer, easier to calibrate, and directly comparable to prior AR visual-search work. The full version should use a 360-degree field, distributing objects around the participant so that some targets begin outside the initial field of view and require chair rotation or torso rotation to discover.
+The proposed system uses a 360-degree sectorized search field. Objects are distributed around the participant so that some targets begin in front of the participant while others begin beside or behind the participant. The 360-degree field is divided into angular sectors, allowing the system to measure which regions have been inspected, neglected, or revisited. A 180-degree version can be retained as a debugging fallback, but the study design assumes a full 360-degree search field with sectors.
 
 Objects can be arranged in three vertical bands:
 
@@ -38,7 +38,7 @@ The system should support two placement modes. In deterministic mode, each round
 
 The initial stimulus set can preserve the current project's shape-color objects because they provide a controlled and objective conjunction-search task. Each virtual object is defined by one shape and one color. The shape set consists of sphere, cube, pyramid, cylinder, star, and capsule. The color set consists of red, blue, yellow, and purple. Together, these produce 24 possible target categories.
 
-The first rotational version should spawn between 32 and 48 objects per round for a 180-degree pilot and between 48 and 64 objects per round for a 360-degree study. Object density should be high enough to require search, but not so high that eye tracking becomes unreliable due to overlapping gaze colliders. Objects should be scaled and spaced so that each object can be separately fixated at the chosen radius. A starting radius of approximately 1.5 m is a reasonable first target for mid-height objects, with adjustments made during piloting based on legibility and headset field of view.
+The first rotational version should spawn 32 to 40 objects per round in the 360-degree sectorized field to verify comfort, gaze targeting, and sector coverage. After pilot testing, the density can increase to 48 to 64 objects per round. Object density should be high enough to require search, but not so high that eye tracking becomes unreliable due to overlapping gaze colliders. Objects should be scaled and spaced so that each object can be separately fixated at the chosen radius. A starting radius of approximately 1.5 m is a reasonable first target for mid-height objects, with adjustments made during piloting based on legibility and headset field of view.
 
 In a more creative version of the study, object categories can move beyond abstract shapes. For example, the system can use virtual household items, toy blocks, lab tools, or emergency-response objects. These variants enable semantic search questions such as "find the object you would use to clean a spill," but they introduce recognition and semantic-memory confounds. For the first gaze-contingency comparison, abstract shape-color conjunctions remain preferable because correctness is unambiguous.
 
@@ -60,9 +60,20 @@ This would let the study separate search assistance from selection confidence. H
 
 ### 3.5 Gaze-Contingent Assistant
 
-The assistant is a spoken guide that provides condition-dependent help during active search. In the baseline condition, the assistant is gaze-unaware and gives generic encouragement at fixed or lightly randomized intervals. It does not know where the participant is looking and does not comment on target proximity, object category, or sector coverage.
+The assistant is a spoken guide that provides condition-dependent help during active search. The proposed system supports four assistance configurations created by crossing gaze awareness with voice type. In the gaze-unaware conditions, the assistant gives generic encouragement at fixed or lightly randomized intervals. It does not know where the participant is looking and does not comment on target proximity, object category, or sector coverage. In the gaze-aware conditions, the assistant receives information about the participant's current gaze target, recent fixation history, inspected sectors, uninspected sectors, repeated distractor visits, and approximate target proximity.
 
-In the gaze-aware condition, the assistant receives a structured description of the participant's search state. This includes the current gazed object, recent fixation history, inspected sectors, uninspected sectors, repeated distractor visits, approximate target proximity, and whether the target is currently in or out of the participant's forward-facing sector. The assistant can then provide either proximity feedback or coverage feedback.
+Voice type is manipulated independently from gaze awareness. In the neutral-voice conditions, hints are delivered using a standard synthetic or neutral human-like voice. In the self-similar voice conditions, hints are delivered using a participant-like, familiar, or cloned voice. If direct voice cloning is not appropriate for the study protocol, self-similarity can be approximated using a participant-selected preferred voice or a familiar voice profile. The purpose of this manipulation is to test whether a personalized voice changes trust, reliance, comfort, and perceived intrusiveness independently of whether the assistant is actually gaze-aware.
+
+The four assistance configurations are:
+
+- neutral voice, gaze-unaware assistant
+- neutral voice, gaze-aware assistant
+- self-similar voice, gaze-unaware assistant
+- self-similar voice, gaze-aware assistant
+
+This design is intentionally asymmetric in psychological risk. The self-similar gaze-aware condition may feel like the most personal and responsive assistant, but it may also make gaze monitoring more salient and uncomfortable. Therefore, the system should log not only search performance but also trust, reliance, eeriness, voice familiarity, and privacy concern.
+
+The gaze-aware assistant can provide either proximity feedback or coverage feedback.
 
 Proximity feedback is warmer-colder feedback:
 
@@ -104,25 +115,33 @@ Together, these measurements support a richer analysis of search behavior than t
 
 ### 4.1 Task
 
-For this experiment, participants sit in a swivel chair and search for virtual AR objects distributed around them. Participants are instructed to remain seated throughout the task. They may rotate the chair, turn their torso, and move their head, but they should not stand up or walk around the room. At the beginning of each round, the participant faces a fixed forward direction and views a fixation cross. The target for the upcoming round is displayed and announced by the assistant, for example "Find the blue star."
+For this experiment, participants sit in a swivel chair and search for virtual AR objects distributed around them in a 360-degree sectorized search field. Participants are instructed to remain seated throughout the task. They may rotate the chair, turn their torso, and move their head, but they should not stand up or walk around the room. At the beginning of each round, the participant faces a fixed forward direction and views a fixation cross. The target for the upcoming round is displayed and announced by the assistant, for example "Find the blue star."
 
 After the fixation period, the objects for the round appear around the participant. The participant searches the surrounding object field and selects an object by dwelling on it with their gaze. If the selected object matches the target color and shape, the round ends. If the selected object is incorrect, the system gives wrong-object feedback and the participant continues searching.
 
-The task can be implemented in either a 180-degree or 360-degree search field. In the 180-degree pilot, all objects appear in front of or beside the participant. In the 360-degree version, objects can appear behind the participant as well. The 360-degree version is the stronger final task because it creates genuine out-of-view search and makes rotation behavior central to the study.
+The task uses the 360-degree sector layout as the primary design. Objects can appear in front of, beside, or behind the participant. This creates genuine out-of-view search and makes rotation behavior central to the study.
 
 Each round contains one target and a controlled set of distractors. Distractors include objects sharing the target color, objects sharing the target shape, and objects sharing neither feature. This keeps the search task objective and prevents participants from relying on a single visual feature.
 
 ### 4.2 Study Design
 
-The recommended first study uses a repeated-measures design with assistant awareness as the primary independent variable. Each participant experiences both gaze-unaware and gaze-aware rounds. In gaze-unaware rounds, the assistant gives generic encouragement without access to gaze or sector coverage. In gaze-aware rounds, the assistant uses current gaze, recent fixation history, and sector coverage to provide proximity or coverage feedback.
+The recommended first study uses a repeated-measures design crossing assistant awareness with voice type. Each participant experiences gaze-unaware and gaze-aware assistance, and each assistance mode is presented in both a neutral voice and a self-similar voice. In gaze-unaware rounds, the assistant gives generic encouragement without access to gaze or sector coverage. In gaze-aware rounds, the assistant uses current gaze, recent fixation history, and sector coverage to provide proximity or coverage feedback. In neutral-voice rounds, the assistant uses a standard synthetic or neutral human-like voice. In self-similar voice rounds, the assistant uses a participant-like, familiar, or cloned voice.
 
 A strong first design is:
 
 - Assistant awareness: gaze-unaware vs gaze-aware
+- Voice type: neutral vs self-similar
 - Target eccentricity: initially visible vs initially out of view
 - Round number: repeated within participant
 
-Assistant awareness is the main manipulated condition. Target eccentricity is a within-participant task factor defined by the target's angular distance from the participant's starting forward direction. Initially visible targets appear within the approximate forward field of view. Initially out-of-view targets require head or chair rotation before the participant can inspect them.
+Assistant awareness is the main task-adaptation factor, and voice type is the main social/personalization factor. Target eccentricity is a within-participant task factor defined by the target's angular distance from the participant's starting forward direction. Initially visible targets appear within the approximate forward field of view. Initially out-of-view targets require head or chair rotation before the participant can inspect them.
+
+The four core conditions are:
+
+- neutral voice, gaze-unaware assistant
+- neutral voice, gaze-aware assistant
+- self-similar voice, gaze-unaware assistant
+- self-similar voice, gaze-aware assistant
 
 For a more creative follow-up, the study can use a 2 x 2 design:
 
@@ -138,7 +157,7 @@ This would test whether gaze awareness is most useful when the assistant says ho
 
 However, the first experiment should keep the design small enough that gaze behavior and rotation behavior can be interpreted cleanly.
 
-Each participant should complete a balanced set of rounds. A practical structure is 16 rounds: 8 gaze-unaware and 8 gaze-aware. Within each condition, targets should be balanced across sectors and eccentricity classes. For example, in a 360-degree version, each condition can include targets in front, right, back, and left sectors. The target order should be randomized or counterbalanced so that condition is not confounded with learning, fatigue, or target sector.
+Each participant should complete a balanced set of rounds. A practical structure is 16 rounds: four rounds per core condition. Within each condition, targets should be balanced across sectors and eccentricity classes. For example, each condition can include targets in front, right, back, and left sectors across the full session, or in a finer eight-sector layout if more rounds are available. The target order should be randomized or counterbalanced so that condition is not confounded with learning, fatigue, target sector, or target eccentricity.
 
 The design can also include a multi-target variant inspired by 360-degree VR search tasks. In this variant, a round asks the participant to find all objects matching a criterion, such as all red cylinders or all blue objects, while ignoring distractors. This variant is more demanding than single-target search because participants must maintain a search goal over multiple selections and decide when the relevant objects have all been found. It also makes cueing more meaningful: a gaze-aware assistant can help participants avoid repeatedly revisiting completed sectors or can remind them which sectors remain unsearched. This multi-target version should be treated as a follow-up study unless the single-target version proves too easy.
 
@@ -157,6 +176,8 @@ Cueing and guidance measures - If the study compares cue styles, the system reco
 Assistant behavior - The system records hint onset time, hint category, hint text, condition, and the gaze/head state that caused the hint. This enables analyses of time from hint to target fixation, time from hint to correct selection, and whether particular hint categories reduce repeated search in already inspected sectors.
 
 Workload and subjective experience - Workload is measured using NASA-TLX after the run or after each block. Additional subjective measures should include perceived helpfulness, trust, annoyance, perceived intrusiveness, perceived physical effort from rotating, preference between assistant conditions, and whether participants noticed that the assistant was gaze-aware.
+
+Voice and personalization measures - The self-similar voice manipulation requires additional subjective measures. Participants should rate voice familiarity, naturalness, similarity to self or familiar voice, comfort, eeriness, privacy concern, and willingness to use the assistant again. The analysis should also measure reliance and compliance behaviorally, for example whether participants follow hints more often in self-similar voice conditions than in neutral voice conditions.
 
 Environmental awareness - A creative addition is to measure what participants remember about the surrounding environment. After a subset of rounds, participants can answer questions about non-target objects, object sectors, or incidental physical-room events. This tests whether assistance improves target search while narrowing awareness, a tradeoff reported in wide-area AR navigation-aid work.
 
@@ -178,11 +199,17 @@ H4: Gaze-aware assistance will improve sector coverage efficiency, reflected by 
 
 H5: The benefit of gaze-aware assistance will be larger for initially out-of-view targets than for initially visible targets.
 
-H6: Coverage feedback will produce more systematic search behavior than simple proximity feedback, whereas proximity feedback may produce faster target captures once participants are near the target.
+H6: Self-similar voice will increase perceived familiarity, social presence, and compliance with assistant hints relative to neutral voice.
 
-H7: Gaze-aware assistance will reduce mental demand when it is perceived as useful, but may increase annoyance or perceived intrusiveness when participants feel that the system is over-monitoring their gaze.
+H7: Self-similar voice will increase privacy concern and eeriness, especially when paired with gaze-aware assistance.
+
+H8: Coverage feedback will produce more systematic search behavior than simple proximity feedback, whereas proximity feedback may produce faster target captures once participants are near the target.
+
+H9: Gaze-aware assistance will reduce mental demand when it is perceived as useful, but may increase annoyance or perceived intrusiveness when participants feel that the system is over-monitoring their gaze.
 
 The expected pattern is not simply that gaze-aware assistance makes every round faster. In some cases, a gaze-aware assistant may slow participants slightly by encouraging a more systematic sweep. The stronger claim is that gaze-aware assistance should improve search efficiency, reduce redundant inspection, and help participants recover from missed or neglected sectors, especially when the target is not initially visible.
+
+The voice manipulation may produce a different kind of effect. Self-similar voice may not directly improve search time, but it may increase trust, compliance, engagement, and perceived social presence. The key risk is over-reliance or discomfort: participants may follow a self-similar assistant more readily even when its feedback is vague, and they may perceive a self-similar gaze-aware assistant as more invasive than a neutral gaze-aware assistant.
 
 ### 4.5 Participants
 
@@ -200,4 +227,4 @@ After practice, the main task begins. At the start of each round, the participan
 
 After the final round, participants complete NASA-TLX and any additional subjective questionnaires. A short debriefing interview should ask which hints were helpful, whether the participant noticed gaze-aware behavior, whether the assistant felt intrusive, and what search strategy they used. If environmental awareness is included, recall questions should be asked before explaining the study hypotheses.
 
-The full session should include setup and consent, headset fitting, eye-tracking calibration, practice, the main rotational search task, workload and subjective questionnaires, and debriefing. The exact duration will depend on the number of rounds and whether the study uses a 180-degree pilot or full 360-degree layout.
+The full session should include setup and consent, headset fitting, eye-tracking calibration, practice, the main 360-degree sectorized search task, workload and subjective questionnaires, and debriefing. The exact duration will depend on the number of rounds, object density, and whether the study includes single-target rounds only or a later multi-target block.

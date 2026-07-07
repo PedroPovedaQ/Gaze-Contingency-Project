@@ -32,7 +32,7 @@ Key details to borrow or adapt:
 Key differences from our proposed project:
 
 - Warden et al. used real-world physical objects, while our first redesign can use virtual AR objects so object identity, target position, and distractor composition remain deterministic.
-- Their task covered a 180-degree search field; our eventual version can expand to 360 degrees.
+- Their task covered a 180-degree search field; our selected design expands this setup to a full 360-degree seated search field.
 - Their cue conditions focused on AR target cue type and cue location; our primary independent variable remains gaze-aware versus gaze-unaware assistant feedback.
 - Their response used a confirmation button after gaze targeting; our current project can preserve gaze-dwell selection.
 
@@ -117,9 +117,9 @@ These VR papers suggest several concrete changes to the experiment:
 
 ## Proposed Task
 
-The participant sits in a swivel chair at the center of a tracked room. They are instructed to remain seated and not translate through the space. They may rotate the chair, turn their torso, and move their head naturally. The task is to find target virtual objects distributed around them in passthrough AR.
+The participant sits in a swivel chair at the center of a tracked room. They are instructed to remain seated and not translate through the space. They may rotate the chair, turn their torso, and move their head naturally. The task is to find target virtual objects distributed around them in a full 360-degree passthrough AR search field.
 
-Objects can be placed at fixed angular positions around the participant, for example across a 180-degree or 360-degree egocentric search field. A 360-degree version is the more distinctive redesign, but a 180-degree version may be easier to pilot and more directly comparable to Warden et al. Objects should appear at multiple vertical bands, such as low, mid, and high positions, to make the task require both yaw and pitch exploration.
+Objects are placed at fixed angular positions around the participant across the complete egocentric field. Some targets should begin in front of the participant, while others should begin to the side or behind the participant. Objects should appear at multiple vertical bands, such as low, mid, and high positions, to make the task require both yaw and pitch exploration.
 
 The simplest stimulus set can keep the current shape-color objects:
 
@@ -130,60 +130,71 @@ The simplest stimulus set can keep the current shape-color objects:
 
 The object-finding task should remain objective. This is preferable to paintings or artwork for the core experiment because search performance, wrong selections, and target recognition are easier to measure. Artwork could become a later variant for memory, preference, or semantic search, but the first redesign should preserve the current shape-color conjunction logic.
 
-## Layout Options
+## Selected Layout
 
-### Option A: 180-Degree Seated Search
+### Primary Setup: 360-Degree Search With Sectors
 
-Objects are placed in a semicircle in front of and beside the participant. This closely matches the Warden et al. setup and reduces the burden of turning fully backward. It is better for the first pilot.
-
-Advantages:
-
-- Easier safety setup.
-- Less neck and torso strain.
-- More comparable to existing AR visual-search work.
-- Less risk that participants miss objects behind them because of chair constraints.
-
-Disadvantages:
-
-- Less distinctive than a full 360-degree search field.
-- Weaker test of out-of-view assistance.
-
-### Option B: 360-Degree Seated Search
-
-Objects are placed around the participant in a full circle. Participants must rotate the chair to inspect targets behind and beside them.
+Objects are placed around the participant in a full circle and assigned to explicit angular sectors. Participants must rotate the chair to inspect targets behind and beside them. This 360-degree sector-based layout is the selected design for the study.
 
 Advantages:
 
 - Stronger egocentric search problem.
 - Makes head/body rotation central to the task.
+- Creates genuine initially-out-of-view targets.
 - Better fit for out-of-view guidance, spatial audio, and gaze-aware coverage feedback.
+- Differentiates the project from frontal shelf or 180-degree search designs.
 
 Disadvantages:
 
 - Higher physical fatigue.
 - Harder to keep object distance and visibility consistent.
-- Requires careful cable/space/safety management, even on a standalone headset.
+- Requires careful chair, cable, and space management, even on a standalone headset.
 
-### Option C: 360-Degree Search With Sectors
+### Sector Structure
 
-The search field is divided into sectors, for example front, right, back, and left. Objects are distributed evenly across sectors and vertical bands. This makes coverage and neglect easier to measure.
+The 360-degree field should be divided into sectors, for example front, front-right, right, back-right, back, back-left, left, and front-left. Objects are distributed evenly across sectors and vertical bands. This makes coverage and neglect easier to measure.
 
 Advantages:
 
 - Clean dependent variables for sector coverage.
 - Easy to implement gaze-aware hints such as "you have not checked behind you yet."
 - Supports counterbalancing target location by sector.
+- Allows explicit analysis of initially visible versus initially out-of-view targets.
 
 Disadvantages:
 
-- The sector structure may become obvious to participants.
+- The sector structure may become obvious to participants if hints name sectors too explicitly.
+
+### Reduced Debug Variant: 180-Degree Search
+
+If the 360-degree layout creates usability or tracking problems during pilot testing, a 180-degree version can be used as a temporary debugging variant. It should not be treated as the final experimental design unless the full 360-degree task proves unsafe or unreliable.
 
 ## Candidate Experimental Conditions
 
-The first redesign should keep the independent variable simple:
+The strongest assistance design is a 2 x 2 factorial crossing gaze awareness with voice type:
 
-- Gaze-unaware assistant: speaks generic timed encouragement without gaze or coverage knowledge.
-- Gaze-aware assistant: uses current gaze, recent gaze history, and sector coverage to provide warmer-colder or coverage feedback.
+| Condition | Gaze awareness | Voice type | Description |
+| --- | --- | --- | --- |
+| Neutral, gaze-unaware | No | Neutral TTS or neutral recorded voice | Generic timed encouragement without gaze or coverage knowledge. |
+| Neutral, gaze-aware | Yes | Neutral TTS or neutral recorded voice | Uses current gaze, recent gaze history, and sector coverage to provide warmer-colder or coverage feedback. |
+| Self-similar, gaze-unaware | No | Participant-like, familiar, or self-similar cloned voice | Same generic hint logic as the gaze-unaware baseline, but delivered in a personalized/self-similar voice. |
+| Self-similar, gaze-aware | Yes | Participant-like, familiar, or self-similar cloned voice | Gaze-aware assistance delivered in a personalized/self-similar voice. This is the highest-engagement but highest-privacy-risk condition. |
+
+This design separates two questions that are easy to confound:
+
+- Does gaze awareness improve search behavior and performance?
+- Does self-similar voice change trust, engagement, compliance, or discomfort?
+
+The most interesting outcome is the interaction. A self-similar voice may make gaze-aware feedback feel more personally relevant and coach-like, but it may also make the gaze monitoring feel more invasive. If the self-similar voice increases reliance, it could help when the assistant is correct and hurt when the assistant is vague or wrong.
+
+If voice cloning is not feasible or not approved for the study, use a lower-risk personalization manipulation:
+
+- neutral synthetic voice
+- warm human-like voice
+- familiar but not cloned voice
+- participant-selected preferred voice
+
+These options preserve the voice-type question without requiring biometric voice cloning.
 
 The gaze-aware condition can be implemented at several levels:
 
@@ -197,8 +208,9 @@ Secondary conditions can be added later:
 - Voice-only versus visual cue.
 - Voice-only versus spatial audio cue.
 - Warm/cold proximity feedback versus coverage feedback.
-- 180-degree versus 360-degree search field.
+- sector count or target eccentricity within the 360-degree field.
 - Perfect hints versus imperfect hints for trust calibration.
+- Self-similar voice with transparent privacy disclosure versus minimal disclosure, if the ethics protocol allows studying perceived surveillance.
 
 ## Measures
 
@@ -239,9 +251,16 @@ Workload and subjective measures:
 - NASA-TLX.
 - Perceived helpfulness.
 - Trust in the assistant.
+- Reliance on the assistant.
+- Compliance with hints.
 - Annoyance.
+- Eeriness or uncanniness.
+- Voice familiarity and naturalness.
+- Voice ownership or self-similarity.
 - Perceived intrusiveness or surveillance.
+- Privacy concern.
 - Preference for gaze-aware versus gaze-unaware rounds.
+- Preference for neutral versus self-similar voice.
 - Perceived physical effort from rotation.
 
 Optional memory and awareness measures:
@@ -261,7 +280,9 @@ Secondary questions:
 
 - Does gaze-aware assistance reduce unnecessary head rotation?
 - Does gaze-aware assistance improve sector coverage or make search more systematic?
-- Does a 360-degree search field amplify the benefit of gaze-aware feedback compared with a 180-degree field?
+- Does self-similar voice increase trust and compliance with assistant feedback?
+- Does self-similar voice make gaze-aware feedback feel more useful or more invasive?
+- Does gaze-aware assistance help most when targets begin outside the participant's initial field of view?
 - Does assistance improve target finding at the cost of environmental awareness?
 - Is coverage feedback more useful than direct warmer-colder proximity feedback in a search space surrounding the body?
 
@@ -278,6 +299,12 @@ H4: Gaze-aware assistance will increase search coverage efficiency, measured by 
 H5: The benefit of gaze-aware assistance will be larger for targets outside the participant's initial field of view than for targets near the starting forward direction.
 
 H6: Gaze-aware assistance may reduce mental demand but could increase perceived intrusiveness if participants feel that the system is monitoring their eyes too explicitly.
+
+H7: Self-similar voice will increase perceived familiarity, social presence, and compliance with hints relative to neutral voice.
+
+H8: Self-similar voice will increase privacy concern and eeriness, especially when paired with gaze-aware assistance.
+
+H9: The self-similar gaze-aware condition may produce the strongest subjective engagement but not necessarily the best objective performance if participants over-attend to or over-trust the assistant.
 
 ## Implementation Notes
 
@@ -308,7 +335,7 @@ The participant should start each round facing a known forward reference. A fixa
 
 ## Recommended Next Step
 
-The first pilot should use a 180-degree seated layout with 32 to 48 objects, because this is closest to existing AR search literature and easier to debug. Once gaze tracking, object capture, and sector coverage are reliable, expand to a 360-degree layout with 48 to 64 objects and compare gaze-aware versus gaze-unaware assistance.
+The first pilot should use the selected 360-degree seated layout with a reduced object count, such as 32 to 40 objects, to verify comfort, rotation behavior, gaze targeting, and sector coverage. After the mechanics are reliable, increase density to 48 to 64 objects and run the full gaze-awareness by voice-type design.
 
 The most compelling final version is likely:
 
