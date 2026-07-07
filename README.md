@@ -126,6 +126,7 @@ All components auto-attach at runtime to `ObjectSpawner` via `[RuntimeInitialize
 - [`docs/guide/README.md`](docs/guide/README.md) — Multi-part practical guide set (system overview, round flow, gaze/telemetry, build/debug workflow)
 - [`docs/enhanced-gaze-contingency-plan.md`](docs/enhanced-gaze-contingency-plan.md) — Implementation plan for the gaze contingency enhancement
 - [`docs/rotational-ar-search-experiment-direction.md`](docs/rotational-ar-search-experiment-direction.md) — Proposed redesign: seated participant, rotation-only AR object search around the body
+- [`docs/rotational-manuscript-sections-3-4.md`](docs/rotational-manuscript-sections-3-4.md) — Manuscript-style Section 3 and Section 4 draft for the rotational AR search redesign
 - [`docs/system-description-draft.md`](docs/system-description-draft.md) — Manuscript-style system description draft
 - [`docs/experiment-section-draft.md`](docs/experiment-section-draft.md) — Manuscript-style experiment section draft
 

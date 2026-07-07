@@ -76,6 +76,45 @@ Relevant citation:
 
 - Lee et al. "The Impact of Navigation Aids on Search Performance and Object Recall in Wide-Area Augmented Reality." CHI 2023. PDF: https://attentionlab.psych.ucsb.edu/sites/default/files/images/publications/2023_TheImpactOfNavigationAidsOnSearchPerformanceAndObjectRecallInWide-AreaAugmentedReality.pdf
 
+## 360-Degree VR Search Patterns to Incorporate
+
+Several VR studies are useful even though the proposed task is AR, because they isolate the search behaviors that become important once the target can appear outside the current field of view.
+
+Kelley et al.'s 360-degree visual-search work is especially relevant because it studies a full effective field of regard with multiple targets and distractors. Their task compares a no-cue baseline against 2D Wedge, 3D Arrow, and Gaze Line cues. The important takeaway for our design is that the 360-degree search field should not only contain one isolated target; it can include multiple relevant targets, distractors, and competing objects so that cue usefulness is tested under real search pressure.
+
+Relevant citation:
+
+- Kelley, McMahan, Wickens, and Ortega. "The Importance of Cueing While Visually Searching a 360 Degree Environment for Multiple Targets in the Presence of Distractors." VRST 2025. PDF: https://vtechworks.lib.vt.edu/bitstreams/0f57ce52-721c-4167-846d-1e7ad0d1e867/download
+
+Stein et al.'s extended-field visual-search work is useful because it separates eye movements from head movements during VR search. Participants completed search in a wider-than-screen field, and the study tracked how head movements bring new regions into view while eye movements handle finer inspection once objects are visible. This maps directly to our seated AR design, where gaze-aware help may reduce unnecessary head rotation or improve the timing of head turns.
+
+Relevant citation:
+
+- Stein et al. "Eye and head movements in visual search in the extended field of view." Scientific Reports 2024. https://www.nature.com/articles/s41598-024-59657-5
+
+Harada and Ohyama's 360-degree visual-guidance work is useful for comparing guidance styles around the body. Their framing treats the limited field of view of an HMD as an out-of-view problem and evaluates visual guidance effects for surrounding directions. This supports our plan to compare no cue, visual sector cue, voice cue, and gaze-aware coverage cue.
+
+Relevant citation:
+
+- Harada and Ohyama. "Quantitative evaluation of visual guidance effects for 360-degree directions." Virtual Reality 2022. https://link.springer.com/article/10.1007/s10055-021-00574-7
+
+Audio and tactile 360-degree search work is useful for a more creative assistant condition. Studies of spatialized auditory, vibrotactile, and audio-tactile cueing in dynamic 3D VR search suggest that non-visual cues can reduce visual-search time without adding more visual clutter. For our AR task, this suggests a condition where the assistant's spoken content stays non-directional, but a spatial audio cue points toward an under-searched sector or likely target direction.
+
+Relevant citations:
+
+- Fincannon. "Spatialized Auditory and Vibrotactile Cueing for Dynamic Three-Dimensional Visual Search." Dissertation. https://www.proquest.com/openview/4748bba66352b07dfe7b3d51a60c4111/1
+- "Spatial Sound in a 3D Virtual Environment: All Bark and No Bite?" Big Data and Cognitive Computing 2021. https://www.mdpi.com/2504-2289/5/4/79
+
+These VR papers suggest several concrete changes to the experiment:
+
+- Add an initially-out-of-view target factor rather than treating all target positions as equivalent.
+- Add head-rotation measures as primary dependent variables, not only secondary logs.
+- Consider blocks with multiple targets, where participants must find all objects matching a criterion.
+- Compare cue styles that are meaningful in 360 degrees: gaze line, sector cue, spatial audio, coverage feedback, and no cue.
+- Track search path quality: sector revisits, unsearched-sector neglect, cumulative yaw travel, and whether users scan past the target sector.
+- Preserve a no-cue or generic-assistant baseline so the value of gaze-aware assistance is not confounded with simply having any cue.
+- Use target/distractor clustering to create hard rounds, because a sparse 360-degree scene may be too easy once participants learn to rotate systematically.
+
 ## Proposed Task
 
 The participant sits in a swivel chair at the center of a tracked room. They are instructed to remain seated and not translate through the space. They may rotate the chair, turn their torso, and move their head naturally. The task is to find target virtual objects distributed around them in passthrough AR.
