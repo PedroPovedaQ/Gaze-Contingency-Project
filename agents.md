@@ -4,14 +4,26 @@
 
 Unity 6 mixed reality project targeting the **HTC Vive Focus Vision**. Passthrough (video see-through) MR environment for a research study on gaze-contingent AI assistance. Built from Unity's MR Template with HTC Vive OpenXR integration.
 
-**Study**: Participants perform a deterministic mixed-reality conjunction-search task on a real table with a virtual bookshelf layout. The current experiment runs 14 rounds, alternates gaze-unaware and gaze-aware hinting by round, and asks participants to find one target object among 42 spawned objects per round using eye-gaze dwell capture.
+**Study**: Participants perform a deterministic mixed-reality conjunction-search task on a real table with a virtual bookshelf layout. The current experiment runs 14 rounds, alternates gaze-unaware and gaze-aware hinting by round, and asks participants to find one target object among 56 spawned objects per round using eye-gaze dwell capture.
+
+## Research Documents and Evidence Conventions
+
+- `docs/experiment-procedure.md` is the participant-facing protocol and decision register. It separates implemented behavior from proposed steps and open decisions.
+- `docs/guide/02-gameplay-round-flow.md` is the authoritative runtime account for round timing, deterministic stimuli, condition order, dwell capture, and completion.
+- `docs/guide/03-gaze-agent-and-telemetry.md` is the authoritative account for gaze-derived hints and recorded telemetry.
+- `docs/guide/01-system-overview.md` and `docs/diagram.md` explain system ownership and data flow.
+- `project_proposal.tex` is historical proposal material. Its earlier physical-books, seven-target, and between-subjects descriptions are superseded by the implemented virtual 14-round task unless explicitly revived.
+- `docs/enhanced-gaze-contingency-plan.md` records design history; verify all thresholds and counts against current code before treating them as implemented.
+- `analysis/README.md` defines the post-session analysis workflow and generated outputs.
+
+When editing research documentation, label claims as **Implemented**, **Protocol proposal**, or **Open decision**. Cite source papers for transferred methods, but do not present their thresholds as validated for this headset or task. In particular, XRI hover and dwell events are interaction proxies, not validated fixations; verify proposed eye-tracking measures against `GazeDataLogger`, `TrialDataLogger`, and the analysis scripts.
 
 ## Hardware & Build
 
 - **Headset**: HTC Vive Focus Vision (standalone Android)
 - **Build**: Android ARM64, min SDK 32, Linear color space, URP forward rendering
 - **Input**: Eye gaze tracking (primary), hand tracking, head tracking (fallback)
-- **Scene**: Only `Assets/Scenes/SampleScene.unity` in build (index 0)
+- **Scene**: Only `Assets/Scenes/GazeContingencyStudyScene.unity` in build (index 0)
 
 ## Assembly Definitions (Critical)
 
