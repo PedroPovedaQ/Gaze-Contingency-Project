@@ -1,0 +1,176 @@
+{
+  "title": "Seeing the System: Gaze-Contingent AI Assistance in Mixed Reality Search",
+  "description": "An intellectual deep-dive into a mixed reality research system that uses eye tracking to provide intelligent assistance during object search tasks. This episode walks through the complete technical pipeline from Unity scene setup through data analysis, exploring how gaze-contingent AI can transform search behavior in spatial environments.",
+  "durationSeconds": 1205.45,
+  "sampleRate": 24000,
+  "voices": {
+    "host": "alloy",
+    "cohost": "echo",
+    "all": [
+      "alloy",
+      "echo"
+    ]
+  },
+  "segments": [
+    {
+      "index": 0,
+      "speaker": "host",
+      "voiceId": "alloy",
+      "text": "Welcome to the show! Today we're diving deep into a fascinating mixed reality research system - a gaze-contingent AI assistance project for object search tasks. Now, the title sounds super technical because it genuinely is technical, but the core concept is actually pretty intuitive once you break it down. Picture this: you're wearing a mixed reality headset, looking at a table absolutely covered with objects, and you're trying to hunt down one specific target. The system is literally watching where your eyes go, understanding what you appear to be inspecting, and can use that gaze behavior to give you smarter, more contextual help. We're not talking about generic assistance here - this is help that responds intelligently to whether you're looking in the right direction, getting warmer, drifting away from the target, or hovering over completely the wrong thing. It's like having a really perceptive assistant who can read your visual attention and guide you accordingly.",
+      "startTime": 0,
+      "endTime": 65.1
+    },
+    {
+      "index": 1,
+      "speaker": "cohost",
+      "voiceId": "echo",
+      "text": "Right, and this is crucial - this is a full study system, not just some flashy demo. The research documentation we're working from lays out this entire comprehensive flow of the experiment, starting from the Unity scene architecture and ending with exported logs, analysis scripts, statistical plots, and final reports. So this episode is going to methodically walk through that pipeline as if we were following one participant through the complete system journey. We'll talk through the app launch sequence, table plane detection protocols, the introduction gate mechanism, round setup procedures, object spawning algorithms, gaze dwell capture systems, correct and wrong selection handling, hint generation logic, comprehensive logging infrastructure, and finally the entire analysis workflow that happens after the headset run ends. It's basically a full technical walkthrough of a CAP 6117-level project.",
+      "startTime": 65.1,
+      "endTime": 127.5
+    },
+    {
+      "index": 2,
+      "speaker": "host",
+      "voiceId": "alloy",
+      "text": "The project begins its life in Unity with a scene called GazeContingencyStudyScene.unity, and that naming is actually pretty important because a mixed reality experiment isn't just some visual interface you throw together. It's this coordinated symphony of systems handling experiment state management, spatial setup protocols, voice instruction delivery, visual prompt coordination, object generation pipelines, gaze tracking infrastructure, comprehensive event logging, and sophisticated post-session data analysis. The documentation specifically identifies FindObjectGameManager.cs as the owner of the experiment state machine, which means it's the central component that knows which experimental phase the participant is currently in, which round is active, whether a selection was correct or incorrect, and crucially, when to advance the state machine forward to the next phase.",
+      "startTime": 127.6,
+      "endTime": 183.6
+    },
+    {
+      "index": 3,
+      "speaker": "cohost",
+      "voiceId": "echo",
+      "text": "And then you have FindObjectUI.cs, which owns the visible study HUD interface. In any user study, the HUD design actually matters way more than people think because it has to tell the participant exactly what to do without letting the interface itself become the cognitive task they're performing. The interface architecture has to seamlessly show start prompts, fixation crosses for gaze calibration, clear task information, wrong-selection feedback that doesn't discourage continued participation, and simple status messages that keep people oriented. Then there's VoiceAssistantController.cs, which coordinates all the spoken instructions through VoiceSynthesizer.cs. The voice system isn't just cosmetic here - it's a fundamental part of the experimental experience design, especially because mixed reality participants really don't want to keep reading text overlays while they're trying to search through physical space.",
+      "startTime": 183.6,
+      "endTime": 242.9
+    },
+    {
+      "index": 4,
+      "speaker": "host",
+      "voiceId": "alloy",
+      "text": "That first section of the experimental flowchart is basically this elegant launch fan-out pattern. The app launches, and you get one branch detecting the table plane while another branch shows the start prompt and another branch prepares voice synthesis and game management systems. This is genuinely good architectural design in mixed reality because the system needs several distinct conditions to be completely ready before the participant can begin the actual experimental task. The physical world must be understood well enough to place virtual content accurately, the UI must be ready to tell the participant what's happening at each step, and the game manager and voice assistant must be fully prepared to guide the entire experimental run. If any one of those systems lags behind the others, you can get these really confusing false starts that mess with your data quality in subtle but important ways.",
+      "startTime": 242.9,
+      "endTime": 298.5
+    },
+    {
+      "index": 5,
+      "speaker": "cohost",
+      "voiceId": "echo",
+      "text": "The next critical step is plane detection, and the documentation names VivePlaneProvider.cs as the component responsible for detecting the usable table plane in the mixed reality environment. This means the headset and application infrastructure need to understand a real-world surface where virtual objects can be placed with spatial stability and visual coherence. For an object search task, this is absolutely foundational - if the bookshelf layout or object arrangement floats in the wrong spatial location, clips through the physical table surface, or appears at an unstable angle that shifts during the task, then the participant is no longer just performing a clean visual search task. They're also fighting spatial registration problems and environmental instability, which is definitely not what you want to be measuring in your behavioral data. The plane detection quality directly affects data validity.",
+      "startTime": 298.5,
+      "endTime": 359.9
+    },
+    {
+      "index": 6,
+      "speaker": "host",
+      "voiceId": "alloy",
+      "text": "Once the plane is successfully detected and validated, the participant sees a start prompt from FindObjectUI.cs and taps the table surface to begin the session. That tap isn't just a simple button press - it's an important experimental boundary marker. Before the tap, the participant is in the setup and calibration phase. After the tap, the system can begin the controlled sequence that produces analyzable behavioral data. FindObjectGameManager.cs receives that tap event and importantly checks whether the spoken introduction is still playing through the voice system. That's actually a subtle but really important implementation detail because the system doesn't automatically start the trial sequence just because the participant tapped the table surface. There's additional gate logic that needs to clear first.",
+      "startTime": 361.1,
+      "endTime": 417
+    },
+    {
+      "index": 7,
+      "speaker": "cohost",
+      "voiceId": "echo",
+      "text": "Exactly! The documentation calls this mechanism the intro gate, and it's honestly pretty clever. If the spoken introduction is still running when the tap occurs, the visible prompt changes to 'Please wait...' and the game manager waits until VoiceAssistantController.cs signals that the intro audio has completely finished. Only once that gate condition clears does FindObjectGameManager.cs actually start the experimental session for real. This architectural choice matters because audio instructions and task timing can otherwise create problematic overlaps. If the first round starts while the participant is still actively hearing and processing the task rules, their early gaze behavior could reflect confusion, divided attention, or incomplete task understanding rather than their actual natural search strategy patterns.",
+      "startTime": 417,
+      "endTime": 474.2
+    },
+    {
+      "index": 8,
+      "speaker": "host",
+      "voiceId": "alloy",
+      "text": "The intro gate also demonstrates a general principle in experimental software design - you don't want to let participant impatience accidentally corrupt your timing model or data collection protocols. Participants often tap quickly because they're eager to start the task, especially if they're excited about the mixed reality experience. They may not realize the system is still in an instruction or calibration phase. A robust state machine architecture absorbs that tap, gives a clear and reassuring 'Please wait...' response, and only starts the actual data collection when all the prerequisite conditions are properly satisfied. That approach makes the resulting data cleaner and the participant experience less ambiguous, which honestly is just good UX design that happens to also protect your research integrity. It's a win-win implementation choice.",
+      "startTime": 474.4,
+      "endTime": 531.5
+    },
+    {
+      "index": 9,
+      "speaker": "cohost",
+      "voiceId": "echo",
+      "text": "After the intro gate finally clears and all systems are ready, we reach the actual experiment start sequence. From there, the system transitions into round presentation and object spawning procedures. At the beginning of each experimental round, FindObjectUI.cs displays the fixation cross and task UI elements, while VoiceAssistantController.cs announces the current search goal to the participant. The fixation cross is this classic study tool that helps normalize where the participant is looking before the actual search behavior begins. In a gaze study, that initial normalization matters quite a bit because the starting gaze position can affect the first fixation location, the overall search path strategy, and any interpretation of how quickly someone identified and moved toward the relevant spatial region.",
+      "startTime": 531.6,
+      "endTime": 587.7
+    },
+    {
+      "index": 10,
+      "speaker": "host",
+      "voiceId": "alloy",
+      "text": "Then the virtual environment gets populated with experimental stimuli. ShelfSpawner.cs creates the bookshelf layout structure and determines spawn positions for objects. The component name suggests it's specifically responsible for arranging the spatial structure and geometry where objects will appear during the task. This matters significantly because object search performance is strongly shaped by layout parameters - the participant isn't just searching through an abstract list of items, they're searching through a spatial scene with specific geometric constraints. The density of objects, the shelf geometry and accessibility, the relative positions between targets and distractors, and the overall visibility of target objects can all influence search performance in ways that need to be either carefully controlled as experimental variables or at least measured and accounted for in the analysis.",
+      "startTime": 587.8,
+      "endTime": 647.4
+    },
+    {
+      "index": 11,
+      "speaker": "cohost",
+      "voiceId": "echo",
+      "text": "After the spatial spawning phase, ShapeObjectFactory.cs performs post-processing on the spawned prefabs to transform them into the actual experimental stimuli that participants will interact with. I really like that architectural separation - one component can make decisions about where objects should be positioned in space, and a completely different component can make decisions about what those positioned objects actually become in terms of visual appearance and experimental meaning. That separation helps keep layout generation logic cleanly separate from stimulus identity logic, which makes the overall experimental codebase easier to reason about, debug, and modify. If a target object should be a particular shape, color, or have specific visual properties, that transformation logic belongs in the stimulus generation layer rather than being mixed into table detection or UI management code.",
+      "startTime": 647.4,
+      "endTime": 707.6
+    },
+    {
+      "index": 12,
+      "speaker": "host",
+      "voiceId": "alloy",
+      "text": "Then SpawnableObjectInfo.cs attaches metadata that gets used by gaze logic, capture logic, and subsequent data analysis pipelines. This component is honestly one of the most important behind-the-scenes pieces of the entire system architecture. The participant sees objects as visual stimuli in the mixed reality environment, but the underlying system needs to know what each object means in experimental terms. Is it the current target object? What's its stimulus identity or category? Where exactly was it spawned in the layout? What label should appear in the behavioral logs? What specific object did the participant dwell on during gaze interaction? If that metadata isn't attached cleanly and comprehensively, the gaze logging system might know that the user looked at a particular collider or visual element, but the analysis pipeline might have no way to determine what that collider actually represented in experimental terms.",
+      "startTime": 707.7,
+      "endTime": 764.2
+    },
+    {
+      "index": 13,
+      "speaker": "cohost",
+      "voiceId": "echo",
+      "text": "This is honestly where the project transitions from being a mixed reality app into being a legitimate research instrument. A simple demo or prototype can get away with just creating visual effects and basic interactions, but a proper study needs traceable experimental meaning at every level. Every single spawned object needs sufficient identity information to connect the user's behavioral patterns to specific trial conditions, target identities, and measurable outcomes. SpawnableObjectInfo.cs essentially acts like a crucial bridge between Unity objects existing in the 3D scene and rows of behavioral data that will later be statistically analyzed. Without that bridge component working correctly, you're basically collecting behavioral tea but you have no systematic way to spill it properly or make sense of what it means. The metadata layer is what makes the behavior interpretable.",
+      "startTime": 764.3,
+      "endTime": 823.4
+    },
+    {
+      "index": 14,
+      "speaker": "host",
+      "voiceId": "alloy",
+      "text": "Now we get to the central mechanism that makes this whole system tick - gaze interaction and dwell capture logic. During the search task, GazeHighlightManager.cs continuously tracks the currently hovered object and applies dwell-based capture algorithms to convert sustained attention into selection events. The documentation describes it as the main bridge between raw gaze interaction data and the structured study task, and that phrase is really worth pausing on because raw gaze data is continuous, noisy, and changing every single frame as the eye tracking system updates. But the experimental study needs discrete, meaningful events, like 'the participant selected object A at this specific timestamp.' Dwell capture is the algorithmic mechanism that converts sustained visual attention into an intentional or semi-intentional selection that can be logged and analyzed.",
+      "startTime": 823.4,
+      "endTime": 886.1
+    },
+    {
+      "index": 15,
+      "speaker": "cohost",
+      "voiceId": "echo",
+      "text": "Dwell selection is especially interesting in mixed reality contexts because it completely avoids requiring a controller click, button press, or hand gesture for every single selection attempt. The participant simply looks at an object, and if their gaze remains stable on that object for a sufficient duration, the system treats that sustained attention as a capture event. But dwell introduces some fascinating design questions that affect both user experience and data quality. How long is long enough to constitute intentional selection? If the threshold is too short, accidental glances or brief visual inspections become false selections. If the threshold is too long, the task feels sluggish and unresponsive, and participants might get frustrated. The documentation doesn't specify the exact dwell threshold parameters, but the architecture clearly makes GazeHighlightManager.cs responsible for that critical conversion from hovered object state to captured object event.",
+      "startTime": 886.1,
+      "endTime": 948.8
+    },
+    {
+      "index": 16,
+      "speaker": "host",
+      "voiceId": "alloy",
+      "text": "There's also this important conceptual distinction between looking and selecting that the dwell mechanism helps preserve. In completely natural search behavior, people look at many wrong objects, inspect potential candidates, and visually eliminate distractors before finding the right target. If the system treated every single fixation or brief glance as a committed answer selection, the task would become incredibly frustrating and the resulting behavioral data would be extremely noisy and hard to interpret. Dwell capture is essentially a compromise solution that says 'A brief glance or visual inspection is just exploration behavior, but sustained gaze that persists for the threshold duration represents a selection commitment.' That design choice lets the system preserve natural visual search exploration patterns while still creating a measurable, discrete endpoint for each selection attempt that can be cleanly logged and analyzed.",
+      "startTime": 948.9,
+      "endTime": 1015.8
+    },
+    {
+      "index": 17,
+      "speaker": "cohost",
+      "voiceId": "echo",
+      "text": "Once dwell capture completes and generates a selection event, that selection gets passed back to FindObjectGameManager.cs, which has the responsibility to decide whether the selected object matches the current target identity. This is another important reason why the game manager serves as the state machine owner - it maintains knowledge of the current search goal and can compare the selected object's metadata against the target object's metadata to determine correctness. If the selected object is correct, the experiment smoothly advances to the next round or potentially finishes the entire study session. If the selected object is wrong, the system triggers coordinated feedback through both FindObjectUI.cs for visual confirmation and VoiceAssistantController.cs for audio feedback, creating a multimodal confirmation that helps keep the participant oriented and engaged without being punitive about incorrect selections.",
+      "startTime": 1015.9,
+      "endTime": 1079.8
+    },
+    {
+      "index": 18,
+      "speaker": "host",
+      "voiceId": "alloy",
+      "text": "But here's where we get to the most distinctive and innovative feature of this entire system - the hint generation mechanism. HintGenerator.cs runs alongside the main interaction loop, and in gaze-aware experimental rounds, it converts the participant's current gaze behavior into temperature-style feedback like 'cold', 'getting warmer', 'on track', or 'very close'. In gaze-unaware control rounds, it provides generic encouragement and support without using any gaze state information to personalize or contextualize the content. This creates the fundamental experimental contrast - the project can directly compare assistance that intelligently reacts to gaze patterns against assistance that doesn't incorporate gaze information at all. Temperature-style feedback is particularly smart because it's immediately intuitive to understand without requiring extensive explanation or cognitive overhead that might interfere with the search task itself.",
+      "startTime": 1079.8,
+      "endTime": 1146.1
+    },
+    {
+      "index": 19,
+      "speaker": "cohost",
+      "voiceId": "echo",
+      "text": "And that gaze-unaware control condition is absolutely crucial for the experimental validity because it creates a proper baseline for comparison. If every single participant gets some form of encouragement and assistance, then the study can ask the specific question of whether gaze-contingent assistance adds measurable value beyond just having general prompting and support. Without that control baseline, any performance improvement might simply result from having an assistant voice present in the task environment, rather than from the gaze-contingent intelligence specifically. With both gaze-aware and gaze-unaware rounds systematically compared, the project can make much cleaner causal inferences about the value of gaze contingency. There's also this interesting user-experience balance consideration - gaze-aware hints can definitely be helpful and improve performance, but they can also become intrusive, distracting, or feel overly obvious if they fire too frequently or provide too much guidance.",
+      "startTime": 1146.1,
+      "endTime": 1205.1
+    }
+  ]
+}
