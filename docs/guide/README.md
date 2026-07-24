@@ -2,6 +2,8 @@
 
 This folder is a complete walkthrough of how the project works, from runtime architecture to round logic, gaze hints, logging, and device workflow.
 
+The participant-facing research protocol, its evidence basis, and the register of unresolved design decisions are maintained in [Experiment Procedure: Gaze-Contingent Guidance and Self-Similar Voice](../experiment-procedure.md). The pages in this guide describe the current implementation and should be used to verify which protocol elements are actually executable.
+
 ## Read Order
 
 1. [01-system-overview.md](01-system-overview.md)  
