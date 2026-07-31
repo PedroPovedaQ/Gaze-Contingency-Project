@@ -83,3 +83,9 @@ analysis/results/
 analysis/__pycache__/
 captures/
 session.mkv
+
+# Generated paper-to-podcast artifacts
+tools/paper-to-podcast/output/
+tools/paper-to-podcast/**/__pycache__/
+tools/paper-to-podcast/**/*.aiff
+tools/paper-to-podcast/**/*.mp3
