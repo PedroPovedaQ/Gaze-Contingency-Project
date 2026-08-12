@@ -84,6 +84,12 @@ analysis/__pycache__/
 captures/
 session.mkv
 
+# Local document/PDF render QA
+tmp/
+**/__pycache__/
+docs/irb/.submission-stage.*/
+docs/irb/.submission-backup.*/
+
 # Generated paper-to-podcast artifacts
 tools/paper-to-podcast/output/
 tools/paper-to-podcast/**/__pycache__/
