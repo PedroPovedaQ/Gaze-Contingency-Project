@@ -1,0 +1,40 @@
+# Gaze Contingency IRB packet
+
+This directory is a first-pass, project-specific packet for a UCF Huron IRB submission. It is not an approval, an institutional determination, or a participant-ready packet.
+
+## Read this first
+
+1. Start with [`irb-readiness-brief.md`](irb-readiness-brief.md).
+2. Resolve every item marked **OPEN DECISION** before uploading anything to Huron.
+3. Have the UCF PI of record and, if applicable, faculty advisor verify the protocol, consent, recruitment language, compensation, target enrollment, lab location, vendor/data path, and retention plan.
+4. Complete the required CITI course(s), add the complete study team in Huron, and obtain ancillary reviews if UCF requires them.
+5. Do not recruit, consent, record voices, upload voice samples, or collect study data until UCF issues approval.
+
+## Submission drafts
+
+- `submission/HRP-503_Gaze_Contingency_Protocol_DRAFT.docx` — protocol narrative built from the current UCF HRP-503 structure.
+- `submission/HRP-502_Gaze_Contingency_Adult_Consent_DRAFT.docx` — adult informed-consent draft built from the current UCF HRP-502 structure.
+- `submission/Recruitment_Materials_DRAFT.docx` — email, flyer/SONA-style short copy, and screening invitation.
+- `submission/Eligibility_and_Safety_Screening_DRAFT.docx` — pre-session eligibility, VR safety, and voice-cloning screening.
+- `submission/Participant_Questionnaires_DRAFT.docx` — demographics, prior experience, manipulation checks, workload, symptoms, and post-study questions.
+- `submission/Voice_Recording_Script_DRAFT.docx` — standardized 1–2 minute voice sample and researcher instructions.
+- `submission/Researcher_Session_and_Event_Record_DRAFT.docx` — consent/session checklist, device and calibration record, exclusions, deviations, and adverse-event record.
+- `submission/Post_Participation_Information_DRAFT.docx` — participant-facing explanation and deletion/contact reminders; HRP-509 is only needed if UCF determines that deception or incomplete disclosure is used.
+
+## Source of truth and regeneration
+
+The editable Markdown in `source/` is the auditable content source. Run:
+
+```sh
+./scripts/build-irb-packet.sh
+```
+
+The build requires Python 3 and `python-docx`. Set `IRB_PYTHON` to a compatible Python executable when it is not the default `python3`. The build also runs an integrity check covering expected outputs, required protocol/consent sections, draft and open-decision warnings, prior-study residue, Word comments, and tracked changes.
+
+The build script uses the immutable UCF templates in `templates/` for UCF styles, logo, page setup, headers, and footers. Do not overwrite the templates. The downloaded HRP-310 worksheet in `forms/` is for investigator review; UCF makes the official human-research determination.
+
+## Status labels
+
+- **Implemented** — supported by the current Unity code/data path.
+- **Protocol proposal** — intended study behavior that must be implemented and verified before participant use.
+- **Open decision** — must be decided, approved, or confirmed before submission or enrollment.
