@@ -89,3 +89,7 @@ tools/paper-to-podcast/output/
 tools/paper-to-podcast/**/__pycache__/
 tools/paper-to-podcast/**/*.aiff
 tools/paper-to-podcast/**/*.mp3
+
+# Interactive podcast runtime sessions
+tools/interactive-paper-podcast/data/
+tools/interactive-paper-podcast/**/__pycache__/

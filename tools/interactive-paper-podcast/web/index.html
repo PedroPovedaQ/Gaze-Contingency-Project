@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Margin Notes — Interactive Paper Podcast</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main>
+    <header><p class="eyebrow">INTERACTIVE RESEARCH RADIO</p><h1>Margin Notes</h1><p>Pause the paper. Question the hosts. Let the conversation remember you.</p></header>
+    <section class="panel library"><label for="session">Episode</label><select id="session"></select><p id="model" class="muted"></p></section>
+    <section class="player panel">
+      <div class="art"><span>PDF</span><strong id="initials">MN</strong></div>
+      <div class="transport"><h2 id="title">Choose an episode</h2><audio id="audio" controls></audio><p id="state" class="muted">Ready.</p></div>
+    </section>
+    <section class="ask panel">
+      <div><p class="eyebrow">INTERRUPT</p><h2>Ask while you listen</h2><p>The episode pauses before your question is sent. The next host answers from the source paper and remembers the exchange.</p></div>
+      <form id="ask-form"><textarea id="question" required placeholder="What does that result actually establish?"></textarea><button>Pause & ask</button><label class="speak"><input id="speak" type="checkbox" checked> Read answers aloud</label><button id="resume" type="button" class="secondary">Resume episode</button></form>
+    </section>
+    <section class="columns">
+      <article class="panel"><p class="eyebrow">DISCUSSION</p><div id="turns" class="turns"></div></article>
+      <aside class="panel"><p class="eyebrow">HOST MEMORY</p><div id="characters"></div><hr><p class="eyebrow">RUN SUMMARY</p><p id="summary">No discussion yet.</p><button id="finish" class="secondary">Finish & summarize run</button></aside>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
