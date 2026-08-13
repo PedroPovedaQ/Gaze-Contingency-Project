@@ -14,7 +14,7 @@ What it does:
 
 - Auto-selects a data directory (`./GazeData` first, then macOS Editor path)
 - Auto-pulls from headset only if local trial summaries are missing
-- Creates/uses `.venv-analysis` and installs `analysis/requirements.txt`
+- Syncs a content-addressed environment in Git's common directory from `uv.lock`
 - Runs `analysis/run_analysis.py`
 - Writes results to `analysis/results` by default
 
@@ -34,18 +34,24 @@ scripts/run-analysis-pipeline.sh --output-dir ./analysis/results_m2
 ## Setup
 
 ```bash
-cd analysis
-pip install -r requirements.txt
+brew install uv
+scripts/sync-python-env.sh
 ```
+
+The environment is shared by worktrees with the same lockfile and Python
+version. See [`docs/worktree-environments.md`](../docs/worktree-environments.md)
+for storage details and Unity cache guidance.
 
 ## Quick Start
 
 ```bash
-# Point at your GazeData folder (Unity persistentDataPath/GazeData)
-python run_analysis.py ~/Library/Application\ Support/DefaultCompany/GazeContingencyProject/GazeData
+# From the project root, point at Unity's persistentDataPath/GazeData
+scripts/run-analysis-pipeline.sh --no-pull \
+  --data-dir "$HOME/Library/Application Support/DefaultCompany/GazeContingencyProject/GazeData"
 
-# Or relative path with custom output:
-python run_analysis.py ./GazeData ./results
+# Or use relative input and a custom output directory
+scripts/run-analysis-pipeline.sh --no-pull \
+  --data-dir ./GazeData --output-dir ./analysis/results
 ```
 
 ## What Gets Produced
@@ -93,7 +99,6 @@ data into `results/nasa_tlx_scores.csv`.
 ```
 analysis/
 ├── README.md           # this file
-├── requirements.txt    # Python dependencies
 ├── run_analysis.py     # main entry point
 ├── load_data.py        # JSON/CSV loaders → DataFrame
 ├── plots.py            # plotting functions (one per metric)

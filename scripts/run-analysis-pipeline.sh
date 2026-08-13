@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ANALYSIS_DIR="${ROOT_DIR}/analysis"
 PROJECT_SETTINGS="${ROOT_DIR}/ProjectSettings/ProjectSettings.asset"
-VENV_DIR="${ROOT_DIR}/.venv-analysis"
+PYTHON_ENV_SCRIPT="${SCRIPT_DIR}/sync-python-env.sh"
 
 DEFAULT_DATA_DIR="${ROOT_DIR}/GazeData"
 DEFAULT_EDITOR_DATA_DIR_LEGACY="${HOME}/Library/Application Support/DefaultCompany/GazeContingencyProject/GazeData"
@@ -16,7 +16,7 @@ DEFAULT_PACKAGE_ID="com.DefaultCompany.MixedRealityTemplate"
 DATA_DIR=""
 OUTPUT_DIR="${DEFAULT_OUTPUT_DIR}"
 PACKAGE_ID=""
-PYTHON_BIN="${PYTHON_BIN:-python3}"
+PYTHON_BIN="${PYTHON_BIN:-}"
 FORCE_PULL=0
 DISABLE_PULL=0
 SKIP_INSTALL=0
@@ -39,8 +39,8 @@ Options:
   --package-id <id>      Android package id for adb pull.
                          Default: parsed from ProjectSettings, fallback
                          com.DefaultCompany.MixedRealityTemplate
-  --python <exe>         Python executable to create/use venv (default: python3)
-  --skip-install         Skip pip install -r requirements.txt
+  --python <exe>         Python executable/version for uv (default: uv selection)
+  --skip-install         Reuse the existing shared environment without syncing
   --open                 Open output folder in Finder when done (macOS)
   -h, --help             Show this help
 
@@ -202,19 +202,13 @@ if ! has_trial_summaries "$DATA_DIR"; then
     fail "No trial_summary.json found under ${DATA_DIR}. Record a run first, or use --pull with a connected headset."
 fi
 
-RUN_PY="$PYTHON_BIN"
-if [[ "$SKIP_INSTALL" -eq 0 ]]; then
-    command -v "$PYTHON_BIN" >/dev/null 2>&1 || fail "Python executable not found: ${PYTHON_BIN}"
-    if [[ ! -x "${VENV_DIR}/bin/python" ]]; then
-        log "Creating analysis virtualenv at ${VENV_DIR}"
-        "$PYTHON_BIN" -m venv "$VENV_DIR"
-    fi
-    RUN_PY="${VENV_DIR}/bin/python"
-
-    log "Installing analysis dependencies"
-    "$RUN_PY" -m pip install --upgrade pip >/dev/null
-    "$RUN_PY" -m pip install -r "${ANALYSIS_DIR}/requirements.txt"
+[[ -x "$PYTHON_ENV_SCRIPT" ]] || fail "Python environment helper is not executable: ${PYTHON_ENV_SCRIPT}"
+if [[ "$SKIP_INSTALL" -eq 1 ]]; then
+    SHARED_ENV="$(PYTHON_BIN="$PYTHON_BIN" "$PYTHON_ENV_SCRIPT" --print-only)"
+else
+    SHARED_ENV="$(PYTHON_BIN="$PYTHON_BIN" "$PYTHON_ENV_SCRIPT")"
 fi
+RUN_PY="${SHARED_ENV}/bin/python"
 
 mkdir -p "$OUTPUT_DIR"
 log "Running analysis pipeline"

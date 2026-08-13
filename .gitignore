@@ -81,6 +81,8 @@ Assets/StreamingAssets/api_keys.json
 GazeData/
 analysis/results/
 analysis/__pycache__/
+.venv/
+.venv-analysis/
 captures/
 session.mkv
 

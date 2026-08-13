@@ -11,6 +11,7 @@ A mixed reality research study investigating how gaze-contingent AI assistance a
 - **Unity** 6000.3.10f1 (Unity 6 LTS)
 - **Hardware:** HTC Vive Focus Vision (standalone Android ARM64, integrated eye tracking)
 - **Android SDK:** minimum API level 32
+- **Python tooling:** [`uv`](https://docs.astral.sh/uv/) for locked analysis dependencies
 - **Scene:** `Assets/Scenes/GazeContingencyStudyScene.unity` (single scene build)
 
 ## Getting Started
@@ -56,6 +57,12 @@ Notes:
 - If Unity Editor is open, the script reads the latest compiler output from `Editor.log`.
 - If Unity Editor is closed, it runs a headless batch compile check.
 - Emergency bypass for one commit: `SKIP_UNITY_LINT=1 git commit ...`
+
+## Worktree Disk Usage
+
+Python dependencies use a shared, content-addressed uv environment. Unity
+worktrees can seed isolated `Library` directories with APFS copy-on-write
+clones. See [`docs/worktree-environments.md`](docs/worktree-environments.md).
 
 ## How It Works
 
