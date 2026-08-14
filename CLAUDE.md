@@ -68,10 +68,13 @@ The Python analysis pipeline lives in **`analysis/`**. It loads all
 `trial_summary.json` files, generates plots, and runs paired t-tests.
 
 ```bash
-cd analysis
-pip install -r requirements.txt
-python run_analysis.py <path/to/GazeData> [output_dir]
+brew install uv
+scripts/sync-python-env.sh
+scripts/run-analysis-pipeline.sh --no-pull --data-dir <path/to/GazeData>
 ```
+
+The locked Python environment lives under Git's common directory and is shared
+by compatible worktrees. See `docs/worktree-environments.md` for details.
 
 Default output is `./results/` containing:
 - `all_rounds.csv` — flattened per-round dataset (one row per round)

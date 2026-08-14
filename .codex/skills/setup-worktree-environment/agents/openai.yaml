@@ -1,0 +1,4 @@
+interface:
+  display_name: "Worktree Environment Setup"
+  short_description: "Share Python and Unity caches across worktrees"
+  default_prompt: "Use $setup-worktree-environment to configure this Git worktree with shared Python dependencies and an isolated Unity Library cache."
