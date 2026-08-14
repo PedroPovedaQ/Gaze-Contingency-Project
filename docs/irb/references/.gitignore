@@ -1,0 +1,3 @@
+lab-example/*.pdf
+lab-example/*.docx
+!lab-example/README.md

@@ -1,0 +1,338 @@
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.85in]{geometry}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{lastpage}
+\usepackage{longtable}
+\usepackage{setspace}
+\usepackage{tabularx}
+\usepackage{xcolor}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue,
+  citecolor=black
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\setlist[itemize]{leftmargin=1.4em,itemsep=2pt,topsep=3pt}
+\setlist[enumerate]{leftmargin=1.6em,itemsep=2pt,topsep=3pt}
+\renewcommand{\arraystretch}{1.18}
+\emergencystretch=2em
+\sloppy
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Gaze Contingency Project}
+\rhead{IRB Draft}
+\cfoot{Page \thepage\ of \pageref{LastPage}}
+
+\newcommand{\status}[1]{\textbf{#1.}}
+\newcommand{\field}[1]{\textbf{#1}}
+
+\title{\textbf{IRB Documentation Draft}\\
+\large Gaze-Contingent AI Assistance in Mixed Reality Object Search}
+\author{Pedro Poveda\\University of Central Florida}
+\date{First pass draft generated July 26, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\fbox{\begin{minipage}{0.92\textwidth}
+\textbf{Draft status.} This document is a first-pass IRB preparation packet for internal review. It is not an approved protocol, consent form, or recruitment document. Claims are labeled as \textbf{Implemented}, \textbf{Protocol proposal}, or \textbf{Open decision} so the research team can separate current system behavior from procedures that still require IRB approval.
+\end{minipage}}
+\end{center}
+
+\tableofcontents
+\newpage
+
+\section{Protocol Summary}
+
+\begin{longtable}{p{0.24\textwidth}p{0.68\textwidth}}
+\toprule
+\field{Item} & \field{Draft content} \\
+\midrule
+\field{Study title} & Gaze-Contingent AI Assistance in Mixed Reality Object Search \\
+\field{Principal investigator} & \status{Open decision} Confirm PI name, department, email, and faculty advisor if this is a student-led project. \\
+\field{Study site} & \status{Protocol proposal} Controlled university laboratory or classroom space with a stable table, consistent lighting, and sufficient clearance for seated or standing mixed-reality headset use. \\
+\field{Population} & \status{Open decision} Adults aged 18 or older who can safely use a mixed-reality headset, complete a visual search task, perceive the object colors used in the study, and hear spoken guidance. \\
+\field{Sample size} & \status{Open decision} A first-pass target should be selected after a power or precision analysis. A pilot phase may be used to estimate variance, task duration, and data quality before setting the final sample size. \\
+\field{Design} & \status{Implemented} The current Unity build runs a within-participant 14-round visual-search task alternating gaze-unaware and gaze-aware spoken hints by round. \status{Protocol proposal} A future factorial version may add a generic versus self-similar voice manipulation, but that is not currently implemented. \\
+\field{Apparatus} & \status{Implemented} Unity 6 mixed-reality application on HTC Vive Focus Vision using passthrough MR, OpenXR eye gaze, hand/head tracking fallback, virtual shelf layout, gaze dwell selection, text UI, and spoken hints. \\
+\field{Session duration} & \status{Open decision} Estimate 45-60 minutes including consent, headset fitting, eye calibration, practice, the 14-round task, NASA-TLX, debrief, and breaks. Pilot timing should replace this estimate. \\
+\field{Primary data} & \status{Implemented} Coded participant/run identifiers, per-frame gaze and hover telemetry, trial event logs, round summaries, wrong/correct captures, task timing, blink estimates when available, and NASA-TLX responses. \\
+\field{Risk level} & \status{Protocol proposal} Minimal risk with foreseeable risks from headset discomfort, eye strain, simulator sickness, frustration, fatigue, privacy concerns about eye tracking, and optional voice recording if the future voice condition is used. \\
+\bottomrule
+\end{longtable}
+
+\section{Purpose and Research Questions}
+
+\status{Protocol proposal} The study investigates whether gaze-contingent spoken guidance improves mixed-reality conjunction search compared with spoken guidance that does not use gaze state. Participants search for a target object among visually similar distractors on a virtual shelf anchored to a real table. The assistant provides either gaze-aware feedback based on the participant's current gaze behavior or gaze-unaware encouragement that does not use gaze information.
+
+\textbf{Primary research question.} Does gaze-aware guidance improve search performance, accuracy, workload, and perceived assistance quality relative to gaze-unaware guidance during a mixed-reality visual-search task?
+
+\textbf{Exploratory research questions.}
+\begin{itemize}
+  \item How do gaze-derived hover episodes, target-directed dwell, distractor dwell, and scan transitions differ between gaze-aware and gaze-unaware rounds?
+  \item Are wrong captures, blink rate, or self-reported workload associated with guidance condition?
+  \item \status{Protocol proposal} In a later version, does a self-similar synthesized voice change perceived trust, comfort, or reliance compared with a generic synthesized voice?
+\end{itemize}
+
+\textbf{Important measurement caution.} The current application records XRI gaze hover and dwell events. These are interaction proxies and should not be described as validated fixations or saccades unless an offline eye-movement classifier and device-specific validation procedure are added.
+
+\section{Background and Rationale}
+
+\status{Protocol proposal} Mixed-reality search tasks require participants to allocate visual attention across cluttered spatial layouts while coordinating gaze, head pose, and selection. Eye tracking can provide a real-time signal about where the participant is attending, which may allow an assistant to provide more timely and relevant guidance. Prior XR visual-search and gaze-interaction studies motivate careful headset calibration, practice trials, counterbalanced condition order, workload measurement, and explicit timing boundaries. These methods are adapted here, but hardware-specific thresholds from prior studies must not be treated as validated for the HTC Vive Focus Vision or for this specific task without piloting.
+
+\section{Current Implemented System}
+
+\subsection{Task Environment}
+
+\status{Implemented} The Unity application uses the HTC Vive Focus Vision in passthrough mixed reality. VIVE plane detection identifies a table or usable surface, and the application builds a virtual shelf layout above that surface. Participants see 56 virtual objects arranged on shelves each round.
+
+\status{Implemented} Each round contains:
+\begin{itemize}
+  \item one target object;
+  \item 13 same-color distractors;
+  \item 13 same-shape distractors;
+  \item remaining neutral distractors;
+  \item six possible shapes: sphere, cube, pyramid, cylinder, star, and capsule;
+  \item four possible colors: red, blue, yellow, and purple.
+\end{itemize}
+
+\subsection{Round Schedule and Conditions}
+
+\status{Implemented} The current executable study uses 14 deterministic rounds generated from seed 42. Participant-facing round 1 is gaze-unaware, round 2 is gaze-aware, and the schedule alternates by round through round 14. The participant number is not currently used to counterbalance condition order.
+
+\status{Implemented} In gaze-aware rounds, the hint generator may use hover, proximity, shelf side, and recent near-target evidence to select feedback such as off-target, on-track, or very-close language. In gaze-unaware rounds, the assistant provides generic encouragement without using gaze state.
+
+\status{Open decision} If the IRB protocol is meant to evaluate a full 2 by 2 design with voice similarity, the current implementation must be updated before data collection. The current build does not independently manipulate generic versus self-similar voice.
+
+\subsection{Selection and Feedback}
+
+\status{Implemented} Selection uses gaze dwell. When the participant keeps gaze hover on an object for approximately 1.6 seconds, the object is captured. Correct captures advance the study to the next round. Incorrect captures produce feedback and the same round continues.
+
+\status{Implemented} Between rounds, the application shows a fixation cross with the next target, plays the next target announcement, hides the cross, inserts a randomized blank pause, and then spawns the next round.
+
+\section{Participant Eligibility}
+
+\status{Protocol proposal} Proposed inclusion criteria:
+\begin{itemize}
+  \item age 18 years or older;
+  \item able to provide informed consent in English;
+  \item able to wear the HTC Vive Focus Vision headset for the session duration;
+  \item normal or corrected-to-normal vision sufficient for the object-search task;
+  \item able to distinguish the task colors or pass a brief color-discrimination check using the study colors;
+  \item able to hear spoken instructions and audio guidance.
+\end{itemize}
+
+\status{Protocol proposal} Proposed exclusion criteria:
+\begin{itemize}
+  \item current condition that makes headset use unsafe or unusually uncomfortable;
+  \item history of severe simulator sickness, motion sickness, vertigo, seizures triggered by visual stimuli, or other condition judged by the participant to make MR use unsafe;
+  \item inability to obtain acceptable eye-tracking calibration after refitting and retrying;
+  \item uncorrected visual or hearing limitation that prevents task completion;
+  \item unwillingness to allow gaze/interaction telemetry required for the main study.
+\end{itemize}
+
+\status{Open decision} The team must finalize whether glasses, contact lenses, eye makeup, color-vision limitations, and prior XR experience are exclusion criteria, covariates, or recorded descriptors.
+
+\section{Recruitment and Compensation}
+
+\status{Protocol proposal} Participants may be recruited through university mailing lists, course announcements, research participant pools, flyers, and word of mouth, subject to IRB approval and course/instructor policies. Recruitment materials should state that the study involves wearing a mixed-reality headset with eye tracking, completing a visual search task, hearing spoken guidance, answering questionnaires, and optionally allowing a voice recording only if the voice-similarity extension is approved.
+
+\status{Open decision} Compensation amount, course-credit handling, and alternatives for students who decline participation must be finalized before submission. Recruitment language should avoid implying that participation is required for course standing, employment, or relationship with the researchers.
+
+\section{Consent Process}
+
+\status{Protocol proposal} Consent will occur before collecting research data. The researcher will describe the study purpose, procedures, duration, foreseeable risks, potential benefits, data collected, confidentiality protections, voluntary nature of participation, withdrawal rights, compensation, and contact information. Participants will have time to ask questions and may decline or stop without penalty.
+
+\status{Protocol proposal} Consent should include a separate data-specific section for eye tracking and interaction telemetry because gaze data can be sensitive. If the future self-similar voice condition is implemented, voice recording and voice synthesis require a separate explicit consent section with retention, deletion, provider, and reuse limits.
+
+\status{Open decision} Decide whether participants may complete the non-voice or generic-voice portions if they decline voice recording. Decide whether source voice recordings are deleted immediately after synthesis or retained for verification.
+
+\section{Study Procedure}
+
+\subsection{Step-by-Step Session Flow}
+
+\begin{enumerate}
+  \item \status{Protocol proposal} Welcome participant, confirm eligibility, review consent, and assign a coded participant ID.
+  \item \status{Protocol proposal} Explain headset use, eye tracking, task goals, break options, and stop procedures.
+  \item \status{Protocol proposal} Fit the HTC Vive Focus Vision and run vendor eye-tracking calibration.
+  \item \status{Protocol proposal} Validate gaze across the search area. Refit and recalibrate if validation fails.
+  \item \status{Protocol proposal} Run practice with non-analyzed targets until the participant understands gaze dwell selection and spoken guidance.
+  \item \status{Implemented} Start the Unity task. The participant taps the start surface, the app builds the shelf, and round 1 begins.
+  \item \status{Implemented} For each of 14 rounds, the participant views a target prompt, waits through the transition, searches 56 virtual objects, and selects an object by sustained gaze dwell.
+  \item \status{Implemented} The assistant speaks condition-dependent hints. Gaze-unaware and gaze-aware rounds alternate.
+  \item \status{Implemented} At completion, the application prompts for NASA-TLX.
+  \item \status{Protocol proposal} Remove the headset, check for discomfort, administer remaining questionnaires or interview prompts, and debrief the participant.
+\end{enumerate}
+
+\subsection{Breaks and Stopping Rules}
+
+\status{Protocol proposal} Participants may request a break at any time. The researcher should stop the session if the participant reports significant discomfort, nausea, dizziness, eye strain, distress, or a desire to stop. Technical failures such as headset restart, repeated tracking loss, unusable gaze calibration, or application crash should be recorded as deviations.
+
+\status{Open decision} Define the maximum continuous headset time, maximum session length, and whether incomplete sessions are compensated fully or partially.
+
+\section{Data Collection}
+
+\status{Implemented} The app stores data under a coded participant/run folder. If no participant ID is set, the app auto-assigns IDs such as P001. The current app does not need participant names to create the runtime logs.
+
+\begin{longtable}{p{0.22\textwidth}p{0.25\textwidth}p{0.41\textwidth}}
+\toprule
+\field{Data source} & \field{Status} & \field{Fields or examples} \\
+\midrule
+\field{gaze\_log.csv} & \status{Implemented} Per-frame telemetry. & Timestamp, frame, gaze origin, gaze direction, gaze rotation, left/right eye positions when available, eye openness when available, fixation point when available, hovered object metadata, target match flag, dwell progress, current objective, game state, ray visibility, blink flag, blink count. \\
+\field{trial\_events.csv} & \status{Implemented} Event-level log. & Game start/end, objective start, hover-derived fixation start/end, correct captures, wrong captures, NASA-TLX prompt shown, objective metadata, object metadata, dwell duration, details field. \\
+\field{trial\_summary.json} & \status{Implemented} Run summary. & Participant ID, run number, condition label, timestamp, deterministic challenge set, round schedule, total rounds, objects per round, total time, first-try accuracy, wrong captures, target/distractor dwell time, blink metrics, gaze behavior classification, per-round metrics. \\
+\field{nasa\_tlx.csv} & \status{Implemented} Questionnaire entry after completion. & Participant ID, condition label, mental demand, physical demand, temporal demand, performance, effort, frustration. Current build records the alternating run as one condition label rather than separate block-level workload. \\
+\field{Voice recordings} & \status{Protocol proposal} Future extension only. & If self-similar voice is added, source voice audio, synthesized voice ID, generation provider/model, parameters, consent status, deletion/retention metadata, and playback logs must be handled under a separate approved procedure. \\
+\bottomrule
+\end{longtable}
+
+\status{Open decision} The final IRB submission should specify whether any video, audio, screen recording, or external observation notes will be collected. The current implemented logger does not require scene video or participant video.
+
+\section{Privacy and Confidentiality}
+
+\status{Protocol proposal} Direct identifiers should be stored separately from study data. Runtime files should use coded participant IDs only. Any linkage file connecting names, emails, consent forms, compensation records, or course-credit records to participant IDs should be stored in a restricted location separate from Unity logs.
+
+\status{Protocol proposal} Gaze and interaction logs should be treated as sensitive behavioral data because they describe visual attention, timing, and task behavior. Only approved study personnel should access identifiable or linkable data. Reports and publications should present aggregate results or de-identified examples that do not reveal participant identity.
+
+\status{Open decision} Finalize storage location, encryption method, access list, retention period, deletion procedure, and whether data will be shared publicly. If data are shared, the team should define a de-identification process and exclude any source voice recordings, synthesized voice assets, consent forms, linkage files, or free-text comments that could identify participants.
+
+\section{Risk Assessment}
+
+\begin{longtable}{p{0.25\textwidth}p{0.32\textwidth}p{0.31\textwidth}}
+\toprule
+\field{Risk} & \field{Description} & \field{Mitigation} \\
+\midrule
+\field{Headset discomfort} & Eye strain, pressure, fatigue, warmth, or discomfort from wearing the headset. & Fit headset carefully, provide breaks, allow stopping at any time, limit session duration, monitor participant comfort. \\
+\field{Simulator or MR sickness} & Nausea, dizziness, disorientation, headache, or balance discomfort. & Use stable passthrough MR, avoid artificial locomotion, allow seated participation when appropriate, stop on request or visible discomfort. \\
+\field{Task frustration} & Participants may feel frustrated by difficult search trials or wrong selections. & Explain that wrong selections are expected, allow breaks, use neutral feedback, remind participants they may stop. \\
+\field{Eye-tracking privacy} & Gaze behavior can be sensitive and may reveal attention patterns. & Use coded IDs, restrict access, avoid collecting unnecessary video, describe gaze collection during consent. \\
+\field{Voice privacy} & \status{Protocol proposal} Voice recordings can identify a participant and synthesized voice may create additional privacy concerns. & Use separate explicit consent, minimize recording length, restrict reuse, define provider handling, retention, and deletion before collection. \\
+\field{Technical interruptions} & Tracking loss, audio failure, app crash, or calibration failure may disrupt participation. & Record deviations, restart only with participant agreement, exclude or label unusable data according to preregistered rules. \\
+\bottomrule
+\end{longtable}
+
+\status{Protocol proposal} The study is expected to be minimal risk if the protocol is limited to adults, standard headset use, behavioral telemetry, and questionnaires, but the IRB makes the final risk determination.
+
+\section{Potential Benefits}
+
+\status{Protocol proposal} Participants may not receive direct personal benefit. They may learn about mixed-reality research or eye-tracking interaction. The expected societal or scientific benefit is improved understanding of how gaze-aware assistance affects performance, workload, and user experience in mixed-reality search tasks.
+
+\section{Analysis Plan}
+
+\status{Protocol proposal} The primary confirmatory comparison should be specified before data collection. A first-pass plan is:
+\begin{itemize}
+  \item primary outcome: search time from valid search onset to correct capture;
+  \item secondary outcomes: first-try accuracy, wrong captures per round, raw NASA-TLX score, and perceived helpfulness;
+  \item exploratory outcomes: target/distractor hover time, hover-derived episode counts, angular transition metrics, blink rate when the signal is available, and response to hints.
+\end{itemize}
+
+\status{Implementation gap} The current objective timer can include transition or announcement time for later rounds. A dedicated search-onset event should be logged before the final protocol treats reaction time as confirmatory.
+
+\status{Protocol proposal} Repeated-measures analyses should account for participant, round order, target identity, and condition. Missing or unusable gaze data should be handled using predeclared quality rules rather than post hoc deletion. Hover-derived ``fixation'' and ``saccade'' fields in existing analysis outputs should be renamed or clearly described as proxies unless a validated classifier is added.
+
+\section{Implementation Gaps Before Full IRB Data Collection}
+
+\begin{longtable}{p{0.12\textwidth}p{0.38\textwidth}p{0.38\textwidth}}
+\toprule
+\field{Priority} & \field{Gap} & \field{Needed resolution} \\
+\midrule
+1 & Search onset boundary is not clean enough for confirmatory reaction time. & Log display/search onset after all objects are visible and search is allowed. \\
+1 & Condition schedule is fixed rather than counterbalanced. & Add participant-ID-based schedule if the final protocol requires counterbalancing. \\
+1 & Hint timing differs between aware and unaware modes. & Match hint opportunity timing if the causal claim is guidance awareness rather than amount/timing of help. \\
+1 & NASA-TLX is currently session-level for the alternating run. & Add post-block or condition-specific workload collection if workload is compared by condition. \\
+1 & No self-similar voice condition in the current build. & Implement voice recording/synthesis workflow only after separate IRB approval for voice data. \\
+2 & Gaze hover is not a validated fixation measure. & Add calibration validation, raw validity indicators, and offline eye-movement classification if fixation/saccade claims are required. \\
+2 & Retention and data-security details are not finalized. & Finalize access, encryption, retention, deletion, and sharing plan. \\
+\bottomrule
+\end{longtable}
+
+\section{Draft Consent Language}
+
+\subsection{Plain-Language Study Description}
+
+\status{Protocol proposal} You are invited to take part in a research study about mixed-reality object search and computer guidance. If you take part, you will wear a mixed-reality headset with eye tracking and search for target virtual objects on a shelf-like display. The system may provide spoken hints. Some hints may use information about where you are looking, and some hints may not use gaze information. We will record task performance, gaze-related telemetry, selections, timing, and questionnaire responses.
+
+\subsection{Voluntary Participation}
+
+\status{Protocol proposal} Taking part is voluntary. You may skip questions you do not want to answer, request a break, or stop at any time without penalty or loss of benefits to which you are otherwise entitled.
+
+\subsection{Risks and Discomforts}
+
+\status{Protocol proposal} You may experience eye strain, headache, dizziness, nausea, discomfort from the headset, fatigue, or frustration during the search task. You can stop immediately if you feel uncomfortable. The study also collects gaze and task behavior data, which may be sensitive because it describes where you looked and how you performed during the task.
+
+\subsection{Confidentiality}
+
+\status{Protocol proposal} Your study data will be labeled with a code instead of your name. The code linking your identity to your data will be stored separately from the research data. Results will be reported in aggregate whenever possible.
+
+\subsection{Optional Voice Addendum}
+
+\status{Protocol proposal} This addendum should be included only if the self-similar voice condition is implemented and approved. The study may ask you to record a short voice sample so a synthesized voice can be generated for the experiment. Voice recordings can identify you. You may decline voice recording. The consent form must state who processes the recording, whether an external provider is used, how long source recordings and synthesized voices are kept, whether they will be reused, and how deletion requests are handled.
+
+\section{Draft Recruitment Text}
+
+\status{Protocol proposal} Researchers are recruiting adults for a study about mixed-reality object search and computer guidance. Participants will wear an HTC Vive Focus Vision headset, complete a visual search task with virtual objects, hear spoken guidance, and answer short questionnaires. The study involves eye tracking and task-performance logging. Participation is voluntary and participants may stop at any time. Compensation: \status{Open decision} [insert amount or course-credit details]. Contact: \status{Open decision} [insert approved contact].
+
+\section{Draft Screening Checklist}
+
+\status{Protocol proposal} Before scheduling or enrollment, ask:
+\begin{enumerate}
+  \item Are you 18 years of age or older?
+  \item Are you comfortable wearing a mixed-reality headset for up to \status{Open decision} [duration]?
+  \item Do you have a history of severe motion sickness, simulator sickness, vertigo, or seizures triggered by visual stimuli?
+  \item Do you have vision, color-vision, or hearing limitations that would prevent you from finding colored virtual objects or hearing spoken instructions?
+  \item Do you currently have any condition that you believe would make headset use unsafe or uncomfortable?
+  \item \status{Protocol proposal} If voice synthesis is included: are you willing to consider a separate optional voice-recording consent form?
+\end{enumerate}
+
+\section{Draft Debriefing Script}
+
+\status{Protocol proposal} Thank you for participating. This study examines whether spoken guidance that uses gaze information changes search performance, workload, and experience compared with spoken guidance that does not use gaze information. In some rounds, the assistant could use where you were looking to decide whether you appeared off target, on track, or very close to the target. In other rounds, the assistant used generic encouragement without using gaze information. The study records coded task data, gaze-related telemetry, object selections, timing, and questionnaire responses. Please contact the research team if you have questions or decide you want to withdraw your data, subject to the limits described in the consent form.
+
+\section{Open Decision Register}
+
+\begin{itemize}
+  \item Final PI, faculty advisor, department, and contact information.
+  \item Target participant population and sample size.
+  \item Compensation and course-credit alternatives.
+  \item Final inclusion/exclusion criteria.
+  \item Whether the submitted protocol covers only the implemented 14-round gaze-aware/unaware study or also the future 2 by 2 voice-similarity study.
+  \item Counterbalancing schedule and whether fixed alternating rounds are acceptable.
+  \item Session duration, break schedule, and stopping rules.
+  \item Eye-tracking calibration validation and recalibration criteria.
+  \item Primary outcome, secondary outcomes, multiplicity strategy, and exclusion rules.
+  \item Data storage location, encryption, retention, deletion, and sharing plan.
+  \item Whether optional voice recording/synthesis is included, and if so, provider, consent, retention, deletion, and fallback details.
+\end{itemize}
+
+\section{References for Methodological Rationale}
+
+\begin{thebibliography}{9}
+
+\bibitem{chiossi2024}
+Chiossi et al. Searching Across Realities: Visual Search in XR with eye-tracking and ERP methods. \textit{IEEE Transactions on Visualization and Computer Graphics}, 2024. DOI: \href{https://doi.org/10.1109/TVCG.2024.3456196}{10.1109/TVCG.2024.3456196}.
+
+\bibitem{zhang2023}
+Zhang et al. See or Hear? Comparing guidance modalities for augmented-reality search tasks. \textit{ISMAR Adjunct}, 2023. DOI: \href{https://doi.org/10.1109/ISMAR-Adjunct60411.2023.00031}{10.1109/ISMAR-Adjunct60411.2023.00031}.
+
+\bibitem{guo2024}
+Guo et al. Collaborating with My Doppelganger: Self-similar voice and agent evaluation in human-computer interaction. \textit{ACM}, 2024. DOI: \href{https://doi.org/10.1145/3651288}{10.1145/3651288}.
+
+\bibitem{nasatlx}
+Hart, S. G., and Staveland, L. E. Development of NASA-TLX: Results of empirical and theoretical research. \textit{Advances in Psychology}, 1988.
+
+\end{thebibliography}
+
+\end{document}
