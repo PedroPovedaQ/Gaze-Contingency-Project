@@ -2,7 +2,7 @@
 
 **Protocol proposal:** This checklist records the intended approved workflow. It does not establish that the workflow is implemented or authorized for participant use.
 
-Study: **Gaze-Contingent AI Assistance and Self-Similar Voice in Mixed Reality Visual Search**
+Study: **Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent**
 
 This internal record uses study ID only. Do not record diagnoses or unnecessary identifying details. Store signed consent, contact/payment records, and the identity key separately.
 
@@ -14,17 +14,18 @@ Researcher: ____________________  Location: ____________________
 - ☐ Current UCF approval confirmed; study not expired/suspended.
 - ☐ Researcher listed on study and CITI/training current.
 - ☐ Correct approved consent/material versions available.
-- ☐ Private room, clear area, chair/table, and emergency contacts ready.
+- ☐ Private room, marked seated origin, swivel chair, clear rotational area, and emergency contacts ready.
 - ☐ Headset/contact surfaces sanitized; equipment safety check passed.
 - ☐ Approved release build/configuration loaded.
 - ☐ Build commit/hash: ____________________  App version: ____________________
 - ☐ Deterministic stimulus manifest/version: ____________________
-- ☐ Counterbalancing schedule version: ____________________  Assigned sequence: ____________________
+- ☐ Counterbalancing schedule version: ____________________  Assigned Williams sequence: ☐ A-B-D-C ☐ B-C-A-D ☐ C-D-B-A ☐ D-A-C-B
+- ☐ Allocation was revealed from the pre-generated randomized schedule only after study ID assignment; assigned sequence was not selected by staff.
 - ☐ Approved voice provider/account; model-improvement sharing disabled; private/no-library-sharing controls confirmed.
 - ☐ Institution-managed encrypted voice workstation ready; automatic cloud backup/sync disabled for temporary study folders.
 - ☐ Provider access uses designated staff, least privilege, MFA when supported, and revocable credentials.
 - ☐ Provider credential is restricted to the staff workflow and is not embedded in the headset build/logs.
-- ☐ VIVE Room Setup verified; study table detected as a usable horizontal placeable plane.
+- ☐ Marked origin and eight-plane 360-degree search geometry validated at 45-degree intervals; all 56 object locations are visible from the seated rotation area.
 
 ## Consent and Eligibility
 
@@ -53,25 +54,31 @@ Researcher: ____________________  Location: ____________________
 ## Headset, Calibration, and Practice
 
 - Headset asset ID: ____________________  Eye-tracking provider/version: ____________________
-- Room Setup/table plane check: ☐ Pass ☐ Fail  Result/retry: ____________________
+- Eight-plane geometry/origin check: ☐ Pass ☐ Fail  Result/retry: ____________________
 - Fit/vision correction acceptable: ☐ Yes ☐ No
 - Eye calibration result: ☐ Pass ☐ Fail  Retries: ______  Quality/validity output: ____________________
+- Multi-direction gaze validation result: ☐ Pass ☐ Fail  Directions/targets checked: ____________________
 - Audio check: ☐ Pass ☐ Fail  Volume/configuration: ____________________
-- Practice completed: ☐ Yes ☐ No  Dwell selection understood: ☐ Yes ☐ No
+- Practice trials attempted: ______ (maximum 8)  Consecutive correct: ______ (criterion 3)  Criterion met: ☐ Yes ☐ No
+- Dwell selection understood: ☐ Yes ☐ No
 - Participant chose to continue after practice: ☐ Yes ☐ No
 
 ## Experimental Blocks
 
 | Block | Assistance | Voice | Planned trials | Valid trials | Start/end | Break offered/taken | Notes/reason codes |
 |---|---|---|---:|---:|---|---|---|
-| 1 | | | | | | | |
-| 2 | | | | | | | |
-| 3 | | | | | | | |
-| 4 | | | | | | | |
+| 1 | | | 16 | | | | |
+| 2 | | | 16 | | | | |
+| 3 | | | 16 | | | | |
+| 4 | | | 16 | | | | |
 
 - ☐ Raw NASA-TLX completed after each completed block.
 - ☐ Manipulation/comfort checks completed after each completed block.
 - ☐ End-of-session instruments completed or skips recorded without pressure.
+- ☐ Each condition manifest places the target exactly twice on each of the eight planes.
+- ☐ Search-onset, scheduled hint opportunity (first at 4 seconds; then every 6 seconds), policy evidence/state, playback outcome, selection, and trial-end events logged.
+- ☐ Each fine-stage opportunity logged raw gaze-target angle, target angular size, normalized proximity, preceding valid comparison value, and resulting warmer/colder/about-the-same/very-close state or abstention.
+- ☐ Gaze-contingent blocks used coarse directional then fine proximity guidance; noncontingent blocks did not receive gaze, hover, coverage, or target-proximity state.
 
 ## Data Transfer and Cleanup
 
@@ -98,7 +105,7 @@ Pre-specified reason codes (select all that apply; do not decide based on condit
 - ☐ None known at session end
 - ☐ Consent withdrawn
 - ☐ Calibration failure after approved retries
-- ☐ Room Setup/table-plane failure
+- ☐ Eight-plane geometry/origin validation failure
 - ☐ Tracking availability below approved threshold
 - ☐ Missing/corrupt search-onset or response event
 - ☐ Corrupted/incomplete file

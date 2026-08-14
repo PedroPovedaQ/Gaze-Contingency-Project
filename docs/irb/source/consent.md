@@ -2,13 +2,13 @@
 
 **Protocol proposal:** This draft describes the intended participant experience. It must not be used until all open decisions are resolved and UCF approves the study and consent form.
 
-Study title: **Gaze-Contingent AI Assistance and Self-Similar Voice in Mixed Reality Visual Search** \
+Study title: **Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent** \
 Principal Investigator: **[OPEN DECISION: name and UCF department]** \
 Version/date: **[OPEN DECISION]**
 
 ## Key Information
 
-You are invited to take part in a research study about spoken assistance during a mixed-reality visual-search task. If you join, you will come to a UCF lab for about **[OPEN DECISION: 75–90 minutes]**. You will wear an HTC Vive Focus Vision headset, look for virtual colored shapes, receive spoken hints, answer questionnaires, and provide about 1–2 minutes of your own speech. A third-party speech service will use that recording to make a private synthetic voice that resembles you and can say study phrases you did not record.
+You are invited to take part in a research study about spoken assistance during a mixed-reality visual-search task. If you join, you will come to a UCF lab for about **[OPEN DECISION: 75–90 minutes]**. While seated in a swivel chair, you will wear an HTC Vive Focus Vision headset and turn to search for virtual colored shapes arranged around you. You will complete practice followed by four 16-trial blocks (64 experimental trials), receive spoken hints, answer questionnaires, and provide about 1–2 minutes of your own speech. A third-party speech service will use that recording to make a private synthetic voice that resembles you and can say study phrases you did not record.
 
 The main risks are temporary nausea, dizziness, eyestrain, headache, fatigue, or discomfort while using the headset; frustration or discomfort with the task or self-similar voice; and loss of privacy involving your gaze, performance, or identifiable voice information. You may pause or stop at any time. You should not expect a direct benefit. Participation is voluntary.
 
@@ -22,7 +22,7 @@ The researchers want to learn whether spoken hints based on where a person looks
 
 ## How long will the research last and what will I need to do?
 
-Your participation will involve one lab visit lasting about **[OPEN DECISION: final duration]**. You will review this form, complete safety screening, record a short voice sample, wear and calibrate a mixed-reality headset, complete practice and experimental search trials, take breaks, answer questionnaires, and receive a study explanation.
+Your participation will involve one lab visit lasting about **[OPEN DECISION: proposed 75–90 minutes]**. You will review this form, complete safety screening, record a short voice sample, wear and calibrate a mixed-reality headset, complete up to eight practice trials and 64 experimental search trials in four blocks, take breaks, answer questionnaires, and receive a study explanation.
 
 ## Is there any way being in this study could be bad for me?
 
@@ -53,7 +53,7 @@ For questions about your rights as a research participant or to speak with someo
 
 ## How many people will be studied?
 
-Up to **[OPEN DECISION: enrolled maximum]** people will take part at UCF.
+The researchers plan to obtain complete study data from 48 people. Up to **[OPEN DECISION: enrolled maximum after accounting for screening, withdrawal, and technical attrition]** people may be enrolled at UCF.
 
 ## What happens if I say yes, I want to be in this research?
 
@@ -63,8 +63,8 @@ After you sign this form, a researcher will:
 2. Ask short questions about headset safety and eligibility.
 3. Ask you to read a neutral script for about 1–2 minutes in a private room. The recording will be made on an institution-managed encrypted research computer.
 4. Upload the recording over an encrypted connection to **[OPEN DECISION: approved provider; proposed ElevenLabs Instant Voice Cloning]** to create a private synthetic voice. On the protected research computer, the team will generate only the fixed study instructions and hints for your session and then copy those audio clips to the headset. The headset will not contain the provider password/key or send your recording to the provider. The voice will not be published or shared to a public voice library.
-5. Fit and calibrate the HTC Vive Focus Vision headset. The headset uses cameras to show your surroundings and eye tracking to estimate where you look. The study application does not save room video, face video, webcam video, or raw eye-camera images.
-6. Ask you to practice and then complete blocks of visual-search trials. You will look for a target among 56 virtual colored shapes and hold your gaze on your selection. You will hear different types of spoken hints, including a generic voice and the self-similar synthetic voice.
+5. Seat you in a swivel chair at a marked position, fit and calibrate the HTC Vive Focus Vision headset, and check that you can comfortably turn to view the search area around you. The headset uses cameras to show your surroundings and eye tracking to estimate where you look. The study application does not save room video, face video, webcam video, or raw eye-camera images.
+6. Ask you to complete up to eight practice trials, then four 16-trial experimental blocks. In each experimental trial, you will turn while remaining seated to find one target among 56 virtual colored shapes arranged across eight virtual areas around you and hold your gaze on your selection. In some blocks, hints will use gaze-related task information to provide coarse directional guidance followed by closer/farther feedback; in other blocks, general hints will not use that information. The same hint wording will be spoken either in a generic voice or in the self-similar synthetic voice.
 7. Offer breaks and ask about symptoms, workload, the hints, and the voices.
 8. Remove the headset, explain the study, and provide compensation under the approved plan if compensation is offered.
 
@@ -72,7 +72,7 @@ The system records coded eye-gaze rays and availability, eye openness when avail
 
 ## What are my responsibilities if I take part in this research?
 
-Tell the researcher immediately if you feel dizzy, nauseated, disoriented, have eye pain, headache, blurred vision, anxiety, or any other concern. Follow the clear-area instructions, remain in the approved task position, do not share personal information in the voice script, and answer safety questions honestly.
+Tell the researcher immediately if you feel dizzy, nauseated, disoriented, have eye pain, headache, blurred vision, neck or back discomfort, anxiety, or any other concern. Follow the clear-area instructions, remain seated in the approved task position, rotate only as instructed, do not share personal information in the voice script, and answer safety questions honestly.
 
 ## What happens if I say yes, but I change my mind later?
 
@@ -82,7 +82,7 @@ If compensation is offered, stopping will not reduce compensation already earned
 
 ## Is there any way being in this study could be bad for me? (Detailed Risks)
 
-Mixed-reality risks: temporary motion sickness, dizziness, disorientation, eyestrain, headache, fatigue, blurred vision, balance problems, or headset pressure. A seizure is rare but may occur in susceptible people. The room will be cleared, a researcher will remain present, and you may remove the headset or take a break at any time.
+Mixed-reality risks: temporary motion sickness, dizziness, disorientation, eyestrain, headache, fatigue, blurred vision, balance problems, headset pressure, or neck/back discomfort from turning while seated. A seizure is rare but may occur in susceptible people. The chair and surrounding area will be checked, a researcher will remain present, breaks will be offered between blocks, and you may remove the headset or take a break at any time.
 
 Voice risks: your recording and synthetic voice may identify you. A synthetic voice is not just a replay; it can produce approved study sentences you never said. Accidental disclosure could create embarrassment, impersonation, or other privacy harms. The researchers will use a coded name, fixed phrases, private account settings, limited access, and documented deletion. They will not publicly share or reuse your voice.
 
@@ -108,7 +108,7 @@ Absolute confidentiality cannot be promised. There is a small risk of unauthoriz
 
 ## Can I be removed from the research without my OK?
 
-The researchers may stop your participation if continuing appears unsafe, you do not meet eligibility requirements, eye tracking or the study table cannot be set up after the approved retry process, equipment/provider service fails, the study is suspended, or you do not follow safety instructions. The reason will be explained when appropriate. If compensation is offered, payment will follow the approved prorating plan and will not depend on usable data.
+The researchers may stop your participation if continuing appears unsafe, you do not meet eligibility requirements, eye tracking or the eight-area search environment cannot be set up after the approved retry process, equipment/provider service fails, the study is suspended, or you do not follow safety instructions. The reason will be explained when appropriate. If compensation is offered, payment will follow the approved prorating plan and will not depend on usable data.
 
 ## What else do I need to know?
 
@@ -135,6 +135,8 @@ By initialing below, I confirm that:
 Participant initials: ____________________
 
 Voice cloning is required for this experiment. If you do not authorize it, you cannot take part, but there is no penalty.
+
+<!-- PAGE BREAK -->
 
 ## Consent and Signature
 

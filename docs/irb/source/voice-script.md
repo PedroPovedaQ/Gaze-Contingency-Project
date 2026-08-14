@@ -2,7 +2,7 @@
 
 **Protocol proposal:** This script and upload workflow are proposed. Use only after UCF approves the provider, data path, exact script, and deletion procedure.
 
-Study: **Gaze-Contingent AI Assistance and Self-Similar Voice in Mixed Reality Visual Search**
+Study: **Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent**
 
 ## Researcher Setup
 
@@ -23,11 +23,11 @@ Confirm: “Do you want to continue with the recording?”  ☐ Yes ☐ No
 
 ## Recording Passage
 
-Today I am taking part in a visual search activity. I will look across several shelves and compare objects by color and shape. Some objects may look similar, so I will take my time and check each area carefully.
+Today I am taking part in a visual search activity. While seated, I will turn to look at several areas arranged around me and compare objects by color and shape. Some objects may look similar, so I will take my time and check each area carefully.
 
 The assistant may offer a short hint. A hint can tell me that I am closer, farther away, or looking in a useful direction. I can listen to the hint, keep searching, and make my own choice. If I need a break, I can pause the activity.
 
-Clear speech can change with pace, emphasis, and punctuation. I can say, “Look near the upper shelf,” or ask, “Is the blue shape beside the red one?” I can count: one, two, three, four, five, six, seven, eight, nine, ten.
+Clear speech can change with pace, emphasis, and punctuation. I can say, “Look this way,” “colder,” “warmer,” or “very close.” I can ask, “Is the blue shape beside the red one?” I can count: one, two, three, four, five, six, seven, eight, nine, ten.
 
 The quick brown fox moves past the quiet garden. Bright yellow stars appear above purple cubes. Round spheres, narrow cylinders, and small pyramids fill the display. Each sentence gives the system a different pattern of sounds while keeping the content neutral.
 

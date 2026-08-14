@@ -126,6 +126,74 @@ FORBIDDEN_RESIDUE = (
     "300 participants",
 )
 
+REQUIRED_STUDY_ALIGNMENT = {
+    "HRP-503_Gaze_Contingency_Protocol_DRAFT.docx": (
+        "48 complete participant datasets",
+        "64 analyzed trials",
+        "eight vertical planes",
+        "Williams design",
+        "A-B-D-C",
+        "B-C-A-D",
+        "C-D-B-A",
+        "D-A-C-B",
+        "target appears exactly twice on each of the eight planes",
+        "search_onset",
+        "begins 4 seconds",
+        "every 6 seconds",
+    ),
+    "HRP-502_Gaze_Contingency_Adult_Consent_DRAFT.docx": (
+        "complete study data from 48 people",
+        "64 experimental trials",
+        "eight virtual areas around you",
+        "swivel chair",
+    ),
+    "Recruitment_Materials_DRAFT.docx": (
+        "four 16-trial blocks",
+        "swivel chair",
+    ),
+    "Eligibility_and_Safety_Screening_DRAFT.docx": (
+        "repeatedly turning in a swivel chair",
+        "approved color set",
+    ),
+    "Participant_Questionnaires_DRAFT.docx": (
+        "closer/farther feedback",
+        "study-created manipulation",
+    ),
+    "Voice_Recording_Script_DRAFT.docx": (
+        "areas arranged around me",
+        "warmer",
+        "very close",
+    ),
+    "Researcher_Session_and_Event_Record_DRAFT.docx": (
+        "Assigned Williams sequence",
+        "A-B-D-C",
+        "eight-plane 360-degree search geometry",
+        "maximum 8",
+        "criterion 3",
+        "first at 4 seconds; then every 6 seconds",
+    ),
+    "Post_Participation_Information_DRAFT.docx": (
+        "coarse directional guidance",
+        "closer/farther feedback",
+        "noncontingent blocks",
+    ),
+}
+
+FORBIDDEN_PLANNED_RESIDUE = {
+    "HRP-502_Gaze_Contingency_Adult_Consent_DRAFT.docx": (
+        "study table cannot be set up",
+    ),
+    "Voice_Recording_Script_DRAFT.docx": (
+        "several shelves",
+        "upper shelf",
+    ),
+    "Researcher_Session_and_Event_Record_DRAFT.docx": (
+        "study table detected",
+        "Room Setup/table plane",
+        "Room Setup/table-plane failure",
+    ),
+}
+
 REVISION_ELEMENTS = {
     "ins", "del", "moveFrom", "moveTo", "moveFromRangeStart", "moveFromRangeEnd",
     "moveToRangeStart", "moveToRangeEnd", "customXmlInsRangeStart", "customXmlInsRangeEnd",
@@ -196,6 +264,12 @@ def verify_package(path: Path) -> list[str]:
     for residue in FORBIDDEN_RESIDUE:
         if residue.casefold() in text.casefold():
             failures.append(f"{path.name}: contains residue from prior study: {residue}")
+    for required in REQUIRED_STUDY_ALIGNMENT.get(path.name, ()):
+        if required.casefold() not in text.casefold():
+            failures.append(f"{path.name}: missing paper-aligned study detail: {required}")
+    for residue in FORBIDDEN_PLANNED_RESIDUE.get(path.name, ()):
+        if residue.casefold() in text.casefold():
+            failures.append(f"{path.name}: contains stale planned-study detail: {residue}")
 
     with zipfile.ZipFile(path) as package:
         names = set(package.namelist())

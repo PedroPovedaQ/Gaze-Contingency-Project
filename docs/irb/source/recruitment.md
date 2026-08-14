@@ -2,7 +2,7 @@
 
 **Protocol proposal:** These are proposed recruitment versions. Use only the channels and final text approved by UCF.
 
-Study: **Gaze-Contingent AI Assistance and Self-Similar Voice in Mixed Reality Visual Search**
+Study: **Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent**
 
 Use only the versions and channels approved by UCF. Replace every open decision before use.
 
@@ -12,7 +12,7 @@ Subject: Participate in a UCF mixed-reality visual-search study
 
 Researchers at the University of Central Florida are inviting adults to take part in a laboratory study about spoken assistance during a mixed-reality visual-search task.
 
-If you participate, you will wear an HTC Vive Focus Vision headset, look for virtual colored shapes, receive spoken hints, answer questionnaires, and record about 1–2 minutes of your own speech. An approved third-party speech service will use the recording to create a private synthetic voice that resembles you for study prompts. The study also records eye-gaze interaction data and task performance. It does not save room video, face video, webcam video, or raw eye-camera images.
+If you participate, you will remain seated in a swivel chair while wearing an HTC Vive Focus Vision headset, turn to look for virtual colored shapes arranged around you, receive spoken hints, answer questionnaires, and record about 1–2 minutes of your own speech. The task includes practice and four 16-trial blocks (64 experimental trials). An approved third-party speech service will use the recording to create a private synthetic voice that resembles you for study prompts. The study also records eye-gaze interaction data and task performance. It does not save room video, face video, webcam video, or raw eye-camera images.
 
 The visit will take about **[OPEN DECISION: duration]** at **[OPEN DECISION: UCF lab/location]**. Compensation is **[OPEN DECISION: amount/form or state no compensation]**.
 
@@ -33,14 +33,15 @@ Take part in a UCF laboratory research study about gaze-based spoken assistance.
 
 - One **[OPEN DECISION: duration]** lab visit
 - Wear an HTC Vive Focus Vision headset
-- Search for virtual colored shapes
+- Remain seated and turn in a swivel chair to search around you
+- Complete practice and four 16-trial search blocks
 - Eye-gaze interaction and task data recorded
 - Record 1–2 minutes of your own speech
 - Hear private study prompts in a synthetic voice that resembles you
 - Answer short questionnaires
 - Compensation: **[OPEN DECISION]**
 
-You may qualify if you are age 18 or older, can consent in English, can safely use a mixed-reality headset, and agree to the short voice recording and private voice-cloning procedure.
+You may qualify if you are age 18 or older, can consent in English, can safely use a mixed-reality headset and turn while seated, and agree to the short voice recording and private voice-cloning procedure.
 
 Interested? **[OPEN DECISION: approved contact/link]**
 

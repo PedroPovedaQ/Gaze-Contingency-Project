@@ -1,6 +1,6 @@
-# IRB-readiness brief: Gaze-Contingent AI Assistance and Self-Similar Voice
+# IRB-readiness brief: Follow My Voice—Gaze-Contingent XR Search with a Self-Similar Agent
 
-Version: first-pass draft, 2026-08-11
+Version: paper-aligned draft, 2026-08-13
 
 ## Bottom line
 
@@ -8,13 +8,13 @@ The planned work likely constitutes non-exempt human-subjects research rather th
 
 The conservative project-specific assumption is: prepare a Huron IRB study using HRP-503 and HRP-502, disclose the eye-tracking and voice-cloning data paths, and do not conduct pilot data collection with people until UCF confirms the determination and approval status. This is research-readiness guidance, not legal advice or an institutional ruling.
 
-Authoritative grounding: [45 CFR 46.102](https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-A/part-46/subpart-A/section-46.102), [45 CFR 46.111](https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-A/part-46/subpart-A/section-46.111), [45 CFR 46.116](https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-A/part-46/subpart-A/section-46.116), [45 CFR 46.117](https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-A/part-46/subpart-A/section-46.117), [UCF IRB](https://www.research.ucf.edu/compliance/irb/), [UCF investigator responsibilities](https://www.research.ucf.edu/for-researchers/compliance/irb/investigators/irb-investigators-responsibilities/), and [UCF Study Application Instructions](https://www.research.ucf.edu/wp-content/uploads/sites/56/2026/02/IRB-Guidance-07-Study-Application-Instructions.pdf).
+Authoritative grounding: [45 CFR 46.102](https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-A/part-46/subpart-A/section-46.102), [45 CFR 46.111](https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-A/part-46/subpart-A/section-46.111), [45 CFR 46.116](https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-A/part-46/subpart-A/section-46.116), [45 CFR 46.117](https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-A/part-46/subpart-A/section-46.117), [UCF IRB](https://www.research.ucf.edu/compliance/irb/), [UCF investigator responsibilities](https://www.research.ucf.edu/compliance/irb/investigators/irb-investigators-responsibilities/), and [UCF Study Application Instructions](https://www.research.ucf.edu/wp-content/uploads/sites/56/2026/02/IRB-Guidance-07-Study-Application-Instructions.pdf).
 
 ## Readiness verdict
 
 **Documents:** A credible first-pass packet is now present, but every visible **OPEN DECISION** must be resolved and the UCF PI must review it before upload.
 
-**Runtime:** Not ready for approved participant collection. The current build implements 14 deterministic gaze-aware/unaware rounds with a fixed generic ElevenLabs voice. The intended 2 × 2 voice experiment is not implemented.
+**Runtime:** Not ready for approved participant collection. The paper-aligned protocol proposes 48 complete datasets, four 16-trial blocks (64 analyzed trials), eight vertical search planes around a seated participant, a four-sequence Williams design, participant-derived voice playback, matched hint opportunities, and two-step coarse/fine gaze guidance. The current build instead implements 14 deterministic front-facing bookshelf rounds with alternating gaze-aware/unaware hinting and a fixed generic ElevenLabs voice.
 
 **Voice cloning:** Feasible only after UCF and institutional security/privacy review approve the vendor path. The proposed workflow uses ElevenLabs Instant Voice Cloning (IVC), with a clear 1–2 minute participant recording and explicit authorization. A protected staff workstation—not the headset—will upload the recording, generate the fixed prompt library, and perform cleanup; the headset release build must contain no provider credential and make no provider API call. ElevenLabs states that IVC requires confirmation of the right and consent to clone the voice. Professional Voice Cloning is not proposed because ElevenLabs limits it to cloning one’s own voice on the voice owner’s account. See [IVC documentation](https://elevenlabs.io/docs/eleven-creative/voices/voice-cloning/instant-voice-cloning), [voice-cloning concepts](https://elevenlabs.io/docs/eleven-api/concepts/voice-cloning), and the [privacy policy](https://elevenlabs.io/privacy-policy).
 
@@ -22,9 +22,10 @@ Authoritative grounding: [45 CFR 46.102](https://www.ecfr.gov/current/title-45/s
 
 | Area | Current implementation | What the application must say / readiness gate |
 |---|---|---|
-| Experimental design | 14 fixed rounds; odd rounds gaze-unaware and even rounds gaze-aware; participant number does not alter order. | **Protocol proposal:** four balanced conditions: gaze-contingent/unaware × generic/self-similar voice. Use sequential study IDs mapped to a frozen balanced schedule; use distinct deterministic layouts within a session; disclose the final sequence and block/trial counts. |
+| Experimental design | 14 fixed front-facing bookshelf rounds; odd rounds gaze-unaware and even rounds gaze-aware; participant number does not alter order. | **Protocol proposal:** four 16-trial blocks: noncontingent/generic (A), noncontingent/self-similar (B), gaze-contingent/generic (C), and gaze-contingent/self-similar (D). Assign the Williams sequences A-B-D-C, B-C-A-D, C-D-B-A, and D-A-C-B through a pre-generated randomized schedule, with 12 of 48 complete datasets per sequence. |
+| Search environment | Front-facing virtual bookshelf. | Seat the participant at a marked origin in a swivel chair. Render 56 objects across eight vertical planes at 45-degree intervals, seven objects per plane. Within each condition, place the target exactly twice on every plane and validate the full geometry before the session. |
 | Voice | Fixed “Rachel” voice ID and generic “Ava” introduction. The headset currently calls ElevenLabs directly and loads a packaged API key. No microphone capture, cloning, participant voice ID, or deletion workflow. | Disclose that cloning is proposed, not implemented. Use an approved encrypted staff workstation for recording, IVC creation, fixed-prompt generation, and deletion. The headset receives prepared clips only and contains no provider credential/API path. Validate the end-to-end workflow before submission or amend before use. |
-| Hint exposure | Gaze-aware hints begin earlier and repeat more often than gaze-unaware hints. | Match opportunities, timing, count, duration range, and content class. Define opportunity versus completed exposure, log both, and make live gaze the policy input that differs. Do not describe the current conditions as matched. |
+| Hint exposure | Gaze-aware hints begin earlier and repeat more often than gaze-unaware hints. | Begin planned opportunities 4 seconds after `search_onset` and repeat every 6 seconds. In gaze-contingent blocks, use coarse spatialized target-plane guidance followed by discrete proximity feedback; in noncontingent blocks, play duration-matched general prompts without gaze, hover, coverage, or target-proximity input. Log opportunities, abstentions, and completed exposures separately. |
 | Telemetry | Per-render-frame gaze pose/hover CSV plus event/summary logs. No sample-level tracking-validity or calibration-status field; no native device timestamp/rate. | Add calibration result, validity/availability, dropped-sample or provider status, display/search onset, hint requested/played/failed, voice condition/voice ID alias, and block/trial schedule events. Disclose actual sampling basis and missingness. |
 | Eye metrics | XRI hover episodes are logged as “fixations”; angular transitions are logged as “saccades.” Blink classification uses custom thresholds. | Use “gaze-hover/dwell proxy” and “angular transition proxy” unless a validated algorithm is added. Pre-specify thresholds and do not claim clinical or diagnostic eye measures. |
 | Timing | Later `time_to_find` values begin before transition/announcement completes. | Add explicit search-display onset and calculate search time from that event. Preserve raw timestamps and document the derived metric. |
@@ -36,12 +37,12 @@ Authoritative grounding: [45 CFR 46.102](https://www.ecfr.gov/current/title-45/s
 ### Protocol narrative
 
 - [ ] Confirm exact study title, PI of record, department, phone, email, faculty advisor, lab/room, funding, conflicts-of-interest answer, and anticipated dates.
-- [ ] Complete a power or precision analysis and set enrolled/analyzable sample sizes.
+- [ ] Complete a simulation-based power/sensitivity analysis to confirm the target of 48 complete datasets and set the larger enrolled maximum after anticipated screening, withdrawal, and technical attrition.
 - [ ] Freeze the primary hypothesis, primary outcome, confirmatory contrasts, alpha/multiplicity plan, and missing-data plan.
-- [ ] Decide whether the gaze main effect and gaze × voice interaction are both primary; if the available sample cannot support confirmatory inference, label condition effects exploratory and frame the study as feasibility-focused.
-- [ ] Finalize 2 × 2 block/trial counts, counterbalancing, rest breaks, practice trials, and maximum session duration.
+- [ ] Confirm the paper's hierarchy: guidance main effect on search time as the primary test and guidance × voice interaction as the secondary focal test, with Holm correction across both.
+- [ ] Freeze the paper-aligned design: four 16-trial blocks, four Williams sequences, 16 trials per condition, target exactly twice on each of eight planes per condition, up to eight practice trials with a three-consecutive-correct criterion, breaks between blocks, and a maximum session duration.
 - [ ] Reconcile every **Protocol proposal** with a tested release build; archive the application version, commit, build identifier, and configuration.
-- [ ] Describe the full session in order: consent, screening, voice recording, staff-workstation prompt generation, Room Setup/plane verification, headset fit, calibration, practice, blocks, questionnaires, breaks, debrief, compensation if offered, and cleanup.
+- [ ] Describe the full session in order: consent, screening, voice recording, staff-workstation prompt generation, marked-origin/eight-plane validation, headset fit, multi-direction calibration/validation, practice, blocks, questionnaires, breaks, debrief, compensation if offered, and cleanup.
 
 ### Consent and voice authorization
 
@@ -62,9 +63,9 @@ Authoritative grounding: [45 CFR 46.102](https://www.ecfr.gov/current/title-45/s
 
 ### Risks and mitigations
 
-- [ ] MR discomfort: seated setup where feasible, clear play area, researcher spotter, breaks on request, immediate stop/removal, symptom check, and post-session observation as needed.
+- [ ] MR discomfort: seated swivel-chair setup, marked origin, clear rotational area, researcher spotter, breaks between blocks and on request, immediate stop/removal, symptom check, and post-session observation as needed.
 - [ ] Visual/neurological risk: exclude or obtain medical guidance for relevant seizure/photosensitivity history; warn about eyestrain, headache, dizziness, nausea, disorientation, and fatigue.
-- [ ] Physical risk: clean/sanitize contact surfaces, manage cables/obstacles, adjust headset fit, and avoid participant movement outside the marked area.
+- [ ] Physical risk: clean/sanitize contact surfaces, manage cables/obstacles, adjust headset fit, screen for concerns about repeated seated rotation, and instruct participants to remain seated at the marked origin.
 - [ ] Voice/privacy risk: private recording room, no names in the script/file, participant-scoped study ID, encrypted transfer/storage, least-privilege access, no Voice Library sharing, no reuse, and deletion verification.
 - [ ] Provide UCF an explicit minimal-risk comparison covering consumer-headset symptoms, identifiable voice upload, synthetic impersonation, and residual vendor retention; UCF determines the risk level.
 - [ ] Psychological risk: warn that hearing a synthetic self-similar voice may feel uncanny or uncomfortable; allow immediate pause/withdrawal.

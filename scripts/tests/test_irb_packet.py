@@ -77,6 +77,16 @@ class VerifierTests(unittest.TestCase):
             document.save(path)
             self.assertIn("Meta Quest", verifier.document_text(path))
 
+    def test_alignment_gate_covers_every_generated_document(self) -> None:
+        self.assertEqual(verifier.EXPECTED, set(verifier.REQUIRED_STUDY_ALIGNMENT))
+
+    def test_alignment_gate_captures_locked_design_details(self) -> None:
+        required = verifier.REQUIRED_STUDY_ALIGNMENT[
+            "HRP-503_Gaze_Contingency_Protocol_DRAFT.docx"
+        ]
+        for detail in ("64 analyzed trials", "Williams design", "search_onset", "every 6 seconds"):
+            self.assertIn(detail, required)
+
     def test_verify_package_rejects_formatting_revision(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             original = Path(temp_dir) / "draft.docx"

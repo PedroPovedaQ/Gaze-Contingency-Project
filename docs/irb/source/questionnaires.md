@@ -2,7 +2,7 @@
 
 **Protocol proposal:** These instruments and administration times are proposed. Finalize the open instrument decisions and obtain UCF approval before participant use.
 
-Study: **Gaze-Contingent AI Assistance and Self-Similar Voice in Mixed Reality Visual Search**
+Study: **Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent**
 
 Use study ID only. Do not collect names in these instruments. Participants may skip any nonessential question.
 
@@ -52,6 +52,12 @@ Rate each statement from 1 = strongly disagree to 7 = strongly agree.
 8. I felt comfortable hearing this voice.  1 2 3 4 5 6 7
 9. The voice felt uncanny or unsettling.  1 2 3 4 5 6 7
 10. I felt in control of the task.  1 2 3 4 5 6 7
+11. The speaking voice sounded natural.  1 2 3 4 5 6 7
+12. The hints helped me identify the correct general direction.  1 2 3 4 5 6 7
+13. The closer/farther feedback helped me narrow down the target location.  1 2 3 4 5 6 7
+14. I relied on the spoken hints when deciding where to search next.  1 2 3 4 5 6 7
+
+Items 1–14 are study-created manipulation, experience, and mechanism checks unless a cited validated scale is adopted before submission; they must not be reported as a single validated score without supporting evidence.
 
 Technical check:
 
@@ -68,11 +74,10 @@ Technical check:
 3. Which combination felt most helpful? ____________________
 4. Which combination felt most comfortable? ____________________
 5. Did you believe the self-similar voice resembled your voice? Why or why not? ____________________
-6. Did any hint reveal information you had not expected the system to infer from your gaze? ____________________
-7. Did hearing your self-similar voice create any concern about privacy or misuse? ____________________
-8. What would you change about the hints, voice, or task? ____________________
-
-<!-- PAGE BREAK -->
+6. When the assistant gave directional guidance and then closer/farther feedback, which stage was more useful, and why? ____________________
+7. Did any hint reveal information you had not expected the system to infer from your gaze? ____________________
+8. Did hearing your self-similar voice create any concern about misuse or about how the voice was created? ____________________
+9. What would you change about the hints, voice, or task? ____________________
 
 ## Post-Session Symptom Rating
 
