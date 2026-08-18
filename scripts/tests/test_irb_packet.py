@@ -84,7 +84,14 @@ class VerifierTests(unittest.TestCase):
         required = verifier.REQUIRED_STUDY_ALIGNMENT[
             "HRP-503_Gaze_Contingency_Protocol_DRAFT.docx"
         ]
-        for detail in ("64 analyzed trials", "Williams design", "search_onset", "every 6 seconds"):
+        for detail in (
+            "up to 64 experimental trials",
+            "standard manifest schedules 16 trials per block",
+            "Williams design",
+            "search_onset",
+            "45-second timeout",
+            "OpenVoice V2",
+        ):
             self.assertIn(detail, required)
 
     def test_verify_package_rejects_formatting_revision(self) -> None:

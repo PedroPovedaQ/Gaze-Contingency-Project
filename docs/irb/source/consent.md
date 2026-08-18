@@ -1,14 +1,15 @@
 # Adult Consent to Take Part in Research
 
-**Protocol proposal:** This draft describes the intended participant experience. It must not be used until all open decisions are resolved and UCF approves the study and consent form.
+**Protocol proposal:** This draft describes the current intended participant experience. It must not be used until the administrative fields are completed, the implementation is verified, and UCF approves the study and consent form.
 
 Study title: **Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent** \
-Principal Investigator: **[OPEN DECISION: name and UCF department]** \
-Version/date: **[OPEN DECISION]**
+Principal Investigator: **Dr. Roshan Venkatakrishnan, Computer Science, College of Engineering and Computer Science, roshan.venkatakrishnan@ucf.edu, 407-823-3957** \
+Student Investigator: **Pedro Poveda, pe011248@ucf.edu** \
+Version/date: **Version 1 / 2026-08-18**
 
 ## Key Information
 
-You are invited to take part in a research study about spoken assistance during a mixed-reality visual-search task. If you join, you will come to a UCF lab for about **[OPEN DECISION: 75–90 minutes]**. While seated in a swivel chair, you will wear an HTC Vive Focus Vision headset and turn to search for virtual colored shapes arranged around you. You will complete practice followed by four 16-trial blocks (64 experimental trials), receive spoken hints, answer questionnaires, and provide about 1–2 minutes of your own speech. A third-party speech service will use that recording to make a private synthetic voice that resembles you and can say study phrases you did not record.
+You are invited to take part in a research study about spoken assistance during a mixed-reality visual-search task. If you join, you will come to a UCF lab for up to **75 minutes**. While seated in a swivel chair, you will wear an HTC Vive Focus Vision headset and turn to search for virtual colored shapes arranged around you. You will complete practice followed by four search blocks with up to 16 trials each (up to 64 experimental trials total), receive spoken hints, answer questionnaires, and provide about 1–2 minutes of your own speech. Your session may contain fewer trials if you stop, experience discomfort, encounter a technical problem, or reach the visit-time limit. Offline software on a UCF-managed research computer will use that recording to make a private synthetic voice that resembles you and can say study phrases you did not record. Your recording and synthetic voice will not be sent to an outside voice service.
 
 The main risks are temporary nausea, dizziness, eyestrain, headache, fatigue, or discomfort while using the headset; frustration or discomfort with the task or self-similar voice; and loss of privacy involving your gaze, performance, or identifiable voice information. You may pause or stop at any time. You should not expect a direct benefit. Participation is voluntary.
 
@@ -22,13 +23,13 @@ The researchers want to learn whether spoken hints based on where a person looks
 
 ## How long will the research last and what will I need to do?
 
-Your participation will involve one lab visit lasting about **[OPEN DECISION: proposed 75–90 minutes]**. You will review this form, complete safety screening, record a short voice sample, wear and calibrate a mixed-reality headset, complete up to eight practice trials and 64 experimental search trials in four blocks, take breaks, answer questionnaires, and receive a study explanation.
+Your participation will involve one lab visit lasting no more than **75 minutes**. You will review this form, complete safety screening, record a short voice sample, wear and calibrate a mixed-reality headset, complete up to eight practice trials and up to 64 experimental search trials in four blocks, take breaks, answer questionnaires, and receive a study explanation.
 
 ## Is there any way being in this study could be bad for me?
 
 The headset may cause nausea, dizziness, disorientation, eyestrain, headache, fatigue, blurred vision, balance difficulty, or pressure/discomfort. Hearing a synthetic voice that resembles you may feel unusual, uncanny, or uncomfortable. Spoken hints may be delayed, inaccurate, or frustrating.
 
-Your voice is identifiable. A synthetic voice can produce words you never recorded. If the recording, private voice clone, or generated clips were accessed or misused, someone might recognize or imitate your voice. The study uses a restricted script, coded filenames, access controls, private settings, no public voice sharing, and a deletion procedure to lower this risk, but complete confidentiality and deletion from every provider backup cannot be guaranteed.
+Your voice is identifiable. A synthetic voice can produce words you never recorded. If the recording, private voice model, or generated clips were accessed or misused, someone might recognize or imitate your voice. The study uses an offline UCF-managed computer, a restricted script, coded filenames, access controls, no public voice sharing, and deletion within 24 hours after your session to lower this risk. Complete confidentiality cannot be guaranteed.
 
 ## Will being in this study help me in any way?
 
@@ -36,7 +37,7 @@ You should not expect a direct benefit. The study may help researchers understan
 
 ## What happens if I do not want to be in this research?
 
-You do not have to participate. Saying no will not affect your relationship with UCF, your grades, employment, services, or benefits. **[If course credit is used: add the approved equivalent alternative assignment.]**
+You do not have to participate. Saying no will not affect your relationship with UCF, your grades, employment, services, or benefits. No course credit is offered.
 
 ## What should I know about a research study?
 
@@ -46,14 +47,14 @@ Taking part is voluntary. You may ask questions before deciding. You may skip an
 
 For questions, concerns, complaints, research-related problems, or to request withdrawal/deletion where possible, contact:
 
-- Principal Investigator: **[OPEN DECISION: name, phone, UCF email]**
-- Faculty Advisor: **[OPEN DECISION: name, phone/email, if applicable]**
+- Principal Investigator: **Dr. Roshan Venkatakrishnan, roshan.venkatakrishnan@ucf.edu, 407-823-3957**
+- Student Investigator: **Pedro Poveda, pe011248@ucf.edu**
 
 For questions about your rights as a research participant or to speak with someone independent of the research team, contact the UCF Institutional Review Board at 407-823-2901 or irb@ucf.edu. **[Confirm current contact wording against the approved HRP-502 template before submission.]**
 
 ## How many people will be studied?
 
-The researchers plan to obtain complete study data from 48 people. Up to **[OPEN DECISION: enrolled maximum after accounting for screening, withdrawal, and technical attrition]** people may be enrolled at UCF.
+The researchers plan to obtain complete study data from 48 people. Up to **60 people** may be enrolled at UCF to account for screening, withdrawal, calibration, and technical failures.
 
 ## What happens if I say yes, I want to be in this research?
 
@@ -62,11 +63,11 @@ After you sign this form, a researcher will:
 1. Assign a study ID that does not include your name.
 2. Ask short questions about headset safety and eligibility.
 3. Ask you to read a neutral script for about 1–2 minutes in a private room. The recording will be made on an institution-managed encrypted research computer.
-4. Upload the recording over an encrypted connection to **[OPEN DECISION: approved provider; proposed ElevenLabs Instant Voice Cloning]** to create a private synthetic voice. On the protected research computer, the team will generate only the fixed study instructions and hints for your session and then copy those audio clips to the headset. The headset will not contain the provider password/key or send your recording to the provider. The voice will not be published or shared to a public voice library.
+4. Use OpenVoice V2 offline on the protected UCF research computer to create a private synthetic voice. The computer will generate only the fixed study instructions and hints for your session and then copy those audio clips to the headset. The computer will not send your recording, voice model, prompt text, or generated clips to an outside speech service. The voice will not be published, reused, or shared to a public voice library.
 5. Seat you in a swivel chair at a marked position, fit and calibrate the HTC Vive Focus Vision headset, and check that you can comfortably turn to view the search area around you. The headset uses cameras to show your surroundings and eye tracking to estimate where you look. The study application does not save room video, face video, webcam video, or raw eye-camera images.
-6. Ask you to complete up to eight practice trials, then four 16-trial experimental blocks. In each experimental trial, you will turn while remaining seated to find one target among 56 virtual colored shapes arranged across eight virtual areas around you and hold your gaze on your selection. In some blocks, hints will use gaze-related task information to provide coarse directional guidance followed by closer/farther feedback; in other blocks, general hints will not use that information. The same hint wording will be spoken either in a generic voice or in the self-similar synthetic voice.
+6. Ask you to complete up to eight practice trials, then four experimental blocks with up to 16 trials each. In each experimental trial, you will turn while remaining seated to find one target among 56 virtual colored shapes arranged across eight virtual areas around you and hold your gaze on your selection. In some blocks, hints will use gaze-related task information to provide coarse directional guidance followed by closer/farther feedback; in other blocks, general hints will not use that information. The same hint wording will be spoken either in a generic voice or in the self-similar synthetic voice.
 7. Offer breaks and ask about symptoms, workload, the hints, and the voices.
-8. Remove the headset, explain the study, and provide compensation under the approved plan if compensation is offered.
+8. Remove the headset, explain the study, and provide the $15 gift card.
 
 The system records coded eye-gaze rays and availability, eye openness when available, what virtual object is under the gaze pointer, dwell progress, trial events, hint timing, task performance, application state, and questionnaire responses. These measures are research interaction data and are not used to diagnose you.
 
@@ -76,17 +77,17 @@ Tell the researcher immediately if you feel dizzy, nauseated, disoriented, have 
 
 ## What happens if I say yes, but I change my mind later?
 
-You may stop at any time. Tell the researcher and the task will stop. No new information will be collected. You may ask the team to delete your identifiable source voice recording, private clone, and identity link if they still exist under the team’s control. Information already stripped of the identity link or included in combined results may not be retrievable. A provider may keep limited information in backups, security logs, or as required by policy/law even after the research team submits a deletion request.
+You may stop at any time. Tell the researcher and the task will stop. No new information will be collected. You may ask the team to delete your identifiable source voice recording, local voice model, and identity link if they still exist. Voice files are scheduled for deletion within 24 hours after the session. The identity link is scheduled for deletion 30 days after the session. Information already stripped of the identity link or included in combined results may not be retrievable.
 
-If compensation is offered, stopping will not reduce compensation already earned under the approved payment plan. **[OPEN DECISION: insert exact prorating.]**
+If you sign this consent form and begin the in-person screening, you will receive the full $15 gift card even if you withdraw, are found ineligible, cannot complete calibration or practice, or the researcher stops the session. A no-show or cancellation before consent is not compensated.
 
 ## Is there any way being in this study could be bad for me? (Detailed Risks)
 
 Mixed-reality risks: temporary motion sickness, dizziness, disorientation, eyestrain, headache, fatigue, blurred vision, balance problems, headset pressure, or neck/back discomfort from turning while seated. A seizure is rare but may occur in susceptible people. The chair and surrounding area will be checked, a researcher will remain present, breaks will be offered between blocks, and you may remove the headset or take a break at any time.
 
-Voice risks: your recording and synthetic voice may identify you. A synthetic voice is not just a replay; it can produce approved study sentences you never said. Accidental disclosure could create embarrassment, impersonation, or other privacy harms. The researchers will use a coded name, fixed phrases, private account settings, limited access, and documented deletion. They will not publicly share or reuse your voice.
+Voice risks: your recording and synthetic voice may identify you. A synthetic voice is not just a replay; it can produce approved study sentences you never said. Accidental disclosure could create embarrassment, impersonation, or other privacy harms. The researchers will use a coded name, fixed phrases, offline processing on a UCF-managed encrypted workstation, limited access, and documented deletion. They will not publicly share or reuse your voice.
 
-Third-party processing: the approved speech provider will receive your audio and the text of fixed study prompts. If ElevenLabs is approved, the research account will turn off the setting that allows new data to improve models. ElevenLabs states that voice data may otherwise be retained under its privacy policy, including for limited operational, security, backup, or legal purposes. **[OPEN DECISION: replace with the final UCF-approved provider and tested retention/deletion statement.]**
+Local voice processing: OpenVoice V2 will run offline on a UCF-managed encrypted workstation. No outside speech provider will receive your recording, speaker embedding, prompt text, or generated clips. If the research team later proposes cloud processing or a different data path, it must first obtain UCF approval and update the consent process; it will not be introduced during your session as an unapproved fallback.
 
 Privacy risks: coded gaze, performance, questionnaire, consent, contact, or payment records could be disclosed. The researchers will separate identity records from coded study data and use UCF-approved storage, but confidentiality cannot be guaranteed.
 
@@ -98,36 +99,38 @@ Unforeseeable risks may exist because voice-cloning and mixed-reality technologi
 
 Your name and contact information will be kept separate from the study files. The study files will use a study ID. Coded data are not anonymous while the identity key exists, and voice recordings/clones may remain identifiable even when labeled only with a code.
 
-The protected research computer temporarily stores your coded voice recording and prepared speech files, and the headset temporarily stores coded gaze/task logs and prepared speech files. Automatic consumer-cloud backup will be disabled for these temporary study folders. After the session, coded research data will be transferred to **[OPEN DECISION: approved UCF encrypted storage]** and removed from the devices after the transfer is checked. The source voice recording, private clone, provider samples/history, and generated self-similar clips will be deleted on **[OPEN DECISION: final approved schedule]**, and the deletion result will be recorded. If deletion fails, the team will restrict access, notify the Principal Investigator, contact the provider, assess whether UCF must be notified, and pause further voice collection while the problem remains unresolved.
+The protected research computer temporarily stores your coded voice recording, local speaker embedding, and prepared speech files, and the headset temporarily stores coded gaze/task logs and prepared speech files. Automatic consumer-cloud backup will be disabled for these temporary study folders. After the session, coded research data will be transferred to a restricted UCF OneDrive/SharePoint research folder controlled by the Principal Investigator and removed from the devices after the transfer is checked. The source recording, speaker embedding, generated self-similar clips, and headset speech cache will be deleted within 24 hours after the session and the deletion result will be recorded. If deletion fails, the team will restrict access, notify the Principal Investigator, assess whether UCF must be notified, and pause further voice collection while the problem remains unresolved.
 
-The research team, UCF IRB/oversight offices, and others authorized by law or UCF may inspect study records. **[OPEN DECISION: add sponsor/provider/monitor access if applicable.]**
+The approved research team, UCF IRB and oversight offices, and others authorized by law or UCF may inspect study records. No external sponsor or voice provider is proposed.
 
-Coded research data, consent/approval records, and analysis files will be kept for at least **[OPEN DECISION: UCF-required period; proposed at least five years after study closure or publication]**. De-identified combined results may be published. Raw voice recordings, private voice clones, generated self-similar voice clips, names, contact information, signed consent, payment records, and the identity key will not be publicly shared.
+Coded research data, consent/payment and approval records, audit logs, and analysis files will be kept for at least **five years after study closure**, or longer if UCF requires it. The identity key and scheduling/contact information will be deleted 30 days after the session after payment and any timely withdrawal request are resolved. Aggregate results, analysis code, and a disclosure-reviewed derived dataset may be published. Raw voice recordings, speaker embeddings, generated self-similar clips, names, contact information, signed consent, payment records, precise raw gaze streams, and the identity key will not be publicly shared.
 
 Absolute confidentiality cannot be promised. There is a small risk of unauthorized access despite safeguards.
 
 ## Can I be removed from the research without my OK?
 
-The researchers may stop your participation if continuing appears unsafe, you do not meet eligibility requirements, eye tracking or the eight-area search environment cannot be set up after the approved retry process, equipment/provider service fails, the study is suspended, or you do not follow safety instructions. The reason will be explained when appropriate. If compensation is offered, payment will follow the approved prorating plan and will not depend on usable data.
+The researchers may stop your participation if continuing appears unsafe, you do not meet eligibility requirements, eye tracking or the eight-area search environment cannot be set up after the approved retry process, local voice generation or other equipment fails, the study is suspended, or you do not follow safety instructions. The reason will be explained when appropriate. You will still receive the full $15 after beginning screening, and payment will not depend on usable data.
 
 ## What else do I need to know?
 
-Compensation: **[OPEN DECISION: amount, form, timing, prorating, and payment-record requirements.]** You will not be paid based on speed, accuracy, eye-tracking quality, voice quality, or whether your data are analyzed.
+Compensation: You will receive one **$15 UCF-approved gift card** after the visit if you sign consent and begin screening. The full amount is provided even if you withdraw, are found ineligible, fail calibration/practice, or the researcher stops the visit. A no-show or cancellation before consent is not compensated. UCF-required payment records will be stored separately from research data. You will not be paid based on speed, accuracy, eye-tracking quality, voice quality, or whether your data are analyzed.
 
-Costs: There is no cost to you other than travel/time. **[OPEN DECISION: confirm.]**
+Costs: There is no study fee or required purchase. You may have ordinary travel, parking, and time costs; parking is not reimbursed.
 
-Research-related injury: **[OPEN DECISION: insert UCF-approved injury/cost language from HRP-502 if required.]**
+Research-related injury: **[INSTITUTIONAL INPUT REQUIRED: insert the current UCF HRP-502 injury/cost language approved for this risk classification.]**
 
 New findings: If the researchers learn information that may affect your willingness to continue, they will tell you as required.
 
 Conflicts of interest: The investigator reports no financial interest. **[PI/UCF must confirm the Huron conflict-of-interest disclosure before submission.]**
+
+<!-- PAGE BREAK -->
 
 ## Voice-Cloning Authorization
 
 By initialing below, I confirm that:
 
 - the recording is my own voice;
-- I authorize the approved research team to upload it to the approved speech provider and create a private synthetic voice for this study;
+- I authorize the approved research team to process it offline on a UCF-managed research computer and create a private synthetic voice for this study;
 - I understand the synthetic voice can say the fixed study phrases even though I did not record those exact phrases;
 - I understand the voice will not be published, shared to a voice library, reused for another project, or used for unrestricted/free-form speech;
 - I understand the privacy and deletion limits described above.
@@ -135,8 +138,6 @@ By initialing below, I confirm that:
 Participant initials: ____________________
 
 Voice cloning is required for this experiment. If you do not authorize it, you cannot take part, but there is no penalty.
-
-<!-- PAGE BREAK -->
 
 ## Consent and Signature
 

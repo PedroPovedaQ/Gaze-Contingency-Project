@@ -45,7 +45,7 @@ def set_cell_shading(cell, fill: str) -> None:
     shd.set(qn("w:fill"), fill)
 
 
-def set_cell_margins(cell, top: int = 80, start: int = 90, bottom: int = 80, end: int = 90) -> None:
+def set_cell_margins(cell, top: int = 40, start: int = 90, bottom: int = 40, end: int = 90) -> None:
     tc = cell._tc
     tc_pr = tc.get_or_add_tcPr()
     tc_mar = tc_pr.first_child_found_in("w:tcMar")
@@ -160,7 +160,7 @@ def add_draft_banner(document: Document) -> None:
         border.set(qn("w:color"), "F4B084")
         p_bdr.append(border)
     p_pr.append(p_bdr)
-    run = p.add_run("DRAFT — NOT FOR SUBMISSION OR PARTICIPANT USE\nResolve all OPEN DECISION items and obtain UCF approval before use.")
+    run = p.add_run("DRAFT — NOT FOR SUBMISSION OR PARTICIPANT USE\nComplete all ADMINISTRATIVE INPUT and INSTITUTIONAL CONFIRMATION items, verify implementation, and obtain UCF approval before use.")
     run.bold = True
     run.font.name = "Arial"
     run.font.size = Pt(9)
@@ -280,7 +280,7 @@ def add_doc_properties(document: Document, title: str) -> None:
     props.subject = "First-pass UCF IRB submission draft"
     props.author = "Gaze Contingency Project research team"
     props.keywords = "UCF, IRB, mixed reality, eye tracking, voice cloning"
-    props.comments = "Generated from auditable Markdown; resolve all OPEN DECISION items before submission."
+    props.comments = "Generated from auditable Markdown; complete administrative inputs and institutional confirmations before submission."
 
 
 def build(source_name: str, output_name: str, template: Path, output_dir: Path) -> None:
@@ -290,16 +290,6 @@ def build(source_name: str, output_name: str, template: Path, output_dir: Path) 
     add_draft_banner(document)
     add_markdown(document, (SOURCE / source_name).read_text(encoding="utf-8"))
     add_doc_properties(document, output_name.removesuffix(".docx"))
-
-    # Make the source template/version relationship explicit without adding tracked comments.
-    p = document.add_paragraph()
-    p.paragraph_format.space_before = Pt(12)
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = p.add_run(f"Draft generated from {template.name} structure and styles. Content source: {source_name}.")
-    run.italic = True
-    run.font.name = "Arial"
-    run.font.size = Pt(8)
-    run.font.color.rgb = RGBColor(100, 100, 100)
 
     output_dir.mkdir(parents=True, exist_ok=True)
     document.save(output_dir / output_name)

@@ -8,4 +8,4 @@ Build from this directory with:
 tectonic gaze-guidance-planned-study.tex --outdir ../../output/pdf
 ```
 
-The design currently fixes 48 complete participant datasets and 64 analyzed trials per participant (16 per 2 × 2 cell; two targets on each of eight planes per cell). Pilot-dependent thresholds are identified in the manuscript and must be frozen before preregistration.
+The design currently targets 48 complete participant datasets and schedules up to 64 experimental trials per participant (a standard 16-trial manifest per 2 × 2 cell; two scheduled targets on each of eight planes per full cell). A complete dataset requires at least 12 technically valid trials per cell. Pilot-dependent thresholds and prespecified early-stop rules are identified in the manuscript and must be frozen before preregistration.

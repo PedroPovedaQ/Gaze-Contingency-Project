@@ -1,6 +1,6 @@
 # Participant Questionnaires
 
-**Protocol proposal:** These instruments and administration times are proposed. Finalize the open instrument decisions and obtain UCF approval before participant use.
+**Current protocol decision:** These instruments and administration times are frozen for the initial submission. Obtain UCF approval before participant use.
 
 Study: **Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent**
 
@@ -8,7 +8,8 @@ Use study ID only. Do not collect names in these instruments. Participants may s
 
 ## Background and Prior Experience (once per participant)
 
-1. Age in years: ______  **[OPEN DECISION: exact age versus age bands.]**
+1. Age range: \
+   ☐ 18–24 ☐ 25–34 ☐ 35–44 ☐ 45–54 ☐ 55–64 ☐ 65+ ☐ Prefer not to answer
 2. Gender identity (select all that apply): \
    ☐ Woman ☐ Man ☐ Nonbinary ☐ Another identity: ______ ☐ Prefer not to answer
 3. Do you use glasses or contact lenses? \
@@ -43,21 +44,21 @@ These condition-code fields are completed automatically/by the researcher and ar
 Rate each statement from 1 = strongly disagree to 7 = strongly agree.
 
 1. The hints seemed responsive to what I was looking at.  1 2 3 4 5 6 7
-2. The hints arrived at useful times.  1 2 3 4 5 6 7
-3. The hints were helpful.  1 2 3 4 5 6 7
-4. The hints were distracting.  1 2 3 4 5 6 7
-5. The speaking voice sounded like me.  1 2 3 4 5 6 7
-6. The speaking voice felt familiar.  1 2 3 4 5 6 7
-7. I trusted the spoken guidance.  1 2 3 4 5 6 7
-8. I felt comfortable hearing this voice.  1 2 3 4 5 6 7
-9. The voice felt uncanny or unsettling.  1 2 3 4 5 6 7
-10. I felt in control of the task.  1 2 3 4 5 6 7
-11. The speaking voice sounded natural.  1 2 3 4 5 6 7
-12. The hints helped me identify the correct general direction.  1 2 3 4 5 6 7
-13. The closer/farther feedback helped me narrow down the target location.  1 2 3 4 5 6 7
-14. I relied on the spoken hints when deciding where to search next.  1 2 3 4 5 6 7
+2. The hints were helpful.  1 2 3 4 5 6 7
+3. The hints were distracting.  1 2 3 4 5 6 7
+4. The speaking voice sounded like me.  1 2 3 4 5 6 7
+5. The speaking voice felt familiar.  1 2 3 4 5 6 7
+6. I trusted the spoken guidance.  1 2 3 4 5 6 7
+7. I felt comfortable hearing this voice.  1 2 3 4 5 6 7
+8. The voice felt uncanny or unsettling.  1 2 3 4 5 6 7
+9. I relied on the spoken hints when deciding where to search next.  1 2 3 4 5 6 7
 
-Items 1–14 are study-created manipulation, experience, and mechanism checks unless a cited validated scale is adopted before submission; they must not be reported as a single validated score without supporting evidence.
+After a gaze-contingent block only:
+
+10. The directional hint helped me identify the correct general area.  1 2 3 4 5 6 7
+11. The warmer/colder feedback helped me narrow down the target location.  1 2 3 4 5 6 7
+
+Items 1–11 are study-created manipulation, experience, and mechanism checks. Analyze each item separately; do not report them as one validated scale or exclude a participant based on a rating.
 
 Technical check:
 
@@ -79,9 +80,9 @@ Technical check:
 8. Did hearing your self-similar voice create any concern about misuse or about how the voice was created? ____________________
 9. What would you change about the hints, voice, or task? ____________________
 
-## Post-Session Symptom Rating
+## Post-Exposure Simulator Sickness Questionnaire
 
-Rate each item now: 0 = none, 1 = slight, 2 = moderate, 3 = severe.
+Rate each item now using the standard SSQ response anchors: 0 = none, 1 = slight, 2 = moderate, 3 = severe.
 
 | Symptom | 0 | 1 | 2 | 3 |
 |---|---|---|---|---|
@@ -90,15 +91,27 @@ Rate each item now: 0 = none, 1 = slight, 2 = moderate, 3 = severe.
 | Headache | ☐ | ☐ | ☐ | ☐ |
 | Eyestrain | ☐ | ☐ | ☐ | ☐ |
 | Difficulty focusing | ☐ | ☐ | ☐ | ☐ |
+| Increased salivation | ☐ | ☐ | ☐ | ☐ |
+| Sweating | ☐ | ☐ | ☐ | ☐ |
 | Nausea | ☐ | ☐ | ☐ | ☐ |
-| Dizziness/disorientation | ☐ | ☐ | ☐ | ☐ |
+| Difficulty concentrating | ☐ | ☐ | ☐ | ☐ |
+| Fullness of head | ☐ | ☐ | ☐ | ☐ |
+| Blurred vision | ☐ | ☐ | ☐ | ☐ |
+| Dizziness with eyes open | ☐ | ☐ | ☐ | ☐ |
+| Dizziness with eyes closed | ☐ | ☐ | ☐ | ☐ |
+| Vertigo | ☐ | ☐ | ☐ | ☐ |
+| Stomach awareness | ☐ | ☐ | ☐ | ☐ |
+| Burping | ☐ | ☐ | ☐ | ☐ |
 
 Did you stop or pause because of symptoms? ☐ No ☐ Yes \
 Do you feel ready to leave the lab? ☐ Yes ☐ No—researcher follow-up required
 
-## Instrument Decisions Before Submission
+## Administration and Scoring Decisions
 
-- **OPEN DECISION:** Confirm whether raw NASA-TLX is the chosen workload measure and preserve its standard wording/scoring.
-- **OPEN DECISION:** Confirm whether to use the full Simulator Sickness Questionnaire rather than the concise symptom check.
-- **OPEN DECISION:** Identify which experience/trust/manipulation items are validated scales versus study-created items; label and analyze them accordingly.
-- **OPEN DECISION:** Finalize administration timing, randomization, required/optional items, scoring, and handling of skipped responses.
+- Administer Raw NASA-TLX after each of the four blocks on 0–100 scales without pairwise weighting.
+- Administer the complete 16-item SSQ before headset use and after headset removal, using Kennedy et al. (1993) 0–3 anchors and canonical Nausea, Oculomotor, Disorientation, and Total scores. Safety stopping uses item-level rules, not the total score.
+- Administer the nine fixed study-created items after every block and items 10–11 after gaze-contingent blocks only. Keep the order fixed to reduce administration variance.
+- Do not administer SUS or UEQ; overall usability is not a focal construct.
+- Eligibility/safety items are required to proceed. Other questionnaire items may be skipped. Record skipped responses as missing and do not impute them for primary analysis.
+
+Reference: Kennedy, R. S., Lane, N. E., Berbaum, K. S., & Lilienthal, M. G. (1993). Simulator Sickness Questionnaire. *The International Journal of Aviation Psychology, 3*(3), 203–220. https://doi.org/10.1207/s15327108ijap0303_3

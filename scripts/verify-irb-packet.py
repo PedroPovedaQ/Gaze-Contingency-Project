@@ -72,7 +72,7 @@ PROTOCOL_HEADINGS = {
     "Provisions to Protect the Privacy Interests of Subjects",
     "Adverse Events, Unanticipated Problems, and Deviations",
     "Records",
-    "Rationale for the Voice-Cloning Factor and Provider Path",
+    "Rationale for the Voice-Cloning Factor and Local Processing Path",
     "Multi-Site Research",
     "References and External Services",
 }
@@ -101,16 +101,16 @@ CONSENT_HEADINGS = {
 
 SUPPORT_HEADINGS = {
     "Recruitment_Materials_DRAFT.docx": {
-        "Recruitment Email", "Flyer or Research-Portal Listing", "Verbal Referral Script", "Recruitment Controls"
+        "Recruitment Email", "Flyer or Social-Media Listing", "Verbal Referral Script", "Recruitment Controls"
     },
     "Eligibility_and_Safety_Screening_DRAFT.docx": {
-        "Basic Eligibility", "Headset and Visual Safety", "Voice Recording Safety and Privacy Confirmation", "Pre-Session Symptom Rating", "Researcher Determination"
+        "Basic Eligibility", "Headset and Visual Safety", "Voice Recording Safety and Privacy Confirmation", "Baseline Simulator Sickness Questionnaire", "Researcher Determination"
     },
     "Participant_Questionnaires_DRAFT.docx": {
-        "Background and Prior Experience (once per participant)", "Raw NASA Task Load Index (after each block)", "Post-Block Assistance and Voice Check", "Post-Session Comparison", "Post-Session Symptom Rating", "Instrument Decisions Before Submission"
+        "Background and Prior Experience (once per participant)", "Raw NASA Task Load Index (after each block)", "Post-Block Assistance and Voice Check", "Post-Session Comparison", "Post-Exposure Simulator Sickness Questionnaire", "Administration and Scoring Decisions"
     },
     "Voice_Recording_Script_DRAFT.docx": {
-        "Researcher Setup", "Participant Introduction", "Recording Passage", "Quality and Upload Record"
+        "Researcher Setup", "Participant Introduction", "Recording Passage", "Quality and Local Processing Record"
     },
     "Researcher_Session_and_Event_Record_DRAFT.docx": {
         "Pre-Session Controls", "Consent and Eligibility", "Voice Procedure", "Headset, Calibration, and Practice", "Experimental Blocks", "Data Transfer and Cleanup", "Session Disposition and Data-Quality Reason Codes", "Symptoms or Adverse Event", "Protocol Deviation or Confidentiality Incident"
@@ -122,47 +122,60 @@ FORBIDDEN_RESIDUE = (
     "Motor Control",
     "Timeflow",
     "Meta Quest",
-    "$15",
     "300 participants",
 )
 
 REQUIRED_STUDY_ALIGNMENT = {
     "HRP-503_Gaze_Contingency_Protocol_DRAFT.docx": (
         "48 complete participant datasets",
-        "64 analyzed trials",
+        "up to 64 experimental trials",
+        "standard manifest schedules 16 trials per block",
         "eight vertical planes",
         "Williams design",
         "A-B-D-C",
         "B-C-A-D",
         "C-D-B-A",
         "D-A-C-B",
-        "target appears exactly twice on each of the eight planes",
+        "16-trial manifest places the target exactly twice on each of the eight planes",
+        "Trial count will not be changed in response to task performance",
         "search_onset",
-        "begins 4 seconds",
-        "every 6 seconds",
+        "4, 10, 16, 22, 28, 34, and 40 seconds",
+        "45-second timeout",
+        "OpenVoice V2",
+        "within 24 hours",
     ),
     "HRP-502_Gaze_Contingency_Adult_Consent_DRAFT.docx": (
         "complete study data from 48 people",
         "64 experimental trials",
         "eight virtual areas around you",
         "swivel chair",
+        "$15 UCF-approved gift card",
+        "OpenVoice V2",
+        "within 24 hours",
     ),
     "Recruitment_Materials_DRAFT.docx": (
-        "four 16-trial blocks",
+        "four search blocks with up to 16 trials each",
         "swivel chair",
+        "up to 75 minutes",
+        "$15 gift card",
     ),
     "Eligibility_and_Safety_Screening_DRAFT.docx": (
         "repeatedly turning in a swivel chair",
         "approved color set",
+        "Baseline Simulator Sickness Questionnaire",
+        "Dizziness with eyes open",
     ),
     "Participant_Questionnaires_DRAFT.docx": (
-        "closer/farther feedback",
-        "study-created manipulation",
+        "warmer/colder feedback",
+        "Items 1–11 are study-created",
+        "Do not administer SUS or UEQ",
     ),
     "Voice_Recording_Script_DRAFT.docx": (
         "areas arranged around me",
         "warmer",
         "very close",
+        "OpenVoice V2",
+        "at most two recording takes",
     ),
     "Researcher_Session_and_Event_Record_DRAFT.docx": (
         "Assigned Williams sequence",
@@ -170,12 +183,14 @@ REQUIRED_STUDY_ALIGNMENT = {
         "eight-plane 360-degree search geometry",
         "maximum 8",
         "criterion 3",
-        "first at 4 seconds; then every 6 seconds",
+        "4, 10, 16, 22, 28, 34, and 40 seconds",
+        "within 24 hours",
     ),
     "Post_Participation_Information_DRAFT.docx": (
         "coarse directional guidance",
         "closer/farther feedback",
         "noncontingent blocks",
+        "within 24 hours",
     ),
 }
 

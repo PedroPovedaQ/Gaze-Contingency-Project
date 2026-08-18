@@ -12,9 +12,9 @@ Eye-gaze measures are interaction telemetry, not a medical test; the study does 
 
 ## Voice and Data Cleanup
 
-The team will follow the approved procedure for transferring coded study data and deleting the local recording, private provider voice/sample, generated clips/history where supported, and headset speech cache. Provider backup, security-log, or legal-retention limits are described in your consent form.
+The team will transfer coded study data to restricted UCF OneDrive/SharePoint storage and delete the local recording, speaker embedding/model artifact, generated clips, workstation session cache, and headset speech cache within 24 hours. No participant voice data were sent to an outside voice service.
 
-If you want to withdraw or ask whether identifiable voice assets can still be deleted, contact the Principal Investigator at **[OPEN DECISION: name and UCF contact]**. Information already de-identified or combined with other participants’ results may not be retrievable.
+If you want to withdraw or ask whether identifiable voice assets have been deleted, contact the Principal Investigator within 30 days at **Dr. Roshan Venkatakrishnan, roshan.venkatakrishnan@ucf.edu**. The identity key is scheduled for deletion 30 days after the session; information already de-identified or combined with other participants’ results may not be retrievable.
 
 ## After the Headset
 
@@ -22,10 +22,10 @@ Tell the researcher before leaving if you have nausea, dizziness, headache, eyes
 
 ## Contacts
 
-Research questions, problems, or withdrawal/deletion requests: **[OPEN DECISION: PI name, phone, UCF email]** \
-Faculty advisor, if applicable: **[OPEN DECISION]** \
+Research questions, problems, or withdrawal/deletion requests: **Dr. Roshan Venkatakrishnan, roshan.venkatakrishnan@ucf.edu, 407-823-3957** \
+Student investigator: **Pedro Poveda, pe011248@ucf.edu** \
 Questions about participant rights or concerns independent of the study team: UCF Institutional Review Board, 407-823-2901, irb@ucf.edu. **[Confirm approved wording.]**
 
-If you would like an aggregate summary when the study is complete: **[OPEN DECISION: approved opt-in method that does not unnecessarily link contact details to study data.]**
+If you would like an aggregate summary when the study is complete, join the separate email-only opt-in list by emailing **Dr. Roshan Venkatakrishnan at roshan.venkatakrishnan@ucf.edu**. The list is not linked to study ID and will be deleted after the summary is sent.
 
 UCF IRB study number: **[add after assignment/approval]**

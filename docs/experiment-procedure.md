@@ -36,7 +36,7 @@ The factors must be independently manipulable:
 - Voice identity changes only the rendered voice. Scripts, timing, spatialization, playback level, and system feedback are held constant across voice columns.
 - Hint opportunities and audio exposure are matched across guidance rows. Gaze contingency and its task-specific information are the intended guidance manipulation; the noncontingent prompts cannot be semantically identical to proximity guidance.
 
-The approved planning target is **48 complete participant datasets**, with 12 participants randomly allocated to each order of a four-sequence balanced Latin square (Williams design). Each participant completes **64 analyzed trials**: 16 per factorial cell. Eight vertical search planes surround the seated participant at 45° intervals, and the target appears exactly twice on each plane within every condition. A simulation-based sensitivity and power analysis using pilot variance components remains required before preregistration.
+The approved planning target is **48 complete participant datasets**, with 12 participants randomly allocated to each order of a four-sequence balanced Latin square (Williams design). The standard schedule contains **up to 64 experimental trials**: four condition blocks with up to 16 trials each. The full 16-trial manifest places the target exactly twice on each of eight vertical search planes surrounding the seated participant at 45° intervals. A complete dataset requires at least 12 technically valid trials per factorial cell. Prespecified time, withdrawal, safety, or technical stops may produce fewer completed trials; the study may not adapt trial count to participant performance or emerging condition results. A simulation-based sensitivity and power analysis using pilot variance components remains required before preregistration.
 
 ### Current executable study
 
@@ -47,7 +47,7 @@ The current build is not yet the proposed 2 × 2 experiment:
 - **Implementation gap:** only one fixed ElevenLabs voice is configured; there is no generic-versus-self-similar voice assignment.
 - **Implementation gap:** condition order is fixed by round number. The participant number does not counterbalance order or target-condition assignment.
 - **Implementation gap:** gaze-aware and gaze-unaware hints have different default delays and intervals (2 s/4 s versus 3.5 s/9 s). This confounds guidance awareness with timing and hint exposure.
-- **Implementation gap:** the 14-round scheduler must be replaced by four 16-trial condition blocks (64 analyzed trials) with exact target-plane balance.
+- **Implementation gap:** the 14-round scheduler must be replaced by four condition blocks with a standard 16-trial manifest (up to 64 experimental trials), exact scheduled target-plane balance, and logged prespecified early-stop reasons.
 
 No data collected with the current build should be described as evidence from the full 2 × 2 design.
 
@@ -74,20 +74,41 @@ These sources justify design practices, not automatic reuse of hardware-specific
 3. Obtain study consent before collecting any research data.
 4. If a self-similar voice will be generated, obtain separate, explicit consent before recording or synthesizing the participant's voice.
 
-**Open decisions:** finalize inclusion/exclusion criteria, screening instruments, compensation, voice-provider disclosure, source-recording retention, synthesized-voice retention, deletion timing, and whether participants may complete only the generic-voice conditions if they decline voice synthesis. These choices require ethics approval before recruitment.
+**Current decision:** recruit adults age 18 or older who can consent in English,
+hear the standardized prompts, safely use the headset while turning in a seated
+swivel chair, distinguish the approved colors, complete eye calibration, and
+authorize the study-limited voice procedure. Pregnancy and age over 65 are not
+automatic exclusions. Use signed paper consent with a separate voice-authorization
+initial. Anyone who signs consent and begins screening receives a $15 UCF-approved
+gift card even if they withdraw or the session stops; no-show/cancellation before
+consent receives no payment. Voice synthesis is required for the factorial study,
+so declining it ends participation without penalty.
 
 ### 2. Self-similar voice preparation
 
 **Protocol proposal.** Complete voice preparation before the experimental blocks so generation delays do not alter condition timing.
 
 1. Record every participant reading the same neutral passage in the same quiet room with the same microphone placement and gain.
-2. Check the recording for clipping, background noise, omissions, and minimum provider requirements. Repeat the recording when the technical check fails.
-3. Generate the self-similar voice using a fixed provider, model, and parameter set.
-4. Render both generic and self-similar conditions from the same text strings. Normalize playback level and use the same audio path and spatialization.
+2. Check the recording for clipping, background noise, omissions, and the frozen local-model input requirements. Repeat once when the technical check fails.
+3. Generate the self-similar voice with OpenVoice V2 pinned to an institutionally
+   reviewed release/commit and running offline on a UCF-managed encrypted
+   workstation. Do not send participant audio, embeddings, prompt text, or clips to
+   a third party.
+4. Render both conditions from the same fixed prompt manifest and base TTS settings.
+   The generic condition uses the fixed neutral base voice; the self-similar
+   condition adds the participant-derived tone-color conversion. Normalize wording,
+   loudness, intelligibility, duration range, audio path, and spatialization.
 5. Conduct a brief technical intelligibility check without revealing experimental hypotheses.
-6. Record the voice ID, model/version, generation parameters, and file or request checksum in the session manifest.
+6. Record the local model commit/version, settings, prompt-manifest version, speaker-
+   embedding alias, and file checksums in the restricted session record.
 
-**Open decisions:** select the standardized passage, generic comparison voice, synthesis provider/model, similarity acceptance rule, and fallback for failed or delayed synthesis. A similarity rating may be used as a manipulation check, but rejecting participants based on that rating requires a preregistered rule.
+**Current decision:** use the neutral passage in the IRB voice-script document, a
+fixed neutral generic base voice, at most two recording takes, and one prompt-library
+regeneration. If an intelligible complete self-similar library cannot be produced,
+stop before randomized blocks and provide full compensation. Similarity ratings are
+manipulation checks and never exclusion criteria. Delete failed takes immediately
+and all usable source audio, embeddings, generated clips, and headset caches within
+24 hours after the session and verified record transfer.
 
 ### 3. Environment and equipment setup
 
@@ -105,11 +126,20 @@ Room changes, interrupted tracking, headset restarts, and application restarts s
 **Protocol proposal.**
 
 1. Run the headset vendor's eye-tracking calibration after fitting the headset.
-2. Validate gaze at several locations spanning the intended search area.
-3. Refit and recalibrate if validation fails.
-4. Repeat calibration after a long break, a headset shift, or sustained loss of usable gaze data.
+2. Validate gaze at nine directions: forward plus the centers of the eight search
+   planes. The formative gate requires detection at 8 of 9 targets, median angular
+   error no greater than 3 degrees, and 90th-percentile error no greater than 6
+   degrees.
+3. Refit and repeat calibration/validation up to two times. Stop with full
+   compensation if the third attempt fails.
+4. Refit and recalibrate between trials after a material headset shift or less than
+   70% valid gaze availability over the preceding 60 seconds. Permit one
+   mid-session refit/recalibration before a technical stop.
 
-**Open decision:** define a device-appropriate validation task and acceptance threshold during piloting. Do not present XRI object hover as a validated fixation measure. The current logger records rendered frames and hover state, not a confirmed native eye-tracker sample stream with a validated fixation classifier.
+**Current decision with validation gate:** these numeric criteria are starting
+acceptance limits, not literature-derived universal thresholds. Verify them with
+nonparticipant Focus Vision testing and freeze them before confirmatory collection.
+Do not present XRI object hover as a validated fixation measure.
 
 ### 5. Instructions and practice
 
@@ -125,33 +155,38 @@ Give standardized instructions:
 
 Practice should use stimuli and targets not used in analyzed trials. Demonstrate target announcements, object selection, incorrect-selection feedback, correct-selection feedback, and at least one example of each guidance policy. Continue until the participant demonstrates task understanding and reliable dwell selection.
 
-**Protocol proposal:** require three consecutive targets selected without experimenter intervention, with a maximum of eight practice trials. The handling rule for participants who do not meet this provisional criterion remains an **open decision** to be frozen after piloting.
+**Current decision:** require three consecutive targets selected without
+experimenter intervention within a maximum of eight practice trials. Failure ends
+the session with full compensation; it is recorded as a practice-criterion failure,
+not poor task performance.
 
 ### 6. Condition order and blocks
 
 **Protocol proposal.**
 
-Use four 16-trial blocks, one for each factorial cell. Define A as noncontingent/generic, B as noncontingent/self-similar, C as gaze-contingent/generic, and D as gaze-contingent/self-similar. Assign block order with a four-sequence balanced Latin square (Williams design): A--B--D--C, B--C--A--D, C--D--B--A, and D--A--C--B. These sequences balance both block position and immediate first-order transitions. Use a pre-generated randomized allocation schedule so 12 of the 48 complete datasets receive each sequence. Participant ID reveals the next assignment; the experimenter must not select it.
+Use four condition blocks, one for each factorial cell, with a standard schedule of 16 trials per block and no more than 64 experimental trials total. Define A as noncontingent/generic, B as noncontingent/self-similar, C as gaze-contingent/generic, and D as gaze-contingent/self-similar. Assign block order with a four-sequence balanced Latin square (Williams design): A--B--D--C, B--C--A--D, C--D--B--A, and D--A--C--B. These sequences balance both block position and immediate first-order transitions. A pre-generated schedule contains 15 assignments per sequence. Enroll up to 60 people and stop when 48 complete datasets include 12 per sequence or the ceiling is reached. Participant ID reveals the next assignment; the experimenter must not select it.
 
 Within each block:
 
-- Place the target twice on each of the eight planes, for 16 analyzed trials.
+- In the standard 16-trial manifest, place the target twice on each of the eight planes.
 - Balance target shape, target color, and display layout across conditions.
 - Use deterministic, logged seeds so a target/layout can be audited.
 - Do not show the same exact layout repeatedly to a participant unless repetition is itself controlled.
 - Match hint opportunities, utterance duration, playback level, and audio path across guidance-awareness conditions. The responsive target information is part of the intended guidance manipulation and therefore differs from the general noncontingent prompts.
+- End a block or session early only for the 75-minute ceiling, withdrawal, safety, or a documented technical failure. Retain completed trials and log the reason; do not change trial count in response to task performance or condition results.
 
-Provide a short rest and the post-block questionnaire after each block.
+Provide a minimum two-minute seated rest after blocks 1--3, and longer whenever
+requested, followed by the post-block questionnaire.
 
 ### 7. Round timeline
 
 The following timeline describes verified current behavior and the event boundaries required by the proposed protocol.
 
 1. **Goal presentation — Implemented.** A fixation cross is shown and the assistant announces the target.
-2. **Transition — Implemented/current.** The cross disappears, followed by a randomized blank pause of 0.2–1.3 s. The planned manuscript narrows this to 0.5–0.9 s; freeze one range before confirmatory collection.
+2. **Transition — Implemented/current.** The cross disappears, followed by a randomized blank pause of 0.2–1.3 s. **Current decision:** implement and freeze a 0.5–0.9 s interval for the factorial study.
 3. **Display onset — Implemented.** The 56 search objects appear.
 4. **Search onset — Protocol requirement.** Log a dedicated `search_onset` event when the full display is available and participant search may begin. The current objective timer is initialized too early for later rounds and can include transition/announcement time.
-5. **Guidance — Partially implemented.** At planned opportunities (first at 4 s after `search_onset`, then every 6 s), noncontingent conditions provide duration-matched general prompts. Gaze-contingent conditions use a two-step policy: spatialized audio first directs attention toward the target plane, then the fine stage computes angular error between the valid gaze ray and the eye-to-target-center ray. Let `alpha` be the target's angular half-size and let `theta_max > alpha` be a pilot-frozen operating range. Normalize proximity as `p = 1 - clip(max(0, theta - alpha) / (theta_max - alpha), 0, 1)`. This transfers the literature's monotonic distance-to-feedback convention to angular gaze error while accounting for target size. Compare `p` with the preceding valid fine-stage opportunity: meaningful approach produces **warmer**, movement away produces **colder**, negligible change produces **about the same**, and gaze within the target's angular extent plus a pilot-validated tolerance produces **very close**. Every opportunity must log condition, trigger time, raw angle, target angular size, normalized proximity, comparison reference, evidence, confidence, selected stage/state, utterance, voice identity, playback start, outcome, and abstention. Filters, `theta_max`, minimum meaningful change, target tolerance, plane-entry rule, hysteresis, and confidence threshold must be frozen after piloting; no cited source establishes universal angular or verbal thresholds for this headset and task.
+5. **Guidance — Partially implemented.** Opportunities occur at 4, 10, 16, 22, 28, 34, and 40 s after `search_onset`; the trial times out at 45 s. Noncontingent conditions provide duration-matched general prompts. Gaze-contingent conditions use a two-step policy: spatialized audio first directs attention toward the target plane, then the fine stage computes angular error between the valid gaze ray and the eye-to-target-center ray. Let `alpha` be the target's angular half-size and set `theta_max` to 45 degrees. Normalize proximity as `p = 1 - clip(max(0, theta - alpha) / (theta_max - alpha), 0, 1)`. The plane becomes attended after valid gaze remains within +/-22.5 degrees of its center for 300 ms. Relative to the preceding valid fine-stage opportunity, an angular improvement of at least 5 degrees produces **warmer**, worsening of at least 5 degrees produces **colder**, smaller change produces **about the same**, and `theta <= alpha + 2 degrees` produces **very close**. Fine evidence requires at least 80% valid gaze over the preceding 500 ms; otherwise the policy logs an abstention and plays a duration-matched neutral fallback. Fine stage returns to coarse after the plane is outside the attended sector at two consecutive opportunities. Every opportunity logs condition, evidence, state, utterance, voice, timing, outcome, and abstention. These are formative starting limits that must pass nonparticipant validation before being frozen; no cited source establishes universal thresholds for this headset and task.
 6. **Selection — Implemented.** Looking continuously at an object for 1.6 s triggers a capture.
 7. **Incorrect selection — Implemented.** The application plays an error sound and the same round continues.
 8. **Correct selection — Implemented.** The application records success and advances through the next transition.
@@ -165,10 +200,18 @@ The 1.6 s dwell threshold is an interaction parameter, not a fixation threshold.
 - Raw **NASA-TLX**: mental demand, physical demand, temporal demand, performance, effort, and frustration.
 - Guidance manipulation check: whether hints appeared responsive to where or how the participant looked.
 - Voice manipulation check: perceived similarity or familiarity of the voice.
-- Brief experience measures covering helpfulness, trust, reliance, enjoyment, comfort, and perceived control or agency.
-- One short open-ended prompt about what helped or hindered search.
+- Nine fixed study-created ratings: gaze responsiveness, helpfulness, distraction,
+  voice similarity, familiarity, trust, comfort, uncanniness, and reliance.
+- Two additional mechanism checks after gaze-contingent blocks only: usefulness of
+  coarse directional guidance and usefulness of proximity guidance.
 
-Use identical items and ordering after every block. Where preference is collected, ask open-ended impressions before revealing the four condition labels or requesting a forced choice.
+Use a fixed item order after every block; the two mechanism items appear only when
+the participant actually received the mechanisms. Analyze each item separately and
+do not claim a validated composite. Do not administer SUS or UEQ because general
+usability is not a focal outcome. Where preference is collected, ask open-ended
+impressions before revealing the four condition labels or requesting a forced
+choice. Administer the complete 16-item Simulator Sickness Questionnaire before
+headset use and after removal, with brief safety checks between blocks.
 
 **Implementation gap:** the current application administers **NASA-TLX** only once after the alternating 14-round run and labels it at the session level. It cannot estimate workload by factorial condition.
 
@@ -190,13 +233,13 @@ Use identical items and ordering after every block. Where preference is collecte
 | Search speed | Time from logged `search_onset` to correct dwell capture | **Primary proposal.** Current objective timing can include transitions and must be corrected. |
 | Selection accuracy | First-attempt correctness, incorrect captures, and total captures per round | Available from current events/summary logs. |
 | Guidance exposure | Number of hint opportunities, playback starts, and completed utterances | **Implementation gap:** hint timing/content is not currently logged. |
-| Guidance response | Change in gaze direction, target-region entry, or selection after a hint within a preregistered window | Requires synchronized hint and gaze events; window remains an **open decision**. |
+| Guidance response | Change in gaze/head direction, target-plane entry, or selection from prompt offset until 3 s, selection, or the next opportunity, whichever occurs first | Requires synchronized hint, gaze, head, and selection events. |
 | Target-directed looking | Latency to first target hover and target dwell before capture | Hover-derived proxy; do not label as fixation without a validated detector. |
 | Search organization | Unique objects/regions visited, revisits, angular path length, and scanpath efficiency | Define formulas and missing-data handling before analysis. |
 | Fixations and saccades | Events produced by a validated offline classifier from sufficiently sampled gaze data | Not established by the current hover-event labels. Hardware-specific thresholds require pilot validation. |
 | Workload | Six raw **NASA-TLX** subscales after each condition block | Current single end-of-run form is insufficient. |
-| Voice similarity | Post-block similarity/familiarity manipulation-check rating | Instrument and scale remain open. |
-| Trust and agency | Prespecified, consistently scored post-block items or validated short scales | Select instruments and primary/secondary status before preregistration. |
+| Voice similarity | Separate 1–7 post-block similarity and familiarity manipulation checks | Study-created items; never an exclusion rule or validated composite. |
+| Trust and experience | Separate 1–7 helpfulness, distraction, trust, comfort, uncanniness, and reliance items | Secondary/exploratory study-created items analyzed separately. |
 
 The analysis plan should name one primary performance outcome and limit confirmatory secondary outcomes. Exploratory gaze measures should be labeled as such unless their extraction and exclusion rules are frozen before data collection.
 
@@ -218,12 +261,13 @@ Record at minimum:
 
 Before data collection, preregister:
 
-- the minimum usable-gaze proportion and how it is calculated;
-- calibration-failure and recalibration rules;
+- the selected 70% trial-level usable-gaze rule and its exact computation;
+- the calibration-failure and recalibration rules above;
 - treatment of blinks, missing samples, duplicate timestamps, and headset removal;
-- maximum interruption or round duration;
+- the 45 s trial timeout and interruption rules;
 - handling of TTS/network failures and incomplete utterances;
-- participant-, block-, and round-level exclusion rules;
+- the requirement for at least 12 technically valid trials per cell for a complete
+  dataset, while retaining observable assignment-policy outcomes where possible;
 - whether failed trials are repeated and how repetitions are labeled.
 
 The current per-frame logger includes gaze pose, hover metadata, eye openness when available, blink state, objective state, and condition-related fields. It does not provide a complete per-sample validity/calibration record, and transitions are skipped. The acquisition rate therefore must be measured from timestamps rather than assumed to equal the headset's native eye-tracking rate.
@@ -241,24 +285,15 @@ The current per-frame logger includes gaze pose, hover metadata, eye openness wh
 | 2 | Fixed condition sequence | Implement and log the four-sequence balanced Latin square (Williams design) and its randomized participant-allocation schedule. |
 | 2 | Hover events named “fixation”/“saccade” | Rename them as hover episodes/angular transitions or add a validated offline eye-movement classifier. |
 | 2 | Incomplete gaze-quality metadata | Export actual timing and available validity/tracking/calibration indicators; quantify achieved sampling behavior. |
-| 1 | Current 14-round bookshelf schedule | Implement four 16-trial blocks, eight surrounding planes, and two target appearances per plane within each cell. |
+| 1 | Current 14-round bookshelf schedule | Implement four condition blocks with a standard 16-trial manifest, up to 64 trials total, eight surrounding planes, two scheduled target appearances per plane within each full cell, and prespecified early-stop logging. |
 
-## Open-decision register
+## Decision status
 
-Resolve and version-control these decisions before piloting the final protocol:
-
-- participant population, eligibility, and compensation (target sample fixed at 48 complete datasets);
-- confirmatory hypotheses, primary outcome, and multiplicity strategy;
-- implementation details for the approved four blocks and 16 trials per cell;
-- counterbalancing schedule and target/layout allocation;
-- matched hint opportunity schedule and exact scripts;
-- generic voice, self-similar voice workflow, similarity check, and synthesis fallback;
-- voice recording and synthesized-asset retention/deletion;
-- eye-calibration validation and recalibration thresholds;
-- practice criterion;
-- gaze-quality and technical-failure exclusions;
-- gaze-event classifier and scanpath formulas;
-- post-block instruments and item order;
-- rest duration, stopping rules, and maximum session duration.
-
-Once resolved, move each item into the relevant procedural section and label it **Protocol approved** with the approval or preregistration version. Do not silently convert recommendations into established protocol.
+The scientific and operational choices above are frozen as **current decisions** in
+[the IRB decision register](irb/decision-register.md). They remain subject to
+nonparticipant feasibility validation, preregistration, PI review, and UCF approval.
+The remaining inputs are administrative facts or institutional determinations:
+official contacts and roles, lab/room, funding and gift-card mechanism, dates,
+Huron number, risk/review classification, required ancillary reviews, and final
+institution-approved workstation/storage configuration. Implementation gaps listed
+above must be closed before participant collection.

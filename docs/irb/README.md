@@ -2,21 +2,21 @@
 
 This directory is a paper-aligned, project-specific draft packet for a UCF Huron IRB submission. It is not an approval, an institutional determination, or a participant-ready packet.
 
-The packet is synchronized to `docs/manuscript/gaze-guidance-planned-study.tex`: 48 complete datasets; a 2 × 2 within-participant design; four 16-trial blocks; eight surrounding vertical search planes; Williams counterbalancing; and two-step coarse-direction/fine-proximity gaze guidance. These are **Protocol proposal** details until the release build and staff workflow implement and verify them.
+The packet is synchronized to `docs/manuscript/gaze-guidance-planned-study.tex`: 48 complete datasets; a 2 × 2 within-participant design; four condition blocks with a standard schedule of 16 trials each (up to 64 total); eight surrounding vertical search planes; Williams counterbalancing; and two-step coarse-direction/fine-proximity gaze guidance. These are **Protocol proposal** details until the release build and staff workflow implement and verify them.
 
 ## Read this first
 
 1. Start with [`irb-readiness-brief.md`](irb-readiness-brief.md).
-2. Resolve every item marked **OPEN DECISION** before uploading anything to Huron.
-3. Have the UCF PI of record and, if applicable, faculty advisor verify the protocol, consent, recruitment language, compensation, target enrollment, lab location, vendor/data path, and retention plan.
+2. Read [`decision-register.md`](decision-register.md). The scientific/procedural choices are frozen as current decisions; complete every **ADMINISTRATIVE INPUT** and obtain every **INSTITUTIONAL CONFIRMATION** before uploading.
+3. Have Dr. Roshan Venkatakrishnan, as proposed PI of record, verify the protocol, consent, recruitment language, compensation, target enrollment, lab location, offline voice path, storage, and retention plan.
 4. Complete the required CITI course(s), add the complete study team in Huron, and obtain ancillary reviews if UCF requires them.
-5. Do not recruit, consent, record voices, upload voice samples, or collect study data until UCF issues approval.
+5. Do not recruit, consent, record voices, generate participant voices, or collect study data until UCF issues approval.
 
 ## Submission drafts
 
 - `submission/HRP-503_Gaze_Contingency_Protocol_DRAFT.docx` — protocol narrative built from the current UCF HRP-503 structure.
 - `submission/HRP-502_Gaze_Contingency_Adult_Consent_DRAFT.docx` — adult informed-consent draft built from the current UCF HRP-502 structure.
-- `submission/Recruitment_Materials_DRAFT.docx` — email, flyer/SONA-style short copy, and screening invitation.
+- `submission/Recruitment_Materials_DRAFT.docx` — email, flyer/social-media short copy, and screening invitation.
 - `submission/Eligibility_and_Safety_Screening_DRAFT.docx` — pre-session eligibility, VR safety, and voice-cloning screening.
 - `submission/Participant_Questionnaires_DRAFT.docx` — demographics, prior experience, manipulation checks, workload, symptoms, and post-study questions.
 - `submission/Voice_Recording_Script_DRAFT.docx` — standardized 1–2 minute voice sample and researcher instructions.
@@ -39,7 +39,9 @@ The build script uses the immutable UCF templates in `templates/` for UCF styles
 
 - **Implemented** — supported by the current Unity code/data path.
 - **Protocol proposal** — intended study behavior that must be implemented and verified before participant use.
-- **Open decision** — must be decided, approved, or confirmed before submission or enrollment.
+- **Current decision** — selected protocol behavior; still subject to PI/UCF approval and implementation validation.
+- **Administrative input** — a factual name, contact, room, date, funding, or account detail the project cannot invent.
+- **Institutional confirmation** — a classification, required wording, or approval only UCF can provide.
 
 ## Legacy working artifacts
 
