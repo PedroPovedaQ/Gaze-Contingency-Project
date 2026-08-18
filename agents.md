@@ -18,6 +18,17 @@ Unity 6 mixed reality project targeting the **HTC Vive Focus Vision**. Passthrou
 
 When editing research documentation, label claims as **Implemented**, **Protocol proposal**, or **Open decision**. Cite source papers for transferred methods, but do not present their thresholds as validated for this headset or task. In particular, XRI hover and dwell events are interaction proxies, not validated fixations; verify proposed eye-tracking measures against `GazeDataLogger`, `TrialDataLogger`, and the analysis scripts.
 
+## Progress Log
+
+- Keep a running daily log in `progress.md` at the repo root, **newest entries on top**.
+- Each working session, add a dated entry (`## YYYY-MM-DD`) summarizing what changed:
+  code/design edits, IRB packet updates, decisions made, and what remains open.
+- Research-compliance milestones belong here too. Example: on **2026-08-18** the study
+  team passed the UCF CITI Stage 1 Basic Courses — **IRB Protocol Review**, **Research and
+  HIPAA Privacy Protections**, and **Researchers – Information Privacy & Security (IPS)**.
+- The IRB submission packet and its progress live on the **`v2`** branch under `docs/irb/`
+  (Huron study **STUDY00009581**); rebuild the packet with `scripts/build-irb-packet.sh`.
+
 ## Hardware & Build
 
 - **Headset**: HTC Vive Focus Vision (standalone Android)
