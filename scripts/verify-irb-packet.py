@@ -269,8 +269,6 @@ def contains_revision(xml: bytes) -> bool:
 def verify_package(path: Path) -> list[str]:
     failures: list[str] = []
     text = document_text(path)
-    if "DRAFT — NOT FOR SUBMISSION OR PARTICIPANT USE" not in text:
-        failures.append(f"{path.name}: missing draft-use warning")
     source_decisions = open_decisions((SOURCE / SOURCE_FOR_OUTPUT[path.name]).read_text(encoding="utf-8"))
     output_decisions = open_decisions(text)
     for decision, expected_count in source_decisions.items():

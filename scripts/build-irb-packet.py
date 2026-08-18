@@ -287,7 +287,6 @@ def build(source_name: str, output_name: str, template: Path, output_dir: Path) 
     document = Document(template)
     preserve_logo_and_clear(document)
     configure_styles(document)
-    add_draft_banner(document)
     add_markdown(document, (SOURCE / source_name).read_text(encoding="utf-8"))
     add_doc_properties(document, output_name.removesuffix(".docx"))
 
