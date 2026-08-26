@@ -23,7 +23,7 @@ Current eligibility rule: Questions 1–4 must be Yes; question 5 must be No. Vo
 6. Has a health professional told you to avoid virtual/mixed-reality headsets, flashing displays, or stereoscopic displays?  ☐ Yes ☐ No
 7. Do you have a history of photosensitive seizure or epilepsy?  ☐ Yes ☐ No
 8. Right now, are you experiencing eye pain/infection, a migraine, or another symptom that would make headset use unsafe or uncomfortable?  ☐ Yes ☐ No
-9. Do you have any concern about safely wearing the headset and repeatedly turning in a swivel chair while remaining seated today, including a current neck, back, balance, or vestibular concern?  ☐ Yes ☐ No
+9. Do you have any concern about safely wearing the headset and repeatedly turning while remaining seated today, including a current neck, back, balance, or vestibular concern?  ☐ Yes ☐ No
 10. Do you use glasses or contact lenses?  ☐ No ☐ Glasses ☐ Contact lenses \
 If yes, can your ordinary correction be used comfortably with the headset?  ☐ Yes ☐ No ☐ Not yet tested
 11. Do you use a hearing aid or have difficulty hearing ordinary spoken instructions?  ☐ No ☐ Yes \

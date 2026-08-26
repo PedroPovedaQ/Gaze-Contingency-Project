@@ -12,7 +12,7 @@ Subject: Participate in a UCF mixed-reality visual-search study
 
 Researchers at the University of Central Florida are inviting adults to take part in a laboratory study about spoken assistance during a mixed-reality visual-search task.
 
-If you participate, you will remain seated in a swivel chair while wearing an HTC Vive Focus Vision headset, turn to look for virtual colored shapes arranged around you, receive spoken hints, answer questionnaires, and record about 1–2 minutes of your own speech. The task includes practice and four search blocks with up to 16 trials each (up to 64 experimental trials total). Offline software on a UCF-managed research computer will use the recording to create a private synthetic voice that resembles you for fixed study prompts. Your recording and synthetic voice will not be sent to an outside voice service. The study also records eye-gaze interaction data and task performance. It does not save room video, face video, webcam video, or raw eye-camera images.
+If you participate, you will remain seated while wearing an HTC Vive Focus Vision headset, turn to look for virtual colored shapes arranged around you, receive spoken hints, answer questionnaires, and record about 1–2 minutes of your own speech. The task includes practice and four search blocks with up to 16 trials each (up to 64 experimental trials total). Offline software on a UCF-managed research computer will use the recording to create a private synthetic voice that resembles you for fixed study prompts. Your recording and synthetic voice will not be sent to an outside voice service. The study also records eye-gaze interaction data and task performance. It does not save room video, face video, webcam video, or raw eye-camera images.
 
 The visit will take up to **75 minutes** at **UCF Main Campus (HEC 208, HEC 308, or BYC 119)**. If you sign consent and begin screening, you will receive a **$15 gift card**, even if you later withdraw or the session stops.
 
@@ -33,7 +33,7 @@ Take part in a UCF laboratory research study about gaze-based spoken assistance.
 
 - One lab visit lasting up to **75 minutes**
 - Wear an HTC Vive Focus Vision headset
-- Remain seated and turn in a swivel chair to search around you
+- Remain seated and turn to search for objects arranged around you
 - Complete practice and four search blocks with up to 16 trials each
 - Eye-gaze interaction and task data recorded
 - Record 1–2 minutes of your own speech

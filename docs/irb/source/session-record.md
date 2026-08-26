@@ -14,7 +14,7 @@ Researcher: ____________________  Location: ____________________
 - ☐ Current UCF approval confirmed; study not expired/suspended.
 - ☐ Researcher listed on study and CITI/training current.
 - ☐ Correct approved consent/material versions available.
-- ☐ Private room, marked seated origin, swivel chair, clear rotational area, and emergency contacts ready.
+- ☐ Private room, marked seated origin, clear turning area, and emergency contacts ready.
 - ☐ Headset/contact surfaces sanitized; equipment safety check passed.
 - ☐ Approved release build/configuration loaded.
 - ☐ Build commit/hash: ____________________  App version: ____________________
