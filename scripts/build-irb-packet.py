@@ -25,14 +25,14 @@ PROTOCOL_TEMPLATE = ROOT / "docs" / "irb" / "templates" / "HRP-503 - TEMPLATE - 
 CONSENT_TEMPLATE = ROOT / "docs" / "irb" / "templates" / "HRP-502 - TEMPLATE CONSENT DOCUMENT - Adult.docx"
 
 DOCUMENTS = [
-    ("protocol.md", "HRP-503_Gaze_Contingency_Protocol_DRAFT.docx", PROTOCOL_TEMPLATE),
-    ("consent.md", "HRP-502_Gaze_Contingency_Adult_Consent_DRAFT.docx", CONSENT_TEMPLATE),
-    ("recruitment.md", "Recruitment_Materials_DRAFT.docx", PROTOCOL_TEMPLATE),
-    ("screening.md", "Eligibility_and_Safety_Screening_DRAFT.docx", PROTOCOL_TEMPLATE),
-    ("questionnaires.md", "Participant_Questionnaires_DRAFT.docx", PROTOCOL_TEMPLATE),
-    ("voice-script.md", "Voice_Recording_Script_DRAFT.docx", PROTOCOL_TEMPLATE),
-    ("session-record.md", "Researcher_Session_and_Event_Record_DRAFT.docx", PROTOCOL_TEMPLATE),
-    ("post-participation.md", "Post_Participation_Information_DRAFT.docx", PROTOCOL_TEMPLATE),
+    ("protocol.md", "HRP-503_Gaze_Contingency_Protocol.docx", PROTOCOL_TEMPLATE),
+    ("consent.md", "HRP-502_Gaze_Contingency_Adult_Consent.docx", CONSENT_TEMPLATE),
+    ("recruitment.md", "Recruitment_Materials.docx", PROTOCOL_TEMPLATE),
+    ("screening.md", "Eligibility_and_Safety_Screening.docx", PROTOCOL_TEMPLATE),
+    ("questionnaires.md", "Participant_Questionnaires.docx", PROTOCOL_TEMPLATE),
+    ("voice-script.md", "Voice_Recording_Script.docx", PROTOCOL_TEMPLATE),
+    ("session-record.md", "Researcher_Session_and_Event_Record.docx", PROTOCOL_TEMPLATE),
+    ("post-participation.md", "Post_Participation_Information.docx", PROTOCOL_TEMPLATE),
 ]
 
 

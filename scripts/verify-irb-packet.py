@@ -18,25 +18,25 @@ DEFAULT_OUTPUT = ROOT / "docs" / "irb" / "submission"
 SOURCE = ROOT / "docs" / "irb" / "source"
 
 EXPECTED = {
-    "HRP-503_Gaze_Contingency_Protocol_DRAFT.docx",
-    "HRP-502_Gaze_Contingency_Adult_Consent_DRAFT.docx",
-    "Recruitment_Materials_DRAFT.docx",
-    "Eligibility_and_Safety_Screening_DRAFT.docx",
-    "Participant_Questionnaires_DRAFT.docx",
-    "Voice_Recording_Script_DRAFT.docx",
-    "Researcher_Session_and_Event_Record_DRAFT.docx",
-    "Post_Participation_Information_DRAFT.docx",
+    "HRP-503_Gaze_Contingency_Protocol.docx",
+    "HRP-502_Gaze_Contingency_Adult_Consent.docx",
+    "Recruitment_Materials.docx",
+    "Eligibility_and_Safety_Screening.docx",
+    "Participant_Questionnaires.docx",
+    "Voice_Recording_Script.docx",
+    "Researcher_Session_and_Event_Record.docx",
+    "Post_Participation_Information.docx",
 }
 
 SOURCE_FOR_OUTPUT = {
-    "HRP-503_Gaze_Contingency_Protocol_DRAFT.docx": "protocol.md",
-    "HRP-502_Gaze_Contingency_Adult_Consent_DRAFT.docx": "consent.md",
-    "Recruitment_Materials_DRAFT.docx": "recruitment.md",
-    "Eligibility_and_Safety_Screening_DRAFT.docx": "screening.md",
-    "Participant_Questionnaires_DRAFT.docx": "questionnaires.md",
-    "Voice_Recording_Script_DRAFT.docx": "voice-script.md",
-    "Researcher_Session_and_Event_Record_DRAFT.docx": "session-record.md",
-    "Post_Participation_Information_DRAFT.docx": "post-participation.md",
+    "HRP-503_Gaze_Contingency_Protocol.docx": "protocol.md",
+    "HRP-502_Gaze_Contingency_Adult_Consent.docx": "consent.md",
+    "Recruitment_Materials.docx": "recruitment.md",
+    "Eligibility_and_Safety_Screening.docx": "screening.md",
+    "Participant_Questionnaires.docx": "questionnaires.md",
+    "Voice_Recording_Script.docx": "voice-script.md",
+    "Researcher_Session_and_Event_Record.docx": "session-record.md",
+    "Post_Participation_Information.docx": "post-participation.md",
 }
 
 PROTOCOL_HEADINGS = {
@@ -100,22 +100,22 @@ CONSENT_HEADINGS = {
 }
 
 SUPPORT_HEADINGS = {
-    "Recruitment_Materials_DRAFT.docx": {
+    "Recruitment_Materials.docx": {
         "Recruitment Email", "Flyer or Social-Media Listing", "Verbal Referral Script", "Recruitment Controls"
     },
-    "Eligibility_and_Safety_Screening_DRAFT.docx": {
+    "Eligibility_and_Safety_Screening.docx": {
         "Basic Eligibility", "Headset and Visual Safety", "Voice Recording Safety and Privacy Confirmation", "Baseline Simulator Sickness Questionnaire", "Researcher Determination"
     },
-    "Participant_Questionnaires_DRAFT.docx": {
+    "Participant_Questionnaires.docx": {
         "Background and Prior Experience (once per participant)", "Raw NASA Task Load Index (after each block)", "Post-Block Assistance and Voice Check", "Post-Session Comparison", "Post-Exposure Simulator Sickness Questionnaire", "Administration and Scoring Decisions"
     },
-    "Voice_Recording_Script_DRAFT.docx": {
+    "Voice_Recording_Script.docx": {
         "Researcher Setup", "Participant Introduction", "Recording Passage", "Quality and Local Processing Record"
     },
-    "Researcher_Session_and_Event_Record_DRAFT.docx": {
+    "Researcher_Session_and_Event_Record.docx": {
         "Pre-Session Controls", "Consent and Eligibility", "Voice Procedure", "Headset, Calibration, and Practice", "Experimental Blocks", "Data Transfer and Cleanup", "Session Disposition and Data-Quality Reason Codes", "Symptoms or Adverse Event", "Protocol Deviation or Confidentiality Incident"
     },
-    "Post_Participation_Information_DRAFT.docx": {"Voice and Data Cleanup", "After the Headset", "Contacts"},
+    "Post_Participation_Information.docx": {"Voice and Data Cleanup", "After the Headset", "Contacts"},
 }
 
 FORBIDDEN_RESIDUE = (
@@ -126,7 +126,7 @@ FORBIDDEN_RESIDUE = (
 )
 
 REQUIRED_STUDY_ALIGNMENT = {
-    "HRP-503_Gaze_Contingency_Protocol_DRAFT.docx": (
+    "HRP-503_Gaze_Contingency_Protocol.docx": (
         "48 complete participant datasets",
         "up to 64 experimental trials",
         "standard manifest schedules 16 trials per block",
@@ -144,7 +144,7 @@ REQUIRED_STUDY_ALIGNMENT = {
         "OpenVoice V2",
         "within 24 hours",
     ),
-    "HRP-502_Gaze_Contingency_Adult_Consent_DRAFT.docx": (
+    "HRP-502_Gaze_Contingency_Adult_Consent.docx": (
         "complete study data from 48 people",
         "64 experimental trials",
         "eight virtual areas around you",
@@ -153,31 +153,31 @@ REQUIRED_STUDY_ALIGNMENT = {
         "OpenVoice V2",
         "within 24 hours",
     ),
-    "Recruitment_Materials_DRAFT.docx": (
+    "Recruitment_Materials.docx": (
         "four search blocks with up to 16 trials each",
         "remain seated",
         "up to 75 minutes",
         "$15 gift card",
     ),
-    "Eligibility_and_Safety_Screening_DRAFT.docx": (
+    "Eligibility_and_Safety_Screening.docx": (
         "repeatedly turning while remaining seated",
         "approved color set",
         "Baseline Simulator Sickness Questionnaire",
         "Dizziness with eyes open",
     ),
-    "Participant_Questionnaires_DRAFT.docx": (
+    "Participant_Questionnaires.docx": (
         "warmer/colder feedback",
         "Items 1–11 are study-created",
         "Do not administer SUS or UEQ",
     ),
-    "Voice_Recording_Script_DRAFT.docx": (
+    "Voice_Recording_Script.docx": (
         "areas arranged around me",
         "warmer",
         "very close",
         "OpenVoice V2",
         "at most two recording takes",
     ),
-    "Researcher_Session_and_Event_Record_DRAFT.docx": (
+    "Researcher_Session_and_Event_Record.docx": (
         "Assigned Williams sequence",
         "A-B-D-C",
         "eight-plane 360-degree search geometry",
@@ -186,7 +186,7 @@ REQUIRED_STUDY_ALIGNMENT = {
         "4, 10, 16, 22, 28, 34, and 40 seconds",
         "within 24 hours",
     ),
-    "Post_Participation_Information_DRAFT.docx": (
+    "Post_Participation_Information.docx": (
         "coarse directional guidance",
         "closer/farther feedback",
         "noncontingent blocks",
@@ -195,14 +195,14 @@ REQUIRED_STUDY_ALIGNMENT = {
 }
 
 FORBIDDEN_PLANNED_RESIDUE = {
-    "HRP-502_Gaze_Contingency_Adult_Consent_DRAFT.docx": (
+    "HRP-502_Gaze_Contingency_Adult_Consent.docx": (
         "study table cannot be set up",
     ),
-    "Voice_Recording_Script_DRAFT.docx": (
+    "Voice_Recording_Script.docx": (
         "several shelves",
         "upper shelf",
     ),
-    "Researcher_Session_and_Event_Record_DRAFT.docx": (
+    "Researcher_Session_and_Event_Record.docx": (
         "study table detected",
         "Room Setup/table plane",
         "Room Setup/table-plane failure",
@@ -315,8 +315,8 @@ def main() -> None:
     for filename in sorted(EXPECTED & actual):
         failures.extend(verify_package(output / filename))
 
-    protocol = output / "HRP-503_Gaze_Contingency_Protocol_DRAFT.docx"
-    consent = output / "HRP-502_Gaze_Contingency_Adult_Consent_DRAFT.docx"
+    protocol = output / "HRP-503_Gaze_Contingency_Protocol.docx"
+    consent = output / "HRP-502_Gaze_Contingency_Adult_Consent.docx"
     if protocol.exists():
         missing_headings = PROTOCOL_HEADINGS - headings(protocol)
         if missing_headings:
