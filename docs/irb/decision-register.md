@@ -138,8 +138,10 @@ separately at the end.
 
 ## Measures and analysis
 
-- Administer the six **Raw NASA-TLX** subscales after every block on 0-100 scales,
-  without pairwise weighting.
+- Administer the six **Raw NASA-TLX** subscales after every block on a 0-10 scale
+  (0 = Very low, 10 = Very high), without pairwise weighting. The 0-10 matrix is a
+  discretized adaptation of the standard 0-100 raw NASA-TLX, matching the lab's
+  prior IRB-approved study.
 - Administer nine fixed study-created post-block ratings: gaze responsiveness,
   helpfulness, distraction, voice similarity, familiarity, trust, comfort,
   uncanniness, and reliance. After gaze-contingent blocks only, add separate coarse-
