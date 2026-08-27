@@ -98,6 +98,31 @@ Analyze the three eeriness items as a mean eeriness score and the similarity ite
 8. Did hearing your self-similar voice create any concern about misuse or about how the voice was created? ____________________
 9. What would you change about the hints, voice, or task? ____________________
 
+## Presence Questionnaire (post-session)
+
+igroup Presence Questionnaire (IPQ; Schubert, Friedmann, & Regenbrecht, 2001) — 14 items across General Presence, Spatial Presence, Involvement, and Experienced Realism. Rate each item from 1 to 7. **[Apply the exact igroup.org anchors before participant use: most items use “fully disagree (1)” to “fully agree (7),” while G1, INV1, REAL1, and REAL3 use item-specific anchors.]**
+
+| Item | 1 Fully disagree | 2 | 3 | 4 | 5 | 6 | 7 Fully agree |
+|---|---|---|---|---|---|---|---|
+| G1. In the computer-generated world I had a sense of “being there.” | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| SP1. Somehow I felt that the virtual world surrounded me. | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| SP2. I felt like I was just perceiving pictures. | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| SP3. I did not feel present in the virtual space. | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| SP4. I had a sense of acting in the virtual space, rather than operating something from outside. | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| SP5. I felt present in the virtual space. | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| INV1. How aware were you of the real world surrounding you while in the virtual world (sounds, room temperature, other people, etc.)? | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| INV2. I was not aware of my real environment. | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| INV3. I still paid attention to the real environment. | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| INV4. I was completely captivated by the virtual world. | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| REAL1. How real did the virtual world seem to you? | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| REAL2. How much did your experience in the virtual environment seem consistent with your real-world experience? | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| REAL3. How real did the virtual world seem to you (compared with an imagined world)? | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| REAL4. The virtual world seemed more real than the real world. | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+
+Reverse-scored items (higher rating indicates less presence): SP2, SP3, INV1, INV3. Compute General, Spatial Presence, Involvement, and Experienced Realism subscales per Schubert et al. (2001).
+
+Reference: Schubert, T., Friedmann, F., & Regenbrecht, H. (2001). The experience of presence: Factor analytic insights. *Presence: Teleoperators and Virtual Environments, 10*(3), 266–281. https://doi.org/10.1162/105474601300343603
+
 ## Post-Exposure Simulator Sickness Questionnaire
 
 Rate each item now using the standard SSQ response anchors: 0 = none, 1 = slight, 2 = moderate, 3 = severe.
