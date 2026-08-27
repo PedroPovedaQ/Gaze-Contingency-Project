@@ -25,16 +25,16 @@ Use study ID only. Do not collect names in these instruments. Participants may s
 
 ## Raw NASA Task Load Index (after each block)
 
-Mark each scale from 0 (low) to 100 (high). This packet uses the six raw NASA-TLX subscales without pairwise weighting (Hart & Staveland, 1988; https://doi.org/10.1016/S0166-4115(08)62386-9).
+Please rate your workload during this block. Mark one box per row on the 0 (Very low) to 10 (Very high) scale. Raw NASA-TLX, six unweighted subscales (Hart & Staveland, 1988; https://doi.org/10.1016/S0166-4115(08)62386-9).
 
-| Dimension | Prompt | Rating 0–100 |
-|---|---|---|
-| Mental demand | How mentally demanding was this block? | ______ |
-| Physical demand | How physically demanding was this block? | ______ |
-| Temporal demand | How hurried or rushed did the pace feel? | ______ |
-| Performance | How successful were you in accomplishing what you were asked to do? 0 = perfect, 100 = failure. | ______ |
-| Effort | How hard did you have to work to accomplish your level of performance? | ______ |
-| Frustration | How insecure, discouraged, irritated, stressed, and annoyed were you? | ______ |
+| Dimension | 0 Very low | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 Very high |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Mental Demand — How mentally demanding was this block? | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Physical Demand — How physically demanding was this block? | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Temporal Demand — How hurried or rushed did you feel during this block? | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Performance — How unsuccessful were you in accomplishing the task? (0 = perfect, 10 = failure) | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Effort — How hard did you have to work to achieve your level of performance? | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+| Frustration — How insecure, discouraged, irritated, stressed, or annoyed did you feel? | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
 
 Block number: ______  Assistance condition code: ______  Voice condition code: ______ \
 These condition-code fields are completed automatically/by the researcher and are not shown as manipulation labels if doing so would bias responses.
@@ -65,6 +65,24 @@ Technical check:
 - Did you hear all prompts clearly? ☐ Yes ☐ No ☐ Unsure
 - Did any prompt repeat, cut off, arrive late, or use the wrong voice? ☐ No ☐ Yes: ______
 - Did you take an unplanned break or experience an interruption? ☐ No ☐ Yes: ______
+
+## Perceived Eeriness (after each block)
+
+For each pair, mark the box that best describes how the assistant's voice felt during this block (1 to 7). Adapted from the Ho & MacDorman (2017) Eeriness index; the eeriness construct was applied to self-similar voices by Zibrek et al. (2018) and Guo et al. (2024). **[Transcribe the exact validated anchor pairs from Ho & MacDorman (2017) before participant use.]**
+
+| The voice felt… | 1 | 2 | 3 | 4 | 5 | 6 | 7 | …the voice felt |
+|---|---|---|---|---|---|---|---|---|
+| Reassuring | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | Eerie |
+| Natural | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | Uncanny |
+| Comforting | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | Creepy |
+
+Perceived voice similarity (manipulation check):
+
+| Statement | 1 Not at all | 2 | 3 | 4 | 5 | 6 | 7 Extremely |
+|---|---|---|---|---|---|---|---|
+| How much did the assistant's voice sound like your own voice? | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ |
+
+Analyze the three eeriness items as a mean eeriness score and the similarity item as a manipulation check; do not exclude participants based on these ratings.
 
 ## Post-Session Comparison
 
@@ -108,10 +126,15 @@ Do you feel ready to leave the lab? ☐ Yes ☐ No—researcher follow-up requir
 
 ## Administration and Scoring Decisions
 
-- Administer Raw NASA-TLX after each of the four blocks on 0–100 scales without pairwise weighting.
+- Administer Raw NASA-TLX after each of the four blocks as a six-subscale matrix on a 0 (Very low) to 10 (Very high) scale, without pairwise weighting.
 - Administer the complete 16-item SSQ before headset use and after headset removal, using Kennedy et al. (1993) 0–3 anchors and canonical Nausea, Oculomotor, Disorientation, and Total scores. Safety stopping uses item-level rules, not the total score.
 - Administer the nine fixed study-created items after every block and items 10–11 after gaze-contingent blocks only. Keep the order fixed to reduce administration variance.
+- Administer the perceived-eeriness semantic differential (Ho & MacDorman, 2017; Zibrek et al., 2018) and the voice-similarity manipulation check after every block; finalize the exact validated eeriness anchors from the source before participant use.
 - Do not administer SUS or UEQ; overall usability is not a focal construct.
 - Eligibility/safety items are required to proceed. Other questionnaire items may be skipped. Record skipped responses as missing and do not impute them for primary analysis.
 
 Reference: Kennedy, R. S., Lane, N. E., Berbaum, K. S., & Lilienthal, M. G. (1993). Simulator Sickness Questionnaire. *The International Journal of Aviation Psychology, 3*(3), 203–220. https://doi.org/10.1207/s15327108ijap0303_3
+
+Reference (eeriness): Ho, C.-C., & MacDorman, K. F. (2017). Measuring the uncanny valley effect: Refinements to indices for perceived humanness, attractiveness, and eeriness. *International Journal of Social Robotics, 9*(1), 129–139. https://doi.org/10.1007/s12369-016-0380-9
+
+Reference (self-similar voice precedent): Zibrek, K., Kokkinara, E., & McDonnell, R. (2018). The effect of realistic appearance of virtual characters in immersive environments. *IEEE TVCG, 24*(4), 1681–1690. https://doi.org/10.1109/TVCG.2018.2794638; Guo, S., Choi, M., Kao, D., & Mousas, C. (2024). Collaborating with My Doppelgänger. *PACM CGIT, 7*(1). https://doi.org/10.1145/3651288
