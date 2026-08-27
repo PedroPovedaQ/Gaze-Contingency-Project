@@ -21,6 +21,18 @@ def ucf_logo_b64() -> str:
 def sections(md: str) -> dict[str, str]:
     return {p.splitlines()[0].strip(): "## " + p for p in re.split(r"(?m)^## ", md)[1:]}
 
+# paragraph starts that are researcher-facing and should NOT appear on participant forms
+DROP_PREFIXES = (
+    "Reference", "Reverse-scored items", "Items 1", "Analyze", "Compute ",
+    "Score subscales", "Score the", "Administer",
+)
+
+def clean_participant(md: str) -> str:
+    """Drop researcher-facing paragraphs (citations, scoring/analysis notes)."""
+    blocks = re.split(r"\n\s*\n", md)
+    kept = [b for b in blocks if not any(b.strip().startswith(p) for p in DROP_PREFIXES)]
+    return "\n\n".join(kept)
+
 def add_evengrid(frag: str, idx: list[int]) -> str:
     i = [0]
     def repl(m):
@@ -70,6 +82,12 @@ def main():
         pres = re.sub(r"igroup Presence Questionnaire \(IPQ;.*?item-specific anchors\.\]\*\*\s*", "", pres, flags=re.S)
         sec["Presence Questionnaire (post-session)"] = pres
 
+    # Eeriness: drop the citation / anchor-transcription note from the intro sentence
+    if "Perceived Eeriness (after each block)" in sec:
+        eer = sec["Perceived Eeriness (after each block)"]
+        eer = re.sub(r" Adapted from the Ho & MacDorman.*?before participant use\.\]\*\*", "", eer, flags=re.S)
+        sec["Perceived Eeriness (after each block)"] = eer
+
     # Assistance: labeled 7-point agreement matrix
     ANCH = ["Strongly disagree", "Disagree", "Somewhat disagree", "Neutral", "Somewhat agree", "Agree", "Strongly agree"]
     items = re.findall(r"(?m)^\d+\.\s+(.*?)\s+1 2 3 4 5 6 7\s*$", sec["Post-Block Assistance and Voice Check"])
@@ -82,7 +100,6 @@ def main():
         + matrix(items[:9])
         + "<p><strong>After a gaze-contingent block only:</strong></p>"
         + matrix(items[9:11])
-        + "<p>Items 1&#8211;11 are study-created manipulation, experience, and mechanism checks. Analyze each item separately; do not report them as one validated scale or exclude a participant based on a rating.</p>"
         + "<p><strong>Technical check</strong></p><ul>"
         + "<li>Did you hear all prompts clearly? ☐ Yes ☐ No ☐ Unsure</li>"
         + "<li>Did any prompt repeat, cut off, arrive late, or use the wrong voice? ☐ No ☐ Yes: ______</li>"
@@ -104,6 +121,7 @@ def main():
             frag = custom
         else:
             body = "\n\n".join(sec[s] for s in sects if s in sec)
+            body = clean_participant(body)
             frag = subprocess.run(["pandoc", "-f", "gfm", "-t", "html"], input=body, capture_output=True, text=True).stdout
             if circles:
                 frag = frag.replace("☐", "○")
