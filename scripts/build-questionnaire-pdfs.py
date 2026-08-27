@@ -63,6 +63,13 @@ def main():
     nasa = re.sub(r"\\\s*$", "", nasa.rstrip())
     sec["Raw NASA Task Load Index (after each block)"] = nasa
 
+    # Presence (IPQ): drop redundant heading + the methodology/anchor-instruction intro
+    if "Presence Questionnaire (post-session)" in sec:
+        pres = sec["Presence Questionnaire (post-session)"]
+        pres = pres.replace("## Presence Questionnaire (post-session)\n", "")
+        pres = re.sub(r"igroup Presence Questionnaire \(IPQ;.*?item-specific anchors\.\]\*\*\s*", "", pres, flags=re.S)
+        sec["Presence Questionnaire (post-session)"] = pres
+
     # Assistance: labeled 7-point agreement matrix
     ANCH = ["Strongly disagree", "Disagree", "Somewhat disagree", "Neutral", "Somewhat agree", "Agree", "Strongly agree"]
     items = re.findall(r"(?m)^\d+\.\s+(.*?)\s+1 2 3 4 5 6 7\s*$", sec["Post-Block Assistance and Voice Check"])
