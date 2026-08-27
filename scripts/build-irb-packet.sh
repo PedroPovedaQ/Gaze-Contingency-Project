@@ -60,6 +60,8 @@ fi
 committed=true
 stage_dir=""
 if [ -n "${backup_dir}" ]; then
+  # preserve non-generated artifacts (e.g., split questionnaire PDFs) across rebuilds
+  find "${backup_dir}" -maxdepth 1 -type f -name '*.pdf' -exec cp -p -- {} "${submission_dir}/" \; 2>/dev/null || true
   rm -rf -- "${backup_dir}"
   backup_dir=""
 fi
