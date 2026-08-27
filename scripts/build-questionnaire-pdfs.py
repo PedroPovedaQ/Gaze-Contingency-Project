@@ -97,9 +97,7 @@ def main():
         return f'<table class="evengrid narrowlabel"><thead>{head}</thead><tbody>{body}</tbody></table>'
     assist = (
         "<p>Rate each statement from strongly disagree to strongly agree.</p>"
-        + matrix(items[:9])
-        + "<p><strong>After a gaze-contingent block only:</strong></p>"
-        + matrix(items[9:11])
+        + matrix(items)
         + "<p><strong>Technical check</strong></p><ul>"
         + "<li>Did you hear all prompts clearly? ☐ Yes ☐ No ☐ Unsure</li>"
         + "<li>Did any prompt repeat, cut off, arrive late, or use the wrong voice? ☐ No ☐ Yes: ______</li>"
