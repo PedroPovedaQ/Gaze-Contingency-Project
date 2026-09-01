@@ -97,6 +97,7 @@ public class VoiceAssistantController : MonoBehaviour
     IEnumerator LoadKeys()
     {
         string elevenLabsKey = "";
+        string mistralKey = "";
         string keysPath = System.IO.Path.Combine(Application.streamingAssetsPath, k_KeysFile);
 
         string url = keysPath;
@@ -111,6 +112,7 @@ public class VoiceAssistantController : MonoBehaviour
             {
                 var keys = JsonUtility.FromJson<ApiKeys>(request.downloadHandler.text);
                 elevenLabsKey = keys.elevenlabs_key;
+                mistralKey = keys.mistral_key;
                 Debug.Log($"{k_Tag} Loaded API keys");
             }
             else
@@ -119,9 +121,15 @@ public class VoiceAssistantController : MonoBehaviour
             }
         }
 
-        // Initialize sub-systems with the loaded key
-        m_VoiceSynthesizer.Initialize(elevenLabsKey);
+        // Initialize sub-systems with the loaded keys
+        m_VoiceSynthesizer.Initialize(elevenLabsKey, mistralKey);
         m_HintGenerator.Initialize(elevenLabsKey, m_AgentContext, m_VoiceSynthesizer, m_CoverageTracker);
+
+        // Self-similar voice: enrollment (mic -> clone) + the on-entry mode picker.
+        var enrollment = gameObject.AddComponent<VoiceEnrollment>();
+        enrollment.Initialize(m_VoiceSynthesizer.Voxtral);
+        var modeSelector = gameObject.AddComponent<VoiceModeSelector>();
+        modeSelector.Initialize(enrollment);
 
         IsReady = true;
         Debug.Log($"{k_Tag} Ready. Key={(!string.IsNullOrEmpty(elevenLabsKey) ? "present" : "MISSING")}");
@@ -330,6 +338,7 @@ public class VoiceAssistantController : MonoBehaviour
     struct ApiKeys
     {
         public string elevenlabs_key;
+        public string mistral_key;
     }
 
     static AudioClip CreateWrongCaptureCue()
