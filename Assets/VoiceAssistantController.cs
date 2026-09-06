@@ -129,7 +129,7 @@ public class VoiceAssistantController : MonoBehaviour
         var enrollment = gameObject.AddComponent<VoiceEnrollment>();
         enrollment.Initialize(m_VoiceSynthesizer.Voxtral);
         var modeSelector = gameObject.AddComponent<VoiceModeSelector>();
-        modeSelector.Initialize(enrollment);
+        modeSelector.Initialize(enrollment, m_VoiceSynthesizer);
 
         IsReady = true;
         Debug.Log($"{k_Tag} Ready. Key={(!string.IsNullOrEmpty(elevenLabsKey) ? "present" : "MISSING")}");

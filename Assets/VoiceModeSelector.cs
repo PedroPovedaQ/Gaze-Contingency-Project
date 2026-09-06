@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
@@ -19,6 +20,17 @@ public class VoiceModeSelector : MonoBehaviour
 {
     const string k_Tag = "[VoiceMode]";
 
+    // PlayerPrefs key: persists the Voxtral clone id so the voice survives restarts.
+    const string k_VoiceIdPref = "selfsim_voice_id";
+
+    // Passage the participant reads aloud during enrollment (~40 s, phonetically varied).
+    const string k_ReadingPassage =
+        "Hello, my name is the study participant, and I am reading this short passage " +
+        "so the system can learn the sound of my voice. I enjoy quiet mornings, strong " +
+        "coffee, and long walks when the weather is clear. The quick brown fox jumps over " +
+        "the lazy dog, and she sells sea shells by the sea shore. Please keep reading at a " +
+        "steady, natural pace until the recording finishes. Thank you for listening.";
+
     [Header("Optional overrides")]
     [SerializeField] VoiceCondition m_DefaultMode = VoiceCondition.Generic;
     [SerializeField] bool m_AutoConfirmDefault = false; // skip the panel, use m_DefaultMode
@@ -28,6 +40,7 @@ public class VoiceModeSelector : MonoBehaviour
     Phase m_Phase = Phase.Choosing;
 
     VoiceEnrollment m_Enrollment;
+    VoiceSynthesizer m_Synth;
     Canvas m_Canvas;
     GameObject m_CanvasGO;
     TextMeshProUGUI m_Text;
@@ -36,9 +49,15 @@ public class VoiceModeSelector : MonoBehaviour
     bool m_PrevTrigger;
     bool m_PrevPrimary;
 
-    public void Initialize(VoiceEnrollment enrollment)
+    string m_SavedVoiceId = "";
+
+    public void Initialize(VoiceEnrollment enrollment, VoiceSynthesizer synth = null)
     {
         m_Enrollment = enrollment;
+        m_Synth = synth;
+
+        // A clone saved on a previous run can be reused without re-recording.
+        m_SavedVoiceId = PlayerPrefs.GetString(k_VoiceIdPref, "");
 
         if (m_AutoConfirmDefault)
         {
@@ -130,20 +149,43 @@ public class VoiceModeSelector : MonoBehaviour
         SessionConfig.Voice = VoiceCondition.SelfSimilar;
         Debug.Log($"{k_Tag} Self-similar voice selected — enrolling");
         m_Phase = Phase.Enrolling;
-        SetText("<b>Recording your voice…</b>\n\nPlease read aloud steadily for about " +
-                m_RecordSeconds + " seconds.");
+
+        // Silence the generic intro ("Ava") so it can't play over — or leak into —
+        // the microphone recording.
+        if (m_Synth != null) m_Synth.Stop();
 
         if (m_Enrollment == null)
         {
-            SetText("Voice enrollment unavailable — using standard voice.");
             SessionConfig.Voice = VoiceCondition.Generic;
             SessionConfig.SelfSimilarEnrollmentPending = false;
-            Finish("Standard voice (enrollment unavailable).");
+            Finish("Voice enrollment unavailable — using standard voice.");
+            return;
+        }
+
+        // Reuse a clone saved on a previous run — skip recording entirely.
+        if (!string.IsNullOrEmpty(m_SavedVoiceId))
+        {
+            SessionConfig.SelfSimilarVoiceId = m_SavedVoiceId;
+            SessionConfig.SelfSimilarEnrollmentPending = false;
+            Debug.Log($"{k_Tag} Reusing saved clone voice_id={m_SavedVoiceId}");
+            Finish("Using your saved voice.");
             return;
         }
 
         // Gate the synthesizer to silence (not generic) until the clone is ready.
         SessionConfig.SelfSimilarEnrollmentPending = true;
+        StartCoroutine(EnrollFlow());
+    }
+
+    IEnumerator EnrollFlow()
+    {
+        // Show the passage and count down so the participant can start reading on cue.
+        for (int c = 3; c > 0; c--)
+        {
+            SetText($"<b>Read this aloud — recording starts in {c}…</b>\n\n“{k_ReadingPassage}”");
+            yield return new WaitForSeconds(1f);
+        }
+        SetText($"<b>● Recording — read this aloud:</b>\n\n“{k_ReadingPassage}”");
 
         m_Enrollment.RecordAndClone(
             m_RecordSeconds,
@@ -154,6 +196,11 @@ public class VoiceModeSelector : MonoBehaviour
             onDone: _ =>
             {
                 SessionConfig.SelfSimilarEnrollmentPending = false;
+                // Persist the clone id so this voice survives an editor/app restart.
+                PlayerPrefs.SetString(k_VoiceIdPref, SessionConfig.SelfSimilarVoiceId);
+                PlayerPrefs.Save();
+                Debug.Log($"{k_Tag} Clone saved. voice_id={SessionConfig.SelfSimilarVoiceId} " +
+                          $"(persisted to PlayerPrefs '{k_VoiceIdPref}'; audio caches in tts_cache)");
                 Finish("Your voice is ready.");
             },
             onError: err =>
