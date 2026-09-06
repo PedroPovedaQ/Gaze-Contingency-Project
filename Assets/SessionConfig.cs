@@ -2,6 +2,17 @@ using System.IO;
 using UnityEngine;
 
 /// <summary>
+/// Which voice the assistant speaks in for this run.
+///   Generic    = the fixed ElevenLabs voice (existing behavior).
+///   SelfSimilar = a voice cloned from the participant via Mistral Voxtral.
+/// </summary>
+public enum VoiceCondition
+{
+    Generic,
+    SelfSimilar
+}
+
+/// <summary>
 /// Shared session configuration for data logging.
 /// Manages participant IDs, run numbering, and folder structure.
 ///
@@ -37,6 +48,22 @@ public static class SessionConfig
     /// <summary>The condition label for the current run.</summary>
     public static string ConditionLabel { get; private set; } = "";
 
+    /// <summary>Voice condition for this run. Set before game start (default Generic).</summary>
+    public static VoiceCondition Voice { get; set; } = VoiceCondition.Generic;
+
+    /// <summary>
+    /// Mistral Voxtral voice id for the self-similar clone (set at enrollment).
+    /// Empty until a voice has been cloned this session.
+    /// </summary>
+    public static string SelfSimilarVoiceId { get; set; } = "";
+
+    /// <summary>
+    /// True while a self-similar voice is being recorded/cloned. While pending,
+    /// the synthesizer stays silent rather than leaking the generic voice into a
+    /// run labeled self-similar.
+    /// </summary>
+    public static bool SelfSimilarEnrollmentPending { get; set; } = false;
+
     /// <summary>Root data folder path.</summary>
     public static string RootPath => Path.Combine(Application.persistentDataPath, k_RootFolder);
 
@@ -64,6 +91,13 @@ public static class SessionConfig
         ConditionLabel = string.IsNullOrWhiteSpace(conditionLabel)
             ? "unspecified"
             : conditionLabel;
+
+        // Record the voice condition in the folder name so runs are self-describing.
+        string voiceTag = Voice == VoiceCondition.SelfSimilar ? "selfsimilar" : "generic";
+        ConditionLabel = $"{ConditionLabel}_voice-{voiceTag}";
+
+        // Reset any stale run state that also resets the session should clear the
+        // cloned voice id (handled by ResetForNewParticipant).
 
         // Find next run number for this participant
         string participantDir = Path.Combine(RootPath, ParticipantId);
@@ -108,6 +142,8 @@ public static class SessionConfig
         RunNumber = 0;
         CurrentRunFolder = "";
         ConditionLabel = "";
+        // A cloned voice belongs to one participant — force re-enrollment for the next.
+        SelfSimilarVoiceId = "";
     }
 
     /// <summary>
