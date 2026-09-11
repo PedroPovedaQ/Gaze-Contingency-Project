@@ -45,14 +45,15 @@ public class VoiceEnrollment : MonoBehaviour
     /// SessionConfig.SelfSimilarVoiceId. Reports progress via optional callbacks.
     /// </summary>
     public void RecordAndClone(int seconds = k_DefaultSeconds,
-        Action<State> onState = null, Action<string> onDone = null, Action<string> onError = null)
+        Action<State> onState = null, Action<string> onDone = null, Action<string> onError = null,
+        Func<IEnumerator> beforeRecording = null)
     {
         if (m_Busy) { onError?.Invoke("enrollment already running"); return; }
-        StartCoroutine(RecordAndCloneCoroutine(seconds, onState, onDone, onError));
+        StartCoroutine(RecordAndCloneCoroutine(seconds, onState, onDone, onError, beforeRecording));
     }
 
     IEnumerator RecordAndCloneCoroutine(int seconds,
-        Action<State> onState, Action<string> onDone, Action<string> onError)
+        Action<State> onState, Action<string> onDone, Action<string> onError, Func<IEnumerator> beforeRecording)
     {
         m_Busy = true;
         m_FinishRequested = false;
@@ -79,6 +80,8 @@ public class VoiceEnrollment : MonoBehaviour
             Fail("no microphone device", onError); Set(State.Failed); m_Busy = false; yield break;
         }
 
+        // Finish the countdown/tone after permission checks and before opening the mic.
+        if (beforeRecording != null) yield return beforeRecording();
         seconds = Mathf.Clamp(seconds, 10, 60);
         Debug.Log($"{k_Tag} Recording {seconds}s...");
         // Spare capacity keeps the cursor valid when the automatic deadline is reached.

@@ -72,7 +72,7 @@ public class VoiceSynthesizer : MonoBehaviour
             {
                 PreparationStage = $"Preparing {(voice == VoiceCondition.Generic ? "neutral" : "self-similar")} voice: {i + 1}/{phrases.Length}";
                 progress?.Invoke(PreparationStage);
-                m_PreparingText = phrases[i];
+                m_PreparingText = voice == VoiceCondition.SelfSimilar ? VoicePromptText.SelfSimilar(phrases[i]) : phrases[i];
                 for (int attempt = 0; attempt < 3; attempt++)
                 {
                     yield return SpeakCoroutine(phrases[i]);
@@ -205,13 +205,34 @@ public class VoiceSynthesizer : MonoBehaviour
         }
     }
 
-    IEnumerator SpeakCoroutine(string text)
+    public IEnumerator SpeakRecordingIntroduction() => SpeakSetupAnnouncement(
+        "We will now connect a short sample of your voice, after the tone please read the script.");
+
+    public IEnumerator SpeakProcessingStatus(bool complete) => SpeakSetupAnnouncement(complete
+        ? "Voice processing is complete. Both voices are ready. Let's check the audio."
+        : "Processing voice.");
+
+    IEnumerator SpeakSetupAnnouncement(string text)
+    {
+        Stop();
+        var originalVoice = SessionConfig.Voice;
+        try
+        {
+            // Setup announcements use the selected neutral voice before study playback.
+            SessionConfig.Voice = VoiceCondition.Generic;
+            yield return SpeakCoroutine(text, true);
+        }
+        finally { SessionConfig.Voice = originalVoice; }
+    }
+
+    IEnumerator SpeakCoroutine(string text, bool setupAnnouncement = false)
     {
         // Defer once so Speak has stored the coroutine handle before any early exit.
         yield return null;
         LastError = null;
         m_GeneratedAudio = false;
         bool wantSelfSimilar = SessionConfig.Voice == VoiceCondition.SelfSimilar;
+        if (wantSelfSimilar) text = VoicePromptText.SelfSimilar(text);
         string voiceId = wantSelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId;
         string voiceScope = wantSelfSimilar ? $"vx-{voiceId}" : $"el-{voiceId}";
 
@@ -228,14 +249,14 @@ public class VoiceSynthesizer : MonoBehaviour
         string cachePath = GetCachePath(text, voiceScope);
         m_ActiveClipKey = Path.GetFileNameWithoutExtension(cachePath);
         Telemetry?.Invoke("audio_request", m_CurrentContext ?? "", m_ActiveClipKey, voiceScope);
-        if (LibraryReady && !m_Preparing)
+        if (LibraryReady && !m_Preparing && !setupAnnouncement)
         {
             if (!m_PreparedClips.ContainsKey(cachePath)) Fail("Clip absent from prepared library.");
             else yield return PlayFromFile(cachePath);
             m_SpeakCoroutine = null; m_CurrentContext = null;
             yield break;
         }
-        if (SessionConfig.VoiceBlocksEnabled && !m_Preparing)
+        if (SessionConfig.VoiceBlocksEnabled && !m_Preparing && !setupAnnouncement)
         {
             Fail("Voice library is not ready.");
             m_SpeakCoroutine = null; m_CurrentContext = null;

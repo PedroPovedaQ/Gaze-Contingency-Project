@@ -641,7 +641,7 @@ public class FindObjectGameManager : MonoBehaviour
         if (IsPractice || (m_CurrentRound >= 0 && m_CurrentRound < ChallengeSet.RoundCount))
         {
             var nextTarget = IsPractice ? ChallengeSet.PracticeRound(m_PracticeIndex).target : ChallengeSet.Rounds[m_CurrentRound].target;
-            m_UI.ShowFixationCross(nextTarget.color, nextTarget.shape);
+            m_UI.ShowFixationCross(nextTarget.color, nextTarget.shape, IsPractice);
             OnRoundTransitionStarted?.Invoke(m_CurrentRound, nextTarget.color, nextTarget.shape);
         }
         else
@@ -679,7 +679,7 @@ public class FindObjectGameManager : MonoBehaviour
         if (IsPractice || (m_CurrentRound >= 0 && m_CurrentRound < ChallengeSet.RoundCount))
         {
             var firstTarget = IsPractice ? ChallengeSet.PracticeRound(m_PracticeIndex).target : ChallengeSet.Rounds[m_CurrentRound].target;
-            m_UI.ShowFixationCross(firstTarget.color, firstTarget.shape);
+            m_UI.ShowFixationCross(firstTarget.color, firstTarget.shape, IsPractice);
             OnRoundTransitionStarted?.Invoke(m_CurrentRound, firstTarget.color, firstTarget.shape);
         }
         else
@@ -706,8 +706,8 @@ public class FindObjectGameManager : MonoBehaviour
     void ShowCurrentObjective()
     {
         m_UI.ShowObjective(m_CurrentTarget.colorValue,
-            $"{(IsPractice ? "Practice: " : "")}{m_CurrentTarget.color} {m_CurrentTarget.shape}",
-            IsPractice ? m_PracticeIndex : m_CurrentRound, IsPractice ? 2 : k_TotalRounds);
+            $"{m_CurrentTarget.color} {m_CurrentTarget.shape}",
+            IsPractice ? m_PracticeIndex : m_CurrentRound, IsPractice ? 2 : k_TotalRounds, IsPractice);
     }
 
     IEnumerator ResetAfterDelay()

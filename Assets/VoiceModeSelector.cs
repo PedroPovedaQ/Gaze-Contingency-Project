@@ -22,13 +22,13 @@ public class VoiceModeSelector : MonoBehaviour
 {
     const string k_Tag = "[VoiceMode]";
 
-    // Passage the participant reads aloud during enrollment (~40 s, phonetically varied).
+    // Short task commands read aloud during enrollment at a natural guiding pace.
     const string k_ReadingPassage =
-        "Hello, my name is the study participant, and I am reading this short passage " +
-        "so the system can learn the sound of my voice. I enjoy quiet mornings, strong " +
-        "coffee, and long walks when the weather is clear. The quick brown fox jumps over " +
-        "the lazy dog, and she sells sea shells by the sea shore. Please keep reading at a " +
-        "steady, natural pace. Thank you for listening.";
+        "Locate the red sphere. Look toward the upper shelf. " +
+        "Move your gaze slowly to the right. Check the blue cube near the center. " +
+        "Compare each object's color and shape. Scan the lower row from left to right. " +
+        "Look beside the purple cylinder. Focus on the target and hold your gaze steady. " +
+        "Select the matching object. Take a short pause. Get ready for the next round.";
 
     [Header("Optional overrides")]
     [SerializeField] VoiceCondition m_DefaultMode = VoiceCondition.Generic;
@@ -330,18 +330,20 @@ public class VoiceModeSelector : MonoBehaviour
 
     IEnumerator EnrollFlow()
     {
-        // Show the passage and count down so the participant can start reading on cue.
-        for (int c = 3; c > 0; c--)
+        SetText($"<b>Voice recording instructions</b>\nListen first. Wait for the tone before reading.\n\n“{k_ReadingPassage}”");
+        yield return m_Synth.SpeakRecordingIntroduction();
+        if (!string.IsNullOrEmpty(m_Synth.LastError))
         {
-            SetText($"<b>Read this aloud — recording starts in {c}…</b>\n\n“{k_ReadingPassage}”");
-            yield return new WaitForSeconds(1f);
+            ShowEnrollmentFailure("Could not play the recording instructions.");
+            yield break;
         }
-        SetText($"<b>● Recording — read this aloud:</b>\n\n“{k_ReadingPassage}”");
 
         m_Enrollment.RecordAndClone(
             m_RecordSeconds,
             onState: s =>
             {
+                if (s == VoiceEnrollment.State.Recording)
+                    SetText($"<b>● Recording — read the commands aloud</b>\nUse your natural guiding voice. Select Finish recording when done.\n\n“{k_ReadingPassage}”");
                 if (s == VoiceEnrollment.State.Cloning) SetText("<b>Creating your voice…</b>\nOne moment.");
             },
             onDone: _ =>
@@ -353,13 +355,51 @@ public class VoiceModeSelector : MonoBehaviour
             {
                 Debug.LogWarning($"{k_Tag} Enrollment failed: {err}");
                 ShowEnrollmentFailure("Could not create your voice.");
-            });
+            },
+            beforeRecording: RecordingCountdownAndTone);
+    }
+
+    IEnumerator RecordingCountdownAndTone()
+    {
+        for (int c = 3; c > 0; c--)
+        {
+            SetText($"<b>Wait for the tone — recording starts in {c}…</b>\n\n“{k_ReadingPassage}”");
+            yield return new WaitForSeconds(1f);
+        }
+        const int sampleRate = 22050;
+        const float duration = 0.2f;
+        var samples = new float[(int)(sampleRate * duration)];
+        for (int i = 0; i < samples.Length; i++)
+        {
+            float fade = Mathf.Min(1f, Mathf.Min(i, samples.Length - 1 - i) / (sampleRate * 0.01f));
+            samples[i] = 0.2f * fade * Mathf.Sin(2f * Mathf.PI * 660f * i / sampleRate);
+        }
+        var clip = AudioClip.Create("RecordingStartTone", samples.Length, 1, sampleRate, false);
+        clip.SetData(samples, 0);
+        var source = gameObject.AddComponent<AudioSource>();
+        source.playOnAwake = false;
+        source.spatialBlend = 0f;
+        source.volume = 0.7f;
+        source.clip = clip;
+        try
+        {
+            source.Play();
+            while (source.isPlaying) yield return null;
+        }
+        finally
+        {
+            source.Stop();
+            Destroy(source);
+            Destroy(clip);
+        }
     }
 
     IEnumerator PrepareVoices()
     {
         m_Phase = Phase.Preparing;
         if (m_Text == null) BuildPanel();
+        SetText("<b>Processing voice…</b>\nPreparing the audio for both voices. Please wait.");
+        yield return m_Synth.SpeakProcessingStatus(false);
         bool ready = false;
         yield return m_Synth.PrepareLibraries(VoiceAssistantController.PhraseLibrary(), SetText, ok => ready = ok);
         if (!ready)
@@ -376,6 +416,8 @@ public class VoiceModeSelector : MonoBehaviour
             SetText($"<b>Audio preparation failed</b>\n{m_Synth.PreparationStage}\n{reason}\n\nTrigger / 1: Retry preparation\nA / X / 2: Record voice again");
             yield break;
         }
+        SetText("<b>Voice processing complete</b>\nBoth voices are ready. Next, check the audio.");
+        yield return m_Synth.SpeakProcessingStatus(true);
         m_Phase = Phase.CheckingNeutral;
         SessionConfig.Voice = VoiceCondition.Generic;
         m_FirstPoll = true;

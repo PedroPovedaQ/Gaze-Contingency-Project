@@ -13,7 +13,7 @@ The important design property is that the run is not improvisational. The shelf 
 ## Timeline of a complete run
 
 1. The first surface tap establishes the shelf geometry; progress waits for both voice libraries and accepted playback samples.
-2. Two separate practice trials expose the task in each assigned voice. A researcher checkpoint starts the measured run.
+2. Two separate practice trials expose the task in each assigned voice. **Implemented:** each is announced as practice aloud, labeled PRACTICE during the fixation transition, and shown as PRACTICE 1 / 2 or 2 / 2 with “not counted” during the search. A researcher checkpoint starts the measured run.
 3. `OnGameStarted` opens one run folder for all 14 experimental trials.
 4. Each transition sets the assigned block voice and announces the goal while objects are prepared but hidden.
 5. `OnRoundReady` records object readiness. After the announcement completes, `BeginSearch` reveals objects, resets dwell, starts the search clock and emits `OnSearchStarted`.

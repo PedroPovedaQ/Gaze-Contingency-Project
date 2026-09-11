@@ -225,7 +225,7 @@ public class FindObjectUI : MonoBehaviour
         m_FixationCross.text = "+";
 
         m_CrossGoalText = CreateText(m_CrossCanvasGO.transform, "CrossGoalText",
-            new Vector2(184, 44), Vector2.zero, 20);
+            new Vector2(240, 80), Vector2.zero, 20);
         m_CrossGoalText.alignment = TextAlignmentOptions.TopLeft;
         m_CrossGoalText.color = Color.black;
         m_CrossGoalText.text = "";
@@ -278,13 +278,15 @@ public class FindObjectUI : MonoBehaviour
         Debug.Log($"{k_Tag} UI positioned on table gap at {pos}");
     }
 
-    public void ShowFixationCross(string color = null, string shape = null)
+    public void ShowFixationCross(string color = null, string shape = null, bool isPractice = false)
     {
         if (m_CrossGoalText != null)
         {
             bool hasGoal = !string.IsNullOrEmpty(color) && !string.IsNullOrEmpty(shape);
             m_CrossGoalText.enabled = hasGoal;
-            m_CrossGoalText.text = hasGoal ? $"Goal: {color} {shape}" : "";
+            m_CrossGoalText.text = hasGoal
+                ? $"{(isPractice ? "PRACTICE\n" : "")}Goal: {color} {shape}"
+                : "";
         }
         if (m_CrossCanvasGO != null) m_CrossCanvasGO.SetActive(true);
     }
@@ -357,7 +359,7 @@ public class FindObjectUI : MonoBehaviour
         }
     }
 
-    public void ShowObjective(Color color, string shapeName, int found, int total)
+    public void ShowObjective(Color color, string shapeName, int found, int total, bool isPractice = false)
     {
         HideStartPrompt();
         m_CanvasGO.SetActive(true);
@@ -370,7 +372,10 @@ public class FindObjectUI : MonoBehaviour
         string hex = ColorUtility.ToHtmlStringRGB(color);
         m_CurrentObjectiveString = $"Locate: <color=#{hex}>{shapeName}</color>";
         m_ObjectiveText.text = m_CurrentObjectiveString;
-        m_ProgressText.text = $"Round {found + 1} / {total}";
+        m_ProgressText.fontSize = isPractice ? 26f : 34f;
+        m_ProgressText.text = isPractice
+            ? $"PRACTICE {found + 1} / {total} — not counted"
+            : $"Round {found + 1} / {total}";
     }
 
     public void ShowWrongFeedback()

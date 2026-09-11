@@ -149,14 +149,18 @@ public class VoiceAssistantController : MonoBehaviour
 
     const string k_CompletionLine = "Excellent! You located all the objects. Please complete the NASA T L X questionnaire now.";
     public const string AudioCheckLine = "Locate the target by its color and shape. You're on the right track.";
-    public static string RoundPhrase(int round, string color, string shape) => $"Locate the {color} {shape}.";
+    public static string RoundPhrase(int round, string color, string shape, bool isPractice = false) =>
+        (isPractice ? "This is a practice round. It does not count toward the study. " : "") +
+        (color == "Yellow" && shape == "Star"
+            ? "Locate the star, yellow color."
+            : $"Locate the {color} {shape}.");
     public static string[] PhraseLibrary()
     {
         var phrases = new System.Collections.Generic.HashSet<string>(HintGenerator.AllPhrases());
         phrases.Add(k_CompletionLine); phrases.Add(k_IntroLine); phrases.Add(k_ClosingLine); phrases.Add(AudioCheckLine); phrases.Add("Nice!");
         foreach (var round in ChallengeSet.Rounds) phrases.Add(RoundPhrase(round.roundIndex, round.target.color, round.target.shape));
         for (int i = 0; i < 2; i++)
-        { var practice = ChallengeSet.PracticeRound(i); phrases.Add(RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape)); }
+        { var practice = ChallengeSet.PracticeRound(i); phrases.Add(RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape, true)); }
         return new System.Collections.Generic.List<string>(phrases).ToArray();
     }
 
@@ -285,7 +289,7 @@ public class VoiceAssistantController : MonoBehaviour
         if (m_HintGenerator != null) m_HintGenerator.CancelPending();
 
         if (m_VoiceSynthesizer != null)
-            m_VoiceSynthesizer.Speak(RoundPhrase(round, color, shape), "round");
+            m_VoiceSynthesizer.Speak(RoundPhrase(round, color, shape, m_GameManager != null && m_GameManager.IsPractice), "round");
     }
 
     IEnumerator FinishIntroThenAnnouncePendingRound()
@@ -305,7 +309,7 @@ public class VoiceAssistantController : MonoBehaviour
             m_PendingRoundShape = null;
 
             if (m_HintGenerator != null) m_HintGenerator.CancelPending();
-            m_VoiceSynthesizer.Speak(RoundPhrase(round, color, shape), "round");
+            m_VoiceSynthesizer.Speak(RoundPhrase(round, color, shape, m_GameManager != null && m_GameManager.IsPractice), "round");
         }
 
         m_RoundAnnounceCoroutine = null;

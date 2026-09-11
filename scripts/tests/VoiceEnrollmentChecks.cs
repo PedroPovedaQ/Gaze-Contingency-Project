@@ -45,15 +45,28 @@ public class VoxtralClient
 public static class VoiceEnrollmentChecks
 {
     static void Require(bool value, string message) { if (!value) throw new Exception(message); }
-    static void Run(bool finishEarly, bool interrupted)
+    static IEnumerator BeforeRecording()
+    {
+        Require(!UnityEngine.Microphone.Active, "Microphone must stay closed during the recording cue");
+        yield return null;
+        Require(!UnityEngine.Microphone.Active, "Cue must finish before microphone capture starts");
+    }
+    static void Run(bool finishEarly, bool interrupted, bool withCue = false)
     {
         UnityEngine.Time.realtimeSinceStartup = 0;
         var provider = new VoxtralClient();
         var enrollment = new VoiceEnrollment(); enrollment.Initialize(provider);
         enrollment.FinishRecording(); // An idle request must not stop the next recording.
-        enrollment.RecordAndClone(40);
+        enrollment.RecordAndClone(40, beforeRecording: withCue ? (Func<IEnumerator>)BeforeRecording : null);
         var routine = enrollment.Pending;
         Require(routine.MoveNext(), "Recording should wait for input");
+        if (withCue)
+        {
+            Require(routine.Current is IEnumerator, "Enrollment should wait for the cue coroutine");
+            var cue = (IEnumerator)routine.Current;
+            while (cue.MoveNext()) { }
+            Require(routine.MoveNext() && UnityEngine.Microphone.Active, "Recording starts after the cue finishes");
+        }
         enrollment.FinishRecording(); // Ignore accidental input before one second of samples.
         Require(!enrollment.CanFinishRecording, "Empty recording must not be submitted");
         int seconds = 0;
@@ -78,7 +91,7 @@ public static class VoiceEnrollmentChecks
     }
     public static void Main()
     {
-        Run(true, false); Run(false, false); Run(false, true);
+        Run(true, false); Run(false, false); Run(false, true); Run(true, false, true);
         Console.WriteLine("PASS: early finish, automatic deadline, duplicate/idle input, exact captured length and interrupted microphone.");
     }
 }

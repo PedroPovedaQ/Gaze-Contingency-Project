@@ -135,6 +135,39 @@ class VoiceIsolationChecks
             Drain(synth.PrepareLibraries(new[] { "policy test phrase" }, null, ok => prepared = ok));
             Check(!prepared && synth.ProviderPolicyBlocked && provider.Calls == 1,
                 "policy rejection blocks readiness without automatic retries");
+            provider.Audio = new byte[120]; provider.Texts.Clear();
+            SessionConfig.Voice = VoiceCondition.SelfSimilar;
+            SessionConfig.SelfSimilarEnrollmentPending = true;
+            Drain(synth.SpeakRecordingIntroduction());
+            Check(string.IsNullOrEmpty(synth.LastError) && SessionConfig.Voice == VoiceCondition.SelfSimilar && provider.Texts.Count == 0,
+                "recording introduction uses neutral before clone enrollment and restores the assigned voice");
+            SessionConfig.SelfSimilarEnrollmentPending = false;
+            Drain(synth.SpeakProcessingStatus(false));
+            Check(SessionConfig.Voice == VoiceCondition.SelfSimilar && provider.Texts.Count == 0,
+                "setup status uses neutral and restores the assigned voice before libraries exist");
+            string targetPrompt = "Locate the Blue Cube.";
+            string practicePrompt = "This is a practice round. It does not count toward the study. " + targetPrompt;
+            Drain(synth.PrepareLibraries(new[] { targetPrompt, practicePrompt }, null, ok => prepared = ok));
+            Check(prepared && provider.Texts.Contains("Let's find the blue cube."),
+                "self-similar synthesis receives first-person target wording");
+            Check(provider.Texts.Contains("Let's try a practice round. This one does not count toward our study rounds. Let's find the blue cube."),
+                "self-similar practice keeps its explicit practice declaration");
+            provider.Calls = 0; UnityWebRequest.Requests.Clear();
+            synth.Speak(targetPrompt); Drain(MonoBehaviour.LastRoutine);
+            Check(string.IsNullOrEmpty(synth.LastError) && provider.Calls == 0 && UnityWebRequest.Requests.Count == 0,
+                "runtime transformation resolves the prepared self-similar clip without network requests");
+            Drain(synth.SpeakProcessingStatus(true));
+            Check(SessionConfig.Voice == VoiceCondition.SelfSimilar && synth.LibraryReady,
+                "completion status preserves voice and library readiness");
+            string hintSource = File.ReadAllText("Assets/HintGenerator.cs");
+            hintSource = hintSource.Substring(hintSource.IndexOf("// --- VERY CLOSE", StringComparison.Ordinal));
+            foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(hintSource, "\"([^\"]+)\""))
+            {
+                string firstPerson = VoicePromptText.SelfSimilar(match.Groups[1].Value);
+                Check(firstPerson.Contains("We're") || firstPerson.Contains("Let's"), "every live hint has first-person wording");
+                Check(!System.Text.RegularExpressions.Regex.IsMatch(firstPerson, @"\byou(r|'re)?\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase),
+                    "self-similar hints do not address the participant in the second person");
+            }
             Check(ChallengeSet.TotalRounds == 14 && ChallengeSet.RoundsPerBlock == 7 && ChallengeSet.BlockCount == 2, "full two-block schedule");
             for (int practice = 0; practice < 2; practice++)
             {
@@ -211,10 +244,11 @@ namespace UnityEngine.Networking
 public class VoxtralClient
 {
     public bool HasKey = true; public byte[] Audio; public int Calls; public string Error = "simulated failure";
+    public System.Collections.Generic.List<string> Texts = new System.Collections.Generic.List<string>();
     public void Initialize(string key) { }
     public IEnumerator Synthesize(string text, string voice, Action<byte[]> ok, Action<string> error)
     {
-        Calls++; yield return null;
+        Calls++; Texts.Add(text); yield return null;
         if (Audio == null) error(Error); else ok(Audio);
     }
 }
