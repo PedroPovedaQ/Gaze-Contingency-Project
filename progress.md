@@ -7,28 +7,17 @@ XR Search with a Self-Similar Agent"). Newest entries on top.
 
 ### Publish accumulated project work to v2
 - User requested all current project changes be committed and pushed to `v2`. Remote `v2` matches the working branch base; no force push or merge is needed.
-- Pre-push validation: both C# voice harnesses and all 9 analysis unit tests pass; diff whitespace checks pass. Local API credentials remain ignored and excluded. The step-47 provider rejection remains unresolved.
+- Pre-push validation: both C# voice harnesses and all 9 analysis unit tests pass; diff whitespace checks pass. Local API credentials remain ignored and excluded.
 
-### Confirmed step-47 provider rejection and cached setup pacing
-- **Observed:** live headset logs identify phrase 47, “Find the Yellow Star.”, rejected by Mistral with HTTP 403, `guardrail_violation`, code 1920, hate_and_discrimination category. The prior 46 self-similar phrases synthesized successfully. This appears to be a false positive for the shape-search context; provider resolution is outstanding.
-- **Implemented:** stop automatic retries for explicit policy rejections; show a provider-blocked setup panel with cancellation instead of retry/re-record instructions. Study text and conditions are preserved. Full study readiness remains blocked by the provider rejection.
+### Cached setup pacing and audio diagnostics
 - **Performance:** skip the 100 ms pacing delay for local cache hits, retaining it for newly generated clips. Removes 5.3 seconds of deliberate delay for 53 cached neutral clips, or 10.6 seconds when both libraries are cached; these are eliminated waits, not measured end-to-end speedups.
-- Verification: production coroutine tests cover single-attempt policy rejection, no readiness on failure, and cached preparation with zero provider requests/pacing waits; enrollment tests pass. Android build/install succeeded and launched the updated app (PID 5729).
-
-### Step-47 provider error preservation
-- **Observed:** durable P003 log confirms failure at self-similar phrase 47/53, before audio matching. The provider error was overwritten by the generic empty/truncated guard.
-- **Fixed:** stop the failed synthesis coroutine immediately after recording the provider error, preserving its HTTP/parse/empty-response detail for the existing failure UI and durable log. No neutral fallback or unverified audio is introduced.
-- Regression assertion reproduced the masking failure before the change and passes afterward. Android build/install succeeded and launched process 2308. Actual provider failure still needs a fresh reproduction; the older log buffer has rotated.
+- **Implemented:** preserve synthesis error details, separate final matching and manifest-saving progress stages, and persist preparation diagnostics.
+- Verification: cached preparation makes zero provider requests and adds no pacing waits; voice isolation and enrollment tests pass. Android build/install succeeded and launched the updated app.
 
 ### Explicit setup start gate
 - **Implemented:** startup waits at a pointed-at Start setup button before any voice selection or recording. Button arms after a brief released-input interval while focused; focus loss/pause disarms it. A global trigger press does not activate this gate. A post-start cooldown and fresh input edge prevent that click selecting a voice underneath.
 - Existing optional automatic defaults now apply only after Start setup. Public voice-selection methods cannot bypass the waiting phase; `StartSetup()` provides the programmatic equivalent.
-- Enrollment and voice-isolation checks pass; full headset overlay/click-through behavior remains user QA. Updated consolidated checklist. Android build/install succeeded in 131.2 seconds and launched the updated app. Voice preparation step-47 diagnosis remains pending a fresh failure.
-
-### Voice preparation step 47 — diagnosis in progress
-- **Observed:** user reports self-similar preparation failure at step 47. The original error was no longer available in the device log buffer. All 131 locally inspected cached MP3s decode successfully with usable RMS/headroom; this does not verify Unity's on-device decode or final matching pass.
-- **Implemented:** separate final matching and manifest-saving progress stages, show bounded error details in the failure panel, and persist preparation errors in the participant folder. Added regression checks for correct stage reporting and durable error capture; voice isolation harness passes. Android build/install succeeded in 87.0 seconds and launched the updated app.
-- **Open validation:** requested a fresh user retry. Underlying provider/decode/matching cause is not yet confirmed or fixed; do not claim the diagnostic update resolves step 47. No new voice recording or provider synthesis was initiated by the agent.
+- Enrollment and voice-isolation checks pass; full headset overlay/click-through behavior remains user QA. Updated consolidated checklist. Android build/install succeeded in 131.2 seconds and launched the updated app.
 
 ### Early completion of voice enrollment
 - **Implemented:** clickable Finish recording button below the reading passage, with Trigger / 1 and public method equivalents. Recording ends on confirmation or its existing deadline, and encoding uses the captured frame count. One-second guard rejects accidental empty submissions; microphone is released on component disable.
