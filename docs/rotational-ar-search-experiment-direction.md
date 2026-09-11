@@ -112,7 +112,7 @@ These VR papers suggest several concrete changes to the experiment:
 
 - Add an initially-out-of-view target factor rather than treating all target positions as equivalent.
 - Add head-rotation measures as primary dependent variables, not only secondary logs.
-- Consider blocks with multiple targets, where participants must find all objects matching a criterion.
+- Consider blocks with multiple targets, where participants must locate all objects matching a criterion.
 - Compare cue styles that are meaningful in 360 degrees: gaze line, sector cue, spatial audio, coverage feedback, and no cue.
 - Track search path quality: sector revisits, unsearched-sector neglect, cumulative yaw travel, and whether users scan past the target sector.
 - Preserve a no-cue or generic-assistant baseline so the value of gaze-aware assistance is not confounded with simply having any cue.
@@ -120,7 +120,7 @@ These VR papers suggest several concrete changes to the experiment:
 
 ## Proposed Task
 
-The participant sits in a swivel chair at the center of a tracked room. They are instructed to remain seated and not translate through the space. They may rotate the chair, turn their torso, and move their head naturally. The task is to find target virtual objects distributed around them in a full 360-degree passthrough AR search field.
+The participant sits in a swivel chair at the center of a tracked room. They are instructed to remain seated and not translate through the space. They may rotate the chair, turn their torso, and move their head naturally. The task is to locate target virtual objects distributed around them in a full 360-degree passthrough AR search field.
 
 Objects are placed at fixed angular positions around the participant across the complete egocentric field. Some targets should begin in front of the participant, while others should begin to the side or behind the participant. Objects should appear at multiple vertical bands, such as low, mid, and high positions, to make the task require both yaw and pitch exploration.
 
@@ -221,7 +221,7 @@ The redesign should preserve the current performance and gaze logs while adding 
 
 Performance measures:
 
-- Time to find target.
+- Time to locate target.
 - Wrong captures.
 - First-try accuracy.
 - Number of hints delivered.
@@ -291,7 +291,7 @@ Secondary questions:
 
 ## Hypotheses
 
-H1: Participants will find targets faster in gaze-aware rounds than in gaze-unaware rounds.
+H1: Participants will locate targets faster in gaze-aware rounds than in gaze-unaware rounds.
 
 H2: Participants will make fewer wrong captures in gaze-aware rounds than in gaze-unaware rounds.
 

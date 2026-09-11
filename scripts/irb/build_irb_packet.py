@@ -690,7 +690,7 @@ def build_participant_materials() -> Path:
             "Explain that breaks and stopping are always available and that wrong selections are expected.",
             "Fit the headset, adjust for comfort, and complete vendor eye calibration.",
             "Validate gaze across the search area. Refit and recalibrate if the approved criterion is not met.",
-            "Explain: find the announced color-shape target as quickly and accurately as possible; select by continuous gaze dwell; continue after a wrong selection; spoken hints may be used or ignored.",
+            "Explain: locate the announced color-shape target as quickly and accurately as possible; select by continuous gaze dwell; continue after a wrong selection; spoken hints may be used or ignored.",
             "Run practice until the approved criterion is met without experimenter intervention.",
             "Run the assigned condition schedule. Do not reveal condition labels or hypotheses.",
             "At approved breaks, check comfort using neutral language and administer scheduled post-block measures.",
@@ -925,7 +925,7 @@ def build_questionnaires() -> Path:
 
     doc.add_heading("9. Semi-Structured Interview", level=1)
     interview_items = [
-        "What strategy did you use to find the announced targets?",
+        "What strategy did you use to locate the announced targets?",
         "When did you choose to follow or ignore the spoken guidance?",
         "Which guidance, if any, felt most helpful? What made it helpful?",
         "Did any guidance feel distracting, poorly timed, inaccurate, or intrusive?",

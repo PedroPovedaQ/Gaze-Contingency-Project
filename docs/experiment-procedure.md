@@ -130,7 +130,7 @@ Do not present XRI object hover as a validated fixation measure.
 
 Give standardized instructions:
 
-- Find the announced conjunction target as quickly and accurately as possible.
+- Locate the announced conjunction target as quickly and accurately as possible.
 - Select an object by looking at it continuously until the dwell selection completes.
 - Continue searching after an incorrect selection.
 - Listen to the assistant, but use or ignore its guidance as desired.

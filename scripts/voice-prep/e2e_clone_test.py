@@ -25,7 +25,7 @@ SAMPLE_TEXT = (
     "long walks when the weather is clear. The quick brown fox jumps over the lazy dog, "
     "and she sells sea shells by the sea shore. Thank you for listening to this recording."
 )
-TEST_LINE = "Round one. Find the blue pyramid."
+TEST_LINE = "Round one. Locate the blue pyramid."
 
 
 def post(url, headers, body_bytes):

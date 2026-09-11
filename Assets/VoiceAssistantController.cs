@@ -14,7 +14,7 @@ public class VoiceAssistantController : MonoBehaviour
     const string k_KeysFile = "api_keys.json";
     const string k_IntroLine =
         "Hi, I will guide you through this task. " +
-        "Your goal in this experiment is to find the target object by its color and shape as quickly and accurately as you can. " +
+        "Your goal in this experiment is to locate the target object by its color and shape as quickly and accurately as you can. " +
         "By staring at an object for an extended period of time, you can select it. " +
         "To begin, tap a nearby surface with your controller. " +
         "Your goal will be displayed in the center of your view each round.";
@@ -147,9 +147,9 @@ public class VoiceAssistantController : MonoBehaviour
         if (m_IntroRequested) PlayIntroIfPossible();
     }
 
-    const string k_CompletionLine = "Excellent! You found all the objects. Please complete the NASA T L X questionnaire now.";
-    public const string AudioCheckLine = "Find the target by its color and shape. You're on the right track.";
-    public static string RoundPhrase(int round, string color, string shape) => $"Find the {color} {shape}.";
+    const string k_CompletionLine = "Excellent! You located all the objects. Please complete the NASA T L X questionnaire now.";
+    public const string AudioCheckLine = "Locate the target by its color and shape. You're on the right track.";
+    public static string RoundPhrase(int round, string color, string shape) => $"Locate the {color} {shape}.";
     public static string[] PhraseLibrary()
     {
         var phrases = new System.Collections.Generic.HashSet<string>(HintGenerator.AllPhrases());

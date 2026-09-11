@@ -6,7 +6,7 @@ This guide walks through the full lifecycle of a run in the Find Object game, fr
 
 ## What this game is doing
 
-The game is a controlled visual-search task. Every round places one target and 55 distractors into a fixed 56-object array. The participant must use gaze to find and dwell on the correct object.
+The game is a controlled visual-search task. Every round places one target and 55 distractors into a fixed 56-object array. The participant must use gaze to locate and dwell on the correct object.
 
 The important design property is that the run is not improvisational. The shelf layout, target schedule, and object combinations are deterministic. That makes the study repeatable and makes the analytics interpretable.
 

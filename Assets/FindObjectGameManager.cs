@@ -541,7 +541,7 @@ public class FindObjectGameManager : MonoBehaviour
 
         ShowCurrentObjective();
         OnRoundReady?.Invoke(m_CurrentRound, m_CurrentTarget.color, m_CurrentTarget.shape);
-        Debug.Log($"{k_Tag} Round {m_CurrentRound + 1}/{k_TotalRounds}: find {m_CurrentTarget.color} {m_CurrentTarget.shape} ({m_SpawnedObjects.Count} spawned)");
+        Debug.Log($"{k_Tag} Round {m_CurrentRound + 1}/{k_TotalRounds}: locate {m_CurrentTarget.color} {m_CurrentTarget.shape} ({m_SpawnedObjects.Count} spawned)");
     }
 
     // =====================================================================

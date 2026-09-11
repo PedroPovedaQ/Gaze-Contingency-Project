@@ -1,6 +1,6 @@
 # Gaze Contingency Project — Functionality Guide
 
-This guide explains how every piece of the VR "Find the Object" game works, from plane detection to eye gaze tracking to the AI voice assistant. It is written for someone new to Unity and assumes no prior knowledge of XR development. Every section includes full code walkthroughs with line-by-line explanations.
+This guide explains how every piece of the VR "Locate the Object" game works, from plane detection to eye gaze tracking to the AI voice assistant. It is written for someone new to Unity and assumes no prior knowledge of XR development. Every section includes full code walkthroughs with line-by-line explanations.
 
 ---
 
@@ -12,7 +12,7 @@ This guide explains how every piece of the VR "Find the Object" game works, from
 4. [Plane Detection — How the Table Is Found](#4-plane-detection--how-the-table-is-found)
 5. [Object Spawning — What Happens When You Tap](#5-object-spawning--what-happens-when-you-tap)
 6. [Shape and Color Assignment (Full Code Walkthrough)](#6-shape-and-color-assignment-full-code-walkthrough)
-7. [The Find the Object Game Mode (Full Code Walkthrough)](#7-the-find-the-object-game-mode-full-code-walkthrough)
+7. [The Locate the Object Game Mode (Full Code Walkthrough)](#7-the-locate-the-object-game-mode-full-code-walkthrough)
 8. [Heads-Up Display — HUD (Full Code Walkthrough)](#8-heads-up-display--hud-full-code-walkthrough)
 9. [Eye Gaze Tracking](#9-eye-gaze-tracking)
 10. [Gaze Highlighting (Full Code Walkthrough)](#10-gaze-highlighting-full-code-walkthrough)
@@ -672,7 +672,7 @@ static Mesh CreatePyramidMesh()
 
 ---
 
-## 7. The Find the Object Game Mode (Full Code Walkthrough)
+## 7. The Locate the Object Game Mode (Full Code Walkthrough)
 
 ### FindObjectGameManager.cs
 
@@ -1001,7 +1001,7 @@ The HUD is a world-space canvas that floats in front of the player's view. It is
 ```
 World-Space Canvas (scale: 0.001, so 1 unit = 1mm)
 ├── Background Panel (400x240, black 70% opacity)
-│   ├── ObjectiveText (top, 36pt, "Find: Red Sphere")
+│   ├── ObjectiveText (top, 36pt, "Locate: Red Sphere")
 │   ├── ProgressText (middle, 28pt, "3 / 9 found")
 │   └── TimerText (bottom, 26pt, yellow, "12.5s")
 └── CompletionPanel (green, hidden until game ends)
@@ -1075,8 +1075,8 @@ public void ShowObjective(Color color, string shapeName, int found, int total)
     // Convert Color to hex string for rich text: Color(0.9, 0.15, 0.15) → "E52626"
     string hex = ColorUtility.ToHtmlStringRGB(color);
     // TextMeshPro supports HTML-like rich text tags
-    m_CurrentObjectiveString = $"Find: <color=#{hex}>{shapeName}</color>";
-    // This renders as: "Find: " in white, then "Red Sphere" in red
+    m_CurrentObjectiveString = $"Locate: <color=#{hex}>{shapeName}</color>";
+    // This renders as: "Locate: " in white, then "Red Sphere" in red
 
     m_ObjectiveText.text = m_CurrentObjectiveString;
     m_ProgressText.text = $"{found} / {total} found";
@@ -1672,7 +1672,7 @@ public class VoiceAssistantController : MonoBehaviour
         if (objectives.Count == 0) return;
 
         var first = objectives[0];
-        string welcome = $"Let's play! Find the {first.color} {first.shape}. Look around the table!";
+        string welcome = $"Let's play! Locate the {first.color} {first.shape}. Look around the table!";
 
         // Direct TTS — no LLM call, instant speech
         m_VoiceSynthesizer.Speak(welcome, "welcome");
@@ -1692,7 +1692,7 @@ public class VoiceAssistantController : MonoBehaviour
         if (nextIndex < objectives.Count)
         {
             var next = objectives[nextIndex];
-            string congrats = $"Great job! Now find the {next.color} {next.shape}.";
+            string congrats = $"Great job! Now locate the {next.color} {next.shape}.";
             m_VoiceSynthesizer.Speak(congrats, "congrats");
             m_HintGenerator.OnNewObjective();  // reset hint timers
         }
@@ -2460,10 +2460,10 @@ ShapeObjectFactory                FindObjectGameManager
 ```
 Game Event
     │
-    ├─ OnGameStarted ────→ Direct TTS: "Let's play! Find the..."
+    ├─ OnGameStarted ────→ Direct TTS: "Let's play! Locate the..."
     │
     ├─ OnObjectFound ────→ Interrupt hints
-    │                      Direct TTS: "Great job! Now find..."
+    │                      Direct TTS: "Great job! Now locate..."
     │                      Reset hint timers
     │
     ├─ OnWrongGrab ──────→ HintGenerator.OnWrongGrab()

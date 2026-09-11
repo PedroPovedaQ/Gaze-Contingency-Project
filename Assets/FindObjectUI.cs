@@ -368,7 +368,7 @@ public class FindObjectUI : MonoBehaviour
         if (m_AgentStateText != null) m_AgentStateText.enabled = true;
 
         string hex = ColorUtility.ToHtmlStringRGB(color);
-        m_CurrentObjectiveString = $"Find: <color=#{hex}>{shapeName}</color>";
+        m_CurrentObjectiveString = $"Locate: <color=#{hex}>{shapeName}</color>";
         m_ObjectiveText.text = m_CurrentObjectiveString;
         m_ProgressText.text = $"Round {found + 1} / {total}";
     }

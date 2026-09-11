@@ -27,7 +27,7 @@ public class VoiceSynthesizer : MonoBehaviour
     Coroutine m_SpeakCoroutine;
     string m_CurrentContext;
 
-    public const string ContentVersion = "matched-voice-v1";
+    public const string ContentVersion = "matched-voice-v2";
     public string LastError { get; private set; }
     public bool ProviderPolicyBlocked => LastError != null && LastError.Contains("guardrail_violation");
     public string PreparationStage { get; private set; }

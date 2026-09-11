@@ -40,7 +40,7 @@ The initial stimulus set can preserve the current project's shape-color objects 
 
 The first rotational version should spawn 32 to 40 objects per round in the 360-degree sectorized field to verify comfort, gaze targeting, and sector coverage. After pilot testing, the density can increase to 48 to 64 objects per round. Object density should be high enough to require search, but not so high that eye tracking becomes unreliable due to overlapping gaze colliders. Objects should be scaled and spaced so that each object can be separately fixated at the chosen radius. A starting radius of approximately 1.5 m is a reasonable first target for mid-height objects, with adjustments made during piloting based on legibility and headset field of view.
 
-In a more creative version of the study, object categories can move beyond abstract shapes. For example, the system can use virtual household items, toy blocks, lab tools, or emergency-response objects. These variants enable semantic search questions such as "find the object you would use to clean a spill," but they introduce recognition and semantic-memory confounds. For the first gaze-contingency comparison, abstract shape-color conjunctions remain preferable because correctness is unambiguous.
+In a more creative version of the study, object categories can move beyond abstract shapes. For example, the system can use virtual household items, toy blocks, lab tools, or emergency-response objects. These variants enable semantic search questions such as "locate the object you would use to clean a spill," but they introduce recognition and semantic-memory confounds. For the first gaze-contingency comparison, abstract shape-color conjunctions remain preferable because correctness is unambiguous.
 
 Each object receives metadata for shape, color, azimuth, elevation band, sector, radius, and target status. This metadata is used by the gaze logger, trial logger, assistant context builder, and analysis pipeline. It also allows the assistant to distinguish between direct target proximity and broader coverage properties, such as whether the participant has ignored the back-left sector or repeatedly inspected objects of the wrong color.
 
@@ -115,7 +115,7 @@ Together, these measurements support a richer analysis of search behavior than t
 
 ### 4.1 Task
 
-For this experiment, participants sit in a swivel chair and search for virtual AR objects distributed around them in a 360-degree sectorized search field. Participants are instructed to remain seated throughout the task. They may rotate the chair, turn their torso, and move their head, but they should not stand up or walk around the room. At the beginning of each round, the participant faces a fixed forward direction and views a fixation cross. The target for the upcoming round is displayed and announced by the assistant, for example "Find the blue star."
+For this experiment, participants sit in a swivel chair and search for virtual AR objects distributed around them in a 360-degree sectorized search field. Participants are instructed to remain seated throughout the task. They may rotate the chair, turn their torso, and move their head, but they should not stand up or walk around the room. At the beginning of each round, the participant faces a fixed forward direction and views a fixation cross. The target for the upcoming round is displayed and announced by the assistant, for example "Locate the blue star."
 
 After the fixation period, the objects for the round appear around the participant. The participant searches the surrounding object field and selects an object by dwelling on it with their gaze. If the selected object matches the target color and shape, the round ends. If the selected object is incorrect, the system gives wrong-object feedback and the participant continues searching.
 
@@ -159,13 +159,13 @@ However, the first experiment should keep the design small enough that gaze beha
 
 Each participant should complete a balanced set of rounds. A practical structure is 16 rounds: four rounds per core condition. Within each condition, targets should be balanced across sectors and eccentricity classes. For example, each condition can include targets in front, right, back, and left sectors across the full session, or in a finer eight-sector layout if more rounds are available. The target order should be randomized or counterbalanced so that condition is not confounded with learning, fatigue, target sector, or target eccentricity.
 
-The design can also include a multi-target variant inspired by 360-degree VR search tasks. In this variant, a round asks the participant to find all objects matching a criterion, such as all red cylinders or all blue objects, while ignoring distractors. This variant is more demanding than single-target search because participants must maintain a search goal over multiple selections and decide when the relevant objects have all been found. It also makes cueing more meaningful: a gaze-aware assistant can help participants avoid repeatedly revisiting completed sectors or can remind them which sectors remain unsearched. This multi-target version should be treated as a follow-up study unless the single-target version proves too easy.
+The design can also include a multi-target variant inspired by 360-degree VR search tasks. In this variant, a round asks the participant to locate all objects matching a criterion, such as all red cylinders or all blue objects, while ignoring distractors. This variant is more demanding than single-target search because participants must maintain a search goal over multiple selections and decide when the relevant objects have all been located. It also makes cueing more meaningful: a gaze-aware assistant can help participants avoid repeatedly revisiting completed sectors or can remind them which sectors remain unsearched. This multi-target version should be treated as a follow-up study unless the single-target version proves too easy.
 
 ### 4.3 Measures
 
-Performance - Task performance is measured using time to find the target, wrong selections, first-try accuracy, and time from first target fixation to correct selection. Because each round continues until the target is found, completion time and wrong selections are the main performance measures. Time from first target fixation to selection helps distinguish visual discovery from decision or selection delay.
+Performance - Task performance is measured using time to locate the target, wrong selections, first-try accuracy, and time from first target fixation to correct selection. Because each round continues until the target is located, completion time and wrong selections are the main performance measures. Time from first target fixation to selection helps distinguish visual discovery from decision or selection delay.
 
-Rotational search behavior - Rotational behavior is measured using total head-yaw travel, maximum angular displacement from the starting direction, number of sector transitions, time spent facing each sector, and angular distance traveled before first target fixation. These measures are central to the redesigned task. A participant can find the target quickly by using a systematic sweep, or inefficiently by revisiting the same sectors repeatedly. The rotational measures make that difference visible.
+Rotational search behavior - Rotational behavior is measured using total head-yaw travel, maximum angular displacement from the starting direction, number of sector transitions, time spent facing each sector, and angular distance traveled before first target fixation. These measures are central to the redesigned task. A participant can locate the target quickly by using a systematic sweep, or inefficiently by revisiting the same sectors repeatedly. The rotational measures make that difference visible.
 
 Gaze behavior - Gaze behavior is measured using fixation time on the target, fixation time on distractors, fixation count on target and distractors, average fixation duration, number of unique objects inspected, percent of objects inspected before success, and repeated fixations on non-target objects. Gaze coverage is also computed by sector and elevation band. These measures allow the analysis to test whether gaze-aware assistance changes search strategy, not only completion time.
 
@@ -189,7 +189,7 @@ The primary research question is:
 
 The following hypotheses are proposed:
 
-H1: Participants will find targets faster in gaze-aware rounds than in gaze-unaware rounds.
+H1: Participants will locate targets faster in gaze-aware rounds than in gaze-unaware rounds.
 
 H2: Participants will make fewer wrong selections in gaze-aware rounds than in gaze-unaware rounds.
 

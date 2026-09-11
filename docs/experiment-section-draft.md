@@ -2,7 +2,7 @@
 
 ## Task
 
-For this experiment, a mixed reality conjunction-search task was implemented in which participants searched a virtual bookshelf for a target object while wearing a video see-through headset. The virtual bookshelves were spatially registered to a real table in front of the participant, allowing the participant to see the physical room through passthrough while interacting with virtual objects arranged on the table surface. The participant's goal in each round was to find one target object specified by a conjunction of color and shape. For example, a round might require the participant to find the purple capsule or the red sphere.
+For this experiment, a mixed reality conjunction-search task was implemented in which participants searched a virtual bookshelf for a target object while wearing a video see-through headset. The virtual bookshelves were spatially registered to a real table in front of the participant, allowing the participant to see the physical room through passthrough while interacting with virtual objects arranged on the table surface. The participant's goal in each round was to locate one target object specified by a conjunction of color and shape. For example, a round might require the participant to locate the purple capsule or the red sphere.
 
 The object array contained 56 virtual objects distributed across two seven-row bookshelf columns. Each object was defined by one of six shapes and one of four colors. The shape set consisted of sphere, cube, pyramid, cylinder, star, and capsule, and the color set consisted of red, blue, yellow, and purple. Each round contained one target, 13 distractors that shared the target color, 13 distractors that shared the target shape, and 29 neutral distractors that shared neither target feature. This distribution was selected to require conjunction search; participants could not reliably solve a round by searching for only the target color or only the target shape.
 
@@ -10,7 +10,7 @@ Participants selected objects using eye gaze. When the participant looked at a v
 
 At the beginning of each round, a fixation cross was shown between the two bookshelf columns. The upcoming target was displayed with the fixation cross and was also announced by the voice assistant. After the transition interval, the fixation cross disappeared, a brief randomized blank pause occurred, and the objects for the round appeared on the shelves. The same transition structure was used before the first round and between all subsequent rounds. This ensured that target information was presented during a controlled fixation phase rather than during active search.
 
-Each active search round continued until the participant selected the correct target. Participants were free to take as much time as needed and were instructed to find the target as quickly and accurately as possible. The task therefore produced both performance outcomes, such as completion time and wrong selections, and gaze-behavior outcomes, such as fixation time on the target, fixation time on distractors, and search coverage across the shelf.
+Each active search round continued until the participant selected the correct target. Participants were free to take as much time as needed and were instructed to locate the target as quickly and accurately as possible. The task therefore produced both performance outcomes, such as completion time and wrong selections, and gaze-behavior outcomes, such as fixation time on the target, fixation time on distractors, and search coverage across the shelf.
 
 ## Study Design
 
@@ -22,7 +22,7 @@ The primary independent variable was therefore assistant awareness. Round number
 
 ## Measures
 
-Performance - Task performance was measured at the round and session levels. The primary performance measure was time to find the target, computed as the duration between the start of a round and the correct gaze-dwell capture. Accuracy was measured using the number of wrong captures before the correct capture and whether the target was captured on the first attempt. The system also recorded the total number of objectives completed, total completion time, and first-try accuracy across the run. Because each round continued until the target was found, completion time and wrong captures served as the main performance-sensitive dependent variables rather than binary success alone.
+Performance - Task performance was measured at the round and session levels. The primary performance measure was time to locate the target, computed as the duration between the start of a round and the correct gaze-dwell capture. Accuracy was measured using the number of wrong captures before the correct capture and whether the target was captured on the first attempt. The system also recorded the total number of objectives completed, total completion time, and first-try accuracy across the run. Because each round continued until the target was located, completion time and wrong captures served as the main performance-sensitive dependent variables rather than binary success alone.
 
 Gaze behavior - Gaze behavior was recorded continuously during active search. For each round, the system measured fixation time on the target, fixation time on distractors, fixation count on the target, fixation count on distractors, average fixation duration, saccade count, saccade frequency, and average saccade amplitude. Per-frame logs also recorded gaze origin, gaze direction, gaze rotation, fixation point when available, current hovered object, object shape and color, shelf level, target-match status, and dwell progress. These measures allowed the analysis to test whether gaze-aware assistance changed how participants searched, not only whether they found targets faster.
 
@@ -40,7 +40,7 @@ This study aimed to answer the following research question: How does gaze-contin
 
 The following hypotheses were developed:
 
-H1: Participants will find targets faster in gaze-aware rounds than in gaze-unaware rounds.
+H1: Participants will locate targets faster in gaze-aware rounds than in gaze-unaware rounds.
 
 H2: Participants will make fewer wrong captures in gaze-aware rounds than in gaze-unaware rounds.
 
@@ -60,7 +60,7 @@ The final manuscript should report the actual number of recruited participants, 
 
 ## Procedure
 
-Upon arrival, participants were greeted by the experimenter and completed the informed-consent process. They then completed any demographic and screening questions required by the study protocol, including prior experience with VR or AR, vision correction status, and color-vision concerns if applicable. The experimenter explained that the participant would complete a mixed reality visual-search task in which they would find a sequence of target objects by color and shape. Participants were told that objects would be selected by sustained gaze dwell rather than by grabbing them with a controller.
+Upon arrival, participants were greeted by the experimenter and completed the informed-consent process. They then completed any demographic and screening questions required by the study protocol, including prior experience with VR or AR, vision correction status, and color-vision concerns if applicable. The experimenter explained that the participant would complete a mixed reality visual-search task in which they would locate a sequence of target objects by color and shape. Participants were told that objects would be selected by sustained gaze dwell rather than by grabbing them with a controller.
 
 After the headset was fitted, the eye-tracking system was calibrated according to the headset procedure. The experimenter then positioned the participant in front of the physical table and started the mixed reality application. The participant viewed the passthrough environment and tapped the table surface to start the session. The system detected the table plane, generated the virtual bookshelf layout, and displayed the first fixation cross and target instruction. The voice assistant introduced the task and announced each round's target during the fixation phase.
 

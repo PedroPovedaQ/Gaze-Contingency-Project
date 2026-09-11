@@ -4,7 +4,7 @@ Unity VoxtralClient. Verifies the exact endpoints/JSON shapes without Unity.
 
 Usage:
     export MISTRAL_API_KEY=...            # your key
-    python3 voxtral_smoke_test.py path/to/sample.wav "Round 1. Find the blue pyramid." out.mp3
+    python3 voxtral_smoke_test.py path/to/sample.wav "Round 1. Locate the blue pyramid." out.mp3
 
 It will: POST /v1/audio/voices (clone) -> voiceId, then POST /v1/audio/speech
 (voxtral-mini-tts-2603, voice_id) -> write the returned audio to out.mp3.
