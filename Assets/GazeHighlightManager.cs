@@ -82,6 +82,17 @@ public class GazeHighlightManager : MonoBehaviour
         Debug.Log($"{k_Tag} Initialized gaze dwell selector ({k_DwellDuration}s) on {gameObject.name}");
     }
 
+    public void ConfigureThroughWallSearch()
+    {
+        var ray = GetComponent<XRRayInteractor>();
+        if (ray == null) return;
+        // Room geometry and HUD graphics must not occlude the searchable layer.
+        ray.raycastMask = 1 << 8;
+        ray.enableUIInteraction = false;
+        ray.hitClosestOnly = true;
+        Debug.Log($"{k_Tag} Through-wall search enabled: gaze hits layer 8 only; controller UI remains available.");
+    }
+
     void CreateBoopSound()
     {
         int sampleRate = 44100;

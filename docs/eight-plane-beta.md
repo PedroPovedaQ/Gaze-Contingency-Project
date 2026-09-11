@@ -6,6 +6,8 @@
 
 **Implemented:** existing target/distractor identities, two practice trials, 14 experimental rounds, voice blocks, gaze dwell, wrong-selection feedback, processing/recording announcements and questionnaires are preserved. Gaze-aware warm/cold hints compare objects on the same plane by distance; the beta does not interpret plane slot numbers as shelf adjacency. Coverage uses eight planes and stable object IDs.
 
+**Implemented:** eye-gaze selection ignores room geometry and UI graphics, raycasting only against the searchable object layer. Controller menu interaction is retained. Verify an object behind a room wall still highlights and completes its dwell; the closest searchable object remains the gaze target when search objects overlap.
+
 **Implemented:** experimental object_manifest.csv adds layout, plane_id, plane_slot, plane_azimuth, origin_x/y/z and forward_yaw. Existing columns remain. The layout tag is rotational_beta_v1. Gaze object IDs can be joined to this manifest. Practice remains outside experimental trial logging. Do not combine beta geometry with shelf data without filtering the layout tag.
 
 **Protocol proposal / open decisions:** radius, slot spacing, density, comfort and gaze reliability require headset QA. The existing target schedule is retained and is not exactly balanced across eight planes. Coarse directional/spatial audio, theta calibration, forced forward alignment, revised trial balancing and the larger manuscript schedule are not implemented by this geometry beta. The current experiment remains always gaze-contingent with two voice blocks.

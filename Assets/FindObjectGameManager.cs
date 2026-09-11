@@ -409,7 +409,10 @@ public class FindObjectGameManager : MonoBehaviour
 
         m_GazeDwell = FindObjectOfType<GazeHighlightManager>();
         if (m_GazeDwell != null)
+        {
+            if (m_UseRotationalLayout) m_GazeDwell.ConfigureThroughWallSearch();
             m_GazeDwell.OnObjectCaptured += OnObjectCaptured;
+        }
         m_NasaTlxSubmittedForRun = false;
 
         var voice = GetComponent<VoiceAssistantController>();
