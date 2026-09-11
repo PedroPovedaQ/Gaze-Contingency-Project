@@ -16,6 +16,7 @@ public class GazeHighlightManager : MonoBehaviour
     static readonly int k_EmissionColor = Shader.PropertyToID("_EmissionColor");
     const string k_Tag = "[GazeDwell]";
     const float k_DwellDuration = 1.6f;
+    FindObjectGameManager m_StudyGame;
     const float k_CaptureFlashDuration = 0.25f;
 
     // Glow ramp: dim warm orange → bright HDR yellow-white
@@ -148,6 +149,8 @@ public class GazeHighlightManager : MonoBehaviour
         // Update dwell state
         if (!m_Locked)
         {
+            if (m_StudyGame == null) m_StudyGame = FindObjectOfType<FindObjectGameManager>();
+            if (m_StudyGame != null && !m_StudyGame.SearchActive) { ResetDwell(); return; }
             if (hoveredObj != null && hoveredObj == m_DwellTarget && !m_CapturedThisTarget)
             {
                 m_DwellTime += Time.deltaTime;

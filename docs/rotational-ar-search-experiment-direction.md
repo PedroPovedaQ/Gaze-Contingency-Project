@@ -1,5 +1,8 @@
 # Rotational AR Search Experiment Direction
 
+> **Protocol proposal — updated 2026-09-10:** The user has selected always gaze-contingent guidance. Gaze awareness is no longer a factor. The guidance × voice comparisons later in this historical direction document are superseded. The current runtime and remaining design decisions are in `docs/experiment-procedure.md`; voice comparison, theta and directional coaching remain separate work.
+
+
 ## Motivation
 
 The current Gaze Contingency Project uses a table-anchored bookshelf layout. This gives us a controlled conjunction-search task, but it keeps the search space largely in front of the participant. A stronger gaze-contingency direction is to place the participant in a chair at the center of the room, restrict locomotion, and require them to rotate to search for virtual objects distributed around them in mixed reality.

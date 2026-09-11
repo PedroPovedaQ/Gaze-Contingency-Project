@@ -13,6 +13,11 @@ def _ttest_paired_within(df: pd.DataFrame, metric: str) -> dict:
     Paired t-test on per-participant means: aware vs unaware.
     Same participant's mean across all rounds in each condition.
     """
+    if "round_schedule" in df and df["round_schedule"].eq("always_gaze_aware").any():
+        return {"metric": metric, "n": 0, "t": None, "p": None,
+                "mean_aware": None, "mean_unaware": None,
+                "reason": "Awareness comparison disabled: dataset includes always-gaze-contingent runs."}
+
     means = df.groupby(["participant_id", "condition"])[metric].mean().unstack()
     if "gaze_aware" not in means.columns or "gaze_unaware" not in means.columns:
         return {"metric": metric, "n": 0, "t": None, "p": None,
@@ -72,7 +77,8 @@ def save_report(df: pd.DataFrame, out_dir: Path):
                          f"unaware: {row['mean_unaware']:.3f}   "
                          f"diff: {row['mean_aware'] - row['mean_unaware']:+.3f}")
         else:
-            lines.append(f"  insufficient data (n={row['n']})")
+            reason = row.get("reason", "insufficient data (n={})".format(row["n"]))
+            lines.append(f"  {reason}")
         lines.append("")
 
     lines.append("Significance: * p<.05  ** p<.01  *** p<.001")

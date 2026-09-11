@@ -1,7 +1,7 @@
 # Gaze Contingency Project
 
-A VR conjunction-search experiment that compares gaze-aware (hot/cold) tip
-feedback against gaze-unaware (generic) encouragement. Built in Unity for
+A VR conjunction-search experiment with always gaze-contingent (proximity)
+guidance. Generic versus self-similar voice is the planned comparison. Built in Unity for
 the HTC VIVE with passthrough AR.
 
 ## High-level Architecture
@@ -9,15 +9,14 @@ the HTC VIVE with passthrough AR.
 - **`Assets/FindObjectGameManager.cs`** — game state machine, round flow,
   object spawning, capture logic
 - **`Assets/ChallengeSet.cs`** — deterministic 14-round challenge set,
-  fixed seed (42), counterbalanced condition assignment per participant
+  fixed seed (42), gaze-contingent guidance in every round
 - **`Assets/ShelfSpawner.cs`** — builds two bookcase units on the detected
   table, computes deterministic shelf spawn points
 - **`Assets/ShapeObjectFactory.cs`** — instantiates shape/color combos,
   handles colliders/materials
 - **`Assets/GazeHighlightManager.cs`** — eye gaze dwell selection (1.6s),
   progressive glow charge-up
-- **`Assets/HintGenerator.cs`** — hot/cold/warm/cold/missed temperature tips
-  (gaze-aware) and generic encouragement (gaze-unaware control). Uses 2D
+- **`Assets/HintGenerator.cs`** — gaze-responsive proximity tips in every round. Uses 2D
   proximity (bookcase column + shelf row).
 - **`Assets/VoiceAssistantController.cs`** — wires HintGenerator to
   VoiceSynthesizer for spoken tips
@@ -30,13 +29,10 @@ the HTC VIVE with passthrough AR.
 
 ## Experimental Design
 
-- **Within-subjects**, counterbalanced
-- **14 rounds** = 2 blocks of 7
-- **P001, P003, ...** (odd) → unaware first, then aware
-- **P002, P004, ...** (even) → aware first, then unaware
-- All participants see the **same 14 deterministic challenges** (seed 42)
-- Conjunction search: 42 objects per round
-  (1 target + 13 same-color + 13 same-shape + 15 neutral)
+- **Implemented:** 14 deterministic rounds in two counterbalanced seven-trial voice blocks, following two uncounted practice trials; 56 objects per round (1 target, 13 same-color, 13 same-shape, 29 neutral).
+- **Protocol proposal — user decision, 2026-09-10:** the agent is always gaze-contingent. Gaze awareness is not a factor; do not reintroduce an unaware control or toggle.
+- **Implemented:** voice is selected at launch. **Open work:** within-session voice counterbalancing, theta transitions, rotational layout, directional coaching and protocol reconciliation.
+- Keep the existing fixed-seed stimuli until the theta scheduler is implemented explicitly.
 
 ## Data Output
 
@@ -45,7 +41,7 @@ Saved to `Application.persistentDataPath/GazeData/`:
 ```
 GazeData/
   P001/
-    run_001_gaze_unaware_2026-04-07_14-30-22/
+    run_001_gaze_aware_voice-blocks-neutral_then_selfsimilar_2026-04-07_14-30-22/
       gaze_log.csv          (per-frame: gaze origin, dir, eye openness, hovered, dwell %)
       trial_events.csv      (timestamped: fixation_start, fixation_end, capture_correct, capture_wrong)
       trial_summary.json    (per-round metrics: search time, accuracy, fixations, saccades)
@@ -104,9 +100,8 @@ Default output is `./results/` containing:
 
 ## Conventions
 
-- The HintGenerator's `gazeAwareTips` flag is set per-round by the game
-  manager based on `ChallengeSet.IsGazeAware(round, participantNumber)`.
-  Don't hardcode it.
+- `HintGenerator` always uses its gaze-responsive policy. `CurrentRoundGazeAware`
+  is always true; there is no `gazeAwareTips` toggle.
 - All challenge generation uses fixed seed 42. Don't introduce
   `Random.Range` into round content — it would break determinism.
 - The fixation cross between rounds pauses the timer (`m_UI.PauseTimer`)

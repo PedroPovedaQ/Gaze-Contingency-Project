@@ -1,5 +1,8 @@
 # Analysis Workflow
 
+**Implemented update (2026-09-10):** New runs are always gaze-aware; the loader recognizes the generic/self-similar voice suffix without inferring an unaware condition. Summary and NASA-TLX outputs retain the original label in `run_condition`, including voice identity. Awareness t-tests refuse datasets containing `always_gaze_aware` runs, rather than pooling them with legacy runs. Existing aware-versus-unaware plots are for legacy data only. Do not pool the new one-condition sessions with the old alternation design to infer an awareness effect. Voice/theta analysis is pending issue #15.
+
+
 Generates plots and statistics from the experiment data collected by Unity.
 
 ## One-Command Runner (Recommended)
@@ -163,3 +166,7 @@ Per-round (in summary JSON `objectives[]`):
 - `saccade_count` — number of saccades (fixation→fixation transitions)
 - `saccade_frequency_hz` — saccades per second of round time
 - `avg_saccade_amplitude_deg` — mean angular distance between consecutive fixations
+
+New neutral runs use `gaze_aware_voice-neutral-male` / `gaze_aware_voice-neutral-female`; the self-similar label is unchanged. `run_condition` retains this assignment. Historical `voice-generic` remains readable. Male/female are neutral voice profiles, not additional guidance conditions.
+
+For schema-2 two-block sessions, `voice_condition`, `voice_order`, `trial_id`, `outcome`, search-onset and capture timestamps are retained per trial. `voice_block_metrics.csv` reports completed trials by block; `voice_pair_differences.csv` pairs only complete 14-trial runs within the same participant/run. Historical awareness plots/tests remain legacy outputs. Run `python3 scripts/verify-study-session.py /absolute/path/to/run` from the repository root to check exported timing/voice/object consistency. NASA-TLX block rows preserve the actual voice label; a historical run-wide two-voice score is `overall`.

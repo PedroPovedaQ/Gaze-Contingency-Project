@@ -8,7 +8,15 @@ formative validation. They are not UCF IRB approvals. Administrative facts and
 institutional determinations that the research team cannot invent are listed
 separately at the end.
 
-## Study leadership and scope
+## 2026-09-10 design change — always gaze-contingent
+
+**Protocol proposal — user-directed decision.** The agent is always gaze-contingent in both voice conditions. Remove gaze awareness as an experimental factor. The two-voice comparison remains planned; its final counts, allocation and power are not settled by this decision.
+
+**Implemented in code.** All 14 rounds now use the existing gaze-responsive policy. See `docs/experiment-procedure.md` for current executable scope and `progress.md` for verification.
+
+**Open decision.** The older four-cell protocol below, its allocation/power assumptions and generated submission documents require reconciliation under issue #18. This decision records project direction, not a Huron approval or amendment. Historical details below are superseded wherever they rely on the gaze-unaware factor.
+
+## Study leadership and scope (previous four-cell design)
 
 - Dr. Roshan Venkatakrishnan is the proposed UCF Principal Investigator of record;
   Pedro Poveda is the student investigator. UCF must confirm eligibility and the

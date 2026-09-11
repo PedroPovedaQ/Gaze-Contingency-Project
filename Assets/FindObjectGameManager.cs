@@ -35,6 +35,92 @@ public class FindObjectGameManager : MonoBehaviour
     /// <summary>Fires when fixation cross appears and next goal can be announced.</summary>
     public event System.Action<int, string, string> OnRoundTransitionStarted; // next round, color, shape
 
+    public event System.Action<int> OnSearchStarted;
+    public event System.Action<string> OnSessionStopped;
+    public event System.Action<string> OnCheckpoint;
+    public bool SearchActive { get; private set; }
+    public bool IsPractice { get; private set; }
+    int m_PracticeIndex;
+    public float CurrentSearchSeconds => (float)m_SearchClock.Elapsed(Time.timeAsDouble);
+    readonly StudyTrialClock m_SearchClock = new StudyTrialClock();
+    bool m_ResearcherPaused;
+    [SerializeField] float m_TrialTimeoutSeconds = 0f; // Disabled until the study protocol sets a ceiling.
+    bool m_TechnicallyStopped;
+    StudyCheckpoint m_Checkpoint;
+    bool m_AwaitingBlockSurvey;
+
+    public void BeginSearch(int round)
+    {
+        if (m_TechnicallyStopped || m_State != GameState.Playing || m_CurrentRound != round || SearchActive) return;
+        foreach (var obj in m_SpawnedObjects)
+            if (obj != null && obj.TryGetComponent<MeshRenderer>(out var renderer)) renderer.enabled = true;
+        SearchActive = true;
+        m_SearchClock.Begin(Time.timeAsDouble);
+        m_GazeDwell?.ResetDwell();
+        m_UI.ResumeTimer();
+        OnSearchStarted?.Invoke(round);
+    }
+
+    public void TechnicalStop(string reason)
+    {
+        if (m_TechnicallyStopped || m_State == GameState.Completed) return;
+        m_SearchClock.Pause(Time.timeAsDouble);
+        m_TechnicallyStopped = true; SearchActive = false;
+        if (m_StartAfterIntroCoroutine != null) { StopCoroutine(m_StartAfterIntroCoroutine); m_StartAfterIntroCoroutine = null; }
+        m_UI.PauseTimer();
+        m_AwaitingBlockSurvey = false; m_UI.HideBlockSurvey();
+        m_GazeDwell?.ResetDwell();
+        GetComponent<VoiceSynthesizer>()?.Stop();
+        GetComponent<HintGenerator>()?.CancelPending();
+        m_State = GameState.Completed;
+        OnSessionStopped?.Invoke(reason);
+        if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
+        m_Checkpoint.Show("Session stopped: " + reason + "\nNo replacement trial. Save logs before restarting.");
+    }
+
+    void OnApplicationPause(bool paused)
+    {
+        if (!paused || m_State == GameState.Idle || m_State == GameState.Completed) return;
+        if (SearchActive) PauseSession();
+        else if (!m_ResearcherPaused) TechnicalStop("interrupted");
+    }
+
+    public void WithdrawSession() => TechnicalStop("withdrawal");
+
+    public void PauseSession()
+    {
+        if (!SearchActive || m_ResearcherPaused) return;
+        m_ResearcherPaused = true; SearchActive = false; m_SearchClock.Pause(Time.timeAsDouble);
+        m_UI.PauseTimer(); m_GazeDwell?.ResetDwell();
+        GetComponent<VoiceSynthesizer>()?.Stop(); GetComponent<HintGenerator>()?.CancelPending();
+        foreach (var obj in m_SpawnedObjects) if (obj != null) obj.SetActive(false);
+        OnCheckpoint?.Invoke("search_paused");
+        if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
+        m_Checkpoint.Show("Session paused. Search objects are hidden.");
+    }
+    public void ResumeSession()
+    {
+        if (!m_ResearcherPaused || m_TechnicallyStopped) return;
+        m_Checkpoint?.Confirm();
+        foreach (var obj in m_SpawnedObjects) if (obj != null) obj.SetActive(true);
+        m_GazeDwell?.ResetDwell();
+        m_ResearcherPaused = false; SearchActive = true; m_SearchClock.Resume(Time.timeAsDouble);
+        m_UI.ResumeTimer(); GetComponent<HintGenerator>()?.OnNewObjective();
+        OnCheckpoint?.Invoke("search_resumed");
+    }
+
+    void Update()
+    {
+        if (m_ResearcherPaused && m_Checkpoint != null && !m_Checkpoint.Waiting) ResumeSession();
+#if ENABLE_INPUT_SYSTEM
+        var keyboard = UnityEngine.InputSystem.Keyboard.current;
+        if (keyboard != null && keyboard.pKey.wasPressedThisFrame) PauseSession();
+        if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame && m_State != GameState.Idle) WithdrawSession();
+#endif
+        if (SearchActive && m_TrialTimeoutSeconds > 0 && CurrentSearchSeconds >= m_TrialTimeoutSeconds)
+            TechnicalStop("timeout");
+    }
+
     public GameState CurrentState => m_State;
     public IReadOnlyList<(string shape, string color, Color colorValue)> Objectives => m_Objectives;
     public IReadOnlyList<GameObject> SpawnedObjects => m_SpawnedObjects;
@@ -43,8 +129,8 @@ public class FindObjectGameManager : MonoBehaviour
     public int TotalRounds => k_TotalRounds;
     public float GameStartTime => m_GameStartTime;
     public (string shape, string color, Color colorValue) CurrentTarget => m_CurrentTarget;
-    public bool CurrentRoundGazeAware { get; private set; }
-    public string CurrentRoundConditionLabel { get; private set; } = "";
+    public bool CurrentRoundGazeAware => true;
+    public string CurrentRoundConditionLabel => "gaze_aware";
 
     [Header("Debug")]
     [SerializeField] bool m_UseDebugRoundCountOverride;
@@ -304,13 +390,7 @@ public class FindObjectGameManager : MonoBehaviour
         m_UI.PauseTimer();
         BuildObjectiveList();
 
-        // Initialize round-1 condition before emitting start events so loggers
-        // and assistants observe the correct initial mode.
-        int participantNumber = GetParticipantNumber();
-        CurrentRoundGazeAware = ChallengeSet.IsGazeAware(m_CurrentRound, participantNumber);
-        CurrentRoundConditionLabel = ChallengeSet.GetConditionLabel(m_CurrentRound, participantNumber);
-        var hints = GetComponent<HintGenerator>();
-        if (hints != null) hints.gazeAwareTips = CurrentRoundGazeAware;
+        // Show participant state before emitting the session start event.
         m_UI.SetAgentState(CurrentRoundGazeAware, CurrentRoundConditionLabel);
 
         if (!m_ShelvesBuilt)
@@ -322,7 +402,8 @@ public class FindObjectGameManager : MonoBehaviour
             m_UI.PositionStaticLeft(m_SpawnCenter, ShelfSpawner.ObjectFacingRotation);
         }
 
-        OnGameStarted?.Invoke();
+        IsPractice = true; m_PracticeIndex = 0;
+        SetPracticeObjective();
         StartCoroutine(BeginFirstRoundTransition());
     }
 
@@ -330,21 +411,40 @@ public class FindObjectGameManager : MonoBehaviour
     //  Spawn round — instantiate, configure, wait, finalize
     // =====================================================================
 
+    void SetPracticeObjective()
+    {
+        var practice = ChallengeSet.PracticeRound(m_PracticeIndex);
+        m_CurrentRound = practice.roundIndex;
+        while (m_Objectives.Count <= m_CurrentRound) m_Objectives.Add(("", "", Color.white));
+        m_Objectives[m_CurrentRound] = (practice.target.shape, practice.target.color, practice.target.colorValue);
+    }
+
+    IEnumerator FinishPractice()
+    {
+        m_State = GameState.Transitioning;
+        foreach (var obj in m_SpawnedObjects) if (obj != null) Destroy(obj);
+        m_SpawnedObjects.Clear();
+        m_UI.HideObjectiveDuringTransition();
+        if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
+        m_Checkpoint.Show("Practice complete in both voices.\nConfirm task understanding before beginning the two study blocks.");
+        while (m_Checkpoint.Waiting && !m_TechnicallyStopped) yield return null;
+        if (m_TechnicallyStopped) yield break;
+        IsPractice = false; m_CurrentRound = 0; BuildObjectiveList();
+        m_GameStartTime = Time.time; m_UI.StartTimer(); m_UI.PauseTimer();
+        SessionConfig.ApplyRoundVoice(0);
+        OnGameStarted?.Invoke();
+        yield return BeginFirstRoundTransition();
+    }
+
     IEnumerator DoSpawnRound()
     {
         // --- Deterministic challenge from ChallengeSet ---
-        var round = ChallengeSet.Rounds[m_CurrentRound];
+        var round = IsPractice ? ChallengeSet.PracticeRound(m_PracticeIndex) : ChallengeSet.Rounds[m_CurrentRound];
         m_CurrentTarget = (round.target.shape, round.target.color, round.target.colorValue);
 
-        // Determine gaze-aware/unaware for this round
+        // The guidance condition is fixed throughout the run.
         int participantNumber = GetParticipantNumber();
-        bool gazeAware = ChallengeSet.IsGazeAware(m_CurrentRound, participantNumber);
-        CurrentRoundGazeAware = gazeAware;
-        CurrentRoundConditionLabel = ChallengeSet.GetConditionLabel(m_CurrentRound, participantNumber);
-
-        var hints = GetComponent<HintGenerator>();
-        if (hints != null) hints.gazeAwareTips = gazeAware;
-        m_UI.SetAgentState(gazeAware, CurrentRoundConditionLabel);
+        m_UI.SetAgentState(CurrentRoundGazeAware, CurrentRoundConditionLabel);
         Debug.Log($"{k_Tag} Round {m_CurrentRound + 1}: participant={participantNumber}, scheduleIndex={round.blockIndex}, condition={CurrentRoundConditionLabel}");
 
         // --- Get spawn points ---
@@ -383,6 +483,7 @@ public class FindObjectGameManager : MonoBehaviour
             var info = obj.GetComponent<SpawnableObjectInfo>();
             if (info != null)
             {
+                info.objectId = $"{(IsPractice ? "practice" : "r")}{m_CurrentRound:D2}_o{i:D2}";
                 info.shelfLevel = sp.row;
                 info.shelfColumn = sp.col;
 
@@ -403,13 +504,15 @@ public class FindObjectGameManager : MonoBehaviour
             // Hide child renderers, keep root visible
             HideChildRenderers(obj);
             var rootRenderer = obj.GetComponent<MeshRenderer>();
-            if (rootRenderer != null) rootRenderer.enabled = true;
+            if (rootRenderer != null) rootRenderer.enabled = false; // Reveal only at search onset.
 
             m_SpawnedObjects.Add(obj);
         }
 
         // Wait for DestroyImmediate to fully process
         yield return null;
+
+        if (m_TechnicallyStopped) yield break;
 
         // Add FRESH XRGrabInteractable with correct colliders — never touches stale prefab state
         foreach (var obj in m_SpawnedObjects)
@@ -431,6 +534,8 @@ public class FindObjectGameManager : MonoBehaviour
         yield return null;
         yield return null;
 
+        if (m_TechnicallyStopped) yield break;
+
         // Reset gaze dwell so it starts fresh on these new objects
         if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
 
@@ -445,7 +550,7 @@ public class FindObjectGameManager : MonoBehaviour
 
     void OnObjectCaptured(GameObject obj)
     {
-        if (m_State != GameState.Playing) return;
+        if (m_State != GameState.Playing || !SearchActive) return;
         if (obj == null || !obj.activeInHierarchy) return;
 
         var info = obj.GetComponent<SpawnableObjectInfo>();
@@ -454,6 +559,18 @@ public class FindObjectGameManager : MonoBehaviour
         if (info.shapeName == m_CurrentTarget.shape && info.colorName == m_CurrentTarget.color)
         {
             Debug.Log($"{k_Tag} Round {m_CurrentRound + 1} correct: {info.DisplayName}");
+            m_SearchClock.Pause(Time.timeAsDouble);
+            SearchActive = false;
+            m_UI.PauseTimer();
+            if (IsPractice)
+            {
+                GetComponent<VoiceSynthesizer>()?.Stop(); GetComponent<HintGenerator>()?.CancelPending();
+                m_GazeDwell?.ResetDwell();
+                m_PracticeIndex++;
+                if (m_PracticeIndex < 2) { SetPracticeObjective(); StartCoroutine(TransitionToNextRound()); }
+                else StartCoroutine(FinishPractice());
+                return;
+            }
             m_CurrentRound++;
             OnObjectFound?.Invoke(m_CurrentRound - 1);
             if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
@@ -465,6 +582,7 @@ public class FindObjectGameManager : MonoBehaviour
                 float elapsed = m_UI.StopTimer();
                 m_LastCompletedElapsed = elapsed;
                 m_UI.ShowCompletion(k_TotalRounds, elapsed);
+                if (SessionConfig.VoiceBlocksEnabled) m_UI.SetSurveyBlockLabel(2);
                 OnGameCompleted?.Invoke(elapsed);
             }
             else
@@ -500,10 +618,29 @@ public class FindObjectGameManager : MonoBehaviour
         m_SpawnPoints.Clear();
         m_UI.HideObjectiveDuringTransition();
 
-        // Show fixation cross with next-goal text in the top-left.
-        if (m_CurrentRound >= 0 && m_CurrentRound < ChallengeSet.RoundCount)
+        if (!IsPractice && SessionConfig.VoiceBlocksEnabled && m_CurrentRound == ChallengeSet.RoundsPerBlock)
         {
-            var nextTarget = ChallengeSet.Rounds[m_CurrentRound].target;
+            GetComponent<VoiceSynthesizer>()?.Stop();
+            GetComponent<HintGenerator>()?.CancelPending();
+            OnCheckpoint?.Invoke("block_end");
+            m_AwaitingBlockSurvey = true;
+            m_UI.ShowBlockSurvey(1);
+            while (m_AwaitingBlockSurvey && !m_TechnicallyStopped) yield return null;
+            if (m_TechnicallyStopped) yield break;
+            m_UI.HideBlockSurvey();
+            m_UI.PositionStaticLeft(m_SpawnCenter, ShelfSpawner.ObjectFacingRotation);
+            if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
+            m_Checkpoint.Show("Block 1 complete.\nQuestionnaire saved. Take a break.\nConfirm when ready for the second voice.");
+            while (m_Checkpoint.Waiting && !m_TechnicallyStopped) yield return null;
+            if (m_TechnicallyStopped) yield break;
+            SessionConfig.ApplyRoundVoice(m_CurrentRound);
+            OnCheckpoint?.Invoke("block_start");
+        }
+
+        // Show fixation cross with next-goal text in the top-left.
+        if (IsPractice || (m_CurrentRound >= 0 && m_CurrentRound < ChallengeSet.RoundCount))
+        {
+            var nextTarget = IsPractice ? ChallengeSet.PracticeRound(m_PracticeIndex).target : ChallengeSet.Rounds[m_CurrentRound].target;
             m_UI.ShowFixationCross(nextTarget.color, nextTarget.shape);
             OnRoundTransitionStarted?.Invoke(m_CurrentRound, nextTarget.color, nextTarget.shape);
         }
@@ -529,6 +666,7 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
 
         // Spawn next round
+        if (m_TechnicallyStopped) yield break;
         m_State = GameState.Playing;
         yield return DoSpawnRound();
     }
@@ -538,9 +676,9 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
         m_UI.HideObjectiveDuringTransition();
 
-        if (m_CurrentRound >= 0 && m_CurrentRound < ChallengeSet.RoundCount)
+        if (IsPractice || (m_CurrentRound >= 0 && m_CurrentRound < ChallengeSet.RoundCount))
         {
-            var firstTarget = ChallengeSet.Rounds[m_CurrentRound].target;
+            var firstTarget = IsPractice ? ChallengeSet.PracticeRound(m_PracticeIndex).target : ChallengeSet.Rounds[m_CurrentRound].target;
             m_UI.ShowFixationCross(firstTarget.color, firstTarget.shape);
             OnRoundTransitionStarted?.Invoke(m_CurrentRound, firstTarget.color, firstTarget.shape);
         }
@@ -560,6 +698,7 @@ public class FindObjectGameManager : MonoBehaviour
 
         if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
 
+        if (m_TechnicallyStopped) yield break;
         m_State = GameState.Playing;
         yield return DoSpawnRound();
     }
@@ -567,8 +706,8 @@ public class FindObjectGameManager : MonoBehaviour
     void ShowCurrentObjective()
     {
         m_UI.ShowObjective(m_CurrentTarget.colorValue,
-            $"{m_CurrentTarget.color} {m_CurrentTarget.shape}",
-            m_CurrentRound, k_TotalRounds);
+            $"{(IsPractice ? "Practice: " : "")}{m_CurrentTarget.color} {m_CurrentTarget.shape}",
+            IsPractice ? m_PracticeIndex : m_CurrentRound, IsPractice ? 2 : k_TotalRounds);
     }
 
     IEnumerator ResetAfterDelay()
@@ -590,13 +729,22 @@ public class FindObjectGameManager : MonoBehaviour
 
     void HandleNasaTlxSubmitted(FindObjectUI.NasaTlxResult tlx)
     {
+        if (m_TechnicallyStopped) return;
+        if (m_AwaitingBlockSurvey)
+        {
+            if (m_TrialLogger == null) m_TrialLogger = GetComponent<TrialDataLogger>();
+            m_TrialLogger?.RecordNasaTlx(tlx.mental, tlx.physical, tlx.temporal,
+                tlx.performance, tlx.effort, tlx.frustration, 0);
+            m_AwaitingBlockSurvey = false;
+            return;
+        }
         if (m_State != GameState.Completed || m_UI == null) return;
         if (m_NasaTlxSubmittedForRun) return;
         if (m_TrialLogger == null) m_TrialLogger = GetComponent<TrialDataLogger>();
         if (m_TrialLogger != null)
             m_TrialLogger.RecordNasaTlx(
                 tlx.mental, tlx.physical, tlx.temporal,
-                tlx.performance, tlx.effort, tlx.frustration);
+                tlx.performance, tlx.effort, tlx.frustration, SessionConfig.VoiceBlocksEnabled ? 1 : -1);
         m_NasaTlxSubmittedForRun = true;
         m_UI.ShowThankYouMessage();
 

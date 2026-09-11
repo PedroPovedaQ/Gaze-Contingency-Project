@@ -56,8 +56,8 @@ Short example:
 ```csharp
 public GameState CurrentState => m_State;
 public IReadOnlyList<GameObject> SpawnedObjects => m_SpawnedObjects;
-public bool CurrentRoundGazeAware { get; private set; }
-public string CurrentRoundConditionLabel { get; private set; } = "";
+public bool CurrentRoundGazeAware => true;
+public string CurrentRoundConditionLabel => "gaze_aware";
 ```
 
 It also auto-attaches itself to the `ObjectSpawner` root and disables template UI systems that would interfere with the study.
@@ -143,17 +143,7 @@ public string DisplayName => $"{colorName}_{shapeName}";
 
 This script controls spoken hints.
 It uses the current round state and gaze data to decide what to say.
-There are two modes:
-
-- gaze-aware: proximity feedback (`off-target` vs `on-track/very-close`)
-- gaze-unaware: empathetic generic encouragement
-
-The current round mode is synchronized from the game manager every frame.
-
-```csharp
-bool resolvedMode = m_GameManager.CurrentRoundGazeAware;
-gazeAwareTips = resolvedMode;
-```
+**Implemented:** the same gaze-responsive proximity policy runs in every round and either voice condition. The unaware mode and per-round mode synchronization have been removed.
 
 Gaze-aware examples are supportive but direct:
 
@@ -259,9 +249,7 @@ This is the higher-level event logger.
 It writes round events and summary JSON for the analysis pipeline.
 
 ```csharp
-string firstCondition = ChallengeSet.GetConditionLabel(0, 1);
-string secondCondition = ChallengeSet.GetConditionLabel(1, 1);
-string runConditionLabel = $"alternating_{firstCondition}_then_{secondCondition}";
+m_OutputDir = SessionConfig.BeginRun(); // gaze_aware plus selected voice
 ```
 
 It also records the post-run NASA-TLX prompt in the event stream.

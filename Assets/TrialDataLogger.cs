@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -36,7 +37,12 @@ public class TrialDataLogger : MonoBehaviour
         public string shape;
         public string color;
         public float startTime;
+        public float transitionTime;
+        public float objectsReadyTime;
+        public string voiceCondition;
+        public string outcome;
         public float completionTime;
+        public float searchSeconds;
         public int wrongCaptures;
         public List<string> wrongCapturedObjects;
         public float fixationTimeOnTarget;
@@ -62,6 +68,8 @@ public class TrialDataLogger : MonoBehaviour
 
     readonly List<ObjectiveRecord> m_ObjectiveRecords = new();
     int m_ActiveObjectiveIndex = -1;
+    VoiceSynthesizer m_Voice;
+    string m_SessionOutcome = "incomplete";
     string m_LastRunStatsText;
 
     // Fixation tracking (for per-objective fixation breakdown)
@@ -86,20 +94,32 @@ public class TrialDataLogger : MonoBehaviour
         m_GameManager.OnObjectFound += OnObjectFound;
         m_GameManager.OnWrongCapture += OnWrongCapture;
         m_GameManager.OnGameCompleted += OnGameCompleted;
+        m_GameManager.OnSearchStarted += OnSearchStarted;
+        m_GameManager.OnRoundTransitionStarted += OnTransitionStarted;
+        m_GameManager.OnRoundReady += OnObjectsReady;
+        m_GameManager.OnSessionStopped += OnSessionStopped;
+        m_GameManager.OnCheckpoint += OnCheckpoint;
 
         Debug.Log($"{k_Tag} Initialized, waiting for game start");
     }
 
     void OnDisable()
     {
+        if (m_EventWriter != null) OnSessionStopped("interrupted");
         if (m_GameManager != null)
         {
             m_GameManager.OnGameStarted -= OnGameStarted;
             m_GameManager.OnObjectFound -= OnObjectFound;
             m_GameManager.OnWrongCapture -= OnWrongCapture;
             m_GameManager.OnGameCompleted -= OnGameCompleted;
+            m_GameManager.OnSearchStarted -= OnSearchStarted;
+            m_GameManager.OnRoundTransitionStarted -= OnTransitionStarted;
+            m_GameManager.OnRoundReady -= OnObjectsReady;
+            m_GameManager.OnSessionStopped -= OnSessionStopped;
+            m_GameManager.OnCheckpoint -= OnCheckpoint;
         }
 
+        if (m_Voice != null) m_Voice.Telemetry -= OnAudioEvent;
         CloseEventWriter();
     }
 
@@ -121,14 +141,13 @@ public class TrialDataLogger : MonoBehaviour
 
     void OnGameStarted()
     {
-        // Determine run-level condition label.
-        // Current protocol alternates aware/unaware every round.
-        string firstCondition = ChallengeSet.GetConditionLabel(0, 1);
-        string secondCondition = ChallengeSet.GetConditionLabel(1, 1);
-        string runConditionLabel = $"alternating_{firstCondition}_then_{secondCondition}";
-
         // Begin a new run — creates the output folder
-        m_OutputDir = SessionConfig.BeginRun(runConditionLabel);
+        m_OutputDir = SessionConfig.BeginRun();
+        string manifest = Path.Combine(SessionConfig.ParticipantPath, "voice-library-manifest.json");
+        if (File.Exists(manifest)) File.Copy(manifest, SessionConfig.GetFilePath("voice-library-manifest.json"), true);
+        m_Voice = GetComponent<VoiceSynthesizer>();
+        if (m_Voice != null) m_Voice.Telemetry += OnAudioEvent;
+        m_SessionOutcome = "incomplete";
         m_SessionId = $"{SessionConfig.ParticipantId}_run{SessionConfig.RunNumber:D3}";
 
         // Open events CSV inside the run folder
@@ -138,7 +157,7 @@ public class TrialDataLogger : MonoBehaviour
             "timestamp", "elapsed", "event_type",
             "objective_index", "objective_shape", "objective_color",
             "object_name", "object_shape", "object_color", "object_shelf_level",
-            "is_target", "dwell_duration", "detail"
+            "is_target", "dwell_duration", "detail", "participant_id", "run_number", "block", "voice_condition", "trial_id"
         ));
 
         // Initialize objective records
@@ -151,7 +170,10 @@ public class TrialDataLogger : MonoBehaviour
                 index = i,
                 shape = objectives[i].shape,
                 color = objectives[i].color,
-                startTime = i == 0 ? Time.time : 0f,
+                startTime = -1f,
+                transitionTime = -1f, objectsReadyTime = -1f,
+                voiceCondition = SessionConfig.VoiceBlocksEnabled ? SessionConfig.VoiceLabelForRound(i) : SessionConfig.VoiceTag,
+                outcome = "not_started",
                 wrongCaptures = 0,
                 wrongCapturedObjects = new List<string>(),
                 fixationTimeOnTarget = 0f,
@@ -169,6 +191,73 @@ public class TrialDataLogger : MonoBehaviour
         Debug.Log($"{k_Tag} Trial started: {eventsPath}");
     }
 
+    void OnTransitionStarted(int round, string color, string shape)
+    {
+        if (round < 0 || round >= m_ObjectiveRecords.Count) return;
+        m_ActiveObjectiveIndex = round;
+        var rec = m_ObjectiveRecords[round]; rec.transitionTime = Time.time; rec.outcome = "transitioning";
+        m_ObjectiveRecords[round] = rec;
+        WriteEvent("transition_start", "", "", "", -1, false, 0, "");
+    }
+    void OnObjectsReady(int round, string color, string shape)
+    {
+        if (m_GameManager.IsPractice || round >= m_ObjectiveRecords.Count) return;
+        var rec = m_ObjectiveRecords[round]; rec.objectsReadyTime = Time.time; m_ObjectiveRecords[round] = rec;
+        WriteEvent("objects_ready", "", "", "", -1, false, 0, "");
+        WriteObjectManifest(round);
+    }
+    void OnSearchStarted(int round)
+    {
+        if (m_GameManager.IsPractice || round >= m_ObjectiveRecords.Count) return;
+        m_ActiveObjectiveIndex = round;
+        var rec = m_ObjectiveRecords[round]; rec.startTime = Time.time; rec.outcome = "searching";
+        m_ObjectiveRecords[round] = rec; m_HasLastFixation = false;
+        WriteEvent("search_start", "", "", "", -1, false, 0, "");
+    }
+    void OnCheckpoint(string name)
+    {
+        if (m_EventWriter == null) return;
+        if (name == "block_start") m_ActiveObjectiveIndex = m_GameManager.CurrentObjectiveIndex;
+        if (name == "search_paused") FinalizeCurrentFixation();
+        WriteEvent(name, "", "", "", -1, false, 0, "researcher_checkpoint");
+        WriteSummary(Time.time - m_GameManager.GameStartTime);
+    }
+    void OnAudioEvent(string kind, string context, string clip, string detail)
+    {
+        WriteEvent(kind, "", "", "", -1, false, 0, $"context={context};clip_id={clip};{detail}");
+    }
+    void OnSessionStopped(string reason)
+    {
+        if (m_EventWriter == null) return;
+        FinalizeCurrentFixation();
+        m_SessionOutcome = reason.StartsWith("audio_failure") ? "technical_failure" : reason;
+        if (m_ActiveObjectiveIndex >= 0 && m_ActiveObjectiveIndex < m_ObjectiveRecords.Count)
+        {
+            var rec = m_ObjectiveRecords[m_ActiveObjectiveIndex]; rec.outcome = m_SessionOutcome;
+            rec.searchSeconds = rec.startTime >= 0 ? m_GameManager.CurrentSearchSeconds : 0;
+            m_ObjectiveRecords[m_ActiveObjectiveIndex] = rec;
+        }
+        WriteEvent("session_stopped", "", "", "", -1, false, 0, reason);
+        WriteSummary(Time.time - m_GameManager.GameStartTime);
+        CloseEventWriter();
+    }
+    void WriteObjectManifest(int round)
+    {
+        string path = SessionConfig.GetFilePath("object_manifest.csv");
+        bool header = !File.Exists(path);
+        using (var writer = new StreamWriter(path, true, s_Utf8NoBom))
+        {
+            if (header) writer.WriteLine("trial_id,object_id,shape,color,row,column,x,y,z,is_target");
+            foreach (var obj in m_GameManager.SpawnedObjects)
+            {
+                var info = obj.GetComponent<SpawnableObjectInfo>(); if (info == null) continue;
+                var pos = obj.transform.position;
+                bool target = info.shapeName == m_ObjectiveRecords[round].shape && info.colorName == m_ObjectiveRecords[round].color;
+                writer.WriteLine(FormattableString.Invariant($"{m_SessionId}_r{round:D2},{info.objectId},{info.shapeName},{info.colorName},{info.shelfLevel},{info.shelfColumn},{pos.x:F5},{pos.y:F5},{pos.z:F5},{(target ? 1 : 0)}"));
+            }
+        }
+    }
+
     void OnObjectFound(int objectiveIndex)
     {
         FinalizeCurrentFixation();
@@ -177,10 +266,11 @@ public class TrialDataLogger : MonoBehaviour
         {
             var rec = m_ObjectiveRecords[objectiveIndex];
             rec.completionTime = Time.time;
-            rec.completed = true;
+            rec.searchSeconds = m_GameManager.CurrentSearchSeconds;
+            rec.completed = true; rec.outcome = "completed";
             m_ObjectiveRecords[objectiveIndex] = rec;
 
-            float timeToFind = rec.completionTime - rec.startTime;
+            float timeToFind = rec.searchSeconds;
 
             WriteEvent("capture_correct",
                 rec.shape, rec.color, $"{rec.color}_{rec.shape}", -1,
@@ -191,19 +281,7 @@ public class TrialDataLogger : MonoBehaviour
         // Reset saccade tracking between rounds (don't count cross-round saccades)
         m_HasLastFixation = false;
 
-        // Start next objective
-        int next = objectiveIndex + 1;
-        if (next < m_ObjectiveRecords.Count)
-        {
-            var rec = m_ObjectiveRecords[next];
-            rec.startTime = Time.time;
-            m_ObjectiveRecords[next] = rec;
-            m_ActiveObjectiveIndex = next;
-
-            WriteEvent("objective_start",
-                rec.shape, rec.color, "", -1, false, 0f,
-                $"index={next}");
-        }
+        // Retain the completed trial identity until the next transition starts.
     }
 
     void OnWrongCapture(string capturedName, string wantedName)
@@ -224,6 +302,7 @@ public class TrialDataLogger : MonoBehaviour
     void OnGameCompleted(float elapsedSeconds)
     {
         FinalizeCurrentFixation();
+        m_SessionOutcome = "completed";
 
         WriteEvent("game_end", "", "", "", -1, false, elapsedSeconds,
             $"total_time={elapsedSeconds:F2}s,found={m_GameManager.FoundCount}");
@@ -243,7 +322,7 @@ public class TrialDataLogger : MonoBehaviour
     void Update()
     {
         if (m_GazeInteractor == null || m_GameManager == null) return;
-        if (m_GameManager.CurrentState != FindObjectGameManager.GameState.Playing) return;
+        if (!m_GameManager.SearchActive) return;
         if (m_ActiveObjectiveIndex < 0 || m_ActiveObjectiveIndex >= m_ObjectiveRecords.Count) return;
 
         // Determine what's hovered
@@ -257,7 +336,7 @@ public class TrialDataLogger : MonoBehaviour
             var info = hovered[0].transform.GetComponent<SpawnableObjectInfo>();
             if (info != null)
             {
-                hoveredId = info.DisplayName;
+                hoveredId = info.objectId;
                 hoveredLevel = info.shelfLevel;
 
                 var objectives = m_GameManager.Objectives;
@@ -375,11 +454,14 @@ public class TrialDataLogger : MonoBehaviour
 
         float elapsed = m_GameManager != null ? Time.time - m_GameManager.GameStartTime : 0f;
 
-        m_EventWriter.WriteLine(string.Format("{0:F4},{1:F4},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11:F4},{12}",
+        m_EventWriter.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:F4},{1:F4},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11:F4},{12},{13},{14},{15},{16},{17}",
             Time.time, elapsed, eventType,
             currentIdx, currentObjShape, currentObjColor,
             Sanitize(objectName), Sanitize(objShape), Sanitize(objColor), shelfLevel,
-            isTarget ? 1 : 0, duration, Sanitize(detail)
+            isTarget ? 1 : 0, duration, Sanitize(detail),
+            SessionConfig.ParticipantId, SessionConfig.RunNumber, currentIdx < 0 ? -1 : currentIdx / ChallengeSet.RoundsPerBlock,
+            currentIdx < 0 ? SessionConfig.VoiceTag : m_ObjectiveRecords[currentIdx].voiceCondition,
+            currentIdx < 0 ? "" : $"{m_SessionId}_r{currentIdx:D2}"
         ));
         m_EventWriter.Flush();
     }
@@ -388,25 +470,40 @@ public class TrialDataLogger : MonoBehaviour
 
     void WriteSummary(float totalTime)
     {
+        float wallTime = Time.time - m_GameManager.GameStartTime;
+        totalTime = 0;
+        for (int i = 0; i < m_ObjectiveRecords.Count; i++)
+        {
+            var record = m_ObjectiveRecords[i];
+            if (i == m_ActiveObjectiveIndex && record.startTime >= 0 && !record.completed)
+            { record.searchSeconds = m_GameManager.CurrentSearchSeconds; m_ObjectiveRecords[i] = record; }
+            totalTime += record.searchSeconds;
+        }
         string summaryPath = SessionConfig.GetFilePath("trial_summary.json");
 
         var sb = new StringBuilder();
         sb.AppendLine("{");
-        sb.AppendLine($"  \"participant_id\": \"{SessionConfig.ParticipantId}\",");
-        sb.AppendLine($"  \"run_number\": {SessionConfig.RunNumber},");
-        sb.AppendLine($"  \"condition\": \"{SessionConfig.ConditionLabel}\",");
-        sb.AppendLine($"  \"session_id\": \"{m_SessionId}\",");
-        sb.AppendLine($"  \"timestamp\": \"{System.DateTime.Now:O}\",");
-        sb.AppendLine($"  \"challenge_set\": \"deterministic_seed_42\",");
-        sb.AppendLine($"  \"round_schedule\": \"alternating_gaze_unaware_gaze_aware\",");
-        sb.AppendLine($"  \"total_rounds\": {ChallengeSet.RoundCount},");
-        sb.AppendLine($"  \"nominal_total_rounds\": {ChallengeSet.TotalRounds},");
-        sb.AppendLine($"  \"debug_round_override\": {ChallengeSet.DebugRoundCountOverride},");
-        sb.AppendLine($"  \"rounds_per_block\": {ChallengeSet.RoundsPerBlock},");
-        sb.AppendLine($"  \"objects_per_round\": {ChallengeSet.ObjectsPerRound},");
-        sb.AppendLine($"  \"total_time_seconds\": {totalTime:F2},");
-        sb.AppendLine($"  \"total_objectives\": {m_ObjectiveRecords.Count},");
-        sb.AppendLine($"  \"objectives_completed\": {m_GameManager.FoundCount},");
+        sb.AppendLine(FormattableString.Invariant($"  \"participant_id\": \"{SessionConfig.ParticipantId}\","));
+        sb.AppendLine(FormattableString.Invariant($"  \"run_number\": {SessionConfig.RunNumber},"));
+        sb.AppendLine(FormattableString.Invariant($"  \"condition\": \"{SessionConfig.ConditionLabel}\","));
+        sb.AppendLine(FormattableString.Invariant($"  \"voice_condition\": \"{(SessionConfig.VoiceBlocksEnabled ? "counterbalanced" : SessionConfig.VoiceTag)}\","));
+        sb.AppendLine(FormattableString.Invariant($"  \"neutral_voice_profile\": \"{SessionConfig.NeutralProfile.ToString().ToLowerInvariant()}\","));
+        sb.AppendLine(FormattableString.Invariant($"  \"session_id\": \"{m_SessionId}\","));
+        sb.AppendLine(FormattableString.Invariant($"  \"timestamp\": \"{System.DateTime.Now:O}\","));
+        sb.AppendLine(FormattableString.Invariant($"  \"challenge_set\": \"deterministic_seed_42\","));
+        sb.AppendLine(FormattableString.Invariant($"  \"round_schedule\": \"always_gaze_aware\","));
+        sb.AppendLine(FormattableString.Invariant($"  \"schema_version\": 2,"));
+        sb.AppendLine(FormattableString.Invariant($"  \"session_outcome\": \"{m_SessionOutcome}\","));
+        sb.AppendLine(FormattableString.Invariant($"  \"voice_order\": \"{SessionConfig.VoiceOrder}\","));
+        sb.AppendLine(FormattableString.Invariant($"  \"total_rounds\": {ChallengeSet.RoundCount},"));
+        sb.AppendLine(FormattableString.Invariant($"  \"nominal_total_rounds\": {ChallengeSet.TotalRounds},"));
+        sb.AppendLine(FormattableString.Invariant($"  \"debug_round_override\": {ChallengeSet.DebugRoundCountOverride},"));
+        sb.AppendLine(FormattableString.Invariant($"  \"rounds_per_block\": {ChallengeSet.RoundsPerBlock},"));
+        sb.AppendLine(FormattableString.Invariant($"  \"objects_per_round\": {ChallengeSet.ObjectsPerRound},"));
+        sb.AppendLine(FormattableString.Invariant($"  \"total_time_seconds\": {totalTime:F2},"));
+        sb.AppendLine(FormattableString.Invariant($"  \"session_wall_time_seconds\": {wallTime:F4},"));
+        sb.AppendLine(FormattableString.Invariant($"  \"total_objectives\": {m_ObjectiveRecords.Count},"));
+        sb.AppendLine(FormattableString.Invariant($"  \"objectives_completed\": {m_GameManager.FoundCount},"));
 
         // Accuracy
         int correctFirstTry = 0;
@@ -425,32 +522,32 @@ public class TrialDataLogger : MonoBehaviour
         float accuracy = m_GameManager.FoundCount > 0
             ? (float)correctFirstTry / m_GameManager.FoundCount : 0f;
 
-        sb.AppendLine($"  \"correct_first_try\": {correctFirstTry},");
-        sb.AppendLine($"  \"total_wrong_captures\": {totalWrong},");
-        sb.AppendLine($"  \"first_try_accuracy\": {accuracy:F3},");
-        sb.AppendLine($"  \"total_fixation_on_targets_seconds\": {totalFixationOnTarget:F2},");
-        sb.AppendLine($"  \"total_fixation_on_distractors_seconds\": {totalFixationOnDistractors:F2},");
+        sb.AppendLine(FormattableString.Invariant($"  \"correct_first_try\": {correctFirstTry},"));
+        sb.AppendLine(FormattableString.Invariant($"  \"total_wrong_captures\": {totalWrong},"));
+        sb.AppendLine(FormattableString.Invariant($"  \"first_try_accuracy\": {accuracy:F3},"));
+        sb.AppendLine(FormattableString.Invariant($"  \"total_fixation_on_targets_seconds\": {totalFixationOnTarget:F2},"));
+        sb.AppendLine(FormattableString.Invariant($"  \"total_fixation_on_distractors_seconds\": {totalFixationOnDistractors:F2},"));
 
         // Blink stats
         bool hasBlinkSignal = m_GazeDataLogger != null && m_GazeDataLogger.HasBlinkSignal;
         int blinkCount = hasBlinkSignal ? m_GazeDataLogger.BlinkCount : -1;
-        float blinksPerMinute = totalTime > 0 && blinkCount >= 0
-            ? blinkCount / (totalTime / 60f) : -1f;
-        sb.AppendLine($"  \"total_blinks\": {blinkCount},");
-        sb.AppendLine($"  \"blinks_per_minute\": {blinksPerMinute:F1},");
+        float blinksPerMinute = wallTime > 0 && blinkCount >= 0
+            ? blinkCount / (wallTime / 60f) : -1f;
+        sb.AppendLine(FormattableString.Invariant($"  \"total_blinks\": {blinkCount},"));
+        sb.AppendLine(FormattableString.Invariant($"  \"blinks_per_minute\": {blinksPerMinute:F1},"));
 
         // Gaze behavior
         string behavior = m_CoverageTracker != null
             ? m_CoverageTracker.ClassifyBehavior().ToString()
             : "unknown";
-        sb.AppendLine($"  \"gaze_behavior_classification\": \"{behavior}\",");
+        sb.AppendLine(FormattableString.Invariant($"  \"gaze_behavior_classification\": \"{behavior}\","));
 
         // Per-objective breakdown
         sb.AppendLine("  \"objectives\": [");
         for (int i = 0; i < m_ObjectiveRecords.Count; i++)
         {
             var rec = m_ObjectiveRecords[i];
-            float timeToFind = rec.completed ? rec.completionTime - rec.startTime : -1f;
+            float timeToFind = rec.completed ? rec.searchSeconds : -1f;
             string wrongList = rec.wrongCapturedObjects != null && rec.wrongCapturedObjects.Count > 0
                 ? "\"" + string.Join("\", \"", rec.wrongCapturedObjects) + "\""
                 : "";
@@ -462,22 +559,31 @@ public class TrialDataLogger : MonoBehaviour
             float avgSaccadeAmp = rec.saccadeCount > 0 ? rec.totalSaccadeAmplitudeDeg / rec.saccadeCount : 0f;
 
             sb.AppendLine("    {");
-            sb.AppendLine($"      \"index\": {rec.index},");
-            sb.AppendLine($"      \"shape\": \"{rec.shape}\",");
-            sb.AppendLine($"      \"color\": \"{rec.color}\",");
-            sb.AppendLine($"      \"completed\": {(rec.completed ? "true" : "false")},");
-            sb.AppendLine($"      \"time_to_find_seconds\": {timeToFind:F2},");
-            sb.AppendLine($"      \"wrong_captures\": {rec.wrongCaptures},");
-            sb.AppendLine($"      \"wrong_captured_objects\": [{wrongList}],");
-            sb.AppendLine($"      \"fixation_time_on_target_seconds\": {rec.fixationTimeOnTarget:F2},");
-            sb.AppendLine($"      \"fixation_time_on_distractors_seconds\": {rec.fixationTimeOnDistractors:F2},");
-            sb.AppendLine($"      \"fixation_count_on_target\": {rec.fixationCountOnTarget},");
-            sb.AppendLine($"      \"fixation_count_on_distractors\": {rec.fixationCountOnDistractors},");
-            sb.AppendLine($"      \"fixation_count_total\": {totalFixations},");
-            sb.AppendLine($"      \"avg_fixation_duration_seconds\": {avgFixDuration:F3},");
-            sb.AppendLine($"      \"saccade_count\": {rec.saccadeCount},");
-            sb.AppendLine($"      \"saccade_frequency_hz\": {saccadeFreq:F3},");
-            sb.AppendLine($"      \"avg_saccade_amplitude_deg\": {avgSaccadeAmp:F2}");
+            sb.AppendLine(FormattableString.Invariant($"      \"index\": {rec.index},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"shape\": \"{rec.shape}\","));
+            sb.AppendLine(FormattableString.Invariant($"      \"color\": \"{rec.color}\","));
+            sb.AppendLine(FormattableString.Invariant($"      \"completed\": {(rec.completed ? "true" : "false")},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"time_to_find_seconds\": {timeToFind:F2},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"search_exposure_seconds\": {rec.searchSeconds:F4},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"voice_condition\": \"{rec.voiceCondition}\","));
+            sb.AppendLine(FormattableString.Invariant($"      \"block\": {rec.index / ChallengeSet.RoundsPerBlock},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"trial_id\": \"{m_SessionId}_r{rec.index:D2}\","));
+            sb.AppendLine(FormattableString.Invariant($"      \"outcome\": \"{rec.outcome}\","));
+            sb.AppendLine(FormattableString.Invariant($"      \"transition_started_at\": {rec.transitionTime:F4},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"objects_ready_at\": {rec.objectsReadyTime:F4},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"search_started_at\": {rec.startTime:F4},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"capture_at\": {(rec.completed ? rec.completionTime : -1f):F4},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"wrong_captures\": {rec.wrongCaptures},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"wrong_captured_objects\": [{wrongList}],"));
+            sb.AppendLine(FormattableString.Invariant($"      \"fixation_time_on_target_seconds\": {rec.fixationTimeOnTarget:F2},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"fixation_time_on_distractors_seconds\": {rec.fixationTimeOnDistractors:F2},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"fixation_count_on_target\": {rec.fixationCountOnTarget},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"fixation_count_on_distractors\": {rec.fixationCountOnDistractors},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"fixation_count_total\": {totalFixations},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"avg_fixation_duration_seconds\": {avgFixDuration:F3},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"saccade_count\": {rec.saccadeCount},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"saccade_frequency_hz\": {saccadeFreq:F3},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"avg_saccade_amplitude_deg\": {avgSaccadeAmp:F2}"));
             sb.Append("    }");
             if (i < m_ObjectiveRecords.Count - 1) sb.Append(",");
             sb.AppendLine();
@@ -512,31 +618,31 @@ public class TrialDataLogger : MonoBehaviour
     }
 
     public void RecordNasaTlx(int mental, int physical, int temporal,
-        int performance, int effort, int frustration)
+        int performance, int effort, int frustration, int block = -1)
     {
         string root = SessionConfig.RootPath;
         if (!Directory.Exists(root))
             Directory.CreateDirectory(root);
 
-        string path = Path.Combine(root, "nasa_tlx.csv");
+        string path = block >= 0 ? SessionConfig.GetFilePath("nasa_tlx.csv") : Path.Combine(root, "nasa_tlx.csv");
         bool needsHeader = !File.Exists(path);
 
         using (var writer = new StreamWriter(path, true, s_Utf8NoBom))
         {
             if (needsHeader)
             {
-                writer.WriteLine("participant_id,condition,mental,physical,temporal,performance,effort,frustration");
+                writer.WriteLine("participant_id,condition,mental,physical,temporal,performance,effort,frustration" + (block >= 0 ? ",run_number,block" : ""));
             }
 
             writer.WriteLine(string.Join(",",
                 Sanitize(SessionConfig.ParticipantId),
-                Sanitize(SessionConfig.ConditionLabel),
+                Sanitize(block >= 0 ? "gaze_aware_voice-" + SessionConfig.VoiceTag : SessionConfig.ConditionLabel),
                 mental.ToString(),
                 physical.ToString(),
                 temporal.ToString(),
                 performance.ToString(),
                 effort.ToString(),
-                frustration.ToString()));
+                frustration.ToString()) + (block >= 0 ? $",{SessionConfig.RunNumber},{block}" : ""));
         }
 
         Debug.Log($"{k_Tag} NASA-TLX recorded: {path}");
@@ -557,7 +663,7 @@ public class TrialDataLogger : MonoBehaviour
             if (rec.completed)
             {
                 completed++;
-                totalFindTime += Mathf.Max(0f, rec.completionTime - rec.startTime);
+                totalFindTime += Mathf.Max(0f, rec.searchSeconds);
                 if (rec.wrongCaptures == 0) correctFirstTry++;
             }
 
@@ -586,16 +692,16 @@ public class TrialDataLogger : MonoBehaviour
 
         var sb = new StringBuilder();
         sb.AppendLine("Session Stats");
-        sb.AppendLine($"Rounds completed: {completed}/{ChallengeSet.RoundCount}");
-        sb.AppendLine($"Total time: {timeStr}");
-        sb.AppendLine($"First-try accuracy: {firstTryPct:F1}%");
-        sb.AppendLine($"Wrong captures: {totalWrong}");
-        sb.AppendLine($"Avg time to find target: {avgFind:F1}s");
-        sb.AppendLine($"Fixation time on target: {targetFixPct:F1}%");
-        sb.AppendLine($"Fixation time on distractors: {distractorFixPct:F1}%");
+        sb.AppendLine(FormattableString.Invariant($"Rounds completed: {completed}/{ChallengeSet.RoundCount}"));
+        sb.AppendLine(FormattableString.Invariant($"Total time: {timeStr}"));
+        sb.AppendLine(FormattableString.Invariant($"First-try accuracy: {firstTryPct:F1}%"));
+        sb.AppendLine(FormattableString.Invariant($"Wrong captures: {totalWrong}"));
+        sb.AppendLine(FormattableString.Invariant($"Avg time to find target: {avgFind:F1}s"));
+        sb.AppendLine(FormattableString.Invariant($"Fixation time on target: {targetFixPct:F1}%"));
+        sb.AppendLine(FormattableString.Invariant($"Fixation time on distractors: {distractorFixPct:F1}%"));
         if (blinkCount >= 0 && blinksPerMinute >= 0f)
-            sb.AppendLine($"Blink rate: {blinksPerMinute:F1}/min");
-        sb.AppendLine($"Gaze pattern: {behavior}");
+            sb.AppendLine(FormattableString.Invariant($"Blink rate: {blinksPerMinute:F1}/min"));
+        sb.AppendLine(FormattableString.Invariant($"Gaze pattern: {behavior}"));
         return sb.ToString().TrimEnd();
     }
 }

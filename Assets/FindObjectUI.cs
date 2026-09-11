@@ -414,6 +414,24 @@ public class FindObjectUI : MonoBehaviour
         m_ShowingPostSurveyStats = false;
     }
 
+    public void ShowBlockSurvey(int blockNumber)
+    {
+        ShowCompletion(7, 0);
+        SetSurveyBlockLabel(blockNumber);
+    }
+
+    public void SetSurveyBlockLabel(int blockNumber)
+    {
+        if (m_CompletionText != null) m_CompletionText.text = $"Block {blockNumber} complete.\nRate workload for this block only.";
+    }
+
+    public void HideBlockSurvey()
+    {
+        m_ShowingNasaTlxSurvey = false; m_WaitingForSurveyAck = false;
+        if (m_CompletionPanel != null) m_CompletionPanel.SetActive(false);
+        if (m_NasaTlxSurveyRoot != null) m_NasaTlxSurveyRoot.SetActive(false);
+    }
+
     public void ShowPostSurveyStats(string statsText)
     {
         if (m_CanvasGO == null || m_CompletionPanel == null || m_CompletionText == null) return;

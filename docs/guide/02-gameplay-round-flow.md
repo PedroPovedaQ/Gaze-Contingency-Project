@@ -2,18 +2,7 @@
 
 This guide walks through the full lifecycle of a run in the Find Object game, from the first tap that starts the session to the final completion screen.
 
-The short version is:
-
-1. The first tap creates a temporary trigger object.
-2. The game manager turns that into the actual session start.
-3. Shelf geometry is created once and cached.
-4. A deterministic 14-round challenge set is generated from a fixed seed.
-5. Round 1 starts with fixation cross + spoken goal (same as later rounds).
-6. Each round spawns 56 configured objects on the shelf grid.
-7. Eye-gaze dwell captures the target after sustained focus.
-8. A transition cross appears, the next goal is shown, then the game pauses briefly.
-9. The next round spawns.
-10. After the last target is found, the run ends and the NASA-TLX prompt is shown.
+**Implemented:** neutral profile selection → self-similar enrollment → both phrase libraries prepared and audio samples accepted → two practice trials → seven experimental trials → block-1 NASA-TLX and break → seven trials in the other voice → block-2 NASA-TLX. Guidance is always gaze-contingent. See [QA procedure](../voice-study-qa.md).
 
 ## What this game is doing
 
@@ -23,35 +12,15 @@ The important design property is that the run is not improvisational. The shelf 
 
 ## Timeline of a complete run
 
-This is the exact order of major events.
-
-1. Participant taps a plane or start surface.
-2. `ObjectSpawner` creates a temporary object.
-3. `FindObjectGameManager.OnObjectSpawned()` intercepts that object.
-4. The game waits for voice readiness if needed.
-5. `StartGame()` resolves the spawn center and shelf orientation.
-6. `ShelfSpawner.CreateShelvesAndSpawnPoints()` builds the shelf geometry once.
-7. `ChallengeSet.Rounds` is loaded and round 1 is selected.
-8. A fixation cross appears with round 1 goal text in the top-left.
-9. The voice assistant starts announcing the round goal.
-10. The cross disappears after the transition pause.
-11. A randomized blank pause runs.
-12. `DoSpawnRound()` enqueues the target and distractor combinations.
-13. Objects are instantiated and configured.
-14. `XRGrabInteractable` components are attached fresh to each object.
-15. The gaze dwell selector begins monitoring the objects.
-16. The current objective is shown on the table-facing HUD.
-17. Player searches and dwells on an object.
-18. `GazeHighlightManager` captures the object after sustained dwell.
-19. If correct, the game enters transition mode.
-20. Current objects are destroyed.
-21. A fixation cross appears with the next goal text in the top-left.
-22. The cross stays visible for the transition pause.
-23. The cross disappears.
-24. A randomized blank pause runs.
-25. The next round spawns.
-26. This loop repeats until round 14 ends.
-27. The completion HUD appears and asks for NASA-TLX submission.
+1. The first surface tap establishes the shelf geometry; progress waits for both voice libraries and accepted playback samples.
+2. Two separate practice trials expose the task in each assigned voice. A researcher checkpoint starts the measured run.
+3. `OnGameStarted` opens one run folder for all 14 experimental trials.
+4. Each transition sets the assigned block voice and announces the goal while objects are prepared but hidden.
+5. `OnRoundReady` records object readiness. After the announcement completes, `BeginSearch` reveals objects, resets dwell, starts the search clock and emits `OnSearchStarted`.
+6. Correct capture stops search timing and logs the completed trial; wrong capture remains within that trial.
+7. After trial seven, logs flush, NASA-TLX records block 1 and a checkpoint holds the break. The next voice is applied only after confirmation.
+8. After trial fourteen, the summary is finalized and NASA-TLX records block 2. Timeout, withdrawal and technical stops retain an incomplete summary without replacement trials.
+9. Explicit pause hides objects and stops speech/dwell/timing; confirmation resumes the same trial with accumulated search time preserved.
 
 ## First tap: how the session starts
 
@@ -138,31 +107,13 @@ The round record stores both the target and the full object array:
 s_Rounds[r] = new RoundDef
 {
     roundIndex = r,
-    blockIndex = r % 2,
+    blockIndex = 0,
     target = target,
     objects = objects.ToArray()
 };
 ```
 
-The schedule is now alternating by round:
-
-- round 1: gaze-unaware
-- round 2: gaze-aware
-- round 3: gaze-unaware
-- round 4: gaze-aware
-- and so on
-
-The code that decides this is:
-
-```csharp
-public static bool IsGazeAware(int roundIndex, int participantNumber)
-{
-    _ = participantNumber;
-    return (roundIndex % 2) == 1;
-}
-```
-
-So the current condition schedule is not participant-counterbalanced by block anymore. It is an alternating round-by-round schedule.
+**Implemented:** All 14 rounds use gaze-contingent hints, regardless of participant number or selected voice. `ChallengeSet.IsGazeAware()` always returns true, and `blockIndex` is 0 for trials 1–7 and 1 for trials 8–14. Voice order is saved per coded participant.
 
 ## Spawning and configuration
 
@@ -175,17 +126,7 @@ var round = ChallengeSet.Rounds[m_CurrentRound];
 m_CurrentTarget = (round.target.shape, round.target.color, round.target.colorValue);
 ```
 
-Then it resolves the condition for that round and updates the hint generator and UI:
-
-```csharp
-bool gazeAware = ChallengeSet.IsGazeAware(m_CurrentRound, participantNumber);
-CurrentRoundGazeAware = gazeAware;
-CurrentRoundConditionLabel = ChallengeSet.GetConditionLabel(m_CurrentRound, participantNumber);
-
-var hints = GetComponent<HintGenerator>();
-if (hints != null) hints.gazeAwareTips = gazeAware;
-m_UI.SetAgentState(gazeAware, CurrentRoundConditionLabel);
-```
+The manager exposes `CurrentRoundGazeAware = true` and `CurrentRoundConditionLabel = "gaze_aware"` throughout the run. `HintGenerator` has no unaware toggle or control policy.
 
 ### How each object is configured
 
@@ -383,7 +324,7 @@ This flow is intentionally rigid.
 - Fresh object instantiation prevents stale interactable state.
 - Dwell capture standardizes selection.
 - Transition cross plus blank pause reduces anticipatory behavior.
-- Alternating aware/unaware rounds make the condition schedule easy to analyze.
+- A single gaze-contingent policy is used throughout either voice run.
 
 If you are debugging the game, the most useful mental model is:
 

@@ -20,36 +20,19 @@ The [IEEE-style planned-study manuscript](manuscript/gaze-guidance-planned-study
 
 ## Study design
 
-### Intended factorial design
+### Current decision: always gaze-contingent
 
-**Protocol proposal.** Use a 2 × 2 within-participant design. Rows manipulate whether the assistant uses gaze information; columns manipulate whether its synthesized voice is generic or self-similar.
+**Protocol proposal — user-directed decision, 2026-09-10.** The agent is always gaze-contingent. Gaze awareness is no longer an experimental factor and there is no gaze-unaware control condition. Neutral versus self-similar voice is the comparison, with the same guidance policy in both voices.
 
-| Guidance awareness | Generic voice | Self-similar voice |
-|---|---|---|
-| **Gaze-unaware** | General guidance in a generic voice | General guidance in the participant's self-similar voice |
-| **Gaze-contingent** | Gaze-responsive guidance in a generic voice | Gaze-responsive guidance in the participant's self-similar voice |
+**Implemented in code.** The application retains 14 deterministic bookshelf trials with 56 objects per trial, now arranged into two seven-trial voice blocks. Odd participant IDs receive neutral then self-similar; even IDs receive the reverse. The assignment is saved under the coded participant folder. Gaze-contingent hinting stays the same in both blocks.
 
-The factors must be independently manipulable:
+**Implemented — preparation and progression.** Choose the male or female neutral profile, enroll the current participant's self-similar voice, and prepare/decode the same complete phrase library for both voices. The operator accepts a playback sample from each voice before proceeding. Two separate practice trials (one per voice) precede the 14 experimental trials. NASA-TLX follows each block; a researcher-confirmed break separates blocks. Practice is excluded from experimental counts and timing.
 
-- **Guidance awareness** changes only whether the hint policy may use the participant's gaze behavior.
-- **Voice similarity** changes only the rendered voice identity.
-- Voice identity changes only the rendered voice. Scripts, timing, spatialization, playback level, and system feedback are held constant across voice columns.
-- Hint opportunities and audio exposure are matched across guidance rows. Gaze contingency and its task-specific information are the intended guidance manipulation; the noncontingent prompts cannot be semantically identical to proximity guidance.
+**Implemented — matching and isolation.** Male neutral uses Eric; female retains Rachel. Neutral audio uses ElevenLabs and self-similar audio uses Voxtral. Both use identical phrase content, a common achieved RMS level (up to -20 dBFS, lowered uniformly for peak headroom), and fixed playback rate. Prepared clips are versioned by text, voice ID and model, with duration/gain/identity in a saved manifest. Experimental playback uses prepared audio only. Failed preparation blocks readiness; missing or failed playback stops the session without voice substitution. Device-wide saved clones are not reused.
 
-The approved planning target is **48 complete participant datasets**, with 12 participants randomly allocated to each order of a four-sequence balanced Latin square (Williams design). The standard schedule contains **up to 64 experimental trials**: four condition blocks with up to 16 trials each. The full 16-trial manifest places the target exactly twice on each of eight vertical search planes surrounding the seated participant at 45° intervals. A complete dataset requires at least 12 technically valid trials per factorial cell. Prespecified time, withdrawal, safety, or technical stops may produce fewer completed trials; the study may not adapt trial count to participant performance or emerging condition results. A simulation-based sensitivity and power analysis using pilot variance components remains required before preregistration.
+**Implemented — measurement.** Objects remain hidden until setup and target speech finish. Search exposure starts at reveal and excludes transitions and explicit pauses. Stable trial/object IDs, per-trial voice, search onset, capture, outcomes, audio events and block questionnaire rows are recorded. Summaries use schema 2 and `always_gaze_aware`; the run label includes the saved voice order. Completed trials are retained on interruption without replacement trials.
 
-### Current executable study
-
-**Implemented.** The application currently runs 14 rounds with 56 objects per round. Each round contains one target, 13 same-color distractors, 13 same-shape distractors, and neutral distractors drawn from six shapes and four colors. Participant-facing odd rounds are gaze-unaware and even rounds are gaze-aware.
-
-The current build is not yet the proposed 2 × 2 experiment:
-
-- **Implementation gap:** only one fixed ElevenLabs voice is configured; there is no generic-versus-self-similar voice assignment.
-- **Implementation gap:** condition order is fixed by round number. The participant number does not counterbalance order or target-condition assignment.
-- **Implementation gap:** gaze-aware and gaze-unaware hints have different default delays and intervals (2 s/4 s versus 3.5 s/9 s). This confounds guidance awareness with timing and hint exposure.
-- **Implementation gap:** the 14-round scheduler must be replaced by four condition blocks with a standard 16-trial manifest (up to 64 experimental trials), exact scheduled target-plane balance, and logged prespecified early-stop reasons.
-
-No data collected with the current build should be described as evidence from the full 2 × 2 design.
+**Protocol proposal / open validation.** Timeout support is configurable and disabled (0) by default until the protocol sets its ceiling. Normalization does not establish perceived loudness, neutrality, similarity or prosodic equivalence between providers. Headset listening, gaze calibration, final block allocation/timeout/power, spatial/theta mechanics, provider/data handling and the complete revised protocol remain research work. Follow [the consolidated QA checklist](voice-study-qa.md) before judging study readiness.
 
 ## Evidence basis and adaptations
 

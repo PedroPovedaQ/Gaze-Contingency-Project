@@ -19,6 +19,14 @@ public class VoiceEnrollment : MonoBehaviour
     VoxtralClient m_Voxtral;
     AudioClip m_RecordingClip;
     bool m_Busy;
+    bool m_FinishRequested;
+    public bool CanFinishRecording => Current == State.Recording && !m_FinishRequested &&
+        m_RecordingClip != null && Microphone.GetPosition(null) >= k_SampleRate;
+
+    public void FinishRecording()
+    {
+        if (CanFinishRecording) m_FinishRequested = true;
+    }
 
     public enum State { Idle, Recording, Cloning, Done, Failed }
     public State Current { get; private set; } = State.Idle;
@@ -47,7 +55,14 @@ public class VoiceEnrollment : MonoBehaviour
         Action<State> onState, Action<string> onDone, Action<string> onError)
     {
         m_Busy = true;
+        m_FinishRequested = false;
+        LastError = "";
         void Set(State s) { Current = s; onState?.Invoke(s); }
+
+        if (m_Voxtral == null || !m_Voxtral.HasKey)
+        {
+            Fail("voice provider unavailable", onError); Set(State.Failed); m_Busy = false; yield break;
+        }
 
         // Mic permission (Android/Quest/Vive).
 #if UNITY_ANDROID
@@ -64,22 +79,31 @@ public class VoiceEnrollment : MonoBehaviour
             Fail("no microphone device", onError); Set(State.Failed); m_Busy = false; yield break;
         }
 
-        Set(State.Recording);
+        seconds = Mathf.Clamp(seconds, 10, 60);
         Debug.Log($"{k_Tag} Recording {seconds}s...");
-        m_RecordingClip = Microphone.Start(null, false, Mathf.Clamp(seconds, 10, 60), k_SampleRate);
+        // Spare capacity keeps the cursor valid when the automatic deadline is reached.
+        m_RecordingClip = Microphone.Start(null, false, seconds + 1, k_SampleRate);
         if (m_RecordingClip == null)
         {
             Fail("Microphone.Start returned null", onError); Set(State.Failed); m_Busy = false; yield break;
         }
 
-        float t = 0f;
-        while (t < seconds && Microphone.IsRecording(null))
-        { t += Time.deltaTime; yield return null; }
+        Set(State.Recording);
+        float started = Time.realtimeSinceStartup;
+        while (!m_FinishRequested && Time.realtimeSinceStartup - started < seconds && Microphone.IsRecording(null))
+            yield return null;
 
         int recordedSamples = Microphone.GetPosition(null);
         Microphone.End(null);
 
+        if (recordedSamples < k_SampleRate)
+        {
+            Destroy(m_RecordingClip); m_RecordingClip = null;
+            Fail("recording too short or microphone interrupted", onError); Set(State.Failed); m_Busy = false; yield break;
+        }
+
         byte[] wav = WavUtility.EncodeFromClip(m_RecordingClip, recordedSamples);
+        Destroy(m_RecordingClip); m_RecordingClip = null;
         Debug.Log($"{k_Tag} Encoded WAV: {wav.Length} bytes ({recordedSamples} samples)");
 
         Set(State.Cloning);
@@ -106,5 +130,17 @@ public class VoiceEnrollment : MonoBehaviour
         LastError = msg;
         Debug.LogWarning($"{k_Tag} {msg}");
         onError?.Invoke(msg);
+    }
+
+    void OnDisable()
+    {
+        StopAllCoroutines();
+        if (m_RecordingClip != null)
+        {
+            Microphone.End(null);
+            Destroy(m_RecordingClip); m_RecordingClip = null;
+        }
+        m_Busy = false;
+        Current = State.Idle;
     }
 }

@@ -18,6 +18,7 @@ from load_data import (load_all_summaries, load_event_logs,
                        compute_last_fixation_durations, load_nasa_tlx)
 from plots import generate_all
 from stats import save_report
+from voice_blocks import write_voice_block_reports
 
 
 def main():
@@ -61,6 +62,8 @@ def main():
         tlx_csv_path = out_dir / "nasa_tlx_scores.csv"
         tlx_df.to_csv(tlx_csv_path, index=False)
         print(f"  saved {tlx_csv_path}")
+
+    write_voice_block_reports(df, out_dir)
 
     # Generate plots
     generate_all(df, out_dir, last_fix_df=last_fix_df, tlx_df=tlx_df)

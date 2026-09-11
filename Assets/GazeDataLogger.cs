@@ -62,6 +62,11 @@ public class GazeDataLogger : MonoBehaviour
 
     // Hover state
     string m_HoveredObject = "";
+    string m_HoveredObjectId = "";
+    Transform m_HoveredTransform;
+    string m_LogFolder = "";
+    string m_LogParticipant = "";
+    readonly string m_PreparationId = System.Guid.NewGuid().ToString("N");
     string m_HoveredShape = "";
     string m_HoveredColor = "";
     int m_HoveredShelfLevel = -1;
@@ -92,8 +97,22 @@ public class GazeDataLogger : MonoBehaviour
             m_Interactor.hoverExited.AddListener(OnHoverExited);
         }
 
-        // Write to the current run folder if available, else fallback
+        OpenLog();
+    }
+
+    void OpenLog()
+    {
+        m_Writer?.Dispose();
+        m_LogFolder = SessionConfig.CurrentRunFolder;
+        m_LogParticipant = SessionConfig.ParticipantId;
         var path = SessionConfig.GetFilePath("gaze_log.csv");
+        if (string.IsNullOrEmpty(m_LogFolder))
+        {
+            string parent = string.IsNullOrEmpty(m_LogParticipant)
+                ? Path.Combine(Application.persistentDataPath, "PreparationLogs") : SessionConfig.ParticipantPath;
+            path = Path.Combine(parent, "preparation_" + m_PreparationId, "gaze_log.csv");
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+        }
 
         m_Writer = new StreamWriter(path, false, Encoding.UTF8);
         m_Writer.WriteLine(string.Join(",",
@@ -109,7 +128,7 @@ public class GazeDataLogger : MonoBehaviour
             "is_target", "dwell_progress",
             "objective_shape", "objective_color", "objective_index",
             "game_state", "ray_visible",
-            "blink", "blink_count"
+            "blink", "blink_count", "participant_id", "run_number", "trial_id", "voice_condition", "search_active", "hovered_object_id", "is_practice"
         ));
         m_Writer.Flush();
 
@@ -134,10 +153,12 @@ public class GazeDataLogger : MonoBehaviour
 
     void OnHoverEntered(HoverEnterEventArgs args)
     {
-        m_HoveredObject = args.interactableObject.transform.name;
+        m_HoveredTransform = args.interactableObject.transform;
+        m_HoveredObject = m_HoveredTransform.name;
         var info = args.interactableObject.transform.GetComponent<SpawnableObjectInfo>();
         if (info != null)
         {
+            m_HoveredObjectId = info.objectId;
             m_HoveredShape = info.shapeName;
             m_HoveredColor = info.colorName;
             m_HoveredShelfLevel = info.shelfLevel;
@@ -152,8 +173,9 @@ public class GazeDataLogger : MonoBehaviour
 
     void OnHoverExited(HoverExitEventArgs args)
     {
-        if (m_HoveredObject == args.interactableObject.transform.name)
+        if (m_HoveredTransform == args.interactableObject.transform)
         {
+            m_HoveredTransform = null; m_HoveredObjectId = "";
             m_HoveredObject = "";
             m_HoveredShape = "";
             m_HoveredColor = "";
@@ -163,6 +185,7 @@ public class GazeDataLogger : MonoBehaviour
 
     void Update()
     {
+        if (m_LogFolder != SessionConfig.CurrentRunFolder || m_LogParticipant != SessionConfig.ParticipantId) { OpenLog(); m_BlinkCount = 0; }
         if (m_Writer == null) return;
 
         // Lazy-resolve references
@@ -324,7 +347,7 @@ public class GazeDataLogger : MonoBehaviour
         var lineVisual = GetComponent<XRInteractorLineVisual>();
         bool rayVisible = lineVisual != null && lineVisual.enabled;
 
-        m_Writer.WriteLine(string.Format(
+        m_Writer.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
             "{0:F4},{1}," +
             "{2:F5},{3:F5},{4:F5}," +
             "{5:F5},{6:F5},{7:F5}," +
@@ -337,7 +360,7 @@ public class GazeDataLogger : MonoBehaviour
             "{27},{28:F4}," +
             "{29},{30},{31}," +
             "{32},{33}," +
-            "{34},{35}",
+            "{34},{35},{36},{37},{38},{39},{40},{41},{42}",
             Time.time, Time.frameCount,
             origin.x, origin.y, origin.z,
             dir.x, dir.y, dir.z,
@@ -350,7 +373,10 @@ public class GazeDataLogger : MonoBehaviour
             isTarget ? 1 : 0, dwellProgress,
             objShape, objColor, objIndex,
             gameState, rayVisible ? 1 : 0,
-            m_BlinkThisFrame ? 1 : 0, m_BlinkCount
+            m_BlinkThisFrame ? 1 : 0, m_BlinkCount,
+            SessionConfig.ParticipantId, SessionConfig.RunNumber,
+            m_GameManager == null ? "" : $"{SessionConfig.ParticipantId}_run{SessionConfig.RunNumber:D3}_r{m_GameManager.CurrentObjectiveIndex:D2}",
+            SessionConfig.VoiceTag, m_GameManager != null && m_GameManager.SearchActive ? 1 : 0, m_HoveredObjectId, m_GameManager != null && m_GameManager.IsPractice ? 1 : 0
         ));
 
         m_FrameCount++;
@@ -361,7 +387,7 @@ public class GazeDataLogger : MonoBehaviour
         }
     }
 
-    static string F(float v) => float.IsNaN(v) ? "" : v.ToString("F5");
+    static string F(float v) => float.IsNaN(v) ? "" : v.ToString("F5", System.Globalization.CultureInfo.InvariantCulture);
 
     void UpdateBlinkDetection(float leftClosed, float rightClosed)
     {

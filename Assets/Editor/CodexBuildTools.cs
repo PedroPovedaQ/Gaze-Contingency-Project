@@ -19,6 +19,17 @@ public static class CodexBuildTools
     // Callable from batchmode: -executeMethod CodexBuildTools.BuildAndRunAndroid
     public static void BuildAndRunAndroid()
     {
+        BuildAndRunAndroid(BuildOptions.None);
+    }
+
+    [MenuItem("Tools/Codex/Clean Build And Run Android", false, 3001)]
+    public static void CleanBuildAndRunAndroid()
+    {
+        BuildAndRunAndroid(BuildOptions.CleanBuildCache);
+    }
+
+    static void BuildAndRunAndroid(BuildOptions additionalOptions)
+    {
         var enabledScenes = EditorBuildSettings.scenes
             .Where(s => s.enabled)
             .Select(s => s.path)
@@ -50,7 +61,7 @@ public static class CodexBuildTools
             scenes = enabledScenes,
             target = BuildTarget.Android,
             locationPathName = apkPath,
-            options = BuildOptions.AutoRunPlayer
+            options = BuildOptions.AutoRunPlayer | additionalOptions
         };
 
         Debug.Log($"[CodexBuild] Building Android player to {apkPath} and launching on device...");

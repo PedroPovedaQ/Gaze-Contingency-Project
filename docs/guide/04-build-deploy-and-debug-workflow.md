@@ -111,7 +111,7 @@ The session data is organized by `SessionConfig` into:
 ```text
 {Application.persistentDataPath}/GazeData/
   P001/
-    run_001_gaze_unaware_YYYY-MM-DD_HH-mm-ss/
+    run_001_gaze_aware_voice-neutral-male_YYYY-MM-DD_HH-mm-ss/
       gaze_log.csv
       trial_events.csv
       trial_summary.json
@@ -156,7 +156,7 @@ If the package name changes, update the path accordingly.
 ### Pull a whole run folder
 
 ```bash
-adb pull /sdcard/Android/data/com.DefaultCompany.MixedRealityTemplate/files/GazeData/P001/run_001_gaze_unaware_2026-04-07_19-10-01 ./run_001
+adb pull /sdcard/Android/data/com.DefaultCompany.MixedRealityTemplate/files/GazeData/P001/run_001_gaze_aware_voice-neutral-male_2026-04-07_19-10-01 ./run_001
 ```
 
 ### Pull all gaze CSVs
@@ -168,7 +168,7 @@ adb pull /sdcard/Android/data/com.DefaultCompany.MixedRealityTemplate/files/Gaze
 ### Pull only the latest gaze log
 
 ```bash
-adb pull /sdcard/Android/data/com.DefaultCompany.MixedRealityTemplate/files/GazeData/P001/run_001_gaze_unaware_2026-04-07_19-10-01/gaze_log.csv
+adb pull /sdcard/Android/data/com.DefaultCompany.MixedRealityTemplate/files/GazeData/P001/run_001_gaze_aware_voice-neutral-male_2026-04-07_19-10-01/gaze_log.csv
 ```
 
 ## How the round flow works
@@ -180,8 +180,6 @@ The gameplay loop is driven by `FindObjectGameManager`.
 When the game starts, round 1 now uses the same transition ritual as later rounds (fixation cross + goal announcement + blank pause) before objects spawn:
 
 ```csharp
-CurrentRoundGazeAware = ChallengeSet.IsGazeAware(m_CurrentRound, participantNumber);
-CurrentRoundConditionLabel = ChallengeSet.GetConditionLabel(m_CurrentRound, participantNumber);
 m_State = GameState.Transitioning;
 StartCoroutine(BeginFirstRoundTransition());
 ```
@@ -189,8 +187,7 @@ StartCoroutine(BeginFirstRoundTransition());
 The UI and hint system are updated immediately:
 
 ```csharp
-if (hints != null) hints.gazeAwareTips = gazeAware;
-m_UI.SetAgentState(gazeAware, CurrentRoundConditionLabel);
+m_UI.SetAgentState(CurrentRoundGazeAware, CurrentRoundConditionLabel);
 ```
 
 ### Spawn and finalize
@@ -269,18 +266,7 @@ So:
 
 ### Hint conditions
 
-The project currently alternates conditions by round:
-
-- round 1: gaze-unaware
-- round 2: gaze-aware
-- round 3: gaze-unaware
-- round 4: gaze-aware
-
-This is defined in `ChallengeSet`:
-
-```csharp
-return (roundIndex % 2) == 1;
-```
+**Implemented:** every round uses gaze-contingent guidance. `CurrentRoundGazeAware` is always true, and summaries identify `always_gaze_aware`. Voice selection does not change the hint policy.
 
 ### Gaze-aware hints
 
@@ -302,21 +288,6 @@ bool veryCloseNow = IsVeryCloseEvidence(targetInfo, lookedInfo, hasLooked);
 bool nearNow = HasNearEvidence(targetInfo, lookedInfo, hasLooked);
 return Pick((veryCloseNow || nearNow) ? (veryCloseNow ? k_GA_Hot_VeryClose : k_GA_Hot_Track) : k_GA_Cold);
 ```
-
-### Gaze-unaware hints
-
-The control condition is generic and empathetic, but not gaze-reactive:
-
-```csharp
-static readonly string[] k_GU_General =
-{
-    "You're doing okay. Keep scanning.",
-    "Take your time. Check shape and color.",
-    "No rush. Scan one object at a time.",
-};
-```
-
-The unaware mode also uses a no-repeat window so back-to-back encouragement does not feel robotic.
 
 ## Debugging incorrect hints
 

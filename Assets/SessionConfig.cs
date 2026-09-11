@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// <summary>
 /// Which voice the assistant speaks in for this run.
-///   Generic    = the fixed ElevenLabs voice (existing behavior).
+///   Generic    = neutral ElevenLabs voice (legacy enum name retained).
 ///   SelfSimilar = a voice cloned from the participant via Mistral Voxtral.
 /// </summary>
 public enum VoiceCondition
@@ -11,6 +11,8 @@ public enum VoiceCondition
     Generic,
     SelfSimilar
 }
+
+public enum NeutralVoiceProfile { Female, Male }
 
 /// <summary>
 /// Shared session configuration for data logging.
@@ -23,7 +25,7 @@ public enum VoiceCondition
 ///         gaze_log.csv
 ///         trial_events.csv
 ///         trial_summary.json
-///       run_002_gaze_unaware_2026-04-05_14-45-10/
+///       run_002_gaze_aware_voice-selfsimilar_2026-04-05_14-45-10/
 ///         ...
 ///     P002/
 ///       ...
@@ -51,6 +53,14 @@ public static class SessionConfig
     /// <summary>Voice condition for this run. Set before game start (default Generic).</summary>
     public static VoiceCondition Voice { get; set; } = VoiceCondition.Generic;
 
+    /// <summary>Explicit neutral voice selection; never inferred from gaze or recordings.</summary>
+    public static NeutralVoiceProfile NeutralProfile { get; set; } = NeutralVoiceProfile.Female;
+    public static string NeutralVoiceId => NeutralProfile == NeutralVoiceProfile.Male
+        ? "cjVigY5qzO86Huf0OWal" // Eric — initial male neutral candidate
+        : "21m00Tcm4TlvDq8ikWAM"; // Rachel — existing female voice
+    public static string VoiceTag => Voice == VoiceCondition.SelfSimilar
+        ? "selfsimilar" : "neutral-" + NeutralProfile.ToString().ToLowerInvariant();
+
     /// <summary>
     /// Mistral Voxtral voice id for the self-similar clone (set at enrollment).
     /// Empty until a voice has been cloned this session.
@@ -64,6 +74,63 @@ public static class SessionConfig
     /// </summary>
     public static bool SelfSimilarEnrollmentPending { get; set; } = false;
 
+    public const string ScheduleVersion = "voice-blocks-v1";
+    public static bool VoiceBlocksEnabled { get; private set; }
+    public static bool NeutralFirst { get; private set; }
+    public static string VoiceOrder => NeutralFirst ? "neutral_then_selfsimilar" : "selfsimilar_then_neutral";
+    public static int CurrentBlock { get; private set; }
+    public static string ParticipantPath => Path.Combine(RootPath, ParticipantId);
+
+    public static void ConfigureVoiceBlocks()
+    {
+        if (string.IsNullOrEmpty(ParticipantId)) ParticipantId = FindNextParticipantId();
+        if (!System.Text.RegularExpressions.Regex.IsMatch(ParticipantId, @"^P[0-9]{3,}$"))
+            throw new System.InvalidOperationException("Use a coded numeric participant ID, such as P001.");
+        Directory.CreateDirectory(ParticipantPath);
+        string assignment = Path.Combine(ParticipantPath, "voice-order-v1.txt");
+        if (File.Exists(assignment))
+        {
+            string value = File.ReadAllText(assignment).Trim();
+            if (value != "neutral_then_selfsimilar" && value != "selfsimilar_then_neutral")
+                throw new System.InvalidOperationException("Invalid saved voice assignment.");
+            NeutralFirst = value == "neutral_then_selfsimilar";
+        }
+        else
+        {
+            if (!int.TryParse(ParticipantId.TrimStart('P', 'p'), out int number))
+                throw new System.InvalidOperationException("Use a coded numeric participant ID, such as P001.");
+            NeutralFirst = number % 2 == 1;
+            File.WriteAllText(assignment, VoiceOrder);
+        }
+        string profilePath = Path.Combine(ParticipantPath, "neutral-profile-v1.txt");
+        if (File.Exists(profilePath))
+        {
+            string saved = File.ReadAllText(profilePath).Trim();
+            if (!System.Enum.TryParse(saved, out NeutralVoiceProfile profile) || !System.Enum.IsDefined(typeof(NeutralVoiceProfile), profile))
+                throw new System.InvalidOperationException("Invalid saved neutral profile.");
+            NeutralProfile = profile;
+        }
+        else File.WriteAllText(profilePath, NeutralProfile.ToString());
+        VoiceBlocksEnabled = true;
+        ApplyRoundVoice(0);
+    }
+
+    public static VoiceCondition VoiceForRound(int round)
+    {
+        bool firstBlock = round < ChallengeSet.RoundsPerBlock;
+        return firstBlock == NeutralFirst ? VoiceCondition.Generic : VoiceCondition.SelfSimilar;
+    }
+
+    public static string VoiceLabelForRound(int round) => VoiceForRound(round) == VoiceCondition.SelfSimilar
+        ? "selfsimilar" : "neutral-" + NeutralProfile.ToString().ToLowerInvariant();
+
+    public static void ApplyRoundVoice(int round)
+    {
+        if (!VoiceBlocksEnabled) return;
+        CurrentBlock = round / ChallengeSet.RoundsPerBlock;
+        Voice = VoiceForRound(round);
+    }
+
     /// <summary>Root data folder path.</summary>
     public static string RootPath => Path.Combine(Application.persistentDataPath, k_RootFolder);
 
@@ -71,29 +138,16 @@ public static class SessionConfig
     /// Begins a new run. Creates the output folder and increments the run counter.
     /// Call this at game start (before any loggers open files).
     /// </summary>
-    /// <param name="gazeAware">True if the gaze-aware condition is active.</param>
-    public static string BeginRun(bool gazeAware)
-    {
-        string conditionLabel = gazeAware ? "gaze_aware" : "gaze_unaware";
-        return BeginRun(conditionLabel);
-    }
-
-    /// <summary>
-    /// Begins a new run with an explicit condition label.
-    /// Use this when a run contains multiple blocks/conditions.
-    /// </summary>
-    public static string BeginRun(string conditionLabel)
+    public static string BeginRun()
     {
         // Auto-assign participant ID if not set
         if (string.IsNullOrEmpty(ParticipantId))
             ParticipantId = FindNextParticipantId();
 
-        ConditionLabel = string.IsNullOrWhiteSpace(conditionLabel)
-            ? "unspecified"
-            : conditionLabel;
+        ConditionLabel = "gaze_aware";
 
         // Record the voice condition in the folder name so runs are self-describing.
-        string voiceTag = Voice == VoiceCondition.SelfSimilar ? "selfsimilar" : "generic";
+        string voiceTag = VoiceBlocksEnabled ? "blocks-" + VoiceOrder : VoiceTag;
         ConditionLabel = $"{ConditionLabel}_voice-{voiceTag}";
 
         // Reset any stale run state that also resets the session should clear the
@@ -138,12 +192,16 @@ public static class SessionConfig
     public static void ResetForNewParticipant()
     {
         Debug.Log($"{k_Tag} Resetting session state for a new participant");
+        VoiceBlocksEnabled = false;
+        CurrentBlock = 0;
         ParticipantId = "";
         RunNumber = 0;
         CurrentRunFolder = "";
         ConditionLabel = "";
         // A cloned voice belongs to one participant — force re-enrollment for the next.
         SelfSimilarVoiceId = "";
+        SelfSimilarEnrollmentPending = false;
+        NeutralProfile = NeutralVoiceProfile.Female;
     }
 
     /// <summary>

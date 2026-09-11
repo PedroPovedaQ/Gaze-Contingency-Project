@@ -6,6 +6,7 @@ using UnityEngine;
 /// </summary>
 public class SpawnableObjectInfo : MonoBehaviour
 {
+    public string objectId; // Stable within a run, including identical distractors.
     public string shapeName;   // "Sphere", "Cube", "Pyramid", "Cylinder", "Star"
     public string colorName;   // "Red", "Blue", "Yellow", "Purple"
     public int shelfLevel;     // 0-6: bottom to top shelf row

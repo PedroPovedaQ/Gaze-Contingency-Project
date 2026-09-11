@@ -7,10 +7,12 @@ import json
 from pathlib import Path
 import pandas as pd
 import csv
+import re
 
 
 SUMMARY_COLUMNS = [
-    "participant_id", "run_number", "condition", "block", "round_index",
+    "voice_condition", "voice_order", "trial_id", "outcome", "session_outcome", "search_started_at", "objects_ready_at", "capture_at", "schema_version",
+    "participant_id", "run_number", "condition", "run_condition", "round_schedule", "block", "round_index",
     "shape", "color", "completed", "time_to_find", "wrong_captures",
     "fixation_time_on_target", "fixation_time_on_distractors",
     "fixation_count_total", "fixation_count_on_target", "fixation_count_on_distractors",
@@ -78,7 +80,7 @@ def _condition_for_round(round_idx: int, run_condition_label: str, rounds_per_bl
       - mixed_gaze_unaware_then_gaze_aware        -> first block unaware, second block aware
       - gaze_aware / gaze_unaware                 -> fixed per run
     """
-    label = (run_condition_label or "").lower()
+    label = (run_condition_label or "").lower().split("_voice-", 1)[0]
     if not label:
         return "unknown"
 
@@ -104,7 +106,9 @@ def _condition_for_round(round_idx: int, run_condition_label: str, rounds_per_bl
 
 def _normalize_tlx_condition(label: str) -> str:
     """Map TLX condition labels to plotting categories without inventing per-condition rows."""
-    low = (label or "").lower()
+    if "_voice-blocks-" in (label or "").lower():
+        return "overall"
+    low = (label or "").lower().split("_voice-", 1)[0]
     if low == "gaze_aware":
         return "gaze_aware"
     if low == "gaze_unaware":
@@ -147,7 +151,7 @@ def load_all_summaries(data_dir: Path) -> pd.DataFrame:
         run = data.get("run_number", 0)
         condition = data.get("condition", "unknown")
         rounds_per_block = data.get("rounds_per_block", 7)
-        total_time_seconds = data.get("total_time_seconds", 0)
+        total_time_seconds = data.get("session_wall_time_seconds", data.get("total_time_seconds", 0))
         total_blinks = data.get("total_blinks", -1)
         blinks_per_minute = data.get("blinks_per_minute", -1)
 
@@ -177,6 +181,17 @@ def load_all_summaries(data_dir: Path) -> pd.DataFrame:
                 "participant_id": participant,
                 "run_number": run,
                 "condition": per_round_condition,
+                "run_condition": condition,
+                "voice_condition": r.get("voice_condition", "unknown"),
+                "voice_order": data.get("voice_order", "unknown"),
+                "trial_id": r.get("trial_id", ""),
+                "outcome": r.get("outcome", "completed" if r.get("completed") else "incomplete"),
+                "session_outcome": data.get("session_outcome", "unknown"),
+                "search_started_at": r.get("search_started_at", -1),
+                "objects_ready_at": r.get("objects_ready_at", -1),
+                "capture_at": r.get("capture_at", -1),
+                "schema_version": data.get("schema_version", 1),
+                "round_schedule": data.get("round_schedule", "unknown"),
                 "block": block,
                 "round_index": round_idx,
                 "shape": r.get("shape", ""),
@@ -227,11 +242,20 @@ def load_event_logs(data_dir: Path) -> pd.DataFrame:
             run_folder = path.parent.name
             df["run_folder"] = run_folder
             rounds_per_block = 7
+            match = re.fullmatch(r"run_\d+_(.+)_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}", run_folder)
+            condition = match.group(1) if match else run_folder
+            summary_path = path.parent / "trial_summary.json"
+            if summary_path.exists():
+                with summary_path.open(encoding="utf-8-sig") as source:
+                    summary = json.load(source)
+                condition = summary.get("condition", condition)
+                rounds_per_block = summary.get("rounds_per_block", rounds_per_block)
+            df["run_condition"] = condition
             if "objective_index" in df.columns:
                 df["condition"] = df["objective_index"].apply(
-                    lambda idx: _condition_for_round(idx, run_folder, rounds_per_block))
+                    lambda idx: _condition_for_round(idx, condition, rounds_per_block))
             else:
-                df["condition"] = _condition_for_round(0, run_folder, rounds_per_block)
+                df["condition"] = _condition_for_round(0, condition, rounds_per_block)
             dfs.append(df)
         except Exception as e:
             print(f"Skipping {path}: {e}")
@@ -285,23 +309,21 @@ def load_nasa_tlx(data_dir: Path) -> pd.DataFrame:
 
     Raw TLX = sum of all 6 subscale scores (each 0-100).
     """
-    tlx_path = data_dir / "nasa_tlx.csv"
-    if not tlx_path.exists():
-        return pd.DataFrame()
-
-    try:
-        df = pd.read_csv(tlx_path, encoding="utf-8-sig")
-        subscales = ["mental", "physical", "temporal",
-                     "performance", "effort", "frustration"]
-        if "condition" in df.columns:
-            # Keep compatible labels for grouping/plots where possible.
-            df["condition"] = df["condition"].apply(_normalize_tlx_condition)
-        if all(c in df.columns for c in subscales):
-            df["raw_tlx"] = df[subscales].sum(axis=1)
-        return df
-    except Exception as e:
-        print(f"Skipping {tlx_path}: {e}")
-        return pd.DataFrame()
+    frames = []
+    for tlx_path in sorted(data_dir.rglob("nasa_tlx.csv")):
+        try:
+            df = pd.read_csv(tlx_path, encoding="utf-8-sig")
+            subscales = ["mental", "physical", "temporal", "performance", "effort", "frustration"]
+            if "condition" in df.columns:
+                df["run_condition"] = df["condition"]
+                df["condition"] = df["condition"].apply(_normalize_tlx_condition)
+            if all(column in df.columns for column in subscales):
+                df["raw_tlx"] = df[subscales].sum(axis=1)
+            df["source_file"] = str(tlx_path)
+            frames.append(df)
+        except (OSError, ValueError) as error:
+            print(f"Skipping {tlx_path}: {error}")
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
 
 
 def load_gaze_logs(data_dir: Path) -> pd.DataFrame:

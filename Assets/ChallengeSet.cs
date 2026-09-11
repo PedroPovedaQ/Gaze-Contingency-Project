@@ -5,17 +5,14 @@ using UnityEngine;
 /// Deterministic challenge definitions for the conjunction search experiment.
 ///
 /// Design: 14 rounds total per session.
-/// Tip condition alternates every round:
-/// - odd-numbered rounds (1,3,5,...) are gaze-unaware
-/// - even-numbered rounds (2,4,6,...) are gaze-aware
+/// The agent is gaze-contingent in every round, in either voice condition.
 ///
 /// All challenges are fixed (seed 42) so every participant gets the exact same
-/// targets, distractors, and shelf positions. The ONLY variable is the
-/// round-level gaze-aware/unaware alternation schedule.
+/// targets, distractors, and shelf positions.
 /// </summary>
 public static class ChallengeSet
 {
-    // Legacy constants kept for compatibility with logging/analysis code.
+    // Two voice blocks; guidance remains gaze-contingent throughout.
     public const int RoundsPerBlock = 7;
     public const int BlockCount = 2;
     public const int TotalRounds = RoundsPerBlock * BlockCount; // 14
@@ -46,7 +43,7 @@ public static class ChallengeSet
     public struct RoundDef
     {
         public int roundIndex;       // 0-13
-        public int blockIndex;       // 0 or 1 (alternating schedule index)
+        public int blockIndex;       // 0-1: counterbalanced voice blocks
         public ObjectDef target;
         public ObjectDef[] objects;  // all 56
     }
@@ -64,15 +61,13 @@ public static class ChallengeSet
     }
 
     /// <summary>
-    /// Returns whether a given round should use gaze-aware tips.
-    /// Alternating schedule: round 0 (round 1 shown to participant) is unaware,
-    /// round 1 is aware, and so on.
+    /// All rounds use gaze-aware tips, independent of participant or voice.
     /// </summary>
     public static bool IsGazeAware(int roundIndex, int participantNumber)
     {
-        // participantNumber intentionally unused in fixed alternating mode
+        _ = roundIndex;
         _ = participantNumber;
-        return (roundIndex % 2) == 1;
+        return true;
     }
 
     /// <summary>
@@ -80,7 +75,25 @@ public static class ChallengeSet
     /// </summary>
     public static string GetConditionLabel(int roundIndex, int participantNumber)
     {
-        return IsGazeAware(roundIndex, participantNumber) ? "gaze_aware" : "gaze_unaware";
+        return "gaze_aware";
+    }
+
+    public static RoundDef PracticeRound(int practiceIndex)
+    {
+        // Separate layouts, excluded from experimental round counts and seed sequence.
+        var rng = new System.Random(900 + practiceIndex);
+        var target = MakeObj(practiceIndex == 0 ? 0 : 1, practiceIndex == 0 ? 0 : 1);
+        var objects = new ObjectDef[ObjectsPerRound];
+        for (int i = 0; i < objects.Length; i++)
+        {
+            ObjectDef candidate;
+            do { candidate = MakeObj(rng.Next(Shapes.Length), rng.Next(ColorNames.Length)); }
+            while (candidate.shape == target.shape && candidate.color == target.color);
+            objects[i] = candidate;
+        }
+        objects[rng.Next(objects.Length)] = target;
+        return new RoundDef { roundIndex = practiceIndex == 0 ? 0 : RoundsPerBlock,
+            blockIndex = practiceIndex, target = target, objects = objects };
     }
 
     static void Generate()
@@ -141,13 +154,13 @@ public static class ChallengeSet
             s_Rounds[r] = new RoundDef
             {
                 roundIndex = r,
-                blockIndex = r % 2,
+                blockIndex = r / RoundsPerBlock,
                 target = target,
                 objects = objects.ToArray()
             };
         }
 
-        Debug.Log($"[ChallengeSet] Generated {TotalRounds} deterministic rounds (alternating gaze-aware/unaware by round)");
+        Debug.Log($"[ChallengeSet] Generated {TotalRounds} deterministic rounds (always gaze-contingent)");
     }
 
     static ObjectDef MakeObj(int si, int ci) => new ObjectDef

@@ -1,22 +1,15 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 /// <summary>
 /// Tip system — gaze-aware tips begin after a short initial delay, then repeat
-/// on a fixed cadence. Two conditions:
+/// on a fixed cadence. The agent is always gaze-contingent.
 ///
 /// GAZE-AWARE: Responds to the player's real-time gaze behavior with
 /// temperature-only feedback (hot/cold). NEVER reveals the target's
 /// location (shelf, direction, column).
 ///
-/// GAZE-UNAWARE (control): Generic encouragement only. "Keep looking."
-/// "Stay focused." No gaze reactivity, no location info, no
-/// warmer/colder. Same tip regardless of what the player is doing.
-///
-/// Both conditions have identical information about WHERE the target is —
-/// neither tells the player. The only variable is whether the agent
-/// can see and respond to the player's gaze.
+/// The same gaze-responsive policy is used in either voice condition.
 /// </summary>
 public class HintGenerator : MonoBehaviour
 {
@@ -26,11 +19,8 @@ public class HintGenerator : MonoBehaviour
     const int k_WarmthVeryClose = 2;
     const float k_TipInterval = 4f;
     const float k_FirstTipDelayAware = 2f;
-    const float k_TipIntervalUnaware = 9f;
-    const float k_FirstTipDelayUnaware = 3.5f;
     const float k_WrongCaptureWindow = 6f;
     const float k_HotMemoryWindow = 5.5f;
-    const int k_UnawareNoRepeatWindow = 3;
     const float k_VeryCloseDistanceMeters = 0.16f;
     const float k_NearTargetDistanceMeters = 0.30f;
     const float k_NearTargetAngleDeg = 14f;
@@ -38,14 +28,6 @@ public class HintGenerator : MonoBehaviour
     const float k_NearRayCandidateAngleDeg = 18f;
     const float k_NearRayCandidateDistanceMeters = 0.24f;
     const float k_MaxCandidateRayDistanceMeters = 8f;
-
-    /// <summary>
-    /// When true, tips respond to gaze with temperature-only feedback.
-    /// When false, tips are generic encouragement only (control).
-    /// Neither condition reveals the target's location.
-    /// </summary>
-    /// <summary>Resolved per round by FindObjectGameManager.</summary>
-    public bool gazeAwareTips = true;
 
     AgentContext m_Context;
     VoiceSynthesizer m_Voice;
@@ -71,9 +53,6 @@ public class HintGenerator : MonoBehaviour
     float m_TimeOnCurrentZone;
     bool m_WasGazingAtTarget;
     float m_LeftTargetTime;
-    bool m_HasLoggedMode;
-    bool m_LastResolvedMode;
-    readonly Queue<string> m_RecentUnawarePhrases = new();
 
     public void Initialize(string apiKey, AgentContext context, VoiceSynthesizer voice, GazeCoverageTracker coverageTracker = null)
     {
@@ -97,10 +76,7 @@ public class HintGenerator : MonoBehaviour
     public void OnNewObjective()
     {
         m_ObjectiveStartTime = Time.time;
-        bool resolvedMode = m_GameManager != null ? m_GameManager.CurrentRoundGazeAware : gazeAwareTips;
-        float tipInterval = resolvedMode ? k_TipInterval : k_TipIntervalUnaware;
-        float firstDelay = resolvedMode ? k_FirstTipDelayAware : k_FirstTipDelayUnaware;
-        m_LastTipTime = Time.time - Mathf.Max(0f, tipInterval - firstDelay);
+        m_LastTipTime = Time.time - Mathf.Max(0f, k_TipInterval - k_FirstTipDelayAware);
         m_WrongCaptureTime = 0f;
         m_LastHotEvidenceTime = -999f;
         m_LastPickIndex = -1;
@@ -143,19 +119,7 @@ public class HintGenerator : MonoBehaviour
     {
         if (m_Voice == null || m_Context == null) return;
         if (m_GameManager == null || m_GameManager.CurrentState != FindObjectGameManager.GameState.Playing) return;
-        if (m_TipsSuppressed) return;
-
-        // Resolve mode from the round state each frame so round boundary
-        // switches (round 7 -> 8) are always applied even if a one-time
-        // assignment is missed.
-        bool resolvedMode = m_GameManager.CurrentRoundGazeAware;
-        gazeAwareTips = resolvedMode;
-        if (!m_HasLoggedMode || m_LastResolvedMode != resolvedMode)
-        {
-            Debug.Log($"{k_Tag} Mode sync: round={m_GameManager.CurrentObjectiveIndex + 1}, mode={(resolvedMode ? "AWARE" : "UNAWARE")}, condition={m_GameManager.CurrentRoundConditionLabel}");
-            m_HasLoggedMode = true;
-            m_LastResolvedMode = resolvedMode;
-        }
+        if (m_TipsSuppressed || !m_GameManager.SearchActive) return;
 
         // Track gaze-near-target state for "go back" detection
         bool gazingAtTarget = IsGazingAtCurrentTarget();
@@ -185,24 +149,23 @@ public class HintGenerator : MonoBehaviour
         if (m_Voice.IsBusy) return;
 
         float now = Time.time;
-        float tipInterval = gazeAwareTips ? k_TipInterval : k_TipIntervalUnaware;
-        if (now - m_LastTipTime < tipInterval) return;
+        if (now - m_LastTipTime < k_TipInterval) return;
 
         m_NextAwareHintWarmth = -1;
         m_NextAwareHintRow = -1;
         m_NextAwareHintCol = -1;
-        string tip = gazeAwareTips ? EvaluateGazeAware(now) : EvaluateGazeUnaware(now);
+        string tip = EvaluateGazeAware(now);
         if (string.IsNullOrEmpty(tip)) return;
 
         m_LastTipTime = now;
         m_Voice.Speak(tip, "tip");
-        if (gazeAwareTips && m_NextAwareHintWarmth >= 0)
+        if (m_NextAwareHintWarmth >= 0)
         {
             m_LastAwareHintWarmth = m_NextAwareHintWarmth;
             m_LastAwareHintRow = m_NextAwareHintRow;
             m_LastAwareHintCol = m_NextAwareHintCol;
         }
-        Debug.Log($"{k_Tag} [{(gazeAwareTips ? "AWARE" : "UNAWARE")}] \"{tip}\"");
+        Debug.Log($"{k_Tag} [AWARE] \"{tip}\"");
     }
 
     // =====================================================================
@@ -260,21 +223,6 @@ public class HintGenerator : MonoBehaviour
         }
 
         return PickAwareByWarmth(k_WarmthCold);
-    }
-
-    // =====================================================================
-    //  GAZE-UNAWARE (control) — generic encouragement, no gaze reactivity
-    // =====================================================================
-
-    string EvaluateGazeUnaware(float now)
-    {
-        if (m_WrongCaptureTime > 0f && (now - m_WrongCaptureTime) < k_WrongCaptureWindow)
-        {
-            m_WrongCaptureTime = 0f;
-            return PickUnaware(k_GU_WrongCapture);
-        }
-
-        return PickUnaware(k_GU_General);
     }
 
     // =====================================================================
@@ -507,31 +455,6 @@ public class HintGenerator : MonoBehaviour
         return pool[idx];
     }
 
-    string PickUnaware(string[] pool)
-    {
-        if (pool == null || pool.Length == 0) return "";
-
-        // Prefer phrases not used in the recent unaware history window.
-        string pick = "";
-        for (int tries = 0; tries < 16; tries++)
-        {
-            string candidate = pool[Random.Range(0, pool.Length)];
-            if (m_RecentUnawarePhrases.Contains(candidate)) continue;
-            pick = candidate;
-            break;
-        }
-
-        // Fallback: if all candidates are in the recent window, pick any random.
-        if (string.IsNullOrEmpty(pick))
-            pick = pool[Random.Range(0, pool.Length)];
-
-        m_RecentUnawarePhrases.Enqueue(pick);
-        while (m_RecentUnawarePhrases.Count > k_UnawareNoRepeatWindow)
-            m_RecentUnawarePhrases.Dequeue();
-
-        return pick;
-    }
-
     string PickAwareByWarmth(int warmth)
     {
         m_NextAwareHintWarmth = warmth;
@@ -551,6 +474,14 @@ public class HintGenerator : MonoBehaviour
     // =================================================================
     //  GAZE-AWARE TIPS — temperature only (hot/cold)
     // =================================================================
+
+    public static string[] AllPhrases()
+    {
+        var phrases = new System.Collections.Generic.List<string>();
+        foreach (var pool in new[] { k_GA_Hot_VeryClose, k_GA_Hot_Track, k_GA_Cold, k_GA_Colder_Track, k_GA_Colder_Cold })
+            phrases.AddRange(pool);
+        return phrases.ToArray();
+    }
 
     // --- VERY CLOSE: tight on target area ---
     static readonly string[] k_GA_Hot_VeryClose =
@@ -610,37 +541,4 @@ public class HintGenerator : MonoBehaviour
         "You're getting colder. Shift to another area.",
     };
 
-    // =================================================================
-    //  GAZE-UNAWARE (CONTROL) — no gaze, no location, just encouragement
-    // =================================================================
-
-    // Generic encouragement only — no proximity, no warmth, no spatial info,
-    // no fake "you're close". Pure placebo presence so the participant gets
-    // the same number of voice prompts as the gaze-aware condition without
-    // any actual help finding the target.
-    static readonly string[] k_GU_General =
-    {
-        "You're doing okay. Keep scanning.",
-        "Take your time. Check shape and color.",
-        "No rush. Scan one object at a time.",
-        "You're making progress. Keep going.",
-        "It's okay to slow down and compare carefully.",
-        "Stay steady. Move to the next object when ready.",
-        "You're doing fine. Recheck uncertain matches.",
-        "Keep a calm pace. Continue searching.",
-        "Good effort. Keep your attention on each object.",
-        "You're on track. Keep scanning methodically.",
-    };
-
-    static readonly string[] k_GU_WrongCapture =
-    {
-        "Not this one, and that's okay. Try again.",
-        "That wasn't the target. Take another look.",
-        "Wrong one. You're okay, keep going.",
-        "Not quite. Try another when you're ready.",
-        "That wasn't it. Keep scanning calmly.",
-        "Not the target. You're still doing fine.",
-        "Wrong pick. Reset and keep searching.",
-        "Not this one. Take your time and continue.",
-    };
 }
