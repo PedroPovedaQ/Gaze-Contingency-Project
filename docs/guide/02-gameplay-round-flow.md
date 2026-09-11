@@ -1,5 +1,7 @@
 # Gameplay Round Flow
 
+**Implemented beta (2026-09-11):** `codex/eight-plane-beta` now starts from a seated center with eight surrounding planes, seven objects each. It retains the two practice trials and 14-round voice schedule. See [beta behavior and QA](../eight-plane-beta.md). Shelf-specific descriptions below describe the retained legacy mode.
+
 This guide walks through the full lifecycle of a run in the Find Object game, from the first tap that starts the session to the final completion screen.
 
 **Implemented:** neutral profile selection → self-similar enrollment → both phrase libraries prepared and audio samples accepted → two practice trials → seven experimental trials → block-1 NASA-TLX and break → seven trials in the other voice → block-2 NASA-TLX. Guidance is always gaze-contingent. See [QA procedure](../voice-study-qa.md).

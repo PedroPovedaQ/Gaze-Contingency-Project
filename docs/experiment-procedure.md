@@ -1,5 +1,7 @@
 # Experiment Procedure: Gaze-Contingent Guidance and Self-Similar Voice
 
+**Implemented beta (2026-09-11):** `codex/eight-plane-beta` now starts from a seated center with eight surrounding planes, seven objects each. It retains the two practice trials and 14-round voice schedule. See [beta behavior and QA](eight-plane-beta.md). Shelf-specific descriptions below describe the retained legacy mode.
+
 ## Purpose and status
 
 This document defines the participant-facing procedure for evaluating gaze-contingent guidance and self-similar voice during mixed-reality visual search. It also records where the intended experiment differs from the current Unity implementation.

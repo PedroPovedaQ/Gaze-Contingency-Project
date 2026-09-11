@@ -9,7 +9,7 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
 /// <summary>
-/// 14-round conjunction search game. Each round spawns 56 objects on bookcases.
+/// 14-round conjunction search game with eight-plane beta or table-shelf layouts.
 /// Player finds 1 target via gaze dwell. On correct capture: show fixation cross,
 /// destroy objects, wait, spawn fresh, finalize gaze interactables, go.
 /// </summary>
@@ -133,6 +133,15 @@ public class FindObjectGameManager : MonoBehaviour
     public string CurrentRoundConditionLabel => "gaze_aware";
 
     [Header("Debug")]
+    [SerializeField] bool m_UseRotationalLayout = true;
+    [SerializeField, Range(1f, 3f)] float m_RotationalRadius = RotationalSearchLayout.DefaultRadius;
+    public bool RotationalBetaEnabled => m_UseRotationalLayout;
+    public Vector3 SeatedOrigin => m_SpawnCenter;
+    public float SeatedForwardYaw => m_SeatedRotation.eulerAngles.y;
+    Quaternion m_SeatedRotation = Quaternion.identity;
+    RotationalSearchLayout.Slot[] m_RotationalSlots;
+    Material m_PlaneOutlineMaterial;
+    bool m_CenterAccepted;
     [SerializeField] bool m_UseDebugRoundCountOverride;
     [SerializeField, Min(1)] int m_DebugRoundCount = ChallengeSet.TotalRounds;
 
@@ -267,6 +276,55 @@ public class FindObjectGameManager : MonoBehaviour
         m_Spawner.objectSpawned += OnObjectSpawned;
     }
 
+    IEnumerator Start()
+    {
+        if (!m_UseRotationalLayout) yield break;
+        VoiceModeSelector selector;
+        VoiceAssistantController voice;
+        do
+        {
+            yield return null;
+            if (m_TechnicallyStopped || m_CenterAccepted) yield break;
+            selector = GetComponent<VoiceModeSelector>();
+            voice = GetComponent<VoiceAssistantController>();
+        } while (selector == null || !selector.IsComplete || voice == null || !voice.IsReady);
+        // Let the setup confirmation disappear before showing the independent start gate.
+        yield return new WaitForSeconds(3.1f);
+        if (m_TechnicallyStopped || m_CenterAccepted) yield break;
+        m_UI.HideStartPrompt();
+        if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
+        while (!m_CenterAccepted && !m_TechnicallyStopped)
+        {
+            m_Checkpoint.Show("<b>360° SEARCH BETA</b>\nSit at the center and face your chosen forward direction.\nEight planes will surround you, seven objects on each.\nStay seated and turn to search.",
+                "Release the trigger, then press Trigger / Enter to center and begin.");
+            while (m_Checkpoint.Waiting && !m_TechnicallyStopped) yield return null;
+            if (m_TechnicallyStopped || m_CenterAccepted) yield break;
+            if (!StartCenteredSession())
+                Debug.LogWarning($"{k_Tag} Centering not ready; keep the headset on and face forward, then try again.");
+        }
+    }
+
+    public bool StartCenteredSession()
+    {
+        if (!m_UseRotationalLayout || m_CenterAccepted || m_State != GameState.Idle || !Application.isFocused || Camera.main == null) return false;
+        var selector = GetComponent<VoiceModeSelector>();
+        var voice = GetComponent<VoiceAssistantController>();
+        if (selector == null || !selector.IsComplete || voice == null || !voice.IsReady) return false;
+        if (m_Spawner == null || m_Spawner.objectPrefabs == null || m_Spawner.objectPrefabs.Count == 0) return false;
+        if (GetComponent<ShapeObjectFactory>() == null) return false;
+        m_SpawnCenter = Camera.main.transform.position;
+        Vector3 forward = Vector3.ProjectOnPlane(Camera.main.transform.forward, Vector3.up);
+        if (forward.sqrMagnitude < 0.01f) return false;
+        m_SeatedRotation = Quaternion.LookRotation(forward.normalized, Vector3.up);
+        m_RotationalRadius = Mathf.Clamp(m_RotationalRadius, 1f, 3f);
+        m_RotationalSlots = RotationalSearchLayout.Build(m_RotationalRadius);
+        m_CenterAccepted = true;
+        m_Checkpoint?.Confirm();
+        voice.PlayStudyIntroduction();
+        StartGame(null);
+        return true;
+    }
+
     void OnDisable()
     {
         ChallengeSet.DebugRoundCountOverride = 0;
@@ -286,6 +344,7 @@ public class FindObjectGameManager : MonoBehaviour
 
     void OnObjectSpawned(GameObject obj)
     {
+        if (m_UseRotationalLayout) { Destroy(obj); return; }
         if (m_State == GameState.Idle)
         {
             var voice = GetComponent<VoiceAssistantController>();
@@ -322,28 +381,31 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_Factory == null) m_Factory = GetComponent<ShapeObjectFactory>();
         if (m_Factory == null) return;
 
-        m_SpawnCenter = triggerObj.transform.position;
-        m_PlaneSize = new Vector2(0.5f, 0.5f);
-        m_PlaneRight = Vector3.right;
-        m_PlaneForward = Vector3.forward;
+        if (!m_UseRotationalLayout)
+        {
+            m_SpawnCenter = triggerObj.transform.position;
+            m_PlaneSize = new Vector2(0.5f, 0.5f);
+            m_PlaneRight = Vector3.right;
+            m_PlaneForward = Vector3.forward;
 
-        var planes = FindObjectsOfType<VivePlaneData>();
-        float best = float.MaxValue;
-        VivePlaneData bestP = null;
-        foreach (var p in planes)
-        {
-            if (!p.IsHorizontalUp) continue;
-            float d = Vector3.Distance(m_SpawnCenter, p.Center);
-            if (d < best) { best = d; bestP = p; }
+            var planes = FindObjectsOfType<VivePlaneData>();
+            float best = float.MaxValue;
+            VivePlaneData bestP = null;
+            foreach (var p in planes)
+            {
+                if (!p.IsHorizontalUp) continue;
+                float d = Vector3.Distance(m_SpawnCenter, p.Center);
+                if (d < best) { best = d; bestP = p; }
+            }
+            if (bestP != null)
+            {
+                m_SpawnCenter = bestP.Center;
+                m_PlaneSize = bestP.Size;
+                m_PlaneRight = bestP.transform.right;
+                m_PlaneForward = bestP.transform.up;
+            }
+            Destroy(triggerObj);
         }
-        if (bestP != null)
-        {
-            m_SpawnCenter = bestP.Center;
-            m_PlaneSize = bestP.Size;
-            m_PlaneRight = bestP.transform.right;
-            m_PlaneForward = bestP.transform.up;
-        }
-        Destroy(triggerObj);
 
         m_GazeDwell = FindObjectOfType<GazeHighlightManager>();
         if (m_GazeDwell != null)
@@ -395,11 +457,19 @@ public class FindObjectGameManager : MonoBehaviour
 
         if (!m_ShelvesBuilt)
         {
-            var (shelfObjs, _) = ShelfSpawner.CreateShelvesAndSpawnPoints(
-                m_SpawnCenter, m_PlaneSize, m_PlaneRight, m_PlaneForward, k_ObjectsPerRound);
-            m_ShelfObjects.AddRange(shelfObjs);
+            if (m_UseRotationalLayout)
+            {
+                CreateRotationalFrames();
+                m_UI.PositionForRotationalSearch();
+            }
+            else
+            {
+                var (shelfObjs, _) = ShelfSpawner.CreateShelvesAndSpawnPoints(
+                    m_SpawnCenter, m_PlaneSize, m_PlaneRight, m_PlaneForward, k_ObjectsPerRound);
+                m_ShelfObjects.AddRange(shelfObjs);
+                m_UI.PositionStaticLeft(m_SpawnCenter, ShelfSpawner.ObjectFacingRotation);
+            }
             m_ShelvesBuilt = true;
-            m_UI.PositionStaticLeft(m_SpawnCenter, ShelfSpawner.ObjectFacingRotation);
         }
 
         IsPractice = true; m_PracticeIndex = 0;
@@ -417,6 +487,49 @@ public class FindObjectGameManager : MonoBehaviour
         m_CurrentRound = practice.roundIndex;
         while (m_Objectives.Count <= m_CurrentRound) m_Objectives.Add(("", "", Color.white));
         m_Objectives[m_CurrentRound] = (practice.target.shape, practice.target.color, practice.target.colorValue);
+    }
+
+    void CreateRotationalFrames()
+    {
+        var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default");
+        if (shader != null)
+        {
+            m_PlaneOutlineMaterial = new Material(shader);
+            m_PlaneOutlineMaterial.color = new Color(0.55f, 0.65f, 0.7f, 1f);
+        }
+        for (int plane = 0; plane < RotationalSearchLayout.PlaneCount; plane++)
+        {
+            Quaternion rotation = m_SeatedRotation * Quaternion.Euler(0f, plane * 45f, 0f);
+            Vector3 center = m_SpawnCenter + rotation * Vector3.forward * (m_RotationalRadius + 0.08f);
+            var frame = new GameObject($"SearchPlane_{plane}_{plane * 45}deg");
+            frame.transform.SetPositionAndRotation(center, rotation);
+            if (m_PlaneOutlineMaterial != null)
+            {
+                var line = frame.AddComponent<LineRenderer>();
+                line.sharedMaterial = m_PlaneOutlineMaterial;
+                line.useWorldSpace = false;
+                line.loop = true; line.widthMultiplier = 0.006f;
+                line.positionCount = 4;
+                line.SetPositions(new[] { new Vector3(-0.42f, -0.36f, 0), new Vector3(-0.42f, 0.36f, 0),
+                    new Vector3(0.42f, 0.36f, 0), new Vector3(0.42f, -0.36f, 0) });
+            }
+            var label = new GameObject("PlaneLabel");
+            label.transform.SetParent(frame.transform, false);
+            label.transform.localPosition = new Vector3(0f, 0.43f, 0f);
+            var text = label.AddComponent<TextMeshPro>();
+            text.text = plane == 0 ? "0° · FORWARD" : $"{plane * 45}°";
+            text.fontSize = 1.8f;
+            text.alignment = TextAlignmentOptions.Center;
+            text.color = Color.white;
+            text.rectTransform.sizeDelta = new Vector2(0.8f, 0.15f);
+            m_ShelfObjects.Add(frame);
+        }
+        Debug.Log($"{k_Tag} Rotational beta centered at {m_SpawnCenter}, yaw={SeatedForwardYaw:F1}, radius={m_RotationalRadius:F2}; 8 planes x 7 objects.");
+    }
+
+    void OnDestroy()
+    {
+        if (m_PlaneOutlineMaterial != null) Destroy(m_PlaneOutlineMaterial);
     }
 
     IEnumerator FinishPractice()
@@ -449,8 +562,20 @@ public class FindObjectGameManager : MonoBehaviour
 
         // --- Get spawn points ---
         m_SpawnPoints.Clear();
-        m_SpawnPoints.AddRange(ShelfSpawner.ComputeSpawnPoints(
-            m_SpawnCenter, m_PlaneSize, m_PlaneRight, m_PlaneForward, ChallengeSet.ObjectsPerRound));
+        if (m_UseRotationalLayout)
+        {
+            foreach (var slot in m_RotationalSlots)
+                m_SpawnPoints.Add(new ShelfSpawner.SpawnPoint
+                {
+                    position = m_SpawnCenter + m_SeatedRotation * new Vector3(slot.x, slot.y, slot.z),
+                    row = slot.slot, col = slot.plane
+                });
+        }
+        else
+        {
+            m_SpawnPoints.AddRange(ShelfSpawner.ComputeSpawnPoints(
+                m_SpawnCenter, m_PlaneSize, m_PlaneRight, m_PlaneForward, ChallengeSet.ObjectsPerRound));
+        }
 
         // --- Instantiate and configure (deterministic order = deterministic shelf positions) ---
         m_SpawnedObjects.Clear();
@@ -478,7 +603,9 @@ public class FindObjectGameManager : MonoBehaviour
             // Position at designated spawn point
             var sp = m_SpawnPoints[i];
             obj.transform.position = sp.position;
-            obj.transform.rotation = ShelfSpawner.ObjectFacingRotation;
+            obj.transform.rotation = m_UseRotationalLayout
+                ? m_SeatedRotation * Quaternion.Euler(0f, m_RotationalSlots[i].azimuth + 180f, 0f)
+                : ShelfSpawner.ObjectFacingRotation;
 
             var info = obj.GetComponent<SpawnableObjectInfo>();
             if (info != null)
@@ -486,6 +613,12 @@ public class FindObjectGameManager : MonoBehaviour
                 info.objectId = $"{(IsPractice ? "practice" : "r")}{m_CurrentRound:D2}_o{i:D2}";
                 info.shelfLevel = sp.row;
                 info.shelfColumn = sp.col;
+                if (m_UseRotationalLayout)
+                {
+                    info.planeId = m_RotationalSlots[i].plane;
+                    info.planeSlot = m_RotationalSlots[i].slot;
+                    info.planeAzimuth = m_RotationalSlots[i].azimuth;
+                }
 
                 // Pyramid mesh pivot is at its base (others are centered), so after
                 // spawn-positioning we lower by half height to align bases on planks.
@@ -628,7 +761,8 @@ public class FindObjectGameManager : MonoBehaviour
             while (m_AwaitingBlockSurvey && !m_TechnicallyStopped) yield return null;
             if (m_TechnicallyStopped) yield break;
             m_UI.HideBlockSurvey();
-            m_UI.PositionStaticLeft(m_SpawnCenter, ShelfSpawner.ObjectFacingRotation);
+            if (m_UseRotationalLayout) m_UI.PositionForRotationalSearch();
+            else m_UI.PositionStaticLeft(m_SpawnCenter, ShelfSpawner.ObjectFacingRotation);
             if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
             m_Checkpoint.Show("Block 1 complete.\nQuestionnaire saved. Take a break.\nConfirm when ready for the second voice.");
             while (m_Checkpoint.Waiting && !m_TechnicallyStopped) yield return null;

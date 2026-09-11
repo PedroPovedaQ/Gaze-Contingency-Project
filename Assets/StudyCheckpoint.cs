@@ -10,7 +10,7 @@ public class StudyCheckpoint : MonoBehaviour
     bool m_Held = true;
     public bool Waiting { get; private set; }
     readonly List<InputDevice> m_Devices = new List<InputDevice>();
-    public void Show(string message)
+    public void Show(string message, string actionPrompt = "Researcher: press Trigger / Enter to continue.")
     {
         if (m_Panel != null) Destroy(m_Panel);
         m_Panel = new GameObject("StudyCheckpoint");
@@ -27,7 +27,7 @@ public class StudyCheckpoint : MonoBehaviour
         text.rectTransform.sizeDelta = new Vector2(740, 360);
         text.alignment = TextAlignmentOptions.Center;
         text.fontSize = 30;
-        text.text = message + "\n\nResearcher: press Trigger / Enter to continue.";
+        text.text = message + "\n\n" + actionPrompt;
         Waiting = true; m_Held = true;
     }
     public void Confirm()
@@ -38,6 +38,7 @@ public class StudyCheckpoint : MonoBehaviour
     void Update()
     {
         if (!Waiting) return;
+        if (!Application.isFocused) { m_Held = true; return; }
         bool pressed = false;
         InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.Controller, m_Devices);
         foreach (var device in m_Devices)

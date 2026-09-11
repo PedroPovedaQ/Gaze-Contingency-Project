@@ -468,7 +468,9 @@ public class VoiceModeSelector : MonoBehaviour
     {
         m_Phase = Phase.Done;
         SelectionCompleted?.Invoke();
-        SetText(message + "\n\nTap a nearby surface to begin.");
+        SetText(message + (GetComponent<FindObjectGameManager>()?.RotationalBetaEnabled == true
+            ? "\n\nStay seated. The center-and-begin step is next."
+            : "\n\nTap a nearby surface to begin."));
         // Leave the confirmation up briefly, then remove the panel.
         if (m_CanvasGO != null) Destroy(m_CanvasGO, 3.0f);
         enabled = false;

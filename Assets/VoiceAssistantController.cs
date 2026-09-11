@@ -20,6 +20,13 @@ public class VoiceAssistantController : MonoBehaviour
         "Your goal will be displayed in the center of your view each round.";
     const string k_ClosingLine =
         "Thank you for your participation in this experiment, please remove the headset now and have a great day";
+    const string k_RotationalIntroLine =
+        "Welcome to the surrounding search. Stay seated at the center. " +
+        "Objects will appear on eight planes around you. Turn to search for the target by its color and shape. " +
+        "Hold your gaze on the matching object to select it. Your first two rounds are practice.";
+    static string StudyIntroLine => FindObjectOfType<FindObjectGameManager>()?.RotationalBetaEnabled == true
+        ? k_RotationalIntroLine : k_IntroLine;
+    public void PlayStudyIntroduction() => HandleInitialStartPressed();
     const int k_WrongCueSampleRate = 22050;
     const float k_WrongCueDurationSeconds = 0.22f;
 
@@ -157,7 +164,7 @@ public class VoiceAssistantController : MonoBehaviour
     public static string[] PhraseLibrary()
     {
         var phrases = new System.Collections.Generic.HashSet<string>(HintGenerator.AllPhrases());
-        phrases.Add(k_CompletionLine); phrases.Add(k_IntroLine); phrases.Add(k_ClosingLine); phrases.Add(AudioCheckLine); phrases.Add("Nice!");
+        phrases.Add(k_CompletionLine); phrases.Add(StudyIntroLine); phrases.Add(k_ClosingLine); phrases.Add(AudioCheckLine); phrases.Add("Nice!");
         foreach (var round in ChallengeSet.Rounds) phrases.Add(RoundPhrase(round.roundIndex, round.target.color, round.target.shape));
         for (int i = 0; i < 2; i++)
         { var practice = ChallengeSet.PracticeRound(i); phrases.Add(RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape, true)); }
@@ -229,7 +236,7 @@ public class VoiceAssistantController : MonoBehaviour
             return;
 
         m_VoiceSynthesizer.Stop();
-        m_VoiceSynthesizer.Speak(k_IntroLine, "intro");
+        m_VoiceSynthesizer.Speak(StudyIntroLine, "intro");
         m_IntroPlayed = true;
         m_IntroRequested = false;
         if (m_RoundAnnounceCoroutine != null)

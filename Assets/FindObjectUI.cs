@@ -278,6 +278,21 @@ public class FindObjectUI : MonoBehaviour
         Debug.Log($"{k_Tag} UI positioned on table gap at {pos}");
     }
 
+    public void PositionForRotationalSearch()
+    {
+        var camera = Camera.main;
+        if (camera == null) return;
+        // Keep the goal below the search field while the participant turns.
+        m_CanvasGO.transform.SetParent(camera.transform, false);
+        m_CanvasGO.transform.localPosition = new Vector3(0f, -0.38f, 0.9f);
+        m_CanvasGO.transform.localRotation = Quaternion.identity;
+        m_CanvasGO.transform.localScale = Vector3.one * 0.00065f;
+        m_CrossCanvasGO.transform.SetParent(camera.transform, false);
+        m_CrossCanvasGO.transform.localPosition = new Vector3(0f, 0f, 1.1f);
+        m_CrossCanvasGO.transform.localRotation = Quaternion.identity;
+        m_CrossCanvasGO.transform.localScale = Vector3.one * 0.002f;
+    }
+
     public void ShowFixationCross(string color = null, string shape = null, bool isPractice = false)
     {
         if (m_CrossGoalText != null)
@@ -504,7 +519,9 @@ public class FindObjectUI : MonoBehaviour
         m_CanvasGO.SetActive(true);
         if (m_CompletionPanel != null) m_CompletionPanel.SetActive(false);
         if (m_StartPromptPanel != null) m_StartPromptPanel.SetActive(true);
-        if (m_StartPromptText != null) m_StartPromptText.text = k_StartPromptDefaultText;
+        if (m_StartPromptText != null) m_StartPromptText.text = GetComponent<FindObjectGameManager>()?.RotationalBetaEnabled == true
+            ? "360° search beta\nComplete voice setup, then center and begin while seated."
+            : k_StartPromptDefaultText;
         if (m_ObjectiveText != null) m_ObjectiveText.enabled = false;
         if (m_ProgressText != null) m_ProgressText.enabled = false;
         if (m_TimerText != null) m_TimerText.enabled = false;

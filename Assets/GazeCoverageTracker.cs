@@ -13,7 +13,7 @@ public class GazeCoverageTracker : MonoBehaviour
     const int k_RingCapacity = 20;
     const float k_MinFixationDuration = 0.1f; // ignore sub-100ms glances
     const int k_ClassifyWindow = 10; // last N events for behavior classification
-    const int k_ZoneCount = 7;
+    int ZoneCount => m_GameManager != null && m_GameManager.RotationalBetaEnabled ? RotationalSearchLayout.PlaneCount : 7;
 
     public enum GazeBehavior { Systematic, Normal, Erratic, Stuck }
 
@@ -41,8 +41,8 @@ public class GazeCoverageTracker : MonoBehaviour
     int m_RingHead;
     int m_RingCount;
 
-    readonly float[] m_ZoneLastScanTime = new float[k_ZoneCount];
-    readonly float[] m_ZoneTotalFixation = new float[k_ZoneCount];
+    readonly float[] m_ZoneLastScanTime = new float[RotationalSearchLayout.PlaneCount];
+    readonly float[] m_ZoneTotalFixation = new float[RotationalSearchLayout.PlaneCount];
 
     // Current fixation state
     string m_CurrentObject;
@@ -72,7 +72,7 @@ public class GazeCoverageTracker : MonoBehaviour
     void Update()
     {
         if (m_GazeInteractor == null || m_GameManager == null) return;
-        if (m_GameManager.CurrentState != FindObjectGameManager.GameState.Playing) return;
+        if (!m_GameManager.SearchActive) return;
 
         // Determine what the player is currently looking at
         string hoveredId = null;
@@ -83,8 +83,8 @@ public class GazeCoverageTracker : MonoBehaviour
             var info = hovered[0].transform.GetComponent<SpawnableObjectInfo>();
             if (info != null)
             {
-                hoveredId = info.DisplayName;
-                hoveredLevel = info.shelfLevel;
+                hoveredId = string.IsNullOrEmpty(info.objectId) ? info.DisplayName : info.objectId;
+                hoveredLevel = info.planeId >= 0 ? info.planeId : info.shelfLevel;
             }
         }
 
@@ -108,7 +108,7 @@ public class GazeCoverageTracker : MonoBehaviour
         }
 
         // Update zone tracking for current gaze
-        if (hoveredLevel >= 0 && hoveredLevel < k_ZoneCount)
+        if (hoveredLevel >= 0 && hoveredLevel < ZoneCount)
         {
             m_ZoneLastScanTime[hoveredLevel] = Time.time;
             m_ZoneTotalFixation[hoveredLevel] += Time.deltaTime;
@@ -157,7 +157,7 @@ public class GazeCoverageTracker : MonoBehaviour
         float totalDuration = 0f;
         var uniqueObjects = new HashSet<string>();
         int zoneSwitches = 0;
-        var zoneCounts = new int[k_ZoneCount];
+        var zoneCounts = new int[ZoneCount];
         int prevZone = -1;
 
         for (int i = 0; i < window; i++)
@@ -168,7 +168,7 @@ public class GazeCoverageTracker : MonoBehaviour
             totalDuration += evt.duration;
             uniqueObjects.Add(evt.objectId);
 
-            if (evt.shelfLevel >= 0 && evt.shelfLevel < k_ZoneCount)
+            if (evt.shelfLevel >= 0 && evt.shelfLevel < ZoneCount)
                 zoneCounts[evt.shelfLevel]++;
 
             if (prevZone >= 0 && evt.shelfLevel != prevZone)
@@ -181,7 +181,7 @@ public class GazeCoverageTracker : MonoBehaviour
 
         // Find dominant zone
         int maxZoneCount = 0;
-        for (int i = 0; i < k_ZoneCount; i++)
+        for (int i = 0; i < ZoneCount; i++)
         {
             if (zoneCounts[i] > maxZoneCount)
                 maxZoneCount = zoneCounts[i];
@@ -262,7 +262,7 @@ public class GazeCoverageTracker : MonoBehaviour
     /// </summary>
     public float GetZoneLastScanTime(int level)
     {
-        if (level < 0 || level >= k_ZoneCount) return 0f;
+        if (level < 0 || level >= ZoneCount) return 0f;
         return m_ZoneLastScanTime[level];
     }
 
@@ -271,7 +271,7 @@ public class GazeCoverageTracker : MonoBehaviour
     /// </summary>
     public float GetZoneTotalFixation(int level)
     {
-        if (level < 0 || level >= k_ZoneCount) return 0f;
+        if (level < 0 || level >= ZoneCount) return 0f;
         return m_ZoneTotalFixation[level];
     }
 
@@ -322,7 +322,7 @@ public class GazeCoverageTracker : MonoBehaviour
         m_CurrentLevel = -1;
         m_FixationStart = 0f;
 
-        for (int i = 0; i < k_ZoneCount; i++)
+        for (int i = 0; i < ZoneCount; i++)
         {
             m_ZoneLastScanTime[i] = 0f;
             m_ZoneTotalFixation[i] = 0f;

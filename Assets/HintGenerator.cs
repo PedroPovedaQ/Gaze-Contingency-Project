@@ -379,6 +379,8 @@ public class HintGenerator : MonoBehaviour
         if (IsGazingAtCurrentTarget()) return true;
         if (!hasLooked || lookedInfo == null) return false;
         if (IsWrongBookcase(targetInfo, lookedInfo)) return false;
+        if (targetInfo.planeId >= 0)
+            return Vector3.Distance(targetInfo.transform.position, lookedInfo.transform.position) <= k_VeryCloseDistanceMeters;
 
         int rowDist = Mathf.Abs(targetInfo.shelfLevel - lookedInfo.shelfLevel);
         int colDist = Mathf.Abs(targetInfo.shelfColumn - lookedInfo.shelfColumn);
@@ -394,6 +396,8 @@ public class HintGenerator : MonoBehaviour
         if (hasLooked && lookedInfo != null)
         {
             if (IsWrongBookcase(targetInfo, lookedInfo)) return false;
+            if (targetInfo.planeId >= 0)
+                return Vector3.Distance(targetInfo.transform.position, lookedInfo.transform.position) <= k_NearTargetDistanceMeters;
 
             int rowDist = Mathf.Abs(targetInfo.shelfLevel - lookedInfo.shelfLevel);
             int colDist = Mathf.Abs(targetInfo.shelfColumn - lookedInfo.shelfColumn);

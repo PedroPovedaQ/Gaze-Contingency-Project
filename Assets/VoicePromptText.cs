@@ -50,6 +50,10 @@ public static class VoicePromptText
     {
         if (string.IsNullOrEmpty(text)) return text;
         if (k_SelfSimilar.TryGetValue(text, out var wording)) return wording;
+        if (text.StartsWith("Welcome to the surrounding search. ", StringComparison.Ordinal))
+            return "Let's begin the surrounding search. Let's stay seated at the center. " +
+                "We'll see objects on eight planes around us. Let's turn to find the target by its color and shape. " +
+                "Let's hold our gaze on the matching object to select it. Our first two rounds are practice.";
         const string practice = "This is a practice round. It does not count toward the study. ";
         if (text.StartsWith(practice, StringComparison.Ordinal))
             return "Let's try a practice round. This one does not count toward our study rounds. " + SelfSimilar(text.Substring(practice.Length));
