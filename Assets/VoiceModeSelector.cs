@@ -398,10 +398,11 @@ public class VoiceModeSelector : MonoBehaviour
     {
         m_Phase = Phase.Preparing;
         if (m_Text == null) BuildPanel();
-        SetText("<b>Processing voice…</b>\nPreparing the audio for both voices. Please wait.");
+        SetText("<b>Processing voice…</b>\nPreparing voice checks and the first practice round. Please wait.");
         yield return m_Synth.SpeakProcessingStatus(false);
         bool ready = false;
-        yield return m_Synth.PrepareLibraries(VoiceAssistantController.PhraseLibrary(), SetText, ok => ready = ok);
+        yield return m_Synth.PrepareLibraries(VoiceAssistantController.StarterPhrases(), SetText,
+            ok => ready = ok, VoiceAssistantController.PhraseLibrary());
         if (!ready)
         {
             m_Phase = Phase.PreparationFailed; m_FirstPoll = true;
@@ -416,13 +417,14 @@ public class VoiceModeSelector : MonoBehaviour
             SetText($"<b>Audio preparation failed</b>\n{m_Synth.PreparationStage}\n{reason}\n\nTrigger / 1: Retry preparation\nA / X / 2: Record voice again");
             yield break;
         }
-        SetText("<b>Voice processing complete</b>\nBoth voices are ready. Next, check the audio.");
+        SetText("<b>Voice setup ready</b>\nNext, check the audio. Remaining prompts load in the background.");
         yield return m_Synth.SpeakProcessingStatus(true);
         m_Phase = Phase.CheckingNeutral;
         SessionConfig.Voice = VoiceCondition.Generic;
         m_FirstPoll = true;
         SetText($"<b>Check neutral {SessionConfig.NeutralProfile.ToString().ToLowerInvariant()} audio</b>\nConfirm voice, clarity and comfortable volume.\nTrigger / 1: Accept\nA / X / 2: Replay\nB / Y / 3: Restart voice setup");
         m_Synth.Speak(VoiceAssistantController.AudioCheckLine, "audio_check");
+        m_Synth.StartBackgroundLoading(VoiceAssistantController.BackgroundPhrases());
     }
 
     public void ConfirmAudioSample()

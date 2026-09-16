@@ -56,6 +56,7 @@ public class FindObjectGameManager : MonoBehaviour
             if (obj != null && obj.TryGetComponent<MeshRenderer>(out var renderer)) renderer.enabled = true;
         SearchActive = true;
         m_SearchClock.Begin(Time.timeAsDouble);
+        m_UI.ShowRoundAudioWait(false);
         m_GazeDwell?.ResetDwell();
         m_UI.ResumeTimer();
         OnSearchStarted?.Invoke(round);
@@ -845,6 +846,7 @@ public class FindObjectGameManager : MonoBehaviour
         m_UI.ShowObjective(m_CurrentTarget.colorValue,
             $"{m_CurrentTarget.color} {m_CurrentTarget.shape}",
             IsPractice ? m_PracticeIndex : m_CurrentRound, IsPractice ? 2 : k_TotalRounds, IsPractice);
+        m_UI.ShowRoundAudioWait(true);
     }
 
     IEnumerator ResetAfterDelay()

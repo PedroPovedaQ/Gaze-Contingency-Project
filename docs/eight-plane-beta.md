@@ -12,9 +12,11 @@
 
 **Protocol proposal / open decisions:** radius, slot spacing, density, comfort and gaze reliability require headset QA. The existing target schedule is retained and is not exactly balanced across eight planes. Coarse directional/spatial audio, theta calibration, forced forward alignment, revised trial balancing and the larger manuscript schedule are not implemented by this geometry beta. The current experiment remains always gaze-contingent with two voice blocks.
 
+**Implemented:** voice setup prepares four starter phrases per voice (eight clips total). After the eight starter clips, the remaining audio loads silently in the background during audio checks, practice and gameplay. Upcoming round instructions are queued before the remaining hints and announcements, with both voices prepared per phrase. Playback preempts background work, which resumes afterward. If a needed clip is not ready yet, it generates on demand; all clips remain cached by voice. A waiting message appears before search begins; the timer and gaze selection remain gated until the round instruction finishes. First-use hints may arrive later while synthesis completes. Added clips must match the accepted audio level and update the active-run voice manifest. The manifest records `starter_then_background` so this preparation mode can be identified during analysis.
+
 ## QA
 
-1. Complete recording and both audio checks; confirm no table tap is requested.
+1. Complete recording and both audio checks; confirm preparation reports four phrases per voice and no table tap is requested. Check a later uncached round shows its audio waiting message with objects hidden and no running search timer. Check a repeated hint uses cached audio and each block retains its assigned voice.
 2. Sit at the intended center, face forward, release the trigger and press it once to begin. Holding it from a prior prompt must not start the run.
 3. Confirm eight framed planes, seven objects per plane, and 0° forward / 90° right / 180° behind.
 4. Turn around: objects must remain anchored while the goal stays readable. Check that the target can be selected at front, side and rear angles.

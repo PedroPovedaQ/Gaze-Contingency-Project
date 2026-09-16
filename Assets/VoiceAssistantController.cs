@@ -171,6 +171,28 @@ public class VoiceAssistantController : MonoBehaviour
         return new System.Collections.Generic.List<string>(phrases).ToArray();
     }
 
+    public static string[] StarterPhrases()
+    {
+        var practice = ChallengeSet.PracticeRound(0);
+        return new[] { AudioCheckLine, StudyIntroLine, "Nice!",
+            RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape, true) };
+    }
+
+    public static string[] BackgroundPhrases()
+    {
+        var ordered = new System.Collections.Generic.List<string>();
+        for (int i = 0; i < 2; i++)
+        {
+            var practice = ChallengeSet.PracticeRound(i);
+            ordered.Add(RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape, true));
+        }
+        foreach (var round in ChallengeSet.Rounds)
+            ordered.Add(RoundPhrase(round.roundIndex, round.target.color, round.target.shape));
+        ordered.AddRange(PhraseLibrary());
+        var seen = new System.Collections.Generic.HashSet<string>();
+        return ordered.FindAll(phrase => seen.Add(phrase)).ToArray();
+    }
+
     void HandleAudioFailure(string reason)
     {
         if (m_GameManager != null && m_GameManager.CurrentState != FindObjectGameManager.GameState.Idle &&

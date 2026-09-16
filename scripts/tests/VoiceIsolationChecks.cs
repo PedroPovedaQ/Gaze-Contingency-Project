@@ -159,6 +159,94 @@ class VoiceIsolationChecks
             Drain(synth.SpeakProcessingStatus(true));
             Check(SessionConfig.Voice == VoiceCondition.SelfSimilar && synth.LibraryReady,
                 "completion status preserves voice and library readiness");
+            string lazyPrompt = "Locate the Purple Sphere.";
+            provider.Calls = 0;
+            Drain(synth.PrepareLibraries(new[] { targetPrompt }, null, ok => prepared = ok,
+                new[] { targetPrompt, lazyPrompt, "Locate the Red Cube." }));
+            Check(prepared && provider.Calls == 0 && loaded.Count == 2,
+                "starter preparation loads only starter clips, leaving later trials untouched");
+            SessionConfig.BeginRun();
+            UnityWebRequest.Requests.Clear();
+            synth.Speak(lazyPrompt, "round"); Drain(MonoBehaviour.LastRoutine);
+            Check(string.IsNullOrEmpty(synth.LastError) && provider.Calls == 1 &&
+                provider.Texts.Contains("Let's find the purple sphere.") &&
+                UnityWebRequest.Requests.TrueForAll(url => url.StartsWith("file:")),
+                "first-use trial synthesizes in the assigned clone with first-person wording and no neutral request");
+            Check(File.Exists(SessionConfig.GetFilePath("voice-library-manifest.json")),
+                "on-demand clip updates the active run manifest");
+            matchedRms = null;
+            foreach (var clip in loaded.Values)
+            {
+                var samples = new float[clip.samples]; clip.GetData(samples, 0); double power = 0;
+                foreach (float sample in samples) power += sample * sample;
+                double rms = Math.Sqrt(power / samples.Length);
+                if (matchedRms.HasValue) Check(Math.Abs(rms - matchedRms.Value) < 0.0001,
+                    "on-demand clip matches accepted starter RMS");
+                matchedRms = rms;
+            }
+            provider.Calls = 0; UnityWebRequest.Requests.Clear();
+            synth.Speak(lazyPrompt); Drain(MonoBehaviour.LastRoutine);
+            Check(provider.Calls == 0 && UnityWebRequest.Requests.Count == 0,
+                "repeated on-demand phrase plays from memory without a request");
+            synth.Speak("not authorized"); Drain(MonoBehaviour.LastRoutine);
+            Check(!string.IsNullOrEmpty(synth.LastError) && provider.Calls == 0,
+                "progressive mode still rejects phrases outside the study library");
+            SessionConfig.Voice = VoiceCondition.Generic;
+            synth.Speak(lazyPrompt); Drain(MonoBehaviour.LastRoutine);
+            Check(string.IsNullOrEmpty(synth.LastError) && provider.Calls == 0 &&
+                UnityWebRequest.Requests.Exists(url => url.EndsWith(SessionConfig.NeutralVoiceId)),
+                "same phrase in neutral block gets separate neutral audio");
+            SessionConfig.Voice = VoiceCondition.SelfSimilar;
+            SessionConfig.SelfSimilarEnrollmentPending = true;
+            synth.Speak(lazyPrompt); Drain(MonoBehaviour.LastRoutine);
+            Check(!string.IsNullOrEmpty(synth.LastError) && provider.Calls == 0,
+                "cached on-demand audio cannot bypass enrollment readiness");
+            SessionConfig.SelfSimilarEnrollmentPending = false;
+            provider.Audio = null; provider.Calls = 0; UnityWebRequest.Requests.Clear();
+            synth.Speak("Locate the Red Cube."); Drain(MonoBehaviour.LastRoutine);
+            Check(!string.IsNullOrEmpty(synth.LastError) && !synth.IsBusy && provider.Calls == 1 &&
+                UnityWebRequest.Requests.Count == 0, "on-demand failure releases busy state without voice fallback");
+            provider.Audio = new byte[120];
+            synth.Speak(targetPrompt); Drain(MonoBehaviour.LastRoutine);
+            int backgroundPlayback = 0;
+            synth.Telemetry += (kind, context, clip, details) => {
+                if (kind == "audio_playback_start" && context == "prefetch") backgroundPlayback++;
+            };
+            var update = typeof(VoiceSynthesizer).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic);
+            provider.Calls = 0;
+            synth.StartBackgroundLoading(new[] { "Locate the Red Cube." });
+            update.Invoke(synth, null);
+            Check(!synth.IsBusy, "background work does not gate the trial or audio-check controls");
+            synth.Speak(targetPrompt); Drain(MonoBehaviour.LastRoutine);
+            Check(provider.Calls == 0, "foreground playback preempts queued background synthesis");
+            update.Invoke(synth, null); Drain(MonoBehaviour.LastRoutine);
+            update.Invoke(synth, null); Drain(MonoBehaviour.LastRoutine);
+            Check(provider.Calls == 1 && backgroundPlayback == 0 && SessionConfig.Voice == VoiceCondition.SelfSimilar,
+                "background resumes, prepares both voices silently and preserves the active condition");
+            provider.Calls = 0; UnityWebRequest.Requests.Clear();
+            synth.Speak("Locate the Red Cube."); Drain(MonoBehaviour.LastRoutine);
+            Check(string.IsNullOrEmpty(synth.LastError) && provider.Calls == 0 && UnityWebRequest.Requests.Count == 0,
+                "background-prepared self clip is ready for immediate playback");
+            SessionConfig.Voice = VoiceCondition.Generic;
+            synth.Speak("Locate the Red Cube."); Drain(MonoBehaviour.LastRoutine);
+            Check(string.IsNullOrEmpty(synth.LastError) && UnityWebRequest.Requests.Count == 0,
+                "background-prepared neutral clip uses its own cache");
+            string failedBackground = "Locate the Yellow Sphere.";
+            Drain(synth.PrepareLibraries(new[] { targetPrompt }, null, ok => prepared = ok,
+                new[] { targetPrompt, failedBackground }));
+            int foregroundFailures = 0;
+            synth.PlaybackFailed += error => foregroundFailures++;
+            synth.StartBackgroundLoading(new[] { failedBackground });
+            update.Invoke(synth, null); Drain(MonoBehaviour.LastRoutine);
+            provider.Audio = null;
+            update.Invoke(synth, null); Drain(MonoBehaviour.LastRoutine);
+            Check(foregroundFailures == 0 && string.IsNullOrEmpty(synth.LastError) && !synth.IsBusy,
+                "background failure cannot stop the trial or poison accepted audio checks");
+            SessionConfig.Voice = VoiceCondition.SelfSimilar;
+            synth.Speak(failedBackground); Drain(MonoBehaviour.LastRoutine);
+            Check(foregroundFailures == 1 && !string.IsNullOrEmpty(synth.LastError),
+                "a failed background clip still requires valid audio when requested for playback");
+            provider.Audio = new byte[120];
             string hintSource = File.ReadAllText("Assets/HintGenerator.cs");
             hintSource = hintSource.Substring(hintSource.IndexOf("// --- VERY CLOSE", StringComparison.Ordinal));
             foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(hintSource, "\"([^\"]+)\""))

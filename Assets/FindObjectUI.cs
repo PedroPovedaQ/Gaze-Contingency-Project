@@ -399,6 +399,13 @@ public class FindObjectUI : MonoBehaviour
         m_ObjectiveText.text = "<color=#FF4444>Wrong object!</color>";
     }
 
+    public void ShowRoundAudioWait(bool waiting)
+    {
+        if (m_ObjectiveText != null)
+            m_ObjectiveText.text = m_CurrentObjectiveString +
+                (waiting ? "\n<size=24>Preparing round audio. Listen before searching.</size>" : "");
+    }
+
     public void ShowCompletion(int total, float elapsedSeconds)
     {
         HideStartPrompt();
