@@ -27,7 +27,7 @@ public class VoiceSynthesizer : MonoBehaviour
     Coroutine m_SpeakCoroutine;
     string m_CurrentContext;
 
-    public const string ContentVersion = "matched-voice-v2";
+    public const string ContentVersion = "matched-voice-v3";
     public string LastError { get; private set; }
     public bool ProviderPolicyBlocked => LastError != null && LastError.Contains("guardrail_violation");
     public string PreparationStage { get; private set; }
@@ -49,12 +49,12 @@ public class VoiceSynthesizer : MonoBehaviour
 
     [Serializable] class ClipAudit
     {
-        public string clip_id, voice_id, provider, model, text, content_version;
+        public string clip_id, voice_id, provider, model, text, content_version, perspective, perspective_version;
         public float duration_seconds, rms, peak, gain, achieved_rms;
     }
     [Serializable] class LibraryAudit
     {
-        public string preparation_mode;
+        public string preparation_mode, perspective, perspective_version;
         public float matched_rms;
         public List<ClipAudit> clips;
     }
@@ -70,6 +70,7 @@ public class VoiceSynthesizer : MonoBehaviour
     public IEnumerator PrepareLibraries(string[] phrases, Action<string> progress, Action<bool> done,
         string[] onDemandPhrases = null)
     {
+        SessionConfig.LockPerspective();
         Stop();
         m_BackgroundQueue.Clear();
         m_BackgroundEnabled = false;
@@ -89,7 +90,7 @@ public class VoiceSynthesizer : MonoBehaviour
             {
                 PreparationStage = $"Preparing {(voice == VoiceCondition.Generic ? "neutral" : "self-similar")} voice: {i + 1}/{phrases.Length}";
                 progress?.Invoke(PreparationStage);
-                m_PreparingText = voice == VoiceCondition.SelfSimilar ? VoicePromptText.SelfSimilar(phrases[i]) : phrases[i];
+                m_PreparingText = VoicePromptText.Format(phrases[i], SessionConfig.Perspective);
                 for (int attempt = 0; attempt < 3; attempt++)
                 {
                     yield return SpeakCoroutine(phrases[i]);
@@ -157,6 +158,7 @@ public class VoiceSynthesizer : MonoBehaviour
         {
             string json = JsonUtility.ToJson(new LibraryAudit { clips = m_Audit,
                 matched_rms = m_MatchedRms,
+                perspective = SessionConfig.Perspective.ToString(), perspective_version = VoicePromptText.Version,
                 preparation_mode = m_OnDemandPhrases == null ? "full_library" :
                     m_BackgroundEnabled ? "starter_then_background" : "starter_then_on_demand" }, true);
             File.WriteAllText(Path.Combine(SessionConfig.ParticipantPath, "voice-library-manifest.json"), json);
@@ -310,7 +312,7 @@ public class VoiceSynthesizer : MonoBehaviour
         m_GeneratedAudio = false;
         bool allowOnDemand = LibraryReady && m_OnDemandPhrases != null && m_OnDemandPhrases.Contains(text);
         bool wantSelfSimilar = (requestedVoice ?? SessionConfig.Voice) == VoiceCondition.SelfSimilar;
-        if (wantSelfSimilar) text = VoicePromptText.SelfSimilar(text);
+        if (!setupAnnouncement) text = VoicePromptText.Format(text, SessionConfig.Perspective);
         m_PreparingText = text;
         string voiceId = wantSelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId;
         string voiceScope = wantSelfSimilar ? $"vx-{voiceId}" : $"el-{voiceId}";
@@ -493,6 +495,8 @@ public class VoiceSynthesizer : MonoBehaviour
                 provider = wantSelfSimilar ? "mistral" : "elevenlabs",
                 model = wantSelfSimilar ? "voxtral-mini-tts-2603" : k_Model,
                 text = m_PreparingText, content_version = ContentVersion,
+                perspective = m_SetupAnnouncement ? "setup" : SessionConfig.Perspective.ToString(),
+                perspective_version = VoicePromptText.Version,
                 duration_seconds = clip.length, rms = rms, peak = peak, gain = gain, achieved_rms = rms * gain });
         }
         // Persist before playback, including clips added after the run began.
@@ -503,9 +507,9 @@ public class VoiceSynthesizer : MonoBehaviour
         m_AudioSource.volume = 0.7f;
         m_AudioSource.pitch = 1f;
         m_AudioSource.Play();
-        Telemetry?.Invoke("audio_playback_start", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6}");
+        Telemetry?.Invoke("audio_playback_start", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={SessionConfig.Perspective};perspective_version={VoicePromptText.Version};text={m_PreparingText}");
         while (m_AudioSource.isPlaying) yield return null;
-        Telemetry?.Invoke("audio_playback_end", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6}");
+        Telemetry?.Invoke("audio_playback_end", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={SessionConfig.Perspective};perspective_version={VoicePromptText.Version};text={m_PreparingText}");
         m_ActiveClipKey = null;
     }
 
@@ -517,6 +521,7 @@ public class VoiceSynthesizer : MonoBehaviour
     /// </summary>
     public void PreCachePhrases(string[] phrases)
     {
+        SessionConfig.LockPerspective();
         StartCoroutine(PreCacheCoroutine(phrases));
     }
 
@@ -526,8 +531,9 @@ public class VoiceSynthesizer : MonoBehaviour
         int cached = 0;
         int skipped = 0;
 
-        foreach (string phrase in phrases)
+        foreach (string sourcePhrase in phrases)
         {
+            string phrase = VoicePromptText.Format(sourcePhrase, SessionConfig.Perspective);
             string path = GetCachePath(phrase, $"el-{neutralVoiceId}"); // pre-cache targets the generic voice
             if (File.Exists(path))
             {
@@ -582,9 +588,10 @@ public class VoiceSynthesizer : MonoBehaviour
     string GetCachePath(string text, string scope)
     {
         // Scope the key by voice so generic vs self-similar (and different clones)
-        // never collide on identical hint text. FNV-1a over "scope|text".
+        // never collide on identical hint text; include script mode/version even for shared lines.
         string model = scope.StartsWith("vx-") ? "voxtral-mini-tts-2603" : k_Model;
-        string keyed = ContentVersion + "|" + model + "|" + scope + "|" + text;
+        string keyed = ContentVersion + "|" + VoicePromptText.Version + "|" +
+            SessionConfig.Perspective + "|" + model + "|" + scope + "|" + text;
         using (var sha = SHA256.Create())
         {
             string hash = BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(keyed))).Replace("-", "").ToLowerInvariant();

@@ -1,10 +1,21 @@
 using System;
 using System.Collections.Generic;
 
-/// <summary>First-person plural wording for the self-similar voice condition.</summary>
+/// <summary>Voice wording perspective used by the phrase library and pilot.</summary>
+public enum VoicePerspective
+{
+    Collaborative,
+    External
+}
+
+/// <summary>Stable wording transforms for the two voice perspectives.</summary>
 public static class VoicePromptText
 {
-    static readonly Dictionary<string, string> k_SelfSimilar = new Dictionary<string, string>
+    public const string Version = "perspective-v1";
+
+    // Neutral/external source phrase to collaborative equivalent. Keeping this
+    // table explicit preserves meaning across every live hint and terminal line.
+    static readonly Dictionary<string, string> k_Collaborative = new Dictionary<string, string>
     {
         { "You're very close.", "We're very close." },
         { "Stay with this area.", "Let's stay with this area." },
@@ -46,10 +57,26 @@ public static class VoicePromptText
         { "Thank you for your participation in this experiment, please remove the headset now and have a great day", "We've finished the experiment. Let's remove the headset now and enjoy the rest of our day." },
     };
 
+    static readonly Dictionary<string, string> k_External = new Dictionary<string, string>
+    {
+        { "Let's switch areas and try again.", "Switch areas and try again." },
+    };
+
+    /// <summary>Formats a known prompt for the requested perspective.</summary>
+    public static string Format(string text, VoicePerspective perspective)
+    {
+        if (string.IsNullOrEmpty(text)) return text;
+        if (!Enum.IsDefined(typeof(VoicePerspective), perspective))
+            throw new ArgumentOutOfRangeException(nameof(perspective), perspective, "Unknown voice perspective.");
+        if (perspective == VoicePerspective.Collaborative) return SelfSimilar(text);
+        return k_External.TryGetValue(text, out var wording) ? wording : text;
+    }
+
+    /// <summary>Compatibility name for the legacy self-similar voice condition.</summary>
     public static string SelfSimilar(string text)
     {
         if (string.IsNullOrEmpty(text)) return text;
-        if (k_SelfSimilar.TryGetValue(text, out var wording)) return wording;
+        if (k_Collaborative.TryGetValue(text, out var wording)) return wording;
         if (text.StartsWith("Welcome to the surrounding search. ", StringComparison.Ordinal))
             return "Let's begin the surrounding search. Let's stay seated at the center. " +
                 "We'll see objects on eight planes around us. Let's turn to find the target by its color and shape. " +

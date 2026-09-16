@@ -18,12 +18,26 @@ class VoiceIsolationChecks
     static string Cache(VoiceSynthesizer synth, string scope) => (string)typeof(VoiceSynthesizer)
         .GetMethod("GetCachePath", BindingFlags.Instance | BindingFlags.NonPublic)
         .Invoke(synth, new object[] { "test phrase", scope });
+    static string Formatted(string text) => VoicePromptText.Format(text, SessionConfig.Perspective);
     static void Main()
     {
         string root = Path.Combine(Path.GetTempPath(), "gaze-voice-tests-" + Guid.NewGuid());
         Directory.CreateDirectory(root);
         try
         {
+            SessionConfig.ResetForNewParticipant();
+            Check(SessionConfig.TrySetPerspective(VoicePerspective.External), "perspective can be selected before setup lock");
+            SessionConfig.LockPerspective();
+            Check(!SessionConfig.TrySetPerspective(VoicePerspective.Collaborative), "perspective change rejected after setup lock");
+            SessionConfig.ResetForNewParticipant();
+            Check(SessionConfig.Perspective == VoicePerspective.Collaborative && !SessionConfig.PerspectiveLocked,
+                "new participant resets perspective and lock");
+            Check(SessionConfig.TrySetPerspective(VoicePerspective.External), "new participant can select a new perspective");
+            string externalText = Formatted("Locate the Blue Cube.");
+            SessionConfig.ResetForNewParticipant();
+            string collaborativeText = Formatted("Locate the Blue Cube.");
+            Check(externalText != collaborativeText, "perspectives produce distinct formatted text");
+
             var synth = new VoiceSynthesizer();
             Set(synth, "m_CacheDir", root);
             Set(synth, "m_ApiKey", "fake-key");
@@ -41,6 +55,10 @@ class VoiceIsolationChecks
             string male = Cache(synth, "el-cjVigY5qzO86Huf0OWal");
             string self = Cache(synth, "vx-participant-clone");
             Check(female != male && male != self && female != self, "voice cache isolation");
+            Check(SessionConfig.TrySetPerspective(VoicePerspective.External), "perspective can change before library preparation");
+            string externalCache = Cache(synth, "el-21m00Tcm4TlvDq8ikWAM");
+            Check(externalCache != female, "perspective cache isolation for identical text");
+            SessionConfig.ResetForNewParticipant();
             // A populated neutral cache must never rescue a failed self-similar request.
             File.WriteAllBytes(female, new byte[120]);
             SessionConfig.Voice = VoiceCondition.SelfSimilar;
@@ -149,7 +167,9 @@ class VoiceIsolationChecks
             string practicePrompt = "This is a practice round. It does not count toward the study. " + targetPrompt;
             Drain(synth.PrepareLibraries(new[] { targetPrompt, practicePrompt }, null, ok => prepared = ok));
             Check(prepared && provider.Texts.Contains("Let's find the blue cube."),
-                "self-similar synthesis receives first-person target wording");
+                "self-similar synthesis receives the selected formatted target wording");
+            Check(UnityWebRequest.RequestBodies.Exists(body => body.Contains("Let's find the blue cube.")),
+                "neutral synthesis receives the same formatted target wording");
             Check(provider.Texts.Contains("Let's try a practice round. This one does not count toward our study rounds. Let's find the blue cube."),
                 "self-similar practice keeps its explicit practice declaration");
             provider.Calls = 0; UnityWebRequest.Requests.Clear();
@@ -251,10 +271,22 @@ class VoiceIsolationChecks
             hintSource = hintSource.Substring(hintSource.IndexOf("// --- VERY CLOSE", StringComparison.Ordinal));
             foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(hintSource, "\"([^\"]+)\""))
             {
-                string firstPerson = VoicePromptText.SelfSimilar(match.Groups[1].Value);
-                Check(firstPerson.Contains("We're") || firstPerson.Contains("Let's"), "every live hint has first-person wording");
-                Check(!System.Text.RegularExpressions.Regex.IsMatch(firstPerson, @"\byou(r|'re)?\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase),
-                    "self-similar hints do not address the participant in the second person");
+                string source = match.Groups[1].Value;
+                string collaborative = VoicePromptText.Format(source, VoicePerspective.Collaborative);
+                string external = VoicePromptText.Format(source, VoicePerspective.External);
+                Check(!string.IsNullOrEmpty(collaborative) && !string.IsNullOrEmpty(external), "every live hint has both perspective renderings");
+            }
+            var hintMatches = System.Text.RegularExpressions.Regex.Matches(hintSource, "\"([^\"]+)\"");
+            var hintPhrases = new string[hintMatches.Count];
+            for (int i = 0; i < hintMatches.Count; i++) hintPhrases[i] = hintMatches[i].Groups[1].Value;
+            provider.Texts.Clear(); UnityWebRequest.RequestBodies.Clear();
+            Drain(synth.PrepareLibraries(hintPhrases, null, ok => prepared = ok));
+            Check(prepared, "all live hints prepare in both voices");
+            foreach (string phrase in hintPhrases)
+            {
+                string formatted = VoicePromptText.Format(phrase, SessionConfig.Perspective);
+                Check(provider.Texts.Contains(formatted), "self-similar hint uses shared formatted text");
+                Check(UnityWebRequest.RequestBodies.Exists(body => body.Contains(formatted)), "neutral hint uses shared formatted text");
             }
             Check(ChallengeSet.TotalRounds == 14 && ChallengeSet.RoundsPerBlock == 7 && ChallengeSet.BlockCount == 2, "full two-block schedule");
             for (int practice = 0; practice < 2; practice++)
@@ -308,22 +340,40 @@ namespace UnityEngine
     public enum AudioType { MPEG }
     public static class Application { public static string TestPath = Path.GetTempPath(); public static string persistentDataPath => TestPath; }
     public static class Debug { public static void Log(object x) { } public static void LogWarning(object x) { } }
-    public static class JsonUtility { public static string ToJson(object x, bool pretty = false) => "{}"; }
+    public static class JsonUtility
+    {
+        public static string ToJson(object x, bool pretty = false)
+        {
+            var type = x.GetType();
+            var text = type.GetField("text")?.GetValue(x) as string;
+            var model = type.GetField("model_id")?.GetValue(x) as string;
+            if (text != null || model != null)
+                return "{\"text\":\"" + (text ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"") +
+                    "\",\"model_id\":\"" + (model ?? "") + "\"}";
+            return "{}";
+        }
+    }
 }
 namespace UnityEngine.Networking
 {
-    public class UploadHandlerRaw { public UploadHandlerRaw(byte[] bytes) { } }
+    public class UploadHandlerRaw { public byte[] Bytes; public UploadHandlerRaw(byte[] bytes) { Bytes = bytes; } }
     public class DownloadHandlerBuffer { public byte[] data = new byte[120]; public string text = ""; }
     public class UnityWebRequest : IDisposable
     {
         public static System.Collections.Generic.List<string> Requests = new System.Collections.Generic.List<string>();
+        public static System.Collections.Generic.List<string> RequestBodies = new System.Collections.Generic.List<string>();
         public enum Result { Success }
         public Result result; public string error; public long responseCode; public int timeout;
         public UploadHandlerRaw uploadHandler; public DownloadHandlerBuffer downloadHandler = new DownloadHandlerBuffer();
         string url;
         public UnityWebRequest(string url, string method) { this.url = url; }
         public void SetRequestHeader(string k, string v) { }
-        public IEnumerator SendWebRequest() { Requests.Add(url); yield return null; }
+        public IEnumerator SendWebRequest() {
+            Requests.Add(url);
+            if (uploadHandler != null && uploadHandler.Bytes != null)
+                RequestBodies.Add(System.Text.Encoding.UTF8.GetString(uploadHandler.Bytes));
+            yield return null;
+        }
         public void Dispose() { }
     }
     public static class UnityWebRequestMultimedia { public static UnityWebRequest GetAudioClip(string path, AudioType type) => new UnityWebRequest(path, "GET"); }

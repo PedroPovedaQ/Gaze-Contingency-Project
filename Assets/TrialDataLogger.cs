@@ -460,7 +460,7 @@ public class TrialDataLogger : MonoBehaviour
             Time.time, elapsed, eventType,
             currentIdx, currentObjShape, currentObjColor,
             Sanitize(objectName), Sanitize(objShape), Sanitize(objColor), shelfLevel,
-            isTarget ? 1 : 0, duration, Sanitize(detail),
+            isTarget ? 1 : 0, duration, CsvCell(detail),
             SessionConfig.ParticipantId, SessionConfig.RunNumber, currentIdx < 0 ? -1 : currentIdx / ChallengeSet.RoundsPerBlock,
             currentIdx < 0 ? SessionConfig.VoiceTag : m_ObjectiveRecords[currentIdx].voiceCondition,
             currentIdx < 0 ? "" : $"{m_SessionId}_r{currentIdx:D2}"
@@ -497,6 +497,7 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine(FormattableString.Invariant($"  \"schema_version\": 2,"));
         sb.AppendLine(FormattableString.Invariant($"  \"session_outcome\": \"{m_SessionOutcome}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"voice_order\": \"{SessionConfig.VoiceOrder}\","));
+        sb.AppendLine($"  \"voice_perspective\": \"{SessionConfig.Perspective}\", \"perspective_version\": \"{VoicePromptText.Version}\",");
         sb.AppendLine(FormattableString.Invariant($"  \"total_rounds\": {ChallengeSet.RoundCount},"));
         sb.AppendLine(FormattableString.Invariant($"  \"nominal_total_rounds\": {ChallengeSet.TotalRounds},"));
         sb.AppendLine(FormattableString.Invariant($"  \"debug_round_override\": {ChallengeSet.DebugRoundCountOverride},"));
@@ -606,6 +607,9 @@ public class TrialDataLogger : MonoBehaviour
             m_EventWriter = null;
         }
     }
+
+    // Audio details include the exact spoken text; retain commas/quotes losslessly.
+    static string CsvCell(string value) => "\"" + (value ?? "").Replace("\"", "\"\"") + "\"";
 
     static string Sanitize(string s)
     {

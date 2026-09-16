@@ -53,6 +53,30 @@ public static class SessionConfig
     /// <summary>Voice condition for this run. Set before game start (default Generic).</summary>
     public static VoiceCondition Voice { get; set; } = VoiceCondition.Generic;
 
+    /// <summary>
+    /// Wording perspective for the assistant. It is selected during setup and
+    /// remains shared by both counterbalanced voice blocks for the participant.
+    /// </summary>
+    public static VoicePerspective Perspective { get; private set; } = VoicePerspective.Collaborative;
+    /// <summary>Canonical wording version owned by the prompt formatter.</summary>
+    public static string PerspectiveVersion => VoicePromptText.Version;
+    public static bool PerspectiveLocked { get; private set; }
+
+    /// <summary>Attempts to select the wording perspective before setup is locked.</summary>
+    public static bool TrySetPerspective(VoicePerspective value)
+    {
+        if (PerspectiveLocked || !System.Enum.IsDefined(typeof(VoicePerspective), value))
+            return false;
+        Perspective = value;
+        return true;
+    }
+
+    /// <summary>Locks the participant's perspective for enrollment and the full run.</summary>
+    public static void LockPerspective()
+    {
+        PerspectiveLocked = true;
+    }
+
     /// <summary>Explicit neutral voice selection; never inferred from gaze or recordings.</summary>
     public static NeutralVoiceProfile NeutralProfile { get; set; } = NeutralVoiceProfile.Female;
     public static string NeutralVoiceId => NeutralProfile == NeutralVoiceProfile.Male
@@ -144,6 +168,10 @@ public static class SessionConfig
         if (string.IsNullOrEmpty(ParticipantId))
             ParticipantId = FindNextParticipantId();
 
+        // A run owns one wording perspective even when a caller starts it
+        // without the optional voice setup panel.
+        LockPerspective();
+
         ConditionLabel = "gaze_aware";
 
         // Record the voice condition in the folder name so runs are self-describing.
@@ -165,6 +193,12 @@ public static class SessionConfig
         string folderName = $"run_{RunNumber:D3}_{ConditionLabel}_{timestamp}";
         CurrentRunFolder = Path.Combine(participantDir, folderName);
         Directory.CreateDirectory(CurrentRunFolder);
+
+        // Keep the selected wording perspective alongside the run so analysis
+        // never has to infer it from cached audio or the voice block order.
+        File.WriteAllText(
+            Path.Combine(CurrentRunFolder, "session-perspective-v1.txt"),
+            $"perspective={Perspective}\nversion={PerspectiveVersion}\n");
 
         Debug.Log($"{k_Tag} Run started: {ParticipantId} / run {RunNumber} / {ConditionLabel}");
         Debug.Log($"{k_Tag} Output folder: {CurrentRunFolder}");
@@ -202,6 +236,8 @@ public static class SessionConfig
         SelfSimilarVoiceId = "";
         SelfSimilarEnrollmentPending = false;
         NeutralProfile = NeutralVoiceProfile.Female;
+        Perspective = VoicePerspective.Collaborative;
+        PerspectiveLocked = false;
     }
 
     /// <summary>
