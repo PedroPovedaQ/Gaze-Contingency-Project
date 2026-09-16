@@ -1,5 +1,9 @@
 # Gaze Contingency IRB packet
 
+[Study hub — protocol, surveys and references](../STUDY-HUB.md)
+
+**Revision notice (2026-09-16):** the four-condition/offline design described below is superseded by the two-voice, always-gaze-contingent cloud workflow. See the study hub for current planning; this packet needs reconciliation and has not been submitted, per the researcher.
+
 This directory is a paper-aligned, project-specific draft packet for a UCF Huron IRB submission. It is not an approval, an institutional determination, or a participant-ready packet.
 
 The packet is synchronized to `docs/manuscript/gaze-guidance-planned-study.tex`: 48 complete datasets; a 2 × 2 within-participant design; four condition blocks with a standard schedule of 16 trials each (up to 64 total); eight surrounding vertical search planes; Williams counterbalancing; and two-step coarse-direction/fine-proximity gaze guidance. These are **Protocol proposal** details until the release build and staff workflow implement and verify them.

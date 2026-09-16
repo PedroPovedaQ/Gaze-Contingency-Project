@@ -14,6 +14,8 @@
 
 **Implemented:** voice setup prepares four starter phrases per voice (eight clips total). After the eight starter clips, the remaining audio loads silently in the background during audio checks, practice and gameplay. Upcoming round instructions are queued before the remaining hints and announcements, with both voices prepared per phrase. Playback preempts background work, which resumes afterward. If a needed clip is not ready yet, it generates on demand; all clips remain cached by voice. A waiting message appears before search begins; the timer and gaze selection remain gated until the round instruction finishes. First-use hints may arrive later while synthesis completes. Added clips must match the accepted audio level and update the active-run voice manifest. The manifest records `starter_then_background` so this preparation mode can be identified during analysis.
 
+**Protocol proposal — confirmed 2026-09-16:** require return to a fixed front cue before each trial and retain only warmer/colder guidance. The beta does not yet implement that front-alignment gate; its current view-following transition must change. Controlled turn difficulty will be front-to-target angle.
+
 ## QA
 
 1. Complete recording and both audio checks; confirm preparation reports four phrases per voice and no table tap is requested. Check a later uncached round shows its audio waiting message with objects hidden and no running search timer. Check a repeated hint uses cached audio and each block retains its assigned voice.
@@ -24,4 +26,4 @@
 6. Verify wrong selection, correct selection, pause/resume, questionnaire transition and session reset. Reset reloads setup and allows a fresh center.
 7. Check the experimental manifest's layout and plane columns after a measured round. Inspect headset comfort and object readability before adjusting the 1–3 m radius in the manager Inspector.
 
-The stable shelf checkpoint remains on v2 at a67fe92. The beta work is on codex/eight-plane-beta.
+The beta and background audio preparation were promoted to `v2` at `4198cfa` on 2026-09-16. The older shelf checkpoint is `a67fe92`. Pending thesis decisions are tracked in [the alignment checkpoint](thesis-study-alignment.md).

@@ -8,6 +8,10 @@ formative validation. They are not UCF IRB approvals. Administrative facts and
 institutional determinations that the research team cannot invent are listed
 separately at the end.
 
+## 2026-09-16 reconciliation checkpoint
+
+**Protocol proposal — confirmed user decisions:** seated rotation, a return to the fixed front direction before every trial, warmer/colder-only guidance, and a two-voice within-participant thesis study using cloud voice processing. **Administrative status reported by the researcher:** the application has not been submitted. The [alignment checkpoint](../thesis-study-alignment.md) records these decisions and the remaining pilot-count and validation questions. Offline/no-third-party-transfer statements below are superseded draft assumptions, not the selected workflow; provider data handling and institutional requirements still need verification before source reconciliation/submission. The older allocation, provider and sample-size entries below have not yet been reconciled into a current submission packet; they must not be treated as confirmation of the current approved workflow.
+
 ## 2026-09-10 design change — always gaze-contingent
 
 **Protocol proposal — user-directed decision.** The agent is always gaze-contingent in both voice conditions. Remove gaze awareness as an experimental factor. The two-voice comparison remains planned; its final counts, allocation and power are not settled by this decision.

@@ -1,5 +1,7 @@
 # Analysis Workflow
 
+**Measurement planning (2026-09-16):** see the [living measures register](../docs/measures-register.md) for all surveys, behavioral metrics, scoring, implementation gaps and open decisions. IMI is now included; final subscales/form are proposed.
+
 **Implemented update (2026-09-10):** New runs are always gaze-aware; the loader recognizes the generic/self-similar voice suffix without inferring an unaware condition. Summary and NASA-TLX outputs retain the original label in `run_condition`, including voice identity. Awareness t-tests refuse datasets containing `always_gaze_aware` runs, rather than pooling them with legacy runs. Existing aware-versus-unaware plots are for legacy data only. Do not pool the new one-condition sessions with the old alternation design to infer an awareness effect. Voice/theta analysis is pending issue #15.
 
 

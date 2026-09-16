@@ -1,10 +1,14 @@
 # Gaze Contingency Project
 
+**Study materials:** [Open the study hub](docs/STUDY-HUB.md) — current protocol, all surveys, reference PDFs, measures and the GitHub delivery board.
+
 A mixed reality research study investigating how gaze-contingent AI assistance affects user performance, cognitive load, and task satisfaction in spatial search tasks for CAP 6117- Mixed Reality Project at UCF.
 
 ## Research Question
 
-> How does a gaze-contingent AI agent affect user performance, cognitive load, and task satisfaction in mixed reality object search tasks compared to a standard AI agent without gaze awareness?
+> Current thesis direction: How does generic versus self-similar voice affect task performance and participant experience during gaze-contingent mixed-reality object search? Both conditions are always gaze-contingent.
+
+**Protocol proposal:** the final outcome hierarchy, schedule and survey form are being finalized; see the study hub for decisions and implementation gaps.
 
 ## Requirements
 

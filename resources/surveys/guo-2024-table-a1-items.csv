@@ -1,0 +1,44 @@
+item_id,source_item,measure_id,construct,original_wording,anchor_low,anchor_high,source_reference,scoring_status
+GUO2024_Q1,Q1,S16,Co-presence,I noticed the virtual character.,1: Very Strongly Disagree,7: Very Strongly Agree,Biocca et al. 2001,Verify source scoring; raw only
+GUO2024_Q2,Q2,S16,Co-presence,The virtual character noticed me.,1: Very Strongly Disagree,7: Very Strongly Agree,Biocca et al. 2001,Verify source scoring; raw only
+GUO2024_Q3,Q3,S16,Co-presence,The virtual character’s presence was obvious to me.,1: Very Strongly Disagree,7: Very Strongly Agree,Biocca et al. 2001,Verify source scoring; raw only
+GUO2024_Q4,Q4,S16,Co-presence,My presence was obvious to the virtual character.,1: Very Strongly Disagree,7: Very Strongly Agree,Biocca et al. 2001,Verify source scoring; raw only
+GUO2024_Q5,Q5,S16,Co-presence,The virtual character caught my attention.,1: Very Strongly Disagree,7: Very Strongly Agree,Biocca et al. 2001,Verify source scoring; raw only
+GUO2024_Q6,Q6,S16,Co-presence,I caught the virtual character’s attention.,1: Very Strongly Disagree,7: Very Strongly Agree,Biocca et al. 2001,Verify source scoring; raw only
+GUO2024_Q7,Q7,S17,Attentional allocation,I was easily distracted from the virtual character when other things were going on.,1: Very Strongly Disagree,7: Very Strongly Agree,Biocca et al. 2001,Verify source scoring; raw only
+GUO2024_Q8,Q8,S17,Attentional allocation,The virtual character was easily distracted from me when other things were going on.,1: Very Strongly Disagree,7: Very Strongly Agree,Biocca et al. 2001,Verify source scoring; raw only
+GUO2024_Q9,Q9,S17,Attentional allocation,I remained focused on the virtual character throughout our interaction.,1: Very Strongly Disagree,7: Very Strongly Agree,Biocca et al. 2001,Verify source scoring; raw only
+GUO2024_Q10,Q10,S17,Attentional allocation,The virtual character remained focused on me throughout our interaction.,1: Very Strongly Disagree,7: Very Strongly Agree,Biocca et al. 2001,Verify source scoring; raw only
+GUO2024_Q11,Q11,S17,Attentional allocation,The virtual character did not receive my full attention.,1: Very Strongly Disagree,7: Very Strongly Agree,Biocca et al. 2001,Verify source scoring; raw only
+GUO2024_Q12,Q12,S17,Attentional allocation,I did not receive the virtual character’s full attention.,1: Very Strongly Disagree,7: Very Strongly Agree,Biocca et al. 2001,Verify source scoring; raw only
+GUO2024_Q13,Q13,S18,Perceived intelligence,The virtual character was able to operate without my intervention.,1: Very Strongly Disagree,7: Very Strongly Agree,Moussawi and Koufaris 2019,Verify source scoring; raw only
+GUO2024_Q14,Q14,S18,Perceived intelligence,The virtual character was aware of the virtual environment.,1: Very Strongly Disagree,7: Very Strongly Agree,Moussawi and Koufaris 2019,Verify source scoring; raw only
+GUO2024_Q15,Q15,S18,Perceived intelligence,The virtual character was able to set and pursue tasks by themselves in anticipation of future needs.,1: Very Strongly Disagree,7: Very Strongly Agree,Moussawi and Koufaris 2019,Verify source scoring; raw only
+GUO2024_Q16,Q16,S18,Perceived intelligence,The virtual character was able to complete tasks quickly.,1: Very Strongly Disagree,7: Very Strongly Agree,Moussawi and Koufaris 2019,Verify source scoring; raw only
+GUO2024_Q17,Q17,S18,Perceived intelligence,The virtual character was able to find and process the necessary information for completing the task.,1: Very Strongly Disagree,7: Very Strongly Agree,Moussawi and Koufaris 2019,Verify source scoring; raw only
+GUO2024_Q18,Q18,S18,Perceived intelligence,The virtual character was able to adapt/adjust their behavior based on prior events.,1: Very Strongly Disagree,7: Very Strongly Agree,Moussawi and Koufaris 2019,Verify source scoring; raw only
+GUO2024_Q19,Q19,S19,Intelligence comparison,Do you think the virtual character was more intelligent than you?,1: Very Strongly Disagree,7: Very Strongly Agree,Guo et al. 2024 (study-created),Verify source scoring; raw only
+GUO2024_Q20,Q20,S20,Eerie,I found the virtual character appealing.,1: Very Strongly Disagree,7: Very Strongly Agree,Zibrek et al. 2018,Verify source scoring; raw only
+GUO2024_Q21,Q21,S20,Eerie,I found the virtual character eerie.,1: Very Strongly Disagree,7: Very Strongly Agree,Zibrek et al. 2018,Verify source scoring; raw only
+GUO2024_Q22,Q22,S20,Eerie,I found the virtual character familiar.,1: Very Strongly Disagree,7: Very Strongly Agree,Zibrek et al. 2018,Verify source scoring; raw only
+GUO2024_Q23,Q23,S21,Likability,This virtual character is friendly.,1: Very Strongly Disagree,7: Very Strongly Agree,Reysen 2005,Verify source scoring; raw only
+GUO2024_Q24,Q24,S21,Likability,This virtual character is likable.,1: Very Strongly Disagree,7: Very Strongly Agree,Reysen 2005,Verify source scoring; raw only
+GUO2024_Q25,Q25,S21,Likability,This virtual character is warm.,1: Very Strongly Disagree,7: Very Strongly Agree,Reysen 2005,Verify source scoring; raw only
+GUO2024_Q26,Q26,S21,Likability,This virtual character is approachable.,1: Very Strongly Disagree,7: Very Strongly Agree,Reysen 2005,Verify source scoring; raw only
+GUO2024_Q27,Q27,S21,Likability,I would ask this virtual character for advice.,1: Very Strongly Disagree,7: Very Strongly Agree,Reysen 2005,Verify source scoring; raw only
+GUO2024_Q28,Q28,S21,Likability,I would like this virtual character as a coworker.,1: Very Strongly Disagree,7: Very Strongly Agree,Reysen 2005,Verify source scoring; raw only
+GUO2024_Q29,Q29,S21,Likability,I would like this virtual character as a roommate.,1: Very Strongly Disagree,7: Very Strongly Agree,Reysen 2005,Verify source scoring; raw only
+GUO2024_Q30,Q30,S21,Likability,I would like to be friends with this virtual character.,1: Very Strongly Disagree,7: Very Strongly Agree,Reysen 2005,Verify source scoring; raw only
+GUO2024_Q31,Q31,S21,Likability,This virtual character is physically attractive.,1: Very Strongly Disagree,7: Very Strongly Agree,Reysen 2005,Verify source scoring; raw only
+GUO2024_Q32,Q32,S21,Likability,This virtual character is similar to me.,1: Very Strongly Disagree,7: Very Strongly Agree,Reysen 2005,Verify source scoring; raw only
+GUO2024_Q33,Q33,S21,Likability,This virtual character is knowledgeable.,1: Very Strongly Disagree,7: Very Strongly Agree,Reysen 2005,Verify source scoring; raw only
+GUO2024_Q34,Q34,S22,Believability,Rate the believability of the virtual character’s voice and appearance combined.,1: Very Strongly Disagree,7: Very Strongly Agree,Lam et al. 2023,Verify source scoring; raw only
+GUO2024_Q35,Q35,S22,Believability,Rate how well you agree with the following: I would expect the virtual character to sound like this from the way they look.,1: Very Strongly Disagree,7: Very Strongly Agree,Lam et al. 2023,Verify source scoring; raw only
+GUO2024_Q36,Q36,S22,Believability,Rate how well you agree with the following: I would expect the virtual character to look like this from the way they sound.,1: Very Strongly Disagree,7: Very Strongly Agree,Lam et al. 2023,Verify source scoring; raw only
+GUO2024_Q37,Q37,S23,Perceived anthropomorphism,The virtual character is able to speak like a human.,1: Very Strongly Disagree,7: Very Strongly Agree,Moussawi and Koufaris 2019,Verify source scoring; raw only
+GUO2024_Q38,Q38,S23,Perceived anthropomorphism,The virtual character can be happy.,1: Very Strongly Disagree,7: Very Strongly Agree,Moussawi and Koufaris 2019,Verify source scoring; raw only
+GUO2024_Q39,Q39,S23,Perceived anthropomorphism,The virtual character can be friendly.,1: Very Strongly Disagree,7: Very Strongly Agree,Moussawi and Koufaris 2019,Verify source scoring; raw only
+GUO2024_Q40,Q40,S23,Perceived anthropomorphism,The virtual character can be respectful.,1: Very Strongly Disagree,7: Very Strongly Agree,Moussawi and Koufaris 2019,Verify source scoring; raw only
+GUO2024_Q41,Q41,S23,Perceived anthropomorphism,The virtual character can be funny.,1: Very Strongly Disagree,7: Very Strongly Agree,Moussawi and Koufaris 2019,Verify source scoring; raw only
+GUO2024_Q42,Q42,S23,Perceived anthropomorphism,The virtual character can be caring.,1: Very Strongly Disagree,7: Very Strongly Agree,Moussawi and Koufaris 2019,Verify source scoring; raw only
+GUO2024_Q43,Q43,S24,Overall experience,Please provide additional comments on your overall experience,,,Guo et al. 2024 (open response),Qualitative

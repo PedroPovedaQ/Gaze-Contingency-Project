@@ -1,6 +1,12 @@
 # Experiment Procedure: Gaze-Contingent Guidance and Self-Similar Voice
 
-**Implemented beta (2026-09-11):** `codex/eight-plane-beta` now starts from a seated center with eight surrounding planes, seven objects each. It retains the two practice trials and 14-round voice schedule. See [beta behavior and QA](eight-plane-beta.md). Shelf-specific descriptions below describe the retained legacy mode.
+**Experimenter run sheet (2026-09-16):** [Word protocol](protocol/Gaze_Search_Experimenter_Run_Sheet.docx) · [Readable source](protocol/experimenter-run-sheet.md). Adapted from the supplied example and checked against current scripts; marked as a rehearsal proposal with unresolved study decisions.
+
+**Measurement planning (2026-09-16):** see the [living measures register](measures-register.md) for all surveys, behavioral metrics, scoring, implementation gaps and open decisions. IMI is now included; final subscales/form are proposed.
+
+**Implemented beta (promoted to `v2` at `4198cfa`, 2026-09-16):** the application starts from a seated center with eight surrounding planes, seven objects each. It retains the two practice trials and 14-round voice schedule. See [beta behavior and QA](eight-plane-beta.md). Shelf-specific descriptions below describe the retained legacy mode.
+
+**Reconciliation in progress (2026-09-16):** the user confirmed a seated, rotating search task. The older four-cell, shelf and offline-provider sections below are historical planning inputs wherever they conflict with the current two-voice thesis direction. See [the alignment checkpoint and pending decisions](thesis-study-alignment.md). Do not use this mixed-version document as a frozen operator script.
 
 ## Purpose and status
 
@@ -18,7 +24,15 @@ The runtime authorities for the current application remain:
 - [Gameplay and round flow](guide/02-gameplay-round-flow.md)
 - [Gaze, agent, and telemetry](guide/03-gaze-agent-and-telemetry.md)
 
-The [IEEE-style planned-study manuscript](manuscript/gaze-guidance-planned-study.tex) is the concise scientific account of the approved 360° direction. This procedure remains the detailed decision register and must not imply that the planned eight-plane system is already implemented.
+The [IEEE-style planned-study manuscript](manuscript/gaze-guidance-planned-study.tex) is the concise scientific account of the planned 360° direction and also requires reconciliation. This procedure distinguishes the implemented eight-plane beta from unimplemented scheduling, guidance and measurement proposals.
+
+## Decisions confirmed 2026-09-16 — target protocol, not all implemented
+
+**Protocol proposal — user-directed decisions:** the participant sits at the center, rotates to search, and returns to the same fixed front direction before every new trial. Guidance remains warmer/colder only in both voice conditions. The participant-study voice route is cloud processing; the current runtime uses ElevenLabs and Mistral/Voxtral. The researcher reports the IRB application has not been submitted.
+
+**Implementation gap:** the beta currently presents its transition in the current viewing direction. Add a fixed-front alignment/readiness gate without rotating the world or resetting the session origin. Balance and log front-to-target angle; keep the return interval outside active search timing. Previous-target angle/distance are secondary geometric descriptors rather than the controlled turn distance.
+
+**Open decision:** pilot trial count is awaiting the researcher. Alignment tolerance, practice/timeout criteria and final sample/repetition justification require validation. Offline and no-third-party-transfer statements retained below belong to the old draft and must be replaced before submission; they do not describe the selected cloud workflow.
 
 ## Study design
 
@@ -26,7 +40,7 @@ The [IEEE-style planned-study manuscript](manuscript/gaze-guidance-planned-study
 
 **Protocol proposal — user-directed decision, 2026-09-10.** The agent is always gaze-contingent. Gaze awareness is no longer an experimental factor and there is no gaze-unaware control condition. Neutral versus self-similar voice is the comparison, with the same guidance policy in both voices.
 
-**Implemented in code.** The application retains 14 deterministic bookshelf trials with 56 objects per trial, now arranged into two seven-trial voice blocks. Odd participant IDs receive neutral then self-similar; even IDs receive the reverse. The assignment is saved under the coded participant folder. Gaze-contingent hinting stays the same in both blocks.
+**Implemented in code.** The application retains a deterministic 14-trial target schedule with 56 objects per trial, displayed on eight surrounding planes in the beta and arranged into two seven-trial voice blocks. Odd participant IDs receive neutral then self-similar; even IDs receive the reverse. The assignment is saved under the coded participant folder. Gaze-contingent hinting stays the same in both blocks.
 
 **Implemented — preparation and progression.** Choose the male or female neutral profile, enroll the current participant's self-similar voice, and prepare/decode a starter set for both voices (audio check, introduction, first practice instruction and success response). Remaining authorized trial and hint phrases load silently in the background, starting during audio checks, and are cached separately by voice. Playback takes priority; a needed clip that is not ready yet is generated on demand. Round audio preparation and playback finish before search onset; first-use hints can incur network latency during search. Each additional clip must match the accepted starter audio level and is added to the participant and active-run voice manifests. The manifest labels this mode `starter_then_background`. Self-similar prompts use first-person plural wording ("let's", "we", "our"); neutral prompts retain their existing wording. Spoken setup announcements mark the start and completion of voice-library processing. The operator accepts a playback sample from each voice before proceeding. Two separate practice trials (one per voice) precede the 14 experimental trials. NASA-TLX follows each block; a researcher-confirmed break separates blocks. Practice is excluded from experimental counts and timing.
 

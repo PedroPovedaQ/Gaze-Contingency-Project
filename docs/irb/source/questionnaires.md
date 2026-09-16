@@ -1,10 +1,24 @@
 # Participant Questionnaires
 
-**Current protocol decision:** These instruments and administration times are frozen for the initial submission. Obtain UCF approval before participant use.
+**Protocol proposal — revision in progress (2026-09-16):** This source is not frozen. The current study uses two voice blocks with gaze-contingent warmer/colder guidance in both. IMI is included by researcher decision; see the [measures register](../../measures-register.md) for current selection, timing, scoring and open decisions. Older IPQ/eeriness content below remains a candidate, not a finalized administration battery. Generated PDFs/DOCX have not yet been rebuilt. The IRB application is not yet submitted, per the researcher.
 
 Study: **Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent**
 
 Use study ID only. Do not collect names in these instruments. Participants may skip any nonessential question.
+
+## Intrinsic Motivation Inventory (IMI) — included, form pending
+
+**Protocol proposal — confirmed inclusion:** add IMI to the study surveys. Working plan: interest/enjoyment, effort/importance, pressure/tension and value/usefulness after each voice block, following Kao et al. (2021), §4.3.3 ([DOI](https://doi.org/10.1145/3474665)). The proposed complete item-bank selection is 24 items per block; final selection, wording and burden review remain open. This is not the packet's distinct 22-item version.
+
+Use the [official instrument PDF](../../../resources/surveys/imi-complete.pdf) and [reference paper](../../../resources/surveys/kao-2021-self-similar-avatar-voice.pdf). Preserve the seven-point anchors and item-specific reverse keys; compute separate subscale means, not an overall IMI total. The [register](../../measures-register.md) specifies scoring and missingness proposals. No participant-ready IMI form is claimed until the item map and value/usefulness wording are frozen.
+
+## Agent-perception survey from Guo et al. (2024)
+
+**Protocol proposal — confirmed addition:** include the Table A1 survey from *Collaborating with my Doppelgänger*, https://doi.org/10.1145/3651288, in the study's survey planning. The [complete source form and references](../../../resources/surveys/guo-2024-survey.md) preserve Q1–Q43 and seven-point anchors. The [CSV item bank](../../../resources/surveys/guo-2024-table-a1-items.csv) supports later survey implementation.
+
+Measures: co-presence and attentional allocation (Biocca et al., 2001); perceived intelligence and anthropomorphism (Moussawi & Koufaris, 2019); intelligence comparison (Guo et al., study-created); Eerie (Zibrek et al., 2018); likability (Reysen, 2005); believability (Lam et al., 2023); open experience response. Full references accompany the source form and are tracked in the manuscript bibliography.
+
+Post-block administration is proposed. Final voice-agent adaptations, appearance-item applicability, scale scoring and overlap with existing ratings remain open. This addition does not authorize treating the old eeriness draft and Guo's Eerie items as interchangeable. Generated participant forms are not yet rebuilt.
 
 ## Background and Prior Experience (once per participant)
 
@@ -53,12 +67,12 @@ Rate each statement from 1 = strongly disagree to 7 = strongly agree.
 8. The voice felt uncanny or unsettling.  1 2 3 4 5 6 7
 9. I relied on the spoken hints when deciding where to search next.  1 2 3 4 5 6 7
 
-After a gaze-contingent block only:
+After each voice block (guidance is always gaze-contingent):
 
-10. The directional hint helped me identify the correct general area.  1 2 3 4 5 6 7
+10. Retired: directional guidance is outside the current thesis scope.
 11. The warmer/colder feedback helped me narrow down the target location.  1 2 3 4 5 6 7
 
-Items 1–11 are study-created manipulation, experience, and mechanism checks. Analyze each item separately; do not report them as one validated scale or exclude a participant based on a rating.
+Active items above are study-created manipulation, experience, and mechanism checks. Analyze each item separately; do not report them as one validated scale or exclude a participant based on a rating.
 
 Technical check:
 
@@ -66,7 +80,7 @@ Technical check:
 - Did any prompt repeat, cut off, arrive late, or use the wrong voice? ☐ No ☐ Yes: ______
 - Did you take an unplanned break or experience an interruption? ☐ No ☐ Yes: ______
 
-## Perceived Eeriness (after each block)
+## Perceived Eeriness (legacy candidate — exact form open)
 
 For each pair, mark the box that best describes how the assistant's voice felt during this block (1 to 7). Adapted from the Ho & MacDorman (2017) Eeriness index; the eeriness construct was applied to self-similar voices by Zibrek et al. (2018) and Guo et al. (2024). **[Transcribe the exact validated anchor pairs from Ho & MacDorman (2017) before participant use.]**
 
@@ -84,7 +98,7 @@ Perceived voice similarity (manipulation check):
 
 Analyze the three eeriness items as a mean eeriness score and the similarity item as a manipulation check; do not exclude participants based on these ratings.
 
-## Post-Session Comparison
+## Post-Session Comparison (legacy draft — revise for voice-only design)
 
 1. Which type of assistance did you prefer? \
    ☐ More gaze-responsive ☐ Less gaze-responsive ☐ No preference ☐ Unsure
@@ -98,7 +112,7 @@ Analyze the three eeriness items as a mean eeriness score and the similarity ite
 8. Did hearing your self-similar voice create any concern about misuse or about how the voice was created? ____________________
 9. What would you change about the hints, voice, or task? ____________________
 
-## Presence Questionnaire (post-session)
+## Presence Questionnaire (legacy candidate — on hold)
 
 igroup Presence Questionnaire (IPQ; Schubert, Friedmann, & Regenbrecht, 2001) — 14 items across General Presence, Spatial Presence, Involvement, and Experienced Realism. Rate each item from 1 to 7. **[Apply the exact igroup.org anchors before participant use: most items use “fully disagree (1)” to “fully agree (7),” while G1, INV1, REAL1, and REAL3 use item-specific anchors.]**
 
@@ -151,10 +165,10 @@ Do you feel ready to leave the lab? ☐ Yes ☐ No—researcher follow-up requir
 
 ## Administration and Scoring Decisions
 
-- Administer Raw NASA-TLX after each of the four blocks as a six-subscale matrix on a 0 (Very low) to 10 (Very high) scale, without pairwise weighting.
+- Administer Raw NASA-TLX after each of the two voice blocks as a six-subscale matrix on a 0 (Very low) to 10 (Very high) scale, without pairwise weighting.
 - Administer the complete 16-item SSQ before headset use and after headset removal, using Kennedy et al. (1993) 0–3 anchors and canonical Nausea, Oculomotor, Disorientation, and Total scores. Safety stopping uses item-level rules, not the total score.
-- Administer the nine fixed study-created items after every block and items 10–11 after gaze-contingent blocks only. Keep the order fixed to reduce administration variance.
-- Administer the perceived-eeriness semantic differential (Ho & MacDorman, 2017; Zibrek et al., 2018) and the voice-similarity manipulation check after every block; finalize the exact validated eeriness anchors from the source before participant use.
+- Administer the nine fixed study-created items after every block and warmer/colder item 11 after each voice block; directional item 10 is retired. Keep the order fixed to reduce administration variance.
+- Legacy proposal, not yet reconfirmed: administer the perceived-eeriness semantic differential (Ho & MacDorman, 2017; Zibrek et al., 2018) and the voice-similarity manipulation check after every block; finalize the exact validated eeriness anchors from the source before participant use.
 - Do not administer SUS or UEQ; overall usability is not a focal construct.
 - Eligibility/safety items are required to proceed. Other questionnaire items may be skipped. Record skipped responses as missing and do not impute them for primary analysis.
 
