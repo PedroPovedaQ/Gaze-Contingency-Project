@@ -1,0 +1,12 @@
+{
+  "name": "gaze-contingency-tools",
+  "private": true,
+  "scripts": {
+    "record:start": "python3 scripts/record-vr.py start",
+    "record:status": "python3 scripts/record-vr.py status",
+    "record:stop": "python3 scripts/record-vr.py stop",
+    "record:devices": "python3 scripts/record-vr.py devices",
+    "record:merge": "python3 scripts/record-vr.py merge",
+    "record:test": "python3 -m unittest discover -s scripts/tests -p test_record_vr.py"
+  }
+}
