@@ -3,6 +3,11 @@
 Daily progress on the Gaze Contingency Project ("Follow My Voice: Gaze-Contingent
 XR Search with a Self-Similar Agent"). Newest entries on top.
 
+## 2026-09-20
+
+### Publish formatted experimenter protocol
+- Added the current run sheet, verified UCF-themed PDF and self-contained LaTeX sources. Added prominent README links to the protocol and editable sources. The cover identifies trial-count and voice-order inconsistencies for review.
+
 ## 2026-09-16
 
 ### Archive submission-video reference and checkpoint all work for v2
