@@ -1,0 +1,117 @@
+[[AdvancedFormat]]
+[[Block:Study information and baseline]]
+[[Question:DB]]
+[[ID:BASE_INTRO]]
+DRAFT — Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent. This survey is for study setup and baseline measures. Use the study code only; do not enter your name. The instrument map remains subject to IRB and pilot review.
+[[Question:TE:SingleLine]]
+[[ID:BASE_STUDY_CODE]]
+Study code (assigned by the researcher):
+[[Question:MC:SingleAnswer:Vertical]]
+[[ID:BASE_AGE]]
+Age range:
+[[Choices]]
+18–24
+25–34
+35–44
+45–54
+55–64
+65+
+Prefer not to answer
+[[Question:MC:MultipleAnswer:Vertical]]
+[[ID:BASE_GENDER]]
+Gender identity (select all that apply):
+[[Choices]]
+Woman
+Man
+Nonbinary
+Another identity
+Prefer not to answer
+[[Question:TE:SingleLine]]
+[[ID:BASE_GENDER_OTHER]]
+If you selected Another identity, please describe (optional):
+[[Question:MC:SingleAnswer:Vertical]]
+[[ID:BASE_CORRECTION]]
+Do you use glasses or contact lenses?
+[[Choices]]
+Neither
+Glasses
+Contact lenses
+Both
+Prefer not to answer
+[[Question:MC:SingleAnswer:Vertical]]
+[[ID:BASE_MR]]
+How often have you used virtual- or mixed-reality headsets?
+[[Choices]]
+Never
+Once or twice
+Several times
+Monthly
+Weekly or more
+[[Question:MC:SingleAnswer:Vertical]]
+[[ID:BASE_EYE]]
+Have you used eye-tracking technology before?
+[[Choices]]
+No
+Yes
+Unsure
+[[Question:MC:SingleAnswer:Vertical]]
+[[ID:BASE_VOICE]]
+Have you used a synthetic or cloned version of your own voice before?
+[[Choices]]
+No
+Yes
+Unsure
+[[Question:Matrix]]
+[[ID:BASE_AI_FAMILIARITY]]
+How familiar are you with AI voice assistants?
+[[Choices]]
+Familiarity
+[[AdvancedAnswers]]
+[[Answer:1]]
+1 — Not at all familiar
+[[Answer:2]]
+2
+[[Answer:3]]
+3
+[[Answer:4]]
+4
+[[Answer:5]]
+5
+[[Answer:6]]
+6
+[[Answer:7]]
+7 — Extremely familiar
+[[PageBreak]]
+[[Block:Baseline simulator sickness]]
+[[Question:DB]]
+[[ID:BASE_SSQ_INTRO]]
+Rate each symptom now, before headset use. Use 0 = none, 1 = slight, 2 = moderate, 3 = severe.
+[[Question:Matrix]]
+[[ID:BASE_SSQ]]
+Baseline Simulator Sickness Questionnaire
+[[Choices]]
+General discomfort
+Fatigue
+Headache
+Eyestrain
+Difficulty focusing
+Increased salivation
+Sweating
+Nausea
+Difficulty concentrating
+Fullness of head
+Blurred vision
+Dizziness with eyes open
+Dizziness with eyes closed
+Vertigo
+Stomach awareness
+Burping
+[[AdvancedAnswers]]
+[[Answer:1]]
+0 — None
+[[Answer:2]]
+1 — Slight
+[[Answer:3]]
+2 — Moderate
+[[Answer:4]]
+3 — Severe

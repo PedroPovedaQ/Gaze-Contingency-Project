@@ -1,0 +1,46 @@
+% Reusable UCF-inspired academic theme. Include after documentclass.
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{xcolor}
+\definecolor{UCFBlack}{HTML}{000000}
+\definecolor{UCFGold}{HTML}{FFC904}
+\definecolor{UCFDark}{HTML}{111111}
+\definecolor{UCFLight}{HTML}{FAFAF7}
+\definecolor{UCFGray}{HTML}{666666}
+\usepackage[letterpaper,margin=0.8in,headheight=16pt]{geometry}
+\usepackage{microtype}
+\usepackage{titlesec}
+\usepackage[most]{tcolorbox}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{xurl}
+\usepackage[colorlinks=true,linkcolor=UCFDark,urlcolor=UCFDark]{hyperref}
+\renewcommand{\familydefault}{\sfdefault}
+\pagecolor{UCFLight}
+\color{UCFDark}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{7pt}
+\linespread{1.08}
+\setlist[itemize]{leftmargin=1.4em,itemsep=4pt,topsep=3pt}
+\titleformat{\section}{\Large\bfseries\color{UCFDark}}{}{0pt}{}[{\color{UCFGold}\titlerule[1.5pt]}]
+\titlespacing*{\section}{0pt}{20pt}{10pt}
+\newtcolorbox{ucfcallout}[1]{enhanced,breakable,colback=white,colframe=UCFDark,colbacktitle=UCFGold,coltitle=UCFDark,fonttitle=\bfseries,title={#1},arc=1mm,boxrule=0.6pt,left=9pt,right=9pt,top=7pt,bottom=7pt}
+\newcommand{\ucfheader}{UCF-inspired academic document}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{UCFGray}\ucfheader}
+\fancyhead[R]{\small\color{UCFGray}REVIEW COPY}
+\fancyfoot[L]{\small\color{UCFGray}Research documentation}
+\fancyfoot[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0pt}
+\emergencystretch=2em
+\widowpenalty=10000
+\clubpenalty=10000
+
+\titleformat{\subsection}{\large\bfseries\color{UCFDark}}{}{0pt}{}[{\color{UCFGold}\titlerule[0.8pt]}]
+
+\usepackage{needspace}
+\let\ucforiginalsubsection\subsection
+\renewcommand{\subsection}{\Needspace{7\baselineskip}\ucforiginalsubsection}

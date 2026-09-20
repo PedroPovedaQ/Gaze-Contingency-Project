@@ -2,7 +2,7 @@
 
 [Study hub — protocol, surveys and references](STUDY-HUB.md)
 
-Version 0.2 — updated 2026-09-16. Living inventory for the seated, rotating MR search study. This register governs current measurement planning; older forms and generated PDFs may describe superseded designs. It does not certify implementation or IRB approval.
+Version 0.3 — updated 2026-09-19. Living inventory for the seated, rotating MR search study. This register governs current measurement planning; older forms and generated PDFs may describe superseded designs. It does not certify implementation or IRB approval.
 
 **Protocol proposal — confirmed decisions:** two within-participant voice blocks (generic/self-similar), counterbalanced order, always gaze-contingent warmer/colder guidance, fixed-front return before each trial, cloud voice processing. Include IMI, per the researcher. **Open decision:** final trial repetitions, primary outcome and final survey form. No trial count was agreed at the meeting. IRB is not yet submitted, per the researcher.
 
@@ -48,6 +48,8 @@ The [official complete packet](../resources/surveys/imi-complete.pdf) contains 7
 Use the official seven-point truth anchors. Reverse-keyed items use `8 - response`; average within each subscale. In the full-bank ordering, reverse interest/enjoyment items 3 and 4, effort/importance items 2 and 5, and pressure/tension items 1 and 3; value/usefulness has no reverse-keyed items. Verify keys against the actual frozen form after any item selection/reordering. Do not compute one total IMI score. Only interest/enjoyment directly represents intrinsic motivation; other subscales represent distinct experiences. Source: [official IMI overview](https://selfdeterminationtheory.org/intrinsic-motivation-inventory/) and saved packet.
 
 **Protocol proposal — missingness rule:** retain raw responses and missing counts; score a subscale only if all selected items are answered, otherwise mark that score missing. Do not invent a response or substitute another participant's mean. Review this conservative project rule before analysis freeze; it is not presented as an official IMI requirement.
+
+**Qualtrics draft implementation (2026-09-19):** three Advanced TXT drafts now mirror this register: baseline/pre-task, post-voice-block and post-session/safety. The draft IDs and repeatable import sources are recorded in [`resources/surveys/qualtrics/README.md`](../resources/surveys/qualtrics/README.md). They are saved drafts only; item wording, order, requiredness, scoring, missingness and IRB reconciliation remain open before publication.
 
 **Reported evidence:** Kao et al. used IMI in an educational programming game; §5.2.5 reports no significant direct voice-similarity effect on the four IMI outcomes. Their PENS competence/relatedness/immersion outcomes are separate measures, not IMI subscales adopted here. Their voluntary time played is not equivalent to time needed to find an object. [Paper and provenance](../resources/surveys/README.md).
 

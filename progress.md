@@ -3,6 +3,42 @@
 Daily progress on the Gaze Contingency Project ("Follow My Voice: Gaze-Contingent
 XR Search with a Self-Similar Agent"). Newest entries on top.
 
+## 2026-09-20
+
+### Link the experimenter protocol from the README
+- Added a prominent PDF link and editable source links, retaining the review/rehearsal status. Copied the complete formatted protocol and Markdown into the local v2 checkout so its README links resolve.
+- Opened the three existing Qualtrics survey builders for review.
+
+
+### Format current experimenter run sheet as PDF
+- Converted the current Markdown run sheet to a UCF-themed PDF with editable LaTeX under `docs/protocol/formatted-run-sheet/`. Preserved source wording and flagged the trial-count and voice-order inconsistencies in a cover note.
+- Compiled using Tectonic and checked extracted sections and rendered pages.
+
+### Set provisional study trial count
+- Subsequent user revision: increased the provisional plan to 60 experimental trials, 30 per voice condition, plus two practice trials (62 total). Updated both planning documents; runtime remains unchanged. Thirty trials per block cannot divide equally across eight planes, so the location-balancing schedule remains open.
+- Recorded the researcher’s provisional choice of 48 experimental trials: 24 per voice condition, plus two practice trials (50 including practice), in the protocol decision register and alignment document.
+- Runtime and dated protocol exports remain unchanged; angle allocation, pilot feasibility and power justification remain open.
+
+### Save reusable UCF academic PDF styling and render protocol
+- Created the personal `ucf-academic-pdf` skill with a reusable LaTeX theme, local compilation fallback and PDF/text/visual verification instructions, based on the requested Hermes references.
+- Produced a UCF-inspired protocol review edition under `docs/protocol/ucf-themed/` with editable LaTeX, a charcoal/gold cover, session overview, and explicit review notes for wording, TLX duplication, survey linkage and open decisions. The original run sheet remains the dated source; this is a styled review edition, not a protocol freeze.
+- Validated the skill and compiled with Tectonic because pdflatex is unavailable; checked extracted content and rendered pages.
+
+## 2026-09-19
+
+### Create Qualtrics draft survey battery
+- Built repeatable Qualtrics Advanced TXT imports from the questionnaire and measures register: baseline/pre-task, post-voice-block and post-session/safety.
+- Imported the three drafts into the UCF Qualtrics workspace, preserved repository item IDs as question export tags, and removed each blank starter block. Draft IDs and builder links are recorded in `resources/surveys/qualtrics/README.md`.
+- Included the full proposed 24-item IMI bank, NASA-TLX, baseline/post SSQ, voice manipulation and technical checks, and the Guo Table A1 source bank. IPQ remains on hold for the passthrough MR design; final wording, burden, scoring, requiredness, IRB reconciliation and publication remain open.
+
+### Print the Qualtrics drafts for protocol review
+- Rendered one print-ready PDF per draft under `output/pdf/`, with survey ID, administration timing, export tags, response choices, writing space and page numbering.
+- Visually checked representative first, middle and final pages for clipping, readable text, matrix response scales and interview writing areas. The PDFs are static review copies; response collection remains in Qualtrics.
+
+### Add source annotations to the survey PDFs
+- Rendered annotated companion PDFs with a yellow provenance note after each item group and a references page covering NASA-TLX, SSQ, IMI, Kao et al. (2021), Guo et al. (2024), and the original Guo Table A1 attributions.
+- Marked demographics, technical checks, preference questions and interview prompts as study-created instead of implying they came from a validated paper. Visually checked representative annotated pages and reference pages.
+
 ## 2026-09-16
 
 ### Archive submission-video reference and checkpoint all work for v2

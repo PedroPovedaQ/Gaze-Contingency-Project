@@ -1,5 +1,13 @@
 # Gaze Contingency Project
 
+## Experimenter protocol
+
+**Start here:** [Open the formatted experimenter protocol (PDF)](docs/protocol/formatted-run-sheet/experimenter-run-sheet.pdf).
+
+The protocol covers session preparation, consent, voice setup, practice, both task blocks, surveys, safety stops and the final researcher checks. It is a **review/rehearsal draft**; the cover flags trial-count and voice-order inconsistencies that must be reconciled before participant use.
+
+[Editable run sheet](docs/protocol/experimenter-run-sheet.md) · [LaTeX source](docs/protocol/formatted-run-sheet/experimenter-run-sheet.tex)
+
 **Study materials:** [Open the study hub](docs/STUDY-HUB.md) — current protocol, all surveys, reference PDFs, measures and the GitHub delivery board.
 
 A mixed reality research study investigating how gaze-contingent AI assistance affects user performance, cognitive load, and task satisfaction in spatial search tasks for CAP 6117- Mixed Reality Project at UCF.
