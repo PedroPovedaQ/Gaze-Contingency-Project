@@ -1,0 +1,80 @@
+[[AdvancedFormat]]
+[[Block:Post-exposure safety]]
+[[Question:DB]]
+[[ID:POST_INTRO]]
+DRAFT — Complete after removing the headset. Tell the researcher immediately if symptoms are severe or worsening.
+[[Question:Matrix]]
+[[ID:POST_SSQ]]
+Post-exposure Simulator Sickness Questionnaire. Use 0 = none, 1 = slight, 2 = moderate, 3 = severe.
+[[Choices]]
+General discomfort
+Fatigue
+Headache
+Eyestrain
+Difficulty focusing
+Increased salivation
+Sweating
+Nausea
+Difficulty concentrating
+Fullness of head
+Blurred vision
+Dizziness with eyes open
+Dizziness with eyes closed
+Vertigo
+Stomach awareness
+Burping
+[[AdvancedAnswers]]
+[[Answer:1]]
+0 — None
+[[Answer:2]]
+1 — Slight
+[[Answer:3]]
+2 — Moderate
+[[Answer:4]]
+3 — Severe
+[[Question:MC:SingleAnswer:Vertical]]
+[[ID:POST_STOP]]
+Did you stop or pause because of symptoms?
+[[Choices]]
+No
+Yes
+[[Question:MC:SingleAnswer:Vertical]]
+[[ID:POST_READY]]
+Do you feel ready to leave the lab?
+[[Choices]]
+Yes
+No — researcher follow-up required
+[[PageBreak]]
+[[Block:Voice comparison and interview]]
+[[Question:MC:SingleAnswer:Vertical]]
+[[ID:POST_VOICE_PREF]]
+Which voice did you prefer?
+[[Choices]]
+Generic voice
+Voice resembling me
+No preference
+Unsure
+[[Question:TE:Essay]]
+[[ID:POST_VOICE_REASON]]
+Why did you choose that response?
+[[Question:TE:Essay]]
+[[ID:POST_HELPFUL]]
+Which voice or combination felt most helpful, and why?
+[[Question:TE:Essay]]
+[[ID:POST_COMFORT]]
+Which voice or combination felt most comfortable, and why?
+[[Question:TE:Essay]]
+[[ID:POST_SIMILARITY]]
+Did you believe the self-similar voice resembled your voice? Why or why not?
+[[Question:TE:Essay]]
+[[ID:POST_DIALOGUE]]
+Did hearing the self-similar voice change how you experienced your own thoughts or internal dialogue? Please describe.
+[[Question:TE:Essay]]
+[[ID:POST_CONCERNS]]
+Did hearing the self-similar voice create any concern about misuse or how the voice was created?
+[[Question:TE:Essay]]
+[[ID:POST_CHANGES]]
+What would you change about the hints, voice, or task?
+[[Question:TE:Essay]]
+[[ID:POST_INTERVIEW]]
+Researcher notes from the semi-structured final interview (search strategy, useful or distracting feedback, voice experience, comfort, and suggested changes):

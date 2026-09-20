@@ -32,7 +32,7 @@ The [IEEE-style planned-study manuscript](manuscript/gaze-guidance-planned-study
 
 **Implementation gap:** the beta currently presents its transition in the current viewing direction. Add a fixed-front alignment/readiness gate without rotating the world or resetting the session origin. Balance and log front-to-target angle; keep the return interval outside active search timing. Previous-target angle/distance are secondary geometric descriptors rather than the controlled turn distance.
 
-**Open decision:** pilot trial count is awaiting the researcher. Alignment tolerance, practice/timeout criteria and final sample/repetition justification require validation. Offline and no-third-party-transfer statements retained below belong to the old draft and must be replaced before submission; they do not describe the selected cloud workflow.
+**Protocol proposal — provisional user decision, 2026-09-20:** plan 60 experimental trials, split into 30 per voice block, plus two practice trials (62 trials including practice). The implemented beta still has 14 experimental trials. Alignment tolerance, practice/timeout criteria, angle allocation and final sample/repetition justification require validation. Offline and no-third-party-transfer statements retained below belong to the old draft and must be replaced before submission; they do not describe the selected cloud workflow.
 
 ## Study design
 

@@ -1,0 +1,416 @@
+[[AdvancedFormat]]
+[[Block:Voice block identifiers]]
+[[Question:DB]]
+[[ID:BLOCK_INTRO]]
+DRAFT — Complete this form immediately after the current voice block, before starting the next block. The researcher records the condition fields; do not infer or change them.
+[[Question:TE:SingleLine]]
+[[ID:BLOCK_STUDY_CODE]]
+Study code:
+[[Question:TE:SingleLine]]
+[[ID:BLOCK_NUMBER]]
+Block number (researcher entry):
+[[Question:TE:SingleLine]]
+[[ID:BLOCK_VOICE_CONDITION]]
+Voice condition code (researcher entry):
+[[Question:TE:SingleLine]]
+[[ID:BLOCK_ORDER]]
+Condition order code (researcher entry):
+[[PageBreak]]
+[[Block:Workload]]
+[[Question:Matrix]]
+[[ID:BLOCK_TLX]]
+Raw NASA-TLX. Rate workload during this block. Performance uses 0 = perfect and 10 = failure.
+[[Choices]]
+Mental Demand — How mentally demanding was this block?
+Physical Demand — How physically demanding was this block?
+Temporal Demand — How hurried or rushed did you feel during this block?
+Performance — How unsuccessful were you in accomplishing the task?
+Effort — How hard did you have to work to achieve your level of performance?
+Frustration — How insecure, discouraged, irritated, stressed, or annoyed did you feel?
+[[AdvancedAnswers]]
+[[Answer:1]]
+0 — Very low / perfect
+[[Answer:2]]
+1
+[[Answer:3]]
+2
+[[Answer:4]]
+3
+[[Answer:5]]
+4
+[[Answer:6]]
+5
+[[Answer:7]]
+6
+[[Answer:8]]
+7
+[[Answer:9]]
+8
+[[Answer:10]]
+9
+[[Answer:11]]
+10 — Very high / failure
+[[PageBreak]]
+[[Block:Intrinsic Motivation Inventory]]
+[[Question:DB]]
+[[ID:IMI_INTRO]]
+Rate each statement about the search activity you just completed. Use 1 = not at all true and 7 = very true. Items marked [R] are reverse-keyed for scoring; keep the raw response.
+[[Question:Matrix]]
+[[ID:IMI_1]]
+IMI — Interest/enjoyment
+[[Choices]]
+I enjoyed doing this activity very much.
+This activity was fun to do.
+I thought this was a boring activity. [R]
+This activity did not hold my attention at all. [R]
+I would describe this activity as very interesting.
+I thought this activity was quite enjoyable.
+While I was doing this activity, I was thinking about how much I enjoyed it.
+[[AdvancedAnswers]]
+[[Answer:1]]
+1 — Not at all true
+[[Answer:2]]
+2
+[[Answer:3]]
+3
+[[Answer:4]]
+4
+[[Answer:5]]
+5
+[[Answer:6]]
+6
+[[Answer:7]]
+7 — Very true
+[[Question:Matrix]]
+[[ID:IMI_2]]
+IMI — Effort/importance
+[[Choices]]
+I put a lot of effort into this.
+I didn’t try very hard to do well at this activity. [R]
+I tried very hard on this activity.
+It was important to me to do well at this task.
+I didn’t put much energy into this. [R]
+[[AdvancedAnswers]]
+[[Answer:1]]
+1 — Not at all true
+[[Answer:2]]
+2
+[[Answer:3]]
+3
+[[Answer:4]]
+4
+[[Answer:5]]
+5
+[[Answer:6]]
+6
+[[Answer:7]]
+7 — Very true
+[[Question:Matrix]]
+[[ID:IMI_3]]
+IMI — Pressure/tension
+[[Choices]]
+I did not feel nervous at all while doing this. [R]
+I felt very tense while doing this activity.
+I was very relaxed in doing this. [R]
+I was anxious while working on this task.
+I felt pressured while doing these.
+[[AdvancedAnswers]]
+[[Answer:1]]
+1 — Not at all true
+[[Answer:2]]
+2
+[[Answer:3]]
+3
+[[Answer:4]]
+4
+[[Answer:5]]
+5
+[[Answer:6]]
+6
+[[Answer:7]]
+7 — Very true
+[[Question:Matrix]]
+[[ID:IMI_4]]
+IMI — Value/usefulness
+[[Choices]]
+I believe this activity could be of some value to me.
+I think that doing this activity is useful for this search activity.
+I think this is important to do because it can improve my search performance.
+I would be willing to do this again because it has some value to me.
+I think doing this activity could help me to search for targets.
+I believe doing this activity could be beneficial to me.
+I think this is an important activity.
+[[AdvancedAnswers]]
+[[Answer:1]]
+1 — Not at all true
+[[Answer:2]]
+2
+[[Answer:3]]
+3
+[[Answer:4]]
+4
+[[Answer:5]]
+5
+[[Answer:6]]
+6
+[[Answer:7]]
+7 — Very true
+[[PageBreak]]
+[[Block:Voice and assistance checks]]
+[[Question:Matrix]]
+[[ID:BLOCK_CHECKS]]
+Rate each statement about this voice block from 1 = strongly disagree to 7 = strongly agree.
+[[Choices]]
+The hints seemed responsive to what I was looking at.
+The hints were helpful.
+The hints were distracting.
+The speaking voice sounded like my own voice.
+The speaking voice felt familiar.
+I trusted the spoken guidance.
+I felt comfortable hearing this voice.
+The voice felt uncanny or unsettling.
+I relied on the spoken hints when deciding where to search next.
+The warmer/colder feedback helped me narrow down the target location.
+[[AdvancedAnswers]]
+[[Answer:1]]
+1 — Strongly disagree
+[[Answer:2]]
+2
+[[Answer:3]]
+3
+[[Answer:4]]
+4
+[[Answer:5]]
+5
+[[Answer:6]]
+6
+[[Answer:7]]
+7 — Strongly agree
+[[Question:MC:SingleAnswer:Vertical]]
+[[ID:BLOCK_HEARD]]
+Did you hear all prompts clearly?
+[[Choices]]
+Yes
+No
+Unsure
+[[Question:MC:SingleAnswer:Vertical]]
+[[ID:BLOCK_FAULT]]
+Did any prompt repeat, cut off, arrive late, or use the wrong voice?
+[[Choices]]
+No
+Yes
+Unsure
+[[Question:TE:Essay]]
+[[ID:BLOCK_FAULT_NOTE]]
+If yes, describe what happened (optional):
+[[Question:MC:SingleAnswer:Vertical]]
+[[ID:BLOCK_BREAK]]
+Did you take an unplanned break or experience an interruption?
+[[Choices]]
+No
+Yes
+[[Question:TE:Essay]]
+[[ID:BLOCK_BREAK_NOTE]]
+If yes, describe the interruption (optional):
+[[PageBreak]]
+[[Block:Agent perception source bank — Guo et al. 2024]]
+[[Question:DB]]
+[[ID:GUO_INTRO]]
+Source-bank draft from Guo et al. (2024), Table A1. Rate the virtual voice agent you just experienced. All items use 1 = very strongly disagree and 7 = very strongly agree. Appearance-specific items are retained for review and may be marked not applicable in the frozen participant form.
+[[Question:Matrix]]
+[[ID:GUO_1]]
+Co-presence — Biocca et al. 2001
+[[Choices]]
+I noticed the virtual character.
+The virtual character noticed me.
+The virtual character’s presence was obvious to me.
+My presence was obvious to the virtual character.
+The virtual character caught my attention.
+I caught the virtual character’s attention.
+[[AdvancedAnswers]]
+[[Answer:1]]
+1 — Very strongly disagree
+[[Answer:2]]
+2
+[[Answer:3]]
+3
+[[Answer:4]]
+4
+[[Answer:5]]
+5
+[[Answer:6]]
+6
+[[Answer:7]]
+7 — Very strongly agree
+[[Question:Matrix]]
+[[ID:GUO_2]]
+Attentional allocation — Biocca et al. 2001
+[[Choices]]
+I was easily distracted from the virtual character when other things were going on.
+The virtual character was easily distracted from me when other things were going on.
+I remained focused on the virtual character throughout our interaction.
+The virtual character remained focused on me throughout our interaction.
+The virtual character did not receive my full attention.
+I did not receive the virtual character’s full attention.
+[[AdvancedAnswers]]
+[[Answer:1]]
+1 — Very strongly disagree
+[[Answer:2]]
+2
+[[Answer:3]]
+3
+[[Answer:4]]
+4
+[[Answer:5]]
+5
+[[Answer:6]]
+6
+[[Answer:7]]
+7 — Very strongly agree
+[[Question:Matrix]]
+[[ID:GUO_3]]
+Perceived intelligence — Moussawi and Koufaris 2019
+[[Choices]]
+The virtual character was able to operate without my intervention.
+The virtual character was aware of the virtual environment.
+The virtual character was able to set and pursue tasks by themselves in anticipation of future needs.
+The virtual character was able to complete tasks quickly.
+The virtual character was able to find and process the necessary information for completing the task.
+The virtual character was able to adapt/adjust their behavior based on prior events.
+[[AdvancedAnswers]]
+[[Answer:1]]
+1 — Very strongly disagree
+[[Answer:2]]
+2
+[[Answer:3]]
+3
+[[Answer:4]]
+4
+[[Answer:5]]
+5
+[[Answer:6]]
+6
+[[Answer:7]]
+7 — Very strongly agree
+[[Question:Matrix]]
+[[ID:GUO_4]]
+Intelligence comparison — Guo et al. 2024
+[[Choices]]
+Do you think the virtual character was more intelligent than you?
+[[AdvancedAnswers]]
+[[Answer:1]]
+1 — Very strongly disagree
+[[Answer:2]]
+2
+[[Answer:3]]
+3
+[[Answer:4]]
+4
+[[Answer:5]]
+5
+[[Answer:6]]
+6
+[[Answer:7]]
+7 — Very strongly agree
+[[Question:Matrix]]
+[[ID:GUO_5]]
+Eerie — Zibrek et al. 2018
+[[Choices]]
+I found the virtual character appealing.
+I found the virtual character eerie.
+I found the virtual character familiar.
+[[AdvancedAnswers]]
+[[Answer:1]]
+1 — Very strongly disagree
+[[Answer:2]]
+2
+[[Answer:3]]
+3
+[[Answer:4]]
+4
+[[Answer:5]]
+5
+[[Answer:6]]
+6
+[[Answer:7]]
+7 — Very strongly agree
+[[Question:Matrix]]
+[[ID:GUO_6]]
+Likability — Reysen 2005
+[[Choices]]
+This virtual character is friendly.
+This virtual character is likable.
+This virtual character is warm.
+This virtual character is approachable.
+I would ask this virtual character for advice.
+I would like this virtual character as a coworker.
+I would like this virtual character as a roommate.
+I would like to be friends with this virtual character.
+This virtual character is physically attractive.
+This virtual character is similar to me.
+This virtual character is knowledgeable.
+[[AdvancedAnswers]]
+[[Answer:1]]
+1 — Very strongly disagree
+[[Answer:2]]
+2
+[[Answer:3]]
+3
+[[Answer:4]]
+4
+[[Answer:5]]
+5
+[[Answer:6]]
+6
+[[Answer:7]]
+7 — Very strongly agree
+[[Question:Matrix]]
+[[ID:GUO_7]]
+Believability — Lam et al. 2023
+[[Choices]]
+Rate the believability of the virtual character’s voice and appearance combined.
+Rate how well you agree with the following: I would expect the virtual character to sound like this from the way they look.
+Rate how well you agree with the following: I would expect the virtual character to look like this from the way they sound.
+[[AdvancedAnswers]]
+[[Answer:1]]
+1 — Very strongly disagree
+[[Answer:2]]
+2
+[[Answer:3]]
+3
+[[Answer:4]]
+4
+[[Answer:5]]
+5
+[[Answer:6]]
+6
+[[Answer:7]]
+7 — Very strongly agree
+[[Question:Matrix]]
+[[ID:GUO_8]]
+Perceived anthropomorphism — Moussawi and Koufaris 2019
+[[Choices]]
+The virtual character is able to speak like a human.
+The virtual character can be happy.
+The virtual character can be friendly.
+The virtual character can be respectful.
+The virtual character can be funny.
+The virtual character can be caring.
+[[AdvancedAnswers]]
+[[Answer:1]]
+1 — Very strongly disagree
+[[Answer:2]]
+2
+[[Answer:3]]
+3
+[[Answer:4]]
+4
+[[Answer:5]]
+5
+[[Answer:6]]
+6
+[[Answer:7]]
+7 — Very strongly agree
+[[Question:TE:Essay]]
+[[ID:GUO_Q43]]
+Please provide additional comments on your overall experience:

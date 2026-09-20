@@ -18,7 +18,7 @@ Updated 2026-09-16. Planning companion to [the procedure](experiment-procedure.m
 
 **Protocol proposal — confirmed user decision:** keep only warmer/colder guidance, with the same policy in both voices. Coarse directional guidance and spatialized target-plane cues are outside the current thesis scope. Stale-feedback interruption remains required.
 
-**Open decision:** use 24, 16 or the current seven measured trials per voice for the initial development pilot? A provisional count is a feasibility test, not a power calculation or the final recruitment protocol. Balanced angles and repetitions must be verified rather than inferred from the total count.
+**Protocol proposal — provisional user decision, 2026-09-20:** plan 60 experimental trials per participant: 30 in each of the two voice blocks, plus two uncounted practice trials (one per voice), for 62 trials including practice. This replaces the open pilot-count choice; it does not change the implemented 14-experimental-trial beta. Final angle allocation/repetitions, duration, fatigue and power justification remain open and require validation before freezing the study protocol.
 
 **Protocol proposal — confirmed user decision:** use cloud voice processing for the participant study. The current implementation uses ElevenLabs for generic speech and Mistral/Voxtral for cloning/self-similar speech. The researcher reports that the IRB application has **not been submitted**. Replace offline/no-third-party-transfer claims in the draft sources with the actual reviewed data flow before submission. Exact provider retention/deletion controls, account setup and institutional requirements remain to be verified; do not carry over promises of offline processing or universal 24-hour remote deletion without evidence.
 

@@ -2,7 +2,7 @@
 
 Experimenter Run Sheet
 
-Version: 0.1 | September 16 2026 | Protocol proposal for rehearsal and review. The IRB application has not been submitted. Use with the approved consent and finalized study settings before participant collection.
+Version: 0.1 | September 16 2026
 
 Researcher only: Two counterbalanced voice blocks, generic and self-similar. Both use gaze-contingent warmer/colder guidance. Planned trial start is the same fixed front direction. Say “first block” and “second block”; do not suggest that either voice should improve performance.
 
@@ -30,7 +30,6 @@ ACTION: Obtain consent.
 
 Say: “Please complete the background and current-comfort questions before we begin. Use only the study code already entered. Do not add your name or contact details. You may skip optional questions.”
 
-ACTION: Confirm coded ID and baseline symptom record. Apply approved screening rules. Record missing responses without inventing answers. Survey platform and exact form must match the session record.
 
 ## 3 Fit and calibrate the headset
 
