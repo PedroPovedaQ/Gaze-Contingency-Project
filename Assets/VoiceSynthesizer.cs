@@ -45,6 +45,7 @@ public class VoiceSynthesizer : MonoBehaviour
     readonly List<ClipAudit> m_Audit = new List<ClipAudit>();
     string m_ActiveClipKey;
     public event Action<string, string, string, string> Telemetry;
+    public AudioClip ReplayClip => m_AudioSource != null ? m_AudioSource.clip : null;
     public event Action<string> PlaybackFailed;
 
     [Serializable] class ClipAudit

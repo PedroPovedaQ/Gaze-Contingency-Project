@@ -9,6 +9,8 @@ This document explains how the gaze-aware assistance layer works in the current 
 
 The code paths described here are the ones currently used by the Unity project. File names are included so you can jump straight to the implementation.
 
+**Implemented:** new sessions also save independent trial replay packages with geometry, head/gaze samples, choices and voice clips. See [Trial recording and replay](../trial-replay.md) for playback, derived measurements, desktop rehearsal, video export and the remaining headset verification gate.
+
 ## 1. High-level flow
 
 The runtime loop is:

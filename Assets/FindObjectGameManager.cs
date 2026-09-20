@@ -275,6 +275,7 @@ public class FindObjectGameManager : MonoBehaviour
             m_UI.OnResetRequested += HandleResetRequested;
         }
         m_Spawner.objectSpawned += OnObjectSpawned;
+        if (GetComponent<TrialReplayRecorder>() == null) gameObject.AddComponent<TrialReplayRecorder>();
     }
 
     IEnumerator Start()
@@ -692,6 +693,9 @@ public class FindObjectGameManager : MonoBehaviour
 
         var info = obj.GetComponent<SpawnableObjectInfo>();
         if (info == null) return;
+
+        GetComponent<TrialReplayRecorder>()?.Selection(obj,
+            info.shapeName == m_CurrentTarget.shape && info.colorName == m_CurrentTarget.color);
 
         if (info.shapeName == m_CurrentTarget.shape && info.colorName == m_CurrentTarget.color)
         {
