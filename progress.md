@@ -5,12 +5,15 @@ XR Search with a Self-Similar Agent"). Newest entries on top.
 
 ## 2026-09-20
 
+### Use GitHub Projects for delivery tracking
+- Made [Gaze Study — Participant Readiness](https://github.com/users/PedroPovedaQ/projects/2) the project tracker; linked replay work to [#28](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/28) and raw-motion work to [#22](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/22). Both remain In Progress with local implementation evidence and outstanding acceptance criteria.
+
 ### Add trial recording, replay, analysis and synthetic demo export
 - **Implemented:** detailed plan and versioned JSONL/WAV recording of exact object meshes/transforms, head/gaze poses with validity, pause-aware timing, trial linkage and authoritative wrong/correct choices. Existing study CSVs are unchanged.
 - **Implemented:** isolated Unity Editor viewer with seeking/cameras/audio; Python derived metrics; separate desktop mouse rehearsal using saved layouts; fixed-rate PNG/WAV export and labeled MP4 encoding. Guide: `docs/trial-replay.md`; plan: `docs/plans/2026-09-20-1603-feat-trial-demo-replay-plan.md`.
 - **Verification:** Unity compile and Editor integration checks passed, including the real capture callback; ten Python tests and existing layout/voice/enrollment/worktree checks passed. Rendered and visually inspected a labeled eight-second 1280×720 synthetic demo (240 frames). Analysis recovered one wrong choice, one correct choice and five seconds of active search. Installed Apple's missing Metal toolchain and corrected Retina export cropping during validation.
 - **Open verification:** Android Build And Run was attempted; the first pass cancelled during cached build preparation, and retry reached “No Android devices connected.” No deployment or physical headset fidelity/performance validation is claimed. The viewer loaded visibly through the Unity menu; coordinate-based UI control failed in the automation service, so full manual interaction QA remains open.
-- **Protocol proposal / Open decision:** repeat-layout collection currently records explicitly labeled desktop mouse responses. Headset repetition, participant learning effects and revised research procedures require a separate protocol decision. Vikunja task 24 remains open for hardware verification; no reusable external logger was supplied.
+- **Protocol proposal / Open decision:** repeat-layout collection currently records explicitly labeled desktop mouse responses. Headset repetition, participant learning effects and revised research procedures require a separate protocol decision. [GitHub issue #28](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/28) on [Gaze Study — Participant Readiness](https://github.com/users/PedroPovedaQ/projects/2) remains open for reconstruction and hardware verification; no reusable external logger was supplied.
 
 ## 2026-09-16
 

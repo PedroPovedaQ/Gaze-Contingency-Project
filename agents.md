@@ -207,3 +207,7 @@ VIVE package source: `https://github.com/ViveSoftware/VIVE-OpenXR-Unity.git?path
   - bring Unity to the foreground, and
   - trigger Android Build And Run (`Tools > Codex > Build And Run Android`) via menu automation.
 - Do this by default unless the user explicitly asks not to.
+
+## Project tracking
+
+Use [GitHub Projects — Gaze Study Participant Readiness](https://github.com/users/PedroPovedaQ/projects/2) and this repository’s GitHub issues as the source of truth for work tracking. Update matching existing issues and their project status; preserve unfinished acceptance criteria. Replay/reconstruction is tracked in [#28](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/28), and raw motion logging in [#22](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/22).

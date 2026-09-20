@@ -8,6 +8,8 @@ execution: code
 ---
 # Trial Recording and Replay - Plan
 
+Tracking: [GitHub issue #28](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/28) · [Gaze Study — Participant Readiness](https://github.com/users/PedroPovedaQ/projects/2). Raw motion requirements remain tracked in [#22](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/22).
+
 ## Goal Capsule
 
 Reconstruct individual search trials with their actual object placements, gaze, head movement, selections and audio, so researchers can demonstrate and inspect behavior without repeating the original performance.

@@ -1,5 +1,7 @@
 # Trial recording, replay and derived measurements
 
+Tracking: [GitHub issue #28](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/28) · [Gaze Study — Participant Readiness](https://github.com/users/PedroPovedaQ/projects/2). Raw motion requirements remain tracked in [#22](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/22).
+
 **Implemented:** new trials write an independent replay package alongside the existing study CSV workflow. The desktop Unity viewer reconstructs saved object geometry, transforms, head pose, gaze interaction state and authoritative choices without entering Play mode. Original study CSV formats are unchanged.
 
 **Protocol proposal:** the repeat-layout tool collects mouse-click responses on the desktop. These are explicitly labeled `desktop_rehearsal`; they are not headset gaze measurements or additional participant-study trials. A headset repeat condition and its treatment of learning effects remain an **Open decision**.
