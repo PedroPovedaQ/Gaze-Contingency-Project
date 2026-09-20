@@ -8,6 +8,10 @@ XR Search with a Self-Similar Agent"). Newest entries on top.
 ### Publish formatted experimenter protocol
 - Added the current run sheet, verified UCF-themed PDF and self-contained LaTeX sources. Added prominent README links to the protocol and editable sources. The cover identifies trial-count and voice-order inconsistencies for review.
 
+### Add provisional study procedure figure
+- Added the UCF-inspired study-flow image and reproducible ImageGen prompt under `output/imagegen/`.
+- Depicts two counterbalanced 30-trial voice blocks, two practice trials, survey timing and seated eight-plane gaze search. The figure labels the procedure provisional; it does not change runtime trial counts.
+
 ## 2026-09-16
 
 ### Archive submission-video reference and checkpoint all work for v2

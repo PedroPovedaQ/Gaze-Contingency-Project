@@ -1,0 +1,15 @@
+Generated using the built-in image generation tool.
+Reference: user-provided experimental procedure figure.
+
+Create a polished academic study-procedure infographic inspired by the attached reference's left-to-right experimental flow, pictogram icons, rounded enclosure, and clear labels. Reference is composition/style ONLY; replace all ping-pong, speed gauges, training design and submission-ID content with our mixed-reality gaze search study. Wide landscape paper figure, white background, crisp vector-like illustration, professional black/charcoal outlines, UCF gold #FFC904 accents, subtle light-gray panels, readable sans-serif type. No institutional logo. Title: "Follow My Voice". Subtitle: "Provisional study procedure".
+Design a clearly connected chronological flow with seven stages, spread evenly across the width, using compact illustrations above readable labels:
+1 outside enclosure: monitor with questionnaire icon; label "Baseline survey".
+2 inside a large rounded light-gray enclosure: headset plus microphone icons; label "Headset & voice setup".
+3 inside enclosure: seated participant wearing headset, curved turning arrow; label "Practice" and smaller "2 trials • 1 per voice".
+4 inside enclosure: small voice-wave plus target-object icon; label "Block 1" and "30 trials".
+5 intermediate stage shown as a distinct gold questionnaire card between blocks, with arrows through it: "Block survey" and "Break".
+6 inside enclosure: voice-wave plus target-object icon; label "Block 2" and "30 trials".
+7 outside enclosure on right: monitor questionnaire icon; label "Block survey" and "Final survey & interview".
+Below the two block cards, show a compact gold outlined note with swap-arrows icon: "Counterbalanced order" and two explicit lines "Neutral → Self-similar" / "Self-similar → Neutral". Do not imply self-similar is always block 2.
+Under the flow, include a prominent compact task illustration centered in a separate strip: TOP-DOWN VIEW, one seated headset wearer in center, exactly EIGHT short inward-facing planes arranged evenly in a circle every 45 degrees, each containing a few small red/blue/yellow/purple sphere/cube/pyramid icons to suggest object arrays. Use a gold gaze arrow from person to one target; no walking illustration. Label this strip "Same task in both blocks" and text "Seated rotation • Eight surrounding planes • Gaze-dwell selection". Below that: "Always gaze-contingent warmer/colder guidance" and "Return to front before each trial".
+Bottom understated footer: "60 experimental trials + 2 practice trials". Keep visual hierarchy clean, ample spacing, all text spelled accurately and large enough for a paper figure, high resolution, no cropped caption, no invented statistical results. Block and final surveys should clearly occur after second block, not before it. Use two rows if necessary for excellent legibility: upper main timeline and lower task detail, with no tangled arrows.
