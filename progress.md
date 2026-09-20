@@ -5,6 +5,9 @@ XR Search with a Self-Similar Agent"). Newest entries on top.
 
 ## 2026-09-20
 
+### Checkpoint all workspace changes
+- Merged the complete workspace snapshot, including the latest inline protocol questions, calibration and telemetry notes, survey wording and break updates. Existing generated PDFs remain their earlier review editions; they have not been regenerated for these latest source edits.
+
 ### Save remaining study materials
 - Checkpointed survey sources, generators and review PDFs, the UCF protocol review edition, current run-sheet edits and the provisional 60-trial planning decision. Preserved the existing published protocol and study-flow figure.
 
