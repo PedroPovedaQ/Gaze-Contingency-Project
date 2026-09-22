@@ -254,7 +254,7 @@ public class TrialDataLogger : MonoBehaviour
                 var pos = obj.transform.position;
                 bool target = info.shapeName == m_ObjectiveRecords[round].shape && info.colorName == m_ObjectiveRecords[round].color;
                 var origin = m_GameManager.SeatedOrigin;
-                string layout = m_GameManager.RotationalBetaEnabled ? "rotational_beta_v1" : "shelves_v1";
+                string layout = m_GameManager.RotationalBetaEnabled ? RotationalSearchLayout.LayoutTag : "shelves_v1";
                 writer.WriteLine(FormattableString.Invariant($"{m_SessionId}_r{round:D2},{info.objectId},{info.shapeName},{info.colorName},{info.shelfLevel},{info.shelfColumn},{pos.x:F5},{pos.y:F5},{pos.z:F5},{(target ? 1 : 0)},{layout},{info.planeId},{info.planeSlot},{info.planeAzimuth:F1},{origin.x:F5},{origin.y:F5},{origin.z:F5},{m_GameManager.SeatedForwardYaw:F1}"));
             }
         }

@@ -495,6 +495,7 @@ public class FindObjectGameManager : MonoBehaviour
 
     void CreateRotationalFrames()
     {
+        float halfWidth = RotationalSearchLayout.FrameHalfWidth(m_RotationalRadius);
         var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default");
         if (shader != null)
         {
@@ -503,9 +504,10 @@ public class FindObjectGameManager : MonoBehaviour
         }
         for (int plane = 0; plane < RotationalSearchLayout.PlaneCount; plane++)
         {
-            Quaternion rotation = m_SeatedRotation * Quaternion.Euler(0f, plane * 45f, 0f);
-            Vector3 center = m_SpawnCenter + rotation * Vector3.forward * (m_RotationalRadius + 0.08f);
-            var frame = new GameObject($"SearchPlane_{plane}_{plane * 45}deg");
+            float azimuth = plane * RotationalSearchLayout.PlaneAngleDegrees;
+            Quaternion rotation = m_SeatedRotation * Quaternion.Euler(0f, azimuth, 0f);
+            Vector3 center = m_SpawnCenter + rotation * Vector3.forward * (m_RotationalRadius + RotationalSearchLayout.FrameDepthOffset);
+            var frame = new GameObject($"SearchPlane_{plane}_{azimuth}deg");
             frame.transform.SetPositionAndRotation(center, rotation);
             if (m_PlaneOutlineMaterial != null)
             {
@@ -514,14 +516,14 @@ public class FindObjectGameManager : MonoBehaviour
                 line.useWorldSpace = false;
                 line.loop = true; line.widthMultiplier = 0.006f;
                 line.positionCount = 4;
-                line.SetPositions(new[] { new Vector3(-0.42f, -0.36f, 0), new Vector3(-0.42f, 0.36f, 0),
-                    new Vector3(0.42f, 0.36f, 0), new Vector3(0.42f, -0.36f, 0) });
+                line.SetPositions(new[] { new Vector3(-halfWidth, -0.36f, 0), new Vector3(-halfWidth, 0.36f, 0),
+                    new Vector3(halfWidth, 0.36f, 0), new Vector3(halfWidth, -0.36f, 0) });
             }
             var label = new GameObject("PlaneLabel");
             label.transform.SetParent(frame.transform, false);
             label.transform.localPosition = new Vector3(0f, 0.43f, 0f);
             var text = label.AddComponent<TextMeshPro>();
-            text.text = plane == 0 ? "0° · FORWARD" : $"{plane * 45}°";
+            text.text = plane == 0 ? "0° · FORWARD" : $"{azimuth}°";
             text.fontSize = 1.8f;
             text.alignment = TextAlignmentOptions.Center;
             text.color = Color.white;

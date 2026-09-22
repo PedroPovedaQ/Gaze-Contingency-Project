@@ -15,6 +15,10 @@ class RotationalLayoutChecks
             Check(Math.Abs(p.y) <= 0.26, "objects remain near seated eye height");
         }
         for (int i=0; i<8; i++) Check(counts[i] == 7, "seven objects on every plane");
+        // End objects should reach toward the polygon corners, leaving 15 cm for
+        // distinct hitboxes. This catches the old fixed, narrow object clusters.
+        double expectedEdge = 1.5 * Math.Tan(Math.PI / 8) - 0.15;
+        Check(Math.Abs(points[1].x - expectedEdge) < 0.0001, "objects fill the usable face width");
         for (int i=0; i<points.Length; i++) for (int j=i+1; j<points.Length; j++)
         {
             double x=points[i].x-points[j].x, y=points[i].y-points[j].y, z=points[i].z-points[j].z;
@@ -28,6 +32,41 @@ class RotationalLayoutChecks
         bool rejected=false;
         try { RotationalSearchLayout.Build(0); } catch (ArgumentOutOfRangeException) { rejected=true; }
         Check(rejected, "invalid radius rejected");
-        Console.WriteLine("PASS: eight planes, seven objects each, handedness, spacing, deterministic layout, radius validation.");
+        foreach (float radius in new[] { 1f, 1.5f, 3f }) CheckConnectedRing(radius);
+        foreach (float invalid in new[] { float.NaN, float.PositiveInfinity, 0.99f, 3.01f })
+        {
+            rejected = false;
+            try { RotationalSearchLayout.FrameHalfWidth(invalid); } catch (ArgumentOutOfRangeException) { rejected = true; }
+            Check(rejected, "invalid outline radius rejected");
+        }
+        Console.WriteLine("PASS: 56 deterministic objects, expanded face coverage, closed octagon corners, spacing at 1–3m, handedness and radius validation.");
+    }
+
+    static void CheckConnectedRing(float radius)
+    {
+        var points = RotationalSearchLayout.Build(radius);
+        double frameRadius = radius + RotationalSearchLayout.FrameDepthOffset;
+        double halfWidth = RotationalSearchLayout.FrameHalfWidth(radius);
+        for (int plane = 0; plane < 8; plane++)
+        {
+            double a = plane * Math.PI / 4;
+            double b = ((plane + 1) % 8) * Math.PI / 4;
+            // Right edge of this face must equal the next face's left edge,
+            // including the closing 315-to-0-degree seam.
+            double rightX = frameRadius * Math.Sin(a) + halfWidth * Math.Cos(a);
+            double rightZ = frameRadius * Math.Cos(a) - halfWidth * Math.Sin(a);
+            double leftX = frameRadius * Math.Sin(b) - halfWidth * Math.Cos(b);
+            double leftZ = frameRadius * Math.Cos(b) + halfWidth * Math.Sin(b);
+            Check(Math.Abs(rightX - leftX) < 0.00001 && Math.Abs(rightZ - leftZ) < 0.00001, "adjacent outline corners join");
+            var edge = points[plane * 7 + 1];
+            double tangentOffset = edge.x * Math.Cos(a) - edge.z * Math.Sin(a);
+            Check(Math.Abs(radius * Math.Tan(Math.PI / 8) - tangentOffset - 0.15) < 0.00001, "15cm object clearance from polygon corner");
+            Check(edge.plane == plane && edge.slot == 1, "stable plane and slot identities");
+        }
+        for (int i = 0; i < points.Length; i++) for (int j = i + 1; j < points.Length; j++)
+        {
+            double x = points[i].x - points[j].x, y = points[i].y - points[j].y, z = points[i].z - points[j].z;
+            Check(Math.Sqrt(x*x + y*y + z*z) >= 0.249, "objects remain separated within and across faces at every radius");
+        }
     }
 }
