@@ -5,6 +5,10 @@ XR Search with a Self-Similar Agent"). Newest entries on top.
 
 ## 2026-09-22
 
+### Format the annotated run sheet for Overleaf
+- Created a standalone LaTeX review edition with UCF-inspired black/gold styling, distinct Say/Ask speech, italic researcher actions, highlighted meeting questions, session fields, page numbers and a seated 360-degree schematic. Preserved the supplied script and annotations with a cover note identifying the newer preferred-voice/controller requirements.
+- Added the source to the requested Overleaf project alongside the manuscript and verified its eight-page PDF after a clean Overleaf build. Saved the reproducible generator and review PDF; local Tectonic compilation, text-coverage checks and page-by-page visual review passed without overfull boxes. Protocol choices remain open under #27; no runtime or participant-readiness claim.
+
 ### Reconcile meeting requirements with v2 and the GitHub project
 - Audited latest `v2` at `6457c1f`, all 29 GitHub issues/project cards and the older local task lists. The supplied annotated run sheet exactly matched the committed source; preserved its notes and saved the meeting prompt verbatim.
 - **Protocol proposal:** updated the planning entry points to preferred versus self-similar voice, controller selection with independent gaze, and pilot-first delivery. Added a complete 27-section owner map, evidence table, next-step sequence and open method decisions in `docs/meeting-reconciliation-2026-09-22.md`.

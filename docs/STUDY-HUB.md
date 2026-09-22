@@ -7,6 +7,7 @@ Updated **September 22, 2026**. Start here for the current study plan, questionn
 | I want to… | Open |
 |---|---|
 | Prepare a rehearsal | [Annotated run sheet](protocol/experimenter-run-sheet.md) · [Earlier Word edition](protocol/Gaze_Search_Experimenter_Run_Sheet.docx) — #27 must reconcile generic/dwell wording before using a revised script |
+| Edit the formatted meeting run sheet | [Overleaf project](https://www.overleaf.com/project/6a84bc097073254fbca6985b) · [Standalone LaTeX and PDF](protocol/overleaf/README.md) — annotated review edition, September 22 |
 | Understand the current experiment | [Protocol at a glance](#current-protocol-at-a-glance) · [Confirmed decisions and implementation gaps](thesis-study-alignment.md) |
 | See every survey | [Survey shelf](#survey-shelf) |
 | See everything we measure | [Measures register](measures-register.md) — timing, scoring, roles, data sources and missing implementation |
