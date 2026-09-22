@@ -2,6 +2,8 @@
 
 ## Experimenter protocol
 
+**Current planning checkpoint (September 22):** [Meeting reconciliation, verified progress and next steps](docs/meeting-reconciliation-2026-09-22.md) · [GitHub project](https://github.com/users/PedroPovedaQ/projects/2). The requested comparison is preferred versus self-similar voice, with controller selection and passive gaze measurement. These changes remain implementation work.
+
 **Start here:** [Open the formatted experimenter protocol (PDF)](docs/protocol/formatted-run-sheet/experimenter-run-sheet.pdf).
 
 The protocol covers session preparation, consent, voice setup, practice, both task blocks, surveys, safety stops and the final researcher checks. It is a **review/rehearsal draft**; the cover flags trial-count and voice-order inconsistencies that must be reconciled before participant use.
@@ -14,7 +16,7 @@ A mixed reality research study investigating how gaze-contingent AI assistance a
 
 ## Research Question
 
-> Current thesis direction: How does generic versus self-similar voice affect task performance and participant experience during gaze-contingent mixed-reality object search? Both conditions are always gaze-contingent.
+> Current thesis direction: How does a participant's preferred versus self-similar voice affect task performance and participant experience during gaze-contingent mixed-reality object search? Both conditions are always gaze-contingent.
 
 **Protocol proposal:** the final outcome hierarchy, schedule and survey form are being finalized; see the study hub for decisions and implementation gaps.
 

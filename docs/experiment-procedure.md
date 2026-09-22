@@ -1,5 +1,7 @@
 # Experiment Procedure: Gaze-Contingent Guidance and Self-Similar Voice
 
+**Protocol proposal — current requirements, September 22:** [Meeting reconciliation and delivery order](meeting-reconciliation-2026-09-22.md) supersedes conflicting older planning below: participant-preferred versus self-similar voice, passive gaze measurement with controller ray/trigger selection, early recording/candidate evaluation, external survey gates and provisional 30+30 measured trials plus two practice. The beta still uses neutral profiles, gaze dwell and 14 measured trials. #27 owns full operator-script/export reconciliation; this mixed-version document is not a frozen run sheet.
+
 **Experimenter run sheet (2026-09-16):** [Word protocol](protocol/Gaze_Search_Experimenter_Run_Sheet.docx) · [Readable source](protocol/experimenter-run-sheet.md). Adapted from the supplied example and checked against current scripts; marked as a rehearsal proposal with unresolved study decisions.
 
 **Measurement planning (2026-09-16):** see the [living measures register](measures-register.md) for all surveys, behavioral metrics, scoring, implementation gaps and open decisions. IMI is now included; final subscales/form are proposed.

@@ -3,6 +3,15 @@
 Daily progress on the Gaze Contingency Project ("Follow My Voice: Gaze-Contingent
 XR Search with a Self-Similar Agent"). Newest entries on top.
 
+## 2026-09-22
+
+### Reconcile meeting requirements with v2 and the GitHub project
+- Audited latest `v2` at `6457c1f`, all 29 GitHub issues/project cards and the older local task lists. The supplied annotated run sheet exactly matched the committed source; preserved its notes and saved the meeting prompt verbatim.
+- **Protocol proposal:** updated the planning entry points to preferred versus self-similar voice, controller selection with independent gaze, and pilot-first delivery. Added a complete 27-section owner map, evidence table, next-step sequence and open method decisions in `docs/meeting-reconciliation-2026-09-22.md`.
+- **Implemented evidence:** the beta remains 14 measured gaze-dwell trials with neutral profiles; shared script modes, progressive preparation, practice/blocks and survey drafts exist. Replay work on `codex/trial-demo-replay` is separate and unmerged. Planning updates do not complete any pilot acceptance gate.
+- Reused existing issues, preserving acceptance criteria/history; added concrete progress/next actions and run-sheet details for survey-to-trial joins, final-zone timing definitions, measured sampling rates and distinct operator actions. No duplicate issues or issue closures.
+- Documentation/project update only: no runtime, live Qualtrics, generated PDF/Word or device-build changes. Existing unsaved workspace work was preserved by preparing this update in a clean checkout from `origin/v2`.
+
 ## 2026-09-20
 
 ### Checkpoint all workspace changes

@@ -2,9 +2,13 @@
 
 [Study hub — protocol, surveys and references](STUDY-HUB.md)
 
-Version 0.3 — updated 2026-09-19. Living inventory for the seated, rotating MR search study. This register governs current measurement planning; older forms and generated PDFs may describe superseded designs. It does not certify implementation or IRB approval.
+Version 0.4 — updated 2026-09-22. Living inventory for the seated, rotating MR search study. This register governs measurement planning alongside the [latest meeting reconciliation](meeting-reconciliation-2026-09-22.md) and #8/#20/#26 acceptance criteria; older forms and generated PDFs may describe superseded designs. It does not certify implementation or IRB approval.
 
-**Protocol proposal — confirmed decisions:** two within-participant voice blocks (generic/self-similar), counterbalanced order, always gaze-contingent warmer/colder guidance, fixed-front return before each trial, cloud voice processing. Include IMI, per the researcher. **Open decision:** final trial repetitions, primary outcome and final survey form. No trial count was agreed at the meeting. IRB is not yet submitted, per the researcher.
+**Protocol proposal — current researcher direction:** two within-participant voice blocks (participant-preferred/self-similar), counterbalanced order, always gaze-contingent warmer/colder guidance, fixed-front return before each trial, cloud voice processing, passive gaze measurement and controller ray/trigger selection. Provisional schedule: 30 experimental trials per voice plus two practice. Include IMI, per the researcher. **Open decision:** angle allocation, practice exposure, primary outcome, first-gaze rule and final survey form. IRB was reported unsubmitted; this update does not change institutional status.
+
+**Protocol proposal — September 22 additions:** #33 owns every candidate's preference score/rank and exact voice identity. #26 owns both experimental voices' liking ratings, separate voice-similarity and accent-similarity items, perceived own/preferred accent and voice gender. #20 adds independent first controller target contact, selection time, repeat/error/hint/zone counts, cumulative head translation and rotation across all axes, and gaze validity. Units/aliases and quality rules are frozen under #8; the older B01–B12 table remains useful but is not yet the complete new schema. Final-gaze and final-correct-zone timing need operational definitions before implementation.
+
+**Protocol proposal — survey-enriched analysis table:** join block-level TLX/voice responses to trial rows through participant/run/block/condition IDs, retaining source/version and missingness. Repeating a block score across trial rows does not make it a per-trial measurement or an independent observation. Preserve raw survey and raw trial records; #26/#20/#15 own the derived export.
 
 ## Subjective measures
 

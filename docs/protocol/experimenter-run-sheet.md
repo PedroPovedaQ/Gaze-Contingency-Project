@@ -4,6 +4,8 @@ Experimenter Run Sheet
 
 Version: 0.1 | September 16 2026 
 
+> **Protocol proposal — annotated meeting source, reviewed September 22.** This supplied run sheet was already saved on `v2`; its wording and notes below are preserved. The newer meeting prompt supersedes generic-voice and gaze-dwell instructions with **preferred versus self-similar voice and controller ray/trigger selection**. See the [reconciliation and open decisions](../meeting-reconciliation-2026-09-22.md). This is not a frozen operator script. #27 owns a revised script and synchronized PDF/Word editions; existing exports predate these requirements.
+
 Researcher only: Two counterbalanced voice blocks, generic and self-similar. Both use gaze-contingent warmer/colder guidance. Planned trial start is the same fixed front direction. Say “first block” and “second block”; do not suggest that either voice should improve performance.
 
 Session record: Participant ID ______  Run ______  Date ______  Researcher ______  Build ______  Voice order ______  Neutral profile ______  Survey version ______

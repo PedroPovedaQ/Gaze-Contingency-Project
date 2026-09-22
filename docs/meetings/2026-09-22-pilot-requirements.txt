@@ -1,0 +1,816 @@
+You are working on my existing VR/XR research experiment codebase. I have an existing set of implementation tasks/issues/TODOs already associated with this project.
+
+Your job is to reconcile the requirements below against the EXISTING tasks before creating or changing anything.
+
+CRITICAL TASK-MANAGEMENT RULE
+
+DO NOT blindly create a new task for every requirement below.
+
+First inspect all existing tasks/issues/TODOs and intelligently reconcile them.
+
+For every requirement:
+
+1. If an existing task already covers it exactly:
+    * Keep the existing task.
+    * Do not create a duplicate.
+2. If an existing task partially covers it:
+    * Enhance that task with the missing requirements.
+    * Preserve useful existing details.
+    * Update its acceptance criteria.
+3. If multiple existing tasks substantially overlap:
+    * Merge them when doing so produces a clearer unit of work.
+    * Preserve all useful requirements from the originals.
+4. If an existing task is too broad:
+    * Split it only when the resulting tasks can be implemented/tested independently.
+5. If nothing existing covers the requirement:
+    * Create a new task.
+6. If an existing task conflicts with the requirements below:
+    * Update it to match the newer requirements below.
+    * Note what changed.
+7. Do not delete useful existing work merely because it is not mentioned below.
+
+The result should be a clean, non-duplicative implementation backlog.
+
+⸻
+
+PROJECT GOAL
+
+We are building a research experiment investigating whether a SELF-SIMILAR synthetic voice — a cloned version of the participant’s own voice — changes visual search behavior, task performance, gaze behavior, arousal-related eye metrics, cognitive workload, or subjective experience compared with a voice the participant explicitly PREFERS.
+
+The experiment runs in XR/VR with eye tracking.
+
+The current comparison should be:
+
+PREFERRED VOICE
+vs.
+SELF-SIMILAR / CLONED VOICE
+
+This supersedes older assumptions that the primary comparison is simply “generic voice vs cloned voice.”
+
+The study uses a within-subject design for voice condition with counterbalanced block ordering.
+
+Do not change research methodology casually. Flag decisions that require researcher approval.
+
+⸻
+
+PRIORITY 1 — GET THE EXPERIMENT EXPERIENCE PILOT-READY
+
+This is the immediate sprint priority.
+
+Do NOT spend the majority of the sprint building advanced analytics, visualization, 3D gaze plots, or a sophisticated replay UI.
+
+The immediate objective is:
+
+Participant can enter experiment
+→ setup works
+→ preferred voice is established
+→ cloned voice is prepared
+→ headset/calibration works
+→ instructions are understandable
+→ practice works
+→ block 1 works
+→ survey/break transition works
+→ block 2 works
+→ experiment finishes
+→ core data is saved correctly.
+
+Advanced telemetry should be architected cleanly but must not derail pilot readiness.
+
+⸻
+
+1. PREFERRED VOICE SELECTION
+
+Implement or enhance the preferred-agent-voice selection workflow.
+
+Participant should hear a limited curated set of candidate voices rather than receiving an arbitrary generic voice.
+
+Requirements:
+
+* Support approximately 5–6 candidate voices per applicable voice group.
+* Candidate voices should be compatible with the participant’s voice/gender matching strategy.
+* Avoid cross-gender voice differences becoming an uncontrolled confound.
+* Participant can preview each candidate voice.
+* Collect a preference score for EVERY candidate voice.
+* Use a 0–100 or 1–100 preference scale.
+* Also capture the participant’s ranking of the candidate voices.
+* Determine and persist the participant’s highest-ranked/preferred voice.
+* Store the exact voice ID used.
+* Store all ratings, not only the winning voice.
+* Preserve enough metadata to reproduce which voices the participant evaluated.
+
+If a generic-voice-selection feature already exists, MODIFY it into this preferred-voice workflow rather than building a parallel system.
+
+⸻
+
+2. SELF-SIMILAR VOICE RECORDING / CLONING
+
+Review the existing voice-recording and voice-cloning workflow.
+
+Requirements:
+
+* Voice sample should be collected near the beginning of the study.
+* Preferably collect it before the participant begins the headset task.
+* The recording passage should provide enough phonetic coverage for good cloning.
+* It may intentionally contain vocabulary used by the experiment to improve synthesis quality for experimental phrases.
+
+Relevant vocabulary includes concepts such as:
+
+* locate
+* red
+* blue
+* other experiment colors
+* sphere
+* cylinder
+* pyramid
+* other target shapes
+
+Do NOT unnecessarily expose technical implementation details to participants.
+
+The experiment protocol may tell participants that a self-similar/synthetic version of their voice will be used somewhere during the experiment.
+
+However, do not unnecessarily announce before every block:
+
+“This is now the self-similar condition.”
+
+Store:
+
+* recording status
+* clone generation status
+* clone voice ID
+* errors/failures
+* timestamps where useful
+
+There should be a clear failure/retry path if recording or synthesis fails.
+
+⸻
+
+3. REMOVE UNNECESSARY PRE-TASK VOICE EXPOSURE
+
+Audit where the experimental agent speaks before actual experimental trials.
+
+Avoid unnecessarily acclimating participants to either experimental voice before measurements begin.
+
+Prefer researcher-delivered task instructions where practical.
+
+The agent should primarily be used for the actual experimental interaction.
+
+Do not remove necessary audio blindly. Identify existing pre-task agent speech and determine whether it should:
+
+* remain,
+* become researcher instruction,
+* or move into practice/task execution.
+
+Document any ambiguous cases.
+
+⸻
+
+4. HEADSET FITTING AND EYE CALIBRATION
+
+Review and improve the calibration workflow.
+
+Required flow:
+
+1. Fit headset.
+2. Run built-in/automated eye calibration.
+3. Verify participant can clearly see/read required content.
+4. Run custom calibration validation if supported.
+5. Record calibration success/failure.
+
+We may use a known target/dot and compare expected vs measured gaze to calculate a calibration offset.
+
+If this already exists, validate and improve it rather than replacing it.
+
+Record enough calibration metadata to later determine whether poor tracking could explain a participant’s data.
+
+⸻
+
+5. TASK INSTRUCTIONS
+
+Simplify participant-facing task instructions.
+
+The conceptual instruction should be approximately:
+
+“Your task is to locate objects around you. The agent will specify an object. For example, the agent might say, ‘Locate the blue sphere.’ Search for the object and select it. You will then continue with the next object specified by the agent.”
+
+Do not over-explain implementation details.
+
+Participants should understand:
+
+* objects can appear around them,
+* they may rotate/look around,
+* whether they must remain seated,
+* how selection works,
+* how to request the target again.
+
+If needed, provide a simple spatial diagram showing the possible object regions/zones.
+
+Do NOT expose internal zone IDs or research implementation terminology unless necessary.
+
+⸻
+
+6. PRACTICE / FAMILIARIZATION
+
+Provide a short practice phase before measured trials.
+
+Purpose:
+
+* understand searching,
+* understand selection,
+* understand controller interaction,
+* understand target repetition,
+* verify tracking.
+
+Practice should not unnecessarily contaminate experimental measurements.
+
+Clearly distinguish practice trials from experimental trials internally.
+
+Store a flag such as:
+
+is_practice
+
+Do not accidentally include practice trials in primary experimental analyses.
+
+⸻
+
+7. OBJECT SELECTION — CONTROLLER RAYCAST
+
+Review the current selection mechanism.
+
+The preferred architecture from the latest design discussion is:
+
+EYE GAZE = PASSIVE MEASUREMENT
+
+CONTROLLER RAYCAST + TRIGGER = EXPLICIT OBJECT SELECTION
+
+Participant visually searches naturally.
+
+Eye tracking measures their visual behavior without requiring gaze itself to trigger selection.
+
+Then:
+
+* participant points controller ray at desired object,
+* participant presses/holds trigger,
+* selection is confirmed.
+
+If the existing implementation uses gaze-dwell selection, refactor intelligently rather than leaving two competing selection systems unless there is a deliberate configuration flag needed for testing.
+
+Keep eye gaze completely instrumented even though it is no longer the primary selection input.
+
+⸻
+
+8. INCORRECT SELECTIONS
+
+Do not silently discard wrong selections.
+
+For each trial record:
+
+* number of incorrect selections
+* object selected
+* timestamp
+* target object
+* optionally time since trial start
+
+Wrong selections should not falsely complete the trial.
+
+After an incorrect selection, allow the participant to continue searching.
+
+⸻
+
+9. REPEAT TARGET / GOAL BUTTON
+
+Add a controller action allowing the participant to replay the current target.
+
+Example:
+
+A button → replay target phrase
+
+Example target phrase:
+
+“Locate the blue sphere.”
+
+Do not permanently display the answer/target in a way that removes the memory component unless already required by the approved design.
+
+Record:
+
+goal_repeat_count
+
+per trial.
+
+Prefer also recording timestamps of each request in raw event telemetry.
+
+⸻
+
+10. HINT TRACKING
+
+The experiment may provide warmer/colder or similar agent guidance.
+
+Record at minimum:
+
+hint_count
+
+for every trial.
+
+If feasible, raw telemetry should additionally contain:
+
+* hint timestamp
+* hint type
+* hint content/ID
+
+Do not require advanced hint analysis for the pilot.
+
+⸻
+
+11. COUNTERBALANCED EXPERIMENT BLOCKS
+
+Support both orders:
+
+Preferred → Self-Similar
+
+and
+
+Self-Similar → Preferred
+
+Condition order must be assigned/persisted per participant.
+
+Do not infer condition solely from block number.
+
+Persist both:
+
+block_number
+voice_condition
+
+where voice_condition is something explicit such as:
+
+preferred
+self_similar
+
+Ensure all downstream data uses these explicit identifiers.
+
+⸻
+
+12. BETWEEN-BLOCK FLOW
+
+The intended high-level flow is approximately:
+
+Consent/setup
+→ demographics / initial Qualtrics
+→ voice recording/cloning
+→ preferred voice selection
+→ headset fitting
+→ eye calibration
+→ task explanation
+→ practice
+→ Block 1
+→ Block 1 survey
+→ break
+→ Block 2
+→ Block 2 survey
+→ post-study survey
+→ interview/debrief
+→ finish
+
+Do not assume every survey is implemented inside this application if Qualtrics handles it externally.
+
+Instead, ensure the application/protocol has clean transition points.
+
+Allow approximately up to five minutes for the between-block break.
+
+⸻
+
+13. CORE TRIAL DATA — HIGHEST DATA PRIORITY
+
+The main research dataset is TRIAL-LEVEL DATA.
+
+This is more important right now than advanced frame-by-frame visualization.
+
+One row should represent one participant completing one experimental trial.
+
+Review the existing schema and intelligently merge these fields with anything already present.
+
+At minimum consider:
+
+participant_id
+voice_condition
+condition_order
+block_number
+trial_number
+is_practice
+
+target_object_id
+target_color
+target_shape
+target_zone
+target_position_x
+target_position_y
+target_position_z
+target_distance
+target_angle
+
+trial_start_timestamp
+trial_end_timestamp
+completion_time
+
+time_to_first_target_gaze
+time_to_first_controller_raycast_on_target
+time_to_final_target_gaze if applicable
+time_to_selection
+
+incorrect_selection_count
+goal_repeat_count
+hint_count
+zones_visited_count
+
+gross_head_rotation
+gross_head_rotation_x
+gross_head_rotation_y
+gross_head_rotation_z
+
+gross_head_movement
+gross_head_movement_x
+gross_head_movement_y
+gross_head_movement_z
+
+gaze_valid_sample_count
+gaze_total_sample_count
+gaze_validity_rate
+
+Add additional existing useful fields rather than deleting them.
+
+Do not create duplicate concepts under slightly different names without a reason.
+
+Document units for every numerical field.
+
+Example:
+
+completion_time_ms
+target_distance_m
+gross_head_rotation_deg
+
+Use consistent naming conventions.
+
+⸻
+
+14. GROSS MOVEMENT / ROTATION
+
+Do not calculate movement solely as endPosition - startPosition.
+
+We care about cumulative movement.
+
+Conceptually:
+
+gross movement = sum of absolute frame-to-frame movement.
+
+Likewise for rotation.
+
+Calculate or make it possible to derive:
+
+* total gross head rotation
+* yaw rotation
+* pitch rotation
+* roll rotation
+* total translation
+* X translation
+* Y translation
+* Z translation
+
+Be careful with Euler angle wraparound.
+
+If quaternions are already available, preserve them in raw telemetry and derive human-readable rotational metrics appropriately.
+
+Do NOT implement simplistic math that produces giant false rotations when crossing ±180 degrees.
+
+⸻
+
+15. TIME TO FIRST GAZE
+
+This is a particularly important metric.
+
+We want to know:
+
+How long after the trial begins does the participant FIRST visually encounter the target?
+
+This should be independent of controller selection.
+
+Define the target-gaze detection rule clearly.
+
+Do not let single-frame eye-tracking noise automatically count as a meaningful gaze unless that is intentionally the chosen definition.
+
+If an existing fixation/dwell threshold exists, inspect it.
+
+Document the exact algorithm.
+
+We may later compare:
+
+time_to_first_target_gaze
+
+against:
+
+time_to_first_controller_raycast_on_target
+
+and:
+
+completion_time.
+
+⸻
+
+16. CONTROLLER TELEMETRY
+
+Track controller behavior sufficiently to derive:
+
+* first raycast onto target
+* incorrect object targeting
+* selection time
+* trigger events
+
+Raw telemetry should include when feasible:
+
+timestamp
+frame/sample index
+participant_id
+block_number
+trial_number
+controller position
+controller rotation
+ray origin
+ray direction
+raycast object ID
+trigger state
+button states relevant to the study
+
+Trigger state can be represented as 0/1 where appropriate.
+
+⸻
+
+17. RAW EYE DATA
+
+Preserve raw eye tracking data.
+
+Potential fields:
+
+participant_id
+block_number
+trial_number
+timestamp
+sample_index
+gaze_origin_x/y/z
+gaze_direction_x/y/z
+gaze_hit_x/y/z
+gaze_object_id
+validity/confidence fields
+left/right eye fields if available and useful
+headset pose reference if necessary
+
+Do not downsample destructively unless storage/performance requires it.
+
+If eye tracking operates at a different frequency than HMD motion data, it may use a separate file/table.
+
+That is acceptable.
+
+⸻
+
+18. MOTION DATA / AFTER-ACTION REVIEW SUPPORT
+
+We want enough raw telemetry to reconstruct a participant’s session after the fact.
+
+This does NOT mean you need to build the full replay UI right now.
+
+We need to preserve enough state that a future replay tool could reconstruct:
+
+* headset position/orientation
+* controller position/orientation
+* controller ray
+* button states
+* gaze
+* currently active objects
+* object positions
+* target object
+* current block/trial
+* condition
+* important experiment events
+
+Think of this as an After Action Review / experiment replay dataset.
+
+If the existing project already has telemetry, motion logging, replay, session recording, or event logging, ENHANCE IT rather than creating a redundant pipeline.
+
+⸻
+
+19. OBJECT / SCENE STATE
+
+For replay and analysis we need to know what the participant could see.
+
+Preserve:
+
+* object ID
+* shape
+* color
+* zone
+* world position
+* whether object is target
+* when object appeared
+* when object disappeared
+
+Avoid duplicating static information every frame if a more efficient event-based representation can reproduce the exact state.
+
+Design this intelligently.
+
+⸻
+
+20. DATA RELATIONSHIPS
+
+Every major dataset must be joinable.
+
+At minimum consistently use:
+
+participant_id
+block_number
+trial_number
+
+where appropriate.
+
+Do not rely solely on timestamps to join datasets.
+
+Possible structure:
+
+participant_id + block_number + trial_number
+
+as a composite trial identity.
+
+If there is already a session_id or trial_id system, preserve it and integrate these identifiers intelligently.
+
+⸻
+
+21. DATA STORAGE
+
+Current logging may occur on-device.
+
+Review whether the current storage approach is reliable enough for research data.
+
+If an existing server/API can safely receive experiment data, consider using it.
+
+However:
+
+DO NOT introduce unnecessary network dependency that could cause participant data loss.
+
+Prefer resilient behavior such as:
+
+write locally first
+→ validate
+→ upload/sync
+→ verify
+→ retain local backup until confirmed.
+
+Data loss during a research session is unacceptable.
+
+⸻
+
+22. SURVEY / QUALTRICS INTEGRATION POINTS
+
+We have survey blocks before/after relevant parts of the study.
+
+The application does not necessarily need to reproduce Qualtrics.
+
+But participant IDs and condition information must map cleanly between experiment data and Qualtrics responses.
+
+Researcher, not participant, should normally establish participant ID.
+
+Survey concepts include:
+
+* workload
+* agent/voice impressions
+* voice liking
+* voice similarity
+* accent similarity
+* perceived accent
+* perceived voice gender
+* overall preference
+* post-study comparison
+
+Specific survey wording may still change.
+
+Do not hard-code unfinished survey questions unnecessarily.
+
+⸻
+
+23. VOICE MEASURES
+
+For both relevant voices, preserve the ability to collect:
+
+VOICE LIKING / PREFERENCE
+
+* potentially 0–100
+
+VOICE SIMILARITY
+
+* Likert-style item
+
+ACCENT SIMILARITY
+
+* separate Likert-style item
+
+Do NOT combine voice similarity and accent similarity into one question.
+
+Example concepts:
+
+“The agent’s voice is similar to mine.”
+
+“The agent’s accent is similar to mine.”
+
+Treat these as separate measures.
+
+⸻
+
+24. EXPERIMENT PROTOCOL SUPPORT
+
+Review any protocol/admin UI or experimenter workflow.
+
+The researcher needs to clearly distinguish:
+
+PARTICIPANT-FACING SPEECH
+
+from:
+
+EXPERIMENTER-ONLY ACTIONS.
+
+Avoid situations where internal instructions accidentally appear as participant instructions.
+
+Examples of experimenter actions:
+
+* assign participant ID
+* assign counterbalance order
+* start recording
+* verify clone generated
+* verify calibration
+* begin practice
+* begin block
+* confirm survey completed
+* save/export data
+* verify files exist
+
+⸻
+
+25. DATA VALIDATION
+
+Add a lightweight validation step before a participant session is considered complete.
+
+At minimum verify:
+
+* participant ID exists
+* both experimental blocks completed
+* expected trial count exists
+* condition labels exist
+* trial data saved
+* eye data exists when eye tracking was active
+* motion data exists when expected
+* no catastrophic timestamp corruption
+* clone/preferred voice metadata exists
+* files can be linked using participant/block/trial identifiers
+
+Do not silently mark a session successful when required data failed to save.
+
+⸻
+
+26. PILOT MODE
+
+If the application does not already have one, consider a lightweight pilot/debug mode.
+
+It should make it easy for researchers to:
+
+* run an entire experiment quickly
+* inspect current participant
+* inspect condition order
+* confirm current trial
+* verify data is being logged
+* verify eye tracker validity
+* verify controller raycast
+* verify target repeat
+* verify hints
+* inspect output files after completion
+
+Do not expose debugging information to normal participants.
+
+⸻
+
+27. DEFERRED / SECONDARY ANALYTICS
+
+These are important but should NOT block the Friday pilot:
+
+* gaze spatial dispersion
+* horizontal gaze spread
+* vertical gaze spread
+* azimuth IQR
+* elevation IQR
+* fixation maps
+* 2D gaze plots
+* 3D gaze point clouds
+* replay visualization
+* advanced path modeling
+* statistical modeling
+* automated publication figures
+
+Make sure raw data supports these later.
+
+Do not spend the current sprint polishing them unless all pilot-critical work is complete.
+
+⸻
+
+REQUIRED FIRST STEP: REPOSITORY + TASK

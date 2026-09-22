@@ -2,15 +2,15 @@
 
 **Measurement planning (2026-09-16):** see the [living measures register](measures-register.md) for all surveys, behavioral metrics, scoring, implementation gaps and open decisions. IMI is now included; final subscales/form are proposed.
 
-Updated 2026-09-16. Planning companion to [the procedure](experiment-procedure.md) and [epic #19](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/19). This is not a frozen participant protocol or an institutional approval record.
+Updated 2026-09-22. Planning companion to [the procedure](experiment-procedure.md) and [epic #19](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/19). This is not a frozen participant protocol or an institutional approval record. The [September 22 reconciliation](meeting-reconciliation-2026-09-22.md) records all meeting requirements, current source evidence and next steps.
 
 ## Settled direction
 
 **Protocol proposal — user-directed study design:** seat the participant at the center and have them rotate to find objects around them. Retain the existing swivel-chair procedure as the working apparatus: chair, torso and head may rotate; walking/standing is not part of the search task.
 
-**Protocol proposal — meeting decision:** compare self-similar and generic voice within participants, counterbalance the two block orders, and keep gaze-contingent guidance in both. Pilot collaborative and external wording, then choose one perspective shared by both voices; perspective is not an additional thesis factor.
+**Protocol proposal — latest meeting direction:** compare self-similar and participant-preferred voice within participants, counterbalance the two block orders, and keep gaze-contingent guidance in both. Controller ray plus trigger selects; gaze remains independently measured. This supersedes generic-voice and gaze-dwell requirements. Extend the existing selector with candidate previews, every score/rank and exact voice identity (#33); refactor capture and target repetition under #34. Pilot collaborative and external wording, then choose one perspective shared by both voices; perspective is not an additional thesis factor.
 
-**Implemented:** the beta promoted to `v2` at `4198cfa` provides eight planes every 45 degrees, seven objects per plane, a seated origin, gaze dwell selection, two practice trials and 14 measured trials. Eight starter clips load before voice checks; remaining audio loads in the background. Objects stay hidden until the round instruction finishes. The current transition follows the participant's view rather than enforcing forward alignment. That checkpoint used different wording across voices. The local issue #24 implementation now offers collaborative/external script pilot modes, with identical selected wording across both voices and a session lock; see [pilot scripts and assessment](voice-script-pilot.md). The final study perspective is not yet selected.
+**Implemented:** the beta promoted to `v2` at `4198cfa` provides eight planes every 45 degrees, seven objects per plane, a seated origin, gaze dwell selection, two practice trials and 14 measured trials. Eight starter clips load before voice checks; remaining audio loads in the background. Objects stay hidden until the round instruction finishes. The current transition follows the participant's view rather than enforcing forward alignment. That checkpoint used different wording across voices. Issue #24's script modes are now merged into `v2` at `39863df`, with identical selected wording across both voices and a session lock; see [pilot scripts and assessment](voice-script-pilot.md). The final study perspective is not yet selected.
 
 ## Decisions confirmed on 2026-09-16
 
@@ -36,7 +36,7 @@ Updated 2026-09-16. Planning companion to [the procedure](experiment-procedure.m
 
 ## Defaults that need piloting, not arbitrary answers now
 
-**Protocol proposal:** retain eight planes, 56 objects, approximately 1.5 m radius and gaze dwell as the starting apparatus. Evaluate front/side/rear readability, gaze acquisition and comfortable chair rotation before adjusting dimensions.
+**Protocol proposal:** retain eight planes, 56 objects and approximately 1.5 m radius as the starting apparatus. The latest requested interaction uses controller ray/trigger selection; gaze dwell remains only the implemented beta baseline. Evaluate front/side/rear readability, independent gaze acquisition, controller targeting and comfortable chair rotation before adjusting dimensions.
 
 **Open validation:** establish calibration/validation criteria, practical timeout, enough practice, total duration, fatigue, final repetitions and sample/sensitivity justification from development rehearsal and the permitted pilot. Existing numerical thresholds are not validated merely because they appear in a document.
 
