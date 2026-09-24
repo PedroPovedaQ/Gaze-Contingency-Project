@@ -19,7 +19,7 @@ using ISXRHMD = UnityEngine.InputSystem.XR.XRHMD;
 /// <summary>
 /// Logs comprehensive per-frame eye tracking and gaze data to CSV.
 /// Captures: gaze origin/direction/rotation, per-eye positions and openness,
-/// fixation point, hovered object info, dwell progress, current objective,
+/// fixation point, hovered object info, legacy zero dwell column, current objective,
 /// target match status, and blink detection.
 /// </summary>
 public class GazeDataLogger : MonoBehaviour
@@ -44,7 +44,6 @@ public class GazeDataLogger : MonoBehaviour
     int m_FrameCount;
 
     // Cached references
-    GazeHighlightManager m_DwellSelector;
     FindObjectGameManager m_GameManager;
     XRInputDevice m_EyeDevice;
     bool m_EyeDeviceSearched;
@@ -189,8 +188,6 @@ public class GazeDataLogger : MonoBehaviour
         if (m_Writer == null) return;
 
         // Lazy-resolve references
-        if (m_DwellSelector == null)
-            m_DwellSelector = FindObjectOfType<GazeHighlightManager>();
         if (m_GameManager == null)
             m_GameManager = FindObjectOfType<FindObjectGameManager>();
 
@@ -341,7 +338,7 @@ public class GazeDataLogger : MonoBehaviour
         }
 
         // Dwell progress
-        float dwellProgress = m_DwellSelector != null ? m_DwellSelector.DwellProgress : 0f;
+        float dwellProgress = 0f; // Legacy CSV column: gaze dwell selection has been removed.
 
         // Ray visibility
         var lineVisual = GetComponent<XRInteractorLineVisual>();

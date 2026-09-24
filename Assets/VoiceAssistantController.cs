@@ -15,7 +15,7 @@ public class VoiceAssistantController : MonoBehaviour
     const string k_IntroLine =
         "Hi, I will guide you through this task. " +
         "Your goal in this experiment is to locate the target object by its color and shape as quickly and accurately as you can. " +
-        "By staring at an object for an extended period of time, you can select it. " +
+        "Point your controller ray at an object to highlight it, then press the trigger to select it. " +
         "To begin, tap a nearby surface with your controller. " +
         "Your goal will be displayed in the center of your view each round.";
     const string k_ClosingLine =
@@ -23,7 +23,7 @@ public class VoiceAssistantController : MonoBehaviour
     const string k_RotationalIntroLine =
         "Welcome to the surrounding search. Stay seated at the center. " +
         "Objects will appear on eight planes around you. Turn to search for the target by its color and shape. " +
-        "Hold your gaze on the matching object to select it. Your first two rounds are practice.";
+        "Point your controller ray at the matching object to highlight it, then press the trigger to select it. Your first two rounds are practice.";
     static string StudyIntroLine => FindObjectOfType<FindObjectGameManager>()?.RotationalBetaEnabled == true
         ? k_RotationalIntroLine : k_IntroLine;
     public void PlayStudyIntroduction() => HandleInitialStartPressed();

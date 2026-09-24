@@ -10,7 +10,7 @@ using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
 /// <summary>
 /// 14-round conjunction search game with eight-plane beta or table-shelf layouts.
-/// Player finds 1 target via gaze dwell. On correct capture: show fixation cross,
+/// Player finds 1 target via controller ray and trigger. On correct capture: show fixation cross,
 /// destroy objects, wait, spawn fresh, finalize gaze interactables, go.
 /// </summary>
 public class FindObjectGameManager : MonoBehaviour
@@ -57,7 +57,7 @@ public class FindObjectGameManager : MonoBehaviour
         SearchActive = true;
         m_SearchClock.Begin(Time.timeAsDouble);
         m_UI.ShowRoundAudioWait(false);
-        m_GazeDwell?.ResetDwell();
+        m_ControllerSelector?.ResetSelection();
         m_UI.ResumeTimer();
         OnSearchStarted?.Invoke(round);
     }
@@ -70,7 +70,7 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_StartAfterIntroCoroutine != null) { StopCoroutine(m_StartAfterIntroCoroutine); m_StartAfterIntroCoroutine = null; }
         m_UI.PauseTimer();
         m_AwaitingBlockSurvey = false; m_UI.HideBlockSurvey();
-        m_GazeDwell?.ResetDwell();
+        m_ControllerSelector?.ResetSelection();
         GetComponent<VoiceSynthesizer>()?.Stop();
         GetComponent<HintGenerator>()?.CancelPending();
         m_State = GameState.Completed;
@@ -92,7 +92,7 @@ public class FindObjectGameManager : MonoBehaviour
     {
         if (!SearchActive || m_ResearcherPaused) return;
         m_ResearcherPaused = true; SearchActive = false; m_SearchClock.Pause(Time.timeAsDouble);
-        m_UI.PauseTimer(); m_GazeDwell?.ResetDwell();
+        m_UI.PauseTimer(); m_ControllerSelector?.ResetSelection();
         GetComponent<VoiceSynthesizer>()?.Stop(); GetComponent<HintGenerator>()?.CancelPending();
         foreach (var obj in m_SpawnedObjects) if (obj != null) obj.SetActive(false);
         OnCheckpoint?.Invoke("search_paused");
@@ -104,7 +104,7 @@ public class FindObjectGameManager : MonoBehaviour
         if (!m_ResearcherPaused || m_TechnicallyStopped) return;
         m_Checkpoint?.Confirm();
         foreach (var obj in m_SpawnedObjects) if (obj != null) obj.SetActive(true);
-        m_GazeDwell?.ResetDwell();
+        m_ControllerSelector?.ResetSelection();
         m_ResearcherPaused = false; SearchActive = true; m_SearchClock.Resume(Time.timeAsDouble);
         m_UI.ResumeTimer(); GetComponent<HintGenerator>()?.OnNewObjective();
         OnCheckpoint?.Invoke("search_resumed");
@@ -237,7 +237,7 @@ public class FindObjectGameManager : MonoBehaviour
     ObjectSpawner m_Spawner;
     ShapeObjectFactory m_Factory;
     FindObjectUI m_UI;
-    GazeHighlightManager m_GazeDwell;
+    ControllerRaySelector m_ControllerSelector;
     TrialDataLogger m_TrialLogger;
     Coroutine m_ResetCoroutine;
     Coroutine m_AppExitCoroutine;
@@ -330,7 +330,7 @@ public class FindObjectGameManager : MonoBehaviour
     {
         ChallengeSet.DebugRoundCountOverride = 0;
         if (m_Spawner != null) m_Spawner.objectSpawned -= OnObjectSpawned;
-        if (m_GazeDwell != null) m_GazeDwell.OnObjectCaptured -= OnObjectCaptured;
+        if (m_ControllerSelector != null) m_ControllerSelector.OnObjectCaptured -= OnObjectCaptured;
         if (m_StartAfterIntroCoroutine != null)
         {
             StopCoroutine(m_StartAfterIntroCoroutine);
@@ -408,11 +408,16 @@ public class FindObjectGameManager : MonoBehaviour
             Destroy(triggerObj);
         }
 
-        m_GazeDwell = FindObjectOfType<GazeHighlightManager>();
-        if (m_GazeDwell != null)
+        m_ControllerSelector = GetComponent<ControllerRaySelector>();
+        if (m_ControllerSelector == null) m_ControllerSelector = gameObject.AddComponent<ControllerRaySelector>();
+        if (m_ControllerSelector != null)
         {
-            if (m_UseRotationalLayout) m_GazeDwell.ConfigureThroughWallSearch();
-            m_GazeDwell.OnObjectCaptured += OnObjectCaptured;
+            if (m_UseRotationalLayout)
+            {
+                FindObjectOfType<GazeHighlightManager>()?.ConfigureThroughWallSearch();
+                m_ControllerSelector.ThroughWallSearch = true;
+            }
+            m_ControllerSelector.OnObjectCaptured += OnObjectCaptured;
         }
         m_NasaTlxSubmittedForRun = false;
 
@@ -663,6 +668,7 @@ public class FindObjectGameManager : MonoBehaviour
             grab.allowGazeAssistance = false;
             grab.movementType = XRGrabInteractable.MovementType.Kinematic;
             grab.throwOnDetach = false;
+            ControllerRaySelector.PreventGrab(grab);
 
             grab.colliders.Clear();
             foreach (var col in obj.GetComponents<Collider>())
@@ -675,8 +681,8 @@ public class FindObjectGameManager : MonoBehaviour
 
         if (m_TechnicallyStopped) yield break;
 
-        // Reset gaze dwell so it starts fresh on these new objects
-        if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
+        // Require a released trigger before confirming on these new objects
+        if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
 
         ShowCurrentObjective();
         OnRoundReady?.Invoke(m_CurrentRound, m_CurrentTarget.color, m_CurrentTarget.shape);
@@ -704,7 +710,7 @@ public class FindObjectGameManager : MonoBehaviour
             if (IsPractice)
             {
                 GetComponent<VoiceSynthesizer>()?.Stop(); GetComponent<HintGenerator>()?.CancelPending();
-                m_GazeDwell?.ResetDwell();
+                m_ControllerSelector?.ResetSelection();
                 m_PracticeIndex++;
                 if (m_PracticeIndex < 2) { SetPracticeObjective(); StartCoroutine(TransitionToNextRound()); }
                 else StartCoroutine(FinishPractice());
@@ -712,7 +718,7 @@ public class FindObjectGameManager : MonoBehaviour
             }
             m_CurrentRound++;
             OnObjectFound?.Invoke(m_CurrentRound - 1);
-            if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
+            if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
 
             if (m_CurrentRound >= k_TotalRounds)
             {
@@ -734,7 +740,7 @@ public class FindObjectGameManager : MonoBehaviour
             Debug.Log($"{k_Tag} Wrong: {info.DisplayName}, wanted {m_CurrentTarget.color}_{m_CurrentTarget.shape}");
             m_UI.ShowWrongFeedback();
             OnWrongCapture?.Invoke(info.DisplayName, $"{m_CurrentTarget.color}_{m_CurrentTarget.shape}");
-            if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
+            if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
         }
     }
 
@@ -745,7 +751,7 @@ public class FindObjectGameManager : MonoBehaviour
     IEnumerator TransitionToNextRound()
     {
         m_State = GameState.Transitioning;
-        if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
+        if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
 
         // Pause timer until the new objective is announced
         m_UI.PauseTimer();
@@ -803,7 +809,7 @@ public class FindObjectGameManager : MonoBehaviour
         yield return null;
         yield return null;
 
-        if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
+        if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
 
         // Spawn next round
         if (m_TechnicallyStopped) yield break;
@@ -813,7 +819,7 @@ public class FindObjectGameManager : MonoBehaviour
 
     IEnumerator BeginFirstRoundTransition()
     {
-        if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
+        if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
         m_UI.HideObjectiveDuringTransition();
 
         if (IsPractice || (m_CurrentRound >= 0 && m_CurrentRound < ChallengeSet.RoundCount))
@@ -836,7 +842,7 @@ public class FindObjectGameManager : MonoBehaviour
         yield return null;
         yield return null;
 
-        if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
+        if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
 
         if (m_TechnicallyStopped) yield break;
         m_State = GameState.Playing;
@@ -862,7 +868,7 @@ public class FindObjectGameManager : MonoBehaviour
         ShelfSpawner.ClearCache();
         m_SpawnPoints.Clear();
         m_Objectives.Clear();
-        if (m_GazeDwell != null) m_GazeDwell.OnObjectCaptured -= OnObjectCaptured;
+        if (m_ControllerSelector != null) m_ControllerSelector.OnObjectCaptured -= OnObjectCaptured;
         if (m_UI != null) m_UI.ShowStartPrompt();
         m_State = GameState.Idle;
         m_ResetCoroutine = null;
@@ -942,7 +948,7 @@ public class FindObjectGameManager : MonoBehaviour
         // End-of-run should show only post-run UI (NASA-TLX prompt),
         // not the searchable scene content.
         if (m_UI != null) m_UI.HideFixationCross();
-        if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
+        if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
 
         foreach (var obj in m_SpawnedObjects)
             if (obj != null) Destroy(obj);

@@ -8,7 +8,7 @@ The runtime wording API is `VoicePromptText.Format(text, perspective)` in `Asset
 
 | Moment | Collaborative candidate | External candidate |
 | --- | --- | --- |
-| Welcome | “Let’s begin the surrounding search. Let’s stay seated at the center. We’ll see objects on eight planes around us. Let’s turn to find the target by its color and shape. Let’s hold our gaze on the matching object to select it. Our first two rounds are practice.” | “Welcome to the surrounding search. Stay seated at the center. Objects will appear on eight planes around you. Turn to search for the target by its color and shape. Hold your gaze on the matching object to select it. Your first two rounds are practice.” |
+| Welcome | “Let’s begin the surrounding search. Let’s stay seated at the center. We’ll see objects on eight planes around us. Let’s turn to find the target by its color and shape. Let’s point the controller ray at the matching object to highlight it, then press the trigger to select it. Our first two rounds are practice.” | “Welcome to the surrounding search. Stay seated at the center. Objects will appear on eight planes around you. Turn to search for the target by its color and shape. Point your controller ray at the matching object to highlight it, then press the trigger to select it. Your first two rounds are practice.” |
 | Practice | “Let’s try a practice round. This one does not count toward our study rounds. Let’s find the [color] [shape].” | “This is a practice round. It does not count toward the study. Locate the [color] [shape].” |
 | Round instruction | “Let’s find the [color] [shape].” | “Locate the [color] [shape].” |
 | Helpful hint | “We’re getting closer. Let’s keep searching this direction.” | “You’re getting closer. Keep searching this direction.” |

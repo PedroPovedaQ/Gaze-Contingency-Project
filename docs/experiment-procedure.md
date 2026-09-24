@@ -1,6 +1,6 @@
 # Experiment Procedure: Gaze-Contingent Guidance and Self-Similar Voice
 
-**Protocol proposal — current requirements, September 22:** [Meeting reconciliation and delivery order](meeting-reconciliation-2026-09-22.md) supersedes conflicting older planning below: participant-preferred versus self-similar voice, passive gaze measurement with controller ray/trigger selection, early recording/candidate evaluation, external survey gates and provisional 30+30 measured trials plus two practice. The beta still uses neutral profiles, gaze dwell and 14 measured trials. #27 owns full operator-script/export reconciliation; this mixed-version document is not a frozen run sheet.
+**Protocol proposal — current requirements, September 22:** [Meeting reconciliation and delivery order](meeting-reconciliation-2026-09-22.md) supersedes conflicting older planning below: participant-preferred versus self-similar voice, passive gaze measurement with controller ray/trigger selection, early recording/candidate evaluation, external survey gates and provisional 30+30 measured trials plus two practice. The beta still uses neutral profiles and 14 measured trials. Controller ray/trigger selection is implemented locally on September 22; headset validation remains pending. #27 owns full operator-script/export reconciliation; this mixed-version document is not a frozen run sheet.
 
 **Experimenter run sheet (2026-09-16):** [Word protocol](protocol/Gaze_Search_Experimenter_Run_Sheet.docx) · [Readable source](protocol/experimenter-run-sheet.md). Adapted from the supplied example and checked against current scripts; marked as a rehearsal proposal with unresolved study decisions.
 
@@ -149,12 +149,12 @@ Do not present XRI object hover as a validated fixation measure.
 Give standardized instructions:
 
 - Locate the announced conjunction target as quickly and accurately as possible.
-- Select an object by looking at it continuously until the dwell selection completes.
+- Point either controller ray at the object; its blue highlight confirms the ray intersection. Release, then press that controller’s trigger to select it. Looking alone never selects.
 - Continue searching after an incorrect selection.
 - Listen to the assistant, but use or ignore its guidance as desired.
 - Request a break whenever needed.
 
-Practice should use stimuli and targets not used in analyzed trials. Demonstrate target announcements, object selection, incorrect-selection feedback, correct-selection feedback, and at least one example of each guidance policy. Continue until the participant demonstrates task understanding and reliable dwell selection.
+Practice should use stimuli and targets not used in analyzed trials. Demonstrate target announcements, object selection, incorrect-selection feedback, correct-selection feedback, and at least one example of each guidance policy. Continue until the participant demonstrates task understanding and reliable controller ray/trigger selection.
 
 **Current decision:** require three consecutive targets selected without
 experimenter intervention within a maximum of eight practice trials. Failure ends
@@ -192,7 +192,7 @@ The following timeline describes verified current behavior and the event boundar
 7. **Incorrect selection — Implemented.** The application plays an error sound and the same round continues.
 8. **Correct selection — Implemented.** The application records success and advances through the next transition.
 
-The 1.6 s dwell threshold is an interaction parameter, not a fixation threshold.
+**Implemented:** gaze dwell selection is removed. Historical 1.6 s dwell runs used an interaction threshold, not a fixation threshold.
 
 ### 8. Post-block measures
 
@@ -231,7 +231,7 @@ headset use and after removal, with brief safety checks between blocks.
 
 | Construct | Operational measure | Status and caution |
 |---|---|---|
-| Search speed | Time from logged `search_onset` to correct dwell capture | **Primary proposal.** Current objective timing can include transitions and must be corrected. |
+| Search speed | Time from logged `search_onset` to correct controller-trigger capture | **Primary proposal.** Current objective timing can include transitions and must be corrected. |
 | Selection accuracy | First-attempt correctness, incorrect captures, and total captures per round | Available from current events/summary logs. |
 | Guidance exposure | Number of hint opportunities, playback starts, and completed utterances | **Implementation gap:** hint timing/content is not currently logged. |
 | Guidance response | Change in gaze/head direction, target-plane entry, or selection from prompt offset until 3 s, selection, or the next opportunity, whichever occurs first | Requires synchronized hint, gaze, head, and selection events. |

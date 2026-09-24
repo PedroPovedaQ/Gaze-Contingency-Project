@@ -8,7 +8,7 @@ This guide walks through the full lifecycle of a run in the Find Object game, fr
 
 ## What this game is doing
 
-The game is a controlled visual-search task. Every round places one target and 55 distractors into a fixed 56-object array. The participant must use gaze to locate and dwell on the correct object.
+The game is a controlled visual-search task. Every round places one target and 55 distractors into a fixed 56-object array. The participant must locate the correct object, point the controller ray at it and press the trigger.
 
 The important design property is that the run is not improvisational. The shelf layout, target schedule, and object combinations are deterministic. That makes the study repeatable and makes the analytics interpretable.
 
@@ -18,11 +18,11 @@ The important design property is that the run is not improvisational. The shelf 
 2. Two separate practice trials expose the task in each assigned voice. **Implemented:** each is announced as practice aloud, labeled PRACTICE during the fixation transition, and shown as PRACTICE 1 / 2 or 2 / 2 with “not counted” during the search. A researcher checkpoint starts the measured run.
 3. `OnGameStarted` opens one run folder for all 14 experimental trials.
 4. Each transition sets the assigned block voice and announces the goal while objects are prepared but hidden.
-5. `OnRoundReady` records object readiness. After the announcement completes, `BeginSearch` reveals objects, resets dwell, starts the search clock and emits `OnSearchStarted`.
+5. `OnRoundReady` records object readiness. After the announcement completes, `BeginSearch` reveals objects, resets controller confirmation, starts the search clock and emits `OnSearchStarted`.
 6. Correct capture stops search timing and logs the completed trial; wrong capture remains within that trial.
 7. After trial seven, logs flush, NASA-TLX records block 1 and a checkpoint holds the break. The next voice is applied only after confirmation.
 8. After trial fourteen, the summary is finalized and NASA-TLX records block 2. Timeout, withdrawal and technical stops retain an incomplete summary without replacement trials.
-9. Explicit pause hides objects and stops speech/dwell/timing; confirmation resumes the same trial with accumulated search time preserved.
+9. Explicit pause hides objects and stops speech/selection/timing; confirmation resumes the same trial with accumulated search time preserved.
 
 ## First tap: how the session starts
 
@@ -186,31 +186,15 @@ if (info.shapeName == "Pyramid")
 }
 ```
 
-Finally, the game waits one frame, adds a fresh `XRGrabInteractable`, waits for registration, resets gaze dwell state, and only then shows the objective.
+Finally, the game waits one frame, adds a fresh `XRGrabInteractable`, waits for registration, resets controller confirmation, and only then shows the objective.
 
-## Dwell capture
+## Controller selection
 
-The actual selection mechanic is gaze dwell.
+**Implemented (September 22):** point either physical controller ray at an object to highlight it light blue, then press that controller's trigger once to confirm. `ControllerRaySelector` uses the existing XRI Near-Far ray hit, respects foreground UI, and only accepts input while search is active and the controller is tracked. Gaze alone never highlights or captures an object.
 
-`GazeHighlightManager` watches the hovered objects on the gaze interactor. When the user keeps looking at the same object long enough, it captures it.
+The trigger must be released during active search before a press is accepted. Holding it does not repeat or carry a selection across pauses, tracking loss or rounds. Search objects reject grab selection and remain fixed. During octagonal search, controller casts use searchable layer 8; normal masks return outside search. Near grabbing is disabled during search.
 
-```csharp
-if (hoveredObj != null && hoveredObj == m_DwellTarget && !m_CapturedThisTarget)
-{
-    m_DwellTime += Time.deltaTime;
-
-    if (m_DwellTime >= k_DwellDuration)
-        CaptureObject(hoveredObj);
-}
-```
-
-The dwell threshold is:
-
-```csharp
-const float k_DwellDuration = 1.6f;
-```
-
-That means the participant must sustain gaze, not just glance over an object.
+`GazeHighlightManager` retains its serialized identity only as the gaze anchor for telemetry/hints and gaze wall filtering. The legacy `dwell_progress` CSV column is always zero. Trial summaries record `selection_method: controller_ray_trigger_press_v1`; earlier dwell runs must not be silently pooled with this interaction method. Headset validation remains pending.
 
 If the captured object matches the current target’s shape and color, the round counts as correct. Otherwise the UI shows wrong feedback and the game continues.
 
@@ -276,10 +260,10 @@ This means the participant sees:
 
 ## Next-round spawn
 
-After the blank pause, the manager resets gaze dwell and spawns the next round:
+After the blank pause, the manager resets controller confirmation and spawns the next round:
 
 ```csharp
-if (m_GazeDwell != null) m_GazeDwell.ResetDwell();
+if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
 
 m_State = GameState.Playing;
 yield return DoSpawnRound();
@@ -289,7 +273,7 @@ The important point is that the next round is not a continuation of the previous
 
 - a new target,
 - a new object array,
-- a reset dwell timer,
+- a released-trigger confirmation gate,
 - updated hint mode,
 - a fresh UI objective.
 
@@ -330,4 +314,8 @@ This flow is intentionally rigid.
 
 If you are debugging the game, the most useful mental model is:
 
-`tap -> bootstrap -> build shelf once -> first-round cross+announcement -> spawn deterministic round -> dwell capture -> transition cross -> blank pause -> next round -> repeat -> completion`
+`tap -> bootstrap -> build shelf once -> first-round cross+announcement -> spawn deterministic round -> controller trigger capture -> transition cross -> blank pause -> next round -> repeat -> completion`
+
+### Controller intersection haptics (implemented locally, 2026-09-24)
+
+During active search, entering a search object with a controller ray produces one 40 ms pulse at 0.2 amplitude on that controller, alongside its highlight. Holding the ray on the same object does not repeat the pulse; switching objects or exiting and re-entering does. Both targets and distractors use identical feedback. Pause, tracking loss and selection reset clear intersection history. Strength and duration are serialized settings on ControllerRaySelector. Device feel and delivery remain to be verified.

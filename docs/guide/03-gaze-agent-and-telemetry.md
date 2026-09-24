@@ -3,7 +3,7 @@
 This document explains how the gaze-aware assistance layer works in the current project:
 
 - how eye gaze flows from hardware to hover detection and logging
-- how highlight and dwell behavior work
+- how controller highlight and confirmation work
 - how the always gaze-contingent hint policy uses target proximity
 - what gets logged, where it goes, and how to debug incorrect hints
 
@@ -15,7 +15,7 @@ The runtime loop is:
 
 1. The headset provides eye gaze pose data.
 2. The `XRGazeInteractor` uses that pose to raycast into the scene.
-3. Hover events update highlight state and dwell progress.
+3. Gaze hover events feed telemetry and hints independently of controller selection.
 4. The hint generator chooses an `off-target` or `on-track/very-close` gaze-aware line.
 5. The telemetry logger records gaze pose, hover state, blink state, target metadata, and game state every frame.
 
@@ -29,7 +29,7 @@ Relevant pieces:
 
 - `XRGazeInteractor` drives hover detection from gaze pose.
 - `EyeGazeRayVisual` renders the orange line when enabled.
-- `GazeHighlightManager` listens for hover changes and drives dwell/capture feedback.
+- `GazeHighlightManager` identifies the gaze anchor; `ControllerRaySelector` handles selection feedback.
 - `GazeDataLogger` records gaze and hover telemetry.
 - `HintGenerator` converts gaze state into spoken feedback.
 
@@ -61,54 +61,13 @@ That separation is intentional:
 - you still collect eye gaze data for analysis
 - the agent can still generate hints from gaze behavior
 
-## 3. Highlight and dwell behavior
+## 3. Controller highlight and confirmation
 
-`GazeHighlightManager` is the script that turns hover into visible feedback and capture logic.
+**Implemented (September 22):** `ControllerRaySelector` highlights the actual physical-controller ray intersection light blue. A fresh trigger press confirms that object during active search. Gaze hover remains available to telemetry and hints, but never charges a highlight or captures. `GazeHighlightManager` is retained only as the serialized gaze anchor and wall-filter configuration.
 
-Core responsibilities:
+Held triggers cannot repeat captures or carry across pauses, rounds or tracking loss. XRI grab selection is filtered out so search objects stay fixed. Foreground UI hits are not search-object selections. Controller physics masks are restricted to searchable layer 8 during octagonal search and restored afterward; near grabbing is disabled during search.
 
-- track the currently hovered spawned object
-- compute dwell progress toward capture
-- apply an edge highlight while gaze stays on a candidate
-- trigger a capture flash when dwell completes
-- reset state between rounds
-
-```csharp
-// GazeHighlightManager.cs
-private const float k_DwellDuration = 1.6f;
-private const float k_CaptureFlashDuration = 0.25f;
-
-public float DwellProgress => Mathf.Clamp01(m_DwellTime / k_DwellDuration);
-```
-
-The dwell path is effectively:
-
-1. A gaze hover is detected on a spawned object.
-2. The manager starts accumulating dwell time.
-3. While the target remains hovered, the highlight strengthens.
-4. If the target stays under gaze for long enough, the object is captured.
-
-The logic runs in `LateUpdate`, which matters because it lets the highlight state override other visual affordances that may also be writing to the same material properties.
-
-```csharp
-// GazeHighlightManager.cs
-private void LateUpdate()
-{
-    // resolve hovered object
-    // accumulate dwell
-    // update visual feedback
-    // capture on threshold
-}
-```
-
-### Practical note
-
-If dwell feels wrong in a build, check two things first:
-
-- whether the hovered object has the expected gaze-interactable setup
-- whether the user is actually hovering the target object, not just looking near it
-
-The hint system can tolerate near-misses better than the dwell capture path.
+The old `dwell_progress` CSV column remains zero for schema compatibility. Trial summaries label these runs `selection_method: controller_ray_trigger_press_v1`. Historical hover-derived fixation/saccade labels remain interaction proxies; this selection change does not validate them as physiological eye events. Device verification remains pending.
 
 ## 4. Hint generation
 
@@ -211,7 +170,7 @@ The current CSV includes, among other fields:
 - fixation point
 - hovered object name, shape, color, and shelf level
 - whether the hovered object matches the active target
-- dwell progress
+- legacy dwell progress (always zero)
 - current objective shape, color, and round index
 - game state
 - whether the gaze ray visual is visible
@@ -239,7 +198,7 @@ If you disable the line visual, you only hide the line. You do not disable:
 
 - eye tracking
 - hover callbacks
-- dwell tracking
+- controller confirmation
 - hint generation
 - telemetry logging
 
@@ -265,7 +224,7 @@ Use this checklist when the assistant says the wrong thing.
 - Look for recent wrong-capture events, which can bias the next response toward off-target language.
 - Check the target-proximity evidence used to choose the hint.
 - Make sure the target object and the hovered object both have the expected spawn metadata.
-- Verify that dwell state was reset at the start of the round.
+- Verify that the controller trigger is released before a fresh confirmation press.
 - If hints repeat too often, check the hint cadence and proximity classification.
 
 ## 9. Code pointers
@@ -282,7 +241,7 @@ These are the main files to inspect together when debugging the gaze agent:
 If you only remember one thing:
 
 - `ARFeatureController` controls the visual ray
-- `GazeHighlightManager` handles hover, dwell, and capture feedback
+- `ControllerRaySelector` handles controller highlight and trigger capture
 - `HintGenerator` turns gaze state into gaze-responsive speech
 - `GazeDataLogger` records the data needed to audit what happened
 

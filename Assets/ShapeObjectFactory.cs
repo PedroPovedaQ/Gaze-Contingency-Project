@@ -242,6 +242,7 @@ public class ShapeObjectFactory : MonoBehaviour
         foreach (var col in obj.GetComponents<Collider>())
             grab.colliders.Add(col);
 
+        ControllerRaySelector.PreventGrab(grab);
         grab.allowGazeInteraction = true;
         grab.allowGazeSelect = false;
         grab.allowGazeAssistance = false;

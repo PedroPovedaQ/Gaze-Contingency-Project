@@ -27,8 +27,8 @@ public class VoiceModeSelector : MonoBehaviour
         "Locate the red sphere. Look toward the upper shelf. " +
         "Move your gaze slowly to the right. Check the blue cube near the center. " +
         "Compare each object's color and shape. Scan the lower row from left to right. " +
-        "Look beside the purple cylinder. Focus on the target and hold your gaze steady. " +
-        "Select the matching object. Take a short pause. Get ready for the next round.";
+        "Look beside the purple cylinder. Point the controller ray at the target and check its highlight. " +
+        "Press the trigger to select the matching object. Take a short pause. Get ready for the next round.";
 
     [Header("Optional overrides")]
     [SerializeField] VoiceCondition m_DefaultMode = VoiceCondition.Generic;

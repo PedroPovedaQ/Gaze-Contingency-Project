@@ -11,7 +11,7 @@ public enum VoicePerspective
 /// <summary>Stable wording transforms for the two voice perspectives.</summary>
 public static class VoicePromptText
 {
-    public const string Version = "perspective-v1";
+    public const string Version = "perspective-v2-controller";
 
     // Neutral/external source phrase to collaborative equivalent. Keeping this
     // table explicit preserves meaning across every live hint and terminal line.
@@ -80,7 +80,7 @@ public static class VoicePromptText
         if (text.StartsWith("Welcome to the surrounding search. ", StringComparison.Ordinal))
             return "Let's begin the surrounding search. Let's stay seated at the center. " +
                 "We'll see objects on eight planes around us. Let's turn to find the target by its color and shape. " +
-                "Let's hold our gaze on the matching object to select it. Our first two rounds are practice.";
+                "Let's point the controller ray at the matching object to highlight it, then press the trigger to select it. Our first two rounds are practice.";
         const string practice = "This is a practice round. It does not count toward the study. ";
         if (text.StartsWith(practice, StringComparison.Ordinal))
             return "Let's try a practice round. This one does not count toward our study rounds. " + SelfSimilar(text.Substring(practice.Length));
@@ -89,7 +89,7 @@ public static class VoicePromptText
         if (text.StartsWith("Hi, I will guide you through this task. ", StringComparison.Ordinal))
             return "Let's work through this task together. " +
                 "Let's find the target object by its color and shape as quickly and accurately as we can. " +
-                "By holding our gaze on an object, we can select it. " +
+                "Let's point the controller ray at an object to highlight it, then press the trigger to select it. " +
                 "Let's begin by tapping a nearby surface with the controller. " +
                 "We'll see our goal in the center of the view each round.";
         return text;

@@ -56,7 +56,6 @@ public class TrialDataLogger : MonoBehaviour
     }
 
     FindObjectGameManager m_GameManager;
-    GazeHighlightManager m_DwellSelector;
     GazeCoverageTracker m_CoverageTracker;
     GazeDataLogger m_GazeDataLogger;
     XRBaseInputInteractor m_GazeInteractor;
@@ -129,7 +128,6 @@ public class TrialDataLogger : MonoBehaviour
         var highlighter = FindObjectOfType<GazeHighlightManager>();
         if (highlighter != null)
         {
-            m_DwellSelector = highlighter;
             m_GazeInteractor = highlighter.GetComponent<XRBaseInputInteractor>();
             m_GazeDataLogger = highlighter.GetComponent<GazeDataLogger>();
         }
@@ -507,6 +505,8 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine(FormattableString.Invariant($"  \"session_wall_time_seconds\": {wallTime:F4},"));
         sb.AppendLine(FormattableString.Invariant($"  \"total_objectives\": {m_ObjectiveRecords.Count},"));
         sb.AppendLine(FormattableString.Invariant($"  \"objectives_completed\": {m_GameManager.FoundCount},"));
+
+        sb.AppendLine("  \"selection_method\": \"controller_ray_trigger_press_v1\",");
 
         // Accuracy
         int correctFirstTry = 0;
