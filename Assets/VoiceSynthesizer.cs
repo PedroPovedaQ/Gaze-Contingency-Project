@@ -50,11 +50,13 @@ public class VoiceSynthesizer : MonoBehaviour
     [Serializable] class ClipAudit
     {
         public string clip_id, voice_id, provider, model, text, content_version, perspective, perspective_version;
-        public float duration_seconds, rms, peak, gain, achieved_rms;
+        public float duration_seconds, rms, peak, gain, achieved_rms, requested_rms;
+        public bool level_limited;
     }
     [Serializable] class LibraryAudit
     {
         public string preparation_mode, perspective, perspective_version;
+        public string normalization_policy = "safe-best-effort-v1";
         public float matched_rms;
         public List<ClipAudit> clips;
     }
@@ -147,6 +149,8 @@ public class VoiceSynthesizer : MonoBehaviour
             if (Math.Abs(item.achieved_rms - target) > target * 0.01f || !clip.SetData(samples, 0))
             { Fail("Could not match voice library levels."); return false; }
             item.gain *= adjustment;
+            item.requested_rms = target;
+            item.level_limited = false;
         }
         m_MatchedRms = target;
         return true;
@@ -477,16 +481,12 @@ public class VoiceSynthesizer : MonoBehaviour
             foreach (float sample in samples) { sum += sample * sample; peak = Math.Max(peak, Math.Abs(sample)); }
             float rms = (float)Math.Sqrt(sum / Math.Max(1, samples.Length));
             if (rms < 0.00001f) { RejectClip(clip, filePath, "Audio is silent."); yield break; }
-            // Same RMS target (-20 dBFS), peak cap and playback rate for both providers.
-            float gain = Math.Min(4f, Math.Min(0.1f / rms, 0.9f / peak));
-            if (LibraryReady && m_MatchedRms > 0)
-            {
-                // Newly requested clips must match the already accepted voice samples.
-                float matchedGain = m_MatchedRms / rms;
-                if (matchedGain > 4f || peak * matchedGain > 0.901f)
-                { RejectClip(clip, filePath, "Audio cannot match the accepted voice level."); yield break; }
-                gain = matchedGain;
-            }
+            // Keep accepted starter RMS as the target, without exceeding safe gain/headroom.
+            // Later phrases can have different crest factors; record the shortfall, not a trial failure.
+            float requestedRms = LibraryReady && m_MatchedRms > 0 ? m_MatchedRms : 0.1f;
+            float requestedGain = requestedRms / rms;
+            float gain = Math.Min(requestedGain, Math.Min(4f, 0.9f / peak));
+            bool levelLimited = gain < requestedGain;
             for (int i = 0; i < samples.Length; i++) samples[i] *= gain;
             if (!clip.SetData(samples, 0)) { RejectClip(clip, filePath, "Could not normalize decoded audio."); yield break; }
             m_PreparedClips[filePath] = clip;
@@ -497,7 +497,11 @@ public class VoiceSynthesizer : MonoBehaviour
                 text = m_PreparingText, content_version = ContentVersion,
                 perspective = m_SetupAnnouncement ? "setup" : SessionConfig.Perspective.ToString(),
                 perspective_version = VoicePromptText.Version,
-                duration_seconds = clip.length, rms = rms, peak = peak, gain = gain, achieved_rms = rms * gain });
+                duration_seconds = clip.length, rms = rms, peak = peak, gain = gain, achieved_rms = rms * gain,
+                requested_rms = requestedRms, level_limited = levelLimited });
+            if (levelLimited && LibraryReady)
+                Telemetry?.Invoke("audio_level_limited", m_CurrentContext ?? "", m_ActiveClipKey ?? "",
+                    FormattableString.Invariant($"requested_rms={requestedRms:F6};achieved_rms={rms * gain:F6};gain={gain:F6};difference_db={20 * Math.Log10(rms * gain / requestedRms):F3}"));
         }
         // Persist before playback, including clips added after the run began.
         if (LibraryReady && !m_Preparing && !SaveManifest()) yield break;

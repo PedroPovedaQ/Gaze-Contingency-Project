@@ -288,6 +288,44 @@ class VoiceIsolationChecks
                 Check(provider.Texts.Contains(formatted), "self-similar hint uses shared formatted text");
                 Check(UnityWebRequest.RequestBodies.Exists(body => body.Contains(formatted)), "neutral hint uses shared formatted text");
             }
+            // Later clips may have less headroom than the accepted starter samples.
+            foreach (bool quiet in new[] { false, true })
+            {
+                DownloadHandlerAudioClip.ForceSkewed = false;
+                DownloadHandlerAudioClip.Quiet = false;
+                Drain(synth.PrepareLibraries(new[] { targetPrompt }, null, ok => prepared = ok,
+                    new[] { targetPrompt, lazyPrompt }));
+                Check(prepared, "normal starter samples prepare before limited clip");
+                DownloadHandlerAudioClip.ForceSkewed = !quiet;
+                DownloadHandlerAudioClip.Quiet = quiet;
+                SessionConfig.Voice = VoiceCondition.SelfSimilar;
+                int failures = 0, limited = 0, starts = 0;
+                Action<string> failure = reason => failures++;
+                Action<string, string, string, string> telemetry = (kind, context, key, detail) => {
+                    if (kind == "audio_level_limited") limited++;
+                    if (kind == "audio_playback_start") starts++;
+                };
+                synth.PlaybackFailed += failure; synth.Telemetry += telemetry;
+                synth.Speak(lazyPrompt, "round"); Drain(MonoBehaviour.LastRoutine);
+                Check(string.IsNullOrEmpty(synth.LastError) && failures == 0 && starts == 1,
+                    "valid later clip with limited headroom must play instead of aborting trial");
+                Check(limited == 1, "limited normalization is recorded in telemetry");
+                var audit = (IList)typeof(VoiceSynthesizer).GetField("m_Audit", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth);
+                var last = audit[audit.Count - 1]; var auditType = last.GetType();
+                float gain = (float)auditType.GetField("gain").GetValue(last);
+                float achieved = (float)auditType.GetField("achieved_rms").GetValue(last);
+                float target = (float)typeof(VoiceSynthesizer).GetField("m_MatchedRms", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth);
+                float peak = (float)auditType.GetField("peak").GetValue(last);
+                Check(gain <= 4f && peak * gain <= 0.901f && achieved < target,
+                    "limited clip respects gain and peak caps and records actual RMS");
+                provider.Calls = 0; UnityWebRequest.Requests.Clear();
+                synth.Speak(lazyPrompt); Drain(MonoBehaviour.LastRoutine);
+                Check(provider.Calls == 0 && UnityWebRequest.Requests.Count == 0 && limited == 1,
+                    "limited clip remains cached instead of being discarded and regenerated");
+                synth.PlaybackFailed -= failure; synth.Telemetry -= telemetry;
+            }
+            DownloadHandlerAudioClip.ForceSkewed = false;
+            DownloadHandlerAudioClip.Quiet = false;
             Check(ChallengeSet.TotalRounds == 14 && ChallengeSet.RoundsPerBlock == 7 && ChallengeSet.BlockCount == 2, "full two-block schedule");
             for (int practice = 0; practice < 2; practice++)
             {
@@ -332,7 +370,7 @@ namespace UnityEngine
     {
         public float length = 1f; public int samples => m_Data.Length; public int channels = 1;
         float[] m_Data = new float[1000];
-        public AudioClip(bool skewed = false) { for (int i=0; i<m_Data.Length; i++) m_Data[i] = skewed ? (i == 0 ? 1f : 0.02f) : 0.2f; }
+        public AudioClip(bool skewed = false, bool quiet = false) { for (int i=0; i<m_Data.Length; i++) m_Data[i] = skewed ? (i == 0 ? 1f : 0.02f) : quiet ? 0.001f : 0.2f; }
         public bool GetData(float[] data, int offset) { Array.Copy(m_Data, data, data.Length); return true; }
         public bool SetData(float[] data, int offset) { Array.Copy(data, m_Data, data.Length); return true; }
     }
@@ -377,7 +415,7 @@ namespace UnityEngine.Networking
         public void Dispose() { }
     }
     public static class UnityWebRequestMultimedia { public static UnityWebRequest GetAudioClip(string path, AudioType type) => new UnityWebRequest(path, "GET"); }
-    public static class DownloadHandlerAudioClip { public static bool Corrupt, AlternatePeak; static int count; public static AudioClip GetContent(UnityWebRequest request) => Corrupt ? null : new AudioClip(AlternatePeak && count++ % 2 == 0); }
+    public static class DownloadHandlerAudioClip { public static bool Corrupt, AlternatePeak, ForceSkewed, Quiet; static int count; public static AudioClip GetContent(UnityWebRequest request) => Corrupt ? null : new AudioClip(ForceSkewed || (AlternatePeak && count++ % 2 == 0), Quiet); }
 }
 public class VoxtralClient
 {
