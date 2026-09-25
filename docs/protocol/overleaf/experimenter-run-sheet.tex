@@ -1,5 +1,5 @@
 % Standalone Overleaf document. Compile this file with pdfLaTeX.
-% Generated from the annotated Markdown; regenerate with scripts/format-overleaf-run-sheet.py.
+% Revised from the researcher-supplied September 23 source. This edited edition is not generated from the older Markdown; do not overwrite it with the legacy generator.
 \documentclass[11pt,letterpaper]{article}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -31,7 +31,6 @@
 \fancyhf{}
 \fancyhead[L]{\small\color{Gray}FOLLOW MY VOICE \enspace / \enspace RUN SHEET}
 \fancyhead[R]{\small\color{Gray}ANNOTATED REVIEW}
-\fancyfoot[L]{\footnotesize\color{Gray}Source v0.1 \textbullet{} Formatted 22 September 2026}
 \fancyfoot[R]{\small\thepage}
 \renewcommand{\headrulewidth}{0.35pt}
 \emergencystretch=2em
@@ -46,119 +45,64 @@
 \newcommand{\meeting}[2]{\Needspace{7\baselineskip}\begin{meetingnote}{#1}#2\end{meetingnote}}
 \newcommand{\field}[1]{\textbf{#1}\enspace\hrulefill}
 \begin{document}
-\hypersetup{pageanchor=false}
-\begin{titlepage}
-\thispagestyle{empty}
-\vspace*{0.3in}
-{\small\bfseries\color{Gray}GAZE CONTINGENCY SEARCH STUDY\par}
-{\color{Gold}\rule{\linewidth}{4pt}}
-\vspace{0.2in}
 \begin{tcolorbox}[colback=Ink,colframe=Ink,arc=0mm,left=20pt,right=20pt,top=25pt,bottom=25pt]
 {\color{Gold}\bfseries EXPERIMENTER RUN SHEET\par}
 \vspace{12pt}
 {\color{white}\fontsize{32}{37}\selectfont\bfseries Follow My Voice\par}
 \vspace{12pt}
-{\color{white}\large Annotated meeting edition\par}
-\end{tcolorbox}
-\vspace{0.18in}
-\begin{tabularx}{\linewidth}{@{}lX@{}}
-\textbf{Source} & Version 0.1, September 16, 2026; meeting annotations retained \\[7pt]
-\textbf{Formatted} & September 22, 2026 \\[7pt]
-\textbf{Setting} & Seated, rotating mixed-reality object search \\[7pt]
-\textbf{Hardware} & HTC Vive Focus Vision \\[7pt]
-\textbf{Status} & Protocol proposal / researcher review \\
-\end{tabularx}
-\vspace{12pt}
-\begin{meetingnote}{READ BEFORE REHEARSAL}
-The supplied run sheet is preserved below, including its questions and meeting notes.
-The newer meeting requirements specify \textbf{participant-preferred versus self-similar voice}
-and \textbf{controller ray + trigger selection}, with independently measured gaze.
-Older generic-voice and gaze-dwell wording in this source remains to be reconciled.
 
-The provisional plan is 30 experimental trials per voice plus two practice trials.
-Audited \texttt{v2} still implements 14 measured gaze-dwell trials with neutral profiles.
-This edition does not freeze method decisions or certify participant readiness.
-\end{meetingnote}
-\vfill
-{\small\color{Gray}UCF-inspired black and gold. Editable, standalone LaTeX.\par}
-\href{https://github.com/PedroPovedaQ/Gaze-Contingency-Project/blob/v2/docs/meeting-reconciliation-2026-09-22.md}{\small Current decisions, progress and implementation backlog}
-\end{titlepage}
-\hypersetup{pageanchor=true}
-\step{How to use this edition}
+\end{tcolorbox}
 \say{SAY / ASK}{Participant-facing speech is set in dark upright type.}
 \action{ACTION / RESEARCHER}{Experimenter-only instructions are italic and muted gold-brown. Do not read them aloud.}
-\meeting{MEETING NOTE / OPEN DECISION}{Gold panels preserve questions, proposed updates and unresolved points from the supplied source. They are not participant instructions or validated implementation claims. Source numbering is retained.}
+
 \begin{tabularx}{\linewidth}{@{}XX@{}}
 \field{Participant ID} & \field{Run} \\[14pt]
 \field{Date} & \field{Researcher} \\[14pt]
 \field{Build} & \field{Voice order} \\[14pt]
-\field{Neutral profile (source)} & \field{Survey version} \\
+\field{Preferred voice ID} & \field{Survey version} \\
 \end{tabularx}
 \vspace{8pt}
-\action{RESEARCHER ONLY}{Two counterbalanced voice blocks, generic and self-similar. Both use gaze-contingent warmer/colder guidance. Planned trial start is the same fixed front direction. Say ``first block'' and ``second block''; do not suggest that either voice should improve performance.}
+\action{RESEARCHER ONLY}{Two counterbalanced voice blocks, participant-preferred and self-similar. Both use gaze-contingent warmer/colder guidance. Planned trial start is the same fixed front direction. Say ``first block'' and ``second block''; do not suggest that either voice should improve performance.}
 \step{Before participant arrives}
 {\color{ActionInk}\itshape
 \begin{itemize}
 \item {Sanitize and test the Head Mounted Display (HMD) and controllers.}
-\end{itemize}
-}
-{\color{ActionInk}\itshape
-\begin{itemize}
 \item {Open Unity and Qualtrics.}
-\end{itemize}
-}
-{\color{ActionInk}\itshape
-\begin{itemize}
 \item {Enter coded ID and assigned condition.}
-\end{itemize}
-}
-{\color{ActionInk}\itshape
-\begin{itemize}
 \item {Prepare consent, baseline survey, both block surveys, final interview and session/event record. Use one defined TLX collection route; see the beta note in Section 7.}
 \end{itemize}
 }
 \step{1 Welcome and consent}
 \say{SAY}{``Thank you for coming. You will stay seated and turn to find virtual objects by their color and shape. A voice assistant will provide hints. You may pause, take a break or stop at any time without penalty.''}
 \say{SAY}{``We will ask you to record a short voice sample to create a synthetic version of your voice. We also record eye-gaze and task data under a study code. Please read the consent form for what is collected, where it is processed and how it is handled.''}
-\meeting{OPEN QUESTION FROM MEETING}{Do we want to make them aware of the voice cloning?}
+
 \action{ACTION}{Obtain consent.}
-\step{2 Initial Qualtrics}
-\say{SAY}{``Please complete the background and current-comfort questions before we begin. Use only the study code already entered. Do not add your name or contact details. You may skip optional questions.''}
+\step{2 Initial Qualtrics and Voice Setup}
+
+\say{SAY}{``Please complete the background and current-comfort questions before we begin. Use only the study code already entered. Do not add your name or contact details. You may skip optional questions. We will also ask what kind of assistant voice you would prefer. There are no right or wrong preferences.''}
+\action{ACTION}{Confirm the coded participant and run IDs. Include the baseline demographics and current-comfort items, followed by the separate questions below. Keep skipped responses distinct from ``no preference.''}
+
+\say{SURVEY ITEM / AGENT GENDER PREFERENCE}{``What gender presentation would you prefer for the agent's voice?''}
+\say{SURVEY ITEM / AGENT ACCENT PREFERENCE}{``What accent would you prefer the agent's voice to have?''}
+
+\action{ACTION / CANDIDATE PREPARATION}{Save the requested preferences and configure selected voice for the trial.}
+\say{SAY}{``We will now record the short voice sample described in the consent form. After the tone, please read the displayed passage in your usual speaking voice.''}
+
+\say{ASK / AUDIO CHECK}{``Can you hear the voice clearly and at a comfortable volume?''}
+
 \step{3 Fit and calibrate the headset}
 \say{SAY}{``Remain seated in this chair. You may turn the chair, your body and your head to look around, but do not stand or walk. Tell me immediately if you feel dizzy, nauseated, strained, uncomfortable or unsteady.''}
-\action{ACTION}{Fit equipment and verify tracking, perform automated eye callibration protocol.}
-\meeting{CALIBRATION NOTE / PROPOSAL}{Callibration step where the user looks at a dot in space, and we can use that as a callibration offset to boost accuracy.}
+\action{ACTION}{Fit equipment and verify tracking, perform the automated eye-calibration protocol.}
+
 \say{ASK}{``Can you see clearly? Does the equipment feel comfortable? Do you feel well enough to continue?''}
 \step{4. Pre-Block Activity}
-\say{SAY}{``First, I will explain the task. Your task is simply to locate objects that are around you. The objects that you'll need to find are specified by an agent. For example, the agent might say: "Locate the blue sphere". Once you find the object, hold your gaze on it for a few seconds to select it -- this completes the round. You will then continue this for other objects the agent specifies.}
-\say{SAY}{``Next, read the displayed passage so the agent understands the way you speak".}
-\meeting{OPEN QUESTION FROM MEETING}{Can we cover this in the consent step?}
-\say{SAY}{``We will now connect a short sample of your voice, after the tone please read the script.'' Then ``Processing voice.'' When ready: ``Voice setup is ready. Let's check the audio.''}
+\say{SAY}{``First, I will explain the task. Your task is simply to locate objects that are around you. The objects that you'll need to find are specified by an agent. For example, the agent might say: "Locate the blue sphere". Once you find the object, point the controller ray at it to highlight it, then press the trigger to select it -- this completes the round. You will then continue this for other objects the agent specifies.}
+
 \clearpage
-\step{Meeting updates}\meeting{RESEARCHER NOTES}{The following requirements were added to the supplied run sheet. They remain proposals/open decisions; the GitHub backlog owns implementation and validation.}
-\begin{meetingnote}{MEETING UPDATES / PROPOSED MEASURES}
-\begin{itemize}
-\item {Preferred accent}
-\item {Gender perception }
-\item {Match Gender in preferred voice (to avoid cross-gender effect)}
-\item {Ask for 100 point rating on each voice (including self-similar)}
-\item {("The agent's voice is similar to mine.", The agent's accent is similar to mine.) (1-7), Likert Scale}
-\item {Log time to first gaze}
-\item {Log time to first controller raycast/object intersect}
-\item {Log overall trial time (includes final selection trigger) }
-\item {After action review tool (Participant Trial Replay) (Controller + Eye Gaze), is trigger held down (1/0) (60 HZ) + object position}
-\item {Total Gross Rotation + Head Movement (Y + X axis + Z), yaw/pitch/ per round'}
-\item {Drewes Gaze vs locomotion paper}
-\item {[10] J. Drewes, S. Feder, and W. Einhauser. Gaze during locomotion in virtual reality and the real world. Frontiers in Neuroscience, 15:656913, 2021. doi: 10.3389/fnins.2021.656913 3, 6 D. C. Niehorster, M. Nystrom, R. S. Hessels, J. S. Benjamins, R. Andersson, and I. T. C. Hooge. The fundamentals of eye tracking, part 7: 8Online Submission ID: 2013 Determining data quality. Behavior Research Methods, 58:183, 2026. doi: 10.3758/s13428-026-03039-4 3, 7}
-\item {use colors and italics to actions to perform without speaking}
-\item {update start of protocol, include mention of self-similar voice clone use in the experiment}
-\end{itemize}
-\end{meetingnote}
-\clearpage
+
 \step{5. Familiarization}
 \action{ACTION}{At the 360 search start checkpoint, seat the participant at the intended center facing the chosen room-front reference. Release the trigger, then press Trigger / Enter to center and begin. Record the reference; do not recenter to wherever the participant happens to face later.}
-\say{SAY}{``Objects will appear around you, you can turn in your chair in all 360 degrees. Find the object with the announced color and shape. Turn while staying seated, then hold your gaze on the matching object until it is selected. You do not need to count rounds.''}
-\meeting{MEETING NOTE}{The source requests a simple seated 360-degree illustration. The schematic below adds that visual without specifying a selection method.}
+\say{SAY}{``Objects will appear around you, you can turn in your chair in all 360 degrees. Find the object with the announced color and shape. Turn while staying seated, point the controller ray at the matching object to highlight it, then press the trigger to select it. Looking alone does not select an object. You do not need to count rounds.''}
 
 \begin{center}
 \begin{tikzpicture}[scale=0.8]
@@ -187,7 +131,7 @@ This edition does not freeze method decisions or certify participant readiness.
 \step{6 First task block}
 \action{INTERNAL SETTINGS}{Practice | Real | 30 rounds}
 \action{RESEARCHER SETTINGS}{Confirm the saved first voice and planned trial schedule. Keep object layout, selection method, guidance policy and the finalized prompt wording constant across voices.}
-\say{SAY}{``We will now begin the first task block. Find each target as quickly and accurately as you comfortably can. Stay seated and use the same gaze selection you practiced. Tell me if you need to pause.''}
+\say{SAY}{``We will now begin the first task block. Find each target as quickly and accurately as you comfortably can. Stay seated and use the same controller ray and trigger selection you practiced. Tell me if you need to pause.''}
 \action{ACTION}{Start block; monitor safety.}
 \say{AT COMPLETION SAY}{``That task block is complete. Please stop and lower your hands comfortably.''}
 \say{SAY}{``These questions ask about your workload, your experience of the activity and the agent. There are no right answers. Please answer based on the block you just finished.''}
@@ -209,28 +153,22 @@ This edition does not freeze method decisions or certify participant readiness.
 \action{EXPLORATORY FOLLOW-UP}{After open responses, ask ``Did either voice feel like your own thoughts, like another person helping, or neither?'' Record this as an exploratory report, not proof of an internal-dialogue mechanism.}
 \action{ACTION}{Administer Post-Study Survey Block}
 \step{10 Debrief and finish}
-\say{SAY}{``Thank you. This study compares generic and self-similar voices during gaze-guided object search. Both voices provide gaze-contingent assistance. We are examining task performance and how participants experience the activity and assistant.''}
+\say{SAY}{``Thank you. This study compares participant-preferred and self-similar voices during gaze-guided object search. Both voices provide gaze-contingent assistance. We are examining task performance and how participants experience the activity and assistant.''}
 \say{SAY}{``Your data are stored under a coded participant ID. Please avoid discussing the timing condition or study details with people who may participate later, because knowing them in advance could affect their behavior.''}
 \say{ASK}{``Do you have any questions about the study or your experience?''}
 \say{SAY}{``Thank you for participating. We are finished.''}
 \step{Immediate stop or pause criteria}
 \meeting{PAUSE OR STOP}{Participant request, dizziness, nausea, headache, eye strain, fatigue, pain, distress, unsafe movement or equipment failure. Help the participant remain seated and remove the headset when needed.}
-\action{ACTION}{Pause through the verified researcher control; the beta supports P on a connected keyboard and Trigger / Enter at its resume checkpoint. App focus loss can pause or technically stop a session. Log time, trial, reason and outcome. Resume only when the participant wants to continue and tracking/audio/alignment are valid; otherwise stop and preserve partial data.}
+
 \clearpage
 \step{Final researcher check}
 {\color{ActionInk}\itshape
 \begin{itemize}
-\item {Confirm both block surveys and final interview/symptom records, or record why incomplete. Match participant, run, block and voice identifiers.}
-\end{itemize}
-}
-{\color{ActionInk}\itshape
-\begin{itemize}
-\item {Verify EyeData (Trial \#, Participant ID), MotionData and TrialData (Most important)(Participant ID, Voice Type, Trial \#/Block\#/Distance to object, Rotation Theta, Gross Rotation (X/Y/Z), Gross Movement (X/Y/Z)) for all three blocks. Time to first gaze, Time to final gaze,time to first controller raycast intersection, final time to correct zone, final controller selection/overall completion time. \# of zones visited, \# of incorrect selections, \# of main goal repeats requested, \# of hints per round, include nasa-tlx survey and others etc include in the trial data file, repeat values if not measured on a per trial basis but instead measured on a block basis}
-\item {UPDATE: Think of more columns for trial Data}
-\item {Demographics Survey questions: what do you perceive your own accent to be?}
+\item {Confirm both block surveys and final interview/symptom records, or record why incomplete. }
+\item {Match participant, run, block and voice identifiers.}
 \item {Secure data and sanitize equipment.}
 \end{itemize}
 }
 \step{Appendix Current recording passage}
-\meeting{CURRENT RECORDING PASSAGE / SOURCE TEXT}{``Locate the red sphere. Look toward the upper shelf. Move your gaze slowly to the right. Check the blue cube near the center. Compare each object's color and shape. Scan the lower row from left to right. Look beside the purple cylinder. Focus on the target and hold your gaze steady. Select the matching object. Take a short pause. Get ready for the next round.''}
+\meeting{CURRENT RECORDING PASSAGE}{``Locate the red sphere. Look toward the upper shelf. Move your gaze slowly to the right. Check the blue cube near the center. Compare each object's color and shape. Scan the lower row from left to right. Look beside the purple cylinder. Point the controller ray at the target and check its highlight. Press the trigger to select the matching object. Take a short pause. Get ready for the next round.''}
 \end{document}
