@@ -174,7 +174,7 @@ public class VoiceAssistantController : MonoBehaviour
     public static string[] StarterPhrases()
     {
         var practice = ChallengeSet.PracticeRound(0);
-        return new[] { AudioCheckLine, StudyIntroLine, "Nice!",
+        return new[] { AudioCheckLine, StudyIntroLine, "Nice!", HintGenerator.AreaCorrectionPhrase,
             RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape, true) };
     }
 

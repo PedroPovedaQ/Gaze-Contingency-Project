@@ -17,6 +17,7 @@ public static class VoicePromptText
     // table explicit preserves meaning across every live hint and terminal line.
     static readonly Dictionary<string, string> k_Collaborative = new Dictionary<string, string>
     {
+        { "Oh, there. You're in the right area. Keep looking here.", "Oh, there. We're in the right area. Let's keep looking here." },
         { "You're very close.", "We're very close." },
         { "Stay with this area.", "Let's stay with this area." },
         { "You're right where you need to be.", "We're right where we need to be." },

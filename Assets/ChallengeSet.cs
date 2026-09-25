@@ -16,7 +16,7 @@ public static class ChallengeSet
     public const int RoundsPerBlock = 7;
     public const int BlockCount = 2;
     public const int TotalRounds = RoundsPerBlock * BlockCount; // 14
-    public const int ObjectsPerRound = 56;
+    public const int ObjectsPerRound = 168;
     public static int DebugRoundCountOverride { get; set; }
     public static int RoundCount =>
         DebugRoundCountOverride > 0
@@ -45,7 +45,7 @@ public static class ChallengeSet
         public int roundIndex;       // 0-13
         public int blockIndex;       // 0-1: counterbalanced voice blocks
         public ObjectDef target;
-        public ObjectDef[] objects;  // all 56
+        public ObjectDef[] objects;  // all 168
     }
 
     static RoundDef[] s_Rounds;
@@ -140,8 +140,8 @@ public static class ChallengeSet
 
             var objects = new List<ObjectDef>(ObjectsPerRound);
             objects.Add(target);
-            for (int i = 0; i < 13; i++) objects.Add(sameColor[rng.Next(sameColor.Count)]);
-            for (int i = 0; i < 13; i++) objects.Add(sameShape[rng.Next(sameShape.Count)]);
+            for (int i = 0; i < 39; i++) objects.Add(sameColor[rng.Next(sameColor.Count)]);
+            for (int i = 0; i < 39; i++) objects.Add(sameShape[rng.Next(sameShape.Count)]);
             int neutralCount = ObjectsPerRound - objects.Count;
             for (int i = 0; i < neutralCount; i++) objects.Add(neutral[rng.Next(neutral.Count)]);
 

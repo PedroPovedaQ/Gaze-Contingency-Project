@@ -1,9 +1,81 @@
+## 2026-09-25
+
+- Prepared the complete pilot checkpoint for v2: randomized 168-object layout, floor-relative heights, wrist degree-guide toggle, immediate gaze-area speech interruption, finalized run-sheet source/PDF and prior controller/audio fixes. Layout/gaze-gate and voice-isolation regression suites passed again; prior Android Build And Run succeeded. Physical headset acceptance remains pending.
+
+## 2026-09-24
+
+- Made gaze-area corrections more immediate at researcher request: 100 ms stable entry and 40 ms fade, down from 300/150 ms. Search speech is cut off mid-sentence; instructions remain protected. Added regression proving unfinished audio is stopped rather than awaited. Geometry/gate and voice tests passed. Android Build And Run succeeded (296.4 s), installed and launched on the connected Vive; physical timing/listening QA remains pending.
+
+## 2026-09-24
+
+- Implemented 168-object scatter (21 per octagon wall) with trial seeds, random heights/width positions, 20 cm minimum spacing and recorded layout_seed. Exactly one target and scaled conjunction distractors retained. Added eye-gaze target-wall entry correction: 300 ms dwell, 150 ms speech fade, 500 ms exit rearm and 6 s cooldown, with tracking/search revalidation and protected instructions. Preload correction in both voices (ten startup clips). Scatter/gate and voice tests pass, including stale correction cancellation, progressive volume reduction and network-free playback. Android Build And Run succeeded (141.8 s); updated package and running headset process verified. Physical gaze/audio/performance QA still required.
+
+## 2026-09-24
+
+- Expanded octagonal object centers to 0.10–3.048 m above the tracked floor with configurable bounds and a new layout tag. Scene requests floor tracking; wrist Settings now includes Degree guides to toggle outlines and labels together across rounds. Geometry checks pass for bounds, determinism, spacing and connected corners. Android Build And Run succeeded (56.4 s); verified updated package and running headset process. Physical floor alignment and wrist-toggle QA remain pending.
+
+- Fixed trial aborts from later voice clips exceeding accepted-sample RMS headroom: retain progressive loading, clamp gain to 4 / peak to 0.9, and record requested/achieved RMS, limitation flag and audio_level_limited telemetry. Starter matching remains strict; missing/corrupt audio and voice-isolation checks remain enforced. Peak-limited and quiet-clip regressions failed before the fix and pass afterward; targeted manual review (unrelated branch work) and inline reuse/quality/efficiency review found no additional changes needed. Committed fix as 83785d0. Android Build And Run passed after restarting Unity to clear stale editor assemblies; verified package update and running headset process. Human playback/trial acceptance remains pending.
+
+- Added controller-ray object-entry haptics to ControllerRaySelector: per-controller 40 ms / 0.2 amplitude pulses, no sustained-hover repeats, reset on inactive search/tracking loss/selection reset. Documented behavior and updated #34 device QA. Unity batch compilation and ControllerSelectionChecks passed (exit 0). Required refocus/build script attempted but macOS could not connect to Unity (-609); no device build or physical haptic validation completed.
+
+## 2026-09-23
+
+- Updated GitHub #26 with a draft exploratory own-voice debrief interview and finalization criteria: self-recognition, perceived performance, liking/eeriness, use cases and context preferences. Linked operator delivery in #27. Verified both issue bodies; live survey and finalized run sheet remain unchanged pending question-set finalization.
+
+## 2026-09-23
+
+- Removed the metadata cover page from the live Overleaf run sheet at the researcher’s request and synced the local source, preserving current live edits. Verified the remaining source exactly and compiled six pages with zero errors or warnings.
+
+## 2026-09-23
+
+- Synced the local run-sheet source to the researcher-finalized attachment verbatim. Verified the live Overleaf experimenter-run-sheet.tex already matches all 13,391 characters exactly; recompiled successfully to seven pages with zero reported errors or warnings. This finalized edition supersedes the earlier ten-page local draft. No protocol wording changed during sync.
+
+## 2026-09-23
+
+- Verified the run-sheet meeting checklist against GitHub tasks. Updated #33/#26 with explicit participant-chosen agent gender/accent (superseding automatic gender matching), 100-point individual ratings including self-similar, and separate requested 1–7 voice/accent similarity items. Updated #27 with the local ten-page run-sheet revision and publication limits. Existing #20/#22/#14/#16/#18 already own timing, motion/replay, literature/quality and disclosure requirements. Read back and verified the updated issue bodies.
+
+## 2026-09-23
+
+- Revised the researcher-supplied Overleaf run-sheet source: initial Qualtrics records own perceived accent separately from preferred agent gender presentation and accent, including no-preference/missing handling. Added preference-aware previews/ratings, explicit participant voice choice and mismatch handling, early sample collection, readiness/identity checks and separate voice/accent-similarity items. Replaced superseded gaze-dwell instructions with the confirmed controller-ray/trigger method. Survey/application implementation and unresolved scale/allocation decisions remain explicit. Compiled a 10-page review PDF; changes are local, not a live Qualtrics or Overleaf publication.
+
+## 2026-09-22
+
+- Created GitHub #35: eye-measurement validity gaps and true 120 Hz acquisition evidence gate; added to Participant Readiness as Ready. Defined source-route feasibility, native-versus-predicted timing, render-independent acquisition, buffered persistence, quality/calibration/detector validation and hardware proof. Linked tailored responsibilities in #8/#14/#15/#16/#17/#19/#20/#22/#26/#28. No acquisition capability or workload validity claimed from advertised frequency; implementation remains pending. Verified issue bodies and project membership.
+
+## 2026-09-22
+
+- Replaced gaze dwell capture with controller ray + fresh trigger press. Blue highlight follows controller intersection; gaze remains observational for telemetry and hints. Search objects cannot be grabbed. Pause/round/tracking resets require trigger release; UI hits take precedence. Added controller selection verification and selection-method metadata. Updated spoken instructions in both perspectives and enrollment wording. Unity compilation, controller checks and octagon regression pass. Required Build And Run attempted: existing OpenXR Composition Layers Support validation blocks Android build; no adb device connected. Headset QA remains pending.
+
 # Project Progress Log
 
 Daily progress on the Gaze Contingency Project ("Follow My Voice: Gaze-Contingent
 XR Search with a Self-Similar Agent"). Newest entries on top.
 
 ## 2026-09-22
+
+### Implement the connected octagon and wider object coverage
+- **Confirmed design:** retain eight faces around the seated user and spread objects across the connected faces; the researcher clarified that solid backing panels are not requested. Kept 56 objects, stable plane/slot IDs, existing vertical placement and shape/target composition.
+- **Implemented locally:** derive outline width from the actual outline radius so all eight seams close; expand horizontal object placement with 15 cm of corner clearance. Added `rotational_octagon_v2` manifest provenance and updated the geometry guide to describe wider spacing and changed radial distances.
+- Verification: observed the expected failing old-layout coverage test, then passed extended geometry checks at 1/1.5/3 m, Unity batch compilation, and a temporary integration harness invoking actual frame creation at a translated origin and 137° heading. Runtime corners join, frames add no colliders, and existing through-wall gaze physics checks pass. Code review found no actionable issues.
+- Build And Run was triggered in Unity for this checkout. Android preprocessing failed because OpenXR Composition Layers Support is required by the installed package but not enabled; geometry changes do not modify XR settings. ADB also reports no connected headset. Device rendering/targeting and build configuration remain unverified; no successful APK/device deployment is claimed.
+
+### Scope connected search walls under existing geometry task
+- Confirmed current remote v2 uses eight separate outlined frames (0.84 m by 0.72 m), with seven objects clustered on each tangent plane and no solid backing. Added the requested connected-corner extension and geometric/interaction verification criteria to #9, preserving its project status.
+- **Open decisions:** eight joined faces versus six, and solid panels versus expanded object coverage versus both. Requested clarification before changing the study geometry; no code or device build yet. Existing local user changes remain untouched.
+
+### Lock controller ray as the selection method
+- **Confirmed design decision:** researcher explicitly locked controller-ray object selection, with trigger confirmation, replacing gaze-dwell completion in the intended study. Gaze remains independently logged and supplies gaze-contingent guidance.
+- Recorded the confirmation in #7 and #34 and verified the saved issue bodies. Press-versus-hold timing and other input details remain separate open decisions; no runtime implementation or headset test is claimed, and task statuses are unchanged.
+
+### Map PeriSpike screenshot measures and citations into existing GitHub tasks
+- **Protocol proposal:** reviewed the supplied measures/reference screenshots from anonymous submission 1752 and extended #26 (susceptibility/SSQ/IPQ selection), #27 (exposure and stop procedure), #20 (exposure events), #14 (gaze validity and projection), #15 (optional BCEA/transitions/SSQ-per-minute analysis), and #16 (source verification and interpretation). Preserved existing scope, issue history and project statuses; advanced analytics remain deferred.
+- Checked the Golding MSSQ bibliographic/abstract source, Golding/Rafiq/Keshavarz VIMSSQ full text, and Castet/Crossland eye-stability bibliography/abstract. SSQ/IPQ exact form/scoring checks remain explicit tasks. The public PeriSpike manuscript, Zhao reference [49], mapping of [9], and two unseen gaze metrics remain unresolved; no invented citations or publication status.
+- Specified transfer limits for seated passthrough MR: source-study 90 Hz, 20-minute exposure and normalized viewport radius are not local validated parameters. Preserve exposure and symptom outcomes separately, avoid bridging gaze gaps, and do not interpret free-search dispersion as fixation stability or cognitive load. Planning/GitHub changes only; no runtime, live survey, Overleaf or device changes.
+
+### Add paper-informed eye-gaze implementation requirements to GitHub
+- Verified the screenshot reference as Zagermann, Pfeil and Reiterer (2016), *Measuring Cognitive Load using Eye Tracking Technology in Visual Computing*, BELIV, pp. 78–85, DOI `10.1145/2993901.2993908`, using the open full text at <https://d-nb.info/1128594803/34>. It is a position paper; its proposed ocular/workload relationships do not validate this headset or task.
+- **Protocol proposal / implementation backlog:** expanded and renamed existing #14 to own eye-gaze acquisition, calibration and quality validation, with concrete sensor-capability, timing, validity, coordinate-frame and device-test requirements. Added conditional fixation/saccade/blink and pupil criteria plus confound controls; linked telemetry #22 and outcome interpretation #16. Preserved existing issue bodies and project statuses; #14 remains Ready.
+- **Implemented evidence:** inspected `GazeDataLogger.cs` at remote v2 `3cd250b`; the current render-frame logger and heuristic blink output are not sufficient evidence of validated physiological measures. GitHub bodies and project membership were read back and verified. No runtime changes or headset tests in this task.
 
 ### Format the annotated run sheet for Overleaf
 - Created a standalone LaTeX review edition with UCF-inspired black/gold styling, distinct Say/Ask speech, italic researcher actions, highlighted meeting questions, session fields, page numbers and a seated 360-degree schematic. Preserved the supplied script and annotations with a cover note identifying the newer preferred-voice/controller requirements.

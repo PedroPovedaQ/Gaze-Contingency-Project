@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.XR.CoreUtils;
+using UnityEngine.XR;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Video;
@@ -136,6 +138,26 @@ public class FindObjectGameManager : MonoBehaviour
     [Header("Debug")]
     [SerializeField] bool m_UseRotationalLayout = true;
     [SerializeField, Range(1f, 3f)] float m_RotationalRadius = RotationalSearchLayout.DefaultRadius;
+    [SerializeField, Min(0f)] float m_MinObjectHeight = RotationalSearchLayout.DefaultMinHeight;
+    [SerializeField, Min(0.1f)] float m_MaxObjectHeight = RotationalSearchLayout.DefaultMaxHeight;
+    [SerializeField] bool m_ShowDegreeGuides = true;
+    readonly List<GameObject> m_DegreeGuides = new();
+    float m_FloorHeight;
+    public bool IsInsideSearchPlane(Vector3 point, int plane)
+    {
+        Quaternion rotation = m_SeatedRotation * Quaternion.Euler(0, plane * RotationalSearchLayout.PlaneAngleDegrees, 0);
+        Vector3 local = Quaternion.Inverse(rotation) * (point - m_SpawnCenter);
+        float halfWidth = m_RotationalRadius * Mathf.Tan(Mathf.PI / RotationalSearchLayout.PlaneCount);
+        return Mathf.Abs(local.x) <= halfWidth && point.y >= m_FloorHeight &&
+            point.y <= m_FloorHeight + m_MaxObjectHeight + 0.1f;
+    }
+    public int LayoutSeed { get; private set; }
+    public bool DegreeGuidesVisible => m_ShowDegreeGuides;
+    public void SetDegreeGuidesVisible(bool visible)
+    {
+        m_ShowDegreeGuides = visible;
+        foreach (var guide in m_DegreeGuides) if (guide != null) guide.SetActive(visible);
+    }
     public bool RotationalBetaEnabled => m_UseRotationalLayout;
     public Vector3 SeatedOrigin => m_SpawnCenter;
     public float SeatedForwardYaw => m_SeatedRotation.eulerAngles.y;
@@ -296,7 +318,7 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
         while (!m_CenterAccepted && !m_TechnicallyStopped)
         {
-            m_Checkpoint.Show("<b>360° SEARCH BETA</b>\nSit at the center and face your chosen forward direction.\nEight planes will surround you, seven objects on each.\nStay seated and turn to search.",
+            m_Checkpoint.Show("<b>360° SEARCH BETA</b>\nSit at the center and face your chosen forward direction.\nEight planes will surround you, 21 objects on each.\nStay seated and turn to search.",
                 "Release the trigger, then press Trigger / Enter to center and begin.");
             while (m_Checkpoint.Waiting && !m_TechnicallyStopped) yield return null;
             if (m_TechnicallyStopped || m_CenterAccepted) yield break;
@@ -313,12 +335,18 @@ public class FindObjectGameManager : MonoBehaviour
         if (selector == null || !selector.IsComplete || voice == null || !voice.IsReady) return false;
         if (m_Spawner == null || m_Spawner.objectPrefabs == null || m_Spawner.objectPrefabs.Count == 0) return false;
         if (GetComponent<ShapeObjectFactory>() == null) return false;
+        var origin = Camera.main.GetComponentInParent<XROrigin>();
+        if (origin == null || origin.CurrentTrackingOriginMode != TrackingOriginModeFlags.Floor)
+        {
+            Debug.LogWarning($"{k_Tag} Floor tracking must be ready before centering the floor-height layout.");
+            return false;
+        }
+        m_FloorHeight = origin.Origin.transform.position.y;
         m_SpawnCenter = Camera.main.transform.position;
         Vector3 forward = Vector3.ProjectOnPlane(Camera.main.transform.forward, Vector3.up);
         if (forward.sqrMagnitude < 0.01f) return false;
         m_SeatedRotation = Quaternion.LookRotation(forward.normalized, Vector3.up);
         m_RotationalRadius = Mathf.Clamp(m_RotationalRadius, 1f, 3f);
-        m_RotationalSlots = RotationalSearchLayout.Build(m_RotationalRadius);
         m_CenterAccepted = true;
         m_Checkpoint?.Confirm();
         voice.PlayStudyIntroduction();
@@ -500,6 +528,9 @@ public class FindObjectGameManager : MonoBehaviour
 
     void CreateRotationalFrames()
     {
+        m_DegreeGuides.Clear();
+        float bottom = m_FloorHeight - m_SpawnCenter.y;
+        float top = bottom + m_MaxObjectHeight + 0.1f;
         float halfWidth = RotationalSearchLayout.FrameHalfWidth(m_RotationalRadius);
         var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default");
         if (shader != null)
@@ -521,8 +552,8 @@ public class FindObjectGameManager : MonoBehaviour
                 line.useWorldSpace = false;
                 line.loop = true; line.widthMultiplier = 0.006f;
                 line.positionCount = 4;
-                line.SetPositions(new[] { new Vector3(-halfWidth, -0.36f, 0), new Vector3(-halfWidth, 0.36f, 0),
-                    new Vector3(halfWidth, 0.36f, 0), new Vector3(halfWidth, -0.36f, 0) });
+                line.SetPositions(new[] { new Vector3(-halfWidth, bottom, 0), new Vector3(-halfWidth, top, 0),
+                    new Vector3(halfWidth, top, 0), new Vector3(halfWidth, bottom, 0) });
             }
             var label = new GameObject("PlaneLabel");
             label.transform.SetParent(frame.transform, false);
@@ -534,8 +565,10 @@ public class FindObjectGameManager : MonoBehaviour
             text.color = Color.white;
             text.rectTransform.sizeDelta = new Vector2(0.8f, 0.15f);
             m_ShelfObjects.Add(frame);
+            m_DegreeGuides.Add(frame);
+            frame.SetActive(m_ShowDegreeGuides);
         }
-        Debug.Log($"{k_Tag} Rotational beta centered at {m_SpawnCenter}, yaw={SeatedForwardYaw:F1}, radius={m_RotationalRadius:F2}; 8 planes x 7 objects.");
+        Debug.Log($"{k_Tag} Rotational beta centered at {m_SpawnCenter}, yaw={SeatedForwardYaw:F1}, radius={m_RotationalRadius:F2}; 8 planes x 21 objects.");
     }
 
     void OnDestroy()
@@ -575,10 +608,12 @@ public class FindObjectGameManager : MonoBehaviour
         m_SpawnPoints.Clear();
         if (m_UseRotationalLayout)
         {
+            LayoutSeed = RotationalSearchLayout.SeedBase + (IsPractice ? 1000 : 0) + m_CurrentRound;
+            m_RotationalSlots = RotationalSearchLayout.Build(m_RotationalRadius, m_MinObjectHeight, m_MaxObjectHeight, LayoutSeed);
             foreach (var slot in m_RotationalSlots)
                 m_SpawnPoints.Add(new ShelfSpawner.SpawnPoint
                 {
-                    position = m_SpawnCenter + m_SeatedRotation * new Vector3(slot.x, slot.y, slot.z),
+                    position = m_SpawnCenter + m_SeatedRotation * new Vector3(slot.x, m_FloorHeight - m_SpawnCenter.y + slot.y, slot.z),
                     row = slot.slot, col = slot.plane
                 });
         }

@@ -11,7 +11,7 @@ class VoiceIsolationChecks
     static void Check(bool condition, string name) { if (!condition) throw new Exception(name); }
     static void Drain(IEnumerator routine)
     {
-        while (routine.MoveNext()) if (routine.Current is IEnumerator child) Drain(child);
+        while (routine.MoveNext()) { Time.unscaledTime += 0.05f; if (routine.Current is IEnumerator child) Drain(child); }
     }
     static void Set(object instance, string field, object value) => instance.GetType()
         .GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(instance, value);
@@ -322,16 +322,56 @@ class VoiceIsolationChecks
                 synth.Speak(lazyPrompt); Drain(MonoBehaviour.LastRoutine);
                 Check(provider.Calls == 0 && UnityWebRequest.Requests.Count == 0 && limited == 1,
                     "limited clip remains cached instead of being discarded and regenerated");
+                Set(synth, "m_CurrentContext", "round");
+                Check(!synth.TryAreaCorrection(lazyPrompt, () => true), "target instruction cannot be interrupted");
+                Set(synth, "m_CurrentContext", "tip");
+                Check(!synth.TryAreaCorrection("unprepared", () => true), "correction must be preloaded");
+                Check(!synth.TryAreaCorrection(lazyPrompt, () => false), "stale gaze cannot start correction");
+                var source = (AudioSource)typeof(VoiceSynthesizer).GetField("m_AudioSource", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth);
+                source.Play();
+                source.HoldPlayback = true;
+                int stopsBeforeCorrection = source.StopCalls;
+                bool relevant = true;
+                Check(synth.TryAreaCorrection(lazyPrompt, () => relevant), "playing hint accepts fade");
+                var abandonedFade = MonoBehaviour.LastRoutine;
+                abandonedFade.MoveNext();
+                Time.unscaledTime += 0.02f;
+                abandonedFade.MoveNext();
+                Check(source.volume > 0 && source.volume < 0.7f, "ongoing hint fades gradually");
+                relevant = false; Drain(abandonedFade);
+                Check(Math.Abs(source.volume - 0.7f) < 0.0001f && starts == 2,
+                    "leaving target zone during fade restores volume and cancels correction");
+                Check(synth.TryAreaCorrection(lazyPrompt, () => true), "prepared correction can replace a hint");
+                var fade = MonoBehaviour.LastRoutine;
+                Check(synth.IsBusy, "pending fade blocks ordinary hints");
+                Drain(fade);
+                Drain(MonoBehaviour.LastRoutine);
+                Check(!source.HoldPlayback && source.StopCalls > stopsBeforeCorrection, "correction cuts off unfinished speech");
+                Check(starts == 3 && failures == 0, "correction plays once without failure");
+                Check(provider.Calls == 0 && UnityWebRequest.Requests.Count == 0, "correction needs no network");
                 synth.PlaybackFailed -= failure; synth.Telemetry -= telemetry;
             }
             DownloadHandlerAudioClip.ForceSkewed = false;
             DownloadHandlerAudioClip.Quiet = false;
             Check(ChallengeSet.TotalRounds == 14 && ChallengeSet.RoundsPerBlock == 7 && ChallengeSet.BlockCount == 2, "full two-block schedule");
+            foreach (var trial in ChallengeSet.Rounds)
+            {
+                int targetCount = 0, colorOnly = 0, shapeOnly = 0;
+                foreach (var obj in trial.objects)
+                {
+                    bool sameColor = obj.color == trial.target.color, sameShape = obj.shape == trial.target.shape;
+                    if (sameColor && sameShape) targetCount++;
+                    else if (sameColor) colorOnly++;
+                    else if (sameShape) shapeOnly++;
+                }
+                Check(trial.objects.Length == 168 && targetCount == 1 && colorOnly == 39 && shapeOnly == 39,
+                    "168-object trials preserve one target and scaled conjunction distractors");
+            }
             for (int practice = 0; practice < 2; practice++)
             {
                 var round = ChallengeSet.PracticeRound(practice); int targets = 0;
                 foreach (var obj in round.objects) if (obj.shape == round.target.shape && obj.color == round.target.color) targets++;
-                Check(round.objects.Length == 56 && targets == 1, "practice has one target and 55 distractors");
+                Check(round.objects.Length == 168 && targets == 1, "practice has one target and 167 distractors");
             }
             Check(File.ReadAllText("Assets/Scenes/GazeContingencyStudyScene.unity").Contains("m_UseDebugRoundCountOverride: 0"), "build scene must not truncate voice blocks");
             var clock = new StudyTrialClock();
@@ -351,6 +391,7 @@ class VoiceIsolationChecks
 
 namespace UnityEngine
 {
+    public static class Time { public static float unscaledTime; }
     public struct Color { public float r, g, b, a; public Color(float r,float g,float b,float a=1) { this.r=r;this.g=g;this.b=b;this.a=a; } }
     public static class Mathf { public static int Clamp(int value,int min,int max) => Math.Min(max, Math.Max(min,value)); }
     public class MonoBehaviour
@@ -365,7 +406,7 @@ namespace UnityEngine
     public class GameObject { public T AddComponent<T>() where T : new() => new T(); }
     public class Coroutine { }
     public class WaitForSeconds { public static int Count; public WaitForSeconds(float seconds) { Count++; } }
-    public class AudioSource { public float spatialBlend, volume, pitch; public bool playOnAwake; int playPolls; public bool isPlaying => playPolls-- > 0; public AudioClip clip; public void Play() { playPolls = 2; } public void Stop() { playPolls = 0; } }
+    public class AudioSource { public float spatialBlend, volume, pitch; public bool playOnAwake; int playPolls; public bool HoldPlayback; public int StopCalls; public bool isPlaying => HoldPlayback || playPolls-- > 0; public AudioClip clip; public void Play() { playPolls = 2; } public void Stop() { playPolls = 0; HoldPlayback = false; StopCalls++; } }
     public class AudioClip
     {
         public float length = 1f; public int samples => m_Data.Length; public int channels = 1;

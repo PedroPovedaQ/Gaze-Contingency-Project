@@ -25,6 +25,7 @@ public class VoiceSynthesizer : MonoBehaviour
     string m_CacheDir;
     AudioSource m_AudioSource;
     Coroutine m_SpeakCoroutine;
+    Coroutine m_InterruptionCoroutine;
     string m_CurrentContext;
 
     public const string ContentVersion = "matched-voice-v3";
@@ -174,7 +175,7 @@ public class VoiceSynthesizer : MonoBehaviour
     }
 
     public bool IsSpeaking => m_AudioSource != null && m_AudioSource.isPlaying;
-    public bool IsBusy => m_SpeakCoroutine != null || IsSpeaking;
+    public bool IsBusy => m_InterruptionCoroutine != null || m_SpeakCoroutine != null || IsSpeaking;
 
     public void StartBackgroundLoading(string[] phrases)
     {
@@ -253,8 +254,46 @@ public class VoiceSynthesizer : MonoBehaviour
         m_SpeakCoroutine = StartCoroutine(SpeakCoroutine(text));
     }
 
+    public bool TryAreaCorrection(string phrase, Func<bool> stillRelevant)
+    {
+        if (!LibraryReady || m_InterruptionCoroutine != null || m_SetupAnnouncement ||
+            (m_CurrentContext != null && m_CurrentContext != "tip" && m_CurrentContext != "prefetch")) return false;
+        bool self = SessionConfig.Voice == VoiceCondition.SelfSimilar;
+        string voiceId = self ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId;
+        if (self && SessionConfig.SelfSimilarEnrollmentPending) return false;
+        string path = GetCachePath(VoicePromptText.Format(phrase, SessionConfig.Perspective),
+            (self ? "vx-" : "el-") + voiceId);
+        if (!m_PreparedClips.ContainsKey(path) || !stillRelevant()) return false;
+        m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(phrase, stillRelevant));
+        return true;
+    }
+
+    IEnumerator FadeToAreaCorrection(string phrase, Func<bool> stillRelevant)
+    {
+        yield return null;
+        float volume = m_AudioSource.volume;
+        float start = Time.unscaledTime;
+        while (IsSpeaking && Time.unscaledTime - start < 0.04f)
+        {
+            if (!stillRelevant()) { m_AudioSource.volume = volume; m_InterruptionCoroutine = null; yield break; }
+            m_AudioSource.volume = volume * (1f - (Time.unscaledTime - start) / 0.04f);
+            yield return null;
+        }
+        m_AudioSource.volume = volume;
+        m_InterruptionCoroutine = null;
+        if (!stillRelevant()) yield break;
+        Telemetry?.Invoke("audio_area_correction", "tip", m_ActiveClipKey ?? "", "gaze_target_plane;fade_seconds=0.04");
+        Speak(phrase, "tip");
+    }
+
     public void Stop()
     {
+        if (m_InterruptionCoroutine != null)
+        {
+            StopCoroutine(m_InterruptionCoroutine);
+            m_InterruptionCoroutine = null;
+        }
+        if (m_AudioSource != null) m_AudioSource.volume = 0.7f;
         if (m_BackgroundCoroutine != null)
         {
             StopCoroutine(m_BackgroundCoroutine);

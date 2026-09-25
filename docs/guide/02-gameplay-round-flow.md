@@ -1,6 +1,6 @@
 # Gameplay Round Flow
 
-**Implemented beta (2026-09-11):** `codex/eight-plane-beta` now starts from a seated center with eight surrounding planes, seven objects each. It retains the two practice trials and 14-round voice schedule. See [beta behavior and QA](../eight-plane-beta.md). Shelf-specific descriptions below describe the retained legacy mode.
+**Implemented beta (2026-09-11):** `codex/eight-plane-beta` now starts from a seated center with eight surrounding planes, 21 randomly scattered objects each. It retains the two practice trials and 14-round voice schedule. See [beta behavior and QA](../eight-plane-beta.md). Shelf-specific descriptions below describe the retained legacy mode.
 
 This guide walks through the full lifecycle of a run in the Find Object game, from the first tap that starts the session to the final completion screen.
 
@@ -8,7 +8,7 @@ This guide walks through the full lifecycle of a run in the Find Object game, fr
 
 ## What this game is doing
 
-The game is a controlled visual-search task. Every round places one target and 55 distractors into a fixed 56-object array. The participant must locate the correct object, point the controller ray at it and press the trigger.
+The game is a controlled visual-search task. Every round places one target and 167 distractors into a reproducible random 168-object array. The participant must locate the correct object, point the controller ray at it and press the trigger.
 
 The important design property is that the run is not improvisational. The shelf layout, target schedule, and object combinations are deterministic. That makes the study repeatable and makes the analytics interpretable.
 
@@ -99,9 +99,9 @@ This means the experiment is deterministic across participants. Everyone gets th
 Each round contains:
 
 - 1 target object,
-- 13 same-color distractors,
-- 13 same-shape distractors,
-- the remaining neutral distractors needed to bring the total to 56 objects.
+- 39 same-color distractors,
+- 39 same-shape distractors,
+- the remaining neutral distractors needed to bring the total to 168 objects.
 
 The round record stores both the target and the full object array:
 

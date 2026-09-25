@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.XR;
+using System.Collections.Generic;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 /// <summary>
@@ -13,6 +15,11 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 /// </summary>
 public class HintGenerator : MonoBehaviour
 {
+    public const string AreaCorrectionPhrase = "Oh, there. You're in the right area. Keep looking here.";
+    readonly GazeZoneEntryGate m_ZoneEntry = new GazeZoneEntryGate();
+    readonly List<InputDevice> m_EyeDevices = new List<InputDevice>();
+    InputDevice m_EyeDevice;
+    float m_NextEyeSearch;
     const string k_Tag = "[HintGen]";
     const int k_WarmthCold = 0;
     const int k_WarmthTrack = 1;
@@ -75,6 +82,7 @@ public class HintGenerator : MonoBehaviour
 
     public void OnNewObjective()
     {
+        m_ZoneEntry.Reset();
         m_ObjectiveStartTime = Time.time;
         m_LastTipTime = Time.time - Mathf.Max(0f, k_TipInterval - k_FirstTipDelayAware);
         m_WrongCaptureTime = 0f;
@@ -101,6 +109,7 @@ public class HintGenerator : MonoBehaviour
     public void CancelPending()
     {
         m_TipsSuppressed = true;
+        m_ZoneEntry.Reset();
         m_WrongCaptureTime = 0f;
         m_LastHotEvidenceTime = -999f;
         m_LastAwareHintWarmth = -1;
@@ -146,6 +155,14 @@ public class HintGenerator : MonoBehaviour
             m_TimeOnCurrentZone = 0f;
         }
 
+        bool insideTargetZone = IsGazeInTargetPlane(out bool validGaze);
+        if (m_ZoneEntry.Update(validGaze, insideTargetZone, Time.timeAsDouble) &&
+            m_Voice.TryAreaCorrection(AreaCorrectionPhrase, AreaCorrectionStillRelevant))
+        {
+            m_ZoneEntry.MarkSpoken(Time.timeAsDouble);
+            m_LastTipTime = Time.time;
+            return;
+        }
         if (m_Voice.IsBusy) return;
 
         float now = Time.time;
@@ -249,6 +266,36 @@ public class HintGenerator : MonoBehaviour
                 return (info.shelfLevel, info.shelfColumn);
         }
         return (-1, -1);
+    }
+
+    bool AreaCorrectionStillRelevant() => !m_TipsSuppressed && m_GameManager != null &&
+        m_GameManager.SearchActive && IsGazeInTargetPlane(out _);
+
+    bool IsGazeInTargetPlane(out bool valid)
+    {
+        valid = false;
+        if (m_GameManager == null || !m_GameManager.RotationalBetaEnabled ||
+            m_GazeInteractor == null || !m_GazeInteractor.isActiveAndEnabled || !Application.isFocused) return false;
+        if (!m_EyeDevice.isValid && Time.time >= m_NextEyeSearch)
+        {
+            m_NextEyeSearch = Time.time + 1f;
+            InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.EyeTracking, m_EyeDevices);
+            if (m_EyeDevices.Count > 0) m_EyeDevice = m_EyeDevices[0];
+        }
+        if (!m_EyeDevice.isValid || !m_EyeDevice.TryGetFeatureValue(CommonUsages.isTracked, out bool tracked) || !tracked)
+            return false;
+        if (!TryGetTargetInfo(out var target) || target.planeId < 0) return false;
+        valid = true;
+        // Intersect the target's wall, including empty space between its objects.
+        Quaternion rotation = Quaternion.Euler(0, m_GameManager.SeatedForwardYaw + target.planeAzimuth, 0);
+        Vector3 normal = rotation * Vector3.forward;
+        Vector3 direction = m_GazeInteractor.transform.forward;
+        float denominator = Vector3.Dot(direction, normal);
+        if (denominator <= 0.0001f) return false;
+        float distance = Vector3.Dot(target.transform.position - m_GazeInteractor.transform.position, normal) / denominator;
+        if (distance <= 0 || distance > 10) return false;
+        Vector3 hit = m_GazeInteractor.transform.position + direction * distance;
+        return m_GameManager.IsInsideSearchPlane(hit, target.planeId);
     }
 
     // Keep for zone tracking in Update
@@ -484,6 +531,7 @@ public class HintGenerator : MonoBehaviour
         var phrases = new System.Collections.Generic.List<string>();
         foreach (var pool in new[] { k_GA_Hot_VeryClose, k_GA_Hot_Track, k_GA_Cold, k_GA_Colder_Track, k_GA_Colder_Cold })
             phrases.AddRange(pool);
+        phrases.Add(AreaCorrectionPhrase);
         return phrases.ToArray();
     }
 

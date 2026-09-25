@@ -245,7 +245,7 @@ public class TrialDataLogger : MonoBehaviour
         bool header = !File.Exists(path);
         using (var writer = new StreamWriter(path, true, s_Utf8NoBom))
         {
-            if (header) writer.WriteLine("trial_id,object_id,shape,color,row,column,x,y,z,is_target,layout,plane_id,plane_slot,plane_azimuth,origin_x,origin_y,origin_z,forward_yaw");
+            if (header) writer.WriteLine("trial_id,object_id,shape,color,row,column,x,y,z,is_target,layout,plane_id,plane_slot,plane_azimuth,origin_x,origin_y,origin_z,forward_yaw,layout_seed");
             foreach (var obj in m_GameManager.SpawnedObjects)
             {
                 var info = obj.GetComponent<SpawnableObjectInfo>(); if (info == null) continue;
@@ -253,7 +253,7 @@ public class TrialDataLogger : MonoBehaviour
                 bool target = info.shapeName == m_ObjectiveRecords[round].shape && info.colorName == m_ObjectiveRecords[round].color;
                 var origin = m_GameManager.SeatedOrigin;
                 string layout = m_GameManager.RotationalBetaEnabled ? RotationalSearchLayout.LayoutTag : "shelves_v1";
-                writer.WriteLine(FormattableString.Invariant($"{m_SessionId}_r{round:D2},{info.objectId},{info.shapeName},{info.colorName},{info.shelfLevel},{info.shelfColumn},{pos.x:F5},{pos.y:F5},{pos.z:F5},{(target ? 1 : 0)},{layout},{info.planeId},{info.planeSlot},{info.planeAzimuth:F1},{origin.x:F5},{origin.y:F5},{origin.z:F5},{m_GameManager.SeatedForwardYaw:F1}"));
+                writer.WriteLine(FormattableString.Invariant($"{m_SessionId}_r{round:D2},{info.objectId},{info.shapeName},{info.colorName},{info.shelfLevel},{info.shelfColumn},{pos.x:F5},{pos.y:F5},{pos.z:F5},{(target ? 1 : 0)},{layout},{info.planeId},{info.planeSlot},{info.planeAzimuth:F1},{origin.x:F5},{origin.y:F5},{origin.z:F5},{m_GameManager.SeatedForwardYaw:F1},{m_GameManager.LayoutSeed}"));
             }
         }
     }
