@@ -50,7 +50,7 @@ public class VoiceSynthesizer : MonoBehaviour
 
     [Serializable] class ClipAudit
     {
-        public string clip_id, voice_id, provider, model, text, content_version, perspective, perspective_version;
+        public string clip_id, voice_id, provider, model, text, content_version, perspective, perspective_version, effect_profile;
         public float duration_seconds, rms, peak, gain, achieved_rms, requested_rms;
         public bool level_limited;
     }
@@ -520,6 +520,9 @@ public class VoiceSynthesizer : MonoBehaviour
             }
             var samples = new float[clip.samples * clip.channels];
             if (!clip.GetData(samples, 0)) { RejectClip(clip, filePath, "Could not read decoded audio samples."); yield break; }
+            // Raw provider caches stay untouched. Replay captures this processed clip;
+            // normalization below measures the actual treated waveform in both modes.
+            InnerThoughtVoice.Process(samples, clip.channels, clip.frequency, wantSelfSimilar);
             double sum = 0; float peak = 0;
             foreach (float sample in samples) { sum += sample * sample; peak = Math.Max(peak, Math.Abs(sample)); }
             float rms = (float)Math.Sqrt(sum / Math.Max(1, samples.Length));
@@ -540,6 +543,7 @@ public class VoiceSynthesizer : MonoBehaviour
                 text = m_PreparingText, content_version = ContentVersion,
                 perspective = m_SetupAnnouncement ? "setup" : actualPerspective.ToString(),
                 perspective_version = VoicePromptText.Version,
+                effect_profile = InnerThoughtVoice.Profile(wantSelfSimilar),
                 duration_seconds = clip.length, rms = rms, peak = peak, gain = gain, achieved_rms = rms * gain,
                 requested_rms = requestedRms, level_limited = levelLimited });
             if (levelLimited && LibraryReady)
@@ -554,7 +558,7 @@ public class VoiceSynthesizer : MonoBehaviour
         m_AudioSource.volume = 0.7f;
         m_AudioSource.pitch = 1f;
         m_AudioSource.Play();
-        Telemetry?.Invoke("audio_playback_start", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};text={m_PreparingText}");
+        Telemetry?.Invoke("audio_playback_start", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};effect_profile={InnerThoughtVoice.Profile(wantSelfSimilar)};text={m_PreparingText}");
         while (m_AudioSource.isPlaying) yield return null;
         Telemetry?.Invoke("audio_playback_end", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};text={m_PreparingText}");
         m_ActiveClipKey = null;

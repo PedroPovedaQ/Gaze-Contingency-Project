@@ -25,6 +25,19 @@ class VoiceIsolationChecks
         Directory.CreateDirectory(root);
         try
         {
+            // Exercise real DSP: stereo separation, silence, no onset delay, and
+            // exact neutral bypass. Existing library tests check treated RMS/peaks.
+            var impulse = new float[4800 * 2]; impulse[0] = 0.5f;
+            var dryImpulse = (float[])impulse.Clone();
+            InnerThoughtVoice.Process(dryImpulse, 2, 48000, false);
+            for (int i = 0; i < impulse.Length; i++) Check(impulse[i] == dryImpulse[i], "neutral bypass is exact");
+            InnerThoughtVoice.Process(impulse, 2, 48000, true);
+            Check(impulse[0] > 0 && impulse[0] < 0.5f, "self effect preserves onset and softens impulse");
+            Check(impulse[1152 * 2] > 0.005f && impulse[2496 * 2] > 0.002f, "short thought reflections present");
+            for (int i = 1; i < impulse.Length; i += 2) Check(impulse[i] == 0, "no stereo crosstalk");
+            var silence = new float[4800];
+            InnerThoughtVoice.Process(silence, 1, 48000, true);
+            Check(Array.TrueForAll(silence, x => x == 0), "no residual audio across phrases");
             SessionConfig.ResetForNewParticipant();
             Check(SessionConfig.TrySetPerspective(VoicePerspective.External), "perspective can be selected before setup lock");
             SessionConfig.LockPerspective();
@@ -121,6 +134,15 @@ class VoiceIsolationChecks
             DownloadHandlerAudioClip.AlternatePeak = true;
             Drain(synth.PrepareLibraries(new[] { "test phrase", "another phrase" }, null, ok => prepared = ok));
             Check(prepared && synth.LibraryReady, "both libraries prepared");
+            var audits = (IEnumerable)typeof(VoiceSynthesizer)
+                .GetField("m_Audit", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth);
+            foreach (var audit in audits)
+            {
+                var type = audit.GetType();
+                bool clone = (string)type.GetField("provider").GetValue(audit) == "mistral";
+                Check((string)type.GetField("effect_profile").GetValue(audit) == (clone ? InnerThoughtVoice.Version : "dry"),
+                    "manifest identifies clone-only effect and dry neutral audio");
+            }
             var loaded = (System.Collections.Generic.Dictionary<string, AudioClip>)typeof(VoiceSynthesizer)
                 .GetField("m_PreparedClips", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth);
             double? matchedRms = null;
@@ -461,7 +483,7 @@ namespace UnityEngine
     public class AudioSource { public float spatialBlend, volume, pitch; public bool playOnAwake; int playPolls; public bool HoldPlayback; public int StopCalls; public bool isPlaying => HoldPlayback || playPolls-- > 0; public AudioClip clip; public void Play() { playPolls = 2; } public void Stop() { playPolls = 0; HoldPlayback = false; StopCalls++; } }
     public class AudioClip
     {
-        public float length = 1f; public int samples => m_Data.Length; public int channels = 1;
+        public float length = 1f; public int samples => m_Data.Length; public int channels = 1; public int frequency = 48000;
         float[] m_Data = new float[1000];
         public AudioClip(bool skewed = false, bool quiet = false) { for (int i=0; i<m_Data.Length; i++) m_Data[i] = skewed ? (i == 0 ? 1f : 0.02f) : quiet ? 0.001f : 0.2f; }
         public bool GetData(float[] data, int offset) { Array.Copy(m_Data, data, data.Length); return true; }
