@@ -16,6 +16,7 @@ public class HintGenerator : MonoBehaviour
     float m_LastTipTime;
     bool m_TipsSuppressed = true;
     string m_CurrentHint;
+    int m_LeftVariant, m_RightVariant;
     VoiceSynthesizer m_Voice;
     FindObjectGameManager m_GameManager;
     XRBaseInputInteractor m_GazeInteractor;
@@ -36,6 +37,10 @@ public class HintGenerator : MonoBehaviour
     public void OnNewObjective()
     {
         m_ZoneEntry.Reset();
+        // A reproducible starting phrase per participant/trial; each direction then
+        // cycles all four forms before repeating. Actual spoken text is logged.
+        int firstVariant = (ChallengeSet.ScheduleSeed % 4 + (m_GameManager != null ? m_GameManager.CurrentObjectiveIndex : 0)) % 4;
+        m_LeftVariant = m_RightVariant = firstVariant;
         m_CurrentHint = null;
         m_LastTipTime = Time.time - (k_TipInterval - k_FirstTipDelay);
         m_TipsSuppressed = false;
@@ -78,8 +83,10 @@ public class HintGenerator : MonoBehaviour
         if (!valid || inside || desired == null || m_Voice.IsBusy || Time.time - m_LastTipTime < k_TipInterval) return;
         m_LastTipTime = Time.time;
         m_CurrentHint = desired;
-        m_Voice.Speak(desired, "tip");
-        Debug.Log($"[HintGen] [{DirectionalHintPolicy.Version}] {desired}");
+        int variant = desired == DirectionalHintPolicy.LeftPhrase ? m_LeftVariant++ : m_RightVariant++;
+        string phrase = DirectionalHintPolicy.Variant(desired, variant);
+        m_Voice.Speak(phrase, "tip");
+        Debug.Log($"[HintGen] [{DirectionalHintPolicy.Version}] {phrase}");
     }
 
     string GetDirection()
@@ -143,8 +150,5 @@ public class HintGenerator : MonoBehaviour
         return false;
     }
 
-    public static string[] AllPhrases() => new[]
-    {
-        DirectionalHintPolicy.LeftPhrase, DirectionalHintPolicy.RightPhrase, AreaCorrectionPhrase
-    };
+    public static string[] AllPhrases() => DirectionalHintPolicy.AllPhrases();
 }

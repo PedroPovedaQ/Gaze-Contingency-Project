@@ -10,11 +10,11 @@
 | 135° | 2 |
 | 180° | 2 |
 
-The first block randomly assigns a left or right turn for each magnitude. The second block mirrors those assignments. Each block independently shuffles its trial order. `angle_pair` links mirrored assignments, not matching object identities. The existing saved voice order determines which voice receives each block; angle scheduling does not override that assignment.
+The first block randomly assigns a left or right turn for each magnitude. The second block mirrors those assignments. Each block independently shuffles two five-trial halves. Each half contains exactly one 0°, 45°, 90°, 135° and 180° assignment; the copy assigned to each half is also randomized. This stratified shuffle reduces early small-angle clustering while preserving the two-per-category block quota. `angle_pair` links mirrored assignments, not matching object identities. The existing saved voice order determines which voice receives each block; angle scheduling does not override that assignment.
 
 Every measured trial randomly selects a slot on its assigned wall and has a separate layout seed. All 168 objects retain random horizontal offsets and floor-relative heights with the existing spacing constraints. Target placement swaps object identities to put exactly one target into the planned slot without changing the distractor counts. Practice remains separate from the measured quotas.
 
-Randomization is deterministic per coded participant ID and schedule version `previous-wall-angle-v3-10-trials`, so a restart reproduces that participant's plan. It is intentionally not a fresh unrecorded draw on every retry. Different participants receive different seeded plans. The current schedule is ten measured trials per block, twenty total, plus two separate practice trials. This supersedes the earlier seven-trial beta and proposed 30-trial block counts.
+Randomization is deterministic per coded participant ID and schedule version `previous-wall-angle-v4-stratified-10-trials`, so a restart reproduces that participant's plan. It is intentionally not a fresh unrecorded draw on every retry. Different participants receive different seeded plans. The current schedule is ten measured trials per block, twenty total, plus two separate practice trials. This supersedes the earlier seven-trial beta and proposed 30-trial block counts.
 
 ## Readiness cross
 
@@ -42,4 +42,4 @@ Gaze must remain within the full 0.4 m cross panel plus 0.15 m padding on each e
 
 ## Verification
 
-The regression first failed because the old schedule omitted an absolute-angle category. Updated tests cover per-block quotas, actual target slots, mirrored pair assignments, full schedule export, participant restart reproducibility, changed seeds across participants, and unique per-trial layout seeds for 50 participant IDs. Existing distractor and randomized-height/spacing tests remain in use. Headset timing, listening, and initial-facing acceptance still require device testing.
+The regression first failed because the old schedule omitted an absolute-angle category. Updated tests cover one of every angle in each five-trial half, per-block quotas, actual target slots, mirrored pair assignments, full schedule export, participant restart reproducibility, changed seeds across participants, and unique per-trial layout seeds for 50 participant IDs. Existing distractor and randomized-height/spacing tests remain in use. Headset timing, listening, and initial-facing acceptance still require device testing.

@@ -17,7 +17,7 @@ public static class ChallengeSet
     public const int BlockCount = 2;
     public const int TotalRounds = RoundsPerBlock * BlockCount; // 20
     public const int ObjectsPerRound = 168;
-    public const string ScheduleVersion = "previous-wall-angle-v3-10-trials";
+    public const string ScheduleVersion = "previous-wall-angle-v4-stratified-10-trials";
     const int k_PlaneCount = 8;
     const int k_ObjectsPerPlane = ObjectsPerRound / k_PlaneCount;
     // Optional short test run: 0 means use all 20 trials. A shorter run will not
@@ -205,18 +205,29 @@ public static class ChallengeSet
         for (int i = 0; i < turnSteps.Length; i++)
             turnSteps[i] = magnitudes[i] == 0 || rng.Next(2) == 0 ? magnitudes[i] : (8 - magnitudes[i]) % 8;
 
-        // 2. Shuffle pair IDs separately within each block (Fisher–Yates shuffle).
-        // Work backward, swap each entry with a randomly chosen entry at/before it.
-        // Shuffling changes order only: it cannot add or remove an angle assignment.
+        // 2. Randomize each five-trial half separately. Each half contains one of
+        // every |theta|, so early trials cannot exhaust the 0°/45° quota in a cluster.
+        // First coin-flip which copy of each magnitude goes in each half, then use
+        // Fisher–Yates within each half. Block two independently orders the same
+        // pair IDs; its directions are still mirrored below.
         var pairOrder = new int[TotalRounds];
         for (int block = 0; block < BlockCount; block++)
         {
             int start = block * RoundsPerBlock;
-            for (int i = 0; i < RoundsPerBlock; i++) pairOrder[start + i] = i;
-            for (int i = RoundsPerBlock - 1; i > 0; i--)
+            for (int i = 0; i < 5; i++)
             {
-                int j = rng.Next(i + 1);
-                (pairOrder[start + i], pairOrder[start + j]) = (pairOrder[start + j], pairOrder[start + i]);
+                bool swapCopies = rng.Next(2) == 0;
+                pairOrder[start + i] = i + (swapCopies ? 5 : 0);
+                pairOrder[start + 5 + i] = i + (swapCopies ? 0 : 5);
+            }
+            for (int half = 0; half < 2; half++)
+            {
+                int offset = start + half * 5;
+                for (int i = 4; i > 0; i--)
+                {
+                    int j = rng.Next(i + 1);
+                    (pairOrder[offset + i], pairOrder[offset + j]) = (pairOrder[offset + j], pairOrder[offset + i]);
+                }
             }
         }
 

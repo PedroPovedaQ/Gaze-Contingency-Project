@@ -84,7 +84,7 @@
 \say{SURVEY ITEM / AGENT GENDER PREFERENCE}{``What gender presentation would you prefer for the agent's voice?''}
 \say{SURVEY ITEM / AGENT ACCENT PREFERENCE}{``What accent would you prefer the agent's voice to have?''}
 
-\action{ACTION / CANDIDATE PREPARATION}{Save the requested preferences and configure the selected voice for the participant-preferred block.}
+\action{ACTION / CANDIDATE PREPARATION}{Save the requested preferences and configure the selected voice for the participant-preferred block. Implemented pilot setup: first select the agent's gender presentation, then select one of the two voices offered for that gender. Let the participant hear the sample, switch voices if desired, and confirm the choice before recording. The current choices are Eric or Roger (male) and Janet or Sarah (female); these are American-accent candidates. Record a requested accent separately if it is not offered.}
 \say{SAY}{``We will now record the short voice sample described in the consent form. After the tone, please read the displayed passage in your usual speaking voice.''}
 
 \say{ASK / AUDIO CHECK}{``Can you hear the voice clearly and at a comfortable volume?''}
@@ -102,7 +102,7 @@
 \clearpage
 
 \step{5. Familiarization}
-\action{ACTION}{At the 360 search start checkpoint, seat the participant at the intended center facing the chosen room-front reference. Release the trigger, then press Trigger / Enter to center and begin. Record the reference; do not recenter to wherever the participant happens to face later.}
+\action{ACTION}{At the 360 search start checkpoint, seat the participant at the intended center facing the chosen room-front reference. Point the controller ray at \emph{Center and begin}, then pull the trigger. Record the reference; do not recenter to wherever the participant happens to face later.}
 \say{SAY}{``Objects will appear around you, and you will be able to turn in your chair through all 360 degrees. Find the described object that the agent asks you to find. You will turn while staying seated, point the controller ray at the matching object to highlight it, then press the trigger to select it. ''}
 
 \begin{center}
@@ -132,7 +132,7 @@
 \step{6 First task block}
 \action{CURRENT SCHEDULE / PROTOCOL PROPOSAL}{10 experimental trials in this voice block; practice trials are separate. Each absolute target-wall angle ($|\theta| = 0^\circ, 45^\circ, 90^\circ, 135^\circ, 180^\circ$) will occur twice. Angles will be measured from the readiness cross on the previous target wall to the next target wall center. Verify the installed build schedule before participant use.}
 \action{IMPLEMENTED READINESS GATE / PILOT VERIFICATION}{Before each trial, the participant will look at the entire readiness cross until its left-to-right fill completes. The cross will stay at the center of the previous target wall. One second of continuous valid gaze within its padded area and completion of the target announcement will both be required. Looking away, tracking loss or pausing will reset the fill. Search timing will begin only when the objects appear. Confirm headset usability before participant use.}
-\action{ANGLE ASSIGNMENT AND RECORDING}{Trial order and object heights will be randomized using recorded seeds. The second block will mirror left/right wall assignments and independently shuffle trial order while preserving the same absolute-angle counts. For example, a start wall at $315^\circ$ and target wall at $0^\circ$ will give signed $\theta=+45^\circ$ and $|\theta|=45^\circ$. Confirm that the trial schedule and actual object positions are saved; exact object bearings and measured head rotation are separate from wall-angle categories.}
+\action{ANGLE ASSIGNMENT AND RECORDING}{Trial order and object heights will be randomized using recorded seeds. Within each block, trials 1--5 and 6--10 will each include one of every absolute wall-angle category, in randomized order. The second block will mirror left/right wall assignments and independently shuffle trial order while preserving the same absolute-angle counts. For example, a start wall at $315^\circ$ and target wall at $0^\circ$ will give signed $\theta=+45^\circ$ and $|\theta|=45^\circ$. Confirm that the trial schedule and actual object positions are saved; exact object bearings and measured head rotation are separate from wall-angle categories.}
 \action{RESEARCHER SETTINGS}{Confirm the saved first voice and planned trial schedule. Keep object layout, selection method, guidance policy and the finalized prompt wording constant across voices.}
 \say{SAY}{``We will now begin the first task block. Find each target as quickly and accurately as you comfortably can. Stay seated and use the same controller ray and trigger selection you practiced. Tell me if you need to pause.''}
 \action{ACTION}{Start block; monitor safety.}

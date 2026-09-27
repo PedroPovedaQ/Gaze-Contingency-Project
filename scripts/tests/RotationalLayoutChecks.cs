@@ -46,6 +46,15 @@ class RotationalLayoutChecks
             try{RotationalSearchLayout.Build(1.5f,0.1f,invalid);}catch(ArgumentOutOfRangeException){rejected=true;}
             Check(rejected,"invalid height rejected");
         }
+        foreach (string direction in new[] { "Look left.", "Look right." })
+        {
+            var variants = new System.Collections.Generic.HashSet<string>();
+            for (int i = 0; i < 4; i++) variants.Add(DirectionalHintPolicy.Variant(direction, i));
+            Check(variants.Count == 4, "original plus three distinct alternatives in each direction");
+            Check(DirectionalHintPolicy.Variant(direction, 4) == direction, "phrases cycle before repeating");
+            foreach (var phrase in variants)
+                Check(phrase.Contains(direction == "Look left." ? "left" : "right"), "variant preserves direction");
+        }
         Check(DirectionalHintPolicy.Direction(0,1,-1,0) == "Look left.", "left from forward gaze");
         Check(DirectionalHintPolicy.Direction(0,1,1,0) == "Look right.", "right from forward gaze");
         Check(DirectionalHintPolicy.Direction(1,0,0,1) == "Look left.", "rotated gaze reference");

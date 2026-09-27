@@ -154,12 +154,33 @@ class VoiceIsolationChecks
             Check(UnityWebRequest.Requests.Count == 1 && UnityWebRequest.Requests[0].Contains(Path.GetFileName(female)), "female cache preserved");
             SessionConfig.ParticipantId = "P001";
             Application.TestPath = root;
+            var voiceKeys = new System.Collections.Generic.HashSet<string>();
+            foreach (var gender in new[] { NeutralVoiceProfile.Female, NeutralVoiceProfile.Male })
+                for (int option = 0; option < 2; option++)
+                {
+                    SessionConfig.SelectNeutralVoice(gender, option);
+                    Check(voiceKeys.Add(Cache(synth, "el-" + SessionConfig.NeutralVoiceId)), "all four neutral voices have distinct cache keys");
+                    Check(!string.IsNullOrEmpty(SessionConfig.NeutralVoiceName), "every voice choice is named");
+                }
+            SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Female, 0);
             SessionConfig.ConfigureVoiceBlocks();
             Check(SessionConfig.NeutralFirst, "odd participant neutral first");
             Check(SessionConfig.VoiceForRound(9) == VoiceCondition.Generic && SessionConfig.VoiceForRound(10) == VoiceCondition.SelfSimilar, "block boundary after ten trials");
             File.WriteAllText(Path.Combine(SessionConfig.ParticipantPath, "voice-order-v1.txt"), "selfsimilar_then_neutral");
             SessionConfig.ConfigureVoiceBlocks();
             Check(!SessionConfig.NeutralFirst, "persisted assignment wins on restart");
+            SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Male, 1);
+            SessionConfig.ConfigureVoiceBlocks(replaceNeutralSelection: true);
+            Check(SessionConfig.NeutralVoiceName == "Roger" && !SessionConfig.NeutralFirst,
+                "explicit re-selection replaces saved gender/voice without changing block order");
+            SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Female, 0);
+            SessionConfig.ConfigureVoiceBlocks();
+            Check(SessionConfig.NeutralVoiceName == "Roger", "restart restores the exact saved voice option");
+            File.Delete(Path.Combine(SessionConfig.ParticipantPath, "neutral-choice-v2.txt"));
+            File.WriteAllText(Path.Combine(SessionConfig.ParticipantPath, "neutral-profile-v1.txt"), "Female");
+            SessionConfig.ConfigureVoiceBlocks();
+            Check(SessionConfig.NeutralVoiceOption == 0 && SessionConfig.NeutralProfile == NeutralVoiceProfile.Female,
+                "legacy gender-only assignments migrate to the original voice");
             SessionConfig.ParticipantId = "P002"; SessionConfig.ConfigureVoiceBlocks();
             Check(!SessionConfig.NeutralFirst, "even participant self first");
             provider.HasKey = true; provider.Audio = new byte[120];
@@ -414,6 +435,32 @@ class VoiceIsolationChecks
                 Check(angleCounts[0, angle] > 0, "every absolute angle is covered");
                 Check(angleCounts[0, angle] == angleCounts[1, angle], "absolute-angle counts match between blocks");
             }
+            // Selection previews bypass library readiness, cancel prior prepared
+            // content, and always request the chosen neutral provider (never a clone).
+            foreach (var gender in new[] { NeutralVoiceProfile.Male, NeutralVoiceProfile.Female })
+                for (int option = 0; option < 2; option++)
+                {
+                    SessionConfig.SelectNeutralVoice(gender, option);
+                    SessionConfig.Voice = VoiceCondition.SelfSimilar;
+                    provider.Calls = 0; UnityWebRequest.Requests.Clear();
+                    synth.PreviewNeutralVoice();
+                    Check(synth.IsBusy && !synth.LibraryReady, "preview waits for audio and invalidates old library");
+                    Drain(MonoBehaviour.LastRoutine);
+                    Check(string.IsNullOrEmpty(synth.LastError) && provider.Calls == 0 &&
+                        UnityWebRequest.Requests.Exists(url => url.EndsWith(SessionConfig.NeutralVoiceId)),
+                        "preview uses the exact selected neutral voice even in self-similar condition");
+                }
+            SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Male, 1);
+            SessionConfig.ResetForNewParticipant();
+            Check(SessionConfig.NeutralVoiceOption == 0 && SessionConfig.NeutralProfile == NeutralVoiceProfile.Female,
+                "new participant clears prior voice choice");
+            string[] neutralVariants = { "Look to your left.", "Look to your right.", "Try looking left.", "Try looking right.", "Search to your left.", "Search to your right." };
+            string[] selfVariants = { "I need to look to my left.", "I need to look to my right.", "I'll try looking left.", "I'll try looking right.", "I need to search to my left.", "I need to search to my right." };
+            for (int i = 0; i < neutralVariants.Length; i++)
+            {
+                Check(VoicePromptText.FormatForVoice(neutralVariants[i], VoiceCondition.Generic) == neutralVariants[i], "neutral alternative remains external");
+                Check(VoicePromptText.FormatForVoice(neutralVariants[i], VoiceCondition.SelfSimilar) == selfVariants[i], "self-similar alternative is first person");
+            }
             for (int participant = 1; participant <= 50; participant++)
             {
                 SessionConfig.ParticipantId = $"P{participant:D3}";
@@ -434,6 +481,12 @@ class VoiceIsolationChecks
                         Check((mirror.SignedTheta == -trial.SignedTheta || trial.AbsoluteTheta == 180) && mirror.AbsoluteTheta == trial.AbsoluteTheta,
                             "paired angles mirror across the two blocks");
                     }
+                }
+                for (int half = 0; half < 4; half++)
+                {
+                    var halfAngles = new System.Collections.Generic.HashSet<int>();
+                    for (int i = 0; i < 5; i++) halfAngles.Add(schedule[half * 5 + i].AbsoluteTheta);
+                    Check(halfAngles.Count == 5, "every five trials cover all absolute angles without early clustering");
                 }
                 int[] quota = { 2, 2, 2, 2, 2 };
                 for (int a = 0; a < 5; a++) Check(firstCounts[a] == quota[a] && secondCounts[a] == quota[a], "fixed per-block quotas");

@@ -500,6 +500,9 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine(FormattableString.Invariant($"  \"condition\": \"{SessionConfig.ConditionLabel}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"voice_condition\": \"{(SessionConfig.VoiceBlocksEnabled ? "counterbalanced" : SessionConfig.VoiceTag)}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"neutral_voice_profile\": \"{SessionConfig.NeutralProfile.ToString().ToLowerInvariant()}\","));
+        sb.AppendLine($"  \"neutral_voice_name\": \"{SessionConfig.NeutralVoiceName}\",");
+        sb.AppendLine($"  \"neutral_voice_id\": \"{SessionConfig.NeutralVoiceId}\",");
+        sb.AppendLine($"  \"neutral_voice_option\": {SessionConfig.NeutralVoiceOption},");
         sb.AppendLine(FormattableString.Invariant($"  \"session_id\": \"{m_SessionId}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"timestamp\": \"{System.DateTime.Now:O}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"challenge_set\": \"{ChallengeSet.ScheduleVersion}\","));

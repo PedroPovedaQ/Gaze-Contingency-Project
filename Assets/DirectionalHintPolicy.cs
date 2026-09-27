@@ -6,7 +6,25 @@ public static class DirectionalHintPolicy
     public const string LeftPhrase = "Look left.";
     public const string RightPhrase = "Look right.";
     public const string AreaPhrase = "You're in the correct area. Keep looking.";
-    public const string Version = "gaze-directional-v1";
+    public const string Version = "gaze-directional-v2-variants";
+
+    static readonly string[] k_Left = { LeftPhrase, "Look to your left.", "Try looking left.", "Search to your left." };
+    static readonly string[] k_Right = { RightPhrase, "Look to your right.", "Try looking right.", "Search to your right." };
+
+    // Separate semantic direction from wording, so changing phrasing never looks
+    // like a gaze reversal and accidentally interrupts the current hint.
+    public static string Variant(string direction, int index)
+    {
+        if (direction != LeftPhrase && direction != RightPhrase) return direction;
+        int slot = ((index % 4) + 4) % 4;
+        return (direction == LeftPhrase ? k_Left : k_Right)[slot];
+    }
+
+    public static string[] AllPhrases() => new[]
+    {
+        LeftPhrase, RightPhrase, "Look to your left.", "Look to your right.",
+        "Try looking left.", "Try looking right.", "Search to your left.", "Search to your right.", AreaPhrase
+    };
 
     public static string Direction(float gazeX, float gazeZ, float targetX, float targetZ)
     {

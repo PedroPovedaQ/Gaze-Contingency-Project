@@ -7,16 +7,14 @@ using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.UI;
 
 /// <summary>
-/// On-entry launch-mode picker: choose Neutral (male/female ElevenLabs) or
-/// Self-Similar (Voxtral clone of the participant) voice. Shown once at startup
+/// On-entry setup: choose neutral gender, then one of two voices, hear/confirm
+/// the sample, then enroll the self-similar voice. Shown once at startup
 /// as a small world-space panel in front of the camera.
 ///
-/// Selection:
-///   Trigger  or keyboard [1]  -> Collaborative perspective / first option
-///   A/Primary or keyboard [2] -> External perspective / second option
+/// Point at a visible control, then pull the trigger to select it.
 ///
 /// The researcher may also just call SelectNeutralMale()/SelectNeutralFemale()/SelectSelfSimilar() or set
-/// the default in the inspector (m_DefaultMode) and skip the panel via m_AutoConfirmDefault.
+/// the default gender in the inspector; a named voice still needs confirmation.
 /// </summary>
 public class VoiceModeSelector : MonoBehaviour
 {
@@ -31,8 +29,7 @@ public class VoiceModeSelector : MonoBehaviour
         "Press the trigger to select the matching object. Take a short pause. Get ready for the next round.";
 
     [Header("Optional overrides")]
-    [SerializeField] VoiceCondition m_DefaultMode = VoiceCondition.Generic;
-    [SerializeField] bool m_AutoConfirmDefault = false; // skip the panel, use m_DefaultMode
+    [SerializeField] bool m_AutoConfirmDefault = false; // preselect gender; still ask for a voice
     [SerializeField] int m_RecordSeconds = 40;
 
     [SerializeField] NeutralVoiceProfile m_DefaultNeutralProfile = NeutralVoiceProfile.Female;
@@ -40,7 +37,8 @@ public class VoiceModeSelector : MonoBehaviour
     public event System.Action SelectionCompleted;
     public bool IsComplete => m_Phase == Phase.Done;
 
-    enum Phase { WaitingToStart, Choosing, ChoosingNeutral, Enrolling, EnrollmentFailed, Preparing, PreparationFailed, CheckingNeutral, CheckingSelf, Cancelled, Done }
+    enum Phase { WaitingToStart, Choosing, ChoosingNeutral, ChoosingNeutralVoice, PreviewingNeutral, Enrolling, EnrollmentFailed, Preparing, PreparationFailed, CheckingNeutral, CheckingSelf, Cancelled, Done }
+    NeutralVoiceProfile m_ChosenGender;
     Phase m_Phase = Phase.WaitingToStart;
 
     VoiceEnrollment m_Enrollment;
@@ -54,11 +52,12 @@ public class VoiceModeSelector : MonoBehaviour
     float m_StartReleasedAt = -1f;
     float m_SetupInputAfter;
     readonly List<InputDevice> m_Devices = new List<InputDevice>();
-    bool m_FirstPoll = true;
-    bool m_PrevTrigger;
-    bool m_PrevPrimary;
-    bool m_PrevSecondary;
     bool m_PerspectiveChosen;
+    readonly List<Button> m_Choices = new();
+    Phase m_RenderedPhase = (Phase)(-1);
+    int m_RenderedOption = -1;
+    Button m_AcceptButton;
+
 
     public void Initialize(VoiceEnrollment enrollment, VoiceSynthesizer synth = null)
     {
@@ -75,7 +74,6 @@ public class VoiceModeSelector : MonoBehaviour
         if (m_Phase != Phase.WaitingToStart || !m_StartArmed || !Application.isFocused) return;
         m_StartArmed = false;
         m_Phase = Phase.Choosing;
-        m_FirstPoll = true;
         m_SetupInputAfter = Time.realtimeSinceStartup + 0.75f;
         m_FinishRecordingButton.gameObject.SetActive(false);
         // Wording is fixed by voice condition: external vs first-person singular.
@@ -132,6 +130,7 @@ public class VoiceModeSelector : MonoBehaviour
         image.color = new Color(0.12f, 0.4f, 0.65f, 1f);
         m_FinishRecordingButton = buttonGO.AddComponent<Button>();
         m_FinishRecordingButton.targetGraphic = image;
+        RayMenuFeedback.Attach(m_FinishRecordingButton);
         m_FinishRecordingButton.onClick.AddListener(() =>
         {
             if (m_Phase == Phase.WaitingToStart) StartSetup();
@@ -143,7 +142,7 @@ public class VoiceModeSelector : MonoBehaviour
         labelRect.sizeDelta = buttonRect.sizeDelta;
         var label = labelGO.AddComponent<TextMeshProUGUI>();
         m_ActionLabel = label;
-        label.text = "Finish recording · Trigger / 1";
+        label.text = "Finish recording";
         label.fontSize = 25;
         label.alignment = TextAlignmentOptions.Center;
         label.raycastTarget = false;
@@ -157,7 +156,6 @@ public class VoiceModeSelector : MonoBehaviour
         if (focused) return;
         m_StartArmed = false;
         m_StartReleasedAt = -1f;
-        m_FirstPoll = true;
     }
 
     void OnApplicationPause(bool paused)
@@ -207,83 +205,105 @@ public class VoiceModeSelector : MonoBehaviour
                 m_Enrollment.Current == VoiceEnrollment.State.Recording;
             m_FinishRecordingButton.gameObject.SetActive(recording);
             m_FinishRecordingButton.interactable = recording && m_Enrollment.CanFinishRecording;
-            m_ActionLabel.text = "Finish recording · Trigger / 1";
+            m_ActionLabel.text = "Finish recording";
         }
-        if (!Application.isFocused || Time.realtimeSinceStartup < m_SetupInputAfter)
-        { m_FirstPoll = true; return; }
-        if (m_Phase != Phase.Choosing && m_Phase != Phase.ChoosingNeutral && m_Phase != Phase.Enrolling &&
-            m_Phase != Phase.EnrollmentFailed && m_Phase != Phase.PreparationFailed &&
-            m_Phase != Phase.CheckingNeutral && m_Phase != Phase.CheckingSelf) return;
+        RefreshChoices();
+        if (m_Phase == Phase.PreviewingNeutral && m_Synth != null && !m_Synth.IsBusy && !string.IsNullOrEmpty(m_Synth.LastError))
+            SetText("<b>Voice sample unavailable</b>\n\nTry the other voice, or select Back and retry.");
+        bool available = Application.isFocused && Time.realtimeSinceStartup >= m_SetupInputAfter;
+        foreach (var button in m_Choices) button.interactable = available;
+        if (m_AcceptButton != null)
+            m_AcceptButton.interactable = available && m_Synth != null && !m_Synth.IsBusy && string.IsNullOrEmpty(m_Synth.LastError);
+    }
 
-        bool trig = ReadTrigger();
-        bool prim = ReadPrimary();
-        bool secondary = ReadButton(CommonUsages.secondaryButton);
-
-        // Ignore any button already held when the panel first appears, so a
-        // trigger held from the previous screen can't auto-select.
-        if (m_FirstPoll)
+    // Rebuild only on a screen/voice change; an old pointer press cannot click a new control.
+    void RefreshChoices()
+    {
+        if (m_CanvasGO == null || (m_RenderedPhase == m_Phase && m_RenderedOption == SessionConfig.NeutralVoiceOption)) return;
+        foreach (var button in m_Choices)
         {
-            m_PrevTrigger = trig; m_PrevPrimary = prim; m_PrevSecondary = secondary; m_FirstPoll = false;
-            return;
+            button.gameObject.SetActive(false);
+            if (Application.isPlaying) Destroy(button.gameObject); else DestroyImmediate(button.gameObject);
         }
-
-        bool trigEdge = trig && !m_PrevTrigger;   // rising edge only
-        bool primEdge = prim && !m_PrevPrimary;
-        bool secondaryEdge = secondary && !m_PrevSecondary;
-        m_PrevSecondary = secondary;
-        m_PrevTrigger = trig; m_PrevPrimary = prim;
-
-        if (m_Phase == Phase.Enrolling)
+        m_Choices.Clear(); m_AcceptButton = null;
+        m_RenderedPhase = m_Phase; m_RenderedOption = SessionConfig.NeutralVoiceOption;
+        bool cards = m_Phase == Phase.ChoosingNeutralVoice;
+        m_Text.rectTransform.sizeDelta = new Vector2(660, cards ? 120 : m_Phase == Phase.Enrolling ? 350 : 220);
+        m_Text.rectTransform.anchoredPosition = new Vector2(0, cards ? 160 : m_Phase == Phase.Enrolling ? 40 : 100);
+        switch (m_Phase)
         {
-            if (trigEdge || KeyPressed(1)) FinishRecording();
-            return;
+            case Phase.ChoosingNeutral:
+                Choice("Male", SelectNeutralMale, -170, -100, 300);
+                Choice("Female", SelectNeutralFemale, 170, -100, 300);
+                break;
+            case Phase.ChoosingNeutralVoice:
+                for (int i = 0; i < 2; i++)
+                {
+                    int option = i;
+                    string name = SessionConfig.NeutralName(m_ChosenGender, i);
+                    var button = Choice(name, () => SelectNeutralVoiceOption(option), i == 0 ? -165 : 165, -15, 280, 210);
+                    var avatar = new GameObject("Avatar", typeof(RectTransform), typeof(RawImage));
+                    avatar.transform.SetParent(button.transform, false);
+                    avatar.GetComponent<RectTransform>().sizeDelta = new Vector2(140, 140);
+                    avatar.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 24);
+                    avatar.GetComponent<RawImage>().texture = Resources.Load<Texture2D>("VoiceAvatars/" + name);
+                    avatar.GetComponent<RawImage>().raycastTarget = false;
+                    button.GetComponentInChildren<TextMeshProUGUI>().rectTransform.anchoredPosition = new Vector2(0, -75);
+                }
+                Choice("Back", SelectGeneric, 0, -190, 240);
+                break;
+            case Phase.PreviewingNeutral:
+                m_AcceptButton = Choice("Use this voice", ConfirmNeutralVoice, 0, -80, 440);
+                Choice("Hear " + SessionConfig.NeutralName(m_ChosenGender, 1 - SessionConfig.NeutralVoiceOption),
+                    () => SelectNeutralVoiceOption(1 - SessionConfig.NeutralVoiceOption), -170, -175, 300);
+                Choice("Back", SelectGeneric, 170, -175, 300);
+                break;
+            case Phase.EnrollmentFailed:
+                Choice("Record again", SelectSelfSimilar, -170, -175, 300);
+                Choice("Cancel session", CancelSetup, 170, -175, 300);
+                break;
+            case Phase.PreparationFailed:
+                if (m_Synth != null && !m_Synth.ProviderPolicyBlocked)
+                {
+                    Choice("Retry audio", RetryPreparation, -170, -90, 300);
+                    Choice("Record again", SelectSelfSimilar, 170, -90, 300);
+                }
+                Choice("Cancel session", CancelSetup, 0, -185, 300);
+                break;
+            case Phase.CheckingNeutral:
+            case Phase.CheckingSelf:
+                m_AcceptButton = Choice("Accept audio", ConfirmAudioSample, 0, -80, 440);
+                Choice("Replay", ReplayAudioSample, -170, -175, 300);
+                Choice("Restart setup", SelectGeneric, 170, -175, 300);
+                break;
         }
+    }
 
-        if (m_Phase == Phase.PreparationFailed)
-        {
-            if (m_Synth.ProviderPolicyBlocked)
-            {
-                if (primEdge || KeyPressed(2)) CancelSetup();
-                return;
-            }
-            if (trigEdge || KeyPressed(1)) StartCoroutine(PrepareVoices());
-            else if (primEdge || KeyPressed(2)) SelectSelfSimilar();
-            return;
-        }
+    Button Choice(string label, UnityEngine.Events.UnityAction action, float x, float y, float width, float height = 64)
+    {
+        var button = RayMenuFeedback.CreateButton(m_CanvasGO.transform, label, new Vector2(x, y), new Vector2(width, height), action);
+        m_Choices.Add(button);
+        return button;
+    }
+
+    public void RetryPreparation()
+    {
+        if (m_Phase == Phase.PreparationFailed && m_Synth != null && !m_Synth.ProviderPolicyBlocked)
+            StartCoroutine(PrepareVoices());
+    }
+
+    public void ReplayAudioSample()
+    {
         if (m_Phase == Phase.CheckingNeutral || m_Phase == Phase.CheckingSelf)
-        {
-            if (trigEdge || KeyPressed(1)) ConfirmAudioSample();
-            else if (primEdge || KeyPressed(2)) m_Synth.Speak(VoiceAssistantController.AudioCheckLine, "audio_check");
-            else if (secondaryEdge || KeyPressed(3)) SelectGeneric();
-            return;
-        }
-
-        if (m_Phase == Phase.EnrollmentFailed)
-        {
-            if (trigEdge || KeyPressed(1)) SelectSelfSimilar();
-            else if (primEdge || KeyPressed(2)) CancelSetup();
-            return;
-        }
-
-        if (m_Phase == Phase.ChoosingNeutral)
-        {
-            if (trigEdge || KeyPressed(1)) SelectNeutralMale();
-            else if (primEdge || KeyPressed(2)) SelectNeutralFemale();
-            return;
-        }
-
-        if (trigEdge || KeyPressed(1)) { SelectGeneric(); return; }
-        if (primEdge || KeyPressed(2)) { SelectSelfSimilar(); return; }
+            m_Synth?.Speak(VoiceAssistantController.AudioCheckLine, "audio_check");
     }
 
     void BeginVoiceSelection()
     {
         m_Phase = Phase.Choosing;
-        m_FirstPoll = true;
         if (m_AutoConfirmDefault)
         {
-            if (m_DefaultMode == VoiceCondition.SelfSimilar) SelectSelfSimilar();
-            else SelectNeutral(m_DefaultNeutralProfile);
+            SelectNeutral(m_DefaultNeutralProfile);
             return;
         }
         SelectGeneric();
@@ -292,11 +312,9 @@ public class VoiceModeSelector : MonoBehaviour
     public void SelectGeneric()
     {
         if (!m_PerspectiveChosen || m_Phase == Phase.WaitingToStart || m_Phase == Phase.Done || m_Phase == Phase.Enrolling || m_Phase == Phase.Preparing) return;
-        m_Synth?.Stop();
+        m_Synth?.ResetVoicePreparation();
         m_Phase = Phase.ChoosingNeutral;
-        m_FirstPoll = true;
-        SetText("<b>Neutral voice</b>\n\nPull <b>Trigger</b> (or press 1): Male\n" +
-                "Press <b>A / X</b> (or press 2): Female");
+        SetText("<b>Choose your agent’s voice</b>\n\nPoint at your preferred gender, then pull the trigger.");
     }
 
     public void SelectNeutralMale() => SelectNeutral(NeutralVoiceProfile.Male);
@@ -306,11 +324,33 @@ public class VoiceModeSelector : MonoBehaviour
     {
         if (!m_PerspectiveChosen || m_Phase == Phase.WaitingToStart || m_Phase == Phase.Done || m_Phase == Phase.Enrolling || m_Phase == Phase.Preparing) return;
         m_Synth?.Stop();
-        SessionConfig.NeutralProfile = profile;
+        m_ChosenGender = profile;
+        m_Phase = Phase.ChoosingNeutralVoice;
+        SetText($"<b>Choose a {profile.ToString().ToLowerInvariant()} voice</b>\nPoint at a voice. Pull the trigger to hear it.");
+    }
+
+    public void SelectNeutralVoiceOption(int option)
+    {
+        if (m_Phase != Phase.ChoosingNeutralVoice && m_Phase != Phase.PreviewingNeutral) return;
+        if (option < 0 || option > 1) return;
+        SessionConfig.SelectNeutralVoice(m_ChosenGender, option);
         SessionConfig.Voice = VoiceCondition.Generic;
+        m_Phase = Phase.PreviewingNeutral;
+        SetText($"<b>Listen: {SessionConfig.NeutralVoiceName}</b>\n\nWait for the sample to finish, then select Use this voice.\nYou can also hear the other voice or go back.");
+        m_Synth?.PreviewNeutralVoice();
+    }
+
+    public void ConfirmNeutralVoice()
+    {
+        if (m_Phase != Phase.PreviewingNeutral || m_Synth == null || m_Synth.IsBusy) return;
+        if (!string.IsNullOrEmpty(m_Synth.LastError))
+        {
+            SetText("<b>Voice sample unavailable</b>\nTry the other voice, or go back and retry.");
+            return;
+        }
         SessionConfig.SelfSimilarEnrollmentPending = false;
-        Debug.Log($"{k_Tag} Neutral {profile} voice selected");
-        try { SessionConfig.ConfigureVoiceBlocks(); }
+        Debug.Log($"{k_Tag} Neutral {SessionConfig.NeutralProfile} / {SessionConfig.NeutralVoiceName} voice selected");
+        try { SessionConfig.ConfigureVoiceBlocks(replaceNeutralSelection: true); }
         catch (System.Exception e) { ShowEnrollmentFailure(e.Message); return; }
         SelectSelfSimilar();
     }
@@ -417,24 +457,23 @@ public class VoiceModeSelector : MonoBehaviour
             ok => ready = ok, VoiceAssistantController.PhraseLibrary());
         if (!ready)
         {
-            m_Phase = Phase.PreparationFailed; m_FirstPoll = true;
+            m_Phase = Phase.PreparationFailed;
             if (m_Synth.ProviderPolicyBlocked)
             {
-                SetText($"<b>Voice provider blocked a phrase</b>\n{m_Synth.PreparationStage}\nThe provider rejected study text under its content policy. Ask the researcher to resolve this with the provider. Recording again will not resolve this text rejection.\n\nA / X / 2: Cancel session");
+                SetText($"<b>Voice provider blocked a phrase</b>\n{m_Synth.PreparationStage}\nThe provider rejected study text under its content policy. Ask the researcher to resolve this with the provider. Recording again will not resolve this text rejection.\n\nSelect Cancel session below.");
                 yield break;
             }
             string reason = m_Synth.LastError ?? "No error details were returned.";
             if (reason.Length > 240) reason = reason.Substring(0, 240) + "…";
             reason = reason.Replace("<", "‹").Replace(">", "›");
-            SetText($"<b>Audio preparation failed</b>\n{m_Synth.PreparationStage}\n{reason}\n\nTrigger / 1: Retry preparation\nA / X / 2: Record voice again");
+            SetText($"<b>Audio preparation failed</b>\n{m_Synth.PreparationStage}\n{reason}\n\nRetry audio preparation or record your voice again.");
             yield break;
         }
         SetText("<b>Voice setup ready</b>\nNext, check the audio. Remaining prompts load in the background.");
         yield return m_Synth.SpeakProcessingStatus(true);
         m_Phase = Phase.CheckingNeutral;
         SessionConfig.Voice = VoiceCondition.Generic;
-        m_FirstPoll = true;
-        SetText($"<b>Check neutral {SessionConfig.NeutralProfile.ToString().ToLowerInvariant()} audio</b>\nConfirm voice, clarity and comfortable volume.\nTrigger / 1: Accept\nA / X / 2: Replay\nB / Y / 3: Restart voice setup");
+        SetText($"<b>Check {SessionConfig.NeutralVoiceName} audio</b>\nConfirm voice, clarity and comfortable volume.\nWait for the sample to finish, then select Accept audio.");
         m_Synth.Speak(VoiceAssistantController.AudioCheckLine, "audio_check");
         m_Synth.StartBackgroundLoading(VoiceAssistantController.BackgroundPhrases());
     }
@@ -444,15 +483,15 @@ public class VoiceModeSelector : MonoBehaviour
         if (m_Synth == null || m_Synth.IsBusy || !string.IsNullOrEmpty(m_Synth.LastError)) return;
         if (m_Phase == Phase.CheckingNeutral)
         {
-            m_Phase = Phase.CheckingSelf; m_FirstPoll = true;
+            m_Phase = Phase.CheckingSelf;
             SessionConfig.Voice = VoiceCondition.SelfSimilar;
-            SetText("<b>Check your self-similar audio</b>\nConfirm voice identity, clarity and volume.\nTrigger / 1: Accept\nA / X / 2: Replay\nB / Y / 3: Restart voice setup");
+            SetText("<b>Check your self-similar audio</b>\nConfirm voice identity, clarity and volume.\nWait for the sample to finish, then select Accept audio.");
             m_Synth.Speak(VoiceAssistantController.AudioCheckLine, "audio_check");
         }
         else if (m_Phase == Phase.CheckingSelf)
         {
             try { System.IO.File.WriteAllText(System.IO.Path.Combine(SessionConfig.ParticipantPath, "voice-readiness-v1.txt"),
-                $"{System.DateTime.UtcNow:O} both_audio_samples_accepted profile={SessionConfig.NeutralProfile} order={SessionConfig.VoiceOrder} perspective_policy=neutral_external_self_first_person perspective_version={SessionConfig.PerspectiveVersion}"); }
+                $"{System.DateTime.UtcNow:O} both_audio_samples_accepted profile={SessionConfig.NeutralProfile} neutral_name={SessionConfig.NeutralVoiceName} neutral_id={SessionConfig.NeutralVoiceId} neutral_option={SessionConfig.NeutralVoiceOption} order={SessionConfig.VoiceOrder} perspective_policy=neutral_external_self_first_person perspective_version={SessionConfig.PerspectiveVersion}"); }
             catch (System.Exception) { SetText("Could not save audio readiness. Check device storage, then accept again."); return; }
             SessionConfig.ApplyRoundVoice(0);
             Finish($"{SessionConfig.ParticipantId}: both voices ready.\nWording: neutral external / self-similar first person\nOrder: {SessionConfig.VoiceOrder.Replace("_", " ")}");
@@ -473,14 +512,14 @@ public class VoiceModeSelector : MonoBehaviour
         SessionConfig.SelfSimilarVoiceId = "";
         SessionConfig.SelfSimilarEnrollmentPending = false;
         m_Phase = Phase.EnrollmentFailed;
-        m_FirstPoll = true;
         if (m_Text == null) BuildPanel();
-        SetText(message + "\n\nTrigger / 1: Retry\nA / X / 2: Cancel session");
+        SetText(message + "\n\nRecord again or cancel the session.");
     }
 
     void Finish(string message)
     {
         m_Phase = Phase.Done;
+        RefreshChoices();
         SelectionCompleted?.Invoke();
         SetText(message + (GetComponent<FindObjectGameManager>()?.RotationalBetaEnabled == true
             ? "\n\nStay seated. The center-and-begin step is next."
@@ -502,15 +541,4 @@ public class VoiceModeSelector : MonoBehaviour
         return false;
     }
 
-    // --- Keyboard fallback for editor testing ---
-    bool KeyPressed(int digit)
-    {
-#if ENABLE_INPUT_SYSTEM
-        var kb = UnityEngine.InputSystem.Keyboard.current;
-        if (kb == null) return false;
-        return digit == 1 ? kb.digit1Key.wasPressedThisFrame : digit == 2 ? kb.digit2Key.wasPressedThisFrame : kb.digit3Key.wasPressedThisFrame;
-#else
-        return Input.GetKeyDown(digit == 1 ? KeyCode.Alpha1 : digit == 2 ? KeyCode.Alpha2 : KeyCode.Alpha3);
-#endif
-    }
 }

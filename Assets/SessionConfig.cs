@@ -79,9 +79,34 @@ public static class SessionConfig
 
     /// <summary>Explicit neutral voice selection; never inferred from gaze or recordings.</summary>
     public static NeutralVoiceProfile NeutralProfile { get; set; } = NeutralVoiceProfile.Female;
-    public static string NeutralVoiceId => NeutralProfile == NeutralVoiceProfile.Male
-        ? "cjVigY5qzO86Huf0OWal" // Eric — initial male neutral candidate
-        : "21m00Tcm4TlvDq8ikWAM"; // Rachel — existing female voice
+    public static int NeutralVoiceOption { get; private set; }
+    public static string NeutralVoiceName => NeutralName(NeutralProfile, NeutralVoiceOption);
+    public static string NeutralVoiceId => NeutralId(NeutralProfile, NeutralVoiceOption);
+
+    public static string NeutralName(NeutralVoiceProfile gender, int option)
+    {
+        ValidateNeutral(gender, option);
+        return gender == NeutralVoiceProfile.Male ? (option == 0 ? "Eric" : "Roger") : (option == 0 ? "Janet" : "Sarah");
+    }
+    public static string NeutralId(NeutralVoiceProfile gender, int option)
+    {
+        ValidateNeutral(gender, option);
+        // The provider resolves the historical Rachel ID to Janet. Retain the
+        // existing endpoint/cache namespace; add one new American voice per gender.
+        return gender == NeutralVoiceProfile.Male
+            ? (option == 0 ? "cjVigY5qzO86Huf0OWal" : "CwhRBWXzGAHq8TQ4Fs17")
+            : (option == 0 ? "21m00Tcm4TlvDq8ikWAM" : "EXAVITQu4vr4xnSDxMaL");
+    }
+    static void ValidateNeutral(NeutralVoiceProfile gender, int option)
+    {
+        if (!System.Enum.IsDefined(typeof(NeutralVoiceProfile), gender) || option < 0 || option > 1)
+            throw new System.ArgumentOutOfRangeException(nameof(option), "Choose one of the two voices for this gender.");
+    }
+    public static void SelectNeutralVoice(NeutralVoiceProfile gender, int option)
+    {
+        ValidateNeutral(gender, option);
+        NeutralProfile = gender; NeutralVoiceOption = option;
+    }
     public static string VoiceTag => Voice == VoiceCondition.SelfSimilar
         ? "selfsimilar" : "neutral-" + NeutralProfile.ToString().ToLowerInvariant();
 
@@ -110,7 +135,7 @@ public static class SessionConfig
         if (string.IsNullOrEmpty(ParticipantId)) ParticipantId = FindNextParticipantId();
     }
 
-    public static void ConfigureVoiceBlocks()
+    public static void ConfigureVoiceBlocks(bool replaceNeutralSelection = false)
     {
         EnsureParticipantId();
         if (!System.Text.RegularExpressions.Regex.IsMatch(ParticipantId, @"^P[0-9]{3,}$"))
@@ -132,14 +157,24 @@ public static class SessionConfig
             File.WriteAllText(assignment, VoiceOrder);
         }
         string profilePath = Path.Combine(ParticipantPath, "neutral-profile-v1.txt");
-        if (File.Exists(profilePath))
+        string choicePath = Path.Combine(ParticipantPath, "neutral-choice-v2.txt");
+        if (!replaceNeutralSelection && File.Exists(choicePath))
+        {
+            var saved = File.ReadAllText(choicePath).Trim().Split('|');
+            if (saved.Length != 2 || !System.Enum.TryParse(saved[0], out NeutralVoiceProfile gender) ||
+                !int.TryParse(saved[1], out int option))
+                throw new System.InvalidOperationException("Invalid saved neutral voice choice.");
+            SelectNeutralVoice(gender, option);
+        }
+        else if (!replaceNeutralSelection && File.Exists(profilePath))
         {
             string saved = File.ReadAllText(profilePath).Trim();
             if (!System.Enum.TryParse(saved, out NeutralVoiceProfile profile) || !System.Enum.IsDefined(typeof(NeutralVoiceProfile), profile))
                 throw new System.InvalidOperationException("Invalid saved neutral profile.");
-            NeutralProfile = profile;
+            SelectNeutralVoice(profile, 0); // Existing participants used the first voice.
         }
-        else File.WriteAllText(profilePath, NeutralProfile.ToString());
+        File.WriteAllText(choicePath, $"{NeutralProfile}|{NeutralVoiceOption}");
+        File.WriteAllText(profilePath, NeutralProfile.ToString());
         VoiceBlocksEnabled = true;
         ApplyRoundVoice(0);
     }
@@ -240,6 +275,7 @@ public static class SessionConfig
         SelfSimilarVoiceId = "";
         SelfSimilarEnrollmentPending = false;
         NeutralProfile = NeutralVoiceProfile.Female;
+        NeutralVoiceOption = 0;
         Perspective = VoicePerspective.Collaborative;
         PerspectiveLocked = false;
     }

@@ -68,7 +68,7 @@ public class VoiceSynthesizer : MonoBehaviour
         if (!m_BackgroundLoading) LastError = reason;
         Telemetry?.Invoke("audio_failure", m_CurrentContext ?? "", m_ActiveClipKey ?? "", reason);
         Debug.LogWarning($"{k_Tag} {reason}");
-        if (!m_Preparing && !m_BackgroundLoading) PlaybackFailed?.Invoke(reason);
+        if (!m_Preparing && !m_BackgroundLoading && m_CurrentContext != "voice_choice") PlaybackFailed?.Invoke(reason);
     }
 
     public IEnumerator PrepareLibraries(string[] phrases, Action<string> progress, Action<bool> done,
@@ -256,6 +256,26 @@ public class VoiceSynthesizer : MonoBehaviour
         Stop();
         m_CurrentContext = context;
         m_SpeakCoroutine = StartCoroutine(SpeakCoroutine(text));
+    }
+
+    /// <summary>Changing the setup voice invalidates its prepared library and prefetch work.</summary>
+    public void ResetVoicePreparation()
+    {
+        Stop();
+        m_BackgroundQueue.Clear(); m_BackgroundEnabled = false;
+        LibraryReady = false; m_OnDemandPhrases = null; m_MatchedRms = 0; LastError = null;
+        m_Audit.Clear();
+        foreach (var clip in m_PreparedClips.Values) Destroy(clip);
+        m_PreparedClips.Clear();
+    }
+
+    public void PreviewNeutralVoice()
+    {
+        ResetVoicePreparation();
+        m_CurrentContext = "voice_choice";
+        // Preview before enrollment/library readiness, without changing voice identity.
+        m_SpeakCoroutine = StartCoroutine(SpeakCoroutine(
+            "Find the red cube. Look to your left, then keep looking in that area.", true, VoiceCondition.Generic));
     }
 
     public bool TryAreaCorrection(string phrase, Func<bool> stillRelevant)

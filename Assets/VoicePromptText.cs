@@ -12,7 +12,7 @@ public enum VoicePerspective
 /// <summary>Stable wording transforms for the two voice perspectives.</summary>
 public static class VoicePromptText
 {
-    public const string Version = "perspective-v3-first-person-directional";
+    public const string Version = "perspective-v4-directional-variants";
 
     // Neutral/external source phrase to collaborative equivalent. Keeping this
     // table explicit preserves meaning across every live hint and terminal line.
@@ -92,6 +92,12 @@ public static class VoicePromptText
         {
             case "Look left.": return "I need to look left.";
             case "Look right.": return "I need to look right.";
+            case "Look to your left.": return "I need to look to my left.";
+            case "Look to your right.": return "I need to look to my right.";
+            case "Try looking left.": return "I'll try looking left.";
+            case "Try looking right.": return "I'll try looking right.";
+            case "Search to your left.": return "I need to search to my left.";
+            case "Search to your right.": return "I need to search to my right.";
             case "You're in the correct area. Keep looking.": return "I'm in the correct area. I need to keep looking.";
             case "Nice!": return "I found it!";
             case "Excellent! You located all the objects. Please complete the NASA T L X questionnaire now.":

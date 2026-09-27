@@ -1,55 +1,40 @@
 using UnityEngine;
-using UnityEngine.XR;
+using UnityEngine.UI;
+using UnityEngine.XR.Interaction.Toolkit.UI;
 using TMPro;
-using System.Collections.Generic;
 
-/// <summary>Explicit researcher checkpoints; never advances on a held button.</summary>
+/// <summary>Researcher checkpoints advance only through their pointed-at Continue button.</summary>
 public class StudyCheckpoint : MonoBehaviour
 {
     GameObject m_Panel;
-    bool m_Held = true;
     public bool Waiting { get; private set; }
-    readonly List<InputDevice> m_Devices = new List<InputDevice>();
-    public void Show(string message, string actionPrompt = "Researcher: press Trigger / Enter to continue.")
+    public void Show(string message, string actionPrompt = "Continue")
     {
-        if (m_Panel != null) Destroy(m_Panel);
+        if (m_Panel != null) { m_Panel.SetActive(false); Destroy(m_Panel); }
         m_Panel = new GameObject("StudyCheckpoint");
         var camera = Camera.main;
         if (camera != null) m_Panel.transform.SetParent(camera.transform, false);
         m_Panel.transform.localPosition = new Vector3(0, 0, 1.2f);
         m_Panel.transform.localScale = Vector3.one * 0.001f;
         m_Panel.AddComponent<Canvas>().renderMode = RenderMode.WorldSpace;
-        m_Panel.GetComponent<RectTransform>().sizeDelta = new Vector2(800, 400);
-        m_Panel.AddComponent<UnityEngine.UI.Image>().color = new Color(0, 0, 0, 0.95f);
+        m_Panel.AddComponent<TrackedDeviceGraphicRaycaster>();
+        m_Panel.GetComponent<RectTransform>().sizeDelta = new Vector2(800, 450);
+        m_Panel.AddComponent<Image>().color = new Color(0, 0, 0, 0.95f);
         var textObject = new GameObject("Text");
         textObject.transform.SetParent(m_Panel.transform, false);
         var text = textObject.AddComponent<TextMeshProUGUI>();
-        text.rectTransform.sizeDelta = new Vector2(740, 360);
+        text.rectTransform.sizeDelta = new Vector2(740, 300);
+        text.rectTransform.anchoredPosition = new Vector2(0, 55);
         text.alignment = TextAlignmentOptions.Center;
-        text.fontSize = 30;
-        text.text = message + "\n\n" + actionPrompt;
-        Waiting = true; m_Held = true;
+        text.fontSize = 30; text.raycastTarget = false;
+        text.text = message + "\n\nPoint at the button and pull the trigger.";
+        RayMenuFeedback.CreateButton(m_Panel.transform, actionPrompt, new Vector2(0, -155), new Vector2(440, 64), Confirm);
+        Waiting = true;
     }
     public void Confirm()
     {
+        if (!Waiting || !Application.isFocused) return;
         Waiting = false;
-        if (m_Panel != null) Destroy(m_Panel);
-    }
-    void Update()
-    {
-        if (!Waiting) return;
-        if (!Application.isFocused) { m_Held = true; return; }
-        bool pressed = false;
-        InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.Controller, m_Devices);
-        foreach (var device in m_Devices)
-            if (device.TryGetFeatureValue(CommonUsages.triggerButton, out bool down) && down) pressed = true;
-#if ENABLE_INPUT_SYSTEM
-        var keyboard = UnityEngine.InputSystem.Keyboard.current;
-        pressed |= keyboard != null && keyboard.enterKey.isPressed;
-#else
-        pressed |= Input.GetKey(KeyCode.Return);
-#endif
-        if (pressed && !m_Held) Confirm();
-        m_Held = pressed;
+        if (m_Panel != null) { m_Panel.SetActive(false); Destroy(m_Panel); }
     }
 }

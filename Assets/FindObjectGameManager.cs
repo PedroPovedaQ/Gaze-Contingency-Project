@@ -346,7 +346,7 @@ public class FindObjectGameManager : MonoBehaviour
         while (!m_CenterAccepted && !m_TechnicallyStopped)
         {
             m_Checkpoint.Show("<b>360° SEARCH BETA</b>\nSit at the center and face your chosen forward direction.\nEight planes will surround you, 21 objects on each.\nStay seated and turn to search.",
-                "Release the trigger, then press Trigger / Enter to center and begin.");
+                "Center and begin");
             while (m_Checkpoint.Waiting && !m_TechnicallyStopped) yield return null;
             if (m_TechnicallyStopped || m_CenterAccepted) yield break;
             if (!StartCenteredSession())
