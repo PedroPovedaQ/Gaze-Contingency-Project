@@ -11,7 +11,7 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
 /// <summary>
-/// 14-round conjunction search game with eight-plane beta or table-shelf layouts.
+/// 20-round conjunction search game with eight-plane beta or table-shelf layouts.
 /// Player finds 1 target via controller ray and trigger. On correct capture: show fixation cross,
 /// destroy objects, wait, spawn fresh, finalize gaze interactables, go.
 /// </summary>
@@ -20,9 +20,6 @@ public class FindObjectGameManager : MonoBehaviour
     const string k_Tag = "[FindObjectGame]";
     static int k_ObjectsPerRound => ChallengeSet.ObjectsPerRound;
     static int k_TotalRounds => ChallengeSet.RoundCount;
-    const float k_TransitionPause = 4f;
-    const float k_BlankPauseMin = 0.2f;
-    const float k_BlankPauseMax = 1.3f;
     const float k_ResetDelay = 5f;
     const float k_ExitAfterThankYouDelay = 9f;
 
@@ -50,18 +47,34 @@ public class FindObjectGameManager : MonoBehaviour
     bool m_TechnicallyStopped;
     StudyCheckpoint m_Checkpoint;
     bool m_AwaitingBlockSurvey;
+    TrialReadinessGate m_Readiness;
+    int m_LastCompletedPlane;
+    bool m_PausedDuringReadiness;
+    public TrialReadinessGate Readiness => m_Readiness;
+    public bool AnnouncementReady { get; private set; }
+    public bool ResearcherPaused => m_ResearcherPaused;
+    public event System.Action<string> OnReadinessEvent;
+    public void RecordReadinessEvent(string name) => OnReadinessEvent?.Invoke(name);
+    public void MarkAnnouncementReady(int round)
+    {
+        if (!m_TechnicallyStopped && !m_ResearcherPaused && m_State == GameState.Playing && m_CurrentRound == round)
+            AnnouncementReady = true;
+    }
 
     public void BeginSearch(int round)
     {
-        if (m_TechnicallyStopped || m_State != GameState.Playing || m_CurrentRound != round || SearchActive) return;
+        if (m_TechnicallyStopped || m_State != GameState.Playing || m_CurrentRound != round || SearchActive || m_ResearcherPaused ||
+            !AnnouncementReady || m_Readiness == null || !m_Readiness.Completed) return;
         foreach (var obj in m_SpawnedObjects)
             if (obj != null && obj.TryGetComponent<MeshRenderer>(out var renderer)) renderer.enabled = true;
+        m_UI.HideFixationCross();
         SearchActive = true;
         m_SearchClock.Begin(Time.timeAsDouble);
         m_UI.ShowRoundAudioWait(false);
         m_ControllerSelector?.ResetSelection();
         m_UI.ResumeTimer();
         OnSearchStarted?.Invoke(round);
+        GetComponent<HintGenerator>()?.OnNewObjective();
     }
 
     public void TechnicalStop(string reason)
@@ -69,6 +82,7 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_TechnicallyStopped || m_State == GameState.Completed) return;
         m_SearchClock.Pause(Time.timeAsDouble);
         m_TechnicallyStopped = true; SearchActive = false;
+        m_Readiness?.Cancel();
         if (m_StartAfterIntroCoroutine != null) { StopCoroutine(m_StartAfterIntroCoroutine); m_StartAfterIntroCoroutine = null; }
         m_UI.PauseTimer();
         m_AwaitingBlockSurvey = false; m_UI.HideBlockSurvey();
@@ -84,7 +98,7 @@ public class FindObjectGameManager : MonoBehaviour
     void OnApplicationPause(bool paused)
     {
         if (!paused || m_State == GameState.Idle || m_State == GameState.Completed) return;
-        if (SearchActive) PauseSession();
+        if (SearchActive || (m_Readiness != null && m_Readiness.Active)) PauseSession();
         else if (!m_ResearcherPaused) TechnicalStop("interrupted");
     }
 
@@ -92,7 +106,9 @@ public class FindObjectGameManager : MonoBehaviour
 
     public void PauseSession()
     {
-        if (!SearchActive || m_ResearcherPaused) return;
+        if ((!SearchActive && (m_Readiness == null || !m_Readiness.Active)) || m_ResearcherPaused) return;
+        m_PausedDuringReadiness = !SearchActive;
+        if (m_PausedDuringReadiness) { m_Readiness.ResetCharge(); m_UI.HideFixationCross(); }
         m_ResearcherPaused = true; SearchActive = false; m_SearchClock.Pause(Time.timeAsDouble);
         m_UI.PauseTimer(); m_ControllerSelector?.ResetSelection();
         GetComponent<VoiceSynthesizer>()?.Stop(); GetComponent<HintGenerator>()?.CancelPending();
@@ -107,7 +123,15 @@ public class FindObjectGameManager : MonoBehaviour
         m_Checkpoint?.Confirm();
         foreach (var obj in m_SpawnedObjects) if (obj != null) obj.SetActive(true);
         m_ControllerSelector?.ResetSelection();
-        m_ResearcherPaused = false; SearchActive = true; m_SearchClock.Resume(Time.timeAsDouble);
+        m_ResearcherPaused = false;
+        if (m_PausedDuringReadiness)
+        {
+            AnnouncementReady = false;
+            m_Readiness.Show();
+            GetComponent<VoiceAssistantController>()?.RepeatReadinessAnnouncement();
+            OnCheckpoint?.Invoke("readiness_resumed"); return;
+        }
+        SearchActive = true; m_SearchClock.Resume(Time.timeAsDouble);
         m_UI.ResumeTimer(); GetComponent<HintGenerator>()?.OnNewObjective();
         OnCheckpoint?.Invoke("search_resumed");
     }
@@ -286,6 +310,9 @@ public class FindObjectGameManager : MonoBehaviour
         Physics.IgnoreLayerCollision(8, 8, true);
         m_Spawner = GetComponent<ObjectSpawner>();
         if (m_Spawner == null) return;
+        m_Readiness = GetComponent<TrialReadinessGate>();
+        if (m_Readiness == null) m_Readiness = gameObject.AddComponent<TrialReadinessGate>();
+        if (GetComponent<TrialReplayRecorder>() == null) gameObject.AddComponent<TrialReplayRecorder>();
         if (m_UI == null) { m_UI = gameObject.AddComponent<FindObjectUI>(); m_UI.Initialize(); }
         if (m_UI != null)
             m_UI.ShowStartPrompt();
@@ -608,7 +635,7 @@ public class FindObjectGameManager : MonoBehaviour
         m_SpawnPoints.Clear();
         if (m_UseRotationalLayout)
         {
-            LayoutSeed = RotationalSearchLayout.SeedBase + (IsPractice ? 1000 : 0) + m_CurrentRound;
+            LayoutSeed = IsPractice ? RotationalSearchLayout.SeedBase + 1000 + m_CurrentRound : round.layoutSeed;
             m_RotationalSlots = RotationalSearchLayout.Build(m_RotationalRadius, m_MinObjectHeight, m_MaxObjectHeight, LayoutSeed);
             foreach (var slot in m_RotationalSlots)
                 m_SpawnPoints.Add(new ShelfSpawner.SpawnPoint
@@ -736,8 +763,12 @@ public class FindObjectGameManager : MonoBehaviour
         var info = obj.GetComponent<SpawnableObjectInfo>();
         if (info == null) return;
 
-        if (info.shapeName == m_CurrentTarget.shape && info.colorName == m_CurrentTarget.color)
+        bool correct = info.shapeName == m_CurrentTarget.shape && info.colorName == m_CurrentTarget.color;
+        // Preserve trial identity and trigger/ray state before any capture callbacks advance it.
+        GetComponent<TrialReplayRecorder>()?.Selection(obj, correct);
+        if (correct)
         {
+            m_LastCompletedPlane = info.planeId >= 0 ? info.planeId : 0;
             Debug.Log($"{k_Tag} Round {m_CurrentRound + 1} correct: {info.DisplayName}");
             m_SearchClock.Pause(Time.timeAsDouble);
             SearchActive = false;
@@ -818,67 +849,29 @@ public class FindObjectGameManager : MonoBehaviour
             OnCheckpoint?.Invoke("block_start");
         }
 
-        // Show fixation cross with next-goal text in the top-left.
-        if (IsPractice || (m_CurrentRound >= 0 && m_CurrentRound < ChallengeSet.RoundCount))
-        {
-            var nextTarget = IsPractice ? ChallengeSet.PracticeRound(m_PracticeIndex).target : ChallengeSet.Rounds[m_CurrentRound].target;
-            m_UI.ShowFixationCross(nextTarget.color, nextTarget.shape, IsPractice);
-            OnRoundTransitionStarted?.Invoke(m_CurrentRound, nextTarget.color, nextTarget.shape);
-        }
-        else
-        {
-            m_UI.ShowFixationCross();
-        }
-
-        // Pause
-        yield return new WaitForSeconds(k_TransitionPause);
-
-        // Hide cross
-        m_UI.HideFixationCross();
-
-        // Randomized blank interval to reduce anticipation before objects appear.
-        float blankPause = Random.Range(k_BlankPauseMin, k_BlankPauseMax);
-        yield return new WaitForSeconds(blankPause);
-
-        // Wait for destroys to fully process
-        yield return null;
-        yield return null;
-
-        if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
-
-        // Spawn next round
-        if (m_TechnicallyStopped) yield break;
-        m_State = GameState.Playing;
-        yield return DoSpawnRound();
+        yield return BeginFirstRoundTransition();
     }
 
     IEnumerator BeginFirstRoundTransition()
     {
-        if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
+        m_State = GameState.Transitioning;
+        AnnouncementReady = false;
+        m_ControllerSelector?.ResetSelection();
         m_UI.HideObjectiveDuringTransition();
-
-        if (IsPractice || (m_CurrentRound >= 0 && m_CurrentRound < ChallengeSet.RoundCount))
+        var planned = IsPractice ? ChallengeSet.PracticeRound(m_PracticeIndex) : ChallengeSet.Rounds[m_CurrentRound];
+        // Match the real completed target wall to the planned start, including both boundaries.
+        if (m_UseRotationalLayout && planned.startPlane != m_LastCompletedPlane)
         {
-            var firstTarget = IsPractice ? ChallengeSet.PracticeRound(m_PracticeIndex).target : ChallengeSet.Rounds[m_CurrentRound].target;
-            m_UI.ShowFixationCross(firstTarget.color, firstTarget.shape, IsPractice);
-            OnRoundTransitionStarted?.Invoke(m_CurrentRound, firstTarget.color, firstTarget.shape);
+            TechnicalStop("readiness_start_wall_mismatch"); yield break;
         }
-        else
-        {
-            m_UI.ShowFixationCross();
-        }
-
-        yield return new WaitForSeconds(k_TransitionPause);
-        m_UI.HideFixationCross();
-
-        float blankPause = Random.Range(k_BlankPauseMin, k_BlankPauseMax);
-        yield return new WaitForSeconds(blankPause);
-
+        Quaternion rotation = m_SeatedRotation * Quaternion.Euler(0, m_LastCompletedPlane * 45, 0);
+        Vector3 crossPosition = m_SpawnCenter + rotation * Vector3.forward * m_RotationalRadius;
+        crossPosition.y = m_FloorHeight + (m_MinObjectHeight + m_MaxObjectHeight) * 0.5f;
+        // Establish replay/trial identity before the first readiness event or next instruction.
+        OnRoundTransitionStarted?.Invoke(m_CurrentRound, planned.target.color, planned.target.shape);
+        m_Readiness.Begin(m_LastCompletedPlane, crossPosition, rotation, planned.target.color, planned.target.shape, IsPractice);
+        // Let destruction finish, then prepare hidden objects while the cross charges.
         yield return null;
-        yield return null;
-
-        if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
-
         if (m_TechnicallyStopped) yield break;
         m_State = GameState.Playing;
         yield return DoSpawnRound();

@@ -38,6 +38,7 @@ public class VoiceAssistantController : MonoBehaviour
     AudioSource m_EffectAudioSource;
     AudioClip m_WrongCaptureCue;
     Coroutine m_RoundAnnounceCoroutine;
+    Coroutine m_IntroAnnounceCoroutine;
     VoiceModeSelector m_VoiceModeSelector;
     bool m_IntroRequested;
     bool m_IntroPlayed;
@@ -209,6 +210,11 @@ public class VoiceAssistantController : MonoBehaviour
         if (m_VoiceSynthesizer != null) m_VoiceSynthesizer.PlaybackFailed -= HandleAudioFailure;
         if (m_VoiceModeSelector != null)
             m_VoiceModeSelector.SelectionCompleted -= HandleVoiceSelected;
+        if (m_IntroAnnounceCoroutine != null)
+        {
+            StopCoroutine(m_IntroAnnounceCoroutine);
+            m_IntroAnnounceCoroutine = null;
+        }
         if (m_RoundAnnounceCoroutine != null)
         {
             StopCoroutine(m_RoundAnnounceCoroutine);
@@ -262,9 +268,9 @@ public class VoiceAssistantController : MonoBehaviour
         m_VoiceSynthesizer.Speak(StudyIntroLine, "intro");
         m_IntroPlayed = true;
         m_IntroRequested = false;
-        if (m_RoundAnnounceCoroutine != null)
-            StopCoroutine(m_RoundAnnounceCoroutine);
-        m_RoundAnnounceCoroutine = StartCoroutine(FinishIntroThenAnnouncePendingRound());
+        if (m_IntroAnnounceCoroutine != null)
+            StopCoroutine(m_IntroAnnounceCoroutine);
+        m_IntroAnnounceCoroutine = StartCoroutine(FinishIntroThenAnnouncePendingRound());
     }
 
     void HandleGameStarted()
@@ -306,9 +312,9 @@ public class VoiceAssistantController : MonoBehaviour
             m_PendingRound = round;
             m_PendingRoundColor = color;
             m_PendingRoundShape = shape;
-            if (m_RoundAnnounceCoroutine != null)
-                StopCoroutine(m_RoundAnnounceCoroutine);
-            m_RoundAnnounceCoroutine = StartCoroutine(FinishIntroThenAnnouncePendingRound());
+            if (m_IntroAnnounceCoroutine != null)
+                StopCoroutine(m_IntroAnnounceCoroutine);
+            m_IntroAnnounceCoroutine = StartCoroutine(FinishIntroThenAnnouncePendingRound());
             return;
         }
 
@@ -324,7 +330,8 @@ public class VoiceAssistantController : MonoBehaviour
 
     IEnumerator FinishIntroThenAnnouncePendingRound()
     {
-        while (m_VoiceSynthesizer != null && m_VoiceSynthesizer.IsBusy)
+        while ((m_VoiceSynthesizer != null && m_VoiceSynthesizer.IsBusy) ||
+            (m_GameManager != null && m_GameManager.ResearcherPaused))
             yield return null;
 
         m_IntroPlayingOrQueued = false;
@@ -342,7 +349,17 @@ public class VoiceAssistantController : MonoBehaviour
             m_VoiceSynthesizer.Speak(RoundPhrase(round, color, shape, m_GameManager != null && m_GameManager.IsPractice), "round");
         }
 
-        m_RoundAnnounceCoroutine = null;
+        m_IntroAnnounceCoroutine = null;
+    }
+
+    public void RepeatReadinessAnnouncement()
+    {
+        if (m_GameManager == null || m_GameManager.Readiness == null || !m_GameManager.Readiness.Active) return;
+        if (m_RoundAnnounceCoroutine != null) StopCoroutine(m_RoundAnnounceCoroutine);
+        var target = m_GameManager.CurrentTarget;
+        int round = m_GameManager.CurrentObjectiveIndex;
+        HandleRoundTransitionStarted(round, target.color, target.shape);
+        m_RoundAnnounceCoroutine = StartCoroutine(WaitForAnnouncementAndResumeTimer(round, target.color, target.shape));
     }
 
     System.Collections.IEnumerator WaitForAnnouncementAndResumeTimer(int round, string color, string shape)
@@ -350,7 +367,8 @@ public class VoiceAssistantController : MonoBehaviour
         // Allow all objects-ready subscribers to record their boundary first.
         yield return null;
         // Wait until the transition-phase round announcement finishes.
-        while (m_VoiceSynthesizer != null && m_VoiceSynthesizer.IsBusy)
+        while (m_IntroPlayingOrQueued || m_PendingRound >= 0 ||
+            (m_VoiceSynthesizer != null && m_VoiceSynthesizer.IsBusy))
             yield return null;
 
         // If the round has already changed or game left Playing state while waiting,
@@ -365,11 +383,8 @@ public class VoiceAssistantController : MonoBehaviour
 
         // The manager owns the single authoritative search-onset gate.
         if (!string.IsNullOrEmpty(m_VoiceSynthesizer.LastError)) { m_RoundAnnounceCoroutine = null; yield break; }
-        m_GameManager.BeginSearch(round);
-
-        if (m_HintGenerator != null)
-            m_HintGenerator.OnNewObjective();
-        Debug.Log($"{k_Tag} Round {round + 1} ready: {color} {shape}");
+        m_GameManager.MarkAnnouncementReady(round);
+        Debug.Log($"{k_Tag} Round {round + 1} announcement ready; awaiting gaze gate: {color} {shape}");
         m_RoundAnnounceCoroutine = null;
     }
 

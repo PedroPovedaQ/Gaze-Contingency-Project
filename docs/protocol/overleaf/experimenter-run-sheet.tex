@@ -61,7 +61,7 @@
 \field{Preferred voice ID} & \field{Survey version} \\
 \end{tabularx}
 \vspace{8pt}
-\action{RESEARCHER ONLY}{Two counterbalanced voice blocks: one uses the participant-preferred voice and the other uses the self-similar voice. Each participant experiences both voices; use the saved assigned order. A block comprises multiple trials, and each trial is one target-object search. Both use gaze-contingent warmer/colder guidance. Planned trial start is the same fixed front direction. Say ``first block'' and ``second block''; do not suggest that either voice should improve performance.}
+\action{RESEARCHER ONLY}{Two counterbalanced voice blocks: one uses the participant-preferred voice and the other uses the self-similar voice. Each participant experiences both voices; use the saved assigned order. A block comprises multiple trials, and each trial is one target-object search. Both will use gaze-contingent directional guidance. Before each search, the participant will charge a world-fixed readiness cross on the previous target wall; the first practice will use the front wall. Say ``first block'' and ``second block''; do not suggest that either voice should improve performance.}
 \step{Before participant arrives}
 {\color{ActionInk}\itshape
 \begin{itemize}
@@ -130,7 +130,9 @@
 \say{SAY}{``When you are ready, we will begin the first task block.''}
 \clearpage
 \step{6 First task block}
-\action{PLANNED SCHEDULE}{30 experimental trials in this voice block; practice trials are separate. This is the protocol target, not evidence of the installed build schedule. Verify the configured count before participant use.}
+\action{CURRENT SCHEDULE / PROTOCOL PROPOSAL}{10 experimental trials in this voice block; practice trials are separate. Each absolute target-wall angle ($|\theta| = 0^\circ, 45^\circ, 90^\circ, 135^\circ, 180^\circ$) will occur twice. Angles will be measured from the readiness cross on the previous target wall to the next target wall center. Verify the installed build schedule before participant use.}
+\action{IMPLEMENTED READINESS GATE / PILOT VERIFICATION}{Before each trial, the participant will look at the entire readiness cross until its left-to-right fill completes. The cross will stay at the center of the previous target wall. One second of continuous valid gaze within its padded area and completion of the target announcement will both be required. Looking away, tracking loss or pausing will reset the fill. Search timing will begin only when the objects appear. Confirm headset usability before participant use.}
+\action{ANGLE ASSIGNMENT AND RECORDING}{Trial order and object heights will be randomized using recorded seeds. The second block will mirror left/right wall assignments and independently shuffle trial order while preserving the same absolute-angle counts. For example, a start wall at $315^\circ$ and target wall at $0^\circ$ will give signed $\theta=+45^\circ$ and $|\theta|=45^\circ$. Confirm that the trial schedule and actual object positions are saved; exact object bearings and measured head rotation are separate from wall-angle categories.}
 \action{RESEARCHER SETTINGS}{Confirm the saved first voice and planned trial schedule. Keep object layout, selection method, guidance policy and the finalized prompt wording constant across voices.}
 \say{SAY}{``We will now begin the first task block. Find each target as quickly and accurately as you comfortably can. Stay seated and use the same controller ray and trigger selection you practiced. Tell me if you need to pause.''}
 \action{ACTION}{Start block; monitor safety.}
@@ -140,7 +142,7 @@
 \say{SAY}{``You may take a short break of up to 5 minutes. Tell me when you are ready to continue.''}
 \say{BEFORE CONTINUING ASK}{``Do you feel comfortable and well enough to continue?''}
 \step{7 Second task block}
-\action{PLANNED SCHEDULE}{30 experimental trials using the other assigned voice. Retain incomplete or interrupted trials with their outcomes; do not add replacement trials merely to reach 30 valid attempts.}
+\action{CURRENT SCHEDULE / PROTOCOL PROPOSAL}{10 experimental trials using the other assigned voice, with two trials at each absolute target-wall angle, for 20 experimental trials across both blocks. Retain incomplete or interrupted trials with their outcomes; do not add replacement trials merely to reach 10 valid attempts.}
 \say{SAY}{``We will now begin the second task block. This block will use the other assistant voice. The task and selection method will remain the same. Find each target as quickly and accurately as you comfortably can, and tell me if you need to pause.''}
 \action{ACTION}{Start block; monitor safety.}
 \say{AT COMPLETION SAY}{``The search task is complete. Please stop turning. We will finish the questions about this block, then I will help you remove the headset.''}

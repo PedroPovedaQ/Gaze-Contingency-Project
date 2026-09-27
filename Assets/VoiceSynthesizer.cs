@@ -175,6 +175,8 @@ public class VoiceSynthesizer : MonoBehaviour
     }
 
     public bool IsSpeaking => m_AudioSource != null && m_AudioSource.isPlaying;
+    // Read-only observer access to the exact normalized clip used by playback.
+    public AudioClip ReplayClip => m_AudioSource != null ? m_AudioSource.clip : null;
     public bool IsBusy => m_InterruptionCoroutine != null || m_SpeakCoroutine != null || IsSpeaking;
 
     public void StartBackgroundLoading(string[] phrases)

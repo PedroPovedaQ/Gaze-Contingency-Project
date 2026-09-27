@@ -105,9 +105,14 @@ public static class SessionConfig
     public static int CurrentBlock { get; private set; }
     public static string ParticipantPath => Path.Combine(RootPath, ParticipantId);
 
-    public static void ConfigureVoiceBlocks()
+    public static void EnsureParticipantId()
     {
         if (string.IsNullOrEmpty(ParticipantId)) ParticipantId = FindNextParticipantId();
+    }
+
+    public static void ConfigureVoiceBlocks()
+    {
+        EnsureParticipantId();
         if (!System.Text.RegularExpressions.Regex.IsMatch(ParticipantId, @"^P[0-9]{3,}$"))
             throw new System.InvalidOperationException("Use a coded numeric participant ID, such as P001.");
         Directory.CreateDirectory(ParticipantPath);
@@ -165,8 +170,7 @@ public static class SessionConfig
     public static string BeginRun()
     {
         // Auto-assign participant ID if not set
-        if (string.IsNullOrEmpty(ParticipantId))
-            ParticipantId = FindNextParticipantId();
+        EnsureParticipantId();
 
         // A run owns one wording perspective even when a caller starts it
         // without the optional voice setup panel.

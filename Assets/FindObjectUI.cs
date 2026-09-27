@@ -54,6 +54,7 @@ public class FindObjectUI : MonoBehaviour
     TextMeshProUGUI m_ResetButtonText;
     GameObject m_CrossCanvasGO;
     TextMeshProUGUI m_FixationCross;
+    UnityEngine.UI.Image m_ReadinessFill;
     TextMeshProUGUI m_CrossGoalText;
 
     public event System.Action OnSurveyCompletedAcknowledged;
@@ -218,6 +219,15 @@ public class FindObjectUI : MonoBehaviour
         var crossBgImg = crossBg.AddComponent<UnityEngine.UI.Image>();
         crossBgImg.color = Color.white;
 
+        var charge = new GameObject("ReadinessCharge");
+        charge.transform.SetParent(m_CrossCanvasGO.transform, false);
+        m_ReadinessFill = charge.AddComponent<UnityEngine.UI.Image>();
+        m_ReadinessFill.color = new Color(0.15f, 0.85f, 0.75f, 0.85f);
+        m_ReadinessFill.raycastTarget = false;
+        m_ReadinessFill.rectTransform.pivot = new Vector2(0f, 0.5f);
+        m_ReadinessFill.rectTransform.anchoredPosition = new Vector2(-100f, 0f);
+        SetReadinessProgress(0);
+
         m_FixationCross = CreateText(m_CrossCanvasGO.transform, "FixationCross",
             new Vector2(200, 200), Vector2.zero, 140);
         m_FixationCross.alignment = TextAlignmentOptions.Center;
@@ -287,10 +297,39 @@ public class FindObjectUI : MonoBehaviour
         m_CanvasGO.transform.localPosition = new Vector3(0f, -0.38f, 0.9f);
         m_CanvasGO.transform.localRotation = Quaternion.identity;
         m_CanvasGO.transform.localScale = Vector3.one * 0.00065f;
-        m_CrossCanvasGO.transform.SetParent(camera.transform, false);
-        m_CrossCanvasGO.transform.localPosition = new Vector3(0f, 0f, 1.1f);
-        m_CrossCanvasGO.transform.localRotation = Quaternion.identity;
+        // The readiness cross has its own fixed world pose; only the goal panel follows the head.
+    }
+
+    public void PositionReadinessCross(Vector3 position, Quaternion rotation)
+    {
+        if (m_CrossCanvasGO == null) return;
+        m_CrossCanvasGO.transform.SetParent(null, true);
+        m_CrossCanvasGO.transform.SetPositionAndRotation(position, rotation);
         m_CrossCanvasGO.transform.localScale = Vector3.one * 0.002f;
+    }
+    public void SetReadinessProgress(float progress)
+    {
+        if (m_ReadinessFill != null)
+            m_ReadinessFill.rectTransform.sizeDelta = new Vector2(200f * Mathf.Clamp01(progress), 200f);
+    }
+    public bool IsGazeInsideReadinessCross(Vector3 origin, Vector3 direction, float paddingMetres)
+    {
+        if (m_CrossCanvasGO == null || !m_CrossCanvasGO.activeInHierarchy) return false;
+        var cross = m_CrossCanvasGO.transform;
+        float denominator = Vector3.Dot(direction, cross.forward);
+        if (denominator <= 0.0001f) return false;
+        float distance = Vector3.Dot(cross.position - origin, cross.forward) / denominator;
+        if (distance <= 0 || distance > 10) return false;
+        Vector3 local = cross.InverseTransformPoint(origin + direction * distance);
+        float halfWidth = 100f + paddingMetres / cross.lossyScale.x;
+        float halfHeight = 100f + paddingMetres / cross.lossyScale.y;
+        return Mathf.Abs(local.x) <= halfWidth && Mathf.Abs(local.y) <= halfHeight;
+    }
+    void OnDestroy()
+    {
+        if (m_CrossCanvasGO == null) return;
+        if (Application.isPlaying) Destroy(m_CrossCanvasGO);
+        else DestroyImmediate(m_CrossCanvasGO);
     }
 
     public void ShowFixationCross(string color = null, string shape = null, bool isPractice = false)
@@ -403,7 +442,7 @@ public class FindObjectUI : MonoBehaviour
     {
         if (m_ObjectiveText != null)
             m_ObjectiveText.text = m_CurrentObjectiveString +
-                (waiting ? "\n<size=24>Preparing round audio. Listen before searching.</size>" : "");
+                (waiting ? "\n<size=24>Listen to the target. Look at the cross until it fills.</size>" : "");
     }
 
     public void ShowCompletion(int total, float elapsedSeconds)

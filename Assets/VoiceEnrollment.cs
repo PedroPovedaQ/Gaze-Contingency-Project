@@ -80,7 +80,7 @@ public class VoiceEnrollment : MonoBehaviour
             Fail("no microphone device", onError); Set(State.Failed); m_Busy = false; yield break;
         }
 
-        // Finish the countdown/tone after permission checks and before opening the mic.
+        // Finish the start tone after permission checks and before opening the mic.
         if (beforeRecording != null) yield return beforeRecording();
         seconds = Mathf.Clamp(seconds, 10, 60);
         Debug.Log($"{k_Tag} Recording {seconds}s...");

@@ -8,6 +8,10 @@ formative validation. They are not UCF IRB approvals. Administrative facts and
 institutional determinations that the research team cannot invent are listed
 separately at the end.
 
+## 2026-09-27 — Ten-trial blocks and absolute-angle balance
+
+**Current decision / protocol proposal:** each voice block contains ten measured trials, twenty total, with practice separate. Each block contains two target-wall assignments at each absolute angle: 0°, 45°, 90°, 135°, and 180°, relative to the fixed front direction. Block two mirrors left/right assignments and independently shuffles trial order; heights remain randomized. This supersedes the seven-trial beta and earlier proposed 30-trial block count. The [schedule implementation and logging](../balanced-angle-schedule.md) distinguishes nominal wall angles from exact object bearings and measured head motion. The run sheet is aligned; this decision does not constitute IRB approval or regeneration of the legacy submission packet.
+
 ## 2026-09-26 — Two voice blocks and break terminology
 
 **Current decision / protocol proposal:** each participant completes two counterbalanced voice blocks, one using the participant-preferred voice and the other using the participant-derived self-similar voice. Both use gaze-contingent assistance. Voice condition is the planned comparison; there is no separate timing-condition or gaze-unaware factor. A **trial** is one target-object search; a **block** comprises multiple trials with the same voice. Use “first block” and “second block” in participant speech, not “phases.”

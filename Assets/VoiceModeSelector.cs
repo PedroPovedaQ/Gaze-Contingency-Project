@@ -372,16 +372,12 @@ public class VoiceModeSelector : MonoBehaviour
                 Debug.LogWarning($"{k_Tag} Enrollment failed: {err}");
                 ShowEnrollmentFailure("Could not create your voice.");
             },
-            beforeRecording: RecordingCountdownAndTone);
+            beforeRecording: RecordingStartTone);
     }
 
-    IEnumerator RecordingCountdownAndTone()
+    IEnumerator RecordingStartTone()
     {
-        for (int c = 3; c > 0; c--)
-        {
-            SetText($"<b>Wait for the tone — recording starts in {c}…</b>\n\n“{k_ReadingPassage}”");
-            yield return new WaitForSeconds(1f);
-        }
+        SetText($"<b>Wait for the tone, then begin reading.</b>\n\n“{k_ReadingPassage}”");
         const int sampleRate = 22050;
         const float duration = 0.2f;
         var samples = new float[(int)(sampleRate * duration)];

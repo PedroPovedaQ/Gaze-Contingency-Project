@@ -63,7 +63,9 @@ public static class ControllerSelectionChecks
         finally { UnityEngine.Object.DestroyImmediate(obj); }
 
         // Verify the actual shipped rig, not assumptions about the template version.
-        var scene = EditorSceneManager.OpenScene("Assets/Scenes/GazeContingencyStudyScene.unity", OpenSceneMode.Additive);
+        var scene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath("Assets/Scenes/GazeContingencyStudyScene.unity");
+        bool openedForCheck = !scene.IsValid() || !scene.isLoaded;
+        if (openedForCheck) scene = EditorSceneManager.OpenScene("Assets/Scenes/GazeContingencyStudyScene.unity", OpenSceneMode.Additive);
         try
         {
             var hands = new HashSet<InteractorHandedness>();
@@ -79,7 +81,7 @@ public static class ControllerSelectionChecks
             Check(hands.Contains(InteractorHandedness.Left) && hands.Contains(InteractorHandedness.Right),
                 "Study scene must expose physical controller rays for both hands.");
         }
-        finally { EditorSceneManager.CloseScene(scene, true); }
+        finally { if (openedForCheck) EditorSceneManager.CloseScene(scene, true); }
         GazeWallFilterChecks.Run();
         Debug.Log("[ControllerSelectionChecks] PASS: trigger edges, pause/tracking gates, no gaze dwell, fixed objects, highlight cleanup, both scene controllers.");
     }

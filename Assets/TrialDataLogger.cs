@@ -98,6 +98,7 @@ public class TrialDataLogger : MonoBehaviour
         m_GameManager.OnRoundReady += OnObjectsReady;
         m_GameManager.OnSessionStopped += OnSessionStopped;
         m_GameManager.OnCheckpoint += OnCheckpoint;
+        m_GameManager.OnReadinessEvent += OnReadinessEvent;
 
         Debug.Log($"{k_Tag} Initialized, waiting for game start");
     }
@@ -116,6 +117,7 @@ public class TrialDataLogger : MonoBehaviour
             m_GameManager.OnRoundReady -= OnObjectsReady;
             m_GameManager.OnSessionStopped -= OnSessionStopped;
             m_GameManager.OnCheckpoint -= OnCheckpoint;
+            m_GameManager.OnReadinessEvent -= OnReadinessEvent;
         }
 
         if (m_Voice != null) m_Voice.Telemetry -= OnAudioEvent;
@@ -147,6 +149,9 @@ public class TrialDataLogger : MonoBehaviour
         if (m_Voice != null) m_Voice.Telemetry += OnAudioEvent;
         m_SessionOutcome = "incomplete";
         m_SessionId = $"{SessionConfig.ParticipantId}_run{SessionConfig.RunNumber:D3}";
+        if (m_GameManager.RotationalBetaEnabled)
+            using (var schedule = new StreamWriter(SessionConfig.GetFilePath("trial_schedule.csv"), false, s_Utf8NoBom))
+                ChallengeSet.WriteSchedule(schedule);
 
         // Open events CSV inside the run folder
         string eventsPath = SessionConfig.GetFilePath("trial_events.csv");
@@ -219,6 +224,13 @@ public class TrialDataLogger : MonoBehaviour
         if (name == "search_paused") FinalizeCurrentFixation();
         WriteEvent(name, "", "", "", -1, false, 0, "researcher_checkpoint");
         WriteSummary(Time.time - m_GameManager.GameStartTime);
+    }
+    void OnReadinessEvent(string name)
+    {
+        if (m_EventWriter == null || m_GameManager.IsPractice) return;
+        var gate = m_GameManager.Readiness;
+        WriteEvent(name, "", "", "", -1, false, 0,
+            FormattableString.Invariant($"start_plane={gate.Wall};start_wall_azimuth_deg={gate.Wall * 45};progress={gate.Progress:F4};announcement_ready={m_GameManager.AnnouncementReady}"));
     }
     void OnAudioEvent(string kind, string context, string clip, string detail)
     {
@@ -490,7 +502,10 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine(FormattableString.Invariant($"  \"neutral_voice_profile\": \"{SessionConfig.NeutralProfile.ToString().ToLowerInvariant()}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"session_id\": \"{m_SessionId}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"timestamp\": \"{System.DateTime.Now:O}\","));
-        sb.AppendLine(FormattableString.Invariant($"  \"challenge_set\": \"deterministic_seed_42\","));
+        sb.AppendLine(FormattableString.Invariant($"  \"challenge_set\": \"{ChallengeSet.ScheduleVersion}\","));
+        sb.AppendLine(FormattableString.Invariant($"  \"schedule_seed\": {ChallengeSet.ScheduleSeed},"));
+        sb.AppendLine($"  \"angle_balance_applied\": {(m_GameManager.RotationalBetaEnabled ? "true" : "false")},");
+        sb.AppendLine("  \"theta_reference\": \"previous_target_wall_center\",");
         sb.AppendLine(FormattableString.Invariant($"  \"round_schedule\": \"always_gaze_aware\","));
         sb.AppendLine(FormattableString.Invariant($"  \"schema_version\": 2,"));
         sb.AppendLine(FormattableString.Invariant($"  \"session_outcome\": \"{m_SessionOutcome}\","));
@@ -571,6 +586,14 @@ public class TrialDataLogger : MonoBehaviour
             sb.AppendLine(FormattableString.Invariant($"      \"search_exposure_seconds\": {rec.searchSeconds:F4},"));
             sb.AppendLine(FormattableString.Invariant($"      \"voice_condition\": \"{rec.voiceCondition}\","));
             sb.AppendLine(FormattableString.Invariant($"      \"block\": {rec.index / ChallengeSet.RoundsPerBlock},"));
+            if (m_GameManager.RotationalBetaEnabled)
+            {
+                var planned = ChallengeSet.Rounds[rec.index];
+                sb.AppendLine(FormattableString.Invariant($"      \"start_plane\": {planned.startPlane}, \"start_wall_azimuth_deg\": {planned.startPlane * 45},"));
+                sb.AppendLine(FormattableString.Invariant($"      \"target_plane\": {planned.targetPlane}, \"wall_azimuth_deg\": {planned.targetPlane * 45},"));
+                sb.AppendLine(FormattableString.Invariant($"      \"signed_theta_deg\": {planned.SignedTheta}, \"absolute_theta_deg\": {planned.AbsoluteTheta},"));
+                sb.AppendLine(FormattableString.Invariant($"      \"angle_pair\": {planned.anglePair}, \"layout_seed\": {planned.layoutSeed},"));
+            }
             sb.AppendLine(FormattableString.Invariant($"      \"trial_id\": \"{m_SessionId}_r{rec.index:D2}\","));
             sb.AppendLine(FormattableString.Invariant($"      \"outcome\": \"{rec.outcome}\","));
             sb.AppendLine(FormattableString.Invariant($"      \"transition_started_at\": {rec.transitionTime:F4},"));

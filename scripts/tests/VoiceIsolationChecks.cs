@@ -110,7 +110,7 @@ class VoiceIsolationChecks
             Application.TestPath = root;
             SessionConfig.ConfigureVoiceBlocks();
             Check(SessionConfig.NeutralFirst, "odd participant neutral first");
-            Check(SessionConfig.VoiceForRound(6) == VoiceCondition.Generic && SessionConfig.VoiceForRound(7) == VoiceCondition.SelfSimilar, "block boundary");
+            Check(SessionConfig.VoiceForRound(9) == VoiceCondition.Generic && SessionConfig.VoiceForRound(10) == VoiceCondition.SelfSimilar, "block boundary after ten trials");
             File.WriteAllText(Path.Combine(SessionConfig.ParticipantPath, "voice-order-v1.txt"), "selfsimilar_then_neutral");
             SessionConfig.ConfigureVoiceBlocks();
             Check(!SessionConfig.NeutralFirst, "persisted assignment wins on restart");
@@ -347,7 +347,58 @@ class VoiceIsolationChecks
             }
             DownloadHandlerAudioClip.ForceSkewed = false;
             DownloadHandlerAudioClip.Quiet = false;
-            Check(ChallengeSet.TotalRounds == 14 && ChallengeSet.RoundsPerBlock == 7 && ChallengeSet.BlockCount == 2, "full two-block schedule");
+            Check(ChallengeSet.TotalRounds == 20 && ChallengeSet.RoundsPerBlock == 10 && ChallengeSet.BlockCount == 2, "full two-block schedule");
+            var angleCounts = new int[2, 5];
+            foreach (var trial in ChallengeSet.Rounds)
+            {
+                int targetIndex = Array.FindIndex(trial.objects, o => o.shape == trial.target.shape && o.color == trial.target.color);
+                int plane = (targetIndex / 21 - trial.startPlane + 8) % 8;
+                angleCounts[trial.blockIndex, Math.Min(plane, 8 - plane)]++;
+            }
+            for (int angle = 0; angle < 5; angle++)
+            {
+                Check(angleCounts[0, angle] > 0, "every absolute angle is covered");
+                Check(angleCounts[0, angle] == angleCounts[1, angle], "absolute-angle counts match between blocks");
+            }
+            for (int participant = 1; participant <= 50; participant++)
+            {
+                SessionConfig.ParticipantId = $"P{participant:D3}";
+                var schedule = ChallengeSet.Rounds;
+                var firstCounts = new int[5]; var secondCounts = new int[5];
+                var seeds = new System.Collections.Generic.HashSet<int>();
+                foreach (var trial in schedule)
+                {
+                    int targetIndex = Array.FindIndex(trial.objects, o => o.shape == trial.target.shape && o.color == trial.target.color);
+                    Check(targetIndex == trial.targetPlane * 21 + trial.targetSlot, "actual target obeys schedule");
+                    Check(trial.startPlane == (trial.roundIndex == 0 ? ChallengeSet.PracticeRound(1).targetPlane : schedule[trial.roundIndex - 1].targetPlane),
+                        "start wall follows actual previous target, including practice and block boundary");
+                    Check(seeds.Add(trial.layoutSeed), "each trial has its own layout seed");
+                    (trial.blockIndex == 0 ? firstCounts : secondCounts)[trial.AbsoluteTheta / 45]++;
+                    if (trial.blockIndex == 0)
+                    {
+                        var mirror = Array.Find(schedule, t => t.blockIndex == 1 && t.anglePair == trial.anglePair);
+                        Check((mirror.SignedTheta == -trial.SignedTheta || trial.AbsoluteTheta == 180) && mirror.AbsoluteTheta == trial.AbsoluteTheta,
+                            "paired angles mirror across the two blocks");
+                    }
+                }
+                int[] quota = { 2, 2, 2, 2, 2 };
+                for (int a = 0; a < 5; a++) Check(firstCounts[a] == quota[a] && secondCounts[a] == quota[a], "fixed per-block quotas");
+                var saved = new StringWriter(); ChallengeSet.WriteSchedule(saved);
+                var rows = saved.ToString().Trim().Split('\n');
+                Check(rows.Length == 21, "manifest documents all twenty planned trials");
+                for (int r = 0; r < schedule.Length; r++)
+                {
+                    var cells = rows[r + 1].Trim().Split(',');
+                    Check(cells.Length == 20 && int.Parse(cells[10]) == schedule[r].SignedTheta &&
+                        int.Parse(cells[11]) == schedule[r].AbsoluteTheta && int.Parse(cells[13]) == schedule[r].layoutSeed && int.Parse(cells[17]) == schedule[r].startPlane,
+                        "exported angle and seed match executable plan");
+                }
+                SessionConfig.ParticipantId = "P999"; var other = ChallengeSet.Rounds;
+                SessionConfig.ParticipantId = $"P{participant:D3}";
+                var restored = new StringWriter(); ChallengeSet.WriteSchedule(restored);
+                Check(restored.ToString() == saved.ToString(), "participant restart reproduces full plan");
+                Check(other[0].layoutSeed != schedule[0].layoutSeed, "participant identity changes randomization");
+            }
             foreach (var trial in ChallengeSet.Rounds)
             {
                 int targetCount = 0, colorOnly = 0, shapeOnly = 0;
@@ -367,6 +418,13 @@ class VoiceIsolationChecks
                 foreach (var obj in round.objects) if (obj.shape == round.target.shape && obj.color == round.target.color) targets++;
                 Check(round.objects.Length == 168 && targets == 1, "practice has one target and 167 distractors");
             }
+            SessionConfig.ResetForNewParticipant();
+            var beforeRun = new StringWriter(); ChallengeSet.WriteSchedule(beforeRun);
+            string scheduledParticipant = SessionConfig.ParticipantId;
+            SessionConfig.BeginRun();
+            var afterRun = new StringWriter(); ChallengeSet.WriteSchedule(afterRun);
+            Check(!string.IsNullOrEmpty(scheduledParticipant) && beforeRun.ToString() == afterRun.ToString(),
+                "auto-assigned participant cannot change the schedule at run start");
             Check(File.ReadAllText("Assets/Scenes/GazeContingencyStudyScene.unity").Contains("m_UseDebugRoundCountOverride: 0"), "build scene must not truncate voice blocks");
             var clock = new StudyTrialClock();
             Check(clock.Elapsed(999) == 0, "pre-onset delay excluded");

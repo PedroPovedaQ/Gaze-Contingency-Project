@@ -31,6 +31,55 @@ public class ControllerRaySelector : MonoBehaviour
     public bool ThroughWallSearch { get; set; }
     public event Action<GameObject> OnObjectCaptured;
 
+    // A snapshot of the same physical rays used for selection, in world coordinates.
+    // Unavailable input is -1 rather than an invented released trigger.
+    public struct TelemetrySample
+    {
+        public bool available, rayAvailable;
+        public int tracked, triggerHeld;
+        public float triggerValue;
+        public Vector3 position, rayOrigin, rayDirection, rayEnd;
+        public Quaternion rotation;
+        public GameObject target;
+    }
+    public TelemetrySample LeftTelemetry { get; private set; }
+    public TelemetrySample RightTelemetry { get; private set; }
+    public int TelemetryFrame { get; private set; } = -1;
+    public string SelectingHand { get; private set; }
+
+    TelemetrySample ReadTelemetry(InteractorHandedness hand, bool search)
+    {
+        var sample = new TelemetrySample { tracked = -1, triggerHeld = -1,
+            triggerValue = -1, rotation = Quaternion.identity };
+        var device = InputDevices.GetDeviceAtXRNode(hand == InteractorHandedness.Left ? XRNode.LeftHand : XRNode.RightHand);
+        if (device.isValid)
+        {
+            if (device.TryGetFeatureValue(CommonUsages.isTracked, out bool tracked)) sample.tracked = tracked ? 1 : 0;
+            if (device.TryGetFeatureValue(CommonUsages.triggerButton, out bool held)) sample.triggerHeld = held ? 1 : 0;
+            if (device.TryGetFeatureValue(CommonUsages.trigger, out float value)) sample.triggerValue = value;
+        }
+        foreach (var ray in m_Rays)
+        {
+            if (ray == null || ray.handedness != hand || !ray.isActiveAndEnabled) continue;
+            var controller = ray.GetComponentInParent<ControllerInputActionManager>();
+            if (controller == null) continue;
+            sample.available = true;
+            sample.position = controller.transform.position;
+            sample.rotation = controller.transform.rotation;
+            var origin = ray.farInteractionCaster?.castOrigin;
+            sample.rayAvailable = origin != null && ray.enableFarCasting && sample.tracked == 1;
+            if (sample.rayAvailable)
+            {
+                sample.rayOrigin = origin.position;
+                sample.rayDirection = origin.forward;
+                sample.rayEnd = ((IXRRayProvider)ray).rayEndPoint;
+                sample.target = search ? RayTarget(ray) : null;
+            }
+            break;
+        }
+        return sample;
+    }
+
     public static void PreventGrab(XRGrabInteractable grab)
     {
         grab.selectFilters.Remove(k_NoGrab);
@@ -77,6 +126,10 @@ public class ControllerRaySelector : MonoBehaviour
         bool search = m_Game != null && m_Game.SearchActive;
         bool leftPress = ReadPress(XRNode.LeftHand, search, ref m_LeftArmed);
         bool rightPress = ReadPress(XRNode.RightHand, search, ref m_RightArmed);
+        // Sample both hands before a capture callback can reset or destroy the trial.
+        LeftTelemetry = ReadTelemetry(InteractorHandedness.Left, search);
+        RightTelemetry = ReadTelemetry(InteractorHandedness.Right, search);
+        TelemetryFrame = Time.frameCount;
         if (!search) { m_LastRayTargets.Clear(); return; }
         foreach (var ray in m_Rays)
         {
@@ -100,7 +153,9 @@ public class ControllerRaySelector : MonoBehaviour
             if ((left ? leftPress : rightPress) && m_LastCaptureFrame != Time.frameCount)
             {
                 m_LastCaptureFrame = Time.frameCount;
-                OnObjectCaptured?.Invoke(target);
+                SelectingHand = left ? "left" : "right";
+                try { OnObjectCaptured?.Invoke(target); }
+                finally { SelectingHand = null; }
                 // Capture callbacks may destroy objects or pause/end the trial.
                 return;
             }
