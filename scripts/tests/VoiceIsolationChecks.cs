@@ -26,7 +26,13 @@ class VoiceIsolationChecks
         foreach (var audit in (IEnumerable)typeof(VoiceSynthesizer)
             .GetField("m_Audit", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth))
             if ((string)audit.GetType().GetField("clip_id").GetValue(audit) == Path.GetFileNameWithoutExtension(path))
+            {
                 speech = (int)audit.GetType().GetField("speech_samples").GetValue(audit);
+                bool clone = (string)audit.GetType().GetField("provider").GetValue(audit) == "mistral";
+                int fullLength = clip.samples * clip.channels;
+                int expectedWindow = clone ? fullLength - (int)Math.Round(clip.frequency * 0.4f) * clip.channels : fullLength;
+                Check(speech == expectedWindow, "neutral manifest covers full clip; clone manifest excludes exactly the room tail");
+            }
         Check(speech > 0, "manifest records the speech window");
         var samples = new float[clip.samples * clip.channels]; clip.GetData(samples, 0); double power = 0;
         for (int i = 0; i < samples.Length; i++)

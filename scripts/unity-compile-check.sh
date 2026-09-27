@@ -93,12 +93,20 @@ echo "Unity: $UNITY_BIN_PATH"
 echo "Log:   $LOG_FILE"
 
 set +e
-"$UNITY_BIN_PATH" \
+(
+  # Git hooks export the parent repository/index. Unity Package Manager starts
+  # its own Git processes; inheriting these can rewrite the shared repo config.
+  # Isolate only the child so the hook's parent commit keeps its Git context.
+  unset GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE GIT_COMMON_DIR GIT_PREFIX \
+    GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_NAMESPACE \
+    GIT_CONFIG GIT_CONFIG_PARAMETERS GIT_CONFIG_COUNT
+  "$UNITY_BIN_PATH" \
   -batchmode \
   -nographics \
   -quit \
   -projectPath "$ROOT_DIR" \
   -logFile "$LOG_FILE"
+)
 UNITY_EXIT=$?
 set -e
 
