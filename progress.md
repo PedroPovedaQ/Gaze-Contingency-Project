@@ -1,3 +1,15 @@
+## 2026-09-27
+
+- Recovered the temporary Unity checkout Git link and missing tracked files from its existing HEAD, preserving local protocol edits. Implemented first-person-singular clone speech and external neutral speech with versioned per-voice formatting through preparation, background synthesis, playback and correction-cache lookup. Replaced warmer/colder hints with gaze-relative left/right target-wall guidance and the existing debounced interrupting area cue; preload all three hints, cancel stale direction cues and suppress invalid gaze. Voice-isolation and rotational-layout suites passed, covering provider payloads, offline cache reuse, directional handedness and entry gates. Unity restarted and compiled without C# errors. Required Build And Run was attempted but failed during prerequisites with `No Android devices connected`; headset installation and listening/gaze acceptance remain pending. Preserved Unity scene backups in Assets/_Recovery/.
+
+## 2026-09-27
+
+- Revised participant-facing run-sheet explanations into future tense for the upcoming task, voice blocks, practice and data collection. Preserved direct instructions, current comfort questions and post-task completion/debrief wording.
+
+## 2026-09-26
+
+- Updated the open run sheet from the researcher-supplied revision: two counterbalanced voice blocks, trial/block definitions, between-trial rest and immediate-pause timing, consistent planned 30-trial wording, and removal of obsolete timing-condition references. Recorded the design in the IRB decision register and flagged legacy protocol/consent sources as unreconciled; no Huron submission or generated-packet update.
+
 ## 2026-09-25
 
 - Prepared the complete pilot checkpoint for v2: randomized 168-object layout, floor-relative heights, wrist degree-guide toggle, immediate gaze-area speech interruption, finalized run-sheet source/PDF and prior controller/audio fixes. Layout/gaze-gate and voice-isolation regression suites passed again; prior Android Build And Run succeeded. Physical headset acceptance remains pending.

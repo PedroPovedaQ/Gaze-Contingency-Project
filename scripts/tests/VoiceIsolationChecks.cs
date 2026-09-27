@@ -166,11 +166,11 @@ class VoiceIsolationChecks
             string targetPrompt = "Locate the Blue Cube.";
             string practicePrompt = "This is a practice round. It does not count toward the study. " + targetPrompt;
             Drain(synth.PrepareLibraries(new[] { targetPrompt, practicePrompt }, null, ok => prepared = ok));
-            Check(prepared && provider.Texts.Contains("Let's find the blue cube."),
+            Check(prepared && provider.Texts.Contains("I need to find the blue cube."),
                 "self-similar synthesis receives the selected formatted target wording");
-            Check(UnityWebRequest.RequestBodies.Exists(body => body.Contains("Let's find the blue cube.")),
-                "neutral synthesis receives the same formatted target wording");
-            Check(provider.Texts.Contains("Let's try a practice round. This one does not count toward our study rounds. Let's find the blue cube."),
+            Check(UnityWebRequest.RequestBodies.Exists(body => body.Contains("Locate the Blue Cube.")),
+                "neutral synthesis retains external target wording");
+            Check(provider.Texts.Contains("I will try a practice trial. This one does not count toward my study trials. I need to find the blue cube."),
                 "self-similar practice keeps its explicit practice declaration");
             provider.Calls = 0; UnityWebRequest.Requests.Clear();
             synth.Speak(targetPrompt); Drain(MonoBehaviour.LastRoutine);
@@ -189,7 +189,7 @@ class VoiceIsolationChecks
             UnityWebRequest.Requests.Clear();
             synth.Speak(lazyPrompt, "round"); Drain(MonoBehaviour.LastRoutine);
             Check(string.IsNullOrEmpty(synth.LastError) && provider.Calls == 1 &&
-                provider.Texts.Contains("Let's find the purple sphere.") &&
+                provider.Texts.Contains("I need to find the purple sphere.") &&
                 UnityWebRequest.Requests.TrueForAll(url => url.StartsWith("file:")),
                 "first-use trial synthesizes in the assigned clone with first-person wording and no neutral request");
             Check(File.Exists(SessionConfig.GetFilePath("voice-library-manifest.json")),
@@ -267,26 +267,20 @@ class VoiceIsolationChecks
             Check(foregroundFailures == 1 && !string.IsNullOrEmpty(synth.LastError),
                 "a failed background clip still requires valid audio when requested for playback");
             provider.Audio = new byte[120];
-            string hintSource = File.ReadAllText("Assets/HintGenerator.cs");
-            hintSource = hintSource.Substring(hintSource.IndexOf("// --- VERY CLOSE", StringComparison.Ordinal));
-            foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(hintSource, "\"([^\"]+)\""))
-            {
-                string source = match.Groups[1].Value;
-                string collaborative = VoicePromptText.Format(source, VoicePerspective.Collaborative);
-                string external = VoicePromptText.Format(source, VoicePerspective.External);
-                Check(!string.IsNullOrEmpty(collaborative) && !string.IsNullOrEmpty(external), "every live hint has both perspective renderings");
-            }
-            var hintMatches = System.Text.RegularExpressions.Regex.Matches(hintSource, "\"([^\"]+)\"");
-            var hintPhrases = new string[hintMatches.Count];
-            for (int i = 0; i < hintMatches.Count; i++) hintPhrases[i] = hintMatches[i].Groups[1].Value;
+            var hintPhrases = new[] { "Look left.", "Look right.", "You're in the correct area. Keep looking." };
             provider.Texts.Clear(); UnityWebRequest.RequestBodies.Clear();
             Drain(synth.PrepareLibraries(hintPhrases, null, ok => prepared = ok));
-            Check(prepared, "all live hints prepare in both voices");
+            Check(prepared, "all directional hints prepare in both voices");
             foreach (string phrase in hintPhrases)
             {
-                string formatted = VoicePromptText.Format(phrase, SessionConfig.Perspective);
-                Check(provider.Texts.Contains(formatted), "self-similar hint uses shared formatted text");
-                Check(UnityWebRequest.RequestBodies.Exists(body => body.Contains(formatted)), "neutral hint uses shared formatted text");
+                string selfText = VoicePromptText.FormatForVoice(phrase, VoiceCondition.SelfSimilar);
+                Check(selfText.StartsWith("I"), "self-similar guidance is first-person singular");
+                Check(provider.Texts.Contains(selfText), "clone provider receives first-person hint");
+                Check(UnityWebRequest.RequestBodies.Exists(body => body.Contains(phrase)), "neutral provider receives external hint");
+                SessionConfig.Voice = VoiceCondition.SelfSimilar;
+                provider.Calls = 0; UnityWebRequest.Requests.Clear();
+                synth.Speak(phrase); Drain(MonoBehaviour.LastRoutine);
+                Check(provider.Calls == 0 && UnityWebRequest.Requests.Count == 0, "runtime hint reuses exact prepared voice clip");
             }
             // Later clips may have less headroom than the accepted starter samples.
             foreach (bool quiet in new[] { false, true })

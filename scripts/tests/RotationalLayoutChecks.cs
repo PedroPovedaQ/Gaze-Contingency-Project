@@ -46,6 +46,14 @@ class RotationalLayoutChecks
             try{RotationalSearchLayout.Build(1.5f,0.1f,invalid);}catch(ArgumentOutOfRangeException){rejected=true;}
             Check(rejected,"invalid height rejected");
         }
+        Check(DirectionalHintPolicy.Direction(0,1,-1,0) == "Look left.", "left from forward gaze");
+        Check(DirectionalHintPolicy.Direction(0,1,1,0) == "Look right.", "right from forward gaze");
+        Check(DirectionalHintPolicy.Direction(1,0,0,1) == "Look left.", "rotated gaze reference");
+        Check(DirectionalHintPolicy.Direction(0,-1,1,0) == "Look left.", "rear-facing reference");
+        Check(DirectionalHintPolicy.Direction(0,1,0,-1) == "Look right.", "stable turn for directly behind");
+        Check(DirectionalHintPolicy.Direction(0,1,0,1) == null, "aligned bearing is not a left/right cue");
+        Check(DirectionalHintPolicy.Direction(0,0,1,0) == null, "vertical gaze has no horizontal cue");
+        Check(DirectionalHintPolicy.Direction(float.NaN,1,1,0) == null, "invalid vector abstains");
         var gate=new GazeZoneEntryGate();
         Check(!gate.Update(true,true,0),"entry not immediate");
         Check(!gate.Update(true,true,0.05),"brief sweep ignored");

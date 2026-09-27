@@ -32,7 +32,6 @@ public class VoiceModeSelector : MonoBehaviour
 
     [Header("Optional overrides")]
     [SerializeField] VoiceCondition m_DefaultMode = VoiceCondition.Generic;
-    [SerializeField] VoicePerspective m_DefaultPerspective = VoicePerspective.Collaborative;
     [SerializeField] bool m_AutoConfirmDefault = false; // skip the panel, use m_DefaultMode
     [SerializeField] int m_RecordSeconds = 40;
 
@@ -41,7 +40,7 @@ public class VoiceModeSelector : MonoBehaviour
     public event System.Action SelectionCompleted;
     public bool IsComplete => m_Phase == Phase.Done;
 
-    enum Phase { WaitingToStart, ChoosingPerspective, Choosing, ChoosingNeutral, Enrolling, EnrollmentFailed, Preparing, PreparationFailed, CheckingNeutral, CheckingSelf, Cancelled, Done }
+    enum Phase { WaitingToStart, Choosing, ChoosingNeutral, Enrolling, EnrollmentFailed, Preparing, PreparationFailed, CheckingNeutral, CheckingSelf, Cancelled, Done }
     Phase m_Phase = Phase.WaitingToStart;
 
     VoiceEnrollment m_Enrollment;
@@ -75,24 +74,18 @@ public class VoiceModeSelector : MonoBehaviour
     {
         if (m_Phase != Phase.WaitingToStart || !m_StartArmed || !Application.isFocused) return;
         m_StartArmed = false;
-        m_Phase = Phase.ChoosingPerspective;
+        m_Phase = Phase.Choosing;
         m_FirstPoll = true;
         m_SetupInputAfter = Time.realtimeSinceStartup + 0.75f;
         m_FinishRecordingButton.gameObject.SetActive(false);
-        if (m_AutoConfirmDefault)
+        // Wording is fixed by voice condition: external vs first-person singular.
+        if (!SessionConfig.TrySetPerspective(VoicePerspective.External))
         {
-            if (SessionConfig.TrySetPerspective(m_DefaultPerspective))
-            {
-                m_PerspectiveChosen = true;
-                BeginVoiceSelection();
-            }
-            else
-                SetText("<b>Perspective already locked</b>\nReset the session before starting a new setup.");
+            SetText("<b>Wording already locked</b>\nReset the session before starting a new setup.");
             return;
         }
-        SetText("<b>Choose assistant wording · Script pilot</b>\n\nTrigger (or press 1): <b>Collaborative</b>\n" +
-                "Example: “Let’s find the blue cube.”\n\nA / X (or press 2): <b>External</b>\n" +
-                "Example: “Locate the blue cube.”");
+        m_PerspectiveChosen = true;
+        BeginVoiceSelection();
     }
 
     void BuildPanel()
@@ -218,7 +211,7 @@ public class VoiceModeSelector : MonoBehaviour
         }
         if (!Application.isFocused || Time.realtimeSinceStartup < m_SetupInputAfter)
         { m_FirstPoll = true; return; }
-        if (m_Phase != Phase.ChoosingPerspective && m_Phase != Phase.Choosing && m_Phase != Phase.ChoosingNeutral && m_Phase != Phase.Enrolling &&
+        if (m_Phase != Phase.Choosing && m_Phase != Phase.ChoosingNeutral && m_Phase != Phase.Enrolling &&
             m_Phase != Phase.EnrollmentFailed && m_Phase != Phase.PreparationFailed &&
             m_Phase != Phase.CheckingNeutral && m_Phase != Phase.CheckingSelf) return;
 
@@ -239,13 +232,6 @@ public class VoiceModeSelector : MonoBehaviour
         bool secondaryEdge = secondary && !m_PrevSecondary;
         m_PrevSecondary = secondary;
         m_PrevTrigger = trig; m_PrevPrimary = prim;
-
-        if (m_Phase == Phase.ChoosingPerspective)
-        {
-            if (trigEdge || KeyPressed(1)) SelectCollaborativePerspective();
-            else if (primEdge || KeyPressed(2)) SelectExternalPerspective();
-            return;
-        }
 
         if (m_Phase == Phase.Enrolling)
         {
@@ -290,22 +276,6 @@ public class VoiceModeSelector : MonoBehaviour
         if (primEdge || KeyPressed(2)) { SelectSelfSimilar(); return; }
     }
 
-    /// <summary>Selects first-person plural assistant wording for this participant.</summary>
-    public void SelectCollaborativePerspective()
-    {
-        if (m_Phase != Phase.ChoosingPerspective || !SessionConfig.TrySetPerspective(VoicePerspective.Collaborative)) return;
-        m_PerspectiveChosen = true;
-        BeginVoiceSelection();
-    }
-
-    /// <summary>Selects third-person/external assistant wording for this participant.</summary>
-    public void SelectExternalPerspective()
-    {
-        if (m_Phase != Phase.ChoosingPerspective || !SessionConfig.TrySetPerspective(VoicePerspective.External)) return;
-        m_PerspectiveChosen = true;
-        BeginVoiceSelection();
-    }
-
     void BeginVoiceSelection()
     {
         m_Phase = Phase.Choosing;
@@ -321,7 +291,7 @@ public class VoiceModeSelector : MonoBehaviour
 
     public void SelectGeneric()
     {
-        if (!m_PerspectiveChosen || m_Phase == Phase.WaitingToStart || m_Phase == Phase.ChoosingPerspective || m_Phase == Phase.Done || m_Phase == Phase.Enrolling || m_Phase == Phase.Preparing) return;
+        if (!m_PerspectiveChosen || m_Phase == Phase.WaitingToStart || m_Phase == Phase.Done || m_Phase == Phase.Enrolling || m_Phase == Phase.Preparing) return;
         m_Synth?.Stop();
         m_Phase = Phase.ChoosingNeutral;
         m_FirstPoll = true;
@@ -334,7 +304,7 @@ public class VoiceModeSelector : MonoBehaviour
 
     void SelectNeutral(NeutralVoiceProfile profile)
     {
-        if (!m_PerspectiveChosen || m_Phase == Phase.WaitingToStart || m_Phase == Phase.ChoosingPerspective || m_Phase == Phase.Done || m_Phase == Phase.Enrolling || m_Phase == Phase.Preparing) return;
+        if (!m_PerspectiveChosen || m_Phase == Phase.WaitingToStart || m_Phase == Phase.Done || m_Phase == Phase.Enrolling || m_Phase == Phase.Preparing) return;
         m_Synth?.Stop();
         SessionConfig.NeutralProfile = profile;
         SessionConfig.Voice = VoiceCondition.Generic;
@@ -347,7 +317,7 @@ public class VoiceModeSelector : MonoBehaviour
 
     public void SelectSelfSimilar()
     {
-        if (!m_PerspectiveChosen || m_Phase == Phase.WaitingToStart || m_Phase == Phase.ChoosingPerspective || m_Phase == Phase.Done || m_Phase == Phase.Enrolling || m_Phase == Phase.Preparing) return;
+        if (!m_PerspectiveChosen || m_Phase == Phase.WaitingToStart || m_Phase == Phase.Done || m_Phase == Phase.Enrolling || m_Phase == Phase.Preparing) return;
         SessionConfig.LockPerspective();
         if (!SessionConfig.VoiceBlocksEnabled)
         {
@@ -486,10 +456,10 @@ public class VoiceModeSelector : MonoBehaviour
         else if (m_Phase == Phase.CheckingSelf)
         {
             try { System.IO.File.WriteAllText(System.IO.Path.Combine(SessionConfig.ParticipantPath, "voice-readiness-v1.txt"),
-                $"{System.DateTime.UtcNow:O} both_audio_samples_accepted profile={SessionConfig.NeutralProfile} order={SessionConfig.VoiceOrder} perspective={SessionConfig.Perspective} perspective_version={SessionConfig.PerspectiveVersion}"); }
+                $"{System.DateTime.UtcNow:O} both_audio_samples_accepted profile={SessionConfig.NeutralProfile} order={SessionConfig.VoiceOrder} perspective_policy=neutral_external_self_first_person perspective_version={SessionConfig.PerspectiveVersion}"); }
             catch (System.Exception) { SetText("Could not save audio readiness. Check device storage, then accept again."); return; }
             SessionConfig.ApplyRoundVoice(0);
-            Finish($"{SessionConfig.ParticipantId}: both voices ready.\nPerspective: {SessionConfig.Perspective}\nOrder: {SessionConfig.VoiceOrder.Replace("_", " ")}");
+            Finish($"{SessionConfig.ParticipantId}: both voices ready.\nWording: neutral external / self-similar first person\nOrder: {SessionConfig.VoiceOrder.Replace("_", " ")}");
         }
     }
 

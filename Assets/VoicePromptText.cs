@@ -5,13 +5,14 @@ using System.Collections.Generic;
 public enum VoicePerspective
 {
     Collaborative,
-    External
+    External,
+    FirstPerson
 }
 
 /// <summary>Stable wording transforms for the two voice perspectives.</summary>
 public static class VoicePromptText
 {
-    public const string Version = "perspective-v2-controller";
+    public const string Version = "perspective-v3-first-person-directional";
 
     // Neutral/external source phrase to collaborative equivalent. Keeping this
     // table explicit preserves meaning across every live hint and terminal line.
@@ -69,12 +70,48 @@ public static class VoicePromptText
         if (string.IsNullOrEmpty(text)) return text;
         if (!Enum.IsDefined(typeof(VoicePerspective), perspective))
             throw new ArgumentOutOfRangeException(nameof(perspective), perspective, "Unknown voice perspective.");
-        if (perspective == VoicePerspective.Collaborative) return SelfSimilar(text);
+        if (perspective == VoicePerspective.Collaborative) return Collaborative(text);
+        if (perspective == VoicePerspective.FirstPerson) return SelfSimilar(text);
         return k_External.TryGetValue(text, out var wording) ? wording : text;
     }
 
-    /// <summary>Compatibility name for the legacy self-similar voice condition.</summary>
+    public static VoicePerspective PerspectiveForVoice(VoiceCondition voice) =>
+        voice == VoiceCondition.SelfSimilar ? VoicePerspective.FirstPerson : VoicePerspective.External;
+
+    public static string FormatForVoice(string text, VoiceCondition voice) => Format(text, PerspectiveForVoice(voice));
+
     public static string SelfSimilar(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return text;
+        const string practice = "This is a practice round. It does not count toward the study. ";
+        if (text.StartsWith(practice, StringComparison.Ordinal))
+            return "I will try a practice trial. This one does not count toward my study trials. " + SelfSimilar(text.Substring(practice.Length));
+        if (text.StartsWith("Locate the ", StringComparison.Ordinal))
+            return "I need to find the " + text.Substring("Locate the ".Length).ToLowerInvariant();
+        switch (text)
+        {
+            case "Look left.": return "I need to look left.";
+            case "Look right.": return "I need to look right.";
+            case "You're in the correct area. Keep looking.": return "I'm in the correct area. I need to keep looking.";
+            case "Nice!": return "I found it!";
+            case "Excellent! You located all the objects. Please complete the NASA T L X questionnaire now.":
+                return "I found all the objects. I will complete the NASA T L X questionnaire now.";
+            case "Thank you for your participation in this experiment, please remove the headset now and have a great day":
+                return "I have finished the experiment. I can remove the headset now.";
+        }
+        if (text.StartsWith("Welcome to the surrounding search. ", StringComparison.Ordinal))
+            return "I will begin the surrounding search. I will stay seated at the center. " +
+                "I will see objects on eight planes around me. I need to find each target by its color and shape. " +
+                "I will point the controller ray at the matching object to highlight it, then press the trigger to select it. My first two trials will be practice.";
+        if (text.StartsWith("Hi, I will guide you through this task. ", StringComparison.Ordinal))
+            return "I need to find each target by its color and shape as quickly and accurately as I can. " +
+                "I will point the controller ray at the matching object, then press the trigger to select it. " +
+                "I will begin by tapping a nearby surface with the controller.";
+        return text;
+    }
+
+    /// <summary>Compatibility name for the legacy self-similar voice condition.</summary>
+    static string Collaborative(string text)
     {
         if (string.IsNullOrEmpty(text)) return text;
         if (k_Collaborative.TryGetValue(text, out var wording)) return wording;
@@ -84,7 +121,7 @@ public static class VoicePromptText
                 "Let's point the controller ray at the matching object to highlight it, then press the trigger to select it. Our first two rounds are practice.";
         const string practice = "This is a practice round. It does not count toward the study. ";
         if (text.StartsWith(practice, StringComparison.Ordinal))
-            return "Let's try a practice round. This one does not count toward our study rounds. " + SelfSimilar(text.Substring(practice.Length));
+            return "Let's try a practice round. This one does not count toward our study rounds. " + Collaborative(text.Substring(practice.Length));
         if (text.StartsWith("Locate the ", StringComparison.Ordinal))
             return "Let's find the " + text.Substring("Locate the ".Length).ToLowerInvariant();
         if (text.StartsWith("Hi, I will guide you through this task. ", StringComparison.Ordinal))

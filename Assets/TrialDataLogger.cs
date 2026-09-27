@@ -495,7 +495,8 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine(FormattableString.Invariant($"  \"schema_version\": 2,"));
         sb.AppendLine(FormattableString.Invariant($"  \"session_outcome\": \"{m_SessionOutcome}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"voice_order\": \"{SessionConfig.VoiceOrder}\","));
-        sb.AppendLine($"  \"voice_perspective\": \"{SessionConfig.Perspective}\", \"perspective_version\": \"{VoicePromptText.Version}\",");
+        sb.AppendLine($"  \"voice_perspective\": \"neutral_external_self_first_person\", \"perspective_version\": \"{VoicePromptText.Version}\",");
+        sb.AppendLine($"  \"guidance_policy\": \"{DirectionalHintPolicy.Version}\",");
         sb.AppendLine(FormattableString.Invariant($"  \"total_rounds\": {ChallengeSet.RoundCount},"));
         sb.AppendLine(FormattableString.Invariant($"  \"nominal_total_rounds\": {ChallengeSet.TotalRounds},"));
         sb.AppendLine(FormattableString.Invariant($"  \"debug_round_override\": {ChallengeSet.DebugRoundCountOverride},"));

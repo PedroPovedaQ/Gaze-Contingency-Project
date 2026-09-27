@@ -155,7 +155,7 @@ public class VoiceAssistantController : MonoBehaviour
     }
 
     const string k_CompletionLine = "Excellent! You located all the objects. Please complete the NASA T L X questionnaire now.";
-    public const string AudioCheckLine = "Locate the target by its color and shape. You're on the right track.";
+    public const string AudioCheckLine = "Locate the target by its color and shape.";
     public static string RoundPhrase(int round, string color, string shape, bool isPractice = false) =>
         (isPractice ? "This is a practice round. It does not count toward the study. " : "") +
         (color == "Yellow" && shape == "Star"
@@ -175,6 +175,7 @@ public class VoiceAssistantController : MonoBehaviour
     {
         var practice = ChallengeSet.PracticeRound(0);
         return new[] { AudioCheckLine, StudyIntroLine, "Nice!", HintGenerator.AreaCorrectionPhrase,
+            DirectionalHintPolicy.LeftPhrase, DirectionalHintPolicy.RightPhrase,
             RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape, true) };
     }
 

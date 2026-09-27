@@ -93,7 +93,7 @@ public class VoiceSynthesizer : MonoBehaviour
             {
                 PreparationStage = $"Preparing {(voice == VoiceCondition.Generic ? "neutral" : "self-similar")} voice: {i + 1}/{phrases.Length}";
                 progress?.Invoke(PreparationStage);
-                m_PreparingText = VoicePromptText.Format(phrases[i], SessionConfig.Perspective);
+                m_PreparingText = VoicePromptText.FormatForVoice(phrases[i], voice);
                 for (int attempt = 0; attempt < 3; attempt++)
                 {
                     yield return SpeakCoroutine(phrases[i]);
@@ -163,7 +163,7 @@ public class VoiceSynthesizer : MonoBehaviour
         {
             string json = JsonUtility.ToJson(new LibraryAudit { clips = m_Audit,
                 matched_rms = m_MatchedRms,
-                perspective = SessionConfig.Perspective.ToString(), perspective_version = VoicePromptText.Version,
+                perspective = "neutral_external_self_first_person", perspective_version = VoicePromptText.Version,
                 preparation_mode = m_OnDemandPhrases == null ? "full_library" :
                     m_BackgroundEnabled ? "starter_then_background" : "starter_then_on_demand" }, true);
             File.WriteAllText(Path.Combine(SessionConfig.ParticipantPath, "voice-library-manifest.json"), json);
@@ -261,7 +261,7 @@ public class VoiceSynthesizer : MonoBehaviour
         bool self = SessionConfig.Voice == VoiceCondition.SelfSimilar;
         string voiceId = self ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId;
         if (self && SessionConfig.SelfSimilarEnrollmentPending) return false;
-        string path = GetCachePath(VoicePromptText.Format(phrase, SessionConfig.Perspective),
+        string path = GetCachePath(VoicePromptText.FormatForVoice(phrase, SessionConfig.Voice),
             (self ? "vx-" : "el-") + voiceId);
         if (!m_PreparedClips.ContainsKey(path) || !stillRelevant()) return false;
         m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(phrase, stillRelevant));
@@ -355,7 +355,8 @@ public class VoiceSynthesizer : MonoBehaviour
         m_GeneratedAudio = false;
         bool allowOnDemand = LibraryReady && m_OnDemandPhrases != null && m_OnDemandPhrases.Contains(text);
         bool wantSelfSimilar = (requestedVoice ?? SessionConfig.Voice) == VoiceCondition.SelfSimilar;
-        if (!setupAnnouncement) text = VoicePromptText.Format(text, SessionConfig.Perspective);
+        var actualPerspective = VoicePromptText.PerspectiveForVoice(requestedVoice ?? SessionConfig.Voice);
+        if (!setupAnnouncement) text = VoicePromptText.Format(text, actualPerspective);
         m_PreparingText = text;
         string voiceId = wantSelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId;
         string voiceScope = wantSelfSimilar ? $"vx-{voiceId}" : $"el-{voiceId}";
@@ -493,6 +494,7 @@ public class VoiceSynthesizer : MonoBehaviour
 
     IEnumerator PlayFromFile(string filePath, bool wantSelfSimilar, string voiceId, bool silent)
     {
+        var actualPerspective = wantSelfSimilar ? VoicePerspective.FirstPerson : VoicePerspective.External;
         AudioClip clip;
         if (!m_PreparedClips.TryGetValue(filePath, out clip))
         {
@@ -534,7 +536,7 @@ public class VoiceSynthesizer : MonoBehaviour
                 provider = wantSelfSimilar ? "mistral" : "elevenlabs",
                 model = wantSelfSimilar ? "voxtral-mini-tts-2603" : k_Model,
                 text = m_PreparingText, content_version = ContentVersion,
-                perspective = m_SetupAnnouncement ? "setup" : SessionConfig.Perspective.ToString(),
+                perspective = m_SetupAnnouncement ? "setup" : actualPerspective.ToString(),
                 perspective_version = VoicePromptText.Version,
                 duration_seconds = clip.length, rms = rms, peak = peak, gain = gain, achieved_rms = rms * gain,
                 requested_rms = requestedRms, level_limited = levelLimited });
@@ -550,9 +552,9 @@ public class VoiceSynthesizer : MonoBehaviour
         m_AudioSource.volume = 0.7f;
         m_AudioSource.pitch = 1f;
         m_AudioSource.Play();
-        Telemetry?.Invoke("audio_playback_start", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={SessionConfig.Perspective};perspective_version={VoicePromptText.Version};text={m_PreparingText}");
+        Telemetry?.Invoke("audio_playback_start", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};text={m_PreparingText}");
         while (m_AudioSource.isPlaying) yield return null;
-        Telemetry?.Invoke("audio_playback_end", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={SessionConfig.Perspective};perspective_version={VoicePromptText.Version};text={m_PreparingText}");
+        Telemetry?.Invoke("audio_playback_end", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};text={m_PreparingText}");
         m_ActiveClipKey = null;
     }
 
@@ -576,7 +578,7 @@ public class VoiceSynthesizer : MonoBehaviour
 
         foreach (string sourcePhrase in phrases)
         {
-            string phrase = VoicePromptText.Format(sourcePhrase, SessionConfig.Perspective);
+            string phrase = VoicePromptText.FormatForVoice(sourcePhrase, VoiceCondition.Generic);
             string path = GetCachePath(phrase, $"el-{neutralVoiceId}"); // pre-cache targets the generic voice
             if (File.Exists(path))
             {

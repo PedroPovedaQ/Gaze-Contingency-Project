@@ -54,8 +54,8 @@ public static class SessionConfig
     public static VoiceCondition Voice { get; set; } = VoiceCondition.Generic;
 
     /// <summary>
-    /// Wording perspective for the assistant. It is selected during setup and
-    /// remains shared by both counterbalanced voice blocks for the participant.
+    /// Legacy script-pilot preference. Runtime wording now follows voice condition
+    /// through VoicePromptText.PerspectiveForVoice.
     /// </summary>
     public static VoicePerspective Perspective { get; private set; } = VoicePerspective.Collaborative;
     /// <summary>Canonical wording version owned by the prompt formatter.</summary>
@@ -198,7 +198,7 @@ public static class SessionConfig
         // never has to infer it from cached audio or the voice block order.
         File.WriteAllText(
             Path.Combine(CurrentRunFolder, "session-perspective-v1.txt"),
-            $"perspective={Perspective}\nversion={PerspectiveVersion}\n");
+            $"perspective_policy=neutral_external_self_first_person\nversion={PerspectiveVersion}\n");
 
         Debug.Log($"{k_Tag} Run started: {ParticipantId} / run {RunNumber} / {ConditionLabel}");
         Debug.Log($"{k_Tag} Output folder: {CurrentRunFolder}");
