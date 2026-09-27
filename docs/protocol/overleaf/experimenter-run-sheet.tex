@@ -17,7 +17,7 @@
 \usetikzlibrary{arrows.meta}
 \usepackage{xurl}
 \usepackage[colorlinks=true,linkcolor=Ink,urlcolor=ActionInk]{hyperref}
-\hypersetup{pdftitle={Gaze Contingency Search Study - Annotated Experimenter Run Sheet},pdfauthor={Gaze Contingency Project}}
+\hypersetup{pdftitle={Gaze Contingency Search Study - Experimenter Run Sheet},pdfauthor={Gaze Contingency Project}}
 \renewcommand{\familydefault}{\sfdefault}
 \color{Ink}
 \setlength{\parindent}{0pt}
@@ -30,7 +30,6 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\small\color{Gray}FOLLOW MY VOICE \enspace / \enspace RUN SHEET}
-\fancyhead[R]{\small\color{Gray}ANNOTATED REVIEW}
 \fancyfoot[R]{\small\thepage}
 \renewcommand{\headrulewidth}{0.35pt}
 \emergencystretch=2em
@@ -54,7 +53,7 @@
 \end{tcolorbox}
 \say{SAY / ASK}{Participant-facing speech is set in dark upright type.}
 \action{ACTION / RESEARCHER}{Experimenter-only instructions are italic and muted gold-brown. Do not read them aloud.}
-
+\meeting{Reviewer Comment}{Comment Example.}
 \begin{tabularx}{\linewidth}{@{}XX@{}}
 \field{Participant ID} & \field{Run} \\[14pt]
 \field{Date} & \field{Researcher} \\[14pt]
@@ -62,19 +61,19 @@
 \field{Preferred voice ID} & \field{Survey version} \\
 \end{tabularx}
 \vspace{8pt}
-\action{RESEARCHER ONLY}{Two counterbalanced voice blocks, participant-preferred and self-similar. Both use gaze-contingent warmer/colder guidance. Planned trial start is the same fixed front direction. Say ``first block'' and ``second block''; do not suggest that either voice should improve performance.}
+\action{RESEARCHER ONLY}{Two counterbalanced voice blocks: one uses the participant-preferred voice and the other uses the self-similar voice. Each participant experiences both voices; use the saved assigned order. A block comprises multiple trials, and each trial is one target-object search. Both use gaze-contingent warmer/colder guidance. Planned trial start is the same fixed front direction. Say ``first block'' and ``second block''; do not suggest that either voice should improve performance.}
 \step{Before participant arrives}
 {\color{ActionInk}\itshape
 \begin{itemize}
 \item {Sanitize and test the Head Mounted Display (HMD) and controllers.}
 \item {Open Unity and Qualtrics.}
-\item {Enter coded ID and assigned condition.}
-\item {Prepare consent, baseline survey, both block surveys, final interview and session/event record. Use one defined TLX collection route; see the beta note in Section 7.}
+\item {Enter coded ID and assigned voice-block order.}
+\item {Prepare consent, baseline survey, both block surveys, final interview and session/event record. Use one defined TLX collection route and avoid duplicate administration.}
 \end{itemize}
 }
 \step{1 Welcome and consent}
-\say{SAY}{``Thank you for coming. You will stay seated and turn to find virtual objects by their color and shape. A voice assistant will provide hints. You may pause, take a break or stop at any time without penalty.''}
-\say{SAY}{``We will ask you to record a short voice sample to create a synthetic version of your voice. We also record eye-gaze and task data under a study code. Please read the consent form for what is collected, where it is processed and how it is handled.''}
+\say{SAY}{``Thank you for coming. Today you will be performing a search task in mixed reality. In this task, you will stay seated and turn to find virtual objects by their color and shape. A voice assistant will provide hints. You will be performing this task for a number of trials over two task blocks, each using a different assistant voice. You may pause, take a break or stop at any time without penalty.''}
+\say{SAY}{``We will ask you to record a short voice sample to create a synthetic version of your voice. We will also record eye-gaze and task data under a study code. Please read the consent form for what will be collected, where it will be processed and how it will be handled.''}
 
 \action{ACTION}{Obtain consent.}
 \step{2 Initial Qualtrics and Voice Setup}
@@ -85,7 +84,7 @@
 \say{SURVEY ITEM / AGENT GENDER PREFERENCE}{``What gender presentation would you prefer for the agent's voice?''}
 \say{SURVEY ITEM / AGENT ACCENT PREFERENCE}{``What accent would you prefer the agent's voice to have?''}
 
-\action{ACTION / CANDIDATE PREPARATION}{Save the requested preferences and configure selected voice for the trial.}
+\action{ACTION / CANDIDATE PREPARATION}{Save the requested preferences and configure the selected voice for the participant-preferred block.}
 \say{SAY}{``We will now record the short voice sample described in the consent form. After the tone, please read the displayed passage in your usual speaking voice.''}
 
 \say{ASK / AUDIO CHECK}{``Can you hear the voice clearly and at a comfortable volume?''}
@@ -96,13 +95,15 @@
 
 \say{ASK}{``Can you see clearly? Does the equipment feel comfortable? Do you feel well enough to continue?''}
 \step{4. Pre-Block Activity}
-\say{SAY}{``First, I will explain the task. Your task is simply to locate objects that are around you. The objects that you'll need to find are specified by an agent. For example, the agent might say: "Locate the blue sphere". Once you find the object, point the controller ray at it to highlight it, then press the trigger to select it -- this completes the round. You will then continue this for other objects the agent specifies.}
+\say{SAY}{``First, I will explain the task. In each trial, you will search for one object. The agent will tell you which object to find, for example, `Locate the blue sphere.' You will point the controller ray at the matching object to highlight it, then press the trigger to select it. Selecting the correct object will complete the trial; if you select an incorrect object, you will hear an error ding- continue searching for the same target. You will then continue over several more rounds with the agent asking you locate one object in each round.''}
+\say{SAY}{``If you would like a rest, let me know. We will normally take it between trials, before the next search begins. You can also ask us to pause or stop immediately at any time.''}
+\action{BREAKS AND TIMING}{Requested rest breaks normally occur after a trial ends and before the next search begins. Do not start the next search until the participant is ready. Breaks and questionnaires are outside active-search time. If a participant needs to pause during a trial, pause immediately, suspend active-search timing and record the interruption and its duration separately. Retain the interrupted-trial record; do not silently replace it or count break time as search time.}
 
 \clearpage
 
 \step{5. Familiarization}
 \action{ACTION}{At the 360 search start checkpoint, seat the participant at the intended center facing the chosen room-front reference. Release the trigger, then press Trigger / Enter to center and begin. Record the reference; do not recenter to wherever the participant happens to face later.}
-\say{SAY}{``Objects will appear around you, you can turn in your chair in all 360 degrees. Find the object with the announced color and shape. Turn while staying seated, point the controller ray at the matching object to highlight it, then press the trigger to select it. Looking alone does not select an object. You do not need to count rounds.''}
+\say{SAY}{``Objects will appear around you, and you will be able to turn in your chair through all 360 degrees. Find the described object that the agent asks you to find. You will turn while staying seated, point the controller ray at the matching object to highlight it, then press the trigger to select it. ''}
 
 \begin{center}
 \begin{tikzpicture}[scale=0.8]
@@ -118,43 +119,42 @@
 \draw[Ink,line width=2pt] (-0.14,-0.16)--(-0.14,-0.42) (0.14,-0.16)--(0.14,-0.42);
 \draw[-{Stealth[length=3mm]},line width=1.3pt,Gold!70!black] (35:1.35) arc (35:325:1.35);
 \node[font=\small,align=center] at (0,-3.35) {Remain seated. Turn to look around.};
-\node[font=\small\bfseries] at (0,3.12) {Objects can appear around you};
+\node[font=\small\bfseries] at (0,3.12) {Objects will appear around you};
 \end{tikzpicture}
 
 {\small\color{Gray}Schematic, not to scale. Illustrates seated rotation only.}
 \end{center}
-\say{SAY}{``The next rounds are practice, and are meant to simply get you familiar with the task.''}
-\action{ACTION}{Allow the user to complete the object selection practice rounds.}
+\say{SAY}{``The next trials will be practice trials to help you become familiar with the task.''}
+\action{ACTION}{Allow the user to complete the object-selection practice trials.}
 \say{ASK}{``Do you have any questions about the controls or task?''}
 \say{SAY}{``When you are ready, we will begin the first task block.''}
 \clearpage
 \step{6 First task block}
-\action{INTERNAL SETTINGS}{Practice | Real | 30 rounds}
+\action{PLANNED SCHEDULE}{30 experimental trials in this voice block; practice trials are separate. This is the protocol target, not evidence of the installed build schedule. Verify the configured count before participant use.}
 \action{RESEARCHER SETTINGS}{Confirm the saved first voice and planned trial schedule. Keep object layout, selection method, guidance policy and the finalized prompt wording constant across voices.}
 \say{SAY}{``We will now begin the first task block. Find each target as quickly and accurately as you comfortably can. Stay seated and use the same controller ray and trigger selection you practiced. Tell me if you need to pause.''}
 \action{ACTION}{Start block; monitor safety.}
 \say{AT COMPLETION SAY}{``That task block is complete. Please stop and lower your hands comfortably.''}
-\say{SAY}{``These questions ask about your workload, your experience of the activity and the agent. There are no right answers. Please answer based on the block you just finished.''}
+\say{SAY}{``The next questions will ask about your workload, your experience of the activity and the agent. Please answer based on the block you just finished.''}
 \action{ACTION}{Administer Survey Block \#1.}
 \say{SAY}{``You may take a short break of up to 5 minutes. Tell me when you are ready to continue.''}
 \say{BEFORE CONTINUING ASK}{``Do you feel comfortable and well enough to continue?''}
-\step{Second Task Block}
-\action{INTERNAL SETTINGS}{| Assigned condition | 30 valid attempts}
-\action{INTERNAL SETTINGS}{READ ONLY THE ASSIGNED CONDITION SCRIPT:}
-\say{SAY}{``We will now begin the second task block. The task and selection method are the same. Find each target as quickly and accurately as you comfortably can, and tell me if you need to pause.''}
+\step{7 Second task block}
+\action{PLANNED SCHEDULE}{30 experimental trials using the other assigned voice. Retain incomplete or interrupted trials with their outcomes; do not add replacement trials merely to reach 30 valid attempts.}
+\say{SAY}{``We will now begin the second task block. This block will use the other assistant voice. The task and selection method will remain the same. Find each target as quickly and accurately as you comfortably can, and tell me if you need to pause.''}
 \action{ACTION}{Start block; monitor safety.}
 \say{AT COMPLETION SAY}{``The search task is complete. Please stop turning. We will finish the questions about this block, then I will help you remove the headset.''}
-\say{SAY}{``These questions ask about your workload, your experience of the activity and the agent. There are no right answers. Please answer based on the block you just finished.''}
+\say{SAY}{``The next questions will ask about your workload, your experience of the activity and the agent. Please answer based on the block you just finished.''}
 \action{ACTION}{Administer Survey Block \#2.}
 \clearpage
-\step{9 Final Qualtrics}
-\say{SAY}{``Please complete the final questionnaire. It asks about your experiences with the two voices. It is fine to have no preference. We are interested in what you experienced, including anything distracting, uncomfortable or unhelpful.''}
-\say{SAY}{``Some follow-up questions may appear depending on your answers and the timing condition you experienced. Answer based on your own experience and tell me when you have submitted it.''}
+\step{8 Final Qualtrics}
+\say{SAY}{``Please complete the final questionnaire. It will ask about your experiences with the two voices.''}
+\say{SAY}{``Some follow-up questions may appear depending on your answers about the two voices. Answer based on your own experience and tell me when you have submitted it.''}
 \action{EXPLORATORY FOLLOW-UP}{After open responses, ask ``Did either voice feel like your own thoughts, like another person helping, or neither?'' Record this as an exploratory report, not proof of an internal-dialogue mechanism.}
 \action{ACTION}{Administer Post-Study Survey Block}
-\step{10 Debrief and finish}
+\step{9 Debrief and finish}
 \say{SAY}{``Thank you. This study compares participant-preferred and self-similar voices during gaze-guided object search. Both voices provide gaze-contingent assistance. We are examining task performance and how participants experience the activity and assistant.''}
-\say{SAY}{``Your data are stored under a coded participant ID. Please avoid discussing the timing condition or study details with people who may participate later, because knowing them in advance could affect their behavior.''}
+\say{SAY}{``Your data are stored under a coded participant ID. Please avoid discussing the voice conditions or study details with people who may participate later, because knowing them in advance could affect their behavior.''}
 \say{ASK}{``Do you have any questions about the study or your experience?''}
 \say{SAY}{``Thank you for participating. We are finished.''}
 \step{Immediate stop or pause criteria}
@@ -170,5 +170,5 @@
 \end{itemize}
 }
 \step{Appendix Current recording passage}
-\meeting{CURRENT RECORDING PASSAGE}{``Locate the red sphere. Look toward the upper shelf. Move your gaze slowly to the right. Check the blue cube near the center. Compare each object's color and shape. Scan the lower row from left to right. Look beside the purple cylinder. Point the controller ray at the target and check its highlight. Press the trigger to select the matching object. Take a short pause. Get ready for the next round.''}
+\meeting{CURRENT RECORDING PASSAGE}{``Locate the red sphere. Look toward the upper shelf. Move your gaze slowly to the right. Check the blue cube near the center. Compare each object's color and shape. Scan the lower row from left to right. Look beside the purple cylinder. Point the controller ray at the target and check its highlight. Press the trigger to select the matching object. Take a short pause. Get ready for the next trial.''}
 \end{document}

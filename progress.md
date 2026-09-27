@@ -1,5 +1,7 @@
 ## 2026-09-27
 
+- Saved all remaining protocol/run-sheet edits and Unity recovery/crash artifacts at the researcher's request for the v3 checkpoint. The saved run sheet compiles successfully; legacy IRB packet reconciliation and headset acceptance remain open.
+
 - Recovered the temporary Unity checkout Git link and missing tracked files from its existing HEAD, preserving local protocol edits. Implemented first-person-singular clone speech and external neutral speech with versioned per-voice formatting through preparation, background synthesis, playback and correction-cache lookup. Replaced warmer/colder hints with gaze-relative left/right target-wall guidance and the existing debounced interrupting area cue; preload all three hints, cancel stale direction cues and suppress invalid gaze. Voice-isolation and rotational-layout suites passed, covering provider payloads, offline cache reuse, directional handedness and entry gates. Unity restarted and compiled without C# errors. Required Build And Run was attempted but failed during prerequisites with `No Android devices connected`; headset installation and listening/gaze acceptance remain pending. Preserved Unity scene backups in Assets/_Recovery/.
 
 ## 2026-09-27

@@ -1,5 +1,7 @@
 # Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent
 
+> **Revision status — 2026-09-26:** This legacy draft is not the current two-voice protocol. The current design has two counterbalanced blocks (participant-preferred and self-similar), each comprising multiple target-search trials, with gaze-contingent guidance in both. Requested rest normally occurs between trials; immediate pause/stop remains available, with rest excluded from active-search time. See the [decision register](../decision-register.md#2026-09-26--two-voice-blocks-and-break-terminology) and [current run sheet](../../protocol/overleaf/experimenter-run-sheet.tex). Four-condition and offline-only statements below are superseded and require full reconciliation before regeneration or submission.
+
 Principal Investigator: **Dr. Roshan Venkatakrishnan [ADMINISTRATIVE INPUT: confirm Huron eligibility]** \
 Department/School: **Computer Science, College of Engineering and Computer Science** \
 Telephone: **407-823-3957** \

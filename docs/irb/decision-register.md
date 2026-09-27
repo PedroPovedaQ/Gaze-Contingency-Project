@@ -8,6 +8,16 @@ formative validation. They are not UCF IRB approvals. Administrative facts and
 institutional determinations that the research team cannot invent are listed
 separately at the end.
 
+## 2026-09-26 — Two voice blocks and break terminology
+
+**Current decision / protocol proposal:** each participant completes two counterbalanced voice blocks, one using the participant-preferred voice and the other using the participant-derived self-similar voice. Both use gaze-contingent assistance. Voice condition is the planned comparison; there is no separate timing-condition or gaze-unaware factor. A **trial** is one target-object search; a **block** comprises multiple trials with the same voice. Use “first block” and “second block” in participant speech, not “phases.”
+
+The planned schedule is 30 experimental trials per block, with practice separate; the implemented beta still has 14 experimental trials in two seven-trial blocks. “30 valid attempts” is not an automatic replacement rule. Preserve incomplete/interrupted outcomes; repeat and exclusion rules require explicit specification.
+
+Requested rest breaks normally occur between trials, before the next search starts. The run sheet retains a scheduled optional break of up to five minutes after the first block questionnaire. Participants may pause or stop immediately at any time. Suspend active-search timing for an in-trial pause and record its duration/outcome separately; exclude questionnaires and rest from active-search time. Device timing and operational handling must be verified before participant use.
+
+The [updated run sheet](../protocol/overleaf/experimenter-run-sheet.tex) incorporates the researcher-supplied revision. This decision supersedes older four-condition, factorial, Williams-sequence and timing-condition language. It does not establish IRB approval or reconcile the entire legacy packet's consent, provider/data lifecycle, sample-size or analysis content. Generated Word/PDF submission artifacts remain unreconciled.
+
 ## 2026-09-16 reconciliation checkpoint
 
 **Protocol proposal — confirmed user decisions:** seated rotation, a return to the fixed front direction before every trial, warmer/colder-only guidance, and a two-voice within-participant thesis study using cloud voice processing. **Administrative status reported by the researcher:** the application has not been submitted. The [alignment checkpoint](../thesis-study-alignment.md) records these decisions and the remaining pilot-count and validation questions. Offline/no-third-party-transfer statements below are superseded draft assumptions, not the selected workflow; provider data handling and institutional requirements still need verification before source reconciliation/submission. The older allocation, provider and sample-size entries below have not yet been reconciled into a current submission packet; they must not be treated as confirmation of the current approved workflow.
