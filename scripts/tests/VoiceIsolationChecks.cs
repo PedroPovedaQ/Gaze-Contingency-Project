@@ -19,25 +19,58 @@ class VoiceIsolationChecks
         .GetMethod("GetCachePath", BindingFlags.Instance | BindingFlags.NonPublic)
         .Invoke(synth, new object[] { "test phrase", scope });
     static string Formatted(string text) => VoicePromptText.Format(text, SessionConfig.Perspective);
+    // RMS over the manifest's speech window (words only, excluding any effect tail); checks peak safety too.
+    static double SpeechRms(VoiceSynthesizer synth, string path, AudioClip clip)
+    {
+        int speech = -1;
+        foreach (var audit in (IEnumerable)typeof(VoiceSynthesizer)
+            .GetField("m_Audit", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth))
+            if ((string)audit.GetType().GetField("clip_id").GetValue(audit) == Path.GetFileNameWithoutExtension(path))
+                speech = (int)audit.GetType().GetField("speech_samples").GetValue(audit);
+        Check(speech > 0, "manifest records the speech window");
+        var samples = new float[clip.samples * clip.channels]; clip.GetData(samples, 0); double power = 0;
+        for (int i = 0; i < samples.Length; i++)
+        {
+            Check(Math.Abs(samples[i]) <= 0.901, "matched clip peak safe");
+            if (i < speech) power += samples[i] * samples[i];
+        }
+        return Math.Sqrt(power / speech);
+    }
     static void Main()
     {
         string root = Path.Combine(Path.GetTempPath(), "gaze-voice-tests-" + Guid.NewGuid());
         Directory.CreateDirectory(root);
         try
         {
-            // Exercise real DSP: stereo separation, silence, no onset delay, and
-            // exact neutral bypass. Existing library tests check treated RMS/peaks.
-            var impulse = new float[4800 * 2]; impulse[0] = 0.5f;
+            // Exercise real DSP: exact neutral bypass, no onset delay, stereo room tail,
+            // determinism and silence. Library tests below check treated RMS/peaks.
+            var impulse = new float[4800]; impulse[0] = 0.5f;
             var dryImpulse = (float[])impulse.Clone();
-            InnerThoughtVoice.Process(dryImpulse, 2, 48000, false);
+            var bypass = InnerThoughtVoice.Process(dryImpulse, 1, 48000, false);
+            Check(bypass.Samples == dryImpulse && bypass.Channels == 1 && bypass.SpeechSamples == dryImpulse.Length,
+                "neutral bypass returns the decoded buffer");
             for (int i = 0; i < impulse.Length; i++) Check(impulse[i] == dryImpulse[i], "neutral bypass is exact");
-            InnerThoughtVoice.Process(impulse, 2, 48000, true);
-            Check(impulse[0] > 0 && impulse[0] < 0.5f, "self effect preserves onset and softens impulse");
-            Check(impulse[1152 * 2] > 0.005f && impulse[2496 * 2] > 0.002f, "short thought reflections present");
-            for (int i = 1; i < impulse.Length; i += 2) Check(impulse[i] == 0, "no stereo crosstalk");
-            var silence = new float[4800];
-            InnerThoughtVoice.Process(silence, 1, 48000, true);
-            Check(Array.TrueForAll(silence, x => x == 0), "no residual audio across phrases");
+            var treated = InnerThoughtVoice.Process(impulse, 1, 48000, true);
+            int treatedFrames = treated.Samples.Length / 2;
+            Check(treated.Channels == 2 && treatedFrames == 4800 + 19200 && treated.SpeechSamples == 4800 * 2,
+                "stereo output with 0.4 s room tail; speech window covers only the words");
+            Check(treated.Samples[0] > 0.1f && Math.Abs(treated.Samples[0] - treated.Samples[1]) < 1e-6f,
+                "words start at sample 0, centred");
+            bool centredBeforeRoom = true, wideRoom = false;
+            for (int f = 0; f < treatedFrames; f++)
+            {
+                float side = Math.Abs(treated.Samples[f * 2] - treated.Samples[f * 2 + 1]);
+                if (f < 380) centredBeforeRoom &= side < 1e-6f; else wideRoom |= side > 1e-5f;
+            }
+            Check(centredBeforeRoom && wideRoom, "room arrives after its 8 ms gap, decorrelated per ear");
+            Check(Math.Abs(treated.Samples[treated.Samples.Length - 1]) < 1e-4f, "room tail decays inside the clip");
+            var again = InnerThoughtVoice.Process((float[])impulse.Clone(), 1, 48000, true);
+            for (int i = 0; i < again.Samples.Length; i++) Check(again.Samples[i] == treated.Samples[i], "treatment is deterministic");
+            var silence = InnerThoughtVoice.Process(new float[4800], 1, 48000, true);
+            Check(Array.TrueForAll(silence.Samples, x => x == 0), "no residual audio across phrases");
+            bool rejected = false;
+            try { InnerThoughtVoice.Process(new float[3], 2, 48000, true); } catch (ArgumentException) { rejected = true; }
+            Check(rejected, "malformed interleaved PCM rejected");
             SessionConfig.ResetForNewParticipant();
             Check(SessionConfig.TrySetPerspective(VoicePerspective.External), "perspective can be selected before setup lock");
             SessionConfig.LockPerspective();
@@ -146,14 +179,15 @@ class VoiceIsolationChecks
             var loaded = (System.Collections.Generic.Dictionary<string, AudioClip>)typeof(VoiceSynthesizer)
                 .GetField("m_PreparedClips", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth);
             double? matchedRms = null;
-            foreach (var clip in loaded.Values)
+            bool sawTreated = false;
+            foreach (var entry in loaded)
             {
-                var samples = new float[clip.samples]; clip.GetData(samples, 0); double power = 0;
-                foreach (float sample in samples) { power += sample * sample; Check(Math.Abs(sample) <= 0.901, "matched clip peak safe"); }
-                double rms = Math.Sqrt(power / samples.Length);
+                sawTreated |= entry.Value.channels == 2;
+                double rms = SpeechRms(synth, entry.Key, entry.Value);
                 if (matchedRms.HasValue) Check(Math.Abs(rms - matchedRms.Value) < 0.0001, "different crest factors achieve equal RMS");
                 matchedRms = rms;
             }
+            Check(sawTreated, "clone clips are replaced by treated stereo clips");
             DownloadHandlerAudioClip.AlternatePeak = false;
             Check(File.Exists(Path.Combine(SessionConfig.ParticipantPath, "voice-library-manifest.json")), "manifest saved");
             WaitForSeconds.Count = 0; provider.Calls = 0;
@@ -217,11 +251,9 @@ class VoiceIsolationChecks
             Check(File.Exists(SessionConfig.GetFilePath("voice-library-manifest.json")),
                 "on-demand clip updates the active run manifest");
             matchedRms = null;
-            foreach (var clip in loaded.Values)
+            foreach (var entry in loaded)
             {
-                var samples = new float[clip.samples]; clip.GetData(samples, 0); double power = 0;
-                foreach (float sample in samples) power += sample * sample;
-                double rms = Math.Sqrt(power / samples.Length);
+                double rms = SpeechRms(synth, entry.Key, entry.Value);
                 if (matchedRms.HasValue) Check(Math.Abs(rms - matchedRms.Value) < 0.0001,
                     "on-demand clip matches accepted starter RMS");
                 matchedRms = rms;
@@ -483,8 +515,12 @@ namespace UnityEngine
     public class AudioSource { public float spatialBlend, volume, pitch; public bool playOnAwake; int playPolls; public bool HoldPlayback; public int StopCalls; public bool isPlaying => HoldPlayback || playPolls-- > 0; public AudioClip clip; public void Play() { playPolls = 2; } public void Stop() { playPolls = 0; HoldPlayback = false; StopCalls++; } }
     public class AudioClip
     {
-        public float length = 1f; public int samples => m_Data.Length; public int channels = 1; public int frequency = 48000;
+        public float length = 1f; public int samples => m_Data.Length / channels; public int channels = 1; public int frequency = 48000;
+        public string name = "";
         float[] m_Data = new float[1000];
+        public static AudioClip Create(string name, int lengthSamples, int channels, int frequency, bool stream) =>
+            new AudioClip { name = name, channels = channels, frequency = frequency,
+                m_Data = new float[lengthSamples * channels], length = lengthSamples / (float)frequency };
         public AudioClip(bool skewed = false, bool quiet = false) { for (int i=0; i<m_Data.Length; i++) m_Data[i] = skewed ? (i == 0 ? 1f : 0.02f) : quiet ? 0.001f : 0.2f; }
         public bool GetData(float[] data, int offset) { Array.Copy(m_Data, data, data.Length); return true; }
         public bool SetData(float[] data, int offset) { Array.Copy(data, m_Data, data.Length); return true; }

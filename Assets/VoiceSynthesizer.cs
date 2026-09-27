@@ -52,6 +52,7 @@ public class VoiceSynthesizer : MonoBehaviour
     {
         public string clip_id, voice_id, provider, model, text, content_version, perspective, perspective_version, effect_profile;
         public float duration_seconds, rms, peak, gain, achieved_rms, requested_rms;
+        public int speech_samples; // leading interleaved samples holding the words; RMS is measured here
         public bool level_limited;
     }
     [Serializable] class LibraryAudit
@@ -144,9 +145,10 @@ public class VoiceSynthesizer : MonoBehaviour
             var samples = new float[clip.samples * clip.channels];
             if (!clip.GetData(samples, 0)) { Fail("Cannot inspect matched audio."); return false; }
             float adjustment = target / (item.rms * item.gain);
+            int speech = Math.Min(samples.Length, item.speech_samples);
             double sum = 0;
-            for (int i = 0; i < samples.Length; i++) { samples[i] *= adjustment; sum += samples[i] * samples[i]; }
-            item.achieved_rms = (float)Math.Sqrt(sum / Math.Max(1, samples.Length));
+            for (int i = 0; i < samples.Length; i++) { samples[i] *= adjustment; if (i < speech) sum += samples[i] * samples[i]; }
+            item.achieved_rms = (float)Math.Sqrt(sum / Math.Max(1, speech));
             if (Math.Abs(item.achieved_rms - target) > target * 0.01f || !clip.SetData(samples, 0))
             { Fail("Could not match voice library levels."); return false; }
             item.gain *= adjustment;
@@ -522,10 +524,24 @@ public class VoiceSynthesizer : MonoBehaviour
             if (!clip.GetData(samples, 0)) { RejectClip(clip, filePath, "Could not read decoded audio samples."); yield break; }
             // Raw provider caches stay untouched. Replay captures this processed clip;
             // normalization below measures the actual treated waveform in both modes.
-            InnerThoughtVoice.Process(samples, clip.channels, clip.frequency, wantSelfSimilar);
+            var treated = InnerThoughtVoice.Process(samples, clip.channels, clip.frequency, wantSelfSimilar);
+            if (treated.Samples != samples)
+            {
+                // The treatment returns stereo with a short room tail, so it needs its own clip.
+                var processed = AudioClip.Create(clip.name, treated.Samples.Length / treated.Channels,
+                    treated.Channels, clip.frequency, false);
+                Destroy(clip);
+                clip = processed;
+                samples = treated.Samples;
+            }
+            // Level the words only; the room tail must not raise the clone's speech level.
             double sum = 0; float peak = 0;
-            foreach (float sample in samples) { sum += sample * sample; peak = Math.Max(peak, Math.Abs(sample)); }
-            float rms = (float)Math.Sqrt(sum / Math.Max(1, samples.Length));
+            for (int i = 0; i < samples.Length; i++)
+            {
+                if (i < treated.SpeechSamples) sum += samples[i] * samples[i];
+                peak = Math.Max(peak, Math.Abs(samples[i]));
+            }
+            float rms = (float)Math.Sqrt(sum / Math.Max(1, treated.SpeechSamples));
             if (rms < 0.00001f) { RejectClip(clip, filePath, "Audio is silent."); yield break; }
             // Keep accepted starter RMS as the target, without exceeding safe gain/headroom.
             // Later phrases can have different crest factors; record the shortfall, not a trial failure.
@@ -545,7 +561,7 @@ public class VoiceSynthesizer : MonoBehaviour
                 perspective_version = VoicePromptText.Version,
                 effect_profile = InnerThoughtVoice.Profile(wantSelfSimilar),
                 duration_seconds = clip.length, rms = rms, peak = peak, gain = gain, achieved_rms = rms * gain,
-                requested_rms = requestedRms, level_limited = levelLimited });
+                requested_rms = requestedRms, speech_samples = treated.SpeechSamples, level_limited = levelLimited });
             if (levelLimited && LibraryReady)
                 Telemetry?.Invoke("audio_level_limited", m_CurrentContext ?? "", m_ActiveClipKey ?? "",
                     FormattableString.Invariant($"requested_rms={requestedRms:F6};achieved_rms={rms * gain:F6};gain={gain:F6};difference_db={20 * Math.Log10(rms * gain / requestedRms):F3}"));
