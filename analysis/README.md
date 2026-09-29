@@ -1,5 +1,7 @@
 # Analysis Workflow
 
+**Per-trial performance/subjective files (#20):** use `python3 analysis/trial_csv.py <run-directory> --replays <GazeReplays-directory> --output <new-directory>`. It writes one summary CSV per trial, a combined trial table and provenance manifest, keeping raw replay data separate. Add external questionnaires with repeated `--survey` arguments. See [field definitions, survey joins and remaining measurement gaps](../docs/trial-performance-csv.md). This is a post-session computer export; the older analysis/scoring guidance below may describe legacy protocols.
+
 **Combined CSV:** use `python3 analysis/mega_csv.py <run-directory> --replays <GazeReplays-directory> --output <mega.csv>` to export gaze, motion, events, objects, existing trial metrics and survey context into one wide file. See [row types, joins and missing-data rules](../docs/mega-csv.md). Original recordings remain separate.
 
 **Measurement planning (2026-09-16):** see the [living measures register](../docs/measures-register.md) for all surveys, behavioral metrics, scoring, implementation gaps and open decisions. IMI is now included; final subscales/form are proposed.

@@ -1,0 +1,150 @@
+<div id="p20-timeline">
+  <h2 id="p20-title">Recorded run timeline</h2>
+  <div class="viz-row" id="p20-run-summary"></div>
+  <div class="viz-controls">
+    <label class="form-label">Recorded trial<select class="form-select" id="p20-trial"></select></label>
+    <label class="form-label">Playback speed<select class="form-select" id="p20-speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
+    <button class="btn btn-primary" id="p20-play" type="button">Play</button>
+    <button class="btn" id="p20-next" type="button">Next event</button>
+  </div>
+  <div id="p20-meta" aria-live="polite"></div>
+  <label class="form-label" for="p20-time">Trial timeline · <output id="p20-clock" class="tabular-nums"></output></label>
+  <input class="form-range" type="range" id="p20-time" min="0" step="0.01" value="0" aria-label="Seconds since trial announcement" />
+  <svg id="p20-lanes" role="img" aria-label="Readiness, search, speech, and selection events on a shared trial time axis"></svg>
+  <section class="card video-panel" aria-label="Run video">
+    <h3>Headset video · this run</h3>
+    <p class="text-small">Choose the video recorded during this run. The file stays on this computer. All trials in this run share its alignment.</p>
+    <label class="form-label">Run video <input id="p20-video-file" type="file" accept="video/*"></label>
+    <p id="p20-video-status" class="video-status" role="status">No video attached. Telemetry playback is available.</p>
+    <video id="p20-video" preload="metadata" muted playsinline hidden></video>
+    <div class="video-controls">
+      <button id="p20-video-align" disabled>Align this video frame with timeline cursor</button>
+      <button id="p20-video-adjust" disabled>Adjust alignment</button>
+      <button id="p20-video-remove" disabled>Remove video</button>
+      <label><input id="p20-video-audio" type="checkbox"> Video audio</label>
+    </div>
+    <details><summary>Video alignment and saved settings</summary>
+      <p class="text-small">Pause at a recognizable event in both views, then align. Use recording elapsed time, including readiness and pauses—not the active search clock. Manual alignment is approximate; check a later event for drift.</p>
+      <div class="video-controls">
+        <label>Recording second at video start <input id="p20-video-offset" type="number" step="0.001" placeholder="Not aligned"></label>
+        <button id="p20-video-apply" disabled>Apply offset</button>
+        <button id="p20-video-save" disabled>Save alignment</button>
+        <label>Restore alignment <input id="p20-video-restore" type="file" accept="application/json,.json"></label>
+      </div>
+      <p id="p20-video-alignment" class="text-small">Select a video before aligning. Reattach the video after reopening this page.</p>
+    </details>
+  </section>
+  <div class="p20-snapshot">
+    <div>
+      <h3>Recorded layout · overhead</h3>
+      <svg id="p20-map" role="img" aria-label="Overhead reconstruction of recorded object positions, head, eye gaze and controller rays"></svg>
+      <div class="viz-row text-small"><span class="p20-key"><i class="p20-dot"></i>Objects</span><span class="p20-key"><i class="p20-target"></i>Target</span><span class="p20-key"><i class="p20-gaze"></i>Gaze</span><span class="p20-key"><i class="p20-controller"></i>Controller rays</span></div>
+    </div>
+    <div>
+      <h3>Data at cursor</h3>
+      <table class="table table-sm"><tbody id="p20-data"></tbody></table>
+    </div>
+  </div>
+  <div class="card"><span class="text-small">Spoken cue · text only</span><div id="p20-speech"></div></div>
+  <div id="p20-choice" aria-live="polite"></div>
+  <details><summary>Recording coverage and display precision</summary><div id="p20-coverage"></div></details>
+</div>
+<style>
+#p20-timeline .p20-snapshot{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+#p20-timeline #p20-lanes{width:100%;height:154px;display:block}
+#p20-timeline #p20-map{width:100%;height:285px;display:block}
+#p20-timeline .p20-key{display:inline-flex;align-items:center;gap:5px}
+#p20-timeline .p20-key i{display:inline-block;width:12px;height:6px;background:var(--muted-foreground)}
+#p20-timeline .p20-key .p20-target{background:var(--viz-series-1)}
+#p20-timeline .p20-key .p20-gaze{background:var(--viz-series-2)}
+#p20-timeline .p20-key .p20-controller{background:var(--viz-series-3)}
+#p20-timeline #p20-meta,#p20-timeline #p20-choice{margin-block:12px}
+#p20-timeline td{overflow-wrap:anywhere}
+#p20-timeline details{margin-top:16px}
+@media(max-width:620px){#p20-timeline .p20-snapshot{grid-template-columns:1fr;gap:8px}}
+</style>
+<script id="p20-records" type="application/json">__P20_DATA__</script>
+<script>
+(()=>{
+ const root=document.getElementById('p20-timeline'), data=JSON.parse(document.getElementById('p20-records').textContent);
+ const el=id=>root.querySelector('#p20-'+id), select=el('trial'), slider=el('time'), play=el('play');
+ const ns='http://www.w3.org/2000/svg';
+ let index=0,time=0,playing=false,last=0,animation;
+ const fmt=n=>Number(n).toFixed(2), tri=()=>data.trials[index];
+ const svg=(tag,attrs,parent,text)=>{const n=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));if(text!==undefined)n.textContent=text;parent.appendChild(n);return n;};
+ const text=(p,x,y,t,anchor='start')=>svg('text',{x,y,'text-anchor':anchor,fill:'var(--foreground)','font-size':12},p,t);
+ const tracked=n=>n===1?'Yes':n===0?'No':'Unknown';
+ const xyz=v=>v?v.map(n=>Number(n).toFixed(2)).join(', ')+' m':'Unavailable';
+ const object=(t,id)=>t.objects.find(o=>o[0]===id);
+ const name=(t,id)=>id?(object(t,id)?.[1]||id):'None';
+ data.trials.forEach((t,i)=>{const o=document.createElement('option');o.value=i;o.textContent=t.label+' · '+t.targetName+(t.completeTime?'':' · unfinished');select.append(o)});
+ function persist(){window.openai?.setWidgetState?.({modelContent:{participant:data.participant,trial:tri().label,sourceTrialId:tri().sourceId,secondsAfterAnnouncement:time},privateContent:{index,time}})?.catch(()=>{});}
+ function stop(){playing=false;play.textContent='Play';cancelAnimationFrame(animation);video.pause();}
+ function load(i,at=0){stop();index=i;select.value=i;slider.max=tri().end-tri().start;time=Math.max(0,Math.min(+slider.max,at));draw();syncVideo(true);}
+ function sample(t,at){let lo=0,hi=t.samples.length;while(lo<hi){const m=(lo+hi)>>1;if(t.samples[m][0]<=at)lo=m+1;else hi=m;}return lo?t.samples[lo-1]:null;}
+ function drawLanes(t,at){
+  const p=el('lanes'),w=p.clientWidth||700;p.setAttribute('viewBox',`0 0 ${w} 154`);p.replaceChildren();
+  const left=77,right=w-14,span=t.end-t.start,X=n=>left+(n-t.start)/span*(right-left);
+  const bar=(a,b,y,color,label)=>svg('rect',{x:X(a),y,width:Math.max(.8,X(b)-X(a)),height:14,fill:color,'data-tooltip':label},p);
+  ['Readiness','Search','Speech','Choice'].forEach((label,i)=>text(p,0,20+i*28,label));
+  bar(t.start,t.searchStart??t.end,9,'var(--muted)','Announcement / readiness');
+  if(t.searchStart!==null)bar(t.searchStart,t.completeTime??t.end,37,'var(--viz-series-1)','Active search');
+  t.speech.forEach(a=>bar(Math.max(t.start,a.start),Math.min(t.end,a.end),65,'var(--viz-series-2)',a.text));
+  t.events.filter(e=>e.kind==='selection').forEach(e=>{
+   const x=X(e.time);svg('path',{d:`M ${x} 91 l 6 7 -6 7 -6 -7 Z`,fill:e.correct?'var(--viz-series-1)':'var(--viz-series-4)','data-tooltip':`${e.correct?'Correct':'Wrong'}: ${name(t,e.object)} · ${fmt(e.time-t.start)} s`},p);
+  });
+  svg('line',{x1:X(at),y1:2,x2:X(at),y2:111,stroke:'var(--foreground)','stroke-width':1.5},p);
+  const ticks=w<440?3:5;
+  for(let i=0;i<ticks;i++){const n=i*span/(ticks-1);text(p,left+n/span*(right-left),132,fmt(n)+' s',i===0?'start':i===ticks-1?'end':'middle');}
+ }
+ function drawMap(t,s,at,gap){
+  const p=el('map'),w=p.clientWidth||330,h=285;p.setAttribute('viewBox',`0 0 ${w} ${h}`);p.replaceChildren();
+  if(at<t.snapshotTime){text(p,w/2,120,'Layout not yet recorded','middle');return;}
+  const points=t.objects.map(o=>[o[2],o[4]]);if(s)points.push([s[4][0],s[4][2]]);
+  const xs=points.map(p=>p[0]),zs=points.map(p=>p[1]),minX=Math.min(...xs),maxX=Math.max(...xs),minZ=Math.min(...zs),maxZ=Math.max(...zs);
+  const scale=Math.min((w-38)/(maxX-minX+.5),(h-50)/(maxZ-minZ+.5)),cx=(minX+maxX)/2,cz=(minZ+maxZ)/2;
+  const X=x=>w/2+(x-cx)*scale,Z=z=>h/2-(z-cz)*scale;
+  const path=(a,b,color,dash,width=1.5)=>svg('line',{x1:X(a[0]),y1:Z(a[2]),x2:X(b[0]),y2:Z(b[2]),stroke:color,'stroke-dasharray':dash||'','stroke-width':width},p);
+  svg('defs',{},p);const clip=svg('clipPath',{id:'p20-map-clip'},p.firstChild);svg('rect',{x:8,y:8,width:w-16,height:h-20},clip);
+  const g=svg('g',{'clip-path':'url(#p20-map-clip)'},p);
+  for(const o of t.objects){
+   const hit=s&&[s[8],s[9][7],s[10][7]].includes(o[0]);
+   svg('circle',{cx:X(o[2]),cy:Z(o[4]),r:o[0]===t.target?5:hit?4:2.1,fill:o[0]===t.target?'var(--viz-series-1)':'var(--muted-foreground)',opacity:o[0]===t.target||hit?1:.45,'data-tooltip':`${o[1]} · ${o[0]} · Y ${fmt(o[3])} m`},g);
+  }
+  if(s&&!gap){
+   if(s[13]){svg('circle',{cx:X(s[4][0]),cy:Z(s[4][2]),r:5,fill:'var(--foreground)'},p);text(p,X(s[4][0])+8,Z(s[4][2])-8,'Head');}
+   if(s[14]&&s[7]===1){const a=s[5],v=s[6],b=a.map((n,i)=>n+v[i]*3);const line=path(a,b,'var(--viz-series-2)','');line.setAttribute('clip-path','url(#p20-map-clip)');}
+   s.slice(9,11).forEach((c,i)=>{if(c[1]&&c[2]===1){const line=path(c[5],c[6],'var(--viz-series-3)',i===0?'4 3':'',c[3]===1?3:1.5);line.setAttribute('clip-path','url(#p20-map-clip)');}});
+  }
+  if(gap)text(p,w/2,h/2,'Recording gap · poses hidden','middle');
+  text(p,8,h-3,'+Z ↑ · +X → · fixed recording origin');
+ }
+ function draw(){
+  const t=tri(),at=t.start+time,s=sample(t,at),gap=t.gaps.some(g=>at>g[0]&&at<g[1]);
+  slider.value=time;el('clock').textContent=fmt(time)+' / '+fmt(t.end-t.start)+' s';
+  el('meta').textContent=t.label+' · '+t.targetName+' · |θ| '+t.theta+'° · '+(t.completeTime?'Completed in '+fmt(t.duration)+' s active search':t.searchStart!==null?'Search incomplete in saved data':'Search never started in saved data');
+  drawLanes(t,at);drawMap(t,s,at,gap);
+  const target=object(t,t.target),selection=t.events.filter(e=>e.kind==='selection'&&e.time<=at).at(-1);
+  const completed=t.completeTime!==null&&at>=t.completeTime;
+  const started=t.searchStart!==null&&at>=t.searchStart;
+  const phase=completed?'Completed':started?'Searching':s?.[11]?'Readiness':'Announcement / transition';
+  const rows=[['State',gap?'Recording gap':phase],['Sample',s?`Frame ${s[1]} · ${fmt(at-s[0])} s before cursor`:'Not yet available'],['Search clock',completed?fmt(t.duration)+' s':started?(s&&s[0]>=t.searchStart?fmt(s[2]):'0.00')+' s':'Not started'],['Eye tracking',s?tracked(s[7]):'Unknown'],['Gaze hit',s?name(t,s[8]):'Unknown'],['Controller hit L / R',s?name(t,s[9][7])+' / '+name(t,s[10][7]):'Unknown'],['Trigger held L / R',s?s[9][3]+' / '+s[10][3]:'Unknown'],['Head XYZ',s&&s[13]?xyz(s[4]):'Unavailable'],['Target XYZ',at>=t.snapshotTime?xyz(target?.slice(2,5)):'Not yet recorded']];
+  const table=el('data');table.replaceChildren();rows.forEach(([k,v])=>{const row=document.createElement('tr'),th=document.createElement('th'),td=document.createElement('td');th.scope='row';th.textContent=k;td.textContent=v;row.append(th,td);table.append(row)});
+  const speech=t.speech.find(e=>e.start<=at&&e.end>at);el('speech').textContent=speech?.text||'No recorded speech playing';
+  el('choice').textContent=selection?`${selection.correct?'Correct':'Incorrect'} selection: ${name(t,selection.object)} at ${fmt(selection.search)} s active search.`:'No selection yet.';
+  el('coverage').textContent=`${t.sampleCount.toLocaleString()} original frame samples; median interval implies ${t.medianHz} Hz (render-frame cadence, not native eye-sensor rate). Display reduced to 5 Hz plus state changes; latest preceding sample, no interpolation. X/Y/Z are metres relative to the saved recording origin; top-down dots collapse height. Dashed controller ray = left; solid = right. Original JSONL/WAV retained for full 3D/audio replay. ${data.complete?'':'Recording is incomplete.'} ${(data.warnings||[]).join(' ')}`;
+ }
+ function frame(now){if(!playing)return;if(last && (!videoReady() || offset===null || !covered() || (!video.seeking && (video.readyState>=3 || video.ended))))time=Math.min(+slider.max,time+(now-last)/1000*Number(el('speed').value));last=now;draw();syncVideo();if(time>=+slider.max){stop();persist();}else animation=requestAnimationFrame(frame);}
+ play.addEventListener('click',()=>{if(playing){stop();persist();return;}if(videoFile && offset===null){setVideoStatus('Align the video or remove it before timeline playback.');return;}if(time>=+slider.max)time=0;playing=true;last=0;play.textContent='Pause';syncVideo(true);animation=requestAnimationFrame(frame)});
+ slider.addEventListener('input',()=>{stop();time=+slider.value;draw();syncVideo(true)});slider.addEventListener('change',persist);
+ select.addEventListener('change',()=>{load(+select.value);persist()});
+ el('next').addEventListener('click',()=>{stop();const t=tri(),at=t.start+time,e=t.events.find(e=>e.time>at+.001&&['selection','search_start','audio_playback_start'].includes(e.kind));time=e?e.time-t.start:+slider.max;draw();syncVideo(true);persist()});
+ function restore(state){const s=state?.privateContent;if(s&&Number.isInteger(s.index)&&data.trials[s.index])load(s.index,Number(s.time)||0);}
+ __VIDEO_CODE__
+ el('title').textContent=data.participant+' · Recorded run timeline';
+ el('run-summary').textContent=(data.complete?'Completed recording':'Incomplete recording')+' · '+data.trials.filter(t=>!t.practice&&t.completeTime!==null).length+' measured trials completed · '+data.trials.filter(t=>t.practice).length+' practice trials';
+ load(0,0);restore(window.openai?.widgetState);
+ window.addEventListener('openai:set_globals',e=>{if(e.detail?.globals?.widgetState)restore(e.detail.globals.widgetState)});
+ new ResizeObserver(()=>draw()).observe(el('lanes'));
+})();
+</script>

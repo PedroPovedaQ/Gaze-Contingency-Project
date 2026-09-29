@@ -58,3 +58,7 @@ Run **Tools → Codex → Trial Replay → Run Verification** for serialization,
 Tracking context: [replay #28](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/28), [motion telemetry #22](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/22). The readiness/schedule integration appends start-wall metadata to the existing trial CSV; separate block-level NASA-TLX recording remains in place.
 
 **Implemented readiness gate:** the viewer reconstructs the fixed cross and left-to-right charge separately from object selection. Readiness events are retained before search; dwell-based readiness never populates legacy object `dwell`. The current schedule version is `previous-wall-angle-v3-10-trials`; the per-block theta quotas refer to the previous target wall.
+
+## Browser timeline with run video
+
+**Implemented locally:** [Run video in the timeline](timeline-video.md) describes attaching an existing headset recording, aligning it to the continuous recording clock, and using shared playback controls. The browser page packages prepared run timeline data and keeps video local. Video capture, automatic clock synchronization and video rendered from reconstructed Unity playback are separate capabilities. P020 actual-footage alignment remains unverified because no matching video was available.
