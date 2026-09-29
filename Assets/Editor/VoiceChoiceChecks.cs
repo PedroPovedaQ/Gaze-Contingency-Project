@@ -31,12 +31,16 @@ public static class VoiceChoiceChecks
                 for (int i = 0; i < 2; i++)
                 {
                     selector.SelectNeutralVoiceOption(i);
-                    Check(Phase(selector) == "PreviewingNeutral" && SessionConfig.NeutralProfile == chosenGender &&
-                        SessionConfig.NeutralVoiceOption == i, "Both gendered voices can be selected/switched.");
+                    Check(Phase(selector) == "ChoosingNeutralVoice" && (int)Field("m_SelectedVoiceOption").GetValue(selector) == i,
+                        "Both gendered voices can be selected/switched while cards stay visible.");
+                    Check(SessionConfig.NeutralProfile == gender && SessionConfig.NeutralVoiceOption == option,
+                        "Pending card selection does not commit the session voice.");
+                    selector.PreviewNeutralVoiceOption(1 - i);
+                    Check((int)Field("m_SelectedVoiceOption").GetValue(selector) == i, "Auditioning another voice preserves the selection.");
                     selector.ConfirmNeutralVoice();
-                    Check(Phase(selector) == "PreviewingNeutral", "No audio system cannot confirm readiness.");
+                    Check(Phase(selector) == "ChoosingNeutralVoice", "No audio system cannot confirm readiness.");
                     selector.SelectNeutralVoiceOption(-1);
-                    Check(SessionConfig.NeutralVoiceOption == i, "Invalid choice does not change selection.");
+                    Check((int)Field("m_SelectedVoiceOption").GetValue(selector) == i, "Invalid choice does not change selection.");
                 }
             }
             Debug.Log("[VoiceChoiceChecks] PASS: gender then voice, both options, switching/back, invalid choice and no-audio confirmation gate.");

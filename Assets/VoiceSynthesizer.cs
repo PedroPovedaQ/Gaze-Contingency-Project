@@ -249,13 +249,13 @@ public class VoiceSynthesizer : MonoBehaviour
 
     void OnDisable() => Stop();
 
-    public void Speak(string text, string context = null)
+    public void Speak(string text, string context = null, VoiceCondition? requestedVoice = null)
     {
         // Per-voice key checks happen inside the coroutine (self-similar uses
         // Voxtral, generic uses ElevenLabs), so we don't hard-block here.
         Stop();
         m_CurrentContext = context;
-        m_SpeakCoroutine = StartCoroutine(SpeakCoroutine(text));
+        m_SpeakCoroutine = StartCoroutine(SpeakCoroutine(text, requestedVoice: requestedVoice));
     }
 
     /// <summary>Changing the setup voice invalidates its prepared library and prefetch work.</summary>
@@ -269,16 +269,25 @@ public class VoiceSynthesizer : MonoBehaviour
         m_PreparedClips.Clear();
     }
 
-    public void PreviewNeutralVoice()
+    public void PreviewNeutralVoice(NeutralVoiceProfile gender, int option, Action<bool> completed)
     {
         ResetVoicePreparation();
         m_CurrentContext = "voice_choice";
-        // Preview before enrollment/library readiness, without changing voice identity.
-        m_SpeakCoroutine = StartCoroutine(SpeakCoroutine(
-            "Find the red cube. Look to your left, then keep looking in that area.", true, VoiceCondition.Generic));
+        // Capture the audition identity; hovering must not mutate the study selection.
+        m_SpeakCoroutine = StartCoroutine(PreviewNeutralCoroutine(SessionConfig.NeutralId(gender, option), completed));
     }
 
-    public bool TryAreaCorrection(string phrase, Func<bool> stillRelevant)
+    IEnumerator PreviewNeutralCoroutine(string voiceId, Action<bool> completed)
+    {
+        yield return null; // Store the cancellable coroutine handle before beginning playback.
+        yield return SpeakCoroutine(
+            "Find the red cube. Look to your left, then keep looking in that area.",
+            true, VoiceCondition.Generic, requestedVoiceId: voiceId);
+        completed?.Invoke(string.IsNullOrEmpty(LastError));
+    }
+
+    public bool TryAreaCorrection(string phrase, Func<bool> stillRelevant, Action onCommitted = null,
+        string reason = "gaze_target_plane")
     {
         if (!LibraryReady || m_InterruptionCoroutine != null || m_SetupAnnouncement ||
             (m_CurrentContext != null && m_CurrentContext != "tip" && m_CurrentContext != "prefetch")) return false;
@@ -288,11 +297,11 @@ public class VoiceSynthesizer : MonoBehaviour
         string path = GetCachePath(VoicePromptText.FormatForVoice(phrase, SessionConfig.Voice),
             (self ? "vx-" : "el-") + voiceId);
         if (!m_PreparedClips.ContainsKey(path) || !stillRelevant()) return false;
-        m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(phrase, stillRelevant));
+        m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(phrase, stillRelevant, onCommitted, reason));
         return true;
     }
 
-    IEnumerator FadeToAreaCorrection(string phrase, Func<bool> stillRelevant)
+    IEnumerator FadeToAreaCorrection(string phrase, Func<bool> stillRelevant, Action onCommitted, string reason)
     {
         yield return null;
         float volume = m_AudioSource.volume;
@@ -306,8 +315,9 @@ public class VoiceSynthesizer : MonoBehaviour
         m_AudioSource.volume = volume;
         m_InterruptionCoroutine = null;
         if (!stillRelevant()) yield break;
-        Telemetry?.Invoke("audio_area_correction", "tip", m_ActiveClipKey ?? "", "gaze_target_plane;fade_seconds=0.04");
+        Telemetry?.Invoke("audio_area_correction", "tip", m_ActiveClipKey ?? "", reason + ";fade_seconds=0.04");
         Speak(phrase, "tip");
+        onCommitted?.Invoke();
     }
 
     public void Stop()
@@ -354,7 +364,7 @@ public class VoiceSynthesizer : MonoBehaviour
 
     public IEnumerator SpeakProcessingStatus(bool complete) => SpeakSetupAnnouncement(complete
         ? "Voice setup is ready. Let's check the audio."
-        : "Processing voice.");
+        : "Give us a moment while we process your voice.");
 
     IEnumerator SpeakSetupAnnouncement(string text)
     {
@@ -371,7 +381,7 @@ public class VoiceSynthesizer : MonoBehaviour
     }
 
     IEnumerator SpeakCoroutine(string text, bool setupAnnouncement = false,
-        VoiceCondition? requestedVoice = null, bool silent = false)
+        VoiceCondition? requestedVoice = null, bool silent = false, string requestedVoiceId = null)
     {
         // Defer once so Speak has stored the coroutine handle before any early exit.
         yield return null;
@@ -382,7 +392,7 @@ public class VoiceSynthesizer : MonoBehaviour
         var actualPerspective = VoicePromptText.PerspectiveForVoice(requestedVoice ?? SessionConfig.Voice);
         if (!setupAnnouncement) text = VoicePromptText.Format(text, actualPerspective);
         m_PreparingText = text;
-        string voiceId = wantSelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId;
+        string voiceId = requestedVoiceId ?? (wantSelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId);
         string voiceScope = wantSelfSimilar ? $"vx-{voiceId}" : $"el-{voiceId}";
 
         // Voice availability never changes the assigned condition or cache namespace.

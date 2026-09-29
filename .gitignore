@@ -101,3 +101,7 @@ tools/paper-to-podcast/**/*.mp3
 # Interactive podcast runtime sessions
 tools/interactive-paper-podcast/data/
 tools/interactive-paper-podcast/**/__pycache__/
+
+# Unity performance-test build metadata (generated during Android builds)
+/Assets/Resources/PerformanceTestRunInfo.json*
+/Assets/Resources/PerformanceTestRunSettings.json*

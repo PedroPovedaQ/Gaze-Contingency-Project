@@ -112,6 +112,25 @@ class VoiceIsolationChecks
             Check(externalCache != female, "perspective cache isolation for identical text");
             SessionConfig.ResetForNewParticipant();
             // A populated neutral cache must never rescue a failed self-similar request.
+            const string introduction = "Welcome to the surrounding search. Stay seated at the center. Objects will appear around you.";
+            foreach (var introGender in new[] { NeutralVoiceProfile.Male, NeutralVoiceProfile.Female })
+                for (int introOption = 0; introOption < 2; introOption++)
+                {
+                    SessionConfig.SelectNeutralVoice(introGender, introOption);
+                    SessionConfig.Voice = VoiceCondition.SelfSimilar;
+                    SessionConfig.SelfSimilarEnrollmentPending = true;
+                    provider.Calls = 0; UnityWebRequest.Requests.Clear(); UnityWebRequest.RequestBodies.Clear();
+                    synth.Speak(introduction, "intro", VoiceCondition.Generic);
+                    Drain(MonoBehaviour.LastRoutine);
+                    Check(string.IsNullOrEmpty(synth.LastError) && !synth.IsBusy && provider.Calls == 0 &&
+                        UnityWebRequest.Requests.Exists(url => url.EndsWith(SessionConfig.NeutralId(introGender, introOption))),
+                        "introduction always uses the selected neutral voice even with a pending self-similar condition");
+                    Check(UnityWebRequest.RequestBodies.Exists(body => body.Contains(introduction)),
+                        "introduction keeps participant-directed wording rather than first-person conversion");
+                    Check(SessionConfig.Voice == VoiceCondition.SelfSimilar && SessionConfig.SelfSimilarEnrollmentPending,
+                        "neutral introduction does not change the study voice condition or enrollment state");
+                }
+            SessionConfig.ResetForNewParticipant();
             File.WriteAllBytes(female, new byte[120]);
             SessionConfig.Voice = VoiceCondition.SelfSimilar;
             foreach (bool pending in new[] { false, true })
@@ -397,8 +416,11 @@ class VoiceIsolationChecks
                 synth.Speak(lazyPrompt); Drain(MonoBehaviour.LastRoutine);
                 Check(provider.Calls == 0 && UnityWebRequest.Requests.Count == 0 && limited == 1,
                     "limited clip remains cached instead of being discarded and regenerated");
-                Set(synth, "m_CurrentContext", "round");
-                Check(!synth.TryAreaCorrection(lazyPrompt, () => true), "target instruction cannot be interrupted");
+                foreach (string protectedContext in new[] { "round", "intro", "audio_check", "voice_choice" })
+                {
+                    Set(synth, "m_CurrentContext", protectedContext);
+                    Check(!synth.TryAreaCorrection(lazyPrompt, () => true), "setup and target instructions cannot be interrupted");
+                }
                 Set(synth, "m_CurrentContext", "tip");
                 Check(!synth.TryAreaCorrection("unprepared", () => true), "correction must be preloaded");
                 Check(!synth.TryAreaCorrection(lazyPrompt, () => false), "stale gaze cannot start correction");
@@ -407,7 +429,8 @@ class VoiceIsolationChecks
                 source.HoldPlayback = true;
                 int stopsBeforeCorrection = source.StopCalls;
                 bool relevant = true;
-                Check(synth.TryAreaCorrection(lazyPrompt, () => relevant), "playing hint accepts fade");
+                int correctionCommits = 0;
+                Check(synth.TryAreaCorrection(lazyPrompt, () => relevant, () => correctionCommits++), "playing hint accepts fade");
                 var abandonedFade = MonoBehaviour.LastRoutine;
                 abandonedFade.MoveNext();
                 Time.unscaledTime += 0.02f;
@@ -416,13 +439,21 @@ class VoiceIsolationChecks
                 relevant = false; Drain(abandonedFade);
                 Check(Math.Abs(source.volume - 0.7f) < 0.0001f && starts == 2,
                     "leaving target zone during fade restores volume and cancels correction");
-                Check(synth.TryAreaCorrection(lazyPrompt, () => true), "prepared correction can replace a hint");
+                Check(correctionCommits == 0, "abandoned fade must not commit the cue or consume cooldown");
+                bool returnReasonLogged = false;
+                Action<string, string, string, string> correctionTelemetry = (kind, context, key, detail) =>
+                { if (kind == "audio_area_correction" && detail.Contains("gaze_overshoot_return")) returnReasonLogged = true; };
+                synth.Telemetry += correctionTelemetry;
+                Check(synth.TryAreaCorrection(lazyPrompt, () => true, () => correctionCommits++, "gaze_overshoot_return"),
+                    "prepared correction can replace a hint");
                 var fade = MonoBehaviour.LastRoutine;
                 Check(synth.IsBusy, "pending fade blocks ordinary hints");
                 Drain(fade);
                 Drain(MonoBehaviour.LastRoutine);
                 Check(!source.HoldPlayback && source.StopCalls > stopsBeforeCorrection, "correction cuts off unfinished speech");
                 Check(starts == 3 && failures == 0, "correction plays once without failure");
+                Check(correctionCommits == 1 && returnReasonLogged, "committed correction consumes cooldown once and logs return reason");
+                synth.Telemetry -= correctionTelemetry;
                 Check(provider.Calls == 0 && UnityWebRequest.Requests.Count == 0, "correction needs no network");
                 synth.PlaybackFailed -= failure; synth.Telemetry -= telemetry;
             }
@@ -446,22 +477,78 @@ class VoiceIsolationChecks
             foreach (var gender in new[] { NeutralVoiceProfile.Male, NeutralVoiceProfile.Female })
                 for (int option = 0; option < 2; option++)
                 {
-                    SessionConfig.SelectNeutralVoice(gender, option);
+                    SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Female, 0);
                     SessionConfig.Voice = VoiceCondition.SelfSimilar;
                     provider.Calls = 0; UnityWebRequest.Requests.Clear();
-                    synth.PreviewNeutralVoice();
+                    int completed = 0; bool success = false; bool playbackEnded = false;
+                    Action<string, string, string, string> previewTelemetry = (kind, context, key, detail) =>
+                    { if (kind == "audio_playback_end" && context == "voice_choice") playbackEnded = true; };
+                    synth.Telemetry += previewTelemetry;
+                    synth.PreviewNeutralVoice(gender, option, ok =>
+                    {
+                        completed++; success = ok;
+                        Check(playbackEnded, "successful audition callback occurs only after playback end");
+                    });
+                    Check(completed == 0, "an unplayed preview is not accepted");
                     Check(synth.IsBusy && !synth.LibraryReady, "preview waits for audio and invalidates old library");
                     Drain(MonoBehaviour.LastRoutine);
                     Check(string.IsNullOrEmpty(synth.LastError) && provider.Calls == 0 &&
-                        UnityWebRequest.Requests.Exists(url => url.EndsWith(SessionConfig.NeutralVoiceId)),
-                        "preview uses the exact selected neutral voice even in self-similar condition");
+                        UnityWebRequest.Requests.Exists(url => url.EndsWith(SessionConfig.NeutralId(gender, option))),
+                        "preview uses the auditioned neutral identity even when a different voice is committed");
+                    Check(completed == 1 && success && !synth.IsBusy, "completed audition reports success once and clears busy");
+                    Check(SessionConfig.NeutralProfile == NeutralVoiceProfile.Female && SessionConfig.NeutralVoiceOption == 0 &&
+                        SessionConfig.Voice == VoiceCondition.SelfSimilar, "audition never changes committed voice or condition");
+                    synth.Telemetry -= previewTelemetry;
                 }
+            DownloadHandlerAudioClip.Corrupt = true;
+            int failedPreviewCallbacks = 0;
+            synth.PreviewNeutralVoice(NeutralVoiceProfile.Male, 1, ok =>
+            { Check(!ok, "corrupt audition cannot report success"); failedPreviewCallbacks++; });
+            Drain(MonoBehaviour.LastRoutine);
+            Check(failedPreviewCallbacks == 1 && !synth.IsBusy && !string.IsNullOrEmpty(synth.LastError),
+                "failed audition reports failure and releases confirmation wait");
+            DownloadHandlerAudioClip.Corrupt = false;
             SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Male, 1);
+            SessionConfig.ResetForNewParticipant();
+            string correction = VoicePromptText.WrongSelectionPhrase("Blue", "Cube");
+            Check(VoicePromptText.FormatForVoice(correction, VoiceCondition.Generic) == "Locate the blue cube.",
+                "neutral wrong-selection reminder names the intended target");
+            Check(VoicePromptText.FormatForVoice(correction, VoiceCondition.SelfSimilar) == "I'm looking for the blue cube.",
+                "self-similar wrong-selection reminder uses the requested first-person wording");
+            Check(VoicePromptText.FormatForVoice("Locate the Blue Cube.", VoiceCondition.SelfSimilar) == "I need to find the blue cube.",
+                "wrong-selection wording does not replace normal target announcements");
+            foreach (var condition in new[] { VoiceCondition.Generic, VoiceCondition.SelfSimilar })
+            {
+                SessionConfig.Voice = condition;
+                SessionConfig.SelfSimilarVoiceId = "correction-test-clone";
+                SessionConfig.SelfSimilarEnrollmentPending = false;
+                provider.Audio = new byte[120]; provider.Calls = 0; provider.Texts.Clear();
+                UnityWebRequest.Requests.Clear(); UnityWebRequest.RequestBodies.Clear();
+                synth.Speak(correction, "wrong_selection");
+                Drain(MonoBehaviour.LastRoutine);
+                Check(string.IsNullOrEmpty(synth.LastError) && !synth.IsBusy, "wrong-selection reminder plays successfully");
+                Check(condition == VoiceCondition.Generic
+                    ? provider.Calls == 0 && UnityWebRequest.RequestBodies.Exists(body => body.Contains("Locate the blue cube."))
+                    : provider.Calls == 1 && provider.Texts.Contains("I'm looking for the blue cube."),
+                    "wrong-selection reminder reaches the condition's provider with exact wording");
+                Check(SessionConfig.Voice == condition, "wrong-selection reminder preserves trial voice assignment");
+            }
             SessionConfig.ResetForNewParticipant();
             Check(SessionConfig.NeutralVoiceOption == 0 && SessionConfig.NeutralProfile == NeutralVoiceProfile.Female,
                 "new participant clears prior voice choice");
+            const string audioCheck = "Hover your controller over Accept Audio and press the trigger to confirm this is an acceptable audio level.";
+            Check(VoicePromptText.AudioLevelCheck == audioCheck, "audio check tells participant how to accept volume");
+            foreach (var condition in new[] { VoiceCondition.Generic, VoiceCondition.SelfSimilar })
+                Check(VoicePromptText.FormatForVoice(audioCheck, condition) == audioCheck, "both voices speak identical audio-check instructions");
+            Check(VoicePromptText.FormatForVoice("Go back. That was the correct area.", VoiceCondition.SelfSimilar) ==
+                "I need to go back. That was the correct area.", "return cue uses first person for self-similar voice");
+            Check(VoicePromptText.FormatForVoice("Look way left.", VoiceCondition.SelfSimilar) == "I need to look way left." &&
+                VoicePromptText.FormatForVoice("Look way right.", VoiceCondition.SelfSimilar) == "I need to look way right.",
+                "strong directional cues use first person for the self-similar voice");
+            Check(VoicePromptText.FormatForVoice("Look way right.", VoiceCondition.Generic) == "Look way right.",
+                "neutral strong cue stays external");
             string[] neutralVariants = { "Look to your left.", "Look to your right.", "Try looking left.", "Try looking right.", "Search to your left.", "Search to your right." };
-            string[] selfVariants = { "I need to look to my left.", "I need to look to my right.", "I'll try looking left.", "I'll try looking right.", "I need to search to my left.", "I need to search to my right." };
+            string[] selfVariants = { "I need to look to my left.", "I need to look to my right.", "I'll try looking left.", "I need to look right.", "I need to search to my left.", "I need to search to my right." };
             for (int i = 0; i < neutralVariants.Length; i++)
             {
                 Check(VoicePromptText.FormatForVoice(neutralVariants[i], VoiceCondition.Generic) == neutralVariants[i], "neutral alternative remains external");

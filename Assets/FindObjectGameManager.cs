@@ -175,12 +175,30 @@ public class FindObjectGameManager : MonoBehaviour
         return Mathf.Abs(local.x) <= halfWidth && point.y >= m_FloorHeight &&
             point.y <= m_FloorHeight + m_MaxObjectHeight + 0.1f;
     }
+    // Guidance zones are horizontal sectors. Vertical scanning must not count as
+    // leaving/reentering the correct area or trigger an overshoot cue.
+    public bool IsGazeInSearchSector(Vector3 origin, Vector3 direction, int plane, out bool valid)
+    {
+        valid = false;
+        if (plane < 0 || plane >= RotationalSearchLayout.PlaneCount) return false;
+        Quaternion inverse = Quaternion.Inverse(m_SeatedRotation * Quaternion.Euler(0,
+            plane * RotationalSearchLayout.PlaneAngleDegrees, 0));
+        Vector3 localOrigin = inverse * (origin - m_SpawnCenter);
+        Vector3 localDirection = inverse * direction;
+        return RotationalSearchLayout.IsInHorizontalSector(localOrigin.x, localOrigin.z,
+            localDirection.x, localDirection.z, m_RotationalRadius, out valid);
+    }
+
     public int LayoutSeed { get; private set; }
+    // This preference hides only debug wall outlines/degree labels. Search-zone
+    // geometry, objects, readiness and gaze guidance do not depend on visibility.
     public bool DegreeGuidesVisible => m_ShowDegreeGuides;
+    public event System.Action<bool> DegreeGuidesVisibilityChanged;
     public void SetDegreeGuidesVisible(bool visible)
     {
         m_ShowDegreeGuides = visible;
         foreach (var guide in m_DegreeGuides) if (guide != null) guide.SetActive(visible);
+        DegreeGuidesVisibilityChanged?.Invoke(visible);
     }
     public bool RotationalBetaEnabled => m_UseRotationalLayout;
     public Vector3 SeatedOrigin => m_SpawnCenter;

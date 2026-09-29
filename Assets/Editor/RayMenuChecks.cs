@@ -47,15 +47,43 @@ public static class RayMenuChecks
             Click(male, events); Call(selector, "RefreshChoices");
             Check(ButtonIn(panel, "Eric") != null && ButtonIn(panel, "Roger") != null, "Male cards are available");
             foreach (var image in panel.GetComponentsInChildren<RawImage>()) Check(image.texture != null, "Each card loads its avatar");
-            Capture(panel);
+            var eric = ButtonIn(panel, "Eric");
+            var pointer = new PointerEventData(events) { pointerId = 101 };
+            ExecuteEvents.Execute(eric.gameObject, pointer, ExecuteEvents.pointerEnterHandler);
+            Check((int)Read(selector, "m_PreviewOption") == 0 && (int)Read(selector, "m_SelectedVoiceOption") == -1,
+                "Pointing at Eric starts an audition without selecting");
+            int request = (int)Read(selector, "m_PreviewRequest");
+            ExecuteEvents.Execute(eric.gameObject, pointer, ExecuteEvents.pointerEnterHandler);
+            ExecuteEvents.Execute(eric.gameObject, new PointerEventData(events) { pointerId = 102 }, ExecuteEvents.pointerEnterHandler);
+            Check((int)Read(selector, "m_PreviewRequest") == request, "Steady hover or second ray does not restart sample");
+            ExecuteEvents.Execute(eric.gameObject, pointer, ExecuteEvents.pointerExitHandler);
+            ExecuteEvents.Execute(eric.gameObject, new PointerEventData(events) { pointerId = 102 }, ExecuteEvents.pointerExitHandler);
+            ExecuteEvents.Execute(eric.gameObject, pointer, ExecuteEvents.pointerEnterHandler);
+            Check((int)Read(selector, "m_PreviewRequest") == request + 1, "Leave and reenter permits replay/retry");
+            Check(ButtonIn(panel, "Back") != null, "Hover retains Back until a trigger selection");
             Click(ButtonIn(panel, "Roger"), events); Call(selector, "RefreshChoices");
-            Check(SessionConfig.NeutralVoiceName == "Roger", "Ray click selects Roger rather than a hardcoded first voice");
+            Check(ButtonIn(panel, "Eric") != null && ButtonIn(panel, "Roger") != null, "Selecting a voice keeps both avatars on screen");
+            Check(ButtonIn(panel, "Confirm") != null && ButtonIn(panel, "Back") == null, "Selection changes Back to Confirm");
+            Check(ButtonIn(panel, "Roger").GetComponent<Outline>().enabled && !eric.GetComponent<Outline>().enabled,
+                "Only chosen card has persistent selection border");
+            Check(!ButtonIn(panel, "Confirm").interactable, "Unavailable audio disables Confirm");
+            Capture(panel);
+            selector.PreviewNeutralVoiceOption(0);
+            Check((int)Read(selector, "m_SelectedVoiceOption") == 1 && ButtonIn(panel, "Roger").GetComponent<Outline>().enabled,
+                "Previewing Eric preserves selected Roger border");
+            Check(SessionConfig.NeutralProfile == gender && SessionConfig.NeutralVoiceOption == option,
+                "Auditions and pending selections never mutate committed voice");
             selector.ConfirmNeutralVoice();
-            Check(Read(selector, "m_Phase").ToString() == "PreviewingNeutral", "Cannot accept absent audio");
-            Click(ButtonIn(panel, "Back"), events); Call(selector, "RefreshChoices");
+            Check(Read(selector, "m_Phase").ToString() == "ChoosingNeutralVoice", "Cannot accept absent audio");
+            Click(eric, events);
+            Check(eric.GetComponent<Outline>().enabled && !ButtonIn(panel, "Roger").GetComponent<Outline>().enabled,
+                "Trigger can change selected border");
+            selector.SelectGeneric(); Call(selector, "RefreshChoices");
             Click(ButtonIn(panel, "Female"), events); Call(selector, "RefreshChoices");
             Check(ButtonIn(panel, "Janet") != null && ButtonIn(panel, "Sarah") != null, "Female cards are available");
             foreach (var image in panel.GetComponentsInChildren<RawImage>()) Check(image.texture != null, "Each female card loads its avatar");
+            Check(ButtonIn(panel, "Back") != null && (int)Read(selector, "m_SelectedVoiceOption") == -1,
+                "Changing gender resets selection and restores Back");
             var ui = host.AddComponent<FindObjectUI>(); ui.Initialize(); ui.ShowBlockSurvey(1);
             var canvas = (GameObject)Read(ui, "m_CanvasGO");
             surveyCanvas = canvas; canvas.transform.SetParent(null);
@@ -71,7 +99,7 @@ public static class RayMenuChecks
             int finished = 0; ui.OnStatsDismissed += () => finished++;
             ui.ShowPostSurveyStats("Test stats"); Click(ButtonIn(canvas, "Finish"), events);
             Check(finished == 1, "Finish action is reachable through a visible button");
-            Debug.Log("[RayMenuChecks] PASS: hover/down do not select; pointed male/female voice cards; all four avatars; preview gate; XRI raycasters; six slider values and single submit; finish button. Preview: /tmp/gaze-ray-menu-preview.png");
+            Debug.Log("[RayMenuChecks] PASS: hover audition without selection; no steady-hover/second-ray restarts; reentry retry; persistent exclusive border; Back becomes Confirm; no-audio gate; all four avatars; XRI raycasters; survey and finish. Preview: /tmp/gaze-ray-menu-preview.png");
         }
         finally
         {

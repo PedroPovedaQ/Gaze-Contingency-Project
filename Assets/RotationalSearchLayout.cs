@@ -33,6 +33,23 @@ public static class RotationalSearchLayout
         return (float)((radius + FrameDepthOffset) * Math.Tan(Math.PI / PlaneCount));
     }
 
+    /// <summary>Tests a gaze ray in one wall's local XZ coordinates, independent of eye height/pitch.</summary>
+    public static bool IsInHorizontalSector(float originX, float originZ, float directionX, float directionZ,
+        float radius, out bool valid)
+    {
+        double lengthSquared = (double)directionX * directionX + (double)directionZ * directionZ;
+        valid = !float.IsNaN(originX) && !float.IsInfinity(originX) &&
+            !float.IsNaN(originZ) && !float.IsInfinity(originZ) &&
+            !double.IsNaN(lengthSquared) && !double.IsInfinity(lengthSquared) && lengthSquared >= 0.0001 &&
+            !float.IsNaN(radius) && !float.IsInfinity(radius) && radius > 0;
+        if (!valid) return false; // Nearly vertical gaze has no reliable horizontal sector.
+        double length = Math.Sqrt(lengthSquared);
+        double x = directionX / length, z = directionZ / length;
+        if (z <= 0.0001) return false;
+        double distance = (radius - originZ) / z;
+        return distance > 0 && Math.Abs(originX + x * distance) <= radius * Math.Tan(Math.PI / PlaneCount);
+    }
+
     public static Slot[] Build(float radius, float minHeight = DefaultMinHeight, float maxHeight = DefaultMaxHeight, int seed = SeedBase)
     {
         ValidateRadius(radius);

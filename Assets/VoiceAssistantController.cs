@@ -156,7 +156,7 @@ public class VoiceAssistantController : MonoBehaviour
     }
 
     const string k_CompletionLine = "Excellent! You located all the objects. Please complete the NASA T L X questionnaire now.";
-    public const string AudioCheckLine = "Locate the target by its color and shape.";
+    public const string AudioCheckLine = VoicePromptText.AudioLevelCheck;
     public static string RoundPhrase(int round, string color, string shape, bool isPractice = false) =>
         (isPractice ? "This is a practice round. It does not count toward the study. " : "") +
         (color == "Yellow" && shape == "Star"
@@ -166,9 +166,17 @@ public class VoiceAssistantController : MonoBehaviour
     {
         var phrases = new System.Collections.Generic.HashSet<string>(HintGenerator.AllPhrases());
         phrases.Add(k_CompletionLine); phrases.Add(StudyIntroLine); phrases.Add(k_ClosingLine); phrases.Add(AudioCheckLine); phrases.Add("Nice!");
-        foreach (var round in ChallengeSet.Rounds) phrases.Add(RoundPhrase(round.roundIndex, round.target.color, round.target.shape));
+        foreach (var round in ChallengeSet.Rounds)
+        {
+            phrases.Add(RoundPhrase(round.roundIndex, round.target.color, round.target.shape));
+            phrases.Add(VoicePromptText.WrongSelectionPhrase(round.target.color, round.target.shape));
+        }
         for (int i = 0; i < 2; i++)
-        { var practice = ChallengeSet.PracticeRound(i); phrases.Add(RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape, true)); }
+        {
+            var practice = ChallengeSet.PracticeRound(i);
+            phrases.Add(RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape, true));
+            phrases.Add(VoicePromptText.WrongSelectionPhrase(practice.target.color, practice.target.shape));
+        }
         return new System.Collections.Generic.List<string>(phrases).ToArray();
     }
 
@@ -177,7 +185,8 @@ public class VoiceAssistantController : MonoBehaviour
         var practice = ChallengeSet.PracticeRound(0);
         var phrases = new System.Collections.Generic.List<string>(HintGenerator.AllPhrases());
         phrases.AddRange(new[] { AudioCheckLine, StudyIntroLine, "Nice!",
-            RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape, true) });
+            RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape, true),
+            VoicePromptText.WrongSelectionPhrase(practice.target.color, practice.target.shape) });
         return phrases.ToArray();
     }
 
@@ -188,9 +197,13 @@ public class VoiceAssistantController : MonoBehaviour
         {
             var practice = ChallengeSet.PracticeRound(i);
             ordered.Add(RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape, true));
+            ordered.Add(VoicePromptText.WrongSelectionPhrase(practice.target.color, practice.target.shape));
         }
         foreach (var round in ChallengeSet.Rounds)
+        {
             ordered.Add(RoundPhrase(round.roundIndex, round.target.color, round.target.shape));
+            ordered.Add(VoicePromptText.WrongSelectionPhrase(round.target.color, round.target.shape));
+        }
         ordered.AddRange(PhraseLibrary());
         var seen = new System.Collections.Generic.HashSet<string>();
         return ordered.FindAll(phrase => seen.Add(phrase)).ToArray();
@@ -266,7 +279,8 @@ public class VoiceAssistantController : MonoBehaviour
             return;
 
         m_VoiceSynthesizer.Stop();
-        m_VoiceSynthesizer.Speak(StudyIntroLine, "intro");
+        // Instructions use the selected neutral voice, regardless of the first block's condition.
+        m_VoiceSynthesizer.Speak(StudyIntroLine, "intro", VoiceCondition.Generic);
         m_IntroPlayed = true;
         m_IntroRequested = false;
         if (m_IntroAnnounceCoroutine != null)
@@ -395,6 +409,11 @@ public class VoiceAssistantController : MonoBehaviour
         if (m_EffectAudioSource != null && m_WrongCaptureCue != null)
             m_EffectAudioSource.PlayOneShot(m_WrongCaptureCue);
         if (m_HintGenerator != null) m_HintGenerator.OnWrongCapture();
+        if (m_VoiceSynthesizer != null && m_GameManager != null)
+        {
+            var target = m_GameManager.CurrentTarget;
+            m_VoiceSynthesizer.Speak(VoicePromptText.WrongSelectionPhrase(target.color, target.shape), "wrong_selection");
+        }
     }
 
     void HandleGameCompleted(float elapsedSeconds)

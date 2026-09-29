@@ -12,7 +12,9 @@ public enum VoicePerspective
 /// <summary>Stable wording transforms for the two voice perspectives.</summary>
 public static class VoicePromptText
 {
-    public const string Version = "perspective-v4-directional-variants";
+    public const string Version = "perspective-v7-audio-check-return";
+
+    public const string AudioLevelCheck = "Hover your controller over Accept Audio and press the trigger to confirm this is an acceptable audio level.";
 
     // Neutral/external source phrase to collaborative equivalent. Keeping this
     // table explicit preserves meaning across every live hint and terminal line.
@@ -72,6 +74,8 @@ public static class VoicePromptText
             throw new ArgumentOutOfRangeException(nameof(perspective), perspective, "Unknown voice perspective.");
         if (perspective == VoicePerspective.Collaborative) return Collaborative(text);
         if (perspective == VoicePerspective.FirstPerson) return SelfSimilar(text);
+        if (text.StartsWith("Find the ", StringComparison.Ordinal))
+            return "Locate the " + text.Substring("Find the ".Length);
         return k_External.TryGetValue(text, out var wording) ? wording : text;
     }
 
@@ -80,24 +84,34 @@ public static class VoicePromptText
 
     public static string FormatForVoice(string text, VoiceCondition voice) => Format(text, PerspectiveForVoice(voice));
 
+    // A separate source phrase keeps correction wording distinct from trial announcements.
+    public static string WrongSelectionPhrase(string color, string shape) =>
+        $"Find the {color.ToLowerInvariant()} {shape.ToLowerInvariant()}.";
+
     public static string SelfSimilar(string text)
     {
         if (string.IsNullOrEmpty(text)) return text;
         const string practice = "This is a practice round. It does not count toward the study. ";
         if (text.StartsWith(practice, StringComparison.Ordinal))
             return "I will try a practice trial. This one does not count toward my study trials. " + SelfSimilar(text.Substring(practice.Length));
+        if (text.StartsWith("Find the ", StringComparison.Ordinal))
+            return "I'm looking for the " + text.Substring("Find the ".Length);
         if (text.StartsWith("Locate the ", StringComparison.Ordinal))
             return "I need to find the " + text.Substring("Locate the ".Length).ToLowerInvariant();
         switch (text)
         {
             case "Look left.": return "I need to look left.";
             case "Look right.": return "I need to look right.";
+            case "Look way left.": return "I need to look way left.";
+            case "Look way right.": return "I need to look way right.";
             case "Look to your left.": return "I need to look to my left.";
             case "Look to your right.": return "I need to look to my right.";
             case "Try looking left.": return "I'll try looking left.";
-            case "Try looking right.": return "I'll try looking right.";
+            // Legacy source phrases also resolve to an allowed line.
+            case "Try looking right.": return "I need to look right.";
             case "Search to your left.": return "I need to search to my left.";
             case "Search to your right.": return "I need to search to my right.";
+            case "Go back. That was the correct area.": return "I need to go back. That was the correct area.";
             case "You're in the correct area. Keep looking.": return "I'm in the correct area. I need to keep looking.";
             case "Nice!": return "I found it!";
             case "Excellent! You located all the objects. Please complete the NASA T L X questionnaire now.":

@@ -1857,7 +1857,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6345562874289828833, guid: d0d9b0fad5cd8dd41b3e3a43240551aa, type: 3}
       propertyPath: m_text
-      value: Degree guides
+      value: Guidance boundary
       objectReference: {fileID: 0}
     - target: {fileID: 6345562874289828833, guid: d0d9b0fad5cd8dd41b3e3a43240551aa, type: 3}
       propertyPath: m_fontMaterial
@@ -1977,7 +1977,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6345562874480820535, guid: d0d9b0fad5cd8dd41b3e3a43240551aa, type: 3}
       propertyPath: m_Name
-      value: Degree guides Toggle
+      value: Guidance boundary Toggle
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4496,7 +4496,7 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1292188744}
     - targetCorrespondingSourceObject: {fileID: 2151495449494378922, guid: b6d57cedc6a73c94aad8ce006a26b41b, type: 3}
-      insertIndex: -1
+      insertIndex: 0
       addedObject: {fileID: 1292188754}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b6d57cedc6a73c94aad8ce006a26b41b, type: 3}

@@ -8,8 +8,9 @@ public class HintGenerator : MonoBehaviour
 {
     public const string AreaCorrectionPhrase = DirectionalHintPolicy.AreaPhrase;
     const float k_TipInterval = 4f;
-    const float k_FirstTipDelay = 2f;
     readonly GazeZoneEntryGate m_ZoneEntry = new GazeZoneEntryGate();
+    readonly GazeReturnCueGate m_ReturnCue = new GazeReturnCueGate();
+    string m_ReturnDirection;
     readonly List<InputDevice> m_EyeDevices = new List<InputDevice>();
     InputDevice m_EyeDevice;
     float m_NextEyeSearch;
@@ -37,12 +38,16 @@ public class HintGenerator : MonoBehaviour
     public void OnNewObjective()
     {
         m_ZoneEntry.Reset();
+        m_ReturnCue.Reset();
+        m_ReturnDirection = null;
         // A reproducible starting phrase per participant/trial; each direction then
-        // cycles all four forms before repeating. Actual spoken text is logged.
+        // cycles its allowed forms before repeating. Actual spoken text is logged.
         int firstVariant = (ChallengeSet.ScheduleSeed % 4 + (m_GameManager != null ? m_GameManager.CurrentObjectiveIndex : 0)) % 4;
         m_LeftVariant = m_RightVariant = firstVariant;
         m_CurrentHint = null;
-        m_LastTipTime = Time.time - (k_TipInterval - k_FirstTipDelay);
+        // The first directional hint is eligible on the first valid search frame.
+        // Subsequent hints still use the normal spacing after each spoken cue.
+        m_LastTipTime = Time.time - k_TipInterval;
         m_TipsSuppressed = false;
     }
 
@@ -53,6 +58,8 @@ public class HintGenerator : MonoBehaviour
     {
         m_TipsSuppressed = true;
         m_ZoneEntry.Reset();
+        m_ReturnCue.Reset();
+        m_ReturnDirection = null;
         m_CurrentHint = null;
         m_Voice?.InterruptIfAbout("tip");
     }
@@ -63,48 +70,77 @@ public class HintGenerator : MonoBehaviour
         if (m_TipsSuppressed || !m_GameManager.SearchActive ||
             m_GameManager.CurrentState != FindObjectGameManager.GameState.Playing) return;
 
-        bool inside = IsGazeInTargetPlane(out bool valid);
-        string desired = valid ? (inside ? AreaCorrectionPhrase : GetDirection()) : null;
-        // Stop stale directional requests/playback on a reversal or tracking loss.
-        // Entry into the right area uses the short fade below instead of waiting for speech to finish.
-        if (m_CurrentHint != null && desired != m_CurrentHint && (!valid || !inside))
+        bool inside = IsGazeInTargetSector(out bool valid);
+        bool entryReady = m_ZoneEntry.Update(valid, inside, Time.timeAsDouble);
+        bool returnReady = m_ReturnCue.Update(valid, inside, Time.timeAsDouble);
+        bool far = false;
+        string desired = valid ? (inside ? AreaCorrectionPhrase : GetDirection(out far)) : null;
+        bool returning = m_CurrentHint == DirectionalHintPolicy.ReturnPhrase;
+        // A return cue is stale once the area is regained or the return direction changes.
+        bool stale = !valid || (returning ? inside || desired != m_ReturnDirection : !inside && desired != m_CurrentHint);
+        if (m_CurrentHint != null && stale)
         {
             m_Voice.InterruptIfAbout("tip");
             m_CurrentHint = null;
         }
-        if (m_ZoneEntry.Update(valid, inside, Time.timeAsDouble) &&
-            m_Voice.TryAreaCorrection(AreaCorrectionPhrase, AreaCorrectionStillRelevant))
+        if (entryReady && m_Voice.TryAreaCorrection(AreaCorrectionPhrase, AreaCorrectionStillRelevant, () =>
+            {
+                // A gaze change during the fade must not consume the six-second cooldown.
+                m_ZoneEntry.MarkSpoken(Time.timeAsDouble);
+                m_LastTipTime = Time.time;
+            }))
         {
-            m_ZoneEntry.MarkSpoken(Time.timeAsDouble);
             m_CurrentHint = AreaCorrectionPhrase;
-            m_LastTipTime = Time.time;
             return;
         }
-        if (!valid || inside || desired == null || m_Voice.IsBusy || Time.time - m_LastTipTime < k_TipInterval) return;
+        if (returnReady && desired != null && m_Voice.TryAreaCorrection(DirectionalHintPolicy.ReturnPhrase,
+            () => ReturnCueStillRelevant(desired), () =>
+            {
+                m_ReturnCue.MarkSpoken(Time.timeAsDouble);
+                m_LastTipTime = Time.time;
+            }, "gaze_overshoot_return"))
+        {
+            m_ReturnDirection = desired;
+            m_CurrentHint = DirectionalHintPolicy.ReturnPhrase;
+            return;
+        }
+        // Even during the entry cue cooldown, don't keep saying left/right after arrival.
+        if (m_ZoneEntry.InsideStable && m_CurrentHint != AreaCorrectionPhrase)
+        {
+            m_Voice.InterruptIfAbout("tip");
+            m_CurrentHint = null;
+        }
+        if (!valid || inside || desired == null || m_ReturnCue.IsDebouncingExit ||
+            m_Voice.IsBusy || Time.time - m_LastTipTime < k_TipInterval) return;
         m_LastTipTime = Time.time;
         m_CurrentHint = desired;
         int variant = desired == DirectionalHintPolicy.LeftPhrase ? m_LeftVariant++ : m_RightVariant++;
-        string phrase = DirectionalHintPolicy.Variant(desired, variant);
+        string phrase = DirectionalHintPolicy.Variant(desired, variant, SessionConfig.Voice == VoiceCondition.SelfSimilar, far);
         m_Voice.Speak(phrase, "tip");
         Debug.Log($"[HintGen] [{DirectionalHintPolicy.Version}] {phrase}");
     }
 
-    string GetDirection()
+    string GetDirection(out bool far)
     {
+        far = false;
         if (!TryGetTargetInfo(out var target)) return null;
-        // Aim toward the center of the target wall, not the particular object's horizontal slot.
-        Vector3 normal = Quaternion.Euler(0, m_GameManager.SeatedForwardYaw + target.planeAzimuth, 0) * Vector3.forward;
-        Vector3 origin = m_GameManager.SeatedOrigin;
-        Vector3 targetOffset = target.transform.position - origin;
-        Vector3 toWall = origin + normal * Vector3.Dot(targetOffset, normal) - m_GazeInteractor.transform.position;
+        Vector3 toTarget = target.transform.position - m_GazeInteractor.transform.position;
         Vector3 gaze = m_GazeInteractor.transform.forward;
-        return DirectionalHintPolicy.Direction(gaze.x, gaze.z, toWall.x, toWall.z);
+        return DirectionalHintPolicy.Direction(gaze.x, gaze.z, toTarget.x, toTarget.z, out far);
+    }
+
+    bool ReturnCueStillRelevant(string direction)
+    {
+        if (m_TipsSuppressed || m_GameManager == null || !m_GameManager.SearchActive ||
+            !m_ReturnCue.IsPending(Time.timeAsDouble)) return false;
+        bool inside = IsGazeInTargetSector(out bool valid);
+        return valid && !inside && GetDirection(out _) == direction;
     }
 
     bool AreaCorrectionStillRelevant() => !m_TipsSuppressed && m_GameManager != null &&
-        m_GameManager.SearchActive && IsGazeInTargetPlane(out _);
+        m_GameManager.SearchActive && IsGazeInTargetSector(out _);
 
-    bool IsGazeInTargetPlane(out bool valid)
+    bool IsGazeInTargetSector(out bool valid)
     {
         valid = false;
         if (m_GameManager == null || !m_GameManager.RotationalBetaEnabled ||
@@ -118,17 +154,8 @@ public class HintGenerator : MonoBehaviour
         if (!m_EyeDevice.isValid || !m_EyeDevice.TryGetFeatureValue(CommonUsages.isTracked, out bool tracked) || !tracked)
             return false;
         if (!TryGetTargetInfo(out var target) || target.planeId < 0) return false;
-        valid = true;
-        // Intersect the target's wall, including empty space between its objects.
-        Quaternion rotation = Quaternion.Euler(0, m_GameManager.SeatedForwardYaw + target.planeAzimuth, 0);
-        Vector3 normal = rotation * Vector3.forward;
-        Vector3 direction = m_GazeInteractor.transform.forward;
-        float denominator = Vector3.Dot(direction, normal);
-        if (denominator <= 0.0001f) return false;
-        float distance = Vector3.Dot(target.transform.position - m_GazeInteractor.transform.position, normal) / denominator;
-        if (distance <= 0 || distance > 10) return false;
-        Vector3 hit = m_GazeInteractor.transform.position + direction * distance;
-        return m_GameManager.IsInsideSearchPlane(hit, target.planeId);
+        return m_GameManager.IsGazeInSearchSector(m_GazeInteractor.transform.position,
+            m_GazeInteractor.transform.forward, target.planeId, out valid);
     }
 
     bool TryGetTargetInfo(out SpawnableObjectInfo targetInfo)
