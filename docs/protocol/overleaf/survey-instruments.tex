@@ -1,0 +1,203 @@
+% Standalone document: pdfLaTeX; no external bibliography or images required.
+% Overleaf project: https://www.overleaf.com/project/6a84bc097073254fbca6985b
+% Sync only this file. Compare both copies before replacing either copy.
+% Revision 0.2 -- 2026-09-27. Researcher inventory, not the frozen participant form.
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=0.8in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype}
+\usepackage{booktabs,tabularx,array,longtable}
+\usepackage{xcolor,enumitem,fancyhdr}
+\usepackage[hidelinks]{hyperref}
+\definecolor{gold}{HTML}{967000}
+\definecolor{ink}{HTML}{263238}
+\hypersetup{colorlinks=true,urlcolor=gold,linkcolor=ink,citecolor=gold}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\setlength{\headheight}{14pt}
+\setlist{nosep,leftmargin=*}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Gaze Contingency Search Study}
+\fancyhead[R]{\small Survey inventory v0.2}
+\fancyfoot[C]{\thepage}
+\newcommand{\proposal}{\textbf{Protocol proposal.} }
+\newcommand{\decision}{\textbf{Open decision.} }
+\newcommand{\doi}[1]{\href{https://doi.org/#1}{\nolinkurl{#1}}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\begin{document}
+{\Large\bfseries Survey Inventory and Source Papers}\par
+{\color{gold}\rule{\linewidth}{1.5pt}}
+\textbf{Revision:} 0.2, September 27, 2026\hfill\textbf{Purpose:} protocol and Qualtrics planning
+
+This document identifies the questionnaires in our study plan, their source papers, their intended timing, and the adaptations still requiring a decision. It is a researcher reference, not the final participant questionnaire or a statement of IRB approval.
+
+\proposal The current run sheet specifies two voice blocks: participant-preferred voice and self-similar voice, with 10 experimental trials per block and separate practice. Surveys will refer to the just-completed \emph{voice block}, not an individual trial. Older documents referring to 30 trials per voice, generic voice, or gaze-aware versus gaze-unaware comparisons need reconciliation.
+
+\textbf{Status language.} ``Include'' records a study-planning decision; it does not establish that a live survey is deployed. ``Proposed'' marks timing, scoring or wording still being finalized. Published-source claims are cited separately from our choices.
+
+\section{Administration map}
+\begin{tabularx}{\linewidth}{@{}p{0.17\linewidth}YY@{}}
+\toprule
+When & Survey or question group & Source and status \\
+\midrule
+Before the task & Demographics, prior experience, own accent, preferred agent accent and gender; candidate voice preference & Study-created; requested additions and final response formats need reconciliation. \\
+Before headset use & Simulator Sickness Questionnaire (SSQ), 16 symptoms & Kennedy et al.~\cite{kennedy}; existing safety/comfort proposal. \\
+After each voice block & Raw NASA-TLX, six dimensions & Hart and Staveland~\cite{hart}; include, with a local response-scale adaptation. \\
+After each voice block & Intrinsic Motivation Inventory (IMI), proposed four subscales / 24 items & Official IMI packet~\cite{imi}; subscale-selection precedent: Kao et al.~\cite{kao}. Include IMI; exact form remains proposed. \\
+After each voice block & Guo Table A1 agent-perception bank, 42 ratings + one open response & Guo et al.~\cite{guo} and the original sources in Section~\ref{sec:guo}. Added to planning; final selection remains open. \\
+After each voice block & Voice/accent similarity, liking and selected experience questions; technical checks & Study-created; do not claim a validated combined scale. \\
+After both blocks & Post-exposure SSQ; comparative voice preference; semi-structured debrief & Kennedy et al.~\cite{kennedy} for SSQ; preference and interview are study-created. \\
+\bottomrule
+\end{tabularx}
+
+\textbf{Burden to resolve:} the full proposed TLX + IMI + Guo bank is $6+24+42=72$ ratings per block, or 144 across both blocks, before custom voice questions and open responses. Baseline and final SSQ add 32 symptom ratings. This is an inventory of the proposed battery, not a recommendation to administer every candidate item.
+
+\section{Workload, motivation and symptoms}
+\subsection{Raw NASA-TLX: perceived workload}
+\textbf{Paper:} Hart and Staveland (1988), \emph{Development of NASA-TLX (Task Load Index): Results of Empirical and Theoretical Research}.~\cite{hart}
+
+\proposal Administer once after each voice block. Preserve mental demand, physical demand, temporal demand, performance, effort and frustration separately. Our existing draft uses six discrete 0--10 ratings and their unweighted mean; higher scores indicate greater workload, with performance oriented toward failure. This is an adaptation of the standard NASA-TLX response format, not an unchanged original form. No pairwise weighting is proposed. Use one collection route (Unity or Qualtrics) to avoid asking it twice.
+
+\decision Freeze exact anchors, performance direction, missing-response rule and export units. A 0--10 score must not silently mix with a 0--100 score.
+
+\subsection{IMI: motivation and experience of the activity}
+\textbf{Instrument source:} Center for Self-Determination Theory, official IMI overview and complete packet.~\cite{imi} The official overview identifies Ryan (1982) among its foundational papers.~\cite{ryan}
+
+\textbf{Study rationale / current decision.} We motivate our use of IMI with Zimmerer, Bartels and Latoschik's published IEEE ISMAR 2025 study of verbal feedback from a virtual coach.~\cite{zimmerer} Their study administered enjoyment, perceived competence, effort/importance, pressure/tension and relatedness after VR using seven-point responses (Sections 3.2.4--3.3). This provides a precedent for assessing motivational experience alongside agent feedback in XR. Their feedback manipulation did not significantly affect motivation; the citation supports our measurement choice, not an expected benefit of self-similar speech.
+
+Kao et al. (2021), Section 4.3.3, remains the self-similar-voice precedent for our proposed four-subscale selection.~\cite{kao} Adopting Zimmerer et al. as motivation does not change that selection to their five-subscale battery. Final selection and wording remain open.
+
+\proposal Include IMI after each block. The current proposed selection uses four full-bank subscales:
+\begin{center}
+\begin{tabular}{@{}lr@{}}
+\toprule Subscale & Items \\
+\midrule Interest/enjoyment & 7 \\ Effort/importance & 5 \\
+Pressure/tension & 5 \\ Value/usefulness & 7 \\
+\midrule Total per block & 24 \\\bottomrule
+\end{tabular}
+\end{center}
+Use the official seven-point truth anchors, reverse keyed responses with $8-r$, and average within each subscale. Do not calculate a total IMI score. Interest/enjoyment is the direct self-report measure of intrinsic motivation; the other subscales describe distinct experiences.~\cite{imi}
+
+The 24-item count is our proposed full-bank selection; it is not a claim that Kao administered exactly 24 items. It also differs from the packet's separate 22-item form. Keep ``activity'' referring to the completed search block. \decision Freeze wording, value/usefulness fill-ins, item selection/order and reverse keys against the actual final form. The register proposes scoring only complete subscales, while retaining missing responses; that is a project proposal, not an official IMI requirement.
+
+\subsection{SSQ: simulator-sickness symptoms}
+\textbf{Paper:} Kennedy, Lane, Berbaum and Lilienthal (1993), \emph{Simulator Sickness Questionnaire: An Enhanced Method for Quantifying Simulator Sickness}.~\cite{kennedy}
+
+\proposal Collect the 16 symptoms, each rated 0--3, before headset exposure and after the session. Preserve baseline and post-exposure responses. If reporting canonical nausea, oculomotor, disorientation and total scores, verify the item membership and weights against the published scoring procedure; report baseline, post and change explicitly. A brief between-block symptom/comfort check is separate from administering a full SSQ after every block. Participant stopping and symptom response procedures remain separate from aggregate questionnaire scores.
+
+\section{Agent-perception bank: Guo et al. (2024)}\label{sec:guo}
+\textbf{Paper:} \emph{Collaborating with my Doppelg\"anger: The Effects of Self-similar Appearance and Voice of a Virtual Character during a Jigsaw Puzzle Co-solving Task}. Appendix A, Table A1.~\cite{guo}
+
+The source bank contains 42 ratings and one open response. The table below preserves its source IDs and attributions; Guo adapted some items. Our exact selection and voice-agent wording remain open. Source Q1--Q42 use seven-point agreement ratings. Keep the constructs separate.
+
+\begin{tabularx}{\linewidth}{@{}p{0.13\linewidth}Yp{0.08\linewidth}Y@{}}
+\toprule IDs & Construct & Count & Source attributed in Table A1 \\
+\midrule
+Q1--6 & Co-presence & 6 & Biocca et al. (2001)~\cite{biocca} \\
+Q7--12 & Attentional allocation & 6 & Biocca et al. (2001)~\cite{biocca} \\
+Q13--18 & Perceived intelligence & 6 & Moussawi and Koufaris (2019)~\cite{moussawi} \\
+Q19 & Intelligence comparison & 1 & Guo et al.; study-created~\cite{guo} \\
+Q20--22 & Eerie & 3 & Zibrek et al. (2018)~\cite{zibrek} \\
+Q23--33 & Likability & 11 & Reysen (2005)~\cite{reysen} \\
+Q34--36 & Believability / appearance--voice correspondence & 3 & Lam et al. (2023)~\cite{lam} \\
+Q37--42 & Perceived anthropomorphism & 6 & Moussawi and Koufaris (2019)~\cite{moussawi} \\
+Q43 & Overall experience & Open & Guo et al.; study-created~\cite{guo} \\
+\bottomrule
+\end{tabularx}
+
+\decision Q31 concerns physical attractiveness; Q34--36 require appearance. Decide explicitly whether to omit or adapt them for a disembodied voice. Do not code inapplicability as a low rating. Q20--22 cover appealing, eerie and familiar impressions; do not automatically average them into an eeriness score. Verify reverse coding and construct scoring in the original instruments. Co-presence is distinct from IPQ environmental presence. Do not compute one 42-item total.
+
+\section{Our study-created questions}
+These items have no claimed validated parent questionnaire. Kao and Guo motivate the research topic, but citing them does not validate new wording.~\cite{kao,guo} The wording below separates recorded researcher requests from proposed interview prompts.
+
+\subsection{Baseline demographics and voice setup}
+\proposal Retain age band, optional gender identity, glasses/contacts, prior VR/MR use, eye-tracking experience, prior experience hearing a synthetic/cloned version of one's voice, and familiarity with AI voice assistants.
+
+\textbf{Requested additions:}
+\begin{itemize}
+\item ``What do you perceive your own accent to be?''
+\item Preferred accent of the agent's voice.
+\item Preferred agent-gender presentation, chosen explicitly by the participant; do not infer it from participant gender.
+\item Perceived accent and gender presentation of the evaluated voices, if retained in the final item map.
+\end{itemize}
+Save each offered voice's exact ID and presentation order, the participant's preference score/rank, and the final choice. Record a requested accent separately if no offered voice matches it. Demographic gender identity, preferred voice-gender presentation and perceived voice gender are different variables.
+
+\decision Finalize response options, ranking/tie handling and the endpoints of the requested ``100-point'' rating. A 0--100 slider is a possible implementation, not yet a frozen choice. Rate both experimental voices, including the self-similar voice; retain setup/candidate ratings separately from post-block experience ratings.
+
+\subsection{Voice manipulation and experience checks}
+\textbf{Requested wording, after each voice block:}
+\begin{itemize}
+\item ``The agent's voice is similar to mine.''
+\item ``The agent's accent is similar to mine.''
+\end{itemize}
+Use separate 1--7 Likert responses, with final anchors frozen in the questionnaire. Collect the requested liking rating for each voice, including the self-similar voice, using the same agreed scale. A low similarity rating does not automatically exclude a participant.
+
+\proposal Candidate additional single-item topics are familiarity, naturalness, helpfulness, comfort, distraction, trust, reliance, responsiveness and appropriateness. Prune overlap with Guo before adding them all. Do not sum these into a validated ``voice quality'' scale. If hint-specific items are retained, refer to current left/right guidance and the correct-area cue; older warmer/colder wording is stale.
+
+\subsection{Technical checks and final preference}
+\proposal After each block, record inaudible, delayed, cut-off or wrong-voice audio, other interruptions and breaks, with notes. Distinguish intentional correct-area speech interruptions from audio faults. These are quality flags, not a psychometric scale.
+
+After both blocks, ask which voice the participant preferred: participant-preferred voice, self-similar voice, no preference, or unsure, followed by why. Use neutral participant-facing voice labels that match the actual session. Do not retain old gaze-aware versus gaze-unaware answer options.
+
+\subsection{Semi-structured debrief: proposed guide}
+Begin openly, then use balanced probes. These are our questions, not quoted survey items from a paper.
+\begin{enumerate}
+\item How would you describe your experience with each voice?
+\item What, if anything, did you notice about how the voices sounded in relation to your own voice?
+\item Did either voice affect how you searched or how well you felt you performed? In what way, if any?
+\item What did you like or dislike about hearing the self-similar voice? Did it feel comfortable, uncomfortable, eerie, or neither? What contributed to that feeling?
+\item Which directions or correct-area messages were helpful or distracting? How did interruptions affect the experience?
+\item Can you imagine a useful application for a voice like your own? In which situations would you prefer your own voice, another voice, or no voice?
+\item Did the voice creation or use raise any privacy or personal concerns? What would you change?
+\item Is there anything else about the voices or task that we should know?
+\end{enumerate}
+An optional internal-dialogue/own-thought probe remains exploratory and should follow the open responses. Analyze debrief responses qualitatively. Perceived performance effects are distinct from measured task performance.
+
+\section{Discussed measures outside the current battery}
+\begin{description}[style=nextline]
+\item[IPQ: environmental presence --- on hold.]
+Schubert, Friedmann and Regenbrecht (2001).~\cite{ipq} Real-room-awareness items require an applicability decision in passthrough MR. This is not the Guo co-presence scale.
+\item[Separate eeriness index --- unresolved legacy candidate.]
+Ho and MacDorman (2017).~\cite{ho} Its exact anchors were not finalized in the local draft. It is not interchangeable with Guo Q20--22; avoid duplicating eeriness measures without a rationale.
+\item[MSSQ-Short and VIMSSQ-Short --- discussed, adoption not confirmed.]
+Golding (2006)~\cite{golding} and Golding, Rafiq and Keshavarz (2021)~\cite{vimssq}, respectively. These concern susceptibility, unlike SSQ's current symptoms. They appeared in the supplied VR-sickness paper excerpt but are not confirmed additions to our battery.
+\item[SUS and UEQ --- not included.]
+Neither is part of the current measures-register battery.
+\end{description}
+The Drewes gaze/locomotion and Zagermann eye-tracking/workload papers concern behavioral measurement and interpretation; they are not additional questionnaires in this inventory.
+
+\section{Versions, implementation and Overleaf synchronization}
+\textbf{Local evidence.} This inventory reconciles the current run sheet with \path{docs/measures-register.md}, \path{resources/surveys/guo-2024-survey.md}, its CSV item bank, and \path{resources/surveys/qualtrics/README.md}. Older register text about trial counts and guidance does not override the current run sheet. This document does not change the live surveys.
+
+\textbf{Existing draft builders.} The repository records imports on September 19, 2026; live publication and current contents have not been verified for this inventory:
+\begin{itemize}
+\item \href{https://ucf.yul1.qualtrics.com/survey-builder/SV_5u2FpCk1228bfPE/edit}{Baseline / pre-task draft}.
+\item \href{https://ucf.yul1.qualtrics.com/survey-builder/SV_cwsLpEVffEIo9SK/edit}{Post-voice-block draft}, reused with explicit block and condition identifiers.
+\item \href{https://ucf.yul1.qualtrics.com/survey-builder/SV_emqdHkeDg3gjYpw/edit}{Post-session / safety draft}.
+\end{itemize}
+
+\decision Before collection, freeze the selected item IDs, exact wording, anchors, order, scoring, missingness rules and instrument version. Export participant, session/run, block, voice condition and condition order identifiers. Block-level survey values may be joined onto trial rows, but repeated copies remain one block-level observation.
+
+\textbf{File to sync:} \path{survey-instruments.tex}. Upload this as a new file in the \href{https://www.overleaf.com/project/6a84bc097073254fbca6985b}{existing Overleaf project}. Select it as the main document when compiling this inventory. It has an embedded bibliography and needs no additional files; it does not replace \path{experimenter-run-sheet.tex}.
+
+\textbf{Round-trip workflow:} on-demand Git sync is configured through a dedicated Overleaf checkout. Fetch the latest revision, compare both copies against their last common revision, and merge any concurrent edits before committing and pushing this file. Preserve edits on both sides, then increment the revision/date. No automatic background synchronization is running. The local \path{SURVEY-SYNC.md} records the mapping and last common revision. Changes to this inventory must be reconciled separately with the measures register, Qualtrics forms and protocol before deployment.
+
+\begin{thebibliography}{99}\small
+\bibitem{hart} S. G. Hart and L. E. Staveland (1988). Development of NASA-TLX (Task Load Index): Results of Empirical and Theoretical Research. In \emph{Human Mental Workload}, pp. 139--183. \doi{10.1016/S0166-4115(08)62386-9}. \href{https://human-factors.arc.nasa.gov/groups/TLX/downloads/Hart_Staveland_ORIGINAL_1.pdf}{NASA paper copy}.
+\bibitem{imi} Center for Self-Determination Theory. \emph{Intrinsic Motivation Inventory (IMI)}. \href{https://selfdeterminationtheory.org/intrinsic-motivation-inventory/}{Official overview, origins and validation references}; \href{https://selfdeterminationtheory.org/wp-content/uploads/2022/02/IMI_Complete.pdf}{complete instrument packet}. Accessed September 27, 2026.
+\bibitem{ryan} R. M. Ryan (1982). Control and Information in the Intrapersonal Sphere: An Extension of Cognitive Evaluation Theory. \emph{Journal of Personality and Social Psychology}, 43(3), 450--461. \doi{10.1037/0022-3514.43.3.450}.
+\bibitem{kao} D. Kao, R. Ratan, C. Mousas and A. J. Magana (2021). The Effects of a Self-Similar Avatar Voice in Educational Games. \emph{Proceedings of the ACM on Human-Computer Interaction}, 5(CHI PLAY), Article 238. \doi{10.1145/3474665}.
+\bibitem{zimmerer} A. Zimmerer, L. Bartels and M. E. Latoschik (2025). The Impact of Performance-Specific Feedback from a Virtual Coach in a Virtual Reality Exercise Application. \emph{2025 IEEE International Symposium on Mixed and Augmented Reality (ISMAR)}, pp. 1031--1041. IEEE Computer Society. \doi{10.1109/ISMAR67309.2025.00110}. \href{https://downloads.hci.informatik.uni-wuerzburg.de/2025-ismar-feedback-from-a-virtual-coach-in-vr-exercise.pdf}{Accessible author preprint}.
+\bibitem{kennedy} R. S. Kennedy, N. E. Lane, K. S. Berbaum and M. G. Lilienthal (1993). Simulator Sickness Questionnaire: An Enhanced Method for Quantifying Simulator Sickness. \emph{The International Journal of Aviation Psychology}, 3(3), 203--220. \doi{10.1207/s15327108ijap0303_3}.
+\bibitem{guo} S. Guo, M. Choi, D. Kao and C. Mousas (2024). Collaborating with my Doppelg\"anger: The Effects of Self-similar Appearance and Voice of a Virtual Character during a Jigsaw Puzzle Co-solving Task. \emph{Proceedings of the ACM on Computer Graphics and Interactive Techniques}, 7(1), Article 4. \doi{10.1145/3651288}. Instrument mapping: Appendix A, Table A1.
+\bibitem{biocca} F. Biocca, C. Harms and J. Gregg (2001). The Networked Minds Measure of Social Presence: Pilot Test of the Factor Structure and Concurrent Validity. \emph{4th Annual International Workshop on Presence}, Philadelphia, pp. 1--9. Source attribution retained from Guo Table A1; original scoring audit remains open.
+\bibitem{moussawi} S. Moussawi and M. Koufaris (2019). Perceived Intelligence and Perceived Anthropomorphism of Personal Intelligent Agents: Scale Development and Validation. \emph{Proceedings of the 52nd Hawaii International Conference on System Sciences}. \doi{10.24251/HICSS.2019.015}.
+\bibitem{zibrek} K. Zibrek, E. Kokkinara and R. McDonnell (2018). The Effect of Realistic Appearance of Virtual Characters in Immersive Environments---Does the Character's Personality Play a Role? \emph{IEEE Transactions on Visualization and Computer Graphics}, 24(4), 1681--1690. \doi{10.1109/TVCG.2018.2794638}.
+\bibitem{reysen} S. Reysen (2005). Construction of a New Scale: The Reysen Likability Scale. \emph{Social Behavior and Personality}, 33(2), 201--208. \doi{10.2224/sbp.2005.33.2.201}.
+\bibitem{lam} L. Lam et al. (2023). Effects of Body Type and Voice Pitch on Perceived Audio-Visual Correspondence and Believability of Virtual Characters. \emph{ACM Symposium on Applied Perception}. \doi{10.1145/3605495.3605791}.
+\bibitem{ipq} T. Schubert, F. Friedmann and H. Regenbrecht (2001). The Experience of Presence: Factor Analytic Insights. \emph{Presence: Teleoperators and Virtual Environments}, 10(3), 266--281. \doi{10.1162/105474601300343603}. \href{https://igroup.org/pq/ipq/download.php}{IPQ instrument page}.
+\bibitem{ho} C.-C. Ho and K. F. MacDorman (2017). Measuring the Uncanny Valley Effect: Refinements to Indices for Perceived Humanness, Attractiveness, and Eeriness. \emph{International Journal of Social Robotics}, 9, 129--139. \doi{10.1007/s12369-016-0380-9}.
+\bibitem{golding} J. F. Golding (2006). Predicting Individual Differences in Motion Sickness Susceptibility by Questionnaire. \emph{Personality and Individual Differences}, 41(2), 237--248. \doi{10.1016/j.paid.2006.01.012}.
+\bibitem{vimssq} J. F. Golding, A. Rafiq and B. Keshavarz (2021). Predicting Individual Susceptibility to Visually Induced Motion Sickness by Questionnaire. \emph{Frontiers in Virtual Reality}, 2, 576871. \doi{10.3389/frvir.2021.576871}.
+\end{thebibliography}
+\end{document}

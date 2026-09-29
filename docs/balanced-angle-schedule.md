@@ -1,5 +1,7 @@
 # Balanced target-wall angles
 
+**Current decision / protocol proposal — September 28:** the researcher selected 40 measured trials per voice, eight at each of the five absolute-angle categories, and 20 positive/20 negative target-height deltas per block. See the [meeting record](meeting-reconciliation-2026-09-28.md) and #10. The vertical reference/deadband and cross-balancing details remain open. The ten-trial implementation described below has not yet been generalized; current target-identity uniqueness and two-group scheduling assumptions need changes before an 80-trial run.
+
 **Implemented — beta, 2026-09-27:** both ten-trial voice blocks have the same absolute target-wall angle counts. Angles are measured from the readiness cross on the previous target wall to the next target wall center. For example, starting at wall 315° and targeting wall 0° gives signed theta +45° and absolute theta 45°. Wall azimuth remains relative to the seated fixed front.
 
 | Absolute theta | Trials in each block |

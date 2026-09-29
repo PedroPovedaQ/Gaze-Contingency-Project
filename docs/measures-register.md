@@ -1,5 +1,7 @@
 # Study measures register
 
+**Current decision / protocol proposal — September 28:** [Meeting reconciliation](meeting-reconciliation-2026-09-28.md) adds one performance/subjective CSV per logical trial and separate reconstruction streams. Include signed target height delta/reference, planned versus realized angles and distances, independent timing/count/movement metrics, and survey provenance. Block scores repeated in trial files remain block measurements. Proposed willingness, reliance, independence-motivation and percentage-of-guidance-use items are study-created drafts, not a validated composite; wording/scales and the incomplete semantic-differential note require review under #26. The selected schedule is 40 trials per voice, with 20 positive/20 negative height deltas per block; height reference remains open. Confirmed follow-up: target identity/location are hidden from participants, guidance first reaches the wall then directs up/down, and only the right controller is required. Preserve researcher-only target identity and right-controller provenance; left-controller absence is expected, not missing required data. This supersedes conflicting earlier planning below without claiming new logger or survey implementation.
+
 [Study hub — protocol, surveys and references](STUDY-HUB.md)
 
 Version 0.4 — updated 2026-09-22. Living inventory for the seated, rotating MR search study. This register governs measurement planning alongside the [latest meeting reconciliation](meeting-reconciliation-2026-09-22.md) and #8/#20/#26 acceptance criteria; older forms and generated PDFs may describe superseded designs. It does not certify implementation or IRB approval.
@@ -9,6 +11,8 @@ Version 0.4 — updated 2026-09-22. Living inventory for the seated, rotating MR
 **Protocol proposal — September 22 additions:** #33 owns every candidate's preference score/rank and exact voice identity. #26 owns both experimental voices' liking ratings, separate voice-similarity and accent-similarity items, perceived own/preferred accent and voice gender. #20 adds independent first controller target contact, selection time, repeat/error/hint/zone counts, cumulative head translation and rotation across all axes, and gaze validity. Units/aliases and quality rules are frozen under #8; the older B01–B12 table remains useful but is not yet the complete new schema. Final-gaze and final-correct-zone timing need operational definitions before implementation.
 
 **Protocol proposal — survey-enriched analysis table:** join block-level TLX/voice responses to trial rows through participant/run/block/condition IDs, retaining source/version and missingness. Repeating a block score across trial rows does not make it a per-trial measurement or an independent observation. Preserve raw survey and raw trial records; #26/#20/#15 own the derived export.
+
+**Researcher clarification — September 28 whiteboard:** retain Euclidean distance in metres; instruction count from actually started task-guidance playback with repeat/category and partial-playback flags; and separate active-search latencies to first valid target-gaze contact, first right-controller target-ray contact and final correct trigger selection. Missing contacts stay missing. First-gaze validity/persistence rules remain a detector specification, not a validated fixation claim. The small photographed To-do section is excluded from the meeting scope. #8/#20/#21 own field naming, event boundaries and counting rules.
 
 ## Subjective measures
 
@@ -44,6 +48,8 @@ Version 0.4 — updated 2026-09-22. Living inventory for the seated, rotating MR
 SUS and UEQ remain outside the current draft battery. IMI is not a replacement measure for presence.
 
 ## IMI specification and source transfer
+
+**Current decision — rationale added 2026-09-27:** use [Zimmerer, Bartels and Latoschik (IEEE ISMAR 2025)](https://doi.org/10.1109/ISMAR67309.2025.00110) as the XR agent-feedback precedent motivating IMI. They administered five subscales after VR; their feedback manipulation did not significantly affect motivation. This supports the measurement choice, not a predicted voice effect. Kao remains the precedent for our proposed four-subscale selection below; this citation addition does not change the battery. [Author preprint, §§3.2.4–3.3](https://downloads.hci.informatik.uni-wuerzburg.de/2025-ismar-feedback-from-a-virtual-coach-in-vr-exercise.pdf).
 
 **Protocol proposal — confirmed:** include the Intrinsic Motivation Inventory. **Protocol proposal — working selection:** use the four dimensions used by Kao et al. (2021), §4.3.3, after each voice block: interest/enjoyment, effort/importance, pressure/tension, value/usefulness. This is not the packet's separate 22-item version, which contains a different set of subscales.
 

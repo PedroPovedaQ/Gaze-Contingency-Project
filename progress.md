@@ -1,4 +1,85 @@
+## 2026-09-28
+
+- Prepared all current Unity interaction/guidance, protocol/meeting/survey, per-trial CSV and timeline-video changes for the requested v3 then main integration. Both remote target histories are ancestors of the current work, so fast-forward integration is available without discarding commits. Participant recordings, credentials, generated analysis outputs and Unity performance-test build metadata remain local/ignored.
+- Pre-integration checks passed: rotational layout/gaze entry-return regression suite; voice isolation suite; 32 CSV tests; 2 timeline packaging tests; prior real-browser timeline integration tests; Unity live-editor compile check. Android Build And Run was blocked by the missing headset; dismissed the device notice and verified Unity restored temporarily removed simulation settings. Device validation remains pending.
+
+## 2026-09-28
+
+- Added local headset-video support to the browser run timeline (#37): reusable page packager, run-scoped local video selection, manual recording-clock alignment, linked play/pause/speed/scrub/trial/event controls, missing coverage, media errors and downloadable/restorable alignment metadata. Preserved the original P020 preview and raw data; generated a separate updated local page. No recording or media upload started.
+- Validation: two Python packaging tests and real Chromium integration checks passed with synthetic video, including trial switching, pause/speed, coverage edges, offset restore/wrong-run rejection and corrupt media recovery. Desktop/mobile screenshots inspected. Real P020 page loaded all 9 recorded trial snapshots and retained telemetry playback; actual P020 video remains unavailable/unverified. Manual offset is approximate and requires later-event drift checking; raw footage cannot be reconstructed from CSV alone. Changes remain local and uncommitted.
+- Ran the requested Unity refocus/Build And Run shortcut; menu dispatch succeeded and the editor began building. Completion/device launch is not confirmed (latest log remained in Android prerequisite checks). The timeline feature itself runs in the browser; build-generated Unity files were left untouched.
+
+## 2026-09-28
+
+- Implemented the local post-session portion of GitHub #20 in `analysis/trial_csv.py`: one performance/subjective CSV per logical trial, combined table and source-hash manifest; strict replay/survey identity joins, scoped questionnaire enrichment, pause-aware timing, tracked contact snapshots, actual audio instruction counts, motion paths and realized geometry. Raw sources remain unchanged, missing measures remain blank, and practice/incomplete records remain explicit. Added usage/method documentation and regression tests; changes remain local and uncommitted.
+- Validation: 32 CSV tests pass and Ruff checks pass. P020 exported 22 rows/files (20 planned measured + 2 practice; 6 measured completed), with each individual file verified against the combined table. Original incomplete recording/tail and missing surveys are flagged; participant artifacts remain under ignored analysis/results. No claims of validated fixation, native eye sampling frequency, finalized zone/repeat metrics or acceptance of the new 40+40 design. #20 stays In Progress pending definitions, finalized survey joins and fresh-session/device integration.
+- Requested Unity refocus/Build And Run script was attempted; menu dispatch failed because System Events could not access Unity's menu bar (invalid index). No headset build or runtime validation completed for this Python export change.
+
+## 2026-09-28
+
+- Incorporated the researcher's whiteboard transcription: Euclidean distance, number of instructions, first eye/right-controller contact timing and final selection timing. Mapped these to separate distance/count/active-search latency fields, with actual-playback counting, partial/missing flags and final correct-trigger completion; detector details remain specified separately. Updated meeting/measures notes and GitHub #8/#19/#20/#21. Removed the small photographed To-do section from pending transcription, as requested. Planning/schema clarification only; no runtime, headset or survey change.
+
+## 2026-09-28
+
+- Incorporated researcher clarification: right controller only throughout setup/menus/wrist/pause/repeat and trigger selection; the agent alone knows target identity/location; guide horizontally to the correct vertical wall, then up/down within it. Updated the meeting record, procedure/measures/decision pointers and related GitHub requirements/project overview. Target identity and controller allocation are no longer open questions. Runtime implementation remains pending; target announcements/repeats/error speech and readiness dependencies need a coordinated change, not simply silencing the introductory clip.
+- Cropped three unredacted whiteboard regions for researcher transcription: count-column heading after distance, timing headings between search/controller, and small To-do notes. Preserved original image/redactions and kept crops local. No headset build, runtime or live survey/Overleaf change for this clarification/task update.
+
+## 2026-09-28
+
+- Processed the supplied whiteboard and typed meeting notes into `docs/meeting-reconciliation-2026-09-28.md`, separating decisions, candidate schema/items, unreadable headings and unresolved wording. Updated 21 existing GitHub issues and project #2 overview without duplicate issues; activated #11 coarse-to-fine/vertical guidance (Ready), renamed #10 for 40-per-voice scheduling and #20 for one performance/subjective CSV per trial. No tasks marked Verified or closed.
+- Captured 40+40 trials, five balanced absolute-theta strata, 20 positive/20 negative height deltas per block, separate reconstructable motion/scene streams, block-survey provenance, short varied guidance and success speech, exact loading copy, reliance/chair instruction and later passthrough introduction. Linked draft willingness/reliance/independent-motivation/use-percentage items to #26 and preserved the unfinished semantic-differential and controller notes as open. Target identity availability, vertical reference and turn/look threshold still require researcher clarification.
+- Propagated current planning pointers to procedure, measures, angle schedule and decision register; preserved runtime evidence and older requirements as history. Runtime, headset build, live Qualtrics/Overleaf and generated IRB sources unchanged; this session reconciled planning/tasks only. Raw P020 recordings and the meeting screenshot were not uploaded. Current-design power remains unestablished (#16).
+
 ## 2026-09-27
+
+- Recorded the researcher’s new forty-trial-per-voice decision (80 measured total; eight assignments per absolute angle per block) and guidance without a spoken target description. Checked GitHub #16 and legacy protocol: current-design power remains unfinished; the older 48-participant sensitivity statement concerns a superseded design. Flagged target identification within a wall as unresolved before removing announcements. No runtime, open run-sheet, or headset change in this decision audit.
+
+## 2026-09-27
+
+- Split P020’s mega CSV into separate gaze, replay-gaze, head/XR motion, controller, trial, event, selection, object, session and voice files. Added 29 exclusive record-type partitions retaining geometry and all original populated fields; verified exact reconstruction of every original row and column. Kept source exports intact, retained incomplete-session warnings and documented overlapping convenience views. Added an index/manifest and ZIP under ignored analysis/results/p20-20260927/separate-data; no Unity runtime change or device rebuild needed.
+
+## 2026-09-27
+
+- Generated a local interactive timeline from actual P020 run 001 data, with recorded layout, gaze/controller rays, trigger/hit snapshots, cue text and authoritative selections. Recovered two practice and six completed measured trials; trial 7 never reached search and the replay ends without a footer. Preserved original headset copies and documented the one truncated CSV row omitted only in a derived copy. Exported 21,089-row / 387-column combined CSV, including 7,376 exact frame joins. Unity accepted the original replay prefix; browser playback, event jumping, scrubbing and incomplete-trial display verified. Artifacts and participant recordings stay under ignored analysis/results/p20-20260927; no runtime code or headset state changed. Full 3D/audio replay remains available in the existing Unity viewer; inline overview is reduced for display.
+
+## 2026-09-27
+
+- Changed the spoken processing announcement to “Give us a moment while we process your voice.” Voice-isolation checks passed. Android Build And Run succeeded in 49.8 seconds and launched on Vive FA5AR3N00385; listening verification remains on device.
+
+## 2026-09-27
+
+- Added the standalone survey questions-by-block companion to Overleaf (`survey-questions-by-block.tex`, revision 0.1). Includes every baseline, post-block and final draft question/response option, all 42 Guo candidate ratings plus Q43, requested accent/voice preferences and similarity/liking items, and the proposed exploratory debrief. Maps administration to two counterbalanced ten-trial voice blocks, distinguishes existing drafts from proposals, and flags stale wording, applicability, duplicate items and scoring/scale decisions. Verified all source question text and IDs; built-in LaTeX compilation succeeded. Published only the new companion to Overleaf at `476eed1` and verified the remote bytes match. Live Qualtrics forms, run sheet, Unity code and headset workflow unchanged.
+
+## 2026-09-27
+
+- Replaced the audio-level check with the requested Accept Audio/controller/trigger instruction in both voices. Added a preloaded “Go back. That was the correct area.” cue and its first-person counterpart after a stable horizontal visit/exit, with a two-second relevance window and six-second cooldown. Canceled correction fades no longer consume cooldown; stable arrival stops stale directional hints even during area-cue cooldown. Setup and target announcements remain protected.
+- Fixed the reported upward-scan reannouncement path: guidance area membership now ignores wall-height bounds and uses the horizontal wall sector. Nearly vertical gaze abstains rather than producing an exit. Object interaction and telemetry unchanged. Pure geometry/entry/return tests, voice-isolation/interruption checks, Unity compilation and Editor checks across all eight walls with +/-89-degree pitch passed. Android Build And Run succeeded in 73.9 s and launched on Vive FA5AR3N00385 (PID 11641); the initial Unity/Android error query was empty. Physical listening and edge-jitter acceptance remain open.
+
+## 2026-09-27
+
+- Side-conversation change: wrong controller selections now speak the actual target again in the active condition: neutral “Locate the blue cube.” / self-similar “I'm looking for the blue cube.” Existing wrong-selection visual/tone feedback and ongoing trial timing remain unchanged. Correction utterances have their own source wording and `wrong_selection` audio context so normal announcements retain their current wording and directional guidance cannot interrupt the correction. Included corrections in practice starter, full phrase inventory and ordered background preparation. Voice-isolation checks passed for exact wording, both provider paths and preserved condition. Headset playback remains unverified here; kept the main thread’s device workflow undisturbed.
+
+## 2026-09-27
+
+- Side-conversation change: removed the two-second initial directional-hint delay. OnNewObjective now makes the first hint eligible on the first valid search frame; target announcement/readiness, gaze validity, and speech-busy gates remain in place. Later directional hints retain four-second minimum spacing; target-area entry still uses its existing 0.1-second debounce. Updated telemetry guide and passed the rotational/directional policy checks. Device timing remains unverified; no build was launched from this side conversation to avoid disrupting the main thread’s headset workflow.
+
+## 2026-09-27
+
+- Side-conversation change: the study introduction now explicitly uses the selected neutral voice and external, participant-directed wording, regardless of the first block’s assigned condition. Pedro confirmed this applies only to the introduction; trial target announcements and hints still follow their voice condition. Added an optional per-utterance voice argument without changing session assignment. Voice-isolation regression passed for all four neutral identities, external wording, and preserved self-similar/enrollment state. Left the main thread’s active headset build/testing workflow undisturbed; installation of this small follow-up has not been verified here.
+
+## 2026-09-27
+
+- Added stronger “Look way left/right” hints (first person for self-similar) when the current horizontal gaze-to-object angle is strictly over 90°, interpreting two thetas as two 45° wall steps. Uses actual target bearing; balanced trial theta quotas are unchanged. Included both lines in audio preparation, updated wording/policy versions, and passed threshold, wraparound, invalid gaze, near/far phrasing and voice-isolation checks.
+- Removed “I’ll try looking right” from the self-similar hint rotation at Pedro’s request. Self-similar right hints now cycle three options; neutral/right and left options remain unchanged. Legacy source wording resolves to an allowed first-person line. Updated wording/policy versions and passed the rotational and voice-isolation checks.
+- Changed the avatar picker to controller-hover voice audition, trigger selection with a persistent gold border, and a Back-to-Confirm button on the same screen. Hover does not mutate the selected or committed voice. Previews capture their own provider identity, cancel prior audio, and enable confirmation only after a successful completed sample of the chosen voice. Stable cards avoid hover restart loops; reentry retries, gender changes reset selection, and focus loss cancels previews. The updated ray-menu regression first failed against the old separate-preview screen, then passed after implementation. Voice-isolation checks also passed for all four explicit audition identities, unchanged session voice, completion timing and failed samples. Unity voice-choice and ray-menu checks passed; inspected the rendered picker with a persistent gold border and disabled Confirm for unavailable audio. Review ran inline per the project’s no-subagent instruction; no remaining in-scope correctness findings. Final combined Android Build And Run succeeded in 75.3 s and launched on Vive FA5AR3N00385 (PID 8872). Initial Unity/Android error query was empty. Physical hover/listening, selection confirmation and far-turn hint acceptance remain for headset testing.
+
+## 2026-09-27
+
+- Renamed the existing wrist Settings degree-guide control to **Guidance boundary**, retaining one toggle for all eight wall outlines and degree labels. Added shared ray hover/haptics and synchronized the toggle with public visibility changes and menu reopening. Visibility continues across trials/recreated frames within the session; objects, search zones and gaze guidance remain active when guides are hidden. Moved the control to the top of Settings. Unity compiled and GuidanceBoundaryChecks passed (eight walls/labels, pre-spawn preference, on/off, reopened/API synchronization, ray feedback attachment and unchanged zone geometry). Android Build And Run succeeded in 60.0 s and launched on Vive FA5AR3N00385 (PID 4163). Startup logs reported unsupported lip tracking, a null plane subsystem, and VIVE plane detection timeout; no boundary-toggle exception was observed. Physical wrist targeting, label readability and haptic feel remain for headset acceptance.
+
+## 2026-09-27
+
+- Added Zimmerer, Bartels and Latoschik (published IEEE ISMAR 2025) as the rationale for IMI in the survey inventory and measures register. Preserved the proposed four-subscale battery and distinguished methodological precedent from a predicted voice effect. Survey revision 0.2 compiled successfully and synced to Overleaf at `abaace7`; updated the shared sync baseline.
 
 - Fixed the approved Unity compile-hook environment leak: only the Unity subprocess clears inherited repository/index/worktree/object-store/config Git variables; parent Git context is retained. New isolated fake-Unity regression tests first reproduced the leak, then passed clean-environment and nonzero-exit propagation checks; Bash syntax validation passed.
 - Imported approved `eb477b0` soft-close v2 from `origin/v3`, rebasing the saved mega-CSV and ray-menu/voice-choice/stratified-schedule work on top. Resolved the prior DSP-removal conflicts by retaining the upstream treatment unchanged, stereo clip replacement, speech-window RMS, manifest fields and DSP tests while preserving all newer setup and trial features. Pedro confirmed natural-voice enrollment instructions will remain unchanged and approved the hook environment fix.

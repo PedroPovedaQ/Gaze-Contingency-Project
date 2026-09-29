@@ -1,5 +1,9 @@
 # IRB Protocol Decision Register
 
+## 2026-09-28 — Meeting reconciliation and linked implementation tasks
+
+**Current decision / protocol proposal:** [September 28 meeting record](../meeting-reconciliation-2026-09-28.md) records 40 trials per voice, balanced signed height deltas, agent-led coarse-to-fine horizontal/vertical guidance, more frequent short varied cues, varied success speech, loading text and onboarding changes. It defines a one-file-per-trial performance/subjective export with separate reconstruction sources and draft reliance measures. Confirmed follow-up: both target identity and location are hidden from the participant and known to the agent. Guidance first reaches the correct vertical wall, then directs up/down within that wall. Only the right controller is required for setup, menus, wrist controls and trigger selection; no left-controller dependency. Vertical reference, turn/look threshold and later passthrough checkpoint remain explicit open decisions. See GitHub #19 and linked owners. This records requested work, not runtime behavior, questionnaire validation or IRB approval.
+
 Study: **Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent**  
 Decision set: **Protocol design v2, 2026-08-14**
 
@@ -7,6 +11,16 @@ These are **current protocol decisions** selected for drafting, implementation, 
 formative validation. They are not UCF IRB approvals. Administrative facts and
 institutional determinations that the research team cannot invent are listed
 separately at the end.
+
+## 2026-09-27 — Forty-trial blocks and guidance without a spoken target description
+
+**Current decision / protocol proposal:** the researcher selected **40 measured trials per voice block, 80 measured trials total**, with practice separate. This supersedes the ten-trial beta and provisional thirty-trial study counts below. Retaining the five absolute target-wall angle categories (0°, 45°, 90°, 135°, 180°) gives **eight assignments per category per block**. Angles use the implemented previous-target-wall readiness reference, not the older fixed-front reference below. Preserve recorded randomization, mirrored directions across voice blocks, and randomized object heights. Do not silently replace incomplete attempts to obtain 40 valid trials.
+
+**Current decision / implementation gap:** the agent will guide the participant to the target rather than announce which object to find. The current runtime still announces the target and runs ten measured trials per block. Removing the announcement alone is insufficient: existing directional and correct-area cues identify a wall, not an individual target among its objects. **Open decision:** specify whether target identity will be presented visually or whether guidance must narrow to the individual object. Resolve this before finalizing participant instructions, readiness/audio gates, wrong-selection responses, and hint content.
+
+**Power alignment — not yet established:** [issue #16](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/16) retains an unfinished reproducible power/sensitivity work package and a provisional thirty-trial-per-voice assumption. The legacy source protocol reports approximately 80% paired-test sensitivity for a standardized within-participant contrast near 0.46 at 48 complete participants and two-sided alpha .025; it concerns the superseded four-condition design and is not a completed analysis of this two-voice, forty-trial schedule. Recalculate for the final primary outcome, participant count, meaningful effect, participant-specific voice differences, trial variability, order/learning, missingness and the revised target-identification mechanism. Eighty observations per participant do not constitute eighty independent participants. Assess duration and fatigue in the revised-task pilot; do not transfer P020's named-target timing/variance uncritically.
+
+This entry records a researcher decision, not a runtime update, completed power analysis, or institutional approval. The run sheet and legacy submission packet require reconciliation after the target-identification mechanism is specified.
 
 ## 2026-09-27 — Ten-trial blocks and absolute-angle balance
 

@@ -1,0 +1,473 @@
+% Standalone researcher reference. Compile with pdfLaTeX.
+% Sources: three repository Qualtrics TXT drafts + run sheet + survey inventory v0.2.
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=0.8in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,booktabs,tabularx,array,xcolor,enumitem,fancyhdr}
+\usepackage[colorlinks=true,urlcolor=blue,linkcolor=black]{hyperref}
+\definecolor{gold}{HTML}{967000}
+\setlength{\parindent}{0pt}\setlength{\parskip}{5pt}\setlength{\headheight}{15pt}
+\setlist{nosep,leftmargin=*}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small Gaze Contingency Search Study}
+\fancyhead[R]{\small Questions by block / v0.1}\fancyfoot[C]{\thepage}
+\newcommand{\note}[1]{\par{\small\color{gold}\textbf{Researcher note:} #1}\par}
+\newcommand{\qid}[1]{\par\smallskip\textbf{\texttt{#1}}\par}
+\begin{document}
+{\LARGE\bfseries Survey Questions by Study Block}\par
+{\color{gold}\rule{\linewidth}{1.5pt}}
+\textbf{Revision 0.1 --- September 27, 2026}
+
+This companion to \path{survey-instruments.tex} includes every question in the three local Qualtrics drafts, followed by the newer protocol additions and proposed debrief questions. Exact draft wording is preserved so discrepancies can be reviewed. It is a researcher reference, not a final participant form or evidence of live survey deployment or IRB approval.
+
+\textbf{Protocol proposal:} two counterbalanced voice blocks, \textbf{10 experimental trials each}, plus two separate practice trials. One block uses the participant-preferred neutral voice; the other uses the self-similar voice. \textbf{Block 1 is not always the neutral voice.} Record the actual voice condition and order for each participant.
+
+\textbf{Status key.} \emph{Existing draft} means present in a repository survey import file. \emph{Protocol proposal} means requested or proposed but not confirmed in those imports. \emph{Open decision} identifies wording, inclusion or response-format choices still to freeze. The full Guo bank is a candidate bank, not a decision to administer all 43 questions.
+
+\section*{When each group is administered}
+\begin{tabularx}{\linewidth}{@{}p{0.20\linewidth}X@{}}\toprule
+Study stage & Questions and timing \\\midrule
+Before practice / both blocks & Baseline demographics and experience; own accent; agent accent/gender preference; candidate voice ratings and choice; baseline SSQ before headset exposure. See Sections 1--2.\\
+Practice & Two practice trials. No separate research questionnaire specified. Audio/comfort checks are procedural.\\
+After Block 1 & Repeat the post-block battery in Section 3, referring only to the first completed 10-trial voice block; record actual condition. Candidate bank in Section 4 only if selected.\\
+After Block 2 & Repeat the same post-block battery for the second completed 10-trial voice block; record its condition. Then proceed to the final survey.\\
+After both blocks & Remove headset; post-exposure SSQ, safety checks, comparative voice preference and final debrief (Sections 5--6).\\\bottomrule
+\end{tabularx}
+
+Questionnaires and breaks occur outside active-search timing. No routine questionnaire is assigned after each individual trial. Collect NASA-TLX through one route, Unity \emph{or} Qualtrics, without duplicate administration. Full SSQ is scheduled before and after exposure, not after each block.
+
+\note{Qualtrics also calls questionnaire sections ``blocks.'' In this document, experimental Block 1 and Block 2 always mean the two voice conditions, each containing ten trials. Subheadings such as Workload are survey sections, not additional experimental blocks.}
+\tableofcontents
+\clearpage
+
+\section{Before practice and both blocks: existing baseline draft}
+\textbf{Existing draft.} Administer once; these are not repeated after either voice block. Source: \path{01-baseline-pre-task.txt}.
+\subsection{Study information and baseline}
+\qid{BASE\_INTRO}
+\textit{Survey instruction:} 
+DRAFT --- Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent. This survey is for study setup and baseline measures. Use the study code only; do not enter your name. The instrument map remains subject to IRB and pilot review.
+\qid{BASE\_STUDY\_CODE}
+Study code (assigned by the researcher):
+\textit{Response:} Short free text.
+\qid{BASE\_AGE}
+Age range:
+\textit{Response options:} 18--24; 25--34; 35--44; 45--54; 55--64; 65+; Prefer not to answer.
+\qid{BASE\_GENDER}
+Gender identity (select all that apply):
+\textit{Response options:} Woman; Man; Nonbinary; Another identity; Prefer not to answer.
+\qid{BASE\_GENDER\_OTHER}
+If you selected Another identity, please describe (optional):
+\textit{Response:} Short free text.
+\qid{BASE\_CORRECTION}
+Do you use glasses or contact lenses?
+\textit{Response options:} Neither; Glasses; Contact lenses; Both; Prefer not to answer.
+\qid{BASE\_MR}
+How often have you used virtual- or mixed-reality headsets?
+\textit{Response options:} Never; Once or twice; Several times; Monthly; Weekly or more.
+\qid{BASE\_EYE}
+Have you used eye-tracking technology before?
+\textit{Response options:} No; Yes; Unsure.
+\qid{BASE\_VOICE}
+Have you used a synthetic or cloned version of your own voice before?
+\textit{Response options:} No; Yes; Unsure.
+\qid{BASE\_AI\_FAMILIARITY}
+How familiar are you with AI voice assistants?
+\begin{enumerate}
+\item[1.] Familiarity
+\end{enumerate}
+\textit{Response scale:} 1 --- Not at all familiar; 2; 3; 4; 5; 6; 7 --- Extremely familiar.
+\subsection{Baseline simulator sickness}
+\qid{BASE\_SSQ\_INTRO}
+\textit{Survey instruction:} 
+Rate each symptom now, before headset use. Use 0 = none, 1 = slight, 2 = moderate, 3 = severe.
+\qid{BASE\_SSQ}
+Baseline Simulator Sickness Questionnaire
+\begin{enumerate}
+\item[1.] General discomfort
+\item[2.] Fatigue
+\item[3.] Headache
+\item[4.] Eyestrain
+\item[5.] Difficulty focusing
+\item[6.] Increased salivation
+\item[7.] Sweating
+\item[8.] Nausea
+\item[9.] Difficulty concentrating
+\item[10.] Fullness of head
+\item[11.] Blurred vision
+\item[12.] Dizziness with eyes open
+\item[13.] Dizziness with eyes closed
+\item[14.] Vertigo
+\item[15.] Stomach awareness
+\item[16.] Burping
+\end{enumerate}
+\textit{Response scale:} 0 --- None; 1 --- Slight; 2 --- Moderate; 3 --- Severe.
+\section{Before practice and both blocks: voice-setup additions}
+\textbf{Protocol proposal / requested additions.} These are not present in the baseline TXT import above. IDs below are proposed documentation IDs, not verified live Qualtrics IDs. Do not infer voice preference from demographic gender identity.
+
+\qid{SETUP\_OWN\_ACCENT}
+What do you perceive your own accent to be?
+\textit{Response / timing:} Free text; before voice selection. Allow skipped responses; do not equate a skip with no preference.
+\qid{SETUP\_AGENT\_GENDER}
+What gender presentation would you prefer for the agent's voice?
+\textit{Response / timing:} Before hearing/selecting candidates. Open decision: finalize survey choices and a no-preference response; record an unavailable preference separately from the options offered.
+\qid{SETUP\_AGENT\_ACCENT}
+What accent would you prefer the agent's voice to have?
+\textit{Response / timing:} Free text with an explicit no-preference option proposed. Record requested accent independently of the selected voice; current candidates are American-accent voices.
+\qid{SETUP\_CANDIDATE\_LIKING}
+How much do you like this voice?
+\textit{Response / timing:} Proposed wording for the requested 100-point rating, once per auditioned candidate. A 0--100 slider (0 = do not like at all; 100 = like extremely) is proposed, not finalized. Record voice ID and audition order. Rate the clone once available; do not confuse setup ratings with post-block ratings.
+\qid{SETUP\_CHOSEN\_VOICE}
+Which of these voices would you prefer to use for the task?
+\textit{Response / timing:} Current pilot selection: Eric or Roger in the male group; Janet or Sarah in the female group. Record exact chosen ID separately from requested accent and gender.
+\qid{SETUP\_AUDIO\_CHECK}
+Can you hear the voice clearly and at a comfortable volume?
+\textit{Response / timing:} Procedural yes/no check after a sample; resolve audibility/volume before continuing, rather than treating this as a scale score.
+\clearpage\section{After Block 1 and again after Block 2: existing post-block draft}
+\textbf{Existing draft / proposed battery.} Reuse the same questions after each ten-trial voice block, always referring to the block just completed. Source: \path{02-post-voice-block.txt}. Identifiers below are researcher entries. Preserve participant/run ID, block number, actual voice ID/condition, order, and survey version.
+\subsection*{Requested additions to each post-block form}
+The following requested items supplement or replace older draft wording below; they are not yet confirmed in the imported survey.
+
+\qid{BLOCK\_VOICE\_SIMILARITY}
+The agent's voice is similar to mine.
+\textit{Response / timing:} 1--7 agreement; proposed anchors 1 = strongly disagree, 7 = strongly agree. Replace the older ``speaking voice sounded like my own'' item rather than asking both.
+\qid{BLOCK\_ACCENT\_SIMILARITY}
+The agent's accent is similar to mine.
+\textit{Response / timing:} Separate 1--7 agreement response with the same proposed anchors.
+\qid{BLOCK\_VOICE\_LIKING}
+How much did you like the voice in this block?
+\textit{Response / timing:} Requested 100-point rating for both experimental voices, including self-similar. Proposed 0--100 slider with the same liking anchors as setup; final endpoints remain open.
+\qid{BLOCK\_PERCEIVED\_ACCENT}
+What accent did the agent's voice in this block sound like to you?
+\textit{Response / timing:} Proposed free text / unsure; inclusion and format remain open.
+\qid{BLOCK\_PERCEIVED\_GENDER}
+How would you describe the gender presentation of the agent's voice in this block?
+\textit{Response / timing:} Proposed free text / unsure; inclusion and format remain open. Separate from preferred agent gender and participant identity.
+\subsection{Voice block identifiers}
+\qid{BLOCK\_INTRO}
+\textit{Survey instruction:} 
+DRAFT --- Complete this form immediately after the current voice block, before starting the next block. The researcher records the condition fields; do not infer or change them.
+\qid{BLOCK\_STUDY\_CODE}
+Study code:
+\textit{Response:} Short free text.
+\qid{BLOCK\_NUMBER}
+Block number (researcher entry):
+\textit{Response:} Short free text.
+\qid{BLOCK\_VOICE\_CONDITION}
+Voice condition code (researcher entry):
+\textit{Response:} Short free text.
+\qid{BLOCK\_ORDER}
+Condition order code (researcher entry):
+\textit{Response:} Short free text.
+\subsection{Workload}
+\qid{BLOCK\_TLX}
+Raw NASA-TLX. Rate workload during this block. Performance uses 0 = perfect and 10 = failure.
+\note{Existing draft uses 0--10 discrete responses, with performance increasing toward failure. Open decision: reconcile collection/export units across Unity and Qualtrics before use; do not silently mix 0--10 and 0--100. Preserve all six values; any raw unweighted mean uses the frozen scale.}
+\begin{enumerate}
+\item[1.] Mental Demand --- How mentally demanding was this block?
+\item[2.] Physical Demand --- How physically demanding was this block?
+\item[3.] Temporal Demand --- How hurried or rushed did you feel during this block?
+\item[4.] Performance --- How unsuccessful were you in accomplishing the task?
+\item[5.] Effort --- How hard did you have to work to achieve your level of performance?
+\item[6.] Frustration --- How insecure, discouraged, irritated, stressed, or annoyed did you feel?
+\end{enumerate}
+\textit{Response scale:} 0 --- Very low / perfect; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10 --- Very high / failure.
+\subsection{Intrinsic Motivation Inventory}
+\qid{IMI\_INTRO}
+\textit{Survey instruction:} 
+Rate each statement about the search activity you just completed. Use 1 = not at all true and 7 = very true. Items marked [R] are reverse-keyed for scoring; keep the raw response.
+\note{[R] is a researcher scoring annotation; remove it from the participant-facing form. Proposed scoring: reverse as 8 minus the response, then average each subscale separately; no total IMI. Freeze wording, reverse keys and missingness rules.}
+\qid{IMI\_1}
+IMI --- Interest/enjoyment
+\begin{enumerate}
+\item[1.] I enjoyed doing this activity very much.
+\item[2.] This activity was fun to do.
+\item[3.] I thought this was a boring activity. [R]
+\item[4.] This activity did not hold my attention at all. [R]
+\item[5.] I would describe this activity as very interesting.
+\item[6.] I thought this activity was quite enjoyable.
+\item[7.] While I was doing this activity, I was thinking about how much I enjoyed it.
+\end{enumerate}
+\textit{Response scale:} 1 --- Not at all true; 2; 3; 4; 5; 6; 7 --- Very true.
+\qid{IMI\_2}
+IMI --- Effort/importance
+\begin{enumerate}
+\item[1.] I put a lot of effort into this.
+\item[2.] I didn't try very hard to do well at this activity. [R]
+\item[3.] I tried very hard on this activity.
+\item[4.] It was important to me to do well at this task.
+\item[5.] I didn't put much energy into this. [R]
+\end{enumerate}
+\textit{Response scale:} 1 --- Not at all true; 2; 3; 4; 5; 6; 7 --- Very true.
+\qid{IMI\_3}
+IMI --- Pressure/tension
+\begin{enumerate}
+\item[1.] I did not feel nervous at all while doing this. [R]
+\item[2.] I felt very tense while doing this activity.
+\item[3.] I was very relaxed in doing this. [R]
+\item[4.] I was anxious while working on this task.
+\item[5.] I felt pressured while doing these.
+\end{enumerate}
+\textit{Response scale:} 1 --- Not at all true; 2; 3; 4; 5; 6; 7 --- Very true.
+\qid{IMI\_4}
+IMI --- Value/usefulness
+\note{These value/usefulness fill-ins are the existing local adaptations. Their wording and appropriateness remain open decisions.}
+\begin{enumerate}
+\item[1.] I believe this activity could be of some value to me.
+\item[2.] I think that doing this activity is useful for this search activity.
+\item[3.] I think this is important to do because it can improve my search performance.
+\item[4.] I would be willing to do this again because it has some value to me.
+\item[5.] I think doing this activity could help me to search for targets.
+\item[6.] I believe doing this activity could be beneficial to me.
+\item[7.] I think this is an important activity.
+\end{enumerate}
+\textit{Response scale:} 1 --- Not at all true; 2; 3; 4; 5; 6; 7 --- Very true.
+\subsection{Voice and assistance checks}
+\qid{BLOCK\_CHECKS}
+Rate each statement about this voice block from 1 = strongly disagree to 7 = strongly agree.
+\note{The final warmer/colder item is stale. Proposed replacement: ``The left/right directions and correct-area messages helped me locate the target. Replace the speaking-voice similarity item with the exact requested wording in Section 3 additions; do not administer both as duplicates.}
+\begin{enumerate}
+\item[1.] The hints seemed responsive to what I was looking at.
+\item[2.] The hints were helpful.
+\item[3.] The hints were distracting.
+\item[4.] The speaking voice sounded like my own voice.
+\item[5.] The speaking voice felt familiar.
+\item[6.] I trusted the spoken guidance.
+\item[7.] I felt comfortable hearing this voice.
+\item[8.] The voice felt uncanny or unsettling.
+\item[9.] I relied on the spoken hints when deciding where to search next.
+\item[10.] The warmer/colder feedback helped me narrow down the target location.
+\end{enumerate}
+\textit{Response scale:} 1 --- Strongly disagree; 2; 3; 4; 5; 6; 7 --- Strongly agree.
+\qid{BLOCK\_HEARD}
+Did you hear all prompts clearly?
+\textit{Response options:} Yes; No; Unsure.
+\qid{BLOCK\_FAULT}
+Did any prompt repeat, cut off, arrive late, or use the wrong voice?
+\note{Intentional interruptions when gaze reaches the correct area are expected behavior. Proposed clarification: ``Did any prompt unexpectedly repeat, cut off, arrive late, or use the wrong voice? Record planned interruptions separately from faults.}
+\textit{Response options:} No; Yes; Unsure.
+\qid{BLOCK\_FAULT\_NOTE}
+If yes, describe what happened (optional):
+\textit{Response:} Long free text.
+\qid{BLOCK\_BREAK}
+Did you take an unplanned break or experience an interruption?
+\textit{Response options:} No; Yes.
+\qid{BLOCK\_BREAK\_NOTE}
+If yes, describe the interruption (optional):
+\textit{Response:} Long free text.
+\clearpage\section{After each voice block: full candidate agent-perception bank}
+\qid{GUO\_INTRO}
+\textit{Survey instruction:} 
+Source-bank draft from Guo et al. (2024), Table A1. Rate the virtual voice agent you just experienced. All items use 1 = very strongly disagree and 7 = very strongly agree. Appearance-specific items are retained for review and may be marked not applicable in the frozen participant form.
+\note{This entire section is the retained source bank (42 ratings and Q43 open response). Selection, applicability and adaptations remain open. Do not assume all items form one scale. See survey-instruments.tex for original instrument attribution and scoring decisions.}
+\qid{GUO\_1}
+Co-presence --- Biocca et al. 2001
+\begin{enumerate}
+\item[Q1.] I noticed the virtual character.
+\item[Q2.] The virtual character noticed me.
+\item[Q3.] The virtual character's presence was obvious to me.
+\item[Q4.] My presence was obvious to the virtual character.
+\item[Q5.] The virtual character caught my attention.
+\item[Q6.] I caught the virtual character's attention.
+\end{enumerate}
+\textit{Response scale:} 1 --- Very strongly disagree; 2; 3; 4; 5; 6; 7 --- Very strongly agree.
+\qid{GUO\_2}
+Attentional allocation --- Biocca et al. 2001
+\begin{enumerate}
+\item[Q7.] I was easily distracted from the virtual character when other things were going on.
+\item[Q8.] The virtual character was easily distracted from me when other things were going on.
+\item[Q9.] I remained focused on the virtual character throughout our interaction.
+\item[Q10.] The virtual character remained focused on me throughout our interaction.
+\item[Q11.] The virtual character did not receive my full attention.
+\item[Q12.] I did not receive the virtual character's full attention.
+\end{enumerate}
+\textit{Response scale:} 1 --- Very strongly disagree; 2; 3; 4; 5; 6; 7 --- Very strongly agree.
+\qid{GUO\_3}
+Perceived intelligence --- Moussawi and Koufaris 2019
+\begin{enumerate}
+\item[Q13.] The virtual character was able to operate without my intervention.
+\item[Q14.] The virtual character was aware of the virtual environment.
+\item[Q15.] The virtual character was able to set and pursue tasks by themselves in anticipation of future needs.
+\item[Q16.] The virtual character was able to complete tasks quickly.
+\item[Q17.] The virtual character was able to find and process the necessary information for completing the task.
+\item[Q18.] The virtual character was able to adapt/adjust their behavior based on prior events.
+\end{enumerate}
+\textit{Response scale:} 1 --- Very strongly disagree; 2; 3; 4; 5; 6; 7 --- Very strongly agree.
+\qid{GUO\_4}
+Intelligence comparison --- Guo et al. 2024
+\begin{enumerate}
+\item[Q19.] Do you think the virtual character was more intelligent than you?
+\end{enumerate}
+\textit{Response scale:} 1 --- Very strongly disagree; 2; 3; 4; 5; 6; 7 --- Very strongly agree.
+\qid{GUO\_5}
+Eerie --- Zibrek et al. 2018
+\note{Appealing, eerie and familiar are different impressions; do not automatically average these three into one eeriness score.}
+\begin{enumerate}
+\item[Q20.] I found the virtual character appealing.
+\item[Q21.] I found the virtual character eerie.
+\item[Q22.] I found the virtual character familiar.
+\end{enumerate}
+\textit{Response scale:} 1 --- Very strongly disagree; 2; 3; 4; 5; 6; 7 --- Very strongly agree.
+\qid{GUO\_6}
+Likability --- Reysen 2005
+\note{Source Q31 (physically attractive) depends on appearance. Decide whether applicable before administering; not applicable is not a low rating.}
+\begin{enumerate}
+\item[Q23.] This virtual character is friendly.
+\item[Q24.] This virtual character is likable.
+\item[Q25.] This virtual character is warm.
+\item[Q26.] This virtual character is approachable.
+\item[Q27.] I would ask this virtual character for advice.
+\item[Q28.] I would like this virtual character as a coworker.
+\item[Q29.] I would like this virtual character as a roommate.
+\item[Q30.] I would like to be friends with this virtual character.
+\item[Q31.] This virtual character is physically attractive.
+\item[Q32.] This virtual character is similar to me.
+\item[Q33.] This virtual character is knowledgeable.
+\end{enumerate}
+\textit{Response scale:} 1 --- Very strongly disagree; 2; 3; 4; 5; 6; 7 --- Very strongly agree.
+\qid{GUO\_7}
+Believability --- Lam et al. 2023
+\note{Source Q34--Q36 require an appearance--voice relationship. Applicability to a disembodied voice and agreement anchors for the first question are unresolved.}
+\begin{enumerate}
+\item[Q34.] Rate the believability of the virtual character's voice and appearance combined.
+\item[Q35.] Rate how well you agree with the following: I would expect the virtual character to sound like this from the way they look.
+\item[Q36.] Rate how well you agree with the following: I would expect the virtual character to look like this from the way they sound.
+\end{enumerate}
+\textit{Response scale:} 1 --- Very strongly disagree; 2; 3; 4; 5; 6; 7 --- Very strongly agree.
+\qid{GUO\_8}
+Perceived anthropomorphism --- Moussawi and Koufaris 2019
+\begin{enumerate}
+\item[Q37.] The virtual character is able to speak like a human.
+\item[Q38.] The virtual character can be happy.
+\item[Q39.] The virtual character can be friendly.
+\item[Q40.] The virtual character can be respectful.
+\item[Q41.] The virtual character can be funny.
+\item[Q42.] The virtual character can be caring.
+\end{enumerate}
+\textit{Response scale:} 1 --- Very strongly disagree; 2; 3; 4; 5; 6; 7 --- Very strongly agree.
+\qid{GUO\_Q43}
+Please provide additional comments on your overall experience:
+\textit{Response:} Long free text.
+\note{Source Q43; open response after the block if this candidate bank is retained.}
+\clearpage\section{After both blocks: existing final survey}
+\textbf{Existing draft.} Administer once after the second block survey and headset removal. Repeat the same SSQ symptom wording and scale used at baseline. Source: \path{03-post-session.txt}.
+\subsection{Post-exposure safety}
+\qid{POST\_INTRO}
+\textit{Survey instruction:} 
+DRAFT --- Complete after removing the headset. Tell the researcher immediately if symptoms are severe or worsening.
+\qid{POST\_SSQ}
+Post-exposure Simulator Sickness Questionnaire. Use 0 = none, 1 = slight, 2 = moderate, 3 = severe.
+\begin{enumerate}
+\item[1.] General discomfort
+\item[2.] Fatigue
+\item[3.] Headache
+\item[4.] Eyestrain
+\item[5.] Difficulty focusing
+\item[6.] Increased salivation
+\item[7.] Sweating
+\item[8.] Nausea
+\item[9.] Difficulty concentrating
+\item[10.] Fullness of head
+\item[11.] Blurred vision
+\item[12.] Dizziness with eyes open
+\item[13.] Dizziness with eyes closed
+\item[14.] Vertigo
+\item[15.] Stomach awareness
+\item[16.] Burping
+\end{enumerate}
+\textit{Response scale:} 0 --- None; 1 --- Slight; 2 --- Moderate; 3 --- Severe.
+\qid{POST\_STOP}
+Did you stop or pause because of symptoms?
+\textit{Response options:} No; Yes.
+\qid{POST\_READY}
+Do you feel ready to leave the lab?
+\textit{Response options:} Yes; No --- researcher follow-up required.
+\subsection{Voice comparison and interview}
+\qid{POST\_VOICE\_PREF}
+Which voice did you prefer?
+\note{``Generic voice is older terminology. Proposed response labels: participant-preferred neutral voice; self-similar voice; no preference; unsure. Use consistent participant-facing labels tied to the voices actually heard.}
+\textit{Response options:} Generic voice; Voice resembling me; No preference; Unsure.
+\qid{POST\_VOICE\_REASON}
+Why did you choose that response?
+\textit{Response:} Long free text.
+\qid{POST\_HELPFUL}
+Which voice or combination felt most helpful, and why?
+\note{``Combination is older wording. Proposed: ``Which voice felt most helpful, if either, and why?}
+\textit{Response:} Long free text.
+\qid{POST\_COMFORT}
+Which voice or combination felt most comfortable, and why?
+\note{``Combination is older wording. Proposed: ``Which voice felt most comfortable, if either, and why?}
+\textit{Response:} Long free text.
+\qid{POST\_SIMILARITY}
+Did you believe the self-similar voice resembled your voice? Why or why not?
+\textit{Response:} Long free text.
+\qid{POST\_DIALOGUE}
+Did hearing the self-similar voice change how you experienced your own thoughts or internal dialogue? Please describe.
+\note{Optional exploratory probe. Ask after open-ended experience questions, not before them; do not imply that an inner-dialogue effect occurred.}
+\textit{Response:} Long free text.
+\qid{POST\_CONCERNS}
+Did hearing the self-similar voice create any concern about misuse or how the voice was created?
+\textit{Response:} Long free text.
+\qid{POST\_CHANGES}
+What would you change about the hints, voice, or task?
+\textit{Response:} Long free text.
+\qid{POST\_INTERVIEW}
+Researcher notes from the semi-structured final interview (search strategy, useful or distracting feedback, voice experience, comfort, and suggested changes):
+\note{Researcher entry, not a question to display to participants. The proposed interview guide is in Section 6.}
+\textit{Response:} Long free text.
+\section{After both blocks: proposed exploratory debrief}
+\textbf{Protocol proposal.} Use this as a semi-structured guide, reconciling overlaps with the final survey above rather than asking duplicate questions. Start with open questions and then balanced probes. Exact branching and requiredness remain open. Responses concern the whole session, with voice/block references noted when relevant.
+
+\qid{DEBRIEF\_01}
+How would you describe your experience with each voice?
+\textit{Response / timing:} Open response / interviewer notes. Optional follow-up probes; perceived performance is distinct from measured performance.
+\qid{DEBRIEF\_02}
+What, if anything, did you notice about how the voices sounded in relation to your own voice?
+\textit{Response / timing:} Open response / interviewer notes. Optional follow-up probes; perceived performance is distinct from measured performance.
+\qid{DEBRIEF\_03}
+Did either voice affect how you searched or how well you felt you performed? In what way, if any?
+\textit{Response / timing:} Open response / interviewer notes. Optional follow-up probes; perceived performance is distinct from measured performance.
+\qid{DEBRIEF\_04}
+What did you like or dislike about hearing the self-similar voice? Did it feel comfortable, uncomfortable, eerie, or neither? What contributed to that feeling?
+\textit{Response / timing:} Open response / interviewer notes. Optional follow-up probes; perceived performance is distinct from measured performance.
+\qid{DEBRIEF\_05}
+Which directions or correct-area messages were helpful or distracting? How did interruptions affect the experience?
+\textit{Response / timing:} Open response / interviewer notes. Optional follow-up probes; perceived performance is distinct from measured performance.
+\qid{DEBRIEF\_06}
+Can you imagine a useful application for a voice like your own? In which situations would you prefer your own voice, another voice, or no voice?
+\textit{Response / timing:} Open response / interviewer notes. Optional follow-up probes; perceived performance is distinct from measured performance.
+\qid{DEBRIEF\_07}
+Did the voice creation or use raise any privacy or personal concerns? What would you change?
+\textit{Response / timing:} Open response / interviewer notes. Optional follow-up probes; perceived performance is distinct from measured performance.
+\qid{DEBRIEF\_08}
+Is there anything else about the voices or task that we should know?
+\textit{Response / timing:} Open response / interviewer notes. Optional follow-up probes; perceived performance is distinct from measured performance.
+\section{Finalization and source map}
+\textbf{Open decisions before participant deployment:}
+\begin{itemize}
+\item Choose the final agent-perception subset. TLX + IMI + all 42 Guo ratings alone total 72 ratings per block, before custom questions and notes. Listing the source bank here does not approve that burden.
+\item Resolve the stale warmer/colder wording, older ``generic'' voice label, overlapping similarity questions, appearance-dependent items, and intentional versus faulty audio interruptions.
+\item Freeze 100-point liking endpoints, TLX units, all response anchors, item order, requiredness, optional branches, scoring and missingness handling. IMI scoring markers are researcher-only.
+\item Reconcile the selected items with the protocol and live Qualtrics forms separately. This document does not modify live forms or their publication state.
+\end{itemize}
+
+\textbf{Not assigned to a current block:} IPQ remains on hold; MSSQ-Short and VIMSSQ-Short were discussed but adoption is unconfirmed; SUS and UEQ are outside the current battery. A separate eeriness index remains unresolved. They are not silently added here.
+
+\textbf{Data association:} baseline and final answers belong to the session; post-block answers belong to their actual block and condition. They may be repeated on trial CSV rows for joining, but repeated values remain one survey observation, not ten independent responses.
+
+\textbf{Instrument sources and detailed rationale:} see \path{survey-instruments.tex} in this Overleaf project, including original attributions for the Guo source bank. Key direct references:
+\begin{itemize}
+\item NASA-TLX: \href{https://doi.org/10.1016/S0166-4115(08)62386-9}{Hart and Staveland (1988)}.
+\item IMI wording bank: \href{https://selfdeterminationtheory.org/wp-content/uploads/2022/02/IMI_Complete.pdf}{official complete instrument packet}; self-similar-voice precedent: \href{https://doi.org/10.1145/3474665}{Kao et al. (2021)}.
+\item SSQ: \href{https://doi.org/10.1207/s15327108ijap0303_3}{Kennedy et al. (1993)}.
+\item Agent-perception source bank, Appendix A / Table A1: \href{https://doi.org/10.1145/3651288}{Guo et al. (2024)}. Published bank wording is retained above, not represented as a validated voice-only adaptation.
+\end{itemize}
+
+\textbf{Local source files:} the three imports under \path{resources/surveys/qualtrics/}; \path{docs/protocol/overleaf/experimenter-run-sheet.tex}; \path{docs/protocol/overleaf/survey-instruments.tex}; and \path{docs/measures-register.md}. All were reviewed September 27, 2026. Draft question IDs are retained for traceability. New SETUP, BLOCK and DEBRIEF IDs are proposals only.
+
+\textbf{Existing draft builders (live contents not verified):}
+\begin{itemize}
+\item \href{https://ucf.yul1.qualtrics.com/survey-builder/SV_5u2FpCk1228bfPE/edit}{Baseline / pre-task}.
+\item \href{https://ucf.yul1.qualtrics.com/survey-builder/SV_cwsLpEVffEIo9SK/edit}{Post-voice-block}, reused after each condition.
+\item \href{https://ucf.yul1.qualtrics.com/survey-builder/SV_emqdHkeDg3gjYpw/edit}{Post-session / safety}.
+\end{itemize}
+\end{document}
+

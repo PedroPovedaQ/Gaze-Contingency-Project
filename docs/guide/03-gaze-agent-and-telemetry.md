@@ -73,7 +73,7 @@ The old `dwell_progress` CSV column remains zero for schema compatibility. Trial
 
 `HintGenerator` is where the project decides what the voice assistant says during each round.
 
-**Implemented:** The agent is always gaze-contingent, in either voice condition. Its existing proximity policy uses off-target, on-track and very-close feedback. Directional coarse-to-fine coaching remains proposed. Hints begin after 2 seconds and recur at a 4-second cadence when speech is available.
+**Implemented:** The agent is always gaze-contingent, in either voice condition. The rotational task uses gaze-relative left/right guidance and a target-area cue. The first directional hint is eligible immediately when search starts, after the target announcement and readiness gate, provided gaze is valid and speech is available. Later directional hints retain a 4-second minimum spacing. Target-area cues retain their 0.1-second gaze-entry debounce.
 
 ### Gaze-aware mode
 
@@ -252,3 +252,14 @@ That separation is what makes the system debuggable. When hints are wrong, alway
 **Implemented:** self-similar runs route only to their clone cache/provider. Missing clone, pending enrollment, missing provider/key or synthesis failure never trigger neutral TTS. Neutral male/female caches include the exact voice ID. Unowned device-wide saved clone IDs are ignored; startup requires fresh self-similar enrollment. Enrollment failure holds task start and offers Retry or explicit neutral selection. Run `scripts/test-voice-isolation.sh` for deterministic failure/cache checks; this does not validate headset audio quality or provider availability.
 
 **Implemented — schema 2:** the trial logger begins timing at `OnSearchStarted`, uses the manager's pause-aware clock, and records each trial's assigned voice/outcome. `object_manifest.csv` maps stable trial/object IDs to world positions; gaze rows carry the same IDs and a practice flag. Audio request/ready/start/end/failure events identify manifest clips. NASA-TLX is written per block into the run folder. See [voice-study QA](../voice-study-qa.md) for field validation and the difference between software playback timestamps and acoustic onset.
+
+
+### Guidance-area entry and overshoot (implemented, 2026-09-27)
+
+`HintGenerator` now uses `FindObjectGameManager.IsGazeInSearchSector`: a horizontal ray/wall-sector test independent of gaze height. Looking upward/downward on the same wall does not rearm the area cue. Near-vertical gaze abstains rather than manufacturing an exit. Object raycasts and object-level telemetry retain their existing behavior.
+
+`GazeReturnCueGate` qualifies a return cue after a 100 ms stable visit and 250 ms stable horizontal exit; eligibility expires after two seconds. It clears visit history on tracking loss and allows one cue per visit with a six-second cooldown. These beta tuning values are not validated fixation measures. Neutral wording is “Go back. That was the correct area.”; self-similar wording is “I need to go back. That was the correct area.” Both are preloaded.
+
+Correction fades recheck relevance and consume the cue cooldown only when the replacement speech is committed, not when a fade is queued. Stable arrival cancels stale left/right speech even while the area cue is cooling down. Existing `audio_area_correction` telemetry distinguishes a return using `gaze_overshoot_return`; ordinary area entry retains `gaze_target_plane`.
+
+The two audio-level checks use the same participant instruction from `VoicePromptText.AudioLevelCheck`: hover the controller over Accept Audio and press the trigger to confirm an acceptable audio level. Each uses its own voice condition, and confirmation remains gated on completed successful playback.

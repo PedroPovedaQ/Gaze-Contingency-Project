@@ -8,6 +8,8 @@ Unity 6 mixed reality project targeting the **HTC Vive Focus Vision**. Passthrou
 
 ## Research Documents and Evidence Conventions
 
+- Whenever you look up a research paper, include a direct clickable link for each paper you report in the user-facing answer. Prefer the DOI or publisher page, and also include an accessible full-text/PDF link when available. Do not make the user ask separately for paper links.
+
 - `docs/experiment-procedure.md` is the participant-facing protocol and decision register. It separates implemented behavior from proposed steps and open decisions.
 - `docs/guide/02-gameplay-round-flow.md` is the authoritative runtime account for round timing, deterministic stimuli, condition order, dwell capture, and completion.
 - `docs/guide/03-gaze-agent-and-telemetry.md` is the authoritative account for gaze-derived hints and recorded telemetry.
