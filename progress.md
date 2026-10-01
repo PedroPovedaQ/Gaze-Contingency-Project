@@ -1,5 +1,9 @@
 ## 2026-10-01 — overnight continuation
 
+- 02:08 EDT: Android APK rebuilt successfully with the completed-trial preservation fix (269.7 s; 71,124,916 bytes; fingerprint in morning report). Updated current system overview/study hub to remove obsolete dwell/shelf guidance; current overview/QA links pass. No device deployment.
+
+- 02:03 EDT: saved validator/QA fixes in `d9a8aa1` (103 Python tests). Reproduced stop-during-success corruption in actual Unity summary output, then preserved completed trial outcome/duration while retaining the session technical stop. Regression covers rounds 0, 39 and 79 plus unfinished controls; full Unity integration passed (`/tmp/gaze-unity-stop-integrity.log`). New APK rebuild running; previous package predates this fix.
+
 - 01:59 EDT: reproduced and fixed session-validator false passes for unfinished/duplicate trials, contradictory outcomes, NaN/missing/negative timing and impossible pause/resume sequences. Readiness pauses no longer distort active duration. Interrupted trials retain timing/audio checks. Full current 80-trial packages pass in both voice orders; all 103 Python tests pass (`/tmp/gaze-python-session-integrity-final.log`). Found a separate runtime stop-after-capture outcome edge for follow-up.
 
 - 01:53 EDT: launched the correct graphical Unity project. Refocus/Build And Run helper was attempted and exited 1 because no Unity menu bar was available while the Mac was locked; ADB lists no devices. Offline APK remains valid, but no device deployment is claimed. Replaced stale QA instructions (14 trials, shortcuts, countdown, distinct wording) with the current 40+40/right-ray/shared-guidance and progressive audio workflow.

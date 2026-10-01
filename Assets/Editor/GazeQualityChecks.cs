@@ -28,12 +28,74 @@ public static class GazeQualityChecks
                 Check(VoicePromptText.FormatForVoice(phrase,VoiceCondition.Generic)==VoicePromptText.FormatForVoice(phrase,VoiceCondition.SelfSimilar),"Shared voice wording");
             CheckCsvIntegration();
             CheckTrialLinkage();
+            CheckStopAfterCapture();
             CheckDecisionSnapshots();
             CheckValidationPanelClearance();
             Debug.Log("[GazeQualityChecks] PASS: coordinates, idempotent diagnostic flip, hidden target, shared wording, shared-stream CSV validity and append safety. Hardware accuracy/rate NOT validated.");
         }
         finally{UnityEngine.Object.DestroyImmediate(go);}
     }
+    [Serializable] class StopSummary { public string session_outcome; public StopTrial[] objectives; }
+    [Serializable] class StopTrial { public bool completed; public string outcome; public float time_to_find_seconds; public float search_exposure_seconds; }
+
+    static void CheckStopAfterCapture()
+    {
+        // Invoke the real stop handler and read its actual summary/event files.
+        // A success-audio failure is a session stop, not a reversal of selection.
+        string directory = Path.Combine(Application.temporaryCachePath, "TrialStopChecks_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        string originalFolder = SessionConfig.CurrentRunFolder;
+        var folder = typeof(SessionConfig).GetProperty("CurrentRunFolder");
+        var host = new GameObject("TrialStopFixture"); host.SetActive(false);
+        var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        var loggerType = typeof(TrialDataLogger);
+        var recordType = loggerType.GetNestedType("ObjectiveRecord", BindingFlags.NonPublic);
+        try
+        {
+            folder.SetValue(null, directory);
+            var game = host.AddComponent<FindObjectGameManager>();
+            var logger = host.AddComponent<TrialDataLogger>();
+            loggerType.GetField("m_GameManager", flags).SetValue(logger, game);
+            loggerType.GetField("m_SessionId", flags).SetValue(logger, "STOP_FIXTURE");
+            var records = (System.Collections.IList)loggerType.GetField("m_ObjectiveRecords", flags).GetValue(logger);
+            foreach (int round in new[] { 0, 39, 79 })
+            foreach (bool captured in new[] { true, false })
+            {
+                records.Clear();
+                for (int index = 0; index < ChallengeSet.TotalRounds; index++)
+                {
+                    object record = Activator.CreateInstance(recordType);
+                    void Set(string name, object value) => recordType.GetField(name).SetValue(record, value);
+                    Set("index", index); Set("startTime", index == round ? 1f : -1f);
+                    Set("completed", index == round && captured);
+                    Set("outcome", index == round ? (captured ? "completed" : "searching") : "not_started");
+                    Set("searchSeconds", index == round && captured ? 8f : 0f);
+                    Set("voiceCondition", SessionConfig.VoiceLabelForRound(index));
+                    records.Add(record);
+                }
+                loggerType.GetField("m_ActiveObjectiveIndex", flags).SetValue(logger, round);
+                typeof(FindObjectGameManager).GetField("m_CurrentRound", flags).SetValue(game, round + (captured ? 1 : 0));
+                loggerType.GetField("m_EventWriter", flags).SetValue(logger, new StreamWriter(Path.Combine(directory,"events.csv")));
+                loggerType.GetMethod("OnSessionStopped", flags).Invoke(logger, new object[] { "audio_failure:success" });
+                var saved = JsonUtility.FromJson<StopSummary>(File.ReadAllText(Path.Combine(directory,"trial_summary.json")));
+                Check(saved.session_outcome == "technical_failure", "Stop keeps the session's technical failure");
+                Check(saved.objectives[round].completed == captured &&
+                    saved.objectives[round].outcome == (captured ? "completed" : "technical_failure"),
+                    "A stop cannot undo completed selection, including block and final boundaries");
+                Check(!captured || (saved.objectives[round].time_to_find_seconds == 8f && saved.objectives[round].search_exposure_seconds == 8f),
+                    "Success interruption preserves the captured search duration");
+                Check(File.ReadAllText(Path.Combine(directory,"events.csv")).Contains("session_stopped"), "Stop event is retained and flushed");
+                Check(loggerType.GetField("m_EventWriter", flags).GetValue(logger) == null, "Stop closes the event writer");
+            }
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(host);
+            folder.SetValue(null, originalFolder);
+            Directory.Delete(directory, true);
+        }
+    }
+
     static void CheckValidationPanelClearance()
     {
         var type=typeof(GazeDiagnosticView);

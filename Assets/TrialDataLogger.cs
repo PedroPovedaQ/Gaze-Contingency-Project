@@ -243,9 +243,15 @@ public class TrialDataLogger : MonoBehaviour
         m_SessionOutcome = reason.StartsWith("audio_failure") ? "technical_failure" : reason;
         if (m_ActiveObjectiveIndex >= 0 && m_ActiveObjectiveIndex < m_ObjectiveRecords.Count)
         {
-            var rec = m_ObjectiveRecords[m_ActiveObjectiveIndex]; rec.outcome = m_SessionOutcome;
-            rec.searchSeconds = rec.startTime >= 0 ? m_GameManager.CurrentSearchSeconds : 0;
-            m_ObjectiveRecords[m_ActiveObjectiveIndex] = rec;
+            var rec = m_ObjectiveRecords[m_ActiveObjectiveIndex];
+            // Capture is final even if success speech or the next transition fails.
+            // Keep its outcome/duration; the session stop is recorded separately.
+            if (!rec.completed)
+            {
+                rec.outcome = m_SessionOutcome;
+                rec.searchSeconds = rec.startTime >= 0 ? m_GameManager.CurrentSearchSeconds : 0;
+                m_ObjectiveRecords[m_ActiveObjectiveIndex] = rec;
+            }
         }
         WriteEvent("session_stopped", "", "", "", -1, false, 0, reason);
         WriteSummary(Time.time - m_GameManager.GameStartTime);

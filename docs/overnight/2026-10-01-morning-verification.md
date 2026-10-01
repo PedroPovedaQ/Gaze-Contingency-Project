@@ -1,6 +1,6 @@
 # Overnight work and morning verification — October 1, 2026
 
-Latest verified state: Android APK includes the diagnostic-panel clearance fix; 103 Python tests passed. Local analysis commits: `64d8325`, `932f516`; runtime commit: `77f85f6` (fresh Unity compile hook passed). No device install or hardware acceptance. See the latest checkpoint at the end for the current artifact fingerprint.
+Latest verified state: stop-after-capture repair passed full Unity integration and fresh Android packaging; 103 Python tests passed. Local analysis commits: `64d8325`, `932f516`; runtime commit: `77f85f6` (fresh Unity compile hook passed). No device install or hardware acceptance. See the latest checkpoint at the end for the current artifact fingerprint.
 
 Status: work in progress. This report is updated during the overnight run ending at 06:00 America/New_York. It is not study approval or hardware acceptance.
 
@@ -127,3 +127,15 @@ Updated `docs/voice-study-qa.md` to remove stale 14-trial, first-person, shortcu
 Reproduced and repaired false passes for completed sessions containing unfinished/duplicate trials, contradictory outcomes, NaN/missing/negative timing, malformed metadata and impossible pause/resume sequences. Readiness pauses no longer enter search duration. Interrupted records still undergo timing and voice checks. Full 80-trial/168-object fixtures pass in both voice orders; legacy behavior is retained. CLI success/failure paths are tested. Log: `/tmp/gaze-python-session-integrity-final.log`. This is offline recording consistency, not full device acceptance.
 
 Follow-up discovered during review: `TrialDataLogger.OnSessionStopped` overwrites the last trial's outcome even when correct capture has already completed it. A stop during success speech should preserve the completed trial and mark the session stopped separately. Reproduce/fix this runtime case next; do not treat the new validator's rejection as evidence that the record should be silently repaired.
+
+## Completed-trial preservation repair
+
+The actual Unity stop handler was reproduced failing the new saved-summary regression (`/tmp/gaze-unity-stop-repro.log`). It now preserves a completed trial's outcome and captured search duration if success speech or transition fails; the session retains its separate technical-failure outcome and stop event. Tests cover the first trial, block boundary and final trial (rounds 0, 39, 79), with unfinished controls. Full Unity integration passed (`/tmp/gaze-unity-stop-integrity.log`). A fresh APK is building in `/tmp/gaze-android-stop-integrity.log`; do not call the older fingerprint current until this terminal result is collected.
+
+Validator/QA checkpoint: `d9a8aa1`, 103 Python tests. The correct graphical Unity instance was closed to run these batch checks; reopen it after packaging for morning testing. No headset deployment is claimed.
+
+## Latest packaged artifact — 02:08 EDT
+
+Android packaging succeeded in **269.7 s**, process exit 0. Current APK contains the completed-trial preservation repair: `Builds/CodexAndroid/codex_build.apk`, **71,124,916 bytes**, SHA-256 `676ef4157dc7884813f0cddd32dc761147cb35173c20be7712fd4c229dd7795e`. Log: `/tmp/gaze-android-stop-integrity.log`. This supersedes earlier fingerprints/building notes. No headset install or physical acceptance.
+
+The system overview and study hub now point to the current hidden-target/right-controller flow, shared gaze stream and reconciled run sheet. Current overview/QA relative links passed.

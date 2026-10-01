@@ -1,13 +1,13 @@
 # Study hub
 
-Updated **September 30, 2026**. Start with the [latest meeting decisions and task map](meeting-reconciliation-2026-09-30.md) and [September 28 data/guidance requirements](meeting-reconciliation-2026-09-28.md). Older implementation snapshots below are dated evidence, not current runtime verification.
+Updated **October 1, 2026**. Start with the [latest meeting decisions and task map](meeting-reconciliation-2026-09-30.md) and [September 28 data/guidance requirements](meeting-reconciliation-2026-09-28.md). Older implementation snapshots below are dated evidence, not current runtime verification.
 
 **Current status:** working beta; protocol and survey forms are being finalized. IRB not yet submitted, per the researcher. This page separates current planning from implemented behavior and older documents.
 
 | I want to… | Open |
 |---|---|
-| Prepare a rehearsal | [Annotated run sheet](protocol/experimenter-run-sheet.md) · [Earlier Word edition](protocol/Gaze_Search_Experimenter_Run_Sheet.docx) — #27 must reconcile generic/dwell wording before using a revised script |
-| Edit the formatted meeting run sheet | [Overleaf project](https://www.overleaf.com/project/6a84bc097073254fbca6985b) · [Standalone LaTeX and PDF](protocol/overleaf/README.md) — annotated review edition, September 22 |
+| Prepare a rehearsal | [Current editable run sheet](protocol/overleaf/experimenter-run-sheet.tex) · [Headset QA](voice-study-qa.md) — locally reconciled and compiled; operator rehearsal and final instrument/consent review remain |
+| Edit the formatted meeting run sheet | [Overleaf project](https://www.overleaf.com/project/6a84bc097073254fbca6985b) · [Standalone LaTeX and PDF](protocol/overleaf/README.md) — live publication/export may lag the current local source |
 | Understand the current experiment | [Protocol at a glance](#current-protocol-at-a-glance) · [Confirmed decisions and implementation gaps](thesis-study-alignment.md) |
 | See every survey | [Survey shelf](#survey-shelf) |
 | See everything we measure | [Measures register](measures-register.md) — timing, scoring, roles, data sources and missing implementation |
@@ -25,11 +25,11 @@ Both voices will use shared participant-directed commands (“turn left,” “l
 
 **Data contract:** one performance/subjective CSV per trial plus separate motion/reconstruction data, joined by stable IDs/timestamps. Preserve raw events, objects and audio/video references. Block ratings repeated in trial rows retain their original scope.
 
-**Implemented evidence, dated:** [Voice choices](voice-choices.md) records the September 28 five-per-gender local implementation and pending headset checks; [trial CSV export](trial-performance-csv.md) describes the existing post-session exporter. Meeting decisions are not proof that all runtime behavior is implemented. Earlier September 22 v2/dwell/14-round and 30+30 planning descriptions are superseded for the current study design.
+**Implemented locally, hardware acceptance pending:** the app now has 40+40 measured trials, hidden-target shared commands, horizontal/fine/vertical guidance, six [voice choices](voice-choices.md) per gender, right-controller controls and a shared validity-aware gaze stream. [Trial CSV export](trial-performance-csv.md) describes the post-session exporter. See the [current system overview](guide/01-system-overview.md) and [morning evidence/checklist](overnight/2026-10-01-morning-verification.md). Meeting decisions are not proof that all runtime behavior is implemented. Earlier September 22 v2/dwell/14-round and 30+30 planning descriptions are superseded for the current study design.
 
-**Open decisions:** final 6–8 catalog identities/count, cadence and spatial thresholds, optional prosody/treatment comparability, primary outcomes and power/sensitivity, final survey items/scoring, calibration acceptance and hardware verification. Existing tasks and ownership are in the [September 30 task map](meeting-reconciliation-2026-09-30.md#existing-task-ownership).
+**Open decisions:** headset audition/acceptance of the implemented six-per-gender catalog, cadence and spatial thresholds, optional prosody/treatment comparability, primary outcomes and power/sensitivity, final survey items/scoring, calibration acceptance and hardware verification. Existing tasks and ownership are in the [September 30 task map](meeting-reconciliation-2026-09-30.md#existing-task-ownership).
 
-The [long procedure](experiment-procedure.md), [run sheet](protocol/overleaf/experimenter-run-sheet.tex) and [IRB source](irb/source/protocol.md) require reconciliation under #27/#18; these notes do not claim a synchronized or approved IRB packet.
+The [long procedure](experiment-procedure.md) now separates the current implementation from historical decisions; the [local run sheet](protocol/overleaf/experimenter-run-sheet.tex) is reconciled and compiles. Live Overleaf, final survey/interview instruments and [IRB sources](irb/source/protocol.md) still require review/synchronization under #27/#18; these notes do not claim an approved IRB packet.
 
 ## Survey shelf
 
