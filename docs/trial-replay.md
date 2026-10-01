@@ -12,7 +12,7 @@ The recorder attaches automatically to the game manager. Recording begins at the
   audio/clip_0000.wav
 ```
 
-Keep the whole package together. To copy recordings using Unity's bundled adb:
+Keep the whole package together. For the current study, follow the [three-directory transfer and audit workflow](recording-transfer.md), including `GazeData`, `EyeMeasurements` and `GazeReplays`. To copy only a replay package using Unity's bundled adb:
 
 ```bash
 /Applications/Unity/Hub/Editor/6000.3.10f1/PlaybackEngines/AndroidPlayer/SDK/platform-tools/adb pull \
@@ -20,7 +20,7 @@ Keep the whole package together. To copy recordings using Unity's bundled adb:
   /tmp/gaze-replays
 ```
 
-These files are separate from `GazeData`; clearing old trial data in future must include both directories. Voice caches and enrollment settings remain separate. Packages contain coded participant linkage and participant-specific synthetic voice clips; handle them with the session's access and retention rules. No microphone enrollment recording, credentials or room video is copied.
+These files are separate from `GazeData` and continuous `EyeMeasurements`; retain all three for a current recording audit. Any separately authorized future cleanup must account for those directories and verified backups. Voice caches and enrollment settings remain separate. Packages contain coded participant linkage and participant-specific synthetic voice clips; handle them with the session's access and retention rules. No microphone enrollment recording, credentials or room video is copied by this replay-only command.
 
 ## What schema 2 records
 

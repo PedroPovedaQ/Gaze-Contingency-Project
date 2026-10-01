@@ -51,6 +51,8 @@ See [methods, assumptions, outputs and decisions still needed](../docs/voice-pow
 
 **Implemented; recording consistency only:** after copying a closed run and its explicitly matching eye/replay files, run:
 
+Use the [three-directory Vive transfer procedure](../docs/recording-transfer.md); the older descriptive runner's `--pull` retrieves only `GazeData`.
+
 ```sh
 python3 analysis/audit_recording.py /copied/GazeData/P001/run_001 \
   --eye /copied/EyeMeasurements/recording/gaze_observations.jsonl \

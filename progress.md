@@ -1,5 +1,7 @@
 ## 2026-10-01 — overnight continuation
 
+- Re-exported the original incomplete P020 package under the new motion method: 22 stable measured/practice IDs, one row per file, eight changed motion rows and matching source hashes; local ignored comparison artifacts retain warnings and leave originals unchanged. Added explicit three-directory (`GazeData`, `EyeMeasurements`, `GazeReplays`) transfer instructions because the older analysis pull fetches only trial data. No device copy was performed.
+
 - Reproduced omitted trigger-time motion in trial CSVs (synthetic path 1.0 m exported instead of the observed 1.4 m). Motion method v2 now includes tracked correct/incorrect selection poses, preserves invalid/gap/pause breaks, excludes post-capture movement and identifies a selection-only geometry reference. Frame gaze-quality denominators remain unchanged. Four regressions and all 156 Python tests pass; new method/count fields preserve export provenance.
 
 - Extended strict import to shared replay parsing after reproducing a textual `complete: "false"` footer accepted without warning. Reject non-finite JSON and malformed declared schema/sequence/time, booleans and tracking states before downstream metrics. All 152 Python tests pass; P020 retains exactly 10,119 records / 9,703 samples with its existing incomplete-prefix warnings. Corrected #20 documentation: repeat request/delivery counting is implemented; zone-arrival/revisit definitions remain open.
