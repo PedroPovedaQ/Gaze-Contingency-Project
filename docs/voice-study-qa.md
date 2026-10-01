@@ -43,9 +43,12 @@ python3 scripts/verify-study-session.py /absolute/path/to/run_folder --allow-inc
 python3 analysis/trial_csv.py /absolute/path/to/run_folder --replays /absolute/path/to/GazeReplays --output /absolute/path/to/new-trial-export
 python3 analysis/eye_quality.py /absolute/path/to/gaze_observations.jsonl --out /absolute/path/to/new-eye-report
 python3 analysis/guidance_audit.py --eye /absolute/path/to/gaze_observations.jsonl --replay /absolute/path/to/recording.jsonl --out /absolute/path/to/new-guidance-audit
+python3 analysis/recording_links.py /absolute/path/to/run_folder --eye /absolute/path/to/gaze_observations.jsonl --replay /absolute/path/to/recording.jsonl --out /absolute/path/to/new-link-audit
 ```
 
 Inspect `trial_summary.json`, `trial_schedule.csv`, `trial_events.csv`, `object_manifest.csv`, compatibility `gaze_log.csv`, the voice-library manifest, surveys and linked raw/replay files. The current layout contains 168 uniquely identified objects per trial. A complete 80-row planned schedule is not proof that 80 trials were actually performed. Verify outcomes, timing, source completeness and exact participant/run/block/trial joins. Guidance software timestamps do not establish acoustic onset.
+
+Supply every raw recording explicitly with repeated `--eye` arguments to `recording_links.py` if logging reopened. Its exact observation joins, object/selection checks and coordinate checks complement session and guidance validation. Exit 2 means incomplete evidence (including older recordings without sample recording IDs), not a pass. The report preserves source hashes and distinguishes invalid/unavailable gaze from measured poses. It does not verify media availability, questionnaires, native sensor rate or hardware accuracy.
 
 The per-trial exporter creates one performance/subjective CSV per trial plus a combined table and provenance manifest; reconstruction streams remain separate. Repeated block survey responses retain block scope. Analysis pairs only complete runs using their recorded schedule; historical 7+7 records retain their original rule. These are descriptive QA outputs, not confirmatory power or outcome tests.
 

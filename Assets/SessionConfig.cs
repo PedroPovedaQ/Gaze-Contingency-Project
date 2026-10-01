@@ -38,6 +38,7 @@ public static class SessionConfig
     public const string InteractionPolicy = "right_controller_ray_trigger_v2";
     public const string RepeatEventVersion = "guidance-repeat-v1";
     public const string GuidanceAuditVersion = "guidance-decision-v1";
+    public const string GazeReplayLinkVersion = "gaze-observation-link-v1";
     const string k_RootFolder = "GazeData";
     const string k_Tag = "[Session]";
 

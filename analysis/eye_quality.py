@@ -418,7 +418,7 @@ def read_recording(path):
                     warnings.append('Interrupted final JSON line omitted; retained prefix only.')
                     break
                 raise ValueError(f'Corrupt eye JSON at line {line_number}') from None
-            if row.get('schema') != 1 or row.get('kind') != 'gaze_observation':
+            if not isinstance(row, dict) or row.get('schema') != 1 or row.get('kind') != 'gaze_observation':
                 raise ValueError(f'Unsupported eye record at line {line_number}')
             if not isinstance(row.get('sequence'), int) or row['sequence'] < 0:
                 raise ValueError(f'Invalid observation sequence at line {line_number}')
@@ -437,6 +437,8 @@ def read_recording(path):
 def recording_status(path, rows, warnings):
     receipt = path.parent/'end_status.json'
     result = json.loads(receipt.read_text()) if receipt.exists() else dict(complete=False, reason='No clean-close receipt; recording may be active or interrupted')
+    if not isinstance(result, dict):
+        raise ValueError('Invalid eye recording end-status structure')
     # A clean-close marker cannot override an incomplete or mismatched file.
     if warnings or (result.get('acceptedRows') is not None and result['acceptedRows'] != len(rows)):
         result = dict(result, complete=False, reason='Recovered prefix or row-count mismatch')

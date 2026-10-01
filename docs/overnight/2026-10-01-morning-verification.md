@@ -1,6 +1,6 @@
 # Overnight work and morning verification — October 1, 2026
 
-Latest verified state: stop-after-capture repair passed full Unity integration and fresh Android packaging; 103 Python tests passed. Local analysis commits: `64d8325`, `932f516`; runtime commit: `77f85f6` (fresh Unity compile hook passed). No device install or hardware acceptance. See the latest checkpoint at the end for the current artifact fingerprint.
+Latest verified state: exact raw/replay observation links passed full Unity integration and Android packaging; all 115 Python tests passed. Work remains local with no device install or hardware acceptance. See the latest checkpoint at the end for the current artifact fingerprint.
 
 Status: work in progress. This report is updated during the overnight run ending at 06:00 America/New_York. It is not study approval or hardware acceptance.
 
@@ -139,3 +139,13 @@ Validator/QA checkpoint: `d9a8aa1`, 103 Python tests. The correct graphical Unit
 Android packaging succeeded in **269.7 s**, process exit 0. Current APK contains the completed-trial preservation repair: `Builds/CodexAndroid/codex_build.apk`, **71,124,916 bytes**, SHA-256 `676ef4157dc7884813f0cddd32dc761147cb35173c20be7712fd4c229dd7795e`. Log: `/tmp/gaze-android-stop-integrity.log`. This supersedes earlier fingerprints/building notes. No headset install or physical acceptance.
 
 The system overview and study hub now point to the current hidden-target/right-controller flow, shared gaze stream and reconciled run sheet. Current overview/QA relative links passed.
+
+## Exact recording linkage — October 1 checkpoint
+
+New replay samples and selections retain `gazeRecordingId` with `gazeObservationSequence`, including invalid samples and raw-log reopenings. Production headers advertise `gaze-observation-link-v1`. `analysis/recording_links.py` audits explicitly supplied summary, object manifest, raw eye files and replays; checks participant/run/block/voice/trial joins, target/selection identity, source timestamps and valid world/local ray conversions; and saves input hashes. Legacy missing IDs and incomplete recordings are reported separately rather than guessed. This complements session and guidance checks; it does not verify media assets, surveys or hardware measurements.
+
+Full Unity integration passed (`/tmp/gaze-unity-recording-links-final.log`), including a real recorder-header creation test and reopened-stream identity/serialization tests. All **115 Python tests** passed (`/tmp/gaze-python-recording-links-final.log`), including 12 recording-link tests with malformed input, incomplete evidence, coordinate changes, false tracking claims and CLI exit-code/readback coverage.
+
+Fresh APK build succeeded in **84.3 s**, process exit 0: `Builds/CodexAndroid/codex_build.apk`, **71,125,376 bytes**, SHA-256 `6cd898b9885fe6c3fcc2e9654ee4d7ee39afdde5280d3d4c067a1e82c3a0de4b`. Log: `/tmp/gaze-android-recording-links.log`. This supersedes earlier APK fingerprints. Graphical Unity is currently closed for batch work; reopen the correct project near the morning handoff. The prior locked-Mac Build And Run failure and absent ADB device remain unresolved; no installation/launch is claimed.
+
+Morning: after a consented headset run, pull the entire run, all linked raw recordings, and replay package. Run the session, recording-links, eye-quality and guidance checks documented in `docs/voice-study-qa.md`; inspect each report's incomplete evidence as well as errors. Native 120 Hz, target accuracy, physical haptics, audio/voice quality and device interruption/overhead remain empirical checks.

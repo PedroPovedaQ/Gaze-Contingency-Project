@@ -76,6 +76,7 @@ public sealed class TrialReplayRecorder : MonoBehaviour
             header.buildGuid = Application.buildGUID; header.unityVersion = Application.unityVersion;
             header.interactionPolicy = SessionConfig.InteractionPolicy; header.repeatEventVersion = SessionConfig.RepeatEventVersion;
             header.guidanceAuditVersion = SessionConfig.GuidanceAuditVersion;
+            header.gazeLinkVersion = SessionConfig.GazeReplayLinkVersion;
             header.neutralCatalogVersion = SessionConfig.NeutralCatalogVersion;
             header.origin = m_Origin; header.originRotation = m_OriginRotation;
             header.gazeRecordingPath = SharedGazeStream.Instance != null ? SharedGazeStream.Instance.RecordingPath : "";
@@ -262,6 +263,9 @@ public sealed class TrialReplayRecorder : MonoBehaviour
                 r.gazeDirection = Quaternion.Inverse(m_OriginRotation) * gaze.worldDirection;
             }
             r.gazeObservationSequence = gaze.sequence; r.gazeReceiptTime = gaze.receiptTime;
+            // Sequences are recording-local. The stream can reopen during a replay;
+            // never infer this identity from a header path captured at startup.
+            r.gazeRecordingId = gaze.recordingId;
             r.gazeInputEventTime = gaze.inputEventTime; r.gazeDeliveryAge = gaze.ageSeconds;
             r.gazeSource = gaze.source; r.gazeInvalidReason = gaze.invalidReason;
         }

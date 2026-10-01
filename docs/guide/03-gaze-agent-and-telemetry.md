@@ -59,6 +59,8 @@ The manager's **presented trial** remains stable while success feedback plays, e
 
 Compatibility logging appends when re-enabled; a conflicting existing CSV header fails visibly instead of overwriting data. The continuous eye writer is bounded: overflow/write errors stop recording with an error. Interrupted final JSON records can be recovered as explicitly incomplete prefixes; corrupt middle records, mixed recording IDs and unordered sequences are rejected by analysis.
 
+Replay samples/selection records carry the exact raw `gazeRecordingId` plus `gazeObservationSequence` under `gaze-observation-link-v1`. This stays unambiguous if raw logging opens another file mid-replay. `analysis/recording_links.py` audits explicitly supplied run/raw/replay files, verifies trial/object/selection links and transforms valid replay-local rays back to raw world coordinates. It records unavailable observations and incomplete/legacy evidence separately. File consistency is not validation of sensor rate, gaze accuracy or eye events; see the [audit command and limits](../../analysis/README.md#exact-replayraw-eye-link-audit).
+
 Repeat requests and delivered repetitions have separate versioned events. `instruction_count` includes delivered repeats, while `hint_count` excludes them. A missing historical measure remains unknown rather than becoming zero; repeated CSV/replay evidence is not counted twice. See [trial export definitions](../trial-performance-csv.md).
 
 ## 5. Independent accuracy and eye-event validation

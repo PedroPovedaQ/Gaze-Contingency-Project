@@ -27,7 +27,7 @@ public sealed class TrialReplayRecord
     public int headTracked = -1, gazeTracked = -1;
     public long gazeObservationSequence = -1;
     public double gazeReceiptTime, gazeInputEventTime, gazeDeliveryAge;
-    public string gazeSource, gazeInvalidReason, gazeRecordingPath;
+    public string gazeSource, gazeInvalidReason, gazeRecordingPath, gazeRecordingId, gazeLinkVersion;
     public string guidanceDecisionId;
     public GuidanceDecision guidanceDecision;
     public float dwell, audioVolume = 0.7f;

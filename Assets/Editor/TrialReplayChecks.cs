@@ -68,6 +68,8 @@ public static class TrialReplayChecks
             File.WriteAllLines(corrupt, legacy);
             Assert(TrialReplayFile.Read(corrupt).Header.schema == 1, "Legacy schema is readable.");
             CheckLiveSelectionHook(root);
+            CheckRecorderHeader();
+            CheckObservationLinkIdentity();
             CheckWriterBackpressure(root);
             CheckWriterFlush(root);
             CheckReadinessReplay();
@@ -154,6 +156,68 @@ public static class TrialReplayChecks
     }
     static void Set(object target, string field, object value) => target.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target, value);
     static object Call(object target, string method, params object[] args) => target.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(target, args);
+    static void CheckObservationLinkIdentity()
+    {
+        var host = new GameObject("ReplayEyeLinkFixture"); host.SetActive(false);
+        var source = new GameObject("ReplayEyeSourceFixture"); source.SetActive(false);
+        var previous = SharedGazeStream.Instance;
+        try
+        {
+            var game = host.AddComponent<FindObjectGameManager>();
+            var recorder = host.AddComponent<TrialReplayRecorder>();
+            Set(recorder, "m_Game", game);
+            var stream = source.AddComponent<SharedGazeStream>();
+            typeof(SharedGazeStream).GetProperty("Instance").SetValue(null, stream);
+            foreach (string id in new[] { "eye-before-reopen", "eye-after-reopen" })
+            {
+                var observation = new GazeObservation { recordingId=id, sequence=71,
+                    receiptTime=100, inputEventTime=99.99, source="fixture", invalidReason="untracked" };
+                typeof(SharedGazeStream).GetProperty("Latest").SetValue(stream, observation);
+                var record = new TrialReplayRecord();
+                Call(recorder,"CapturePoses",record);
+                Assert(record.gazeRecordingId==id && record.gazeObservationSequence==71 &&
+                    record.gazeReceiptTime==100 && record.gazeInputEventTime==99.99 && record.gazeTracked==0,
+                    "Reopened raw streams keep distinct identities even with repeated sequences and invalid gaze");
+                var copy=JsonUtility.FromJson<TrialReplayRecord>(JsonUtility.ToJson(record));
+                Assert(copy.gazeRecordingId==id, "Raw recording identity survives replay serialization");
+            }
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(host); UnityEngine.Object.DestroyImmediate(source);
+            typeof(SharedGazeStream).GetProperty("Instance").SetValue(null, previous);
+        }
+    }
+
+    static void CheckRecorderHeader()
+    {
+        var host = new GameObject("ReplayHeaderFixture"); host.SetActive(false);
+        TrialReplayRecorder recorder = null;
+        string directory = null;
+        try
+        {
+            var game = host.AddComponent<FindObjectGameManager>();
+            Set(game, "m_UseRotationalLayout", false);
+            recorder = host.AddComponent<TrialReplayRecorder>();
+            Set(recorder, "m_Game", game);
+            // Exercise production header creation, not a hand-authored fixture header.
+            Call(recorder, "EnsureStarted");
+            directory = recorder.RecordingDirectory;
+            Assert(!string.IsNullOrEmpty(directory), "Recorder creates an isolated recording directory");
+            Call(recorder, "Finish", true, "synthetic header verification");
+            var recording = TrialReplayFile.Read(Path.Combine(directory, "recording.jsonl"));
+            Assert(recording.Header.gazeLinkVersion == SessionConfig.GazeReplayLinkVersion,
+                "Production replay header advertises exact raw-observation linkage");
+        }
+        finally
+        {
+            if (recorder != null) Call(recorder, "OnDisable");
+            UnityEngine.Object.DestroyImmediate(host);
+            // Only remove the newly generated fixture recording, never the shared parent.
+            if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory)) Directory.Delete(directory, true);
+        }
+    }
+
     static void CheckLiveSelectionHook(string root)
     {
         var host = new GameObject("ReplayIntegrationFixture"); host.SetActive(false);

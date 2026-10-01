@@ -13,6 +13,29 @@
 
 Generates plots and statistics from the experiment data collected by Unity.
 
+## Exact replay/raw-eye link audit
+
+**Implemented locally (October 1, 2026):** audit one measured run against explicitly supplied replay and raw-eye recordings. This supplements the session validator, per-trial export and guidance audit; it does not replace them.
+
+```sh
+python3 analysis/recording_links.py /path/to/run \
+  --eye /path/to/EyeMeasurements/recording-a/gaze_observations.jsonl \
+  --eye /path/to/EyeMeasurements/recording-b/gaze_observations.jsonl \
+  --replay /path/to/GazeReplays/recording/recording.jsonl \
+  --out /path/to/new-link-report
+```
+
+Use one `--eye` for each raw recording belonging to the run; add more only when logging reopened. `--replay` can also repeat. The tool never follows a stored device path automatically or guesses a nearby observation. New replays advertise `gaze-observation-link-v1`; each sample/selection carries both the raw recording ID and sequence. A header path alone cannot establish this link.
+
+- `recording_links.json`: input paths, SHA-256 hashes, byte counts, raw clean-close receipts, trial counts, findings and limits. Inputs are rehashed after parsing to detect changes during the audit.
+- `trials.csv`: per-trial raw search rows, replay records, exact linked/unavailable observations, correct selections and source files.
+- `issues.csv`: contradictory participant/run/block/voice/trial links, object/target mismatch, missing exact observations, source/timestamp mismatch or invalid coordinate transforms.
+- `incomplete.csv`: missing/unfinished recordings, absent started-trial streams or legacy/unknown linkage contracts.
+
+Exit **0** means the supplied package is consistent with these checks; **1** means an integrity/structural error; **2** means evidence is incomplete. Existing output directories are refused. Invalid gaze rows remain linkable without interpreting their zero pose placeholders as measurements. A non-search transition may explicitly refer to the preceding trial's observation; active search and selection may not. Practice is excluded from measured-trial counts.
+
+Coordinate checks use the saved origin quaternion/translation to compare replay-local valid rays with raw world rays. They do not establish that the raw hardware conversion is correct. This report does not validate video/audio assets, surveys, physiological eye events, native 120 Hz, acoustic timing or task-wide spatial accuracy. Historical replays remain readable, but cannot gain missing raw-observation provenance retrospectively.
+
 ## One-Command Runner (Recommended)
 
 From the project root:

@@ -1,5 +1,7 @@
 ## 2026-10-01 — overnight continuation
 
+- Added exact replay-to-raw gaze recording identity on every sampled/selected observation and a versioned link contract. New recording-links audit checks run/trial/voice/object/selection consistency, timestamps and world/local coordinate transforms; preserves invalid/legacy/incomplete evidence and hashes explicitly supplied inputs. Real production-header/reopened-stream Unity tests and all 115 Python tests pass. Fresh Android APK packaged successfully in 84.3 s (71,125,376 bytes); device installation/measurement validation remain pending. Updated replay documentation to the current 40+40/shared-command/right-only flow.
+
 - 02:08 EDT: Android APK rebuilt successfully with the completed-trial preservation fix (269.7 s; 71,124,916 bytes; fingerprint in morning report). Updated current system overview/study hub to remove obsolete dwell/shelf guidance; current overview/QA links pass. No device deployment.
 
 - 02:03 EDT: saved validator/QA fixes in `d9a8aa1` (103 Python tests). Reproduced stop-during-success corruption in actual Unity summary output, then preserved completed trial outcome/duration while retaining the session technical stop. Regression covers rounds 0, 39 and 79 plus unfinished controls; full Unity integration passed (`/tmp/gaze-unity-stop-integrity.log`). New APK rebuild running; previous package predates this fix.
