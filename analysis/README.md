@@ -1,5 +1,7 @@
 # Analysis Workflow
 
+**Current data quality (September 30):** `analysis/eye_quality.py` exports raw eye rows plus spatial/delivery-rate quality reports. Invalid measurements remain blank; interrupted final JSON rows can be recovered with an incomplete warning, while middle corruption is rejected. Candidate eye events remain unvalidated. Per-trial `instruction_count` counts actual deliveries including requested repeats; `hint_count` excludes delivered repeats; repeat requests and deliveries are separate. A versioned repeat logger can establish zero; historical absence stays unknown. Schedule/identity/height-policy versions travel with trial rows so 40+40 horizontal balance is not mistaken for implemented vertical balance.
+
 **Per-trial performance/subjective files (#20):** use `python3 analysis/trial_csv.py <run-directory> --replays <GazeReplays-directory> --output <new-directory>`. It writes one summary CSV per trial, a combined trial table and provenance manifest, keeping raw replay data separate. Add external questionnaires with repeated `--survey` arguments. See [field definitions, survey joins and remaining measurement gaps](../docs/trial-performance-csv.md). This is a post-session computer export; the older analysis/scoring guidance below may describe legacy protocols.
 
 **Combined CSV:** use `python3 analysis/mega_csv.py <run-directory> --replays <GazeReplays-directory> --output <mega.csv>` to export gaze, motion, events, objects, existing trial metrics and survey context into one wide file. See [row types, joins and missing-data rules](../docs/mega-csv.md). Original recordings remain separate.
@@ -176,3 +178,44 @@ Per-round (in summary JSON `objectives[]`):
 New neutral runs use `gaze_aware_voice-neutral-male` / `gaze_aware_voice-neutral-female`; the self-similar label is unchanged. `run_condition` retains this assignment. Historical `voice-generic` remains readable. Male/female are neutral voice profiles, not additional guidance conditions.
 
 For schema-2 two-block sessions, `voice_condition`, `voice_order`, `trial_id`, `outcome`, search-onset and capture timestamps are retained per trial. `voice_block_metrics.csv` reports completed trials by block; `voice_pair_differences.csv` pairs only complete 14-trial runs within the same participant/run. Historical awareness plots/tests remain legacy outputs. Run `python3 scripts/verify-study-session.py /absolute/path/to/run` from the repository root to check exported timing/voice/object consistency. NASA-TLX block rows preserve the actual voice label; a historical run-wide two-voice score is `overall`.
+
+## October 1 quality report additions — implemented, validation pending
+
+`eye-quality-v2-phase-aware` adds `trial_eye_quality.csv`, keyed by recording, participant, run and trial. It summarizes **search-only** observed rows, distinct input updates, valid-update fraction, bounded valid duration, gap duration, delivery rate, device changes and invalid reasons. Pauses, practice, participant/trial changes and absent trial-end samples are not joined or extrapolated. These windows are not authoritative trial duration. Unknown vendor calibration identity and researcher exclusion decisions remain blank with explicit status fields. Input delivery rate is still not native sensor rate.
+
+`spatial_validation.csv` now distinguishes mean-direction offset, signed mean yaw/pitch bias, median/p90 sample error, invalid-update fraction, valid-time coverage, RMS sample-to-sample fluctuation and angular spread. Bias is measured minus expected; positive yaw is right and positive pitch is up. Yaw uses a circular mean. Angular SD is explicitly the pooled radial angular spread about each contiguous segment's mean, `sqrt(sum(angle(sample, segment_mean)^2)/(N-S))`; `S` counts usable segments and each has at least two observations. Invalid rows/heartbeats, device changes and gaps break precision segments. Head movement can still contribute to world-ray spread; these are not validated fixation measures.
+
+Tests cover a high-loss trial beside a good trial, pause/practice separation, remaining freshness, changed devices/participants, fixed spatial bias versus jitter, and invalid heartbeats. No automatic study exclusion or correction threshold was introduced.
+
+## Guidance provenance audit
+
+**Implemented locally, October 1.** Run this after pulling both the continuous raw eye file and matching replay packages:
+
+```sh
+python3 analysis/guidance_audit.py \
+  --eye /path/to/EyeMeasurements/recording/gaze_observations.jsonl \
+  --replay /path/to/GazeReplays/trial/recording.jsonl \
+  --out /path/to/new-guidance-audit
+```
+
+Repeat `--eye` and `--replay` for additional files. The destination must be new; original recordings and existing reports are never overwritten. Outputs are `guidance_audit.json`, `guidance_decisions.csv`, and `guidance_issues.csv`. A consistency issue exits with code 1 while preserving the report. Structural input errors also fail; inspect the error rather than treating a missing report as a pass.
+
+The audit requires exact `(eyeRecordingId, observationSequence)` joins. It checks participant/trial context, saved timestamps/age, invalid or stale gaze marked usable, correction revalidation, audio decision IDs, spoken phrase consistency, and audio lifecycle contradictions. Requested, abandoned, cancelled-before-playback, played, and ended states remain distinct. Unavailable/suspended decisions may legitimately have no observation. Legacy files without `guidance-decision-v1` are explicitly unsupported; an empty new recording reports `no_decisions` rather than a successful cue test.
+
+`software_request_to_playback_seconds` subtracts the **replay-relative decision-record time** from the first software playback-start time. It does not subtract absolute eye receipt time from relative replay time. Raw delivery age is audited separately against the decision's absolute Unity realtime. The area-correction commitment callback may be recorded immediately after its audio request; that order alone is not an error. The report retains original requested and committed snapshots in the raw replay.
+
+`consistent` means no observed consistency violation, not complete data or correct gaze guidance. The JSON separately reports raw-eye clean-close evidence, replay completion and truncated-prefix warnings. This tool cannot establish acoustic onset, native 120 Hz acquisition, physiological fixation, the correct wall/vertical direction, or that the participant heard the sound. Ten regression tests cover clock origins, exact joins, staleness/invalidity, trial mismatch, revalidation, cancellation, missing IDs, old data, phrase mismatch and the actual CLI/readback/overwrite/failure paths.
+
+## Delivery timing and signal-availability exports
+
+**Implemented locally, October 1.** `eye_quality.py` now also writes:
+
+- `phase_delivery_quality.csv`: counts and interval statistics grouped by participant/run, phase, practice status and device. Re-entering a phase starts a new interval segment. Invalid delivered updates still count as deliveries; repeated heartbeats do not. Equal gaze coordinates are never used to deduplicate observations.
+- `delivery_intervals.csv`: every accepted positive input-delivery interval used by the timing report, with its phase/device/context and closing application sequence.
+- `signal_capabilities.csv`: combined gaze and independently flagged left/right gaze, pupil and openness availability. HTC counts use distinct host-query timestamps because copied fields are not new queries. `no_timed_query_observed` and `not_observed_or_unavailable` are not proof of unsupported hardware.
+- `clock_frame_dictionary.csv` and `timing_report.json`: clock/frame meanings, captured device/build metadata where present, clean-close status and explicit unknown native capture identity, sample count and loss.
+- `delivery_timing.png` and `.svg`: input-delivery interval histogram and saved delivery age over host time. The 8.33 ms line is only a 120 Hz reference, never evidence of native acquisition. Rows without usable delivery timestamps are omitted from the age plot; their unknown counts remain in the tables.
+
+`delivery_interval_hz` is the reciprocal of the mean positive interval between successive flagged updates in a continuous context. `recorded_row_interval_hz` uses positive adjacent saved-row intervals; it is not a sensor rate or a count of every API poll. Duplicate/nonincreasing update flags, unknown delivery times, heartbeats and distinct render-frame IDs are separate counters. Native drop counts stay blank; missing application row sequences are reported separately and cannot reveal unexposed sensor loss.
+
+Plots use the existing analysis environment's matplotlib dependency. Pass `--no-plots` for tables/JSON only. Nine timing/capability regressions include 120 saved rows/s with 60 input deliveries/s, phase/device/identity breaks, duplicated update flags, absent timing and copied HTC signals. The CLI test also verifies its generated SVG and tables. The inspected plot in `/tmp/gaze-timing-fixture-path` is a labeled synthetic fixture, not a headset measurement.
