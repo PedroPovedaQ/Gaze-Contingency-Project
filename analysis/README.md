@@ -29,12 +29,15 @@ Use one `--eye` for each raw recording belonging to the run; add more only when 
 
 - `recording_links.json`: input paths, SHA-256 hashes, byte counts, raw clean-close receipts, trial counts, findings and limits. Inputs are rehashed after parsing to detect changes during the audit.
 - `trials.csv`: per-trial raw search rows, replay records, exact linked/unavailable observations, correct selections and source files.
+- `assets.csv`: referenced replay audio files, playback-reference counts, byte/frame counts, channels, sample rate and duration. Reused clips are inspected once and every referring event sequence is retained.
 - `issues.csv`: contradictory participant/run/block/voice/trial links, object/target mismatch, missing exact observations, source/timestamp mismatch or invalid coordinate transforms.
 - `incomplete.csv`: missing/unfinished recordings, absent started-trial streams or legacy/unknown linkage contracts.
 
 Exit **0** means the supplied package is consistent with these checks; **1** means an integrity/structural error; **2** means evidence is incomplete. Existing output directories are refused. Invalid gaze rows remain linkable without interpreting their zero pose placeholders as measurements. A non-search transition may explicitly refer to the preceding trial's observation; active search and selection may not. Practice is excluded from measured-trial counts.
 
-Coordinate checks use the saved origin quaternion/translation to compare replay-local valid rays with raw world rays. They do not establish that the raw hardware conversion is correct. This report does not validate video/audio assets, surveys, physiological eye events, native 120 Hz, acoustic timing or task-wide spatial accuracy. Historical replays remain readable, but cannot gain missing raw-observation provenance retrospectively.
+The `recording-links-v2` report also checks saved PCM16 WAV headers, declared/actual lengths, rates and channel alignment. Missing files or playback without saved audio are incomplete evidence; malformed files and unsafe references are integrity issues. Absolute/traversal paths and symlinked assets are rejected before reading them. Referenced regular files within the size limit are hashed before parsing and rechecked after the audit. This does not repair or regenerate clips. No audio references means no audio evidence, not proof of a successful silent run.
+
+Coordinate checks use the saved origin quaternion/translation to compare replay-local valid rays with raw world rays. They do not establish that the raw hardware conversion is correct. PCM format consistency does not establish the right voice, naturalness, audibility or acoustic timing. This report does not validate video, surveys, physiological eye events, native 120 Hz or task-wide spatial accuracy. Historical replays remain readable, but cannot gain missing raw-observation provenance retrospectively.
 
 ## Voice-study power/sensitivity planning
 

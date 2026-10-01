@@ -8,6 +8,7 @@ import tempfile
 import unittest
 
 from recording_links import audit, CONTRACT
+from test_replay_assets import make_wav
 
 
 class RecordingLinkTests(unittest.TestCase):
@@ -187,3 +188,24 @@ class RecordingLinkTests(unittest.TestCase):
                 changed[2].update(gazeObservationSequence=-1,gazeTracked=value)
                 self.write(replay,changed)
                 self.assertIn('invalid_replay_tracking_flag',audit(run,[eye],[replay])['issue_counts'])
+
+    def test_referenced_audio_completeness_hashes_and_cli_reports(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);run,eye,replay,_,rows=self.fixture(root)
+            event=dict(rows[1],kind='audio_playback_start',sequence=2,time=1.5,clip='audio/clip.wav',audioVolume=.7)
+            rows.insert(2,event)
+            for i,row in enumerate(rows):row['sequence']=i
+            self.write(replay,rows);path=root/'audio/clip.wav';make_wav(path)
+            report=audit(run,[eye],[replay])
+            self.assertEqual(report['status'],'consistent')
+            self.assertEqual(report['assets'][0]['status'],'consistent_pcm16')
+            self.assertTrue(any(source['path']==str(path.resolve()) for source in report['sources']))
+            path.unlink();(eye.parent/'end_status.json').unlink()
+            command=[sys.executable,str(Path(__file__).with_name('recording_links.py')),str(run),'--eye',str(eye),'--replay',str(replay),'--out',str(root/'incomplete-report')]
+            result=subprocess.run(command,capture_output=True,text=True)
+            self.assertEqual(result.returncode,2,result.stderr)
+            self.assertTrue((root/'incomplete-report/assets.csv').exists())
+            with (root/'incomplete-report/incomplete.csv').open() as file:
+                codes={r['code'] for r in csv.DictReader(file)}
+            self.assertIn('missing_replay_audio_file',codes)
+            self.assertIn('raw_recording_not_cleanly_closed',codes)

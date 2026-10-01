@@ -1,6 +1,6 @@
 # Overnight work and morning verification — October 1, 2026
 
-Latest verified state: exact raw/replay observation links passed full Unity integration and Android packaging; all 123 Python tests passed, including new synthetic power/sensitivity checks. Work remains local with no device install or hardware acceptance. See the latest checkpoint at the end for the current artifact fingerprint.
+Latest verified state: exact raw/replay observation links passed full Unity integration and Android packaging; all 130 Python tests passed, including synthetic sensitivity and replay-audio integrity checks. Work remains local with no device install or hardware acceptance. See the latest checkpoint at the end for the current artifact fingerprint.
 
 Status: work in progress. This report is updated during the overnight run ending at 06:00 America/New_York. It is not study approval or hardware acceptance.
 
@@ -157,3 +157,9 @@ Saved `docs/voice-power-sensitivity.md`, `analysis/voice_sensitivity.py`, explic
 All **123 Python tests pass**, including eight new statistical/tooling checks (`/tmp/gaze-python-with-power.log`). Saved script/config hashes match; plot inspected. The conventional paired benchmark reproduces approximately d_z=.457 at N=48, alpha .025 and 80% power, but this does not validate the older four-condition design for the current study. Illustrative 40-trial/N20 no-loss scenarios range from roughly 16% to 41% detection for a 10% ratio change; informative missingness can inflate false positives rather than improve inference.
 
 **Needs researcher review:** select primary estimand, meaningful effect, alpha/multiplicity, aggregate versus mixed/censored model, missingness/timeout rules, analyzable N and recruitment allowance. Run the current hidden-target task pilot to constrain noise, correlation, person-specific voice effects and burden. No final N, exclusion rule, recruitment change, IRB submission or study-power claim was made. The current complete-run descriptive exporter is unchanged. Android runtime/source is unchanged since the latest successful recording-link APK.
+
+## Replay audio package completeness
+
+`recording-links-v2` now produces `assets.csv` and checks the saved replay PCM16 audio itself: referenced-file presence, byte/frame counts, channel/rate/alignment fields, declared versus actual lengths, bounded file size and per-event volume range. Reused clips are inspected once with every referring event sequence retained. Playback without a saved clip and recorder-reported asset failures are incomplete evidence even if the replay footer says complete. Invalid WAVs, absolute/traversal paths and linked files/directories are issues; paths are rejected before reading outside the package. Existing assets are hashed before inspection and rechecked after the full audit.
+
+All **130 Python tests pass** (`/tmp/gaze-python-audio-assets-final.log`), including seven new asset/integration cases, unsafe paths/symlinks, malformed/short headers, length/rate contradictions, duplicate clip references, missing clips and CLI output with mixed incomplete evidence. Runtime/APK sources are unchanged. No real participant audio was uploaded, listened to, regenerated or relabeled. File format consistency cannot establish the correct voice, naturalness, acoustic timing or audible delivery; these remain morning checks. Video and finalized survey completeness remain separate.

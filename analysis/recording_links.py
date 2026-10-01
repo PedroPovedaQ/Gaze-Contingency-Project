@@ -13,8 +13,9 @@ from pathlib import Path
 
 from eye_quality import read_recording, recording_status
 from mega_csv import csv_rows, replay_rows
+from replay_assets import inspect_audio_assets
 
-VERSION = 'recording-links-v1'
+VERSION = 'recording-links-v2'
 CONTRACT = 'gaze-observation-link-v1'
 
 
@@ -132,7 +133,7 @@ def audit(run, eye_paths, replay_paths):
     else:
         missing('missing_object_manifest', manifest)
 
-    recording_ids = set()
+    recording_ids, assets = set(), []
     for path in replay_paths:
         path = source(path)
         warnings = []
@@ -151,6 +152,14 @@ def audit(run, eye_paths, replay_paths):
         if warnings or rows[-1].get('kind') != 'end' or rows[-1].get('complete') is not True:
             missing('replay_not_cleanly_completed', path)
         notes.extend(warnings)
+        def audio_source(audio_path):
+            if not any(item['path'] == str(audio_path.resolve()) for item in sources): source(audio_path)
+        audio = inspect_audio_assets(path, rows, on_file=audio_source)
+        assets.extend(audio['assets'])
+        for finding in audio['issues']:
+            issue(finding['code'], path, finding['trial_id'], f"sequence={finding['replay_sequence']}; {finding['detail']}")
+        for finding in audio['incomplete']:
+            incomplete.append(finding)
         for row in rows[1:]:
             if row.get('kind') == 'header' or type(row.get('sequence')) is not int or not finite(row.get('time')):
                 raise ValueError('Invalid replay record/header ordering')
@@ -260,9 +269,9 @@ def audit(run, eye_paths, replay_paths):
     if not replay_paths: missing('no_replay_inputs')
     return dict(report_version=VERSION, participant_id=participant, run_number=number,
                 status='issues_found' if issues else 'evidence_incomplete' if incomplete else 'consistent',
-                sources=sources, raw_status=statuses, trials=list(stats.values()), issues=issues,
+                sources=sources, raw_status=statuses, trials=list(stats.values()), assets=assets, issues=issues,
                 incomplete=incomplete, notes=notes, issue_counts=dict(Counter(i['code'] for i in issues)),
-                limits='File/link consistency only. Run session and guidance validators separately. No native rate, physiological event, spatial accuracy, acoustic or hardware acceptance claim.')
+                limits='File/link and referenced PCM16 format consistency only. No audio references does not prove speech occurred. Run session and guidance validators separately. Does not validate video, surveys, voice identity/naturalness, native rate, physiological events, spatial accuracy, acoustic or hardware acceptance.')
 
 
 def main():
@@ -276,10 +285,10 @@ def main():
     report = audit(args.run, args.eye, args.replay)
     args.out.mkdir(parents=True, exist_ok=False)
     (args.out/'recording_links.json').write_text(json.dumps(report, indent=2, allow_nan=False)+'\n')
-    for name, rows in (('trials', report['trials']), ('issues', report['issues']), ('incomplete', report['incomplete'])):
+    for name, rows in (('trials', report['trials']), ('assets', report['assets']), ('issues', report['issues']), ('incomplete', report['incomplete'])):
         with (args.out/(name+'.csv')).open('w', newline='') as file:
-            fields = list(rows[0]) if rows else ['code']
-            writer = csv.DictWriter(file, fieldnames=fields)
+            fields = list(dict.fromkeys(k for row in rows for k in row)) if rows else ['code']
+            writer = csv.DictWriter(file, fieldnames=fields, lineterminator='\n')
             writer.writeheader()
             for row in rows:
                 writer.writerow({k:json.dumps(v) if isinstance(v,list) else v for k,v in row.items()})
