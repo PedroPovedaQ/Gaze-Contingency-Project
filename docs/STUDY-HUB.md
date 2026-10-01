@@ -15,6 +15,8 @@ Updated **October 1, 2026**. Start with the [latest meeting decisions and task m
 | Know what to do next | [GitHub delivery board](https://github.com/users/PedroPovedaQ/projects/2) · [Epic #19](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/19) |
 | Check what the app actually does | [Eight-plane beta](eight-plane-beta.md) · [Round flow](guide/02-gameplay-round-flow.md) · [Telemetry](guide/03-gaze-agent-and-telemetry.md) |
 
+[Current setup/session figure (SVG, PDF, PNG and caption)](../resources/figures/follow-my-voice-study-flow-20261001.md) · [Runtime/data-flow diagram](diagram.md). These replace the old dwell/table and 60-trial graphics for planning; they are not protocol approval.
+
 ## Current protocol at a glance
 
 **Protocol proposal — current researcher direction:** two counterbalanced preferred/self-similar voice blocks, **40 measured trials each** plus separate practice. The agent knows the target; the participant discovers it through horizontal guidance to the correct wall, then within-wall up/down guidance, and selects with the **right controller ray + trigger**. Target identity stays out of participant speech/UI.

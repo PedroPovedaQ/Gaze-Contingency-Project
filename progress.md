@@ -1,5 +1,7 @@
 ## 2026-10-01 — overnight continuation
 
+- Added an original editable setup/session schematic (SVG, vector PDF, PNG, caption/alt text and builder) for #30, with 40+40, separate practice, hidden target and right-controller selection. Replaced stale table/dwell/old-count runtime and octagonal guides; historical generated artifacts are explicitly labeled stale and preserved. Removed the unsupported blanket accent claim from the run sheet; native compilation passes. Figure rendered and inspected; final venue sizing, protocol ordering and hardware/research acceptance remain open.
+
 - Verified the actual incomplete P020 source in both replay viewers: all 44 sampled/event cursor comparisons agree on original sample fields, source lines, freshness and 168 object positions. Original bytes remain unchanged; desktop/mobile pages were inspected. Fixed browser event jumps to preserve sequence boundaries, including multiple events at the same timestamp; both browser suites pass. P020 lacks the current gaze-link contract and matching video, so this is historical reconstruction evidence only.
 
 - Native full-session replay now seeks from saved trial snapshots while retaining absolute source lines. Full-prefix equivalence passed across 80 trials/exact boundaries/random rewinds. In the 652 MB synthetic fixture, 240 late/mid/early seeks improved from p95 111.6 ms to 1.35 ms; no GUI/headset performance claim. Reproduced and fixed missing selection-time object movements in both capture and reconstruction; full Unity integration passed. Saved reproducible benchmark evidence.
