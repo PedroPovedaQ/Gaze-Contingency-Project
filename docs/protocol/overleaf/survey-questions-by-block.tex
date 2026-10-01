@@ -1,5 +1,5 @@
 % Standalone researcher reference. Compile with pdfLaTeX.
-% Sources: three repository Qualtrics TXT drafts + run sheet + survey inventory v0.2.
+% Sources: three repository Qualtrics TXT drafts + run sheet + survey inventory v0.3.
 \documentclass[11pt,letterpaper]{article}
 \usepackage[margin=0.8in]{geometry}
 \usepackage[T1]{fontenc}
@@ -9,38 +9,40 @@
 \setlength{\parindent}{0pt}\setlength{\parskip}{5pt}\setlength{\headheight}{15pt}
 \setlist{nosep,leftmargin=*}
 \pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small Gaze Contingency Search Study}
-\fancyhead[R]{\small Questions by block / v0.1}\fancyfoot[C]{\thepage}
+\fancyhead[R]{\small Questions by block / v0.2}\fancyfoot[C]{\thepage}
 \newcommand{\note}[1]{\par{\small\color{gold}\textbf{Researcher note:} #1}\par}
 \newcommand{\qid}[1]{\par\smallskip\textbf{\texttt{#1}}\par}
 \begin{document}
 {\LARGE\bfseries Survey Questions by Study Block}\par
 {\color{gold}\rule{\linewidth}{1.5pt}}
-\textbf{Revision 0.1 --- September 27, 2026}
+\textbf{Revision 0.2 --- October 1, 2026}
 
-This companion to \path{survey-instruments.tex} includes every question in the three local Qualtrics drafts, followed by the newer protocol additions and proposed debrief questions. Exact draft wording is preserved so discrepancies can be reviewed. It is a researcher reference, not a final participant form or evidence of live survey deployment or IRB approval.
+This companion to \path{survey-instruments.tex} retains the transcribed questions from three earlier repository Qualtrics drafts, followed by the newer protocol additions and proposed debrief questions. Exact draft wording is preserved so discrepancies can be reviewed. It is a researcher reference, not a final participant form or evidence of live survey deployment or IRB approval.
 
-\textbf{Protocol proposal:} two counterbalanced voice blocks, \textbf{10 experimental trials each}, plus two separate practice trials. One block uses the participant-preferred neutral voice; the other uses the self-similar voice. \textbf{Block 1 is not always the neutral voice.} Record the actual voice condition and order for each participant.
+\textbf{Protocol proposal:} two counterbalanced voice blocks, \textbf{40 experimental trials each}, plus two separate practice trials. One block uses the participant-preferred neutral voice; the other uses the self-similar voice. \textbf{Block 1 is not always the neutral voice.} Record the actual voice condition and order for each participant.
 
-\textbf{Status key.} \emph{Existing draft} means present in a repository survey import file. \emph{Protocol proposal} means requested or proposed but not confirmed in those imports. \emph{Open decision} identifies wording, inclusion or response-format choices still to freeze. The full Guo bank is a candidate bank, not a decision to administer all 43 questions.
+\textbf{Status key.} \emph{Retained draft} means transcribed from an earlier repository survey import; the TXT imports are currently absent in this checkout and live forms are not verified. \emph{Protocol proposal} means requested or proposed but not confirmed in those imports. \emph{Open decision} identifies wording, inclusion or response-format choices still to freeze. The full Guo bank is a candidate bank, not a decision to administer all 43 questions.
+
+\textbf{Implemented locally; headset verification pending.} The app now schedules 40 trials per voice, plus two separate practice trials, and offers six voices per gender presentation. The target is hidden from the participant; the agent guides horizontal turning first, then vertical search within the correct wall. Both conditions use the same imperative guidance wording. Right-controller ray and trigger confirm selections. These runtime facts do not establish that any survey is published or that candidate ratings are collected.
 
 \section*{When each group is administered}
 \begin{tabularx}{\linewidth}{@{}p{0.20\linewidth}X@{}}\toprule
 Study stage & Questions and timing \\\midrule
 Before practice / both blocks & Baseline demographics and experience; own accent; agent accent/gender preference; candidate voice ratings and choice; baseline SSQ before headset exposure. See Sections 1--2.\\
 Practice & Two practice trials. No separate research questionnaire specified. Audio/comfort checks are procedural.\\
-After Block 1 & Repeat the post-block battery in Section 3, referring only to the first completed 10-trial voice block; record actual condition. Candidate bank in Section 4 only if selected.\\
-After Block 2 & Repeat the same post-block battery for the second completed 10-trial voice block; record its condition. Then proceed to the final survey.\\
+After Block 1 & Repeat the post-block battery in Section 3, referring only to the first completed 40-trial voice block; record actual condition. Candidate bank in Section 4 only if selected.\\
+After Block 2 & Repeat the same post-block battery for the second completed 40-trial voice block; record its condition. Then proceed to the final survey.\\
 After both blocks & Remove headset; post-exposure SSQ, safety checks, comparative voice preference and final debrief (Sections 5--6).\\\bottomrule
 \end{tabularx}
 
 Questionnaires and breaks occur outside active-search timing. No routine questionnaire is assigned after each individual trial. Collect NASA-TLX through one route, Unity \emph{or} Qualtrics, without duplicate administration. Full SSQ is scheduled before and after exposure, not after each block.
 
-\note{Qualtrics also calls questionnaire sections ``blocks.'' In this document, experimental Block 1 and Block 2 always mean the two voice conditions, each containing ten trials. Subheadings such as Workload are survey sections, not additional experimental blocks.}
+\note{Qualtrics also calls questionnaire sections ``blocks.'' In this document, experimental Block 1 and Block 2 always mean the two voice conditions, each containing forty trials. Subheadings such as Workload are survey sections, not additional experimental blocks.}
 \tableofcontents
 \clearpage
 
-\section{Before practice and both blocks: existing baseline draft}
-\textbf{Existing draft.} Administer once; these are not repeated after either voice block. Source: \path{01-baseline-pre-task.txt}.
+\section{Before practice and both blocks: retained baseline draft}
+\textbf{Retained draft.} Administer once; these are not repeated after either voice block. Source: \path{01-baseline-pre-task.txt}.
 \subsection{Study information and baseline}
 \qid{BASE\_INTRO}
 \textit{Survey instruction:} 
@@ -111,18 +113,18 @@ What gender presentation would you prefer for the agent's voice?
 \textit{Response / timing:} Before hearing/selecting candidates. Open decision: finalize survey choices and a no-preference response; record an unavailable preference separately from the options offered.
 \qid{SETUP\_AGENT\_ACCENT}
 What accent would you prefer the agent's voice to have?
-\textit{Response / timing:} Free text with an explicit no-preference option proposed. Record requested accent independently of the selected voice; current candidates are American-accent voices.
+\textit{Response / timing:} Free text with an explicit no-preference option proposed. Record requested accent independently of the selected voice; record the offered catalog and exact voice IDs separately; do not infer perceived or preferred accent from a voice name.
 \qid{SETUP\_CANDIDATE\_LIKING}
 How much do you like this voice?
 \textit{Response / timing:} Proposed wording for the requested 100-point rating, once per auditioned candidate. A 0--100 slider (0 = do not like at all; 100 = like extremely) is proposed, not finalized. Record voice ID and audition order. Rate the clone once available; do not confuse setup ratings with post-block ratings.
 \qid{SETUP\_CHOSEN\_VOICE}
 Which of these voices would you prefer to use for the task?
-\textit{Response / timing:} Current pilot selection: Eric or Roger in the male group; Janet or Sarah in the female group. Record exact chosen ID separately from requested accent and gender.
+\textit{Response / timing:} Implemented local catalog: Eric, Roger, Chris, Will, Brian and Liam in the male-presentation group; Janet, Sarah, Jessica, Matilda, Bella and Laura in the female-presentation group. Candidate rating collection remains separate unfinished work; a catalog entry or hover preview is not a rating. Record exact chosen ID separately from requested accent and gender.
 \qid{SETUP\_AUDIO\_CHECK}
 Can you hear the voice clearly and at a comfortable volume?
 \textit{Response / timing:} Procedural yes/no check after a sample; resolve audibility/volume before continuing, rather than treating this as a scale score.
-\clearpage\section{After Block 1 and again after Block 2: existing post-block draft}
-\textbf{Existing draft / proposed battery.} Reuse the same questions after each ten-trial voice block, always referring to the block just completed. Source: \path{02-post-voice-block.txt}. Identifiers below are researcher entries. Preserve participant/run ID, block number, actual voice ID/condition, order, and survey version.
+\clearpage\section{After Block 1 and again after Block 2: retained post-block draft}
+\textbf{Retained draft / proposed battery.} Reuse the same questions after each forty-trial voice block, always referring to the block just completed. Source: \path{02-post-voice-block.txt}. Identifiers below are researcher entries. Preserve participant/run ID, block number, actual voice ID/condition, order, and survey version.
 \subsection*{Requested additions to each post-block form}
 The following requested items supplement or replace older draft wording below; they are not yet confirmed in the imported survey.
 
@@ -141,6 +143,20 @@ What accent did the agent's voice in this block sound like to you?
 \qid{BLOCK\_PERCEIVED\_GENDER}
 How would you describe the gender presentation of the agent's voice in this block?
 \textit{Response / timing:} Proposed free text / unsure; inclusion and format remain open. Separate from preferred agent gender and participant identity.
+\subsection*{September 28 meeting additions: draft reliance items}
+\textbf{Protocol proposal; not a published or validated scale.} Ask the same wording after each block, referring to ``this voice/agent.'' Review overlap with the older experience bank before choosing a final subset.
+\qid{BLOCK\_WILLING\_TO\_FOLLOW}
+I was willing to follow instructions delivered by this voice.
+\qid{BLOCK\_RELIANCE}
+I relied on the agent's guidance to complete the task.
+\qid{BLOCK\_INDEPENDENT\_MOTIVATION}
+I was motivated to complete the task without the agent's guidance.
+\textit{Proposed response for each item:} 1--7 agreement, from strongly disagree to strongly agree. Preserve each answer separately; do not sum or reverse-key these as an established reliance scale.
+\qid{BLOCK\_GUIDANCE\_PERCENT}
+During what percentage of this block did you use the agent's guidance?
+\textit{Proposed response:} 0--100\%, with unable to estimate distinct from zero and skipped/declined. This replaces the draft absolute ``100\% of the time'' statement. Finalize the denominator and wording after piloting. This is estimated use, not measured compliance.
+\note{The hidden target makes guidance necessary for identification. Reported reliance or independence does not alone establish trust or performance. The unfinished semantic-differential note remains an open construct/endpoints decision; no endpoints are invented here. Retain item version, actual voice/block/order, response ID and missingness. Block answers repeated in trial exports remain one observation.}
+
 \subsection{Voice block identifiers}
 \qid{BLOCK\_INTRO}
 \textit{Survey instruction:} 
@@ -348,7 +364,7 @@ Please provide additional comments on your overall experience:
 \textit{Response:} Long free text.
 \note{Source Q43; open response after the block if this candidate bank is retained.}
 \clearpage\section{After both blocks: existing final survey}
-\textbf{Existing draft.} Administer once after the second block survey and headset removal. Repeat the same SSQ symptom wording and scale used at baseline. Source: \path{03-post-session.txt}.
+\textbf{Retained draft.} Administer once after the second block survey and headset removal. Repeat the same SSQ symptom wording and scale used at baseline. Source: \path{03-post-session.txt}.
 \subsection{Post-exposure safety}
 \qid{POST\_INTRO}
 \textit{Survey instruction:} 
@@ -414,7 +430,7 @@ Researcher notes from the semi-structured final interview (search strategy, usef
 \note{Researcher entry, not a question to display to participants. The proposed interview guide is in Section 6.}
 \textit{Response:} Long free text.
 \section{After both blocks: proposed exploratory debrief}
-\textbf{Protocol proposal.} Use this as a semi-structured guide, reconciling overlaps with the final survey above rather than asking duplicate questions. Start with open questions and then balanced probes. Exact branching and requiredness remain open. Responses concern the whole session, with voice/block references noted when relevant.
+\textbf{Protocol proposal.} Use this as a semi-structured guide, reconciling overlaps with the final survey above rather than asking duplicate questions. Start with open questions and then balanced probes. Deliver after both blocks and planned ratings, before explanatory debrief content that could prime answers. Exact branching, required core questions, time budget and notes-versus-recording method remain open. Responses concern the whole session, with participant/run and exact voice/block references noted. Do not collect the same answer again in the final survey; record not-asked, skipped/declined and answered separately.
 
 \qid{DEBRIEF\_01}
 How would you describe your experience with each voice?
@@ -426,13 +442,15 @@ What, if anything, did you notice about how the voices sounded in relation to yo
 Did either voice affect how you searched or how well you felt you performed? In what way, if any?
 \textit{Response / timing:} Open response / interviewer notes. Optional follow-up probes; perceived performance is distinct from measured performance.
 \qid{DEBRIEF\_04}
-What did you like or dislike about hearing the self-similar voice? Did it feel comfortable, uncomfortable, eerie, or neither? What contributed to that feeling?
+What did you like or dislike about the voice created from your recording?
+\textit{Optional probe after the open response:} Did anything feel comfortable, unfamiliar, strange or eerie, or did none of those descriptions fit? What made it feel that way?
 \textit{Response / timing:} Open response / interviewer notes. Optional follow-up probes; perceived performance is distinct from measured performance.
 \qid{DEBRIEF\_05}
 Which directions or correct-area messages were helpful or distracting? How did interruptions affect the experience?
 \textit{Response / timing:} Open response / interviewer notes. Optional follow-up probes; perceived performance is distinct from measured performance.
 \qid{DEBRIEF\_06}
-Can you imagine a useful application for a voice like your own? In which situations would you prefer your own voice, another voice, or no voice?
+Can you imagine any uses for a voice created from your own recording? If so, what would they be?
+\textit{Optional probe:} In which situations, if any, would you prefer that voice, another voice, or no voice assistance? Accept no use case or no preference; ask why after the open response.
 \textit{Response / timing:} Open response / interviewer notes. Optional follow-up probes; perceived performance is distinct from measured performance.
 \qid{DEBRIEF\_07}
 Did the voice creation or use raise any privacy or personal concerns? What would you change?
@@ -440,6 +458,7 @@ Did the voice creation or use raise any privacy or personal concerns? What would
 \qid{DEBRIEF\_08}
 Is there anything else about the voices or task that we should know?
 \textit{Response / timing:} Open response / interviewer notes. Optional follow-up probes; perceived performance is distinct from measured performance.
+\note{Optional later probe: did the voice feel like your own thoughts, another person, neither, or something else? Do not introduce that framing before the open answers or treat it as evidence of an internal-dialogue mechanism. Qualitative coding is exploratory: retain positive, negative, no-effect and contradictory cases, distinguish perceived from measured performance, and allow themes beyond the initial topics. Final coding and consent-compatible response capture require researcher review.}
 \section{Finalization and source map}
 \textbf{Open decisions before participant deployment:}
 \begin{itemize}
@@ -451,7 +470,7 @@ Is there anything else about the voices or task that we should know?
 
 \textbf{Not assigned to a current block:} IPQ remains on hold; MSSQ-Short and VIMSSQ-Short were discussed but adoption is unconfirmed; SUS and UEQ are outside the current battery. A separate eeriness index remains unresolved. They are not silently added here.
 
-\textbf{Data association:} baseline and final answers belong to the session; post-block answers belong to their actual block and condition. They may be repeated on trial CSV rows for joining, but repeated values remain one survey observation, not ten independent responses.
+\textbf{Data association:} baseline and final answers belong to the session; post-block answers belong to their actual block and condition. They may be repeated on trial CSV rows for joining, but repeated values remain one survey observation, not forty independent responses.
 
 \textbf{Instrument sources and detailed rationale:} see \path{survey-instruments.tex} in this Overleaf project, including original attributions for the Guo source bank. Key direct references:
 \begin{itemize}
@@ -463,7 +482,7 @@ Is there anything else about the voices or task that we should know?
 
 \textbf{Local source files:} the three imports under \path{resources/surveys/qualtrics/}; \path{docs/protocol/overleaf/experimenter-run-sheet.tex}; \path{docs/protocol/overleaf/survey-instruments.tex}; and \path{docs/measures-register.md}. All were reviewed September 27, 2026. Draft question IDs are retained for traceability. New SETUP, BLOCK and DEBRIEF IDs are proposals only.
 
-\textbf{Existing draft builders (live contents not verified):}
+\textbf{Retained draft builders (live contents not verified):}
 \begin{itemize}
 \item \href{https://ucf.yul1.qualtrics.com/survey-builder/SV_5u2FpCk1228bfPE/edit}{Baseline / pre-task}.
 \item \href{https://ucf.yul1.qualtrics.com/survey-builder/SV_cwsLpEVffEIo9SK/edit}{Post-voice-block}, reused after each condition.

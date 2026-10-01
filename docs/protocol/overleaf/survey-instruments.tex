@@ -18,7 +18,7 @@
 \setlist{nosep,leftmargin=*}
 \pagestyle{fancy}\fancyhf{}
 \fancyhead[L]{\small Gaze Contingency Search Study}
-\fancyhead[R]{\small Survey inventory v0.2}
+\fancyhead[R]{\small Survey inventory v0.3}
 \fancyfoot[C]{\thepage}
 \newcommand{\proposal}{\textbf{Protocol proposal.} }
 \newcommand{\decision}{\textbf{Open decision.} }
@@ -27,11 +27,11 @@
 \begin{document}
 {\Large\bfseries Survey Inventory and Source Papers}\par
 {\color{gold}\rule{\linewidth}{1.5pt}}
-\textbf{Revision:} 0.2, September 27, 2026\hfill\textbf{Purpose:} protocol and Qualtrics planning
+\textbf{Revision:} 0.3, October 1, 2026\hfill\textbf{Purpose:} protocol and Qualtrics planning
 
 This document identifies the questionnaires in our study plan, their source papers, their intended timing, and the adaptations still requiring a decision. It is a researcher reference, not the final participant questionnaire or a statement of IRB approval.
 
-\proposal The current run sheet specifies two voice blocks: participant-preferred voice and self-similar voice, with 10 experimental trials per block and separate practice. Surveys will refer to the just-completed \emph{voice block}, not an individual trial. Older documents referring to 30 trials per voice, generic voice, or gaze-aware versus gaze-unaware comparisons need reconciliation.
+\proposal The current run sheet specifies two voice blocks: participant-preferred voice and self-similar voice, with 40 experimental trials per block (80 measured trials total) and two separate practice trials. Surveys will refer to the just-completed \emph{voice block}, not an individual trial. The locally implemented schedule matches 40+40; headset verification remains pending. Older 10- or 30-trial-per-voice designs and gaze-aware versus gaze-unaware comparisons are historical. The participant does not know the target identity; both voices use matched imperative guidance, horizontal first and then vertical. Voice menu selection offers six options per gender presentation, while per-candidate rating collection remains unfinished.
 
 \textbf{Status language.} ``Include'' records a study-planning decision; it does not establish that a live survey is deployed. ``Proposed'' marks timing, scoring or wording still being finalized. Published-source claims are cited separately from our choices.
 
@@ -132,7 +132,12 @@ Save each offered voice's exact ID and presentation order, the participant's pre
 \end{itemize}
 Use separate 1--7 Likert responses, with final anchors frozen in the questionnaire. Collect the requested liking rating for each voice, including the self-similar voice, using the same agreed scale. A low similarity rating does not automatically exclude a participant.
 
-\proposal Candidate additional single-item topics are familiarity, naturalness, helpfulness, comfort, distraction, trust, reliance, responsiveness and appropriateness. Prune overlap with Guo before adding them all. Do not sum these into a validated ``voice quality'' scale. If hint-specific items are retained, refer to current left/right guidance and the correct-area cue; older warmer/colder wording is stale.
+\proposal Candidate additional single-item topics are familiarity, naturalness, helpfulness, comfort, distraction, trust, reliance, responsiveness and appropriateness. Prune overlap with Guo before adding them all. Do not sum these into a validated ``voice quality'' scale. If hint-specific items are retained, refer to current horizontal-then-vertical guidance and the correct-area cue; older warmer/colder wording is stale.
+
+\subsection{Meeting-requested reliance items}
+\proposal Review these separate custom items after each block, with identical wording and voice-neutral framing: ``I was willing to follow instructions delivered by this voice''; ``I relied on the agent's guidance to complete the task''; and ``I was motivated to complete the task without the agent's guidance.'' Proposed anchors are 1--7, strongly disagree to strongly agree. Do not aggregate or reverse-key them as a validated scale.
+
+A proposed percentage item asks ``During what percentage of this block did you use the agent's guidance?'' with 0--100\% and unable to estimate, distinct from zero or skipped/declined. It replaces the absolute ``100\% of the time'' statement. \decision Pilot and freeze the denominator/wording, overlap with existing items, analysis role and total burden. The unfinished semantic-differential note needs a construct and endpoints before inclusion. Because target identity is hidden, self-reported reliance does not by itself establish trust, compliance or measured performance. Proposed item IDs and response provenance are in \path{survey-questions-by-block.tex}.
 
 \subsection{Technical checks and final preference}
 \proposal After each block, record inaudible, delayed, cut-off or wrong-voice audio, other interruptions and breaks, with notes. Distinguish intentional correct-area speech interruptions from audio faults. These are quality flags, not a psychometric scale.
@@ -140,18 +145,18 @@ Use separate 1--7 Likert responses, with final anchors frozen in the questionnai
 After both blocks, ask which voice the participant preferred: participant-preferred voice, self-similar voice, no preference, or unsure, followed by why. Use neutral participant-facing voice labels that match the actual session. Do not retain old gaze-aware versus gaze-unaware answer options.
 
 \subsection{Semi-structured debrief: proposed guide}
-Begin openly, then use balanced probes. These are our questions, not quoted survey items from a paper.
+Deliver after both blocks and planned ratings, before explanatory debrief content. Begin openly, then use balanced optional probes. These are our questions, not quoted survey items from a paper. The core subset, order, time budget and consent-compatible notes/recording method remain open; do not duplicate collection in the final survey.
 \begin{enumerate}
 \item How would you describe your experience with each voice?
 \item What, if anything, did you notice about how the voices sounded in relation to your own voice?
 \item Did either voice affect how you searched or how well you felt you performed? In what way, if any?
-\item What did you like or dislike about hearing the self-similar voice? Did it feel comfortable, uncomfortable, eerie, or neither? What contributed to that feeling?
+\item What did you like or dislike about the voice created from your recording? After the open answer, optionally ask whether comfortable, unfamiliar, strange, eerie or none of those descriptions fit, and why.
 \item Which directions or correct-area messages were helpful or distracting? How did interruptions affect the experience?
-\item Can you imagine a useful application for a voice like your own? In which situations would you prefer your own voice, another voice, or no voice?
+\item Can you imagine any uses for a voice created from your own recording? Accept no use case. In which situations, if any, would you prefer that voice, another voice, or no voice assistance, and why?
 \item Did the voice creation or use raise any privacy or personal concerns? What would you change?
 \item Is there anything else about the voices or task that we should know?
 \end{enumerate}
-An optional internal-dialogue/own-thought probe remains exploratory and should follow the open responses. Analyze debrief responses qualitatively. Perceived performance effects are distinct from measured task performance.
+An optional internal-dialogue/own-thought probe remains exploratory and should follow the open responses. Analyze debrief responses qualitatively, retaining positive, negative, no-effect and contradictory cases and allowing emergent themes. Preserve participant/run, guide/item version and relevant voice IDs; distinguish not-asked, skipped/declined and answered. Perceived performance effects are distinct from measured task performance. Final qualitative coding remains researcher-defined.
 
 \section{Discussed measures outside the current battery}
 \begin{description}[style=nextline]
