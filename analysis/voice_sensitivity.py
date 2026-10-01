@@ -163,7 +163,7 @@ def simulate(config, scenario, n, m, ratio, seed):
 
 def write_csv(path, rows):
     with path.open('w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=list(rows[0])); writer.writeheader()
+        writer = csv.DictWriter(file, fieldnames=list(rows[0]), lineterminator='\n'); writer.writeheader()
         for row in rows:
             writer.writerow({k:json.dumps(v) if isinstance(v,list) else v for k,v in row.items()})
 

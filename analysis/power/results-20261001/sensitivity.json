@@ -2,7 +2,7 @@
   "version": "voice-sensitivity-proposal-v1",
   "status": "protocol_proposal_synthetic_assumptions_not_final_sample_size",
   "configuration_sha256": "17a7142ce272e05cd1812f9a2187c315b2bcb8f61eb5d82eeb024819d7a20b2c",
-  "script_sha256": "ba991f39ff15d49a3b1f22172f4bee49922f175d0540457b8a42e93e591e8d3e",
+  "script_sha256": "cdf95c04014d4621f7b2b5112f22e13ee28e6ee7af223a7c5b06f7df97ea9305",
   "python": "3.13.5",
   "numpy": "2.5.2",
   "scipy": "1.18.0",
