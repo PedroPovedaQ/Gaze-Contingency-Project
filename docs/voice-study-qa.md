@@ -1,52 +1,54 @@
-# Two-voice study QA
+# Two-voice study QA — current local build
 
-**Implemented, awaiting headset QA.** The experimental factor is neutral versus self-similar voice; guidance is always gaze-contingent. The session has two practice trials (one in each assigned voice), followed by 14 experimental trials in two blocks of seven. The seeded experimental stimuli are unchanged.
+**Implemented locally; headset verification pending (October 1, 2026).** Compare participant-preferred and self-similar voices with the same gaze-contingent imperative guidance. There are two separate practice trials, then **40 measured trials per voice / 80 total**. The agent knows the hidden target; the participant follows directions and selects using the right controller. This checklist supersedes older 14-trial, first-person, button-shortcut and countdown instructions.
 
 ## Run the complete flow
 
-1. Connect the Focus Vision and use `scripts/refocus-unity-and-build-device.sh`. Supply the existing development provider configuration on the device. No credentials are included in this checkout.
-2. Dismiss headset notices, release the controller buttons, then point at and click **Start setup**. A global trigger press must not skip this screen or select a voice. Choose the participant's neutral profile: Trigger / 1 for male (Eric), A/X / 2 for female (Rachel). Self-similar recording follows. After reading the passage, click **Finish recording** below it or press Trigger / 1 to submit early; only captured audio is submitted. The button activates after one second of audio, and recording still stops automatically at the configured limit. Both providers must be available for initial preparation.
-3. Wait for the complete phrase library to prepare in both voices. Accept each audio sample only after it finishes; A/X / 2 replays it; B/Y / 3 restarts voice setup if the sample is unacceptable. Check identity, intelligibility, comfortable loudness and approximate pacing. Silence or incorrect identity is a failed QA result.
-4. Complete both practice trials and confirm the practice checkpoint. Practice does not count toward the 14 experimental trials.
-5. Complete seven trials, submit the block-1 NASA-TLX, take a break, and confirm the next block. Verify a voice change with the same gaze-contingent policy. Complete the next seven and submit block-2 NASA-TLX.
-6. Repeat with the other neutral profile and an opposite-parity coded participant ID. Odd IDs start neutral; even IDs start self-similar. The saved `voice-order-v1.txt` and `neutral-profile-v1.txt` control subsequent runs for that ID. Track incomplete enrollments separately: ID parity balances assigned order, not necessarily completed sessions. A restart requires new enrollment and a new run, not a replacement block.
+1. Connect the Focus Vision, unlock the computer and open the intended Unity project. Run `scripts/refocus-unity-and-build-device.sh`; verify actual installation and launch, not merely successful menu dispatch. Keep the left controller off. Provider configuration is local/ignored and must not enter Git or reports.
+2. Dismiss headset notices, release the trigger and use the right ray to select **Start setup**. A held or untargeted trigger must not advance. Choose the participant's preferred agent gender presentation, then hover over each voice card to audition. Trigger-select a card and choose **Confirm** after its sample finishes. Check all six cards per gender and the selected border; see [catalog](voice-choices.md).
+3. Use a consented/authorized pilot recording to check enrollment. The recording introduction and a short tone precede microphone capture; there must be **no 3–2–1 countdown**. Read naturally. **Finish recording** becomes available after one second and submits only captured audio; automatic timeout remains. Processing screens show **Loading...**. Do not upload a participant recording just to run this checklist without the required authorization.
+4. Accept both starter audio samples with the right-ray **Accept audio** button after playback. Test **Replay**, retry and re-record paths. Check identity, intelligibility, comfortable loudness and pacing; silence or wrong identity fails QA. Remaining phrases load progressively and may require on-demand preparation. Starter readiness does not establish a fully offline library.
+5. Fit the headset and run vendor calibration, then independent validation/drift checks in [gaze validation](gaze-measurement-validation.md). Complete two practice trials, one per voice. Confirm right-ray highlighting, one entry haptic pulse, trigger-release/re-press selection, wrong-choice continuation and correct-choice chime/varied reinforcement. Looking alone must never select.
+6. Complete 40 measured trials, submit the block survey, rest and continue explicitly. Verify the voice changes for the next 40 with unchanged wording/policy. The previous-wall readiness cross and non-identifying announcement must finish before object reveal/search timing. Neither speech nor participant UI may name the target's color/shape.
+7. Repeat assignment checks with the other voice order and saved participant preference. Saved order/voice choices control reuse of an ID; parity alone does not establish the observed order. A restart is a new run, never a replacement block combined with another run. Short debug sessions do not establish full 80-trial completion.
 
 ## Failure and timing checks
 
-| Scenario | Expected behavior |
+| Scenario | Expected behavior / evidence |
 |---|---|
-| Missing provider key or failed enrollment | Task cannot start; retry/re-record or cancel is explicit. |
-| Corrupt cached MP3 during preparation | Readiness fails; corrupt decode file is removed for regeneration on retry. No wrong-voice fallback. |
-| Disconnect network after both libraries are ready | Prepared speech continues offline. No synthesis request is needed during trials. |
-| Hold the selection/confirmation trigger | A held button cannot skip a checkpoint. |
-| Look at target during its announcement | Objects are hidden; search capture/timing begin only after announcement completion and object setup. |
-| Press P in Editor or invoke `PauseSession()` | Objects hide, speech/dwell stop, and search time stops accumulating. Confirm checkpoint / `ResumeSession()` to resume. |
-| Set a short timeout in the Inspector for a dedicated QA session | Session stops as timeout without replacement trials. Timeout is disabled (0) by default until the protocol sets a ceiling. |
-| Escape in Editor / `WithdrawSession()` | Incomplete summary records withdrawal; completed trials remain intact. |
-| Missing prepared phrase / playback failure | Technical stop, logged failure, no substitution. |
-| Headset/application interruption | Search pauses, or transition stops technically; no silent continuation. |
+| Missing key, verification-required clone or failed enrollment | Explicit retry/cancel or technical failure; no wrong-voice fallback. |
+| Corrupt prepared audio | Decode/preparation failure is visible; retry does not silently use another voice. |
+| Network disconnect | Already prepared clips can play; unavailable background/on-demand clips can still fail. Record readiness and failure rather than promising offline operation from starter acceptance. |
+| Hold trigger through a checkpoint | A held button cannot skip it; release and target the button before confirming. |
+| Readiness and introduction | Objects remain hidden until valid readiness gaze and non-identifying speech finish; search time starts at reveal. |
+| Open Settings during readiness/search | Search/readiness pauses, objects hide and speech stops. Closing settings leaves explicit Continue; it must not auto-resume. |
+| Pause / application interruption | Active-search time excludes the pause; recording retains pause/resume markers. Verify on-device interruption and durability. |
+| Invalid/stale gaze, blink or tracking loss | New direction decisions suspend; stale tips cancel; recovery must not invent a wall exit/arrival. |
+| Look up/down within the same wall | No repeated area-entry cue merely because elevation changes. Fine horizontal alignment precedes vertical guidance. |
+| Overshoot or wall-boundary jitter | Relevant return/updated cue without old-direction speech continuing. Verify actual sound and recorded decisions. |
+| Wrong / correct selection | Wrong selection retains the search without revealing target identity; success feedback finishes before transition. |
+| Dedicated QA timeout / withdrawal | Retain incomplete outcomes and completed trials; no silent replacements. Timeout remains disabled by default pending protocol choice. |
+| Repeat guidance | Separate requested and delivered-repeat events; repeats do not disclose the hidden target. |
 
-**Implemented controls:** researcher methods are available on `FindObjectGameManager`; `StudyCheckpoint.Confirm()` is the programmatic equivalent of the confirmation button. The UI is not an access-control boundary.
+`StudyCheckpoint.Confirm()` and manager pause/resume methods support programmatic tests. The participant UI is not an access-control boundary. Physical ray/haptic/voice timing still needs the headset.
 
 ## Inspect the exported run
 
-Pull the entire run directory from `GazeData/Pnnn/`, then run:
+Pull the entire coded run directory plus its linked `EyeMeasurements` and `GazeReplays` folders. Preserve originals, then run:
 
 ```sh
 python3 scripts/verify-study-session.py /absolute/path/to/run_folder
-# For a deliberately interrupted session:
+# A deliberately interrupted session requires explicit incomplete mode:
 python3 scripts/verify-study-session.py /absolute/path/to/run_folder --allow-incomplete
-scripts/run-analysis-pipeline.sh --data-dir /absolute/path/to/GazeData --no-pull
+python3 analysis/trial_csv.py /absolute/path/to/run_folder --replays /absolute/path/to/GazeReplays --output /absolute/path/to/new-trial-export
+python3 analysis/eye_quality.py /absolute/path/to/gaze_observations.jsonl --out /absolute/path/to/new-eye-report
+python3 analysis/guidance_audit.py --eye /absolute/path/to/gaze_observations.jsonl --replay /absolute/path/to/recording.jsonl --out /absolute/path/to/new-guidance-audit
 ```
 
-Expected artifacts: `trial_summary.json` (schema 2), `trial_events.csv`, `object_manifest.csv`, `gaze_log.csv`, a run-specific copy of `voice-library-manifest.json`, and `nasa_tlx.csv` with block/run identifiers. Search events distinguish transition, objects-ready, search onset, pauses, capture and technical stop. Audio events carry clip IDs and playback start/end calls; these are software timestamps, not measured acoustic onset at the ear. Repeated distractors have distinct object IDs.
+Inspect `trial_summary.json`, `trial_schedule.csv`, `trial_events.csv`, `object_manifest.csv`, compatibility `gaze_log.csv`, the voice-library manifest, surveys and linked raw/replay files. The current layout contains 168 uniquely identified objects per trial. A complete 80-row planned schedule is not proof that 80 trials were actually performed. Verify outcomes, timing, source completeness and exact participant/run/block/trial joins. Guidance software timestamps do not establish acoustic onset.
 
-The validator checks assigned voices against playback manifests, complete phrase sets, 56 distinct objects/one target per trial, and search duration against events. Analysis exports `voice_block_metrics.csv` and `voice_pair_differences.csv`; only complete 14-trial runs contribute paired differences. Excluded/incomplete runs are listed in `voice_pair_exclusions.csv`. These are descriptive QA outputs, not a confirmatory test.
+The per-trial exporter creates one performance/subjective CSV per trial plus a combined table and provenance manifest; reconstruction streams remain separate. Repeated block survey responses retain block scope. Analysis pairs only complete runs using their recorded schedule; historical 7+7 records retain their original rule. These are descriptive QA outputs, not confirmatory power or outcome tests.
 
 ## Remaining empirical decisions
 
-**Protocol proposal / open validation:** self-similar prompts use first-person plural phrasing while neutral prompts retain their existing wording. Both voice conditions use one common achieved RMS level across both libraries (up to -20 dBFS, lowered for the worst-case peak headroom) and fixed playback rate; both now use ElevenLabs `eleven_turbo_v2_5`, with different voice identities and a clone-only audio treatment. Prosody, perceived loudness, neutrality and self-similarity are not established by normalization and require the listening checks above. Final sample size, trial timeout, spatial/theta mechanics, cloud retention/deletion and the full protocol packet remain separate research work. No institutional approval is implied by implementation.
-
-**Implemented — setup and wording QA:** after enrollment, hear "Processing voice" before library preparation and a completion declaration before the neutral audio check. Confirm the self-similar target, practice declaration, warm/cold hints, congratulations, introduction and closing all use first-person plural language. Confirm that neutral speech retains its existing wording. Voice identity and wording now vary together.
-
-**Implemented — recording cue QA:** before enrollment, the selected neutral voice says "We will now connect a short sample of your voice, after the tone please read the script." After microphone permission is resolved, a three-second countdown and short tone precede capture. Confirm the announcement and tone are audible, recording begins after the tone, and Finish recording still ends the sample early.
+**Protocol proposal / open validation.** Both voices use ElevenLabs `eleven_turbo_v2_5` and shared participant-directed wording. The clone-only audio treatment remains and can affect prosody; amplitude matching does not establish perceived loudness, similarity or a pure voice-identity manipulation. Confirm every prepared prompt and success variant by listening. Final instruments, sample size/power, 40+40 burden, timeout, signed-height reference/quotas and consent/cloud lifecycle need research decisions. Native 120 Hz, task-wide accuracy, independent eye-event validation and pupil/workload interpretation remain open. Local checks do not establish institutional approval or participant readiness.

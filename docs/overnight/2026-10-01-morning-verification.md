@@ -1,6 +1,6 @@
 # Overnight work and morning verification — October 1, 2026
 
-Latest verified state: Android APK includes the diagnostic-panel clearance fix; 95 Python tests passed. Local analysis commits: `64d8325`, `932f516`; runtime commit: `77f85f6` (fresh Unity compile hook passed). No device install or hardware acceptance. See the latest checkpoint at the end for the current artifact fingerprint.
+Latest verified state: Android APK includes the diagnostic-panel clearance fix; 103 Python tests passed. Local analysis commits: `64d8325`, `932f516`; runtime commit: `77f85f6` (fresh Unity compile hook passed). No device install or hardware acceptance. See the latest checkpoint at the end for the current artifact fingerprint.
 
 Status: work in progress. This report is updated during the overnight run ending at 06:00 America/New_York. It is not study approval or hardware acceptance.
 
@@ -115,3 +115,15 @@ Analysis tools/tests/README are committed locally as `64d8325` (`feat(analysis):
 The existing open run sheet now reflects 40+40 measured trials, two separate practice trials, hidden-target guidance, six choices per gender, shared imperative wording, right-controller controls and current previous-wall readiness. Built-in LaTeX compilation passed. Independent gaze validation is a pilot procedure; signed-height balancing and formal research decisions remain explicitly open. The procedure register now identifies old first-person, 14-trial, fixed-front and offline-provider designs as historical. GitHub #27 was updated and read back; live Overleaf/Qualtrics and submission artifacts are not synchronized by this local edit.
 
 Runtime checkpoint `77f85f6` contains 81 explicitly selected files and passed a fresh Unity compile hook. Unrelated deletions and generated ProjectSettings changes were excluded. No remote branch was pushed.
+
+## Graphical Unity / deployment attempt
+
+Opened `/tmp/gaze-v2-project-update-20260922` in Unity (editor log `/tmp/gaze-unity-morning-editor.log`). `refocus-unity-and-build-device.sh` ran and exited 1: System Events could not obtain Unity's menu bar. Computer-use inspection reported the Mac locked; do not infer a missing Accessibility grant from the helper's generic message. ADB returned no connected devices. Unlock/connect in the morning and run again. The existing offline APK packaging success remains separate; no installation or launch is claimed. Graphical Unity remains running for morning use.
+
+Updated `docs/voice-study-qa.md` to remove stale 14-trial, first-person, shortcut, countdown and fully-offline-from-starter-readiness claims. Next offline work: strengthen `verify-study-session.py` completion and event-order validation; inspection found that a `completed` session can currently skip records marked incomplete and NaN timing can evade a numeric-difference check. These are identified next actions, not yet repaired.
+
+## Session integrity verifier — 103 tests passing
+
+Reproduced and repaired false passes for completed sessions containing unfinished/duplicate trials, contradictory outcomes, NaN/missing/negative timing, malformed metadata and impossible pause/resume sequences. Readiness pauses no longer enter search duration. Interrupted records still undergo timing and voice checks. Full 80-trial/168-object fixtures pass in both voice orders; legacy behavior is retained. CLI success/failure paths are tested. Log: `/tmp/gaze-python-session-integrity-final.log`. This is offline recording consistency, not full device acceptance.
+
+Follow-up discovered during review: `TrialDataLogger.OnSessionStopped` overwrites the last trial's outcome even when correct capture has already completed it. A stop during success speech should preserve the completed trial and mark the session stopped separately. Reproduce/fix this runtime case next; do not treat the new validator's rejection as evidence that the record should be silently repaired.

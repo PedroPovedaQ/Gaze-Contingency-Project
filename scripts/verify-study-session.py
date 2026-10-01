@@ -3,6 +3,7 @@
 import argparse
 import csv
 import json
+import math
 from collections import Counter
 from pathlib import Path
 
@@ -95,6 +96,69 @@ def clip_condition(clip):
     return clip.get("voice_condition") or {"elevenlabs": "neutral", "mistral": "selfsimilar"}.get(clip.get("provider"))
 
 
+def finite_time(value):
+    """CSV numbers may be strings; JSON booleans are never measured seconds."""
+    if value is None or isinstance(value, bool):
+        return False
+    try:
+        return math.isfinite(float(value)) and float(value) >= 0
+    except (TypeError, ValueError, OverflowError):
+        return False
+
+
+def completed_trial_timing(record, events):
+    """Use the event sequence to delimit active search, excluding readiness pauses."""
+    trial = record["trial_id"]
+    errors = []
+    for key in ("objects_ready_at", "time_to_find_seconds"):
+        if not finite_time(record.get(key)):
+            errors.append(f"{trial}: invalid {key}")
+    if any(not finite_time(e.get("timestamp")) for e in events):
+        errors.append(f"{trial}: invalid event timestamp")
+    if errors:
+        return errors
+    times = [float(e["timestamp"]) for e in events]
+    if any(later < earlier for earlier, later in zip(times, times[1:])):
+        return [f"{trial}: event timestamps are out of order"]
+    starts = [i for i, e in enumerate(events) if e["event_type"] == "search_start"]
+    ends = [i for i, e in enumerate(events) if e["event_type"] == "capture_correct"]
+    if len(starts) != 1 or len(ends) != 1 or starts[0] >= ends[0]:
+        return [f"{trial}: missing/duplicate or reversed onset/capture"]
+    start, end = starts[0], ends[0]
+    announcements = [i for i, e in enumerate(events) if e["event_type"] == "audio_playback_end"
+                     and "context=round;" in e["detail"]]
+    if not announcements or max(announcements) >= start:
+        errors.append(f"{trial}: missing completed announcement before search")
+    if times[start] < float(record["objects_ready_at"]):
+        errors.append(f"{trial}: search started before objects ready")
+    # Readiness may pause using the same named events. Only the search interval
+    # contributes to active duration; success/transition events are outside it.
+    active, elapsed = times[start], 0.0
+    for index in range(start + 1, end):
+        kind, timestamp = events[index]["event_type"], times[index]
+        if kind == "search_paused":
+            if active is None:
+                errors.append(f"{trial}: duplicate search pause")
+            else:
+                elapsed += timestamp - active
+                active = None
+        elif kind == "search_resumed":
+            if active is not None:
+                errors.append(f"{trial}: search resumed without a pause")
+            else:
+                active = timestamp
+    if active is None:
+        errors.append(f"{trial}: capture occurred while search was paused")
+    else:
+        elapsed += times[end] - active
+    if abs(elapsed - float(record["time_to_find_seconds"])) > 0.03:
+        errors.append(f"{trial}: search duration disagrees with events")
+    for key, actual in (("search_started_at", times[start]), ("capture_at", times[end])):
+        if key in record and (not finite_time(record[key]) or abs(float(record[key]) - actual) > 0.03):
+            errors.append(f"{trial}: {key} disagrees with events")
+    return errors
+
+
 def validate(folder, allow_incomplete=False):
     errors = []
     summary = json.loads((folder / "trial_summary.json").read_text(encoding="utf-8-sig"))
@@ -105,15 +169,41 @@ def validate(folder, allow_incomplete=False):
     if not allow_incomplete and summary.get("session_outcome") != "completed":
         errors.append("Session is incomplete")
     expected_trials = summary.get("total_rounds", 14)
-    if not allow_incomplete and len(records) != expected_trials:
+    if type(expected_trials) is not int or expected_trials <= 0:
+        return errors + ["Invalid total_rounds"]
+    claims_complete = summary.get("session_outcome") == "completed"
+    if (claims_complete or not allow_incomplete) and len(records) != expected_trials:
         errors.append(f"Expected {expected_trials} experimental trials")
+    indices, trial_ids = set(), set()
+    for record in records:
+        index, trial = record.get("index"), record.get("trial_id")
+        if type(index) is not int or not 0 <= index < expected_trials or index in indices:
+            errors.append("Invalid or duplicate trial index")
+        else:
+            indices.add(index)
+        if not isinstance(trial, str) or not trial.strip() or trial in trial_ids:
+            errors.append("Missing or duplicate trial identity")
+        else:
+            trial_ids.add(trial)
+        completed = record.get("completed")
+        if type(completed) is not bool:
+            errors.append(f"{trial}: completed must be boolean")
+        if claims_complete and completed is not True:
+            errors.append(f"{trial}: completed session contains an unfinished trial")
+        if "outcome" in record and ((record["outcome"] == "completed") != (completed is True)):
+            errors.append(f"{trial}: completion flag and outcome disagree")
+    if any(type(record.get("index")) is not int for record in records):
+        return errors  # Cannot safely derive voice blocks from malformed indices.
     with (folder / "trial_events.csv").open(encoding="utf-8-sig", newline="") as file:
         events = list(csv.DictReader(file))
     objects = []
     if (folder / "object_manifest.csv").exists():
         with (folder / "object_manifest.csv").open(encoding="utf-8-sig", newline="") as file:
             objects = list(csv.DictReader(file))
-    clips = {clip["clip_id"]: clip for clip in json.loads((folder / "voice-library-manifest.json").read_text())["clips"]}
+    clip_rows = json.loads((folder / "voice-library-manifest.json").read_text())["clips"]
+    clips = {clip["clip_id"]: clip for clip in clip_rows}
+    if len(clips) != len(clip_rows) or any(not isinstance(key, str) or not key for key in clips):
+        errors.append("Missing or duplicate voice clip identity")
     sets = {}
     for clip in clips.values():
         sets.setdefault(clip_condition(clip), set()).add(clip["text"])
@@ -125,42 +215,21 @@ def validate(folder, allow_incomplete=False):
         (shared_commands or not explicit_conditions) and sets.get("neutral") != sets.get("selfsimilar")
     ):
         errors.append("Voice phrase sets differ or are empty")
+    if summary.get("voice_order") not in ("neutral_then_selfsimilar", "selfsimilar_then_neutral"):
+        return errors + ["Invalid voice order"]
     neutral_first = summary["voice_order"] == "neutral_then_selfsimilar"
     neutral_id = summary.get("neutral_voice_id") or {"male": "cjVigY5qzO86Huf0OWal", "female": "21m00Tcm4TlvDq8ikWAM"}[summary["neutral_voice_profile"]]
     rounds_per_block = summary.get("rounds_per_block", 7)
     objects_per_round = summary.get("objects_per_round", 56)
+    if type(rounds_per_block) is not int or rounds_per_block <= 0 or type(objects_per_round) is not int or objects_per_round <= 0:
+        return errors + ["Invalid block or object count"]
     for record in records:
         trial = record["trial_id"]
         neutral = (record["index"] < rounds_per_block) == neutral_first
         expected = "neutral-" + summary["neutral_voice_profile"] if neutral else "selfsimilar"
         if record["voice_condition"] != expected:
             errors.append(f"{trial}: wrong voice assignment")
-        if not record["completed"]:
-            continue
         trial_events = [event for event in events if event["trial_id"] == trial]
-        starts = [float(event["timestamp"]) for event in trial_events if event["event_type"] == "search_start"]
-        ends = [float(event["timestamp"]) for event in trial_events if event["event_type"] == "capture_correct"]
-        announcements = [float(event["timestamp"]) for event in trial_events
-                         if event["event_type"] == "audio_playback_end" and "context=round;" in event["detail"]]
-        if len(starts) != 1 or len(ends) != 1 or not announcements:
-            errors.append(f"{trial}: missing/duplicate onset, capture or completed announcement")
-            continue
-        if starts[0] < max(record["objects_ready_at"], announcements[-1]):
-            errors.append(f"{trial}: search started before objects/announcement ready")
-        active, elapsed = starts[0], 0.0
-        for event in trial_events:
-            if event["event_type"] == "search_paused" and active is not None:
-                elapsed += float(event["timestamp"]) - active
-                active = None
-            elif event["event_type"] == "search_resumed":
-                active = float(event["timestamp"])
-        if active is not None:
-            elapsed += ends[0] - active
-        if abs(elapsed - record["time_to_find_seconds"]) > 0.03:
-            errors.append(f"{trial}: search duration disagrees with events")
-        trial_objects = [obj for obj in objects if obj["trial_id"] == trial]
-        if len(trial_objects) != objects_per_round or len({obj["object_id"] for obj in trial_objects}) != objects_per_round or sum(obj["is_target"] == "1" for obj in trial_objects) != 1:
-            errors.append(f"{trial}: expected {objects_per_round} unique objects and one target")
         for event in trial_events:
             if event["event_type"] != "audio_playback_start":
                 continue
@@ -168,6 +237,20 @@ def validate(folder, allow_incomplete=False):
             clip = clips.get(details.get("clip_id"))
             if not clip or clip_condition(clip) != ("neutral" if neutral else "selfsimilar") or (neutral and clip["voice_id"] != neutral_id):
                 errors.append(f"{trial}: playback identity disagrees with assignment")
+        if record.get("completed") is not True:
+            if any(e["event_type"] == "capture_correct" for e in trial_events):
+                errors.append(f"{trial}: unfinished trial contains a correct capture")
+            if any(not finite_time(e.get("timestamp")) for e in trial_events):
+                errors.append(f"{trial}: invalid event timestamp")
+            else:
+                times = [float(e["timestamp"]) for e in trial_events]
+                if any(b < a for a, b in zip(times, times[1:])):
+                    errors.append(f"{trial}: event timestamps are out of order")
+            continue
+        errors.extend(completed_trial_timing(record, trial_events))
+        trial_objects = [obj for obj in objects if obj["trial_id"] == trial]
+        if len(trial_objects) != objects_per_round or len({obj["object_id"] for obj in trial_objects}) != objects_per_round or sum(obj["is_target"] == "1" for obj in trial_objects) != 1:
+            errors.append(f"{trial}: expected {objects_per_round} unique objects and one target")
     return errors
 
 
@@ -178,7 +261,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     try:
         failures = validate(args.run_folder, args.allow_incomplete)
-    except (OSError, ValueError, KeyError) as error:
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
         failures = [str(error)]
     for failure in failures:
         print("FAIL:", failure)

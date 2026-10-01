@@ -1,5 +1,9 @@
 ## 2026-10-01 — overnight continuation
 
+- 01:59 EDT: reproduced and fixed session-validator false passes for unfinished/duplicate trials, contradictory outcomes, NaN/missing/negative timing and impossible pause/resume sequences. Readiness pauses no longer distort active duration. Interrupted trials retain timing/audio checks. Full current 80-trial packages pass in both voice orders; all 103 Python tests pass (`/tmp/gaze-python-session-integrity-final.log`). Found a separate runtime stop-after-capture outcome edge for follow-up.
+
+- 01:53 EDT: launched the correct graphical Unity project. Refocus/Build And Run helper was attempted and exited 1 because no Unity menu bar was available while the Mac was locked; ADB lists no devices. Offline APK remains valid, but no device deployment is claimed. Replaced stale QA instructions (14 trials, shortcuts, countdown, distinct wording) with the current 40+40/right-ray/shared-guidance and progressive audio workflow.
+
 - 01:50 EDT: saved the reviewed runtime, controller, voice, replay and validator changes in local commit `77f85f6`; the Git compile hook completed a fresh successful Unity compile. No push. Scoped commit excludes all unrelated deletions and Unity-generated ProjectSettings change. Task #27 update read back successfully.
 
 - 01:50 EDT: reconciled the open run sheet with 40+40 measured trials, two separate practices, hidden target, shared guidance, right-controller controls and six voices per gender. Native LaTeX compilation succeeded. Added an explicit current/historical boundary to the procedure register; height balancing, hardware validation, final survey/interview/consent details and live publication remain pending.
