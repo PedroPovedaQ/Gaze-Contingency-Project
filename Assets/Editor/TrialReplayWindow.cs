@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -16,9 +15,7 @@ public sealed class TrialReplayWindow : EditorWindow
     Vector2 m_InspectorScroll;
     float m_Speed = 1;
     string m_Message;
-    readonly Dictionary<string, AudioClip> m_Clips = new Dictionary<string, AudioClip>();
-    TrialReplayRecord m_PlayingAudio;
-    static readonly Type s_AudioUtil = typeof(AudioImporter).Assembly.GetType("UnityEditor.AudioUtil");
+    TrialReplayAudioPreview m_Audio;
 
     [MenuItem("Tools/Codex/Trial Replay/Open Viewer")]
     public static void Open() => GetWindow<TrialReplayWindow>("Trial Replay");
@@ -33,16 +30,15 @@ public sealed class TrialReplayWindow : EditorWindow
     {
         EditorApplication.update -= Tick;
         StopAudio(); m_Renderer?.Dispose(); m_Renderer = null;
-        foreach (var clip in m_Clips.Values) DestroyImmediate(clip);
-        m_Clips.Clear();
+        m_Audio?.Dispose(); m_Audio = null;
     }
     public void Load(string path)
     {
         var timeline = TrialReplayFile.Read(path);
         var renderer = new TrialReplayRenderer(timeline);
         StopAudio(); m_Renderer?.Dispose();
-        foreach (var clip in m_Clips.Values) DestroyImmediate(clip);
-        m_Clips.Clear();
+        m_Audio?.Dispose(); m_Audio = null;
+        m_Audio = new TrialReplayAudioPreview(timeline);
         m_Timeline = timeline; m_Renderer = renderer; m_Time = 0; m_Playing = false; m_SequenceCursor = long.MaxValue;
         m_Message = timeline.Warning; Seek(0); Repaint();
     }
@@ -110,34 +106,10 @@ public sealed class TrialReplayWindow : EditorWindow
             stream.Write(JsonUtility.ToJson(snapshot,true));
         m_Message = "Saved cursor snapshot. Source recording remains unchanged. Negative age/sequence sentinels mean unavailable/not selected.";
     }
-    void StopAudio()
-    {
-        s_AudioUtil?.GetMethod("StopAllPreviewClips", BindingFlags.Static | BindingFlags.Public)?.Invoke(null, null);
-        m_PlayingAudio = null;
-    }
+    void StopAudio() => m_Audio?.Stop();
     void SyncAudio(bool force)
     {
-        var r = m_Timeline.State.Audio;
-        if (!m_Playing || m_Speed != 1 || r == null || string.IsNullOrEmpty(r.clip)) { if (m_PlayingAudio != null) StopAudio(); return; }
-        if (!force && m_PlayingAudio == r) return;
-        StopAudio(); m_PlayingAudio = r;
-        try
-        {
-            if (!m_Clips.TryGetValue(r.clip, out var clip))
-            {
-                var samples = TrialReplayAudio.Decode(TrialReplayFile.AssetPath(m_Timeline.DirectoryPath, r.clip), out int channels, out int rate);
-                for (int i = 0; i < samples.Length; i++) samples[i] *= r.audioVolume;
-                clip = AudioClip.Create(r.clip, samples.Length / channels, channels, rate, false); clip.SetData(samples, 0);
-                m_Clips.Add(r.clip, clip);
-            }
-            int offset = (int)((m_Time - r.time) * clip.frequency);
-            if (offset >= clip.samples) return;
-            var method = s_AudioUtil?.GetMethod("PlayPreviewClip", BindingFlags.Static | BindingFlags.Public, null,
-                new[] { typeof(AudioClip), typeof(int), typeof(bool) }, null);
-            if (method == null) { m_Message = "Audio preview unavailable in this Editor. The saved WAV files remain available."; return; }
-            method.Invoke(null, new object[] { clip, Math.Max(0, offset), false });
-        }
-        catch (Exception e) { m_Message = "Audio unavailable: " + e.Message; }
+        m_Audio?.Sync(m_Time, m_Playing, m_Speed, m_SequenceCursor, force);
     }
     void Guard(Action action)
     {
@@ -160,6 +132,7 @@ public sealed class TrialReplayWindow : EditorWindow
         EditorGUILayout.LabelField(m_Timeline.Header.sourceType + "  •  " + m_Timeline.Header.recordingId, EditorStyles.boldLabel);
         if (!string.IsNullOrEmpty(m_Timeline.Warning)) EditorGUILayout.HelpBox(m_Timeline.Warning, MessageType.Warning);
         if (!string.IsNullOrEmpty(m_Message)) EditorGUILayout.HelpBox(m_Message, MessageType.Info);
+        if (!string.IsNullOrEmpty(m_Audio?.Warning)) EditorGUILayout.HelpBox(m_Audio.Warning, MessageType.Warning);
         using (new EditorGUILayout.HorizontalScope())
         {
             if (GUILayout.Button(m_Playing ? "Pause" : "Play", GUILayout.Width(65))) { m_Playing = !m_Playing; SyncAudio(true); }

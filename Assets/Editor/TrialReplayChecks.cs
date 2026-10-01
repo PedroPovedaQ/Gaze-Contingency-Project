@@ -75,6 +75,7 @@ public static class TrialReplayChecks
             CheckWriterFlush(root);
             CheckReadinessReplay();
             CheckReplayFreshnessAndSequences();
+            TrialReplayAudioChecks.Run();
             // Graphics verification is separate so these checks also run with -nographics.
             Debug.Log("[TrialReplayChecks] PASS: roundtrip, 168 objects, wrong/correct choice, pause, rewind, motion, recovery, corruption, traversal, version, overwrite, controller tracking/trigger/hit, no dwell, legacy schema, audio.");
         }

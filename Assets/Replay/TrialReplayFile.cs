@@ -118,6 +118,8 @@ public static class TrialReplayFile
                         Check(t.position); Check(t.rotation); Check(t.scale);
                     }
                 }
+                if (r.kind == "audio_playback_start" && (!Finite(r.audioVolume) || r.audioVolume < 0 || r.audioVolume > 1))
+                    throw new InvalidDataException("Invalid recorded audio volume.");
                 if (!string.IsNullOrEmpty(r.clip)) AssetPath(info.DirectoryName, r.clip);
                 records.Add(r); sequence = r.sequence; time = r.time;
                 if (records.Count > MaxRecords) throw new InvalidDataException("Too many replay records.");

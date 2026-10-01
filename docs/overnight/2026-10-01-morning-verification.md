@@ -191,3 +191,13 @@ Full `StudyVerificationChecks.Run` passed with process exit 0 (`/tmp/gaze-unity-
 **Morning:** open a copied actual recording in Unity and the browser, step to the same source sequence, compare target/object transforms and gaze/controller/head flags, test pause/rewind/gaps, and save a cursor snapshot. Verify the editor controls fit comfortably at the chosen window size. Interactive rerunning with new input remains distinct unfinished work in #36. Runtime replay state types changed, so rebuild the APK before using the final artifact fingerprint.
 
 Android rebuild after native pose/inspection changes succeeded in **259.8 s**, process exit 0 (`/tmp/gaze-android-native-replay.log`). APK: **71,121,788 bytes**, SHA-256 `63afb0878c3c894984144ad692d928bb6206de9991c0949db6cde69b2a833cfe`. This supersedes the prior APK fingerprint; no device installation.
+
+## Native replay audio — 04:12 EDT
+
+Fixed single-channel playback that lost overlapping success effects, and cache reuse that applied the first event's gain to later uses. The viewer now reconstructs separate speech/one-shot intervals, uses each event's volume, seeks in sample frames, trims at recorded stop/natural duration, and releases its own preview-scene sources on pause/close. Native WAV validation now checks the RIFF length, byte rate/block alignment, nonempty data size and finite 0..1 saved volume. Missing/corrupt audio is explicit; original files stay unchanged.
+
+Full Unity integration passed (`/tmp/gaze-unity-replay-audio-final.log`, exit 0). `TrialReplayAudioChecks.RunEngine` also passed with real silent AudioSources advancing, seeking and stopping independently, and preview disposal leaving the study scene's dirty state unchanged (`/tmp/gaze-unity-audio-engine-final.log`, exit 0). The initial reflected per-clip Editor preview API proved unavailable; final code uses owned AudioSources instead. An exploratory asynchronous probe lost its callback to an Editor domain reload and was terminated; the final engine test prevents reload during its short lifetime and exits explicitly.
+
+**Morning:** listen to a known saved run with speech/chime overlap, pause/seek/restart and corrections. Interruption fades and acoustic onset are not measured/reconstructed exactly. The engine checks use silent synthetic data and do not claim listening quality or headset synchronization. New Android packaging is underway (`/tmp/gaze-android-replay-audio.log`); the prior fingerprint remains historical until collected.
+
+Audio-unit Android packaging succeeded in **229.9 s**, exit 0. APK: **71,126,828 bytes**, SHA-256 `4c77cb03aa01f1dc1ae91d030b542888ff69ca9c4804f586843670c1d6a562e0`. This supersedes the native-inspector package; no device installation.

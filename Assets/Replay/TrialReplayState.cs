@@ -7,7 +7,6 @@ public sealed class TrialReplayState
     public TrialReplayRecord Trial { get; private set; }
     public TrialReplayRecord Sample { get; private set; }
     public TrialReplayRecord Selection { get; private set; }
-    public TrialReplayRecord Audio { get; private set; }
     public TrialReplayRecord Readiness { get; private set; }
     public TrialReplayRecord PoseBoundary { get; private set; }
     // A display freshness rule, not a fixation threshold or acquisition-rate claim.
@@ -18,7 +17,7 @@ public sealed class TrialReplayState
 
     public void Reset()
     {
-        Trial = Sample = Selection = Audio = Readiness = PoseBoundary = null;
+        Trial = Sample = Selection = Readiness = PoseBoundary = null;
         Visible = Searching = false;
         Transforms.Clear();
     }
@@ -53,9 +52,7 @@ public sealed class TrialReplayState
         }
         else if (r.kind == "search_start" || r.kind == "search_resumed") Visible = Searching = true;
         else if (r.kind == "search_paused" || r.kind == "application_paused" || r.kind == "transition" || r.kind == "stop" || r.kind == "end")
-        { Visible = Searching = false; if (r.kind != "transition") Audio = null; }
-        if (r.kind == "audio_playback_start") Audio = r;
-        if (r.kind == "audio_playback_end" || r.kind == "audio_cancelled" || r.kind == "audio_failure") Audio = null;
+        { Visible = Searching = false; }
     }
 
     public bool HasCurrentSample(double time, double maxAge = DefaultMaxSampleAgeSeconds)
