@@ -7,7 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.UI;
 
 /// <summary>
-/// On-entry setup: choose neutral gender, then one of two voices, hear/confirm
+/// On-entry setup: choose neutral gender, then a catalog voice, hear/confirm
 /// the sample, then enroll the self-similar voice. Shown once at startup
 /// as a small world-space panel in front of the camera.
 ///
@@ -51,15 +51,14 @@ public class VoiceModeSelector : MonoBehaviour
     bool m_StartArmed;
     float m_StartReleasedAt = -1f;
     float m_SetupInputAfter;
-    readonly List<InputDevice> m_Devices = new List<InputDevice>();
     bool m_PerspectiveChosen;
     readonly List<Button> m_Choices = new();
     Phase m_RenderedPhase = (Phase)(-1);
     int m_SelectedVoiceOption = -1;
     int m_PreviewOption = -1;
     int m_PreviewRequest;
-    readonly bool[] m_HeardVoice = new bool[2];
-    readonly Outline[] m_VoiceBorders = new Outline[2];
+    readonly bool[] m_HeardVoice = new bool[SessionConfig.NeutralVoiceCount];
+    readonly Outline[] m_VoiceBorders = new Outline[SessionConfig.NeutralVoiceCount];
     Button m_VoiceActionButton;
     Button m_AcceptButton;
 
@@ -239,8 +238,8 @@ public class VoiceModeSelector : MonoBehaviour
         m_Choices.Clear(); m_AcceptButton = null; m_VoiceActionButton = null;
         m_RenderedPhase = m_Phase;
         bool cards = m_Phase == Phase.ChoosingNeutralVoice;
-        m_Text.rectTransform.sizeDelta = new Vector2(660, cards ? 120 : m_Phase == Phase.Enrolling ? 350 : 220);
-        m_Text.rectTransform.anchoredPosition = new Vector2(0, cards ? 160 : m_Phase == Phase.Enrolling ? 40 : 100);
+        m_Text.rectTransform.sizeDelta = new Vector2(660, cards ? 100 : m_Phase == Phase.Enrolling ? 350 : 220);
+        m_Text.rectTransform.anchoredPosition = new Vector2(0, cards ? 180 : m_Phase == Phase.Enrolling ? 40 : 100);
         switch (m_Phase)
         {
             case Phase.ChoosingNeutral:
@@ -248,11 +247,13 @@ public class VoiceModeSelector : MonoBehaviour
                 Choice("Female", SelectNeutralFemale, 170, -100, 300);
                 break;
             case Phase.ChoosingNeutralVoice:
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < SessionConfig.NeutralVoiceCount; i++)
                 {
                     int option = i;
                     string name = SessionConfig.NeutralName(m_ChosenGender, i);
-                    var button = Choice(name, () => SelectNeutralVoiceOption(option), i == 0 ? -165 : 165, -15, 280, 210);
+                    // Two rows of three, with equal card sizes and space for Confirm.
+                    float x = (i % 3 - 1) * 220;
+                    var button = Choice(name, () => SelectNeutralVoiceOption(option), x, i < 3 ? 55 : -90, 200, 130);
                     button.gameObject.AddComponent<VoicePreviewHover>().Initialize(() => PreviewNeutralVoiceOption(option));
                     var border = button.gameObject.AddComponent<Outline>();
                     border.effectColor = new Color(1f, 0.8f, 0.2f);
@@ -260,18 +261,24 @@ public class VoiceModeSelector : MonoBehaviour
                     border.useGraphicAlpha = false;
                     border.enabled = false;
                     m_VoiceBorders[i] = border;
-                    var avatar = new GameObject("Avatar", typeof(RectTransform), typeof(RawImage));
-                    avatar.transform.SetParent(button.transform, false);
-                    avatar.GetComponent<RectTransform>().sizeDelta = new Vector2(140, 140);
-                    avatar.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 24);
-                    avatar.GetComponent<RawImage>().texture = Resources.Load<Texture2D>("VoiceAvatars/" + name);
-                    avatar.GetComponent<RawImage>().raycastTarget = false;
-                    button.GetComponentInChildren<TextMeshProUGUI>().rectTransform.anchoredPosition = new Vector2(0, -75);
+                    var texture = Resources.Load<Texture2D>("VoiceAvatars/" + name);
+                    if (texture != null)
+                    {
+                        var avatar = new GameObject("Avatar", typeof(RectTransform), typeof(RawImage));
+                        avatar.transform.SetParent(button.transform, false);
+                        avatar.GetComponent<RectTransform>().sizeDelta = new Vector2(80, 80);
+                        avatar.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 16);
+                        avatar.GetComponent<RawImage>().texture = texture;
+                        avatar.GetComponent<RawImage>().raycastTarget = false;
+                        var label = button.GetComponentInChildren<TextMeshProUGUI>().rectTransform;
+                        label.sizeDelta = new Vector2(190, 38);
+                        label.anchoredPosition = new Vector2(0, -43);
+                    }
                 }
                 m_VoiceActionButton = Choice("Back", () =>
                 {
                     if (m_SelectedVoiceOption < 0) SelectGeneric(); else ConfirmNeutralVoice();
-                }, 0, -190, 240);
+                }, 0, -200, 240);
                 RefreshVoiceSelection();
                 break;
             case Phase.EnrollmentFailed:
@@ -354,7 +361,7 @@ public class VoiceModeSelector : MonoBehaviour
     /// <summary>Audition without changing the pending or committed voice choice.</summary>
     public void PreviewNeutralVoiceOption(int option)
     {
-        if (m_Phase != Phase.ChoosingNeutralVoice || option < 0 || option > 1) return;
+        if (m_Phase != Phase.ChoosingNeutralVoice || option < 0 || option >= SessionConfig.NeutralVoiceCount) return;
         if (m_PreviewOption == option && m_Synth != null && m_Synth.IsBusy) return;
         m_PreviewOption = option;
         int request = ++m_PreviewRequest;
@@ -371,7 +378,7 @@ public class VoiceModeSelector : MonoBehaviour
             if (success) m_HeardVoice[option] = true;
             SetText(success
                 ? "<b>Point at a voice to hear it.</b>\nPull the trigger to select, then choose Confirm."
-                : $"<b>{name}'s sample is unavailable.</b>\nPoint away and back to retry, or try the other voice.");
+                : $"<b>{name}'s sample is unavailable.</b>\nPoint away and back to retry, or try another voice.");
             RefreshVoiceSelection();
         });
     }
@@ -379,7 +386,7 @@ public class VoiceModeSelector : MonoBehaviour
     /// <summary>Trigger selects a card; only Confirm commits it to the study session.</summary>
     public void SelectNeutralVoiceOption(int option)
     {
-        if (m_Phase != Phase.ChoosingNeutralVoice || option < 0 || option > 1) return;
+        if (m_Phase != Phase.ChoosingNeutralVoice || option < 0 || option >= SessionConfig.NeutralVoiceCount) return;
         m_SelectedVoiceOption = option;
         if (!m_HeardVoice[option] && (m_PreviewOption != option || m_Synth == null || !m_Synth.IsBusy))
             PreviewNeutralVoiceOption(option);
@@ -458,7 +465,7 @@ public class VoiceModeSelector : MonoBehaviour
             {
                 if (s == VoiceEnrollment.State.Recording)
                     SetText($"<b>● Recording — read the commands aloud</b>\nUse your natural guiding voice. Select Finish recording when done.\n\n“{k_ReadingPassage}”");
-                if (s == VoiceEnrollment.State.Cloning) SetText("<b>Creating your voice…</b>\nOne moment.");
+                if (s == VoiceEnrollment.State.Cloning) SetText("<b>Loading...</b>");
             },
             onDone: _ =>
             {
@@ -508,7 +515,7 @@ public class VoiceModeSelector : MonoBehaviour
     {
         m_Phase = Phase.Preparing;
         if (m_Text == null) BuildPanel();
-        SetText("<b>Processing voice…</b>\nPreparing voice checks and the first practice round. Please wait.");
+        SetText("<b>Loading...</b>");
         yield return m_Synth.SpeakProcessingStatus(false);
         bool ready = false;
         yield return m_Synth.PrepareLibraries(VoiceAssistantController.StarterPhrases(), SetText,
@@ -549,10 +556,10 @@ public class VoiceModeSelector : MonoBehaviour
         else if (m_Phase == Phase.CheckingSelf)
         {
             try { System.IO.File.WriteAllText(System.IO.Path.Combine(SessionConfig.ParticipantPath, "voice-readiness-v1.txt"),
-                $"{System.DateTime.UtcNow:O} both_audio_samples_accepted profile={SessionConfig.NeutralProfile} neutral_name={SessionConfig.NeutralVoiceName} neutral_id={SessionConfig.NeutralVoiceId} neutral_option={SessionConfig.NeutralVoiceOption} order={SessionConfig.VoiceOrder} perspective_policy=neutral_external_self_first_person perspective_version={SessionConfig.PerspectiveVersion}"); }
+                $"{System.DateTime.UtcNow:O} both_audio_samples_accepted profile={SessionConfig.NeutralProfile} neutral_name={SessionConfig.NeutralVoiceName} neutral_id={SessionConfig.NeutralVoiceId} neutral_option={SessionConfig.NeutralVoiceOption} order={SessionConfig.VoiceOrder} perspective_policy=shared_participant_directed_imperative perspective_version={SessionConfig.PerspectiveVersion}"); }
             catch (System.Exception) { SetText("Could not save audio readiness. Check device storage, then accept again."); return; }
             SessionConfig.ApplyRoundVoice(0);
-            Finish($"{SessionConfig.ParticipantId}: both voices ready.\nWording: neutral external / self-similar first person\nOrder: {SessionConfig.VoiceOrder.Replace("_", " ")}");
+            Finish($"{SessionConfig.ParticipantId}: both voices ready.\nBoth voices will use the same guidance wording.\nOrder: {SessionConfig.VoiceOrder.Replace("_", " ")}");
         }
     }
 
@@ -593,10 +600,8 @@ public class VoiceModeSelector : MonoBehaviour
 
     bool ReadButton(InputFeatureUsage<bool> usage)
     {
-        InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.Controller, m_Devices);
-        foreach (var d in m_Devices)
-            if (d.TryGetFeatureValue(usage, out bool pressed) && pressed) return true;
-        return false;
+        var device = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+        return device.isValid && device.TryGetFeatureValue(usage, out bool pressed) && pressed;
     }
 
 }

@@ -60,7 +60,7 @@ public class FindObjectUI : MonoBehaviour
     }
 
     float m_WrongFeedbackEndTime;
-    string m_CurrentObjectiveString;
+    string m_RoundStatusText = "";
     bool m_ShowingPostSurveyStats;
     bool m_ShowingNasaTlxSurvey;
     readonly int[] m_NasaTlxScores = new int[k_NasaTlxQuestionCount];
@@ -275,11 +275,8 @@ public class FindObjectUI : MonoBehaviour
     {
         if (m_CrossGoalText != null)
         {
-            bool hasGoal = !string.IsNullOrEmpty(color) && !string.IsNullOrEmpty(shape);
-            m_CrossGoalText.enabled = hasGoal;
-            m_CrossGoalText.text = hasGoal
-                ? $"{(isPractice ? "PRACTICE\n" : "")}Goal: {color} {shape}"
-                : "";
+            m_CrossGoalText.enabled = isPractice;
+            m_CrossGoalText.text = isPractice ? "PRACTICE" : "";
         }
         if (m_CrossCanvasGO != null) m_CrossCanvasGO.SetActive(true);
     }
@@ -362,9 +359,11 @@ public class FindObjectUI : MonoBehaviour
         m_TimerText.enabled = true;
         if (m_AgentStateText != null) m_AgentStateText.enabled = true;
 
-        string hex = ColorUtility.ToHtmlStringRGB(color);
-        m_CurrentObjectiveString = $"Locate: <color=#{hex}>{shapeName}</color>";
-        m_ObjectiveText.text = m_CurrentObjectiveString;
+        // Keep the timing/progress panel, but never put target identity in its status label.
+        // The existing signature remains compatible with the game manager's trial updates.
+        m_RoundStatusText = "";
+        m_WrongFeedbackEndTime = 0f;
+        m_ObjectiveText.text = m_RoundStatusText;
         m_ProgressText.fontSize = isPractice ? 26f : 34f;
         m_ProgressText.text = isPractice
             ? $"PRACTICE {found + 1} / {total} — not counted"
@@ -379,9 +378,10 @@ public class FindObjectUI : MonoBehaviour
 
     public void ShowRoundAudioWait(bool waiting)
     {
+        m_RoundStatusText = waiting
+            ? "<size=24>Listen to the agent. Look at the cross until it fills.</size>" : "";
         if (m_ObjectiveText != null)
-            m_ObjectiveText.text = m_CurrentObjectiveString +
-                (waiting ? "\n<size=24>Listen to the target. Look at the cross until it fills.</size>" : "");
+            m_ObjectiveText.text = m_RoundStatusText;
     }
 
     public void ShowCompletion(int total, float elapsedSeconds)
@@ -520,8 +520,7 @@ public class FindObjectUI : MonoBehaviour
         if (m_WrongFeedbackEndTime > 0f && Time.time > m_WrongFeedbackEndTime)
         {
             m_WrongFeedbackEndTime = 0f;
-            if (!string.IsNullOrEmpty(m_CurrentObjectiveString))
-                m_ObjectiveText.text = m_CurrentObjectiveString;
+            m_ObjectiveText.text = m_RoundStatusText;
         }
 
         if (m_TimerRunning && m_TimerText != null)

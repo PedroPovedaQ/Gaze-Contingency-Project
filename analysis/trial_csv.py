@@ -45,12 +45,17 @@ BASE_FIELDS = [
     "completion_source",
     "incorrect_selection_count",
     "instruction_count",
+    "hint_count",
     "interrupted_instruction_count",
     "instruction_count_status",
     "instruction_count_source",
     "repeat_request_count",
     "delivered_repeat_count",
     "repeat_count_status",
+    "repeat_count_source",
+    "repeat_event_version",
+    "interaction_policy",
+    "neutral_catalog_version",
     "gaze_total_samples",
     "gaze_valid_samples",
     "gaze_unknown_tracking_samples",
@@ -100,6 +105,8 @@ BASE_FIELDS = [
     "scheduled_height_delta_m",
     "scheduled_height_reference",
     "schedule_version",
+    "target_identity_policy",
+    "height_assignment_policy",
     "schedule_seed",
     "layout_seed",
     "angle_pair",
@@ -219,6 +226,9 @@ class Trial:
     valid_controller: int = 0
     instructions: int = 0
     interrupted: int = 0
+    repeat_requests: int = 0
+    delivered_repeats: int = 0
+    repeat_logging: bool = False
     active_instruction: str | None = None
     wrong: int = 0
     intervals: int = 0
@@ -257,6 +267,8 @@ class Trial:
             )
             for source, dest in [
                 ("scheduleVersion", "schedule_version"),
+                ("targetIdentityPolicy", "target_identity_policy"),
+                ("heightAssignmentPolicy", "height_assignment_policy"),
                 ("scheduleSeed", "schedule_seed"),
                 ("layoutSeed", "layout_seed"),
                 ("startPlane", "start_plane"),
@@ -328,7 +340,11 @@ class Trial:
             else:
                 self.wrong += 1
         context = (r.get("detail") or "").split(";", 1)[0]
+        if kind == "guidance_repeat_requested":
+            self.repeat_requests += 1
         if kind == "audio_playback_start":
+            if context == "guidance_repeat":
+                self.delivered_repeats += 1
             # The current recorder calls guidance 'tip'. New policy names must be
             # explicitly added/versioned, never guessed from spoken text.
             self.active_instruction = (
@@ -441,9 +457,16 @@ class Trial:
         if not row.get("replay_file"):
             self.flags.add("no_matching_replay")
         if self.started:
+            if self.repeat_logging:
+                if row.get("repeat_request_count") is None:
+                    row.update(repeat_request_count=self.repeat_requests, delivered_repeat_count=self.delivered_repeats,
+                               repeat_count_status="observed_requests_and_playback_starts", repeat_count_source="replay")
+                elif (row["repeat_request_count"], row["delivered_repeat_count"]) != (self.repeat_requests, self.delivered_repeats):
+                    self.flags.add("repeat_count_cross_source_mismatch")
             if row.get("instruction_count") is None:
                 row.update(
                     instruction_count=self.instructions,
+                    hint_count=self.instructions-self.delivered_repeats,
                     interrupted_instruction_count=self.interrupted,
                     instruction_count_status="observed_playback_starts",
                     instruction_count_source="replay",
@@ -502,7 +525,7 @@ class Trial:
             final_gaze_method="last_observed_tracked_target_intersection_not_fixation",
             head_rotation_method="shortest_quaternion_increment_fixed_frame_rotation_vector_axes_v1",
             zone_measurement_status="not_exported_pending_zone_definition",
-            repeat_count_status="not_recorded_as_distinct_request_delivery_events",
+            repeat_count_status=row.get("repeat_count_status", "not_recorded_as_distinct_request_delivery_events"),
             subjective_scoring_status="raw_responses_only",
         )
         row["quality_flags"] = ";".join(sorted(self.flags))
@@ -540,9 +563,14 @@ def read_summary(run: Path) -> tuple[dict, dict[str, Trial]]:
             "source_summary": str(run / "trial_summary.json"),
             "source_trial_json": json.dumps(source, ensure_ascii=False, sort_keys=True),
             "schedule_version": summary.get("challenge_set"),
+            "target_identity_policy": summary.get("target_identity_policy"),
+            "height_assignment_policy": summary.get("height_assignment_policy"),
             "schedule_seed": summary.get("schedule_seed"),
             "theta_reference": summary.get("theta_reference"),
             "selection_method": summary.get("selection_method"),
+            "interaction_policy": summary.get("interaction_policy"),
+            "neutral_catalog_version": summary.get("neutral_catalog_version"),
+            "repeat_event_version": summary.get("repeat_event_version"),
         }
         for key in (
             "start_plane",
@@ -651,6 +679,8 @@ def add_source_records(
                 "ended": False,
                 "count": 0,
                 "interrupted": 0,
+                "repeat_requests": 0,
+                "delivered_repeats": 0,
                 "active": None,
                 "voices": set(),
             },
@@ -677,7 +707,11 @@ def add_source_records(
             st["voices"].add(clips[detail["clip_id"]])
         if not st["started"] or st["paused"] or st["ended"]:
             continue
+        if kind == "guidance_repeat_requested":
+            st["repeat_requests"] += 1
         if kind == "audio_playback_start":
+            if context == "guidance_repeat":
+                st["delivered_repeats"] += 1
             st["active"] = (
                 context if context in ("tip", "guidance", "guidance_repeat") else None
             )
@@ -693,8 +727,12 @@ def add_source_records(
     for tid, st in state.items():
         t = trials[tid]
         if st["started"]:
+            if summary.get("repeat_event_version") == "guidance-repeat-v1":
+                t.row.update(repeat_request_count=st["repeat_requests"], delivered_repeat_count=st["delivered_repeats"],
+                             repeat_count_status="observed_requests_and_playback_starts", repeat_count_source="trial_events_csv")
             t.row.update(
                 instruction_count=st["count"],
+                hint_count=st["count"]-st["delivered_repeats"],
                 interrupted_instruction_count=st["interrupted"],
                 instruction_count_status="observed_playback_starts",
                 instruction_count_source="trial_events_csv",
@@ -784,6 +822,14 @@ def add_replays(
                 if tid not in trials:
                     raise ValueError(f"Replay trial absent from summary: {tid}")
             t = trials[tid]
+            t.repeat_logging = header.get("repeatEventVersion") == "guidance-repeat-v1"
+            if t.repeat_logging:
+                t.row["repeat_event_version"] = header["repeatEventVersion"]
+                t.row["interaction_policy"] = header.get("interactionPolicy") or t.row.get("interaction_policy")
+            if header.get("neutralCatalogVersion"):
+                if t.row.get("neutral_catalog_version") not in (None, header["neutralCatalogVersion"]):
+                    raise ValueError(f"Conflicting voice catalog versions: {tid}")
+                t.row["neutral_catalog_version"] = header["neutralCatalogVersion"]
             if t.row.get("replay_file") not in (None, str(path)):
                 raise ValueError(f"Multiple replay sources for trial: {tid}")
             t.row.update(

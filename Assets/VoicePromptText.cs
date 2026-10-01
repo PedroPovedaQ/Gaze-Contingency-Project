@@ -12,7 +12,7 @@ public enum VoicePerspective
 /// <summary>Stable wording transforms for the two voice perspectives.</summary>
 public static class VoicePromptText
 {
-    public const string Version = "perspective-v7-audio-check-return";
+    public const string Version = "perspective-v9-shared-imperative";
 
     public const string AudioLevelCheck = "Hover your controller over Accept Audio and press the trigger to confirm this is an acceptable audio level.";
 
@@ -80,13 +80,13 @@ public static class VoicePromptText
     }
 
     public static VoicePerspective PerspectiveForVoice(VoiceCondition voice) =>
-        voice == VoiceCondition.SelfSimilar ? VoicePerspective.FirstPerson : VoicePerspective.External;
+        VoicePerspective.External;
 
     public static string FormatForVoice(string text, VoiceCondition voice) => Format(text, PerspectiveForVoice(voice));
 
     // A separate source phrase keeps correction wording distinct from trial announcements.
     public static string WrongSelectionPhrase(string color, string shape) =>
-        $"Find the {color.ToLowerInvariant()} {shape.ToLowerInvariant()}.";
+        "Keep following the guidance and try another object.";
 
     public static string SelfSimilar(string text)
     {
@@ -113,6 +113,26 @@ public static class VoicePromptText
             case "Search to your right.": return "I need to search to my right.";
             case "Go back. That was the correct area.": return "I need to go back. That was the correct area.";
             case "You're in the correct area. Keep looking.": return "I'm in the correct area. I need to keep looking.";
+            case "Keep looking left.": return "I need to keep looking left.";
+            case "Look more to your left.": return "I need to look more to my left.";
+            case "Continue looking left.": return "I need to continue looking left.";
+            case "Scan to your left.": return "I need to scan to my left.";
+            case "Look farther to your left.": return "I need to look farther to my left.";
+            case "Keep looking farther left.": return "I need to keep looking farther left.";
+            case "Look much farther left.": return "I need to look much farther left.";
+            case "Keep looking right.": return "I need to keep looking right.";
+            case "Look more to your right.": return "I need to look more to my right.";
+            case "Continue looking right.": return "I need to continue looking right.";
+            case "Scan to your right.": return "I need to scan to my right.";
+            case "Look farther to your right.": return "I need to look farther to my right.";
+            case "Keep looking farther right.": return "I need to keep looking farther right.";
+            case "Look much farther right.": return "I need to look much farther right.";
+            case "This is the correct area. Keep looking.": return "I'm in the correct area. I need to keep looking.";
+            case "Stay in this area and keep looking.": return "I need to stay in this area and keep looking.";
+            case "Keep searching in this area.": return "I need to keep searching in this area.";
+            case "Go back to that area.": return "I need to go back to that area.";
+            case "Look back toward the area you just left.": return "I need to look back toward the area I just left.";
+            case "Return to the area you were looking at.": return "I need to return to the area I was looking at.";
             case "Nice!": return "I found it!";
             case "Excellent! You located all the objects. Please complete the NASA T L X questionnaire now.":
                 return "I found all the objects. I will complete the NASA T L X questionnaire now.";

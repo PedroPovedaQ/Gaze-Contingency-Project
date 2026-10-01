@@ -35,6 +35,9 @@ public static class ControllerSelectionChecks
         Check(typeof(GazeHighlightManager).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic) == null,
             "Gaze must have no dwell loop.");
 
+        CheckRightRayPolicy();
+        CheckSettingsLifecycle();
+
         var obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
         obj.SetActive(false);
         try
@@ -83,6 +86,98 @@ public static class ControllerSelectionChecks
         }
         finally { if (openedForCheck) EditorSceneManager.CloseScene(scene, true); }
         GazeWallFilterChecks.Run();
-        Debug.Log("[ControllerSelectionChecks] PASS: trigger edges, pause/tracking gates, no gaze dwell, fixed objects, highlight cleanup, both scene controllers.");
+        Debug.Log("[ControllerSelectionChecks] PASS: trigger edges, pause/tracking gates, no gaze dwell, fixed objects, highlight cleanup, scene rig and right-only UI policy.");
     }
+    static void CheckRightRayPolicy()
+    {
+        var rig = new GameObject("RightOnlyFixture"); rig.SetActive(false);
+        var leftObject = new GameObject("LeftRayFixture"); leftObject.transform.SetParent(rig.transform);
+        var rightObject = new GameObject("RightRayFixture"); rightObject.transform.SetParent(rig.transform);
+        var handObject = new GameObject("HandRayFixture"); handObject.SetActive(false);
+        var controlsObject = new GameObject("StudyControlsFixture"); controlsObject.SetActive(false);
+        try
+        {
+            rig.AddComponent<ControllerInputActionManager>();
+            var left = leftObject.AddComponent<NearFarInteractor>(); left.handedness = InteractorHandedness.Left;
+            var right = rightObject.AddComponent<NearFarInteractor>(); right.handedness = InteractorHandedness.Right;
+            var hand = handObject.AddComponent<NearFarInteractor>(); hand.handedness = InteractorHandedness.Right;
+            left.enableFarCasting=right.enableFarCasting=hand.enableFarCasting=true;
+            left.enableUIInteraction=right.enableUIInteraction=hand.enableUIInteraction=true;
+            right.enableFarCasting = right.enableUIInteraction = false; // Startup in hand mode.
+            var controls = controlsObject.AddComponent<StudyRayControls>();
+            typeof(StudyRayControls).GetMethod("ConfigureRays", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(controls,null);
+            Check(StudyRayControls.IsStudyRay(right) && !StudyRayControls.IsStudyRay(left) && !StudyRayControls.IsStudyRay(hand), "Only the physical right controller is a study pointer.");
+            Check(right.enableFarCasting && right.enableUIInteraction && !right.enableNearCasting,
+                "Right ray keeps UI and far targeting without near-grab selection.");
+            Check(!left.enableFarCasting && !left.enableUIInteraction && !hand.enableUIInteraction,
+                "Left controller and hand rays cannot hover or activate study controls.");
+            right.enableFarCasting = right.enableUIInteraction = false;
+            left.enableUIInteraction = true;
+            typeof(StudyRayControls).GetMethod("ApplyRayPolicy", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(controls,null);
+            Check(right.enableFarCasting && right.enableUIInteraction && !left.enableUIInteraction,
+                "A modality switch cannot leave the right pointer permanently unavailable or enable the left pointer.");
+            typeof(StudyRayControls).GetMethod("OnDestroy", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(controls,null);
+            Check(left.enableFarCasting && left.enableUIInteraction, "Removing study controls restores original ray settings.");
+            Check(!right.enableFarCasting && !right.enableUIInteraction, "Original disabled right-ray settings restore after study.");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(controlsObject); UnityEngine.Object.DestroyImmediate(rig); UnityEngine.Object.DestroyImmediate(handObject);
+        }
+    }
+
+    static void CheckSettingsLifecycle()
+    {
+        foreach (bool readiness in new[] { false, true })
+        {
+            var host = new GameObject("SettingsLifecycleFixture"); host.SetActive(false);
+            var stimulus = new GameObject("SettingsStimulusFixture");
+            GameObject checkpointPanel = null;
+            void Set(object target, string name, object value) => target.GetType().GetField(name,
+                BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target,value);
+            try
+            {
+                var game = host.AddComponent<FindObjectGameManager>();
+                var ui = host.AddComponent<FindObjectUI>();
+                var controls = host.AddComponent<StudyRayControls>();
+                Set(game,"m_UI",ui); Set(controls,"m_Game",game);
+                ((List<GameObject>)game.SpawnedObjects).Add(stimulus);
+                controls.ToggleSettings();
+                Check(!game.ResearcherPaused,"Opening Settings in setup does not invent an active trial.");
+                Set(game,"m_State",FindObjectGameManager.GameState.Playing);
+                if (readiness)
+                {
+                    var gate = host.AddComponent<TrialReadinessGate>();
+                    Set(game,"m_Readiness",gate);
+                    gate.Begin(0,Vector3.forward,Quaternion.identity,"Blue","Cube",false);
+                }
+                else Set(game,"<SearchActive>k__BackingField",true);
+                typeof(StudyRayControls).GetMethod("LateUpdate",BindingFlags.Instance | BindingFlags.NonPublic).Invoke(controls,null);
+                var checkpoint = host.GetComponent<StudyCheckpoint>();
+                Check(checkpoint != null,"Newly active trial must create its pause checkpoint.");
+                checkpointPanel = (GameObject)typeof(StudyCheckpoint).GetField("m_Panel",
+                    BindingFlags.Instance | BindingFlags.NonPublic).GetValue(checkpoint);
+                Check(game.ResearcherPaused && !game.SearchActive && !stimulus.activeSelf,
+                    "Settings already open must pause newly active readiness/search and hide objects.");
+                Check(checkpoint.Waiting && !checkpointPanel.activeSelf,
+                    "Continue cannot be visible underneath Settings.");
+                controls.ToggleSettings();
+                Check(game.ResearcherPaused && checkpoint.Waiting && checkpointPanel.activeSelf,
+                    "Closing Settings exposes Continue without resuming automatically.");
+                // Model accepted Continue without calling runtime Destroy in edit mode.
+                Set(checkpoint,"<Waiting>k__BackingField",false);
+                game.ResumeSession();
+                Check(!game.ResearcherPaused && stimulus.activeSelf && game.SearchActive != readiness,
+                    "Explicit Continue resumes the correct readiness/search stage.");
+            }
+            finally
+            {
+                if (checkpointPanel != null) UnityEngine.Object.DestroyImmediate(checkpointPanel);
+                ((List<GameObject>)host.GetComponent<FindObjectGameManager>().SpawnedObjects).Clear();
+                UnityEngine.Object.DestroyImmediate(stimulus);
+                UnityEngine.Object.DestroyImmediate(host);
+            }
+        }
+    }
+
 }

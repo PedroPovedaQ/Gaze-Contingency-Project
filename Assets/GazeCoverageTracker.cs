@@ -71,16 +71,14 @@ public class GazeCoverageTracker : MonoBehaviour
 
     void Update()
     {
-        if (m_GazeInteractor == null || m_GameManager == null) return;
+        if (m_GameManager == null) return;
         if (!m_GameManager.SearchActive) return;
 
         // Determine what the player is currently looking at
         string hoveredId = null;
         int hoveredLevel = -1;
-        var hovered = m_GazeInteractor.interactablesHovered;
-        if (hovered.Count > 0 && hovered[0] != null)
+        if (SharedGazeStream.Instance != null && SharedGazeStream.Instance.TryHit(out var info))
         {
-            var info = hovered[0].transform.GetComponent<SpawnableObjectInfo>();
             if (info != null)
             {
                 hoveredId = string.IsNullOrEmpty(info.objectId) ? info.DisplayName : info.objectId;

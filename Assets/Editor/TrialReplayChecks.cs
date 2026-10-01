@@ -69,6 +69,7 @@ public static class TrialReplayChecks
             Assert(TrialReplayFile.Read(corrupt).Header.schema == 1, "Legacy schema is readable.");
             CheckLiveSelectionHook(root);
             CheckWriterBackpressure(root);
+            CheckWriterFlush(root);
             CheckReadinessReplay();
             // Graphics verification is separate so these checks also run with -nographics.
             Debug.Log("[TrialReplayChecks] PASS: roundtrip, 168 objects, wrong/correct choice, pause, rewind, motion, recovery, corruption, traversal, version, overwrite, controller tracking/trigger/hit, no dwell, legacy schema, audio.");
@@ -95,6 +96,40 @@ public static class TrialReplayChecks
         state.Reset(); CheckReadiness(state.Readiness == null, "Rewind clears future readiness state.");
     }
     static void CheckReadiness(bool condition, string message) => Assert(condition, message);
+    static void CheckWriterFlush(string root)
+    {
+        string file = Path.Combine(root,"pause-flush.jsonl");
+        using (var entered = new System.Threading.ManualResetEvent(false))
+        using (var release = new System.Threading.ManualResetEvent(false))
+        using (var flushed = new System.Threading.ManualResetEvent(false))
+        using (var writer = new TrialReplayWriter(file))
+        {
+            var enqueue = typeof(TrialReplayWriter).GetMethod("Enqueue",BindingFlags.Instance | BindingFlags.NonPublic);
+            enqueue.Invoke(writer,new object[] { (Action)(() => { entered.Set(); release.WaitOne(); }) });
+            try
+            {
+                Assert(entered.WaitOne(2000),"Pause-flush fixture worker must start.");
+                Assert(writer.Append(new TrialReplayRecord { kind="application_paused",sequence=1 }),"Pause marker accepted.");
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                Assert(writer.RequestFlush(),"Pause flush accepted behind the marker.");
+                Assert(watch.ElapsedMilliseconds<1000,"Pause flush must not block on stalled storage.");
+                enqueue.Invoke(writer,new object[] { (Action)(() => flushed.Set()) });
+                release.Set();
+                Assert(flushed.WaitOne(2000),"Queued flush completed after storage recovered.");
+                var lines=File.ReadAllLines(file);
+                Assert(lines.Length==1 && JsonUtility.FromJson<TrialReplayRecord>(lines[0]).kind=="application_paused",
+                    "The final pause marker is readable before disposal or the 90-write interval.");
+                flushed.Reset();
+                Assert(writer.Append(new GazeObservation { sequence=2,focused=false }) && writer.RequestFlush(),
+                    "A flushed writer remains open for resumed eye observations.");
+                enqueue.Invoke(writer,new object[] { (Action)(() => flushed.Set()) });
+                Assert(flushed.WaitOne(2000) && File.ReadAllLines(file).Length==2,"Resumed data flushes without replacing the prefix.");
+                writer.StopWithoutWaiting();
+                Assert(!writer.RequestFlush(),"Closed writer cannot claim to accept a flush.");
+            }
+            finally { release.Set(); }
+        }
+    }
     static void CheckWriterBackpressure(string root)
     {
         using (var entered = new System.Threading.ManualResetEvent(false))
@@ -170,19 +205,30 @@ public static class TrialReplayChecks
             Call(recorder, "Transition", 1, "Blue", "Cube");
             Call(recorder, "ObjectsReady", 1, "Blue", "Cube");
             Set(game, "<IsPractice>k__BackingField", false);
-            Set(game, "m_CurrentRound", 10);
-            Call(recorder, "Transition", 10, "Blue", "Cube");
-            Call(recorder, "ObjectsReady", 10, "Blue", "Cube");
-            Set(game, "m_CurrentRound", 11);
+            int secondBlockStart = ChallengeSet.RoundsPerBlock;
+            Set(game, "m_CurrentRound", secondBlockStart);
+            Call(recorder, "Transition", secondBlockStart, "Blue", "Cube");
+            Call(recorder, "ObjectsReady", secondBlockStart, "Blue", "Cube");
+            Set(game, "m_CurrentRound", secondBlockStart + 1);
+            var decision = new GuidanceDecision { decisionId="decision-fixture", stage="requested",
+                observationSequence=71, eyeRecordingId="raw-eye-fixture", category="Look up.", phrase="Look up." };
+            Call(recorder,"AudioEvent","guidance_decision","guidance","",JsonUtility.ToJson(decision));
+            Call(recorder,"AudioEvent","audio_request","tip","test-clip","decision_id=decision-fixture;fixture");
             Call(recorder, "Finish", true, "synthetic verification");
             var recording = TrialReplayFile.Read(Path.Combine(directory, "recording.jsonl"));
+            var recordedDecision = recording.Records.Find(r => r.kind=="guidance_decision");
+            var recordedRequest = recording.Records.Find(r => r.kind=="audio_request");
+            Assert(recordedDecision.guidanceDecision.observationSequence==71 &&
+                recordedDecision.guidanceDecision.eyeRecordingId=="raw-eye-fixture" &&
+                recordedRequest.guidanceDecisionId==recordedDecision.guidanceDecisionId,
+                "Replay joins audio requests to the exact saved decision, not a nearby frame");
             var selection = recording.Records.Find(r => r.kind == "selection");
             Assert(selection != null && selection.round == 0 && selection.objectId == "fixture_target" && selection.correct && selection.dwell == 0 && selection.selectionMethod == "controller_ray_trigger_press_v1",
                 "Recorder must retain original trial identity before the real game advances.");
             Assert(selection.selectingHand == "left" && selection.leftController.triggerHeld == 1 &&
                 selection.leftController.hoveredId == "fixture_target" && selection.rightController.triggerHeld == -1 &&
                 selection.leftController.position == new Vector3(1, 2, 3), "Capture uses actual selector snapshot before reset.");
-            Assert(recording.Records[recording.Records.Count - 1].round == 10,
+            Assert(recording.Records[recording.Records.Count - 1].round == secondBlockStart,
                 "Completion linkage must not adopt the already advanced objective index.");
             Assert(recording.Trials.Count == 3 && recording.Trials[1].practice &&
                 recording.Trials[1].runNumber == 0 && string.IsNullOrEmpty(recording.Trials[1].sourceTrialId) &&

@@ -9,7 +9,7 @@ public class EyeGazeRayVisual : MonoBehaviour
 {
     static readonly Color k_OrangeColor = new Color(1f, 0.5f, 0f, 1f);
 
-    [Tooltip("Flip the X position to correct left/right eye swap on VIVE.")]
+    [Tooltip("Legacy serialized flag; ignored. Test origin mirroring in SharedGazeStream diagnostics.")]
     [SerializeField] bool m_FlipX = false;
 
     const string k_Tag = "[EyeGazeRay]";
@@ -77,16 +77,8 @@ public class EyeGazeRayVisual : MonoBehaviour
         InvokeRepeating(nameof(LogTrackingState), 2f, 5f);
     }
 
-    void LateUpdate()
-    {
-        if (m_FlipX)
-        {
-            var pos = transform.localPosition;
-            pos.x = -pos.x;
-            transform.localPosition = pos;
-        }
-    }
-
+    // Measurement coordinates belong to SharedGazeStream. A visual must never
+    // mutate the tracked pose after logging or apply an origin flip every frame.
     void LogTrackingState()
     {
         var t = transform;

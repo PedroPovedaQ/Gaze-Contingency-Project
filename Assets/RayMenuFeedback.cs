@@ -46,6 +46,7 @@ public class RayMenuFeedback : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (!Application.isFocused || !m_Control.IsInteractable() || !m_Pointers.Add(data.pointerId)) return;
         // XRI tells us which ray generated the UI hit; don't vibrate both controllers.
         if (data is TrackedDeviceEventData tracked && tracked.interactor is XRBaseInputInteractor ray &&
+            ray.handedness == InteractorHandedness.Right &&
             ray.GetComponentInParent<ControllerInputActionManager>() != null)
             ray.SendHapticImpulse(0.2f, 0.04f);
     }

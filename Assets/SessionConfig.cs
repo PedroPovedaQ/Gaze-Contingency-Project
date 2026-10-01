@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// Which voice the assistant speaks in for this run.
 ///   Generic    = neutral ElevenLabs voice (legacy enum name retained).
-///   SelfSimilar = a voice cloned from the participant via Mistral Voxtral.
+///   SelfSimilar = a voice cloned from the participant via ElevenLabs.
 /// </summary>
 public enum VoiceCondition
 {
@@ -35,6 +35,9 @@ public enum NeutralVoiceProfile { Female, Male }
 /// </summary>
 public static class SessionConfig
 {
+    public const string InteractionPolicy = "right_controller_ray_trigger_v2";
+    public const string RepeatEventVersion = "guidance-repeat-v1";
+    public const string GuidanceAuditVersion = "guidance-decision-v1";
     const string k_RootFolder = "GazeData";
     const string k_Tag = "[Session]";
 
@@ -83,24 +86,30 @@ public static class SessionConfig
     public static string NeutralVoiceName => NeutralName(NeutralProfile, NeutralVoiceOption);
     public static string NeutralVoiceId => NeutralId(NeutralProfile, NeutralVoiceOption);
 
+    public const int NeutralVoiceCount = 6;
+    public const string NeutralCatalogVersion = "elevenlabs-six-per-gender-v1";
+    // Preserve every existing saved option. Liam/Laura are appended, not inserted.
+    // Provider metadata checked Oct 1: both additions are American English; Janet
+    // keeps its legacy request alias. These labels do not infer participant identity.
+    static readonly string[] MaleNames = { "Eric", "Roger", "Chris", "Will", "Brian", "Liam" };
+    static readonly string[] FemaleNames = { "Janet", "Sarah", "Jessica", "Matilda", "Bella", "Laura" };
+    static readonly string[] MaleIds = { "cjVigY5qzO86Huf0OWal", "CwhRBWXzGAHq8TQ4Fs17", "iP95p4xoKVk53GoZ742B", "bIHbv24MWmeRgasZH58o", "nPczCjzI2devNBz1zQrb", "TX3LPaxmHKxFdv7VOQHJ" };
+    static readonly string[] FemaleIds = { "21m00Tcm4TlvDq8ikWAM", "EXAVITQu4vr4xnSDxMaL", "cgSgspJ2msm6clMCkdW9", "XrExE9yKIg1WjnnlVkGX", "hpp4J3VqNfWAUOO0d1Us", "FGY2WhTYpPnrIDTdsKH5" };
+
     public static string NeutralName(NeutralVoiceProfile gender, int option)
     {
         ValidateNeutral(gender, option);
-        return gender == NeutralVoiceProfile.Male ? (option == 0 ? "Eric" : "Roger") : (option == 0 ? "Janet" : "Sarah");
+        return (gender == NeutralVoiceProfile.Male ? MaleNames : FemaleNames)[option];
     }
     public static string NeutralId(NeutralVoiceProfile gender, int option)
     {
         ValidateNeutral(gender, option);
-        // The provider resolves the historical Rachel ID to Janet. Retain the
-        // existing endpoint/cache namespace; add one new American voice per gender.
-        return gender == NeutralVoiceProfile.Male
-            ? (option == 0 ? "cjVigY5qzO86Huf0OWal" : "CwhRBWXzGAHq8TQ4Fs17")
-            : (option == 0 ? "21m00Tcm4TlvDq8ikWAM" : "EXAVITQu4vr4xnSDxMaL");
+        return (gender == NeutralVoiceProfile.Male ? MaleIds : FemaleIds)[option];
     }
     static void ValidateNeutral(NeutralVoiceProfile gender, int option)
     {
-        if (!System.Enum.IsDefined(typeof(NeutralVoiceProfile), gender) || option < 0 || option > 1)
-            throw new System.ArgumentOutOfRangeException(nameof(option), "Choose one of the two voices for this gender.");
+        if (!System.Enum.IsDefined(typeof(NeutralVoiceProfile), gender) || option < 0 || option >= NeutralVoiceCount)
+            throw new System.ArgumentOutOfRangeException(nameof(option), "Choose one of the six voices for this gender.");
     }
     public static void SelectNeutralVoice(NeutralVoiceProfile gender, int option)
     {
@@ -111,7 +120,7 @@ public static class SessionConfig
         ? "selfsimilar" : "neutral-" + NeutralProfile.ToString().ToLowerInvariant();
 
     /// <summary>
-    /// Mistral Voxtral voice id for the self-similar clone (set at enrollment).
+    /// ElevenLabs voice id for the self-similar clone (set at enrollment).
     /// Empty until a voice has been cloned this session.
     /// </summary>
     public static string SelfSimilarVoiceId { get; set; } = "";
@@ -175,8 +184,29 @@ public static class SessionConfig
         }
         File.WriteAllText(choicePath, $"{NeutralProfile}|{NeutralVoiceOption}");
         File.WriteAllText(profilePath, NeutralProfile.ToString());
+        using (var catalog = new StreamWriter(Path.Combine(ParticipantPath, "neutral-catalog-v1.json")))
+            WriteNeutralCatalog(catalog);
         VoiceBlocksEnabled = true;
         ApplyRoundVoice(0);
+    }
+
+    /// <summary>
+    /// Save available choices and stable request IDs, not an assertion that every
+    /// candidate was heard or rated. All strings here come from the fixed catalog.
+    /// </summary>
+    public static void WriteNeutralCatalog(TextWriter writer)
+    {
+        writer.WriteLine($"{{\"schema\":1,\"catalog_version\":\"{NeutralCatalogVersion}\",\"provider\":\"elevenlabs\",\"candidates\":[");
+        for (int genderIndex = 0; genderIndex < 2; genderIndex++)
+        {
+            var gender = genderIndex == 0 ? NeutralVoiceProfile.Male : NeutralVoiceProfile.Female;
+            for (int option = 0; option < NeutralVoiceCount; option++)
+            {
+                if (genderIndex != 0 || option != 0) writer.WriteLine(",");
+                writer.Write($"{{\"gender_presentation\":\"{gender}\",\"option\":{option},\"name\":\"{NeutralName(gender, option)}\",\"request_voice_id\":\"{NeutralId(gender, option)}\"}}");
+            }
+        }
+        writer.WriteLine("]}");
     }
 
     public static VoiceCondition VoiceForRound(int round)
@@ -232,12 +262,14 @@ public static class SessionConfig
         string folderName = $"run_{RunNumber:D3}_{ConditionLabel}_{timestamp}";
         CurrentRunFolder = Path.Combine(participantDir, folderName);
         Directory.CreateDirectory(CurrentRunFolder);
+        using (var catalog = new StreamWriter(Path.Combine(CurrentRunFolder, "neutral-catalog-v1.json")))
+            WriteNeutralCatalog(catalog);
 
         // Keep the selected wording perspective alongside the run so analysis
         // never has to infer it from cached audio or the voice block order.
         File.WriteAllText(
             Path.Combine(CurrentRunFolder, "session-perspective-v1.txt"),
-            $"perspective_policy=neutral_external_self_first_person\nversion={PerspectiveVersion}\n");
+            $"perspective_policy=shared_participant_directed_imperative\nversion={PerspectiveVersion}\n");
 
         Debug.Log($"{k_Tag} Run started: {ParticipantId} / run {RunNumber} / {ConditionLabel}");
         Debug.Log($"{k_Tag} Output folder: {CurrentRunFolder}");

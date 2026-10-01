@@ -105,7 +105,7 @@ public class TrialDataLogger : MonoBehaviour
 
     void OnDisable()
     {
-        if (m_EventWriter != null) OnSessionStopped("interrupted");
+        if (m_EventWriter != null && m_SessionOutcome != "completed") OnSessionStopped("interrupted");
         if (m_GameManager != null)
         {
             m_GameManager.OnGameStarted -= OnGameStarted;
@@ -325,15 +325,30 @@ public class TrialDataLogger : MonoBehaviour
         WriteSummary(elapsedSeconds);
         m_LastRunStatsText = BuildParticipantStatsText(elapsedSeconds);
 
+        StartCoroutine(CloseAfterFinalFeedback());
+    }
+
+    System.Collections.IEnumerator CloseAfterFinalFeedback()
+    {
+        // Other completion subscribers may queue reinforcement on this same frame.
+        yield return null;
+        while (GetComponent<VoiceAssistantController>()?.SuccessFeedbackBusy == true || (m_Voice != null && m_Voice.IsBusy))
+            yield return null;
         CloseEventWriter();
         m_ActiveObjectiveIndex = -1;
+    }
+
+    public void RecordSuccessEffect(bool started, float duration)
+    {
+        WriteEvent(started ? "audio_effect_start" : "audio_effect_end", "", "", "", -1, false, duration,
+            "context=success_effect;clip_id=success_chime_v1;timing=software_audio_call");
     }
 
     // --- Per-frame fixation tracking ---
 
     void Update()
     {
-        if (m_GazeInteractor == null || m_GameManager == null) return;
+        if (m_GameManager == null) return;
         if (!m_GameManager.SearchActive) return;
         if (m_ActiveObjectiveIndex < 0 || m_ActiveObjectiveIndex >= m_ObjectiveRecords.Count) return;
 
@@ -342,10 +357,8 @@ public class TrialDataLogger : MonoBehaviour
         bool hoveredIsTarget = false;
         int hoveredLevel = -1;
 
-        var hovered = m_GazeInteractor.interactablesHovered;
-        if (hovered.Count > 0 && hovered[0] != null)
+        if (SharedGazeStream.Instance != null && SharedGazeStream.Instance.TryHit(out var info))
         {
-            var info = hovered[0].transform.GetComponent<SpawnableObjectInfo>();
             if (info != null)
             {
                 hoveredId = info.objectId;
@@ -371,7 +384,7 @@ public class TrialDataLogger : MonoBehaviour
                 m_CurrentFixationObject = hoveredId;
                 m_CurrentFixationIsTarget = hoveredIsTarget;
                 m_FixationStartTime = Time.time;
-                m_CurrentFixationGazeDir = m_GazeInteractor.transform.forward;
+                m_CurrentFixationGazeDir = SharedGazeStream.Instance.Latest.worldDirection;
 
                 // Saccade: angular distance from previous fixation to this one
                 if (m_HasLastFixation && m_ActiveObjectiveIndex >= 0
@@ -501,20 +514,26 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine(FormattableString.Invariant($"  \"voice_condition\": \"{(SessionConfig.VoiceBlocksEnabled ? "counterbalanced" : SessionConfig.VoiceTag)}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"neutral_voice_profile\": \"{SessionConfig.NeutralProfile.ToString().ToLowerInvariant()}\","));
         sb.AppendLine($"  \"neutral_voice_name\": \"{SessionConfig.NeutralVoiceName}\",");
+        sb.AppendLine($"  \"neutral_catalog_version\": \"{SessionConfig.NeutralCatalogVersion}\",");
         sb.AppendLine($"  \"neutral_voice_id\": \"{SessionConfig.NeutralVoiceId}\",");
         sb.AppendLine($"  \"neutral_voice_option\": {SessionConfig.NeutralVoiceOption},");
         sb.AppendLine(FormattableString.Invariant($"  \"session_id\": \"{m_SessionId}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"timestamp\": \"{System.DateTime.Now:O}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"challenge_set\": \"{ChallengeSet.ScheduleVersion}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"schedule_seed\": {ChallengeSet.ScheduleSeed},"));
+        sb.AppendLine($"  \"target_identity_policy\": \"{ChallengeSet.TargetIdentityPolicy}\",");
+        sb.AppendLine($"  \"height_assignment_policy\": \"{ChallengeSet.HeightAssignmentPolicy}\",");
         sb.AppendLine($"  \"angle_balance_applied\": {(m_GameManager.RotationalBetaEnabled ? "true" : "false")},");
         sb.AppendLine("  \"theta_reference\": \"previous_target_wall_center\",");
         sb.AppendLine(FormattableString.Invariant($"  \"round_schedule\": \"always_gaze_aware\","));
         sb.AppendLine(FormattableString.Invariant($"  \"schema_version\": 2,"));
         sb.AppendLine(FormattableString.Invariant($"  \"session_outcome\": \"{m_SessionOutcome}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"voice_order\": \"{SessionConfig.VoiceOrder}\","));
-        sb.AppendLine($"  \"voice_perspective\": \"neutral_external_self_first_person\", \"perspective_version\": \"{VoicePromptText.Version}\",");
+        sb.AppendLine($"  \"voice_perspective\": \"shared_participant_directed_imperative\", \"perspective_version\": \"{VoicePromptText.Version}\",");
+        sb.AppendLine("  \"eye_event_measurement\": \"ray_intersection_proxy_not_validated_fixation\",");
         sb.AppendLine($"  \"guidance_policy\": \"{DirectionalHintPolicy.Version}\",");
+        sb.AppendLine($"  \"guidance_audit_version\": \"{SessionConfig.GuidanceAuditVersion}\",");
+        sb.AppendLine($"  \"interaction_policy\": \"{SessionConfig.InteractionPolicy}\", \"repeat_event_version\": \"{SessionConfig.RepeatEventVersion}\",");
         sb.AppendLine(FormattableString.Invariant($"  \"total_rounds\": {ChallengeSet.RoundCount},"));
         sb.AppendLine(FormattableString.Invariant($"  \"nominal_total_rounds\": {ChallengeSet.TotalRounds},"));
         sb.AppendLine(FormattableString.Invariant($"  \"debug_round_override\": {ChallengeSet.DebugRoundCountOverride},"));
@@ -551,7 +570,7 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine(FormattableString.Invariant($"  \"total_fixation_on_distractors_seconds\": {totalFixationOnDistractors:F2},"));
 
         // Blink stats
-        bool hasBlinkSignal = m_GazeDataLogger != null && m_GazeDataLogger.HasBlinkSignal;
+        bool hasBlinkSignal = false; // Blink candidates require offline validation; legacy loss counts are not blinks.
         int blinkCount = hasBlinkSignal ? m_GazeDataLogger.BlinkCount : -1;
         float blinksPerMinute = wallTime > 0 && blinkCount >= 0
             ? blinkCount / (wallTime / 60f) : -1f;
@@ -711,7 +730,7 @@ public class TrialDataLogger : MonoBehaviour
         float targetFixPct = fixTotal > 0f ? (100f * totalFixTarget / fixTotal) : 0f;
         float distractorFixPct = fixTotal > 0f ? (100f * totalFixDistractor / fixTotal) : 0f;
 
-        bool hasBlinkSignal = m_GazeDataLogger != null && m_GazeDataLogger.HasBlinkSignal;
+        bool hasBlinkSignal = false; // Blink candidates require offline validation; legacy loss counts are not blinks.
         int blinkCount = hasBlinkSignal ? m_GazeDataLogger.BlinkCount : -1;
         float blinksPerMinute = totalTime > 0f && blinkCount >= 0
             ? blinkCount / (totalTime / 60f) : -1f;

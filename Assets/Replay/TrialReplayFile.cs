@@ -171,16 +171,32 @@ public sealed class TrialReplayWriter : IDisposable
         string json = JsonUtility.ToJson(record);
         return Enqueue(() => { m_Stream.WriteLine(json); });
     }
+    public bool Append(GazeObservation observation)
+    {
+        string json = JsonUtility.ToJson(observation);
+        return Enqueue(() => m_Stream.WriteLine(json));
+    }
     public bool Asset(string path, byte[] bytes) => Enqueue(() =>
     {
         using (var f = new FileStream(path, FileMode.CreateNew)) f.Write(bytes, 0, bytes.Length);
     });
+    // Ordered behind preceding records, including the pause marker. Do not stall
+    // the Unity thread on slow storage; this is a best-effort flush, not fsync or
+    // a guarantee against the OS killing/freezing the process immediately.
+    public bool RequestFlush() => Enqueue(() => m_Stream.Flush());
     bool Enqueue(Action action)
     {
         if (m_Closed || m_Error != null) return false;
-        if (m_Queue.TryAdd(action)) return true;
-        m_Error = "Replay write queue overflow; recording stopped without dropping evidence silently.";
-        m_Queue.CompleteAdding();
+        try
+        {
+            if (m_Queue.TryAdd(action)) return true;
+            m_Error = "Replay write queue overflow; recording stopped without dropping evidence silently.";
+            m_Queue.CompleteAdding();
+        }
+        catch (ObjectDisposedException)
+        { m_Error = m_Error ?? "Replay writer exited before accepting the queued write."; }
+        catch (InvalidOperationException)
+        { m_Error = m_Error ?? "Replay writer closed before accepting the queued write."; }
         return false;
     }
     void WriteLoop()

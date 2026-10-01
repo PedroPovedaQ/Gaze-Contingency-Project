@@ -11,7 +11,7 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
 /// <summary>
-/// 20-round conjunction search game with eight-plane beta or table-shelf layouts.
+/// 80-round conjunction search game with eight-plane beta or table-shelf layouts.
 /// Player finds 1 target via controller ray and trigger. On correct capture: show fixation cross,
 /// destroy objects, wait, spawn fresh, finalize gaze interactables, go.
 /// </summary>
@@ -39,6 +39,11 @@ public class FindObjectGameManager : MonoBehaviour
     public event System.Action<string> OnCheckpoint;
     public bool SearchActive { get; private set; }
     public bool IsPractice { get; private set; }
+    // The trial currently presented, retained through its success feedback.
+    // CurrentObjectiveIndex advances on capture and is therefore not a recording ID.
+    public int PresentedRoundIndex { get; private set; } = -1;
+    public bool PresentedRoundIsPractice { get; private set; }
+    public string PresentedVoiceTag { get; private set; }
     int m_PracticeIndex;
     public float CurrentSearchSeconds => (float)m_SearchClock.Elapsed(Time.timeAsDouble);
     readonly StudyTrialClock m_SearchClock = new StudyTrialClock();
@@ -328,6 +333,7 @@ public class FindObjectGameManager : MonoBehaviour
         Physics.IgnoreLayerCollision(8, 8, true);
         m_Spawner = GetComponent<ObjectSpawner>();
         if (m_Spawner == null) return;
+        if (GetComponent<StudyRayControls>() == null) gameObject.AddComponent<StudyRayControls>();
         m_Readiness = GetComponent<TrialReadinessGate>();
         if (m_Readiness == null) m_Readiness = gameObject.AddComponent<TrialReadinessGate>();
         if (GetComponent<TrialReplayRecorder>() == null) gameObject.AddComponent<TrialReplayRecorder>();
@@ -530,6 +536,7 @@ public class FindObjectGameManager : MonoBehaviour
         m_State = GameState.Transitioning;
         m_GameStartTime = Time.time;
         m_CurrentRound = 0;
+        PresentedRoundIndex = -1;
         m_UI.StartTimer();
         m_UI.PauseTimer();
         BuildObjectiveList();
@@ -623,6 +630,7 @@ public class FindObjectGameManager : MonoBehaviour
 
     IEnumerator FinishPractice()
     {
+        while (GetComponent<VoiceAssistantController>()?.SuccessFeedbackBusy == true) yield return null;
         m_State = GameState.Transitioning;
         foreach (var obj in m_SpawnedObjects) if (obj != null) Destroy(obj);
         m_SpawnedObjects.Clear();
@@ -795,6 +803,7 @@ public class FindObjectGameManager : MonoBehaviour
             {
                 GetComponent<VoiceSynthesizer>()?.Stop(); GetComponent<HintGenerator>()?.CancelPending();
                 m_ControllerSelector?.ResetSelection();
+                GetComponent<VoiceAssistantController>()?.PlaySuccessFeedback();
                 m_PracticeIndex++;
                 if (m_PracticeIndex < 2) { SetPracticeObjective(); StartCoroutine(TransitionToNextRound()); }
                 else StartCoroutine(FinishPractice());
@@ -834,6 +843,7 @@ public class FindObjectGameManager : MonoBehaviour
 
     IEnumerator TransitionToNextRound()
     {
+        while (GetComponent<VoiceAssistantController>()?.SuccessFeedbackBusy == true) yield return null;
         m_State = GameState.Transitioning;
         if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
 
@@ -886,6 +896,7 @@ public class FindObjectGameManager : MonoBehaviour
         Vector3 crossPosition = m_SpawnCenter + rotation * Vector3.forward * m_RotationalRadius;
         crossPosition.y = m_FloorHeight + (m_MinObjectHeight + m_MaxObjectHeight) * 0.5f;
         // Establish replay/trial identity before the first readiness event or next instruction.
+        SetPresentedTrialContext();
         OnRoundTransitionStarted?.Invoke(m_CurrentRound, planned.target.color, planned.target.shape);
         m_Readiness.Begin(m_LastCompletedPlane, crossPosition, rotation, planned.target.color, planned.target.shape, IsPractice);
         // Let destruction finish, then prepare hidden objects while the cross charges.
@@ -893,6 +904,14 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_TechnicallyStopped) yield break;
         m_State = GameState.Playing;
         yield return DoSpawnRound();
+    }
+
+    // Called only when the next trial is actually presented, not at capture time.
+    void SetPresentedTrialContext()
+    {
+        PresentedRoundIndex = m_CurrentRound;
+        PresentedRoundIsPractice = IsPractice;
+        PresentedVoiceTag = SessionConfig.VoiceBlocksEnabled ? SessionConfig.VoiceLabelForRound(m_CurrentRound) : SessionConfig.VoiceTag;
     }
 
     void ShowCurrentObjective()

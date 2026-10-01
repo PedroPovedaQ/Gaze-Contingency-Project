@@ -31,6 +31,10 @@ public class StudyCheckpoint : MonoBehaviour
         RayMenuFeedback.CreateButton(m_Panel.transform, actionPrompt, new Vector2(0, -155), new Vector2(440, 64), Confirm);
         Waiting = true;
     }
+    public void SetVisible(bool visible)
+    {
+        if (m_Panel != null) m_Panel.SetActive(visible && Waiting);
+    }
     public void Confirm()
     {
         if (!Waiting || !Application.isFocused) return;

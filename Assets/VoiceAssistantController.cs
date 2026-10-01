@@ -13,17 +13,14 @@ public class VoiceAssistantController : MonoBehaviour
     const string k_Tag = "[VoiceAssist]";
     const string k_KeysFile = "api_keys.json";
     const string k_IntroLine =
-        "Hi, I will guide you through this task. " +
-        "Your goal in this experiment is to locate the target object by its color and shape as quickly and accurately as you can. " +
-        "Point your controller ray at an object to highlight it, then press the trigger to select it. " +
-        "To begin, tap a nearby surface with your controller. " +
-        "Your goal will be displayed in the center of your view each round.";
+        "You will use the agent's guidance to find an object whose identity is not shown to you. " +
+        "Follow the directions, point your right controller at the object, then press the trigger to select it. " +
+        "Stay seated and use the chair to turn.";
     const string k_ClosingLine =
         "Thank you for your participation in this experiment, please remove the headset now and have a great day";
-    const string k_RotationalIntroLine =
-        "Welcome to the surrounding search. Stay seated at the center. " +
-        "Objects will appear on eight planes around you. Turn to search for the target by its color and shape. " +
-        "Point your controller ray at the matching object to highlight it, then press the trigger to select it. Your first two rounds are practice.";
+    const string k_RotationalIntroLine = k_IntroLine +
+        " Objects will surround you. The agent will guide you to the right area, then help you look up or down. " +
+        "Your first two trials will be practice.";
     static string StudyIntroLine => FindObjectOfType<FindObjectGameManager>()?.RotationalBetaEnabled == true
         ? k_RotationalIntroLine : k_IntroLine;
     public void PlayStudyIntroduction() => HandleInitialStartPressed();
@@ -36,7 +33,11 @@ public class VoiceAssistantController : MonoBehaviour
     VoiceSynthesizer m_VoiceSynthesizer;
     GazeCoverageTracker m_CoverageTracker;
     AudioSource m_EffectAudioSource;
-    AudioClip m_WrongCaptureCue;
+    AudioClip m_WrongCaptureCue, m_SuccessCue;
+    Coroutine m_SuccessRoutine;
+    int m_SuccessVariant;
+    public bool SuccessFeedbackBusy { get; private set; }
+    static readonly string[] k_SuccessPhrases = { "Nice work.", "Well done.", "You got it.", "That's it. Nicely done." };
     Coroutine m_RoundAnnounceCoroutine;
     Coroutine m_IntroAnnounceCoroutine;
     VoiceModeSelector m_VoiceModeSelector;
@@ -86,6 +87,7 @@ public class VoiceAssistantController : MonoBehaviour
         m_EffectAudioSource.playOnAwake = false;
         m_EffectAudioSource.volume = 0.26f;
         m_WrongCaptureCue = CreateWrongCaptureCue();
+        m_SuccessCue = CreateSuccessCue();
 
         m_VoiceSynthesizer = gameObject.AddComponent<VoiceSynthesizer>();
         m_HintGenerator = gameObject.AddComponent<HintGenerator>();
@@ -107,7 +109,6 @@ public class VoiceAssistantController : MonoBehaviour
     IEnumerator LoadKeys()
     {
         string elevenLabsKey = "";
-        string mistralKey = "";
         string keysPath = System.IO.Path.Combine(Application.streamingAssetsPath, k_KeysFile);
 
         string url = keysPath;
@@ -122,7 +123,6 @@ public class VoiceAssistantController : MonoBehaviour
             {
                 var keys = JsonUtility.FromJson<ApiKeys>(request.downloadHandler.text);
                 elevenLabsKey = keys.elevenlabs_key;
-                mistralKey = keys.mistral_key;
                 Debug.Log($"{k_Tag} Loaded API keys");
             }
             else
@@ -132,13 +132,13 @@ public class VoiceAssistantController : MonoBehaviour
         }
 
         // Initialize sub-systems with the loaded keys
-        m_VoiceSynthesizer.Initialize(elevenLabsKey, mistralKey);
+        m_VoiceSynthesizer.Initialize(elevenLabsKey);
         m_VoiceSynthesizer.PlaybackFailed += HandleAudioFailure;
         m_HintGenerator.Initialize(elevenLabsKey, m_AgentContext, m_VoiceSynthesizer, m_CoverageTracker);
 
         // Self-similar voice: enrollment (mic -> clone) + the on-entry mode picker.
         var enrollment = gameObject.AddComponent<VoiceEnrollment>();
-        enrollment.Initialize(m_VoiceSynthesizer.Voxtral);
+        enrollment.Initialize(m_VoiceSynthesizer.CloneClient);
         m_VoiceModeSelector = gameObject.AddComponent<VoiceModeSelector>();
         m_VoiceModeSelector.SelectionCompleted += HandleVoiceSelected;
         m_VoiceModeSelector.Initialize(enrollment, m_VoiceSynthesizer);
@@ -159,13 +159,11 @@ public class VoiceAssistantController : MonoBehaviour
     public const string AudioCheckLine = VoicePromptText.AudioLevelCheck;
     public static string RoundPhrase(int round, string color, string shape, bool isPractice = false) =>
         (isPractice ? "This is a practice round. It does not count toward the study. " : "") +
-        (color == "Yellow" && shape == "Star"
-            ? "Locate the star, yellow color."
-            : $"Locate the {color} {shape}.");
+        "Follow the guidance to find the object.";
     public static string[] PhraseLibrary()
     {
         var phrases = new System.Collections.Generic.HashSet<string>(HintGenerator.AllPhrases());
-        phrases.Add(k_CompletionLine); phrases.Add(StudyIntroLine); phrases.Add(k_ClosingLine); phrases.Add(AudioCheckLine); phrases.Add("Nice!");
+        phrases.Add(k_CompletionLine); phrases.Add(StudyIntroLine); phrases.Add(k_ClosingLine); phrases.Add(AudioCheckLine); phrases.UnionWith(k_SuccessPhrases);
         foreach (var round in ChallengeSet.Rounds)
         {
             phrases.Add(RoundPhrase(round.roundIndex, round.target.color, round.target.shape));
@@ -184,7 +182,8 @@ public class VoiceAssistantController : MonoBehaviour
     {
         var practice = ChallengeSet.PracticeRound(0);
         var phrases = new System.Collections.Generic.List<string>(HintGenerator.AllPhrases());
-        phrases.AddRange(new[] { AudioCheckLine, StudyIntroLine, "Nice!",
+        phrases.AddRange(k_SuccessPhrases);
+        phrases.AddRange(new[] { AudioCheckLine, StudyIntroLine,
             RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape, true),
             VoicePromptText.WrongSelectionPhrase(practice.target.color, practice.target.shape) });
         return phrases.ToArray();
@@ -298,15 +297,39 @@ public class VoiceAssistantController : MonoBehaviour
             m_HintGenerator.CancelPending();
     }
 
-    void HandleObjectFound(int roundIndex)
-    {
-        // Round ended: hard-stop any ongoing speech so we don't carry audio
-        // across the round transition.
-        if (m_VoiceSynthesizer != null) m_VoiceSynthesizer.Stop();
-        if (m_HintGenerator != null) m_HintGenerator.CancelPending();
+    void HandleObjectFound(int roundIndex) => PlaySuccessFeedback();
 
-        if (m_VoiceSynthesizer != null)
-            m_VoiceSynthesizer.Speak("Nice!", "congrats");
+    public void PlaySuccessFeedback()
+    {
+        m_HintGenerator?.CancelPending(); m_VoiceSynthesizer?.Stop();
+        if (m_SuccessRoutine != null) StopCoroutine(m_SuccessRoutine);
+        m_SuccessRoutine = StartCoroutine(SuccessFeedback());
+    }
+    IEnumerator SuccessFeedback()
+    {
+        SuccessFeedbackBusy = true;
+        if (m_SuccessCue != null && m_EffectAudioSource != null)
+        {
+            m_EffectAudioSource.PlayOneShot(m_SuccessCue);
+            GetComponent<TrialReplayRecorder>()?.RecordEffect(m_SuccessCue, "success_chime", m_EffectAudioSource.volume);
+            GetComponent<TrialDataLogger>()?.RecordSuccessEffect(true, m_SuccessCue.length);
+            yield return new WaitForSecondsRealtime(m_SuccessCue.length);
+            GetComponent<TrialDataLogger>()?.RecordSuccessEffect(false, m_SuccessCue.length);
+        }
+        // The manager waits before changing voice/block. Reinforcement belongs to the completed trial.
+        m_VoiceSynthesizer?.Speak(k_SuccessPhrases[m_SuccessVariant++ % k_SuccessPhrases.Length], "congrats");
+        while (m_VoiceSynthesizer != null && m_VoiceSynthesizer.IsBusy) yield return null;
+        SuccessFeedbackBusy = false; m_SuccessRoutine = null;
+    }
+    static AudioClip CreateSuccessCue()
+    {
+        const int rate = 22050; var samples = new float[(int)(rate*.38f)];
+        for (int i=0;i<samples.Length;i++)
+        {
+            float t=i/(float)rate;
+            samples[i]=.25f*Mathf.Sin(2*Mathf.PI*(t<.12f?660:880)*t)*Mathf.Min(1,t/.01f)*Mathf.Exp(-8*t);
+        }
+        var clip=AudioClip.Create("success_chime_v1",samples.Length,1,rate,false);clip.SetData(samples,0);return clip;
     }
 
     void HandleRoundReady(int round, string color, string shape)
@@ -416,14 +439,12 @@ public class VoiceAssistantController : MonoBehaviour
         }
     }
 
-    void HandleGameCompleted(float elapsedSeconds)
+    void HandleGameCompleted(float elapsedSeconds) => StartCoroutine(CompleteAfterSuccess());
+    IEnumerator CompleteAfterSuccess()
     {
-        if (m_HintGenerator != null) m_HintGenerator.CancelPending();
-        if (m_VoiceSynthesizer != null)
-        {
-            m_VoiceSynthesizer.Stop();
-            m_VoiceSynthesizer.Speak(k_CompletionLine, "completion");
-        }
+        while (SuccessFeedbackBusy) yield return null;
+        m_HintGenerator?.CancelPending();
+        m_VoiceSynthesizer?.Speak(k_CompletionLine, "completion");
     }
 
     public void SpeakClosingThankYou()
@@ -439,7 +460,6 @@ public class VoiceAssistantController : MonoBehaviour
     struct ApiKeys
     {
         public string elevenlabs_key;
-        public string mistral_key;
     }
 
     static AudioClip CreateWrongCaptureCue()

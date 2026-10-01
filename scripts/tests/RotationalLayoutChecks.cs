@@ -11,30 +11,43 @@ class RotationalLayoutChecks
             Check(phrase != "Try looking right.", "self-similar right rotation omits rejected phrase");
             selfRight.Add(phrase);
         }
-        Check(selfRight.Count == 3, "self-similar right rotation has three distinct alternatives");
-        Check(DirectionalHintPolicy.Variant(DirectionalHintPolicy.RightPhrase, 2) == "Try looking right.",
+        Check(selfRight.Count == 8, "self-similar right rotation has eight shared alternatives");
+        Check(DirectionalHintPolicy.Variant(DirectionalHintPolicy.RightPhrase, 2) == "A little more right.",
             "neutral right rotation remains unchanged");
-        Check(DirectionalHintPolicy.Variant(DirectionalHintPolicy.LeftPhrase, 2, true) == "Try looking left.",
+        Check(DirectionalHintPolicy.Variant(DirectionalHintPolicy.LeftPhrase, 2, true) == "A little more left.",
             "left rotation remains unchanged");
+        foreach (var category in new[] { DirectionalHintPolicy.AreaPhrase, DirectionalHintPolicy.ReturnPhrase })
+        {
+            var variants = new System.Collections.Generic.HashSet<string>();
+            for (int i = 0; i < 8; i++) variants.Add(DirectionalHintPolicy.Variant(category, i));
+            Check(variants.Count == 4, "arrival and return cues each have four alternatives");
+        }
+        foreach (var direction in new[] { DirectionalHintPolicy.LeftPhrase, DirectionalHintPolicy.RightPhrase })
+        {
+            var variants = new System.Collections.Generic.HashSet<string>();
+            for (int i = 0; i < 8; i++) variants.Add(DirectionalHintPolicy.Variant(direction, i, false, true));
+            Check(variants.Count == 4, "large turns have four directional alternatives");
+        }
+        Check(DirectionalHintPolicy.AllPhrases().Length == 44, "all 44 distinct guidance phrases are prepared");
         foreach (int degrees in new[] { -179, -135, -91, -90, -45, 0, 45, 90, 91, 135, 179 })
         {
             double radians = degrees * Math.PI / 180;
             string direction = DirectionalHintPolicy.Direction(0, 1, (float)Math.Sin(radians), (float)Math.Cos(radians), out bool far);
-            Check(far == (Math.Abs(degrees) > 90), "strong cue uses strictly over two 45-degree steps");
+            Check(far == (Math.Abs(degrees) > 45), "strong cue uses strictly over one 45-degree steps");
             string phrase = DirectionalHintPolicy.Variant(direction, 0, false, far);
-            if (far) Check(phrase == (direction == DirectionalHintPolicy.LeftPhrase ? "Look way left." : "Look way right."),
+            if (far) Check(phrase == (direction == DirectionalHintPolicy.LeftPhrase ? "Turn to your left." : "Turn to your right."),
                 "large turn produces a matching strong directional phrase");
         }
         DirectionalHintPolicy.Direction(0, 10, 10, 0, out bool exactlyTwo);
-        Check(!exactlyTwo, "exactly ninety degrees stays ordinary regardless of vector length");
+        Check(exactlyTwo, "ninety degrees requires a turn regardless of vector length");
         double almostFull = 359 * Math.PI / 180, justPastZero = Math.PI / 180;
         string wrapped = DirectionalHintPolicy.Direction((float)Math.Sin(almostFull), (float)Math.Cos(almostFull),
             (float)Math.Sin(justPastZero), (float)Math.Cos(justPastZero), out bool farWrap);
         Check(wrapped == DirectionalHintPolicy.RightPhrase && !farWrap, "359-to-1 degree wrap is a short right turn");
         DirectionalHintPolicy.Direction(float.NaN, 1, 1, 0, out bool farInvalid);
         Check(!farInvalid, "invalid gaze does not produce a strong cue");
-        Check(Array.IndexOf(DirectionalHintPolicy.AllPhrases(), "Look way left.") >= 0 &&
-            Array.IndexOf(DirectionalHintPolicy.AllPhrases(), "Look way right.") >= 0, "both strong cues are preloaded");
+        Check(Array.IndexOf(DirectionalHintPolicy.AllPhrases(), "Turn to your left.") >= 0 &&
+            Array.IndexOf(DirectionalHintPolicy.AllPhrases(), "Turn to your right.") >= 0, "both strong cues are preloaded");
         foreach (float radius in new[] { 1f, 1.5f, 3f })
         for (int seed = 42000; seed < 42030; seed++)
         {
@@ -80,9 +93,9 @@ class RotationalLayoutChecks
         foreach (string direction in new[] { "Look left.", "Look right." })
         {
             var variants = new System.Collections.Generic.HashSet<string>();
-            for (int i = 0; i < 4; i++) variants.Add(DirectionalHintPolicy.Variant(direction, i));
-            Check(variants.Count == 4, "original plus three distinct alternatives in each direction");
-            Check(DirectionalHintPolicy.Variant(direction, 4) == direction, "phrases cycle before repeating");
+            for (int i = 0; i < 8; i++) variants.Add(DirectionalHintPolicy.Variant(direction, i));
+            Check(variants.Count == 8, "eight distinct alternatives in each direction");
+            Check(DirectionalHintPolicy.Variant(direction, 8) == direction, "phrases cycle before repeating");
             foreach (var phrase in variants)
                 Check(phrase.Contains(direction == "Look left." ? "left" : "right"), "variant preserves direction");
         }

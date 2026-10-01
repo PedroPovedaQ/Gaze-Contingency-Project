@@ -6,17 +6,17 @@ using UnityEngine.Android;
 #endif
 
 /// <summary>
-/// Records a short microphone sample and clones it via <see cref="VoxtralClient"/>,
+/// Records a short microphone sample and clones it via <see cref="ElevenLabsVoiceClient"/>,
 /// storing the resulting voice id in <see cref="SessionConfig.SelfSimilarVoiceId"/>.
 /// Drives the self-similar launch mode's enrollment step.
 /// </summary>
 public class VoiceEnrollment : MonoBehaviour
 {
     const string k_Tag = "[Enroll]";
-    const int k_SampleRate = 16000;   // mono 16 kHz keeps the base64 sample small
+    const int k_SampleRate = 16000;   // mono 16 kHz keeps the WAV upload small
     const int k_DefaultSeconds = 40;
 
-    VoxtralClient m_Voxtral;
+    ElevenLabsVoiceClient m_CloneClient;
     AudioClip m_RecordingClip;
     bool m_Busy;
     bool m_FinishRequested;
@@ -33,11 +33,11 @@ public class VoiceEnrollment : MonoBehaviour
     public string LastError { get; private set; } = "";
     public bool IsBusy => m_Busy;
 
-    public void Initialize(VoxtralClient voxtral)
+    public void Initialize(ElevenLabsVoiceClient client)
     {
-        m_Voxtral = voxtral != null ? voxtral : GetComponent<VoxtralClient>();
-        if (m_Voxtral == null)
-            Debug.LogWarning($"{k_Tag} No VoxtralClient supplied — enrollment will fail.");
+        m_CloneClient = client != null ? client : GetComponent<ElevenLabsVoiceClient>();
+        if (m_CloneClient == null)
+            Debug.LogWarning($"{k_Tag} No ElevenLabsVoiceClient supplied — enrollment will fail.");
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public class VoiceEnrollment : MonoBehaviour
         LastError = "";
         void Set(State s) { Current = s; onState?.Invoke(s); }
 
-        if (m_Voxtral == null || !m_Voxtral.HasKey)
+        if (m_CloneClient == null || !m_CloneClient.HasKey)
         {
             Fail("voice provider unavailable", onError); Set(State.Failed); m_Busy = false; yield break;
         }
@@ -111,7 +111,7 @@ public class VoiceEnrollment : MonoBehaviour
 
         Set(State.Cloning);
         string voiceId = null; string err = null;
-        yield return m_Voxtral.CloneVoice(wav, $"study_{SessionConfig.ParticipantId}",
+        yield return m_CloneClient.CloneVoice(wav, $"study_{SessionConfig.ParticipantId}",
             id => voiceId = id, e => err = e);
 
         if (!string.IsNullOrEmpty(voiceId))

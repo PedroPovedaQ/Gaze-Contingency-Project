@@ -373,6 +373,57 @@ class TrialCSVTests(unittest.TestCase):
             self.read()
         self.assertFalse((self.root / "export").exists())
 
+    def test_repeat_requests_are_separate_from_delivered_repeats(self):
+        self.records[0]["repeatEventVersion"] = "guidance-repeat-v1"
+        self.records[5].update(kind="guidance_repeat_requested", detail="guidance_repeat;")
+        self.records[6]["detail"] = "guidance_repeat;text=Look up"
+        self.records[7]["detail"] = "guidance_repeat;"
+        self.records.insert(8, dict(kind="guidance_repeat_requested", time=2.3,
+                                    searchSeconds=.3, detail="guidance_repeat;"))
+        self.save()
+        row = self.read()[0][0]
+        self.assertEqual(row["repeat_request_count"], "2")
+        self.assertEqual(row["delivered_repeat_count"], "1")
+        self.assertEqual(row["instruction_count"], "1")
+        self.assertEqual(row["repeat_count_source"], "replay")
+        self.assertEqual(row["hint_count"], "0")
+
+    def test_catalog_version_preserved_and_conflicting_sources_rejected(self):
+        version = "elevenlabs-six-per-gender-v1"
+        self.records[0]["neutralCatalogVersion"] = version
+        self.summary["neutral_catalog_version"] = version
+        self.save()
+        self.assertEqual(self.read()[0][0]["neutral_catalog_version"], version)
+        self.records[0]["neutralCatalogVersion"] = "different-catalog"
+        self.save()
+        with self.assertRaisesRegex(ValueError, "Conflicting voice catalog"):
+            self.read(output="conflicting")
+
+    def test_repeat_zero_requires_versioned_logging(self):
+        legacy = self.read()[0][0]
+        self.assertEqual(legacy["repeat_request_count"], "")
+        self.records[0]["repeatEventVersion"] = "guidance-repeat-v1"
+        self.save()
+        modern = self.read(output="modern")[0][0]
+        self.assertEqual(modern["repeat_request_count"], "0")
+        self.assertEqual(modern["delivered_repeat_count"], "0")
+
+    def test_csv_repeat_counts_without_replay(self):
+        self.summary["repeat_event_version"] = "guidance-repeat-v1"
+        self.save()
+        records = [("search_start", ""), ("guidance_repeat_requested", "context=guidance_repeat;"),
+                   ("guidance_repeat_requested", "context=guidance_repeat;"),
+                   ("audio_request", "context=guidance_repeat;"),
+                   ("audio_playback_start", "context=guidance_repeat;"), ("capture_correct", "")]
+        rows = [dict(participant_id="P001", run_number=1, trial_id=self.tid, voice_condition="selfsimilar",
+                     event_type=kind, detail=detail) for kind, detail in records]
+        source = self.survey("trial_events.csv", rows)
+        (self.run / source.name).write_bytes(source.read_bytes())
+        row = self.read()[0][0]
+        self.assertEqual(row["repeat_request_count"], "2")
+        self.assertEqual(row["delivered_repeat_count"], "1")
+        self.assertEqual(row["repeat_count_source"], "trial_events_csv")
+
     def test_two_recordings_for_one_trial_rejected(self):
         p = self.root / "replays" / "another"
         p.mkdir()

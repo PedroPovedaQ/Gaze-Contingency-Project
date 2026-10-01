@@ -16,12 +16,11 @@ public class VoiceSynthesizer : MonoBehaviour
 {
     const string k_Tag = "[VoiceSynth]";
     const string k_BaseUrl = "https://api.elevenlabs.io/v1/text-to-speech/";
-    const string k_Model = "eleven_turbo_v2_5";
+    const string k_Model = ElevenLabsVoiceClient.Model;
     const string k_CacheFolder = "tts_cache";
 
-    string m_ApiKey;        // ElevenLabs key (generic voice)
-    string m_MistralKey;    // Voxtral key (self-similar voice)
-    VoxtralClient m_Voxtral;
+    string m_ApiKey;        // ElevenLabs key for catalog voices and enrollment
+    ElevenLabsVoiceClient m_CloneClient;
     string m_CacheDir;
     AudioSource m_AudioSource;
     Coroutine m_SpeakCoroutine;
@@ -45,12 +44,13 @@ public class VoiceSynthesizer : MonoBehaviour
     readonly Dictionary<string, AudioClip> m_PreparedClips = new Dictionary<string, AudioClip>();
     readonly List<ClipAudit> m_Audit = new List<ClipAudit>();
     string m_ActiveClipKey;
+    string m_GuidanceDecisionId, m_PendingCorrectionDecisionId;
     public event Action<string, string, string, string> Telemetry;
     public event Action<string> PlaybackFailed;
 
     [Serializable] class ClipAudit
     {
-        public string clip_id, voice_id, provider, model, text, content_version, perspective, perspective_version, effect_profile;
+        public string clip_id, voice_id, voice_condition, provider, model, text, content_version, perspective, perspective_version, effect_profile;
         public float duration_seconds, rms, peak, gain, achieved_rms, requested_rms;
         public int speech_samples; // leading interleaved samples holding the words; RMS is measured here
         public bool level_limited;
@@ -66,7 +66,7 @@ public class VoiceSynthesizer : MonoBehaviour
     void Fail(string reason)
     {
         if (!m_BackgroundLoading) LastError = reason;
-        Telemetry?.Invoke("audio_failure", m_CurrentContext ?? "", m_ActiveClipKey ?? "", reason);
+        AudioTelemetry("audio_failure", m_CurrentContext ?? "", m_ActiveClipKey ?? "", reason);
         Debug.LogWarning($"{k_Tag} {reason}");
         if (!m_Preparing && !m_BackgroundLoading && m_CurrentContext != "voice_choice") PlaybackFailed?.Invoke(reason);
     }
@@ -165,7 +165,7 @@ public class VoiceSynthesizer : MonoBehaviour
         {
             string json = JsonUtility.ToJson(new LibraryAudit { clips = m_Audit,
                 matched_rms = m_MatchedRms,
-                perspective = "neutral_external_self_first_person", perspective_version = VoicePromptText.Version,
+                perspective = "shared_participant_directed_imperative", perspective_version = VoicePromptText.Version,
                 preparation_mode = m_OnDemandPhrases == null ? "full_library" :
                     m_BackgroundEnabled ? "starter_then_background" : "starter_then_on_demand" }, true);
             File.WriteAllText(Path.Combine(SessionConfig.ParticipantPath, "voice-library-manifest.json"), json);
@@ -215,17 +215,16 @@ public class VoiceSynthesizer : MonoBehaviour
         m_BackgroundCoroutine = null;
     }
 
-    /// <summary>Shared Voxtral client (voice enrollment reuses this instance).</summary>
-    public VoxtralClient Voxtral => m_Voxtral;
+    /// <summary>Shared ElevenLabs client (voice enrollment reuses this instance).</summary>
+    public ElevenLabsVoiceClient CloneClient => m_CloneClient;
 
-    public void Initialize(string elevenLabsKey, string mistralKey = null)
+    public void Initialize(string elevenLabsKey)
     {
         m_ApiKey = elevenLabsKey;
-        m_MistralKey = mistralKey;
 
-        m_Voxtral = GetComponent<VoxtralClient>();
-        if (m_Voxtral == null) m_Voxtral = gameObject.AddComponent<VoxtralClient>();
-        m_Voxtral.Initialize(mistralKey);
+        m_CloneClient = GetComponent<ElevenLabsVoiceClient>();
+        if (m_CloneClient == null) m_CloneClient = gameObject.AddComponent<ElevenLabsVoiceClient>();
+        m_CloneClient.Initialize(elevenLabsKey);
 
         m_AudioSource = gameObject.AddComponent<AudioSource>();
         m_AudioSource.spatialBlend = 0f;
@@ -249,12 +248,13 @@ public class VoiceSynthesizer : MonoBehaviour
 
     void OnDisable() => Stop();
 
-    public void Speak(string text, string context = null, VoiceCondition? requestedVoice = null)
+    public void Speak(string text, string context = null, VoiceCondition? requestedVoice = null,
+        string guidanceDecisionId = null)
     {
-        // Per-voice key checks happen inside the coroutine (self-similar uses
-        // Voxtral, generic uses ElevenLabs), so we don't hard-block here.
+        // Identity and key checks happen inside the coroutine so prepared audio works offline.
         Stop();
         m_CurrentContext = context;
+        m_GuidanceDecisionId = guidanceDecisionId;
         m_SpeakCoroutine = StartCoroutine(SpeakCoroutine(text, requestedVoice: requestedVoice));
     }
 
@@ -286,38 +286,68 @@ public class VoiceSynthesizer : MonoBehaviour
         completed?.Invoke(string.IsNullOrEmpty(LastError));
     }
 
+    public void RecordGuidanceRepeatRequest(bool available, string decisionId = null)
+    {
+        string identity = decisionId == null ? "" : "decision_id=" + decisionId + ";";
+        Telemetry?.Invoke("guidance_repeat_requested", "guidance_repeat", "", identity);
+        if (!available) Telemetry?.Invoke("guidance_repeat_unavailable", "guidance_repeat", "", identity + "no_current_valid_gaze_guidance");
+    }
+
+    // Decisions are recorded separately from speech requests and audible starts.
+    // Keep serialized snapshots out of the audio cache identity and spoken text.
+    public void RecordGuidanceDecision(string json) => Telemetry?.Invoke("guidance_decision", "guidance", "", json);
+
+    void AudioTelemetry(string kind, string context, string clip, string detail)
+    {
+        if (!string.IsNullOrEmpty(m_GuidanceDecisionId) && (context == "tip" || context == "guidance_repeat"))
+            detail = "decision_id=" + m_GuidanceDecisionId + ";" + detail;
+        Telemetry?.Invoke(kind, context, clip, detail);
+    }
+
     public bool TryAreaCorrection(string phrase, Func<bool> stillRelevant, Action onCommitted = null,
-        string reason = "gaze_target_plane")
+        string reason = "gaze_target_plane", string guidanceDecisionId = null)
     {
         if (!LibraryReady || m_InterruptionCoroutine != null || m_SetupAnnouncement ||
-            (m_CurrentContext != null && m_CurrentContext != "tip" && m_CurrentContext != "prefetch")) return false;
+            (m_CurrentContext != null && m_CurrentContext != "tip" && m_CurrentContext != "guidance_repeat" && m_CurrentContext != "prefetch")) return false;
         bool self = SessionConfig.Voice == VoiceCondition.SelfSimilar;
         string voiceId = self ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId;
         if (self && SessionConfig.SelfSimilarEnrollmentPending) return false;
         string path = GetCachePath(VoicePromptText.FormatForVoice(phrase, SessionConfig.Voice),
-            (self ? "vx-" : "el-") + voiceId);
+            (self ? "el-clone-" : "el-") + voiceId);
         if (!m_PreparedClips.ContainsKey(path) || !stillRelevant()) return false;
-        m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(phrase, stillRelevant, onCommitted, reason));
+        m_PendingCorrectionDecisionId = guidanceDecisionId;
+        m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(phrase, stillRelevant, onCommitted, reason, guidanceDecisionId));
         return true;
     }
 
-    IEnumerator FadeToAreaCorrection(string phrase, Func<bool> stillRelevant, Action onCommitted, string reason)
+    IEnumerator FadeToAreaCorrection(string phrase, Func<bool> stillRelevant, Action onCommitted, string reason, string decisionId)
     {
         yield return null;
         float volume = m_AudioSource.volume;
         float start = Time.unscaledTime;
         while (IsSpeaking && Time.unscaledTime - start < 0.04f)
         {
-            if (!stillRelevant()) { m_AudioSource.volume = volume; m_InterruptionCoroutine = null; yield break; }
+            if (!stillRelevant())
+            { m_AudioSource.volume = volume; m_InterruptionCoroutine = null; AbandonCorrection("stale_during_fade"); yield break; }
             m_AudioSource.volume = volume * (1f - (Time.unscaledTime - start) / 0.04f);
             yield return null;
         }
         m_AudioSource.volume = volume;
         m_InterruptionCoroutine = null;
-        if (!stillRelevant()) yield break;
-        Telemetry?.Invoke("audio_area_correction", "tip", m_ActiveClipKey ?? "", reason + ";fade_seconds=0.04");
-        Speak(phrase, "tip");
+        if (!stillRelevant()) { AbandonCorrection("stale_before_commit"); yield break; }
+        m_PendingCorrectionDecisionId = null;
+        Telemetry?.Invoke("audio_area_correction", "tip", m_ActiveClipKey ?? "",
+            (decisionId == null ? "" : "decision_id=" + decisionId + ";") + reason + ";fade_seconds=0.04");
+        Speak(phrase, "tip", guidanceDecisionId: decisionId);
         onCommitted?.Invoke();
+    }
+
+    void AbandonCorrection(string reason)
+    {
+        if (m_PendingCorrectionDecisionId != null)
+            Telemetry?.Invoke("guidance_decision_aborted", "tip", "",
+                "decision_id=" + m_PendingCorrectionDecisionId + ";reason=" + reason);
+        m_PendingCorrectionDecisionId = null;
     }
 
     public void Stop()
@@ -327,6 +357,7 @@ public class VoiceSynthesizer : MonoBehaviour
             StopCoroutine(m_InterruptionCoroutine);
             m_InterruptionCoroutine = null;
         }
+        AbandonCorrection("cancelled_before_commit");
         if (m_AudioSource != null) m_AudioSource.volume = 0.7f;
         if (m_BackgroundCoroutine != null)
         {
@@ -344,9 +375,10 @@ public class VoiceSynthesizer : MonoBehaviour
         if (m_AudioSource != null && m_AudioSource.isPlaying)
             m_AudioSource.Stop();
 
-        if (m_ActiveClipKey != null) Telemetry?.Invoke("audio_cancelled", m_CurrentContext ?? "", m_ActiveClipKey, "");
+        if (m_ActiveClipKey != null) AudioTelemetry("audio_cancelled", m_CurrentContext ?? "", m_ActiveClipKey, "");
         m_ActiveClipKey = null;
         m_CurrentContext = null;
+        m_GuidanceDecisionId = null;
     }
 
     public void InterruptIfAbout(string context)
@@ -393,7 +425,7 @@ public class VoiceSynthesizer : MonoBehaviour
         if (!setupAnnouncement) text = VoicePromptText.Format(text, actualPerspective);
         m_PreparingText = text;
         string voiceId = requestedVoiceId ?? (wantSelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId);
-        string voiceScope = wantSelfSimilar ? $"vx-{voiceId}" : $"el-{voiceId}";
+        string voiceScope = wantSelfSimilar ? $"el-clone-{voiceId}" : $"el-{voiceId}";
 
         // Voice availability never changes the assigned condition or cache namespace.
         if (wantSelfSimilar && (SessionConfig.SelfSimilarEnrollmentPending || string.IsNullOrEmpty(voiceId)))
@@ -407,7 +439,7 @@ public class VoiceSynthesizer : MonoBehaviour
         // 1) Cache for the intended voice.
         string cachePath = GetCachePath(text, voiceScope);
         m_ActiveClipKey = Path.GetFileNameWithoutExtension(cachePath);
-        Telemetry?.Invoke("audio_request", m_CurrentContext ?? "", m_ActiveClipKey, voiceScope);
+        AudioTelemetry("audio_request", m_CurrentContext ?? "", m_ActiveClipKey, voiceScope);
         if (LibraryReady && !m_Preparing && !setupAnnouncement &&
             (m_PreparedClips.ContainsKey(cachePath) || !allowOnDemand))
         {
@@ -433,23 +465,23 @@ public class VoiceSynthesizer : MonoBehaviour
 
         byte[] audioData = null;
 
-        // 2) Synthesize the intended voice (Voxtral for self-similar).
+        // 2) Synthesize the intended voice (ElevenLabs for both conditions).
         if (wantSelfSimilar)
         {
-            Debug.Log($"{k_Tag} Voxtral TTS: \"{Truncate(text, 40)}\"");
-            if (m_Voxtral == null || !m_Voxtral.HasKey)
+            Debug.Log($"{k_Tag} ElevenLabs clone TTS: \"{Truncate(text, 40)}\"");
+            if (m_CloneClient == null || !m_CloneClient.HasKey)
             {
                 Fail("Self-similar provider unavailable.");
                 m_SpeakCoroutine = null;
                 m_CurrentContext = null;
                 yield break;
             }
-            string vxErr = null;
-            yield return m_Voxtral.Synthesize(text, voiceId,
-                b => audioData = b, e => vxErr = e);
+            string cloneError = null;
+            yield return m_CloneClient.Synthesize(text, voiceId,
+                b => audioData = b, e => cloneError = e);
             if (audioData == null)
             {
-                Fail($"Self-similar synthesis failed: {vxErr}");
+                Fail($"Self-similar synthesis failed: {cloneError}");
                 m_SpeakCoroutine = null;
                 m_CurrentContext = null;
                 yield break;
@@ -584,8 +616,9 @@ public class VoiceSynthesizer : MonoBehaviour
             m_PreparedClips[filePath] = clip;
             m_Audit.Add(new ClipAudit { clip_id = Path.GetFileNameWithoutExtension(filePath),
                 voice_id = voiceId,
-                provider = wantSelfSimilar ? "mistral" : "elevenlabs",
-                model = wantSelfSimilar ? "voxtral-mini-tts-2603" : k_Model,
+                provider = "elevenlabs",
+                voice_condition = wantSelfSimilar ? "selfsimilar" : "neutral",
+                model = k_Model,
                 text = m_PreparingText, content_version = ContentVersion,
                 perspective = m_SetupAnnouncement ? "setup" : actualPerspective.ToString(),
                 perspective_version = VoicePromptText.Version,
@@ -593,20 +626,20 @@ public class VoiceSynthesizer : MonoBehaviour
                 duration_seconds = clip.length, rms = rms, peak = peak, gain = gain, achieved_rms = rms * gain,
                 requested_rms = requestedRms, speech_samples = treated.SpeechSamples, level_limited = levelLimited });
             if (levelLimited && LibraryReady)
-                Telemetry?.Invoke("audio_level_limited", m_CurrentContext ?? "", m_ActiveClipKey ?? "",
+                AudioTelemetry("audio_level_limited", m_CurrentContext ?? "", m_ActiveClipKey ?? "",
                     FormattableString.Invariant($"requested_rms={requestedRms:F6};achieved_rms={rms * gain:F6};gain={gain:F6};difference_db={20 * Math.Log10(rms * gain / requestedRms):F3}"));
         }
         // Persist before playback, including clips added after the run began.
         if (LibraryReady && !m_Preparing && !SaveManifest()) yield break;
-        Telemetry?.Invoke("audio_ready", m_CurrentContext ?? "", Path.GetFileNameWithoutExtension(filePath), $"duration={clip.length:F4}");
+        AudioTelemetry("audio_ready", m_CurrentContext ?? "", Path.GetFileNameWithoutExtension(filePath), $"duration={clip.length:F4}");
         if (m_Preparing || silent) yield break;
         m_AudioSource.clip = clip;
         m_AudioSource.volume = 0.7f;
         m_AudioSource.pitch = 1f;
         m_AudioSource.Play();
-        Telemetry?.Invoke("audio_playback_start", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};effect_profile={InnerThoughtVoice.Profile(wantSelfSimilar)};text={m_PreparingText}");
+        AudioTelemetry("audio_playback_start", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};effect_profile={InnerThoughtVoice.Profile(wantSelfSimilar)};text={m_PreparingText}");
         while (m_AudioSource.isPlaying) yield return null;
-        Telemetry?.Invoke("audio_playback_end", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};text={m_PreparingText}");
+        AudioTelemetry("audio_playback_end", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};text={m_PreparingText}");
         m_ActiveClipKey = null;
     }
 
@@ -686,7 +719,7 @@ public class VoiceSynthesizer : MonoBehaviour
     {
         // Scope the key by voice so generic vs self-similar (and different clones)
         // never collide on identical hint text; include script mode/version even for shared lines.
-        string model = scope.StartsWith("vx-") ? "voxtral-mini-tts-2603" : k_Model;
+        string model = k_Model;
         string keyed = ContentVersion + "|" + VoicePromptText.Version + "|" +
             SessionConfig.Perspective + "|" + model + "|" + scope + "|" + text;
         using (var sha = SHA256.Create())

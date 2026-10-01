@@ -25,7 +25,7 @@ public class ControllerRaySelector : MonoBehaviour
     [SerializeField, Min(0f)] float m_HoverHapticDuration = 0.04f;
     MaterialPropertyBlock m_Block;
     FindObjectGameManager m_Game;
-    bool m_LeftArmed, m_RightArmed;
+    bool m_RightArmed;
     int m_LastCaptureFrame = -1;
 
     public bool ThroughWallSearch { get; set; }
@@ -111,7 +111,7 @@ public class ControllerRaySelector : MonoBehaviour
         {
             if (ray == null || !m_OriginalMasks.TryGetValue(ray, out int mask)) continue;
             SetMask(ray, search && ThroughWallSearch ? 1 << 8 : mask);
-            ray.enableNearCasting = !search && m_OriginalNearCasting[ray];
+            ray.enableNearCasting = false; // Study interactions use the right far ray, including setup.
         }
     }
 
@@ -124,7 +124,6 @@ public class ControllerRaySelector : MonoBehaviour
     {
         ClearHighlights();
         bool search = m_Game != null && m_Game.SearchActive;
-        bool leftPress = ReadPress(XRNode.LeftHand, search, ref m_LeftArmed);
         bool rightPress = ReadPress(XRNode.RightHand, search, ref m_RightArmed);
         // Sample both hands before a capture callback can reset or destroy the trial.
         LeftTelemetry = ReadTelemetry(InteractorHandedness.Left, search);
@@ -133,10 +132,9 @@ public class ControllerRaySelector : MonoBehaviour
         if (!search) { m_LastRayTargets.Clear(); return; }
         foreach (var ray in m_Rays)
         {
-            if (ray == null) continue;
+            if (ray == null || ray.handedness != InteractorHandedness.Right) continue;
             if (!ray.isActiveAndEnabled) { m_LastRayTargets.Remove(ray); continue; }
-            bool left = ray.handedness == InteractorHandedness.Left;
-            var device = InputDevices.GetDeviceAtXRNode(left ? XRNode.LeftHand : XRNode.RightHand);
+            var device = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
             if (!device.TryGetFeatureValue(CommonUsages.isTracked, out bool tracked) || !tracked)
             {
                 m_LastRayTargets.Remove(ray);
@@ -146,14 +144,14 @@ public class ControllerRaySelector : MonoBehaviour
             m_LastRayTargets.TryGetValue(ray, out var previousTarget);
             m_LastRayTargets[ray] = target;
             if (target == null) continue;
-            // One pulse on entry or switching objects, independently for each controller.
+            // One pulse on entry or switching objects on the study's right controller.
             if (target != previousTarget && m_HoverHapticAmplitude > 0f && m_HoverHapticDuration > 0f)
                 ray.SendHapticImpulse(m_HoverHapticAmplitude, m_HoverHapticDuration);
             Highlight(target);
-            if ((left ? leftPress : rightPress) && m_LastCaptureFrame != Time.frameCount)
+            if (rightPress && m_LastCaptureFrame != Time.frameCount)
             {
                 m_LastCaptureFrame = Time.frameCount;
-                SelectingHand = left ? "left" : "right";
+                SelectingHand = "right";
                 try { OnObjectCaptured?.Invoke(target); }
                 finally { SelectingHand = null; }
                 // Capture callbacks may destroy objects or pause/end the trial.
@@ -218,7 +216,7 @@ public class ControllerRaySelector : MonoBehaviour
 
     public void ResetSelection()
     {
-        m_LeftArmed = m_RightArmed = false;
+        m_RightArmed = false;
         m_LastRayTargets.Clear();
         ClearHighlights();
     }

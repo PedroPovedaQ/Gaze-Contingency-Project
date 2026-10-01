@@ -1,0 +1,55 @@
+{
+  "generated_on": "2026-10-01",
+  "mode": "built-in image_gen",
+  "purpose": "fictional narrator menu portraits, not likenesses of voice actors",
+  "assets": [
+    {
+      "name": "Chris",
+      "destination": "Assets/Resources/VoiceAvatars/Chris.png",
+      "prompt": "Use case: stylized-concept. Asset type: a single small 2D fictional narrator avatar for a VR voice-choice card. Cute low-fidelity friendly vector-like cartoon, head and shoulders centered, front-facing adult, oversized rounded head, simple large dark eyes, dark charcoal outlines, flat softly shaded colors, small closed-mouth smile. Transparent background with actual alpha. No name, no text, no badge, no real celebrity likeness. Square canvas, head and shoulder silhouette fills about 80% of canvas with generous clear margin, entire hair and shoulders visible. Match the simple visual family of friendly game menu avatars, equally neutral expression and visual salience. Subject: fictional adult male with medium brown skin, short neatly cropped black hair, no beard, wearing a muted teal crew-neck shirt.",
+      "source_filename": "exec-550b535a-fde4-4491-8e8b-c7b49e720835.png"
+    },
+    {
+      "name": "Will",
+      "destination": "Assets/Resources/VoiceAvatars/Will.png",
+      "prompt": "Use case: stylized-concept. Asset type: a single small 2D fictional narrator avatar for a VR voice-choice card. Cute low-fidelity friendly vector-like cartoon, head and shoulders centered, front-facing adult, oversized rounded head, simple large dark eyes, dark charcoal outlines, flat softly shaded colors, small closed-mouth smile. Transparent background with actual alpha. No name, no text, no badge, no real celebrity likeness. Square canvas, head and shoulder silhouette fills about 80% of canvas with generous clear margin, entire hair and shoulders visible. Match the simple visual family of friendly game menu avatars, equally neutral expression and visual salience. Subject: fictional adult male with fair skin, straight medium brown side-parted hair, no beard, wearing a muted teal crew-neck shirt.",
+      "source_filename": "exec-9bca45a2-95fa-44ad-8e87-20a75f1d3da7.png"
+    },
+    {
+      "name": "Brian",
+      "destination": "Assets/Resources/VoiceAvatars/Brian.png",
+      "prompt": "Use case: stylized-concept. Asset type: a single small 2D fictional narrator avatar for a VR voice-choice card. Cute low-fidelity friendly vector-like cartoon, head and shoulders centered, front-facing adult, oversized rounded head, simple large dark eyes, dark charcoal outlines, flat softly shaded colors, small closed-mouth smile. Transparent background with actual alpha. No name, no text, no badge, no real celebrity likeness. Square canvas, head and shoulder silhouette fills about 80% of canvas with generous clear margin, entire hair and shoulders visible. Match the simple visual family of friendly game menu avatars, equally neutral expression and visual salience. Subject: fictional adult male with warm olive skin, close-cropped dark brown hair with a touch of gray at the temples, a neat short dark beard, wearing a muted teal crew-neck shirt.",
+      "source_filename": "exec-a7bb82a5-d610-43d2-9594-070c9fa87e42.png"
+    },
+    {
+      "name": "Liam",
+      "destination": "Assets/Resources/VoiceAvatars/Liam.png",
+      "prompt": "Use case: stylized-concept. Asset type: a single small 2D fictional narrator avatar for a VR voice-choice card. Cute low-fidelity friendly vector-like cartoon, head and shoulders centered, front-facing adult, oversized rounded head, simple large dark eyes, dark charcoal outlines, flat softly shaded colors, small closed-mouth smile. Transparent background with actual alpha. No name, no text, no badge, no real celebrity likeness. Square canvas, head and shoulder silhouette fills about 80% of canvas with generous clear margin, entire hair and shoulders visible. Match the simple visual family of friendly game menu avatars, equally neutral expression and visual salience. Subject: fictional adult male with fair skin, short tidy auburn hair, no beard, wearing a muted teal crew-neck shirt.",
+      "source_filename": "exec-fde6b1cd-78f7-4568-9c25-0777bff39050.png"
+    },
+    {
+      "name": "Jessica",
+      "destination": "Assets/Resources/VoiceAvatars/Jessica.png",
+      "prompt": "Use case: stylized-concept. Asset type: a single small 2D fictional narrator avatar for a VR voice-choice card. Cute low-fidelity friendly vector-like cartoon, head and shoulders centered, front-facing adult, oversized rounded head, simple large dark eyes, dark charcoal outlines, flat softly shaded colors, small closed-mouth smile. Transparent background with actual alpha. No name, no text, no badge, no real celebrity likeness. Square canvas, head and shoulder silhouette fills about 80% of canvas with generous clear margin, entire hair and shoulders visible. Match the simple visual family of friendly game menu avatars, equally neutral expression and visual salience. Subject: fictional adult woman with medium brown skin, shoulder-length softly curled dark brown hair, wearing a muted teal crew-neck shirt. No jewelry, no makeup emphasis.",
+      "source_filename": "exec-d511d2db-8198-4f49-aa6e-0d04ac3b251f.png"
+    },
+    {
+      "name": "Matilda",
+      "destination": "Assets/Resources/VoiceAvatars/Matilda.png",
+      "prompt": "Use case: stylized-concept. Asset type: a single small 2D fictional narrator avatar for a VR voice-choice card. Cute low-fidelity friendly vector-like cartoon, head and shoulders centered, front-facing adult, oversized rounded head, simple large dark eyes, dark charcoal outlines, flat softly shaded colors, small closed-mouth smile. Transparent background with actual alpha. No name, no text, no badge, no real celebrity likeness. Square canvas, head and shoulder silhouette fills about 80% of canvas with generous clear margin, entire hair and shoulders visible. Match the simple visual family of friendly game menu avatars, equally neutral expression and visual salience. Subject: fictional adult woman with fair skin, a tidy chin-length dark brown bob haircut, wearing a muted teal crew-neck shirt. No jewelry, no makeup emphasis.",
+      "source_filename": "exec-3f9fab1b-e24f-4744-9847-403c10f0ed97.png"
+    },
+    {
+      "name": "Bella",
+      "destination": "Assets/Resources/VoiceAvatars/Bella.png",
+      "prompt": "Use case: stylized-concept. Asset type: a single small 2D fictional narrator avatar for a VR voice-choice card. Cute low-fidelity friendly vector-like cartoon, head and shoulders centered, front-facing adult, oversized rounded head, simple large dark eyes, dark charcoal outlines, flat softly shaded colors, small closed-mouth smile. Transparent background with actual alpha. No name, no text, no badge, no real celebrity likeness. Square canvas, head and shoulder silhouette fills about 80% of canvas with generous clear margin, entire hair and shoulders visible. Match the simple visual family of friendly game menu avatars, equally neutral expression and visual salience. Subject: fictional adult woman with warm olive skin, long straight near-black hair tucked behind the ears, wearing a muted teal crew-neck shirt. No jewelry, no makeup emphasis.",
+      "source_filename": "exec-888caa14-6832-45c8-a70d-07ee02aa890c.png"
+    },
+    {
+      "name": "Laura",
+      "destination": "Assets/Resources/VoiceAvatars/Laura.png",
+      "prompt": "Use case: stylized-concept. Asset type: a single small 2D fictional narrator avatar for a VR voice-choice card. Cute low-fidelity friendly vector-like cartoon, head and shoulders centered, front-facing adult, oversized rounded head, simple large dark eyes, dark charcoal outlines, flat softly shaded colors, small closed-mouth smile. Transparent background with actual alpha. No name, no text, no badge, no real celebrity likeness. Square canvas, head and shoulder silhouette fills about 80% of canvas with generous clear margin, entire hair and shoulders visible. Match the simple visual family of friendly game menu avatars, equally neutral expression and visual salience. Subject: fictional adult woman with fair skin, shoulder-length soft auburn waves, wearing a muted teal crew-neck shirt. No jewelry, no makeup emphasis.",
+      "source_filename": "exec-091460df-c129-420a-a135-0ab7642b7f2d.png"
+    }
+  ]
+}

@@ -1,13 +1,14 @@
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
 public static class CodexBuildTools
 {
     const string k_MenuPath = "Tools/Codex/Build And Run Android";
-    const string k_OutputDir = "Temp/CodexBuilds";
+    const string k_OutputDir = "Builds/CodexAndroid";
     const string k_OutputApk = "codex_build.apk";
 
     [MenuItem(k_MenuPath, false, 3000)]
@@ -19,16 +20,23 @@ public static class CodexBuildTools
     // Callable from batchmode: -executeMethod CodexBuildTools.BuildAndRunAndroid
     public static void BuildAndRunAndroid()
     {
-        BuildAndRunAndroid(BuildOptions.None);
+        BuildAndroid(BuildOptions.None, true);
+    }
+
+    // Offline packaging check when no headset is attached. No install or launch.
+    [MenuItem("Tools/Codex/Build Android APK", false, 3002)]
+    public static void BuildAndroid()
+    {
+        BuildAndroid(BuildOptions.None, false);
     }
 
     [MenuItem("Tools/Codex/Clean Build And Run Android", false, 3001)]
     public static void CleanBuildAndRunAndroid()
     {
-        BuildAndRunAndroid(BuildOptions.CleanBuildCache);
+        BuildAndroid(BuildOptions.CleanBuildCache, true);
     }
 
-    static void BuildAndRunAndroid(BuildOptions additionalOptions)
+    static void BuildAndroid(BuildOptions additionalOptions, bool launchOnDevice)
     {
         var enabledScenes = EditorBuildSettings.scenes
             .Where(s => s.enabled)
@@ -37,8 +45,7 @@ public static class CodexBuildTools
 
         if (enabledScenes.Length == 0)
         {
-            Debug.LogError("[CodexBuild] No enabled scenes in Build Settings.");
-            return;
+            throw new BuildFailedException("[CodexBuild] No enabled scenes in Build Settings.");
         }
 
         if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
@@ -48,8 +55,7 @@ public static class CodexBuildTools
                 BuildTarget.Android);
             if (!switched)
             {
-                Debug.LogError("[CodexBuild] Failed to switch active build target to Android.");
-                return;
+                throw new BuildFailedException("[CodexBuild] Failed to switch active build target to Android.");
             }
         }
 
@@ -61,10 +67,10 @@ public static class CodexBuildTools
             scenes = enabledScenes,
             target = BuildTarget.Android,
             locationPathName = apkPath,
-            options = BuildOptions.AutoRunPlayer | additionalOptions
+            options = additionalOptions | (launchOnDevice ? BuildOptions.AutoRunPlayer : BuildOptions.None)
         };
 
-        Debug.Log($"[CodexBuild] Building Android player to {apkPath} and launching on device...");
+        Debug.Log($"[CodexBuild] Building Android player to {apkPath}; launch on device: {launchOnDevice}.");
         BuildReport report = BuildPipeline.BuildPlayer(options);
         BuildSummary summary = report.summary;
 
@@ -74,7 +80,7 @@ public static class CodexBuildTools
         }
         else
         {
-            Debug.LogError($"[CodexBuild] Build failed with result: {summary.result}");
+            throw new BuildFailedException($"[CodexBuild] Build failed with result: {summary.result}; errors: {summary.totalErrors}");
         }
     }
 }

@@ -1,181 +1,160 @@
 using UnityEngine;
-using UnityEngine.XR;
-using System.Collections.Generic;
-using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
-/// <summary>Gaze-relative left/right guidance, interrupted by a debounced target-wall entry cue.</summary>
+/// <summary>Shared valid gaze drives coarse horizontal, then fine vertical guidance.</summary>
 public class HintGenerator : MonoBehaviour
 {
     public const string AreaCorrectionPhrase = DirectionalHintPolicy.AreaPhrase;
-    const float k_TipInterval = 4f;
+    const float k_TipInterval = 1.25f; // Pilot cadence; same policy in both voice conditions.
     readonly GazeZoneEntryGate m_ZoneEntry = new GazeZoneEntryGate();
     readonly GazeReturnCueGate m_ReturnCue = new GazeReturnCueGate();
-    string m_ReturnDirection;
-    readonly List<InputDevice> m_EyeDevices = new List<InputDevice>();
-    InputDevice m_EyeDevice;
-    float m_NextEyeSearch;
+    string m_ReturnDirection, m_CurrentHint, m_Candidate;
+    string m_LastSuspension;
+    GazeObservation m_EvaluatedSample;
+    double m_CandidateSince;
     float m_LastTipTime;
     bool m_TipsSuppressed = true;
-    string m_CurrentHint;
-    int m_LeftVariant, m_RightVariant;
+    int m_Variant, m_AreaVariant, m_ReturnVariant;
     VoiceSynthesizer m_Voice;
     FindObjectGameManager m_GameManager;
-    XRBaseInputInteractor m_GazeInteractor;
-
-    // Preserve the controller's existing initialization API.
-    public void Initialize(string apiKey, AgentContext context, VoiceSynthesizer voice, GazeCoverageTracker coverageTracker = null)
-    {
-        m_Voice = voice;
-    }
-
-    void Start()
-    {
-        m_GameManager = GetComponent<FindObjectGameManager>();
-        var highlighter = FindObjectOfType<GazeHighlightManager>();
-        if (highlighter != null) m_GazeInteractor = highlighter.GetComponent<XRBaseInputInteractor>();
-    }
-
+    public void Initialize(string apiKey, AgentContext context, VoiceSynthesizer voice, GazeCoverageTracker coverageTracker = null) => m_Voice = voice;
+    void Start() => m_GameManager = GetComponent<FindObjectGameManager>();
     public void OnNewObjective()
     {
-        m_ZoneEntry.Reset();
-        m_ReturnCue.Reset();
-        m_ReturnDirection = null;
-        // A reproducible starting phrase per participant/trial; each direction then
-        // cycles its allowed forms before repeating. Actual spoken text is logged.
-        int firstVariant = (ChallengeSet.ScheduleSeed % 4 + (m_GameManager != null ? m_GameManager.CurrentObjectiveIndex : 0)) % 4;
-        m_LeftVariant = m_RightVariant = firstVariant;
-        m_CurrentHint = null;
-        // The first directional hint is eligible on the first valid search frame.
-        // Subsequent hints still use the normal spacing after each spoken cue.
-        m_LastTipTime = Time.time - k_TipInterval;
-        m_TipsSuppressed = false;
+        m_ZoneEntry.Reset(); m_ReturnCue.Reset();
+        m_CurrentHint = m_Candidate = m_ReturnDirection = null;
+        m_LastSuspension = null;
+        m_Variant = m_AreaVariant = m_ReturnVariant =
+            (ChallengeSet.ScheduleSeed % 8 + (m_GameManager != null ? m_GameManager.CurrentObjectiveIndex : 0)) % 8;
+        m_LastTipTime = Time.time - k_TipInterval; m_TipsSuppressed = false;
     }
-
-    // Wrong selections keep the same target and gaze-based guidance.
     public void OnWrongCapture() { }
-
     public void CancelPending()
     {
-        m_TipsSuppressed = true;
-        m_ZoneEntry.Reset();
-        m_ReturnCue.Reset();
-        m_ReturnDirection = null;
-        m_CurrentHint = null;
-        m_Voice?.InterruptIfAbout("tip");
+        m_TipsSuppressed = true; m_ZoneEntry.Reset(); m_ReturnCue.Reset();
+        m_CurrentHint = m_Candidate = m_ReturnDirection = null; InterruptGuidance();
     }
-
     void Update()
     {
-        if (m_Voice == null || m_GameManager == null) return;
-        if (m_TipsSuppressed || !m_GameManager.SearchActive ||
-            m_GameManager.CurrentState != FindObjectGameManager.GameState.Playing) return;
-
-        bool inside = IsGazeInTargetSector(out bool valid);
-        bool entryReady = m_ZoneEntry.Update(valid, inside, Time.timeAsDouble);
-        bool returnReady = m_ReturnCue.Update(valid, inside, Time.timeAsDouble);
-        bool far = false;
-        string desired = valid ? (inside ? AreaCorrectionPhrase : GetDirection(out far)) : null;
-        bool returning = m_CurrentHint == DirectionalHintPolicy.ReturnPhrase;
-        // A return cue is stale once the area is regained or the return direction changes.
-        bool stale = !valid || (returning ? inside || desired != m_ReturnDirection : !inside && desired != m_CurrentHint);
-        if (m_CurrentHint != null && stale)
+        if (m_Voice == null || m_GameManager == null || m_TipsSuppressed) return;
+        if (!m_GameManager.SearchActive || m_GameManager.CurrentState != FindObjectGameManager.GameState.Playing)
+        { InterruptGuidance(); m_CurrentHint = null; return; }
+        string desired = Evaluate(out bool valid, out bool inside, out bool far);
+        bool entry = m_ZoneEntry.Update(valid, inside, Time.timeAsDouble);
+        bool returning = m_ReturnCue.Update(valid, inside, Time.timeAsDouble);
+        if (!valid)
         {
-            m_Voice.InterruptIfAbout("tip");
-            m_CurrentHint = null;
+            string reason = m_EvaluatedSample == null ? "no_gaze_observation" :
+                string.IsNullOrEmpty(m_EvaluatedSample.invalidReason) ? "unusable_gaze_or_target_geometry" : m_EvaluatedSample.invalidReason;
+            if (m_LastSuspension != reason)
+                Record(Decision("suspended", reason, null, "", false, inside, far, false));
+            m_LastSuspension = reason;
+            InterruptGuidance(); m_CurrentHint = m_Candidate = null;
+            return; // Tracking loss never invents head-gaze guidance or a wall exit.
         }
-        if (entryReady && m_Voice.TryAreaCorrection(AreaCorrectionPhrase, AreaCorrectionStillRelevant, () =>
-            {
-                // A gaze change during the fade must not consume the six-second cooldown.
-                m_ZoneEntry.MarkSpoken(Time.timeAsDouble);
-                m_LastTipTime = Time.time;
-            }))
+        m_LastSuspension = null;
+        if (desired != m_Candidate) { m_Candidate = desired; m_CandidateSince = Time.timeAsDouble; }
+        bool stable = Time.timeAsDouble - m_CandidateSince >= .15;
+        bool stale = m_CurrentHint == DirectionalHintPolicy.ReturnPhrase ? inside || desired != m_ReturnDirection :
+            m_CurrentHint == AreaCorrectionPhrase ? !inside : desired != m_CurrentHint;
+        if (m_CurrentHint != null && stale && stable)
         {
-            m_CurrentHint = AreaCorrectionPhrase;
-            return;
+            Record(Decision("interruption", "direction_changed", desired, "", true, inside, far, true));
+            InterruptGuidance(); m_CurrentHint = null;
         }
-        if (returnReady && desired != null && m_Voice.TryAreaCorrection(DirectionalHintPolicy.ReturnPhrase,
-            () => ReturnCueStillRelevant(desired), () =>
-            {
-                m_ReturnCue.MarkSpoken(Time.timeAsDouble);
-                m_LastTipTime = Time.time;
-            }, "gaze_overshoot_return"))
+        if (entry)
         {
-            m_ReturnDirection = desired;
-            m_CurrentHint = DirectionalHintPolicy.ReturnPhrase;
-            return;
+            string phrase = DirectionalHintPolicy.Variant(AreaCorrectionPhrase,m_AreaVariant);
+            var decision = Decision("requested", "stable_wall_entry", AreaCorrectionPhrase, phrase, true, inside, far, stable);
+            if (m_Voice.TryAreaCorrection(phrase,
+                () => { Evaluate(out bool v,out bool i,out _); return Active() && v && i; },
+                () => {
+                    Record(Decision("committed", "wall_entry_revalidated", AreaCorrectionPhrase, phrase,
+                        true, true, false, Time.timeAsDouble-m_CandidateSince>=.15, decision.decisionId));
+                    m_ZoneEntry.MarkSpoken(Time.timeAsDouble); m_AreaVariant++; m_LastTipTime=Time.time;
+                }, guidanceDecisionId: decision.decisionId))
+            { Record(decision); m_CurrentHint = AreaCorrectionPhrase; return; }
         }
-        // Even during the entry cue cooldown, don't keep saying left/right after arrival.
-        if (m_ZoneEntry.InsideStable && m_CurrentHint != AreaCorrectionPhrase)
+        if (returning) m_ReturnDirection = desired;
+        if (returning && desired != null)
         {
-            m_Voice.InterruptIfAbout("tip");
-            m_CurrentHint = null;
+            string phrase = DirectionalHintPolicy.Variant(DirectionalHintPolicy.ReturnPhrase,m_ReturnVariant);
+            var decision = Decision("requested", "stable_wall_exit", DirectionalHintPolicy.ReturnPhrase, phrase, true, inside, far, stable);
+            bool revalidatedFar = far;
+            if (m_Voice.TryAreaCorrection(phrase,
+                () => { var d=Evaluate(out bool v,out bool i,out revalidatedFar); return Active() && v && !i && d==m_ReturnDirection && m_ReturnCue.IsPending(Time.timeAsDouble); },
+                () => {
+                    Record(Decision("committed", "wall_exit_revalidated", DirectionalHintPolicy.ReturnPhrase, phrase,
+                        true, false, revalidatedFar, Time.timeAsDouble-m_CandidateSince>=.15, decision.decisionId));
+                    m_ReturnCue.MarkSpoken(Time.timeAsDouble); m_ReturnVariant++; m_LastTipTime=Time.time;
+                },"gaze_overshoot_return",decision.decisionId))
+            { Record(decision); m_ReturnDirection=desired; m_CurrentHint=DirectionalHintPolicy.ReturnPhrase; return; }
         }
-        if (!valid || inside || desired == null || m_ReturnCue.IsDebouncingExit ||
-            m_Voice.IsBusy || Time.time - m_LastTipTime < k_TipInterval) return;
-        m_LastTipTime = Time.time;
-        m_CurrentHint = desired;
-        int variant = desired == DirectionalHintPolicy.LeftPhrase ? m_LeftVariant++ : m_RightVariant++;
-        string phrase = DirectionalHintPolicy.Variant(desired, variant, SessionConfig.Voice == VoiceCondition.SelfSimilar, far);
-        m_Voice.Speak(phrase, "tip");
-        Debug.Log($"[HintGen] [{DirectionalHintPolicy.Version}] {phrase}");
+        if (!stable || desired == null || m_ReturnCue.IsDebouncingExit || (inside && !m_ZoneEntry.InsideStable) ||
+            m_Voice.IsBusy || Time.time-m_LastTipTime<k_TipInterval) return;
+        m_CurrentHint=desired; m_LastTipTime=Time.time;
+        string wording = DirectionalHintPolicy.Variant(desired,m_Variant++,false,far);
+        var request = Decision("requested", "stable_direction", desired, wording, true, inside, far, true);
+        Record(request);
+        m_Voice.Speak(wording,"tip",guidanceDecisionId:request.decisionId);
     }
-
-    string GetDirection(out bool far)
+    void InterruptGuidance()
     {
-        far = false;
-        if (!TryGetTargetInfo(out var target)) return null;
-        Vector3 toTarget = target.transform.position - m_GazeInteractor.transform.position;
-        Vector3 gaze = m_GazeInteractor.transform.forward;
-        return DirectionalHintPolicy.Direction(gaze.x, gaze.z, toTarget.x, toTarget.z, out far);
+        m_Voice?.InterruptIfAbout("tip");
+        m_Voice?.InterruptIfAbout("guidance_repeat");
     }
-
-    bool ReturnCueStillRelevant(string direction)
+    public void RequestRepeat()
     {
-        if (m_TipsSuppressed || m_GameManager == null || !m_GameManager.SearchActive ||
-            !m_ReturnCue.IsPending(Time.timeAsDouble)) return false;
-        bool inside = IsGazeInTargetSector(out bool valid);
-        return valid && !inside && GetDirection(out _) == direction;
+        string desired = Evaluate(out bool valid, out bool inside, out bool far);
+        bool available = Active() && valid && desired != null && m_Voice != null;
+        string phrase = available ? DirectionalHintPolicy.Variant(desired,m_Variant++,false,far) : "";
+        var decision = Decision(available ? "requested" : "unavailable", "controller_repeat_request",
+            desired, phrase, valid, inside, far, false);
+        Record(decision);
+        m_Voice?.RecordGuidanceRepeatRequest(available, decision.decisionId);
+        if (!available) return;
+        // Repeat the current direction, not an obsolete phrase or hidden target identity.
+        m_CurrentHint = desired; m_LastTipTime = Time.time;
+        m_Voice.Speak(phrase,"guidance_repeat",guidanceDecisionId:decision.decisionId);
     }
-
-    bool AreaCorrectionStillRelevant() => !m_TipsSuppressed && m_GameManager != null &&
-        m_GameManager.SearchActive && IsGazeInTargetSector(out _);
-
-    bool IsGazeInTargetSector(out bool valid)
+    GuidanceDecision Decision(string stage, string reason, string category, string phrase,
+        bool valid, bool inside, bool far, bool stable, string id = null) =>
+        GuidanceDecision.Capture(id ?? System.Guid.NewGuid().ToString("N"), stage, reason,
+            category ?? "none", phrase, m_EvaluatedSample, Time.realtimeSinceStartupAsDouble,
+            valid, inside, far, stable);
+    void Record(GuidanceDecision decision) => m_Voice?.RecordGuidanceDecision(JsonUtility.ToJson(decision));
+    bool Active() => !m_TipsSuppressed && m_GameManager != null && m_GameManager.SearchActive;
+    string Evaluate(out bool valid,out bool inside,out bool far)
     {
-        valid = false;
-        if (m_GameManager == null || !m_GameManager.RotationalBetaEnabled ||
-            m_GazeInteractor == null || !m_GazeInteractor.isActiveAndEnabled || !Application.isFocused) return false;
-        if (!m_EyeDevice.isValid && Time.time >= m_NextEyeSearch)
+        valid=inside=far=false;
+        m_EvaluatedSample = SharedGazeStream.Instance != null ? SharedGazeStream.Instance.Latest : null;
+        if (m_GameManager == null || !m_GameManager.RotationalBetaEnabled || SharedGazeStream.Instance == null ||
+            !SharedGazeStream.Instance.TryGetValid(out var sample) || !TryGetTargetInfo(out var target)) return null;
+        m_EvaluatedSample = sample;
+        Vector3 gaze=sample.worldDirection, delta=target.transform.position-sample.worldOrigin;
+        // Azimuth becomes unstable looking nearly straight up/down. This is a gap, not wall departure.
+        if (gaze.x*gaze.x+gaze.z*gaze.z<.04f || delta.sqrMagnitude<.001f) return null;
+        inside=m_GameManager.IsGazeInSearchSector(sample.worldOrigin,gaze,target.planeId,out valid);
+        if (!valid) return null;
+        if (!inside) return DirectionalHintPolicy.Direction(gaze.x,gaze.z,delta.x,delta.z,out far);
+        float gazeElevation=Mathf.Atan2(gaze.y,new Vector2(gaze.x,gaze.z).magnitude)*Mathf.Rad2Deg;
+        float targetElevation=Mathf.Atan2(delta.y,new Vector2(delta.x,delta.z).magnitude)*Mathf.Rad2Deg;
+        // Within-wall horizontal fine correction precedes an aligned/arrival statement.
+        float yaw=Vector3.SignedAngle(new Vector3(gaze.x,0,gaze.z),new Vector3(delta.x,0,delta.z),Vector3.up);
+        if (Mathf.Abs(yaw)>5) return yaw>0 ? DirectionalHintPolicy.RightPhrase : DirectionalHintPolicy.LeftPhrase;
+        return GazeQualityPolicy.Vertical(gazeElevation,targetElevation,3);
+    }
+    bool TryGetTargetInfo(out SpawnableObjectInfo info)
+    {
+        info=null;
+        var target=m_GameManager.CurrentTarget;
+        foreach(var obj in m_GameManager.SpawnedObjects)
         {
-            m_NextEyeSearch = Time.time + 1f;
-            InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.EyeTracking, m_EyeDevices);
-            if (m_EyeDevices.Count > 0) m_EyeDevice = m_EyeDevices[0];
-        }
-        if (!m_EyeDevice.isValid || !m_EyeDevice.TryGetFeatureValue(CommonUsages.isTracked, out bool tracked) || !tracked)
-            return false;
-        if (!TryGetTargetInfo(out var target) || target.planeId < 0) return false;
-        return m_GameManager.IsGazeInSearchSector(m_GazeInteractor.transform.position,
-            m_GazeInteractor.transform.forward, target.planeId, out valid);
-    }
-
-    bool TryGetTargetInfo(out SpawnableObjectInfo targetInfo)
-    {
-        targetInfo = null;
-        if (m_GameManager == null) return false;
-        var target = m_GameManager.CurrentTarget;
-        if (string.IsNullOrEmpty(target.shape) || string.IsNullOrEmpty(target.color)) return false;
-        foreach (var obj in m_GameManager.SpawnedObjects)
-        {
-            if (obj == null || !obj.activeSelf) continue;
-            var info = obj.GetComponent<SpawnableObjectInfo>();
-            if (info != null && info.shapeName == target.shape && info.colorName == target.color)
-            {
-                targetInfo = info;
-                return true;
-            }
+            if(obj==null || !obj.activeSelf) continue;
+            var candidate=obj.GetComponent<SpawnableObjectInfo>();
+            if(candidate!=null && candidate.shapeName==target.shape && candidate.colorName==target.color)
+            { info=candidate; return true; }
         }
         return false;
     }
-
     public static string[] AllPhrases() => DirectionalHintPolicy.AllPhrases();
 }

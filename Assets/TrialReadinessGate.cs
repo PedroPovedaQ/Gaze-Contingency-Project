@@ -1,7 +1,4 @@
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.XR;
-using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 /// <summary>World-fixed, generously padded gaze gate. Never captures a search object.</summary>
 [DefaultExecutionOrder(250)]
@@ -10,12 +7,8 @@ public sealed class TrialReadinessGate : MonoBehaviour
     [SerializeField, Min(0.1f)] float m_ChargeSeconds = 1f;
     [SerializeField, Min(0f)] float m_PaddingMetres = 0.15f;
     readonly StudyReadinessCharge m_Charge = new();
-    readonly List<InputDevice> m_Eyes = new();
-    XRGazeInteractor m_Gaze;
     FindObjectGameManager m_Game;
     FindObjectUI m_UI;
-    InputDevice m_Eye;
-    float m_NextResolve;
     string m_Color, m_Shape;
     bool m_Practice;
     public bool Active { get; private set; }
@@ -53,19 +46,8 @@ public sealed class TrialReadinessGate : MonoBehaviour
     void Update()
     {
         if (!Active || m_Game == null) return;
-        if (Time.unscaledTime >= m_NextResolve)
-        {
-            if (m_Gaze == null) m_Gaze = FindFirstObjectByType<XRGazeInteractor>();
-            if (!m_Eye.isValid)
-            {
-                InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.EyeTracking, m_Eyes);
-                foreach (var eye in m_Eyes) if (eye.isValid) { m_Eye = eye; break; }
-            }
-            m_NextResolve = Time.unscaledTime + 1f;
-        }
-        ValidInside = Application.isFocused && m_Gaze != null && m_Gaze.isActiveAndEnabled &&
-            m_Eye.isValid && m_Eye.TryGetFeatureValue(CommonUsages.isTracked, out bool tracked) && tracked &&
-            m_UI.IsGazeInsideReadinessCross(m_Gaze.transform.position, m_Gaze.transform.forward, m_PaddingMetres);
+        ValidInside = SharedGazeStream.Instance != null && SharedGazeStream.Instance.TryGetValid(out var gaze) &&
+            m_UI.IsGazeInsideReadinessCross(gaze.worldOrigin, gaze.worldDirection, m_PaddingMetres);
         float previous = Progress;
         bool complete = m_Charge.Step(ValidInside, m_Game.ResearcherPaused, m_Game.AnnouncementReady,
             Time.unscaledDeltaTime, m_ChargeSeconds);

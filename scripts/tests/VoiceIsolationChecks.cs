@@ -28,7 +28,7 @@ class VoiceIsolationChecks
             if ((string)audit.GetType().GetField("clip_id").GetValue(audit) == Path.GetFileNameWithoutExtension(path))
             {
                 speech = (int)audit.GetType().GetField("speech_samples").GetValue(audit);
-                bool clone = (string)audit.GetType().GetField("provider").GetValue(audit) == "mistral";
+                bool clone = (string)audit.GetType().GetField("voice_condition").GetValue(audit) == "selfsimilar";
                 int fullLength = clip.samples * clip.channels;
                 int expectedWindow = clone ? fullLength - (int)Math.Round(clip.frequency * 0.4f) * clip.channels : fullLength;
                 Check(speech == expectedWindow, "neutral manifest covers full clip; clone manifest excludes exactly the room tail");
@@ -94,8 +94,8 @@ class VoiceIsolationChecks
             Set(synth, "m_CacheDir", root);
             Set(synth, "m_ApiKey", "fake-key");
             Set(synth, "m_AudioSource", new AudioSource());
-            var provider = new VoxtralClient();
-            Set(synth, "m_Voxtral", provider);
+            var provider = new ElevenLabsVoiceClient();
+            Set(synth, "m_CloneClient", provider);
             Action run = () => {
                 UnityWebRequest.Requests.Clear(); provider.Calls = 0;
                 synth.Speak("test phrase");
@@ -105,7 +105,7 @@ class VoiceIsolationChecks
             };
             string female = Cache(synth, "el-21m00Tcm4TlvDq8ikWAM");
             string male = Cache(synth, "el-cjVigY5qzO86Huf0OWal");
-            string self = Cache(synth, "vx-participant-clone");
+            string self = Cache(synth, "el-clone-participant-clone");
             Check(female != male && male != self && female != self, "voice cache isolation");
             Check(SessionConfig.TrySetPerspective(VoicePerspective.External), "perspective can change before library preparation");
             string externalCache = Cache(synth, "el-21m00Tcm4TlvDq8ikWAM");
@@ -114,7 +114,7 @@ class VoiceIsolationChecks
             // A populated neutral cache must never rescue a failed self-similar request.
             const string introduction = "Welcome to the surrounding search. Stay seated at the center. Objects will appear around you.";
             foreach (var introGender in new[] { NeutralVoiceProfile.Male, NeutralVoiceProfile.Female })
-                for (int introOption = 0; introOption < 2; introOption++)
+                for (int introOption = 0; introOption < SessionConfig.NeutralVoiceCount; introOption++)
                 {
                     SessionConfig.SelectNeutralVoice(introGender, introOption);
                     SessionConfig.Voice = VoiceCondition.SelfSimilar;
@@ -149,10 +149,10 @@ class VoiceIsolationChecks
             provider.HasKey = false;
             run();
             Check(UnityWebRequest.Requests.Count == 0 && provider.Calls == 0, "missing key stays silent");
-            Set(synth, "m_Voxtral", null);
+            Set(synth, "m_CloneClient", null);
             run();
             Check(UnityWebRequest.Requests.Count == 0, "missing provider stays silent");
-            Set(synth, "m_Voxtral", provider); provider.HasKey = true;
+            Set(synth, "m_CloneClient", provider); provider.HasKey = true;
             foreach (byte[] result in new byte[][] { null, new byte[0], new byte[50] })
             {
                 provider.Audio = result;
@@ -181,16 +181,21 @@ class VoiceIsolationChecks
             Application.TestPath = root;
             var voiceKeys = new System.Collections.Generic.HashSet<string>();
             foreach (var gender in new[] { NeutralVoiceProfile.Female, NeutralVoiceProfile.Male })
-                for (int option = 0; option < 2; option++)
+                for (int option = 0; option < SessionConfig.NeutralVoiceCount; option++)
                 {
                     SessionConfig.SelectNeutralVoice(gender, option);
-                    Check(voiceKeys.Add(Cache(synth, "el-" + SessionConfig.NeutralVoiceId)), "all four neutral voices have distinct cache keys");
+                    Check(voiceKeys.Add(Cache(synth, "el-" + SessionConfig.NeutralVoiceId)), "all twelve neutral voices have distinct cache keys");
                     Check(!string.IsNullOrEmpty(SessionConfig.NeutralVoiceName), "every voice choice is named");
                 }
             SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Female, 0);
+            Check(SessionConfig.NeutralVoiceCount == 6 && voiceKeys.Count == 12, "six distinct choices per gender");
+            Check(SessionConfig.NeutralId(NeutralVoiceProfile.Male, 4) == "nPczCjzI2devNBz1zQrb" &&
+                  SessionConfig.NeutralId(NeutralVoiceProfile.Female, 4) == "hpp4J3VqNfWAUOO0d1Us" &&
+                  SessionConfig.NeutralName(NeutralVoiceProfile.Male, 5) == "Liam" &&
+                  SessionConfig.NeutralName(NeutralVoiceProfile.Female, 5) == "Laura", "new choices append without remapping existing last indices");
             SessionConfig.ConfigureVoiceBlocks();
             Check(SessionConfig.NeutralFirst, "odd participant neutral first");
-            Check(SessionConfig.VoiceForRound(9) == VoiceCondition.Generic && SessionConfig.VoiceForRound(10) == VoiceCondition.SelfSimilar, "block boundary after ten trials");
+            Check(SessionConfig.VoiceForRound(39) == VoiceCondition.Generic && SessionConfig.VoiceForRound(40) == VoiceCondition.SelfSimilar, "block boundary after forty trials");
             File.WriteAllText(Path.Combine(SessionConfig.ParticipantPath, "voice-order-v1.txt"), "selfsimilar_then_neutral");
             SessionConfig.ConfigureVoiceBlocks();
             Check(!SessionConfig.NeutralFirst, "persisted assignment wins on restart");
@@ -201,6 +206,19 @@ class VoiceIsolationChecks
             SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Female, 0);
             SessionConfig.ConfigureVoiceBlocks();
             Check(SessionConfig.NeutralVoiceName == "Roger", "restart restores the exact saved voice option");
+            foreach (var newGender in new[] { NeutralVoiceProfile.Male, NeutralVoiceProfile.Female })
+            {
+                SessionConfig.SelectNeutralVoice(newGender, 5);
+                string selectedId = SessionConfig.NeutralVoiceId;
+                SessionConfig.ConfigureVoiceBlocks(replaceNeutralSelection: true);
+                SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Female, 0);
+                SessionConfig.ConfigureVoiceBlocks();
+                Check(SessionConfig.NeutralVoiceOption == 5 && SessionConfig.NeutralVoiceId == selectedId,
+                    "sixth voice persists and restores the exact provider identity");
+                string catalog = File.ReadAllText(Path.Combine(SessionConfig.ParticipantPath, "neutral-catalog-v1.json"));
+                Check(catalog.Contains(SessionConfig.NeutralCatalogVersion) && catalog.Contains(selectedId) &&
+                    catalog.Contains("Liam") && catalog.Contains("Laura"),"catalog snapshot preserves additions and version");
+            }
             File.Delete(Path.Combine(SessionConfig.ParticipantPath, "neutral-choice-v2.txt"));
             File.WriteAllText(Path.Combine(SessionConfig.ParticipantPath, "neutral-profile-v1.txt"), "Female");
             SessionConfig.ConfigureVoiceBlocks();
@@ -218,7 +236,7 @@ class VoiceIsolationChecks
             foreach (var audit in audits)
             {
                 var type = audit.GetType();
-                bool clone = (string)type.GetField("provider").GetValue(audit) == "mistral";
+                bool clone = (string)type.GetField("voice_condition").GetValue(audit) == "selfsimilar";
                 Check((string)type.GetField("effect_profile").GetValue(audit) == (clone ? InnerThoughtVoice.Version : "dry"),
                     "manifest identifies clone-only effect and dry neutral audio");
             }
@@ -268,11 +286,11 @@ class VoiceIsolationChecks
             string targetPrompt = "Locate the Blue Cube.";
             string practicePrompt = "This is a practice round. It does not count toward the study. " + targetPrompt;
             Drain(synth.PrepareLibraries(new[] { targetPrompt, practicePrompt }, null, ok => prepared = ok));
-            Check(prepared && provider.Texts.Contains("I need to find the blue cube."),
+            Check(prepared && provider.Texts.Contains("Locate the Blue Cube."),
                 "self-similar synthesis receives the selected formatted target wording");
             Check(UnityWebRequest.RequestBodies.Exists(body => body.Contains("Locate the Blue Cube.")),
                 "neutral synthesis retains external target wording");
-            Check(provider.Texts.Contains("I will try a practice trial. This one does not count toward my study trials. I need to find the blue cube."),
+            Check(provider.Texts.Contains("This is a practice round. It does not count toward the study. Locate the Blue Cube."),
                 "self-similar practice keeps its explicit practice declaration");
             provider.Calls = 0; UnityWebRequest.Requests.Clear();
             synth.Speak(targetPrompt); Drain(MonoBehaviour.LastRoutine);
@@ -291,9 +309,9 @@ class VoiceIsolationChecks
             UnityWebRequest.Requests.Clear();
             synth.Speak(lazyPrompt, "round"); Drain(MonoBehaviour.LastRoutine);
             Check(string.IsNullOrEmpty(synth.LastError) && provider.Calls == 1 &&
-                provider.Texts.Contains("I need to find the purple sphere.") &&
+                provider.Texts.Contains("Locate the Purple Sphere.") &&
                 UnityWebRequest.Requests.TrueForAll(url => url.StartsWith("file:")),
-                "first-use trial synthesizes in the assigned clone with first-person wording and no neutral request");
+                "first-use trial synthesizes in the assigned clone with shared wording and no neutral request");
             Check(File.Exists(SessionConfig.GetFilePath("voice-library-manifest.json")),
                 "on-demand clip updates the active run manifest");
             matchedRms = null;
@@ -374,8 +392,8 @@ class VoiceIsolationChecks
             foreach (string phrase in hintPhrases)
             {
                 string selfText = VoicePromptText.FormatForVoice(phrase, VoiceCondition.SelfSimilar);
-                Check(selfText.StartsWith("I"), "self-similar guidance is first-person singular");
-                Check(provider.Texts.Contains(selfText), "clone provider receives first-person hint");
+                Check(selfText == phrase, "self-similar guidance shares the external command");
+                Check(provider.Texts.Contains(selfText), "clone provider receives shared command");
                 Check(UnityWebRequest.RequestBodies.Exists(body => body.Contains(phrase)), "neutral provider receives external hint");
                 SessionConfig.Voice = VoiceCondition.SelfSimilar;
                 provider.Calls = 0; UnityWebRequest.Requests.Clear();
@@ -430,7 +448,12 @@ class VoiceIsolationChecks
                 int stopsBeforeCorrection = source.StopCalls;
                 bool relevant = true;
                 int correctionCommits = 0;
-                Check(synth.TryAreaCorrection(lazyPrompt, () => relevant, () => correctionCommits++), "playing hint accepts fade");
+                bool abortedDecisionLogged = false;
+                Action<string,string,string,string> abortedTelemetry = (kind,context,key,detail) => {
+                    if (kind=="guidance_decision_aborted" && detail.Contains("decision_id=abandoned-decision")) abortedDecisionLogged=true;
+                };
+                synth.Telemetry += abortedTelemetry;
+                Check(synth.TryAreaCorrection(lazyPrompt, () => relevant, () => correctionCommits++, guidanceDecisionId:"abandoned-decision"), "playing hint accepts fade");
                 var abandonedFade = MonoBehaviour.LastRoutine;
                 abandonedFade.MoveNext();
                 Time.unscaledTime += 0.02f;
@@ -440,11 +463,17 @@ class VoiceIsolationChecks
                 Check(Math.Abs(source.volume - 0.7f) < 0.0001f && starts == 2,
                     "leaving target zone during fade restores volume and cancels correction");
                 Check(correctionCommits == 0, "abandoned fade must not commit the cue or consume cooldown");
+                Check(abortedDecisionLogged,"Abandoned area request records its own decision ID without playback");
+                synth.Telemetry -= abortedTelemetry;
                 bool returnReasonLogged = false;
+                bool correctionStartLinked = false;
                 Action<string, string, string, string> correctionTelemetry = (kind, context, key, detail) =>
-                { if (kind == "audio_area_correction" && detail.Contains("gaze_overshoot_return")) returnReasonLogged = true; };
+                {
+                    if (kind == "audio_area_correction" && detail.Contains("gaze_overshoot_return") && detail.Contains("decision_id=return-decision")) returnReasonLogged = true;
+                    if (kind == "audio_playback_start" && detail.Contains("decision_id=return-decision")) correctionStartLinked = true;
+                };
                 synth.Telemetry += correctionTelemetry;
-                Check(synth.TryAreaCorrection(lazyPrompt, () => true, () => correctionCommits++, "gaze_overshoot_return"),
+                Check(synth.TryAreaCorrection(lazyPrompt, () => true, () => correctionCommits++, "gaze_overshoot_return","return-decision"),
                     "prepared correction can replace a hint");
                 var fade = MonoBehaviour.LastRoutine;
                 Check(synth.IsBusy, "pending fade blocks ordinary hints");
@@ -453,13 +482,25 @@ class VoiceIsolationChecks
                 Check(!source.HoldPlayback && source.StopCalls > stopsBeforeCorrection, "correction cuts off unfinished speech");
                 Check(starts == 3 && failures == 0, "correction plays once without failure");
                 Check(correctionCommits == 1 && returnReasonLogged, "committed correction consumes cooldown once and logs return reason");
+                Check(correctionStartLinked,"Audible correction retains the request decision through fade and Speak reset");
                 synth.Telemetry -= correctionTelemetry;
                 Check(provider.Calls == 0 && UnityWebRequest.Requests.Count == 0, "correction needs no network");
                 synth.PlaybackFailed -= failure; synth.Telemetry -= telemetry;
             }
+            var decisionEvents = new System.Collections.Generic.List<string>();
+            Action<string,string,string,string> captureDecisionEvents = (kind,context,key,detail) => decisionEvents.Add(kind+"|"+detail);
+            synth.Telemetry += captureDecisionEvents;
+            synth.Speak(lazyPrompt,"tip",guidanceDecisionId:"original-decision"); Drain(MonoBehaviour.LastRoutine);
+            foreach (var kind in new[] {"audio_request","audio_playback_start","audio_playback_end"})
+                Check(decisionEvents.Exists(e=>e.StartsWith(kind+"|") && e.Contains("decision_id=original-decision")),
+                    "Audio lifecycle preserves the original decision ID: "+kind);
+            decisionEvents.Clear();
+            synth.Speak(lazyPrompt,"round"); Drain(MonoBehaviour.LastRoutine);
+            Check(!decisionEvents.Exists(e=>e.Contains("decision_id=")),"Non-guidance speech cannot inherit a prior decision");
+            synth.Telemetry -= captureDecisionEvents;
             DownloadHandlerAudioClip.ForceSkewed = false;
             DownloadHandlerAudioClip.Quiet = false;
-            Check(ChallengeSet.TotalRounds == 20 && ChallengeSet.RoundsPerBlock == 10 && ChallengeSet.BlockCount == 2, "full two-block schedule");
+            Check(ChallengeSet.TotalRounds == 80 && ChallengeSet.RoundsPerBlock == 40 && ChallengeSet.BlockCount == 2, "full two-block schedule");
             var angleCounts = new int[2, 5];
             foreach (var trial in ChallengeSet.Rounds)
             {
@@ -475,7 +516,7 @@ class VoiceIsolationChecks
             // Selection previews bypass library readiness, cancel prior prepared
             // content, and always request the chosen neutral provider (never a clone).
             foreach (var gender in new[] { NeutralVoiceProfile.Male, NeutralVoiceProfile.Female })
-                for (int option = 0; option < 2; option++)
+                for (int option = 0; option < SessionConfig.NeutralVoiceCount; option++)
                 {
                     SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Female, 0);
                     SessionConfig.Voice = VoiceCondition.SelfSimilar;
@@ -511,11 +552,11 @@ class VoiceIsolationChecks
             SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Male, 1);
             SessionConfig.ResetForNewParticipant();
             string correction = VoicePromptText.WrongSelectionPhrase("Blue", "Cube");
-            Check(VoicePromptText.FormatForVoice(correction, VoiceCondition.Generic) == "Locate the blue cube.",
-                "neutral wrong-selection reminder names the intended target");
-            Check(VoicePromptText.FormatForVoice(correction, VoiceCondition.SelfSimilar) == "I'm looking for the blue cube.",
-                "self-similar wrong-selection reminder uses the requested first-person wording");
-            Check(VoicePromptText.FormatForVoice("Locate the Blue Cube.", VoiceCondition.SelfSimilar) == "I need to find the blue cube.",
+            Check(VoicePromptText.FormatForVoice(correction, VoiceCondition.Generic) == "Keep following the guidance and try another object.",
+                "neutral wrong-selection reminder does not reveal identity");
+            Check(VoicePromptText.FormatForVoice(correction, VoiceCondition.SelfSimilar) == "Keep following the guidance and try another object.",
+                "self-similar wrong-selection reminder does not reveal identity");
+            Check(VoicePromptText.FormatForVoice("Locate the Blue Cube.", VoiceCondition.SelfSimilar) == "Locate the Blue Cube.",
                 "wrong-selection wording does not replace normal target announcements");
             foreach (var condition in new[] { VoiceCondition.Generic, VoiceCondition.SelfSimilar })
             {
@@ -528,8 +569,8 @@ class VoiceIsolationChecks
                 Drain(MonoBehaviour.LastRoutine);
                 Check(string.IsNullOrEmpty(synth.LastError) && !synth.IsBusy, "wrong-selection reminder plays successfully");
                 Check(condition == VoiceCondition.Generic
-                    ? provider.Calls == 0 && UnityWebRequest.RequestBodies.Exists(body => body.Contains("Locate the blue cube."))
-                    : provider.Calls == 1 && provider.Texts.Contains("I'm looking for the blue cube."),
+                    ? provider.Calls == 0 && UnityWebRequest.RequestBodies.Exists(body => body.Contains("Keep following the guidance and try another object."))
+                    : provider.Calls == 1 && provider.Texts.Contains("Keep following the guidance and try another object."),
                     "wrong-selection reminder reaches the condition's provider with exact wording");
                 Check(SessionConfig.Voice == condition, "wrong-selection reminder preserves trial voice assignment");
             }
@@ -540,25 +581,32 @@ class VoiceIsolationChecks
             Check(VoicePromptText.AudioLevelCheck == audioCheck, "audio check tells participant how to accept volume");
             foreach (var condition in new[] { VoiceCondition.Generic, VoiceCondition.SelfSimilar })
                 Check(VoicePromptText.FormatForVoice(audioCheck, condition) == audioCheck, "both voices speak identical audio-check instructions");
+            foreach (string phrase in DirectionalHintPolicy.AllPhrases())
+            {
+                string firstPerson = VoicePromptText.FormatForVoice(phrase, VoiceCondition.SelfSimilar);
+                Check(firstPerson == phrase, "every assistance variant has shared imperative wording: " + phrase);
+                Check(!firstPerson.Contains("I'll try looking right"), "rejected first-person phrase never returns");
+            }
             Check(VoicePromptText.FormatForVoice("Go back. That was the correct area.", VoiceCondition.SelfSimilar) ==
-                "I need to go back. That was the correct area.", "return cue uses first person for self-similar voice");
-            Check(VoicePromptText.FormatForVoice("Look way left.", VoiceCondition.SelfSimilar) == "I need to look way left." &&
-                VoicePromptText.FormatForVoice("Look way right.", VoiceCondition.SelfSimilar) == "I need to look way right.",
-                "strong directional cues use first person for the self-similar voice");
+                "Go back. That was the correct area.", "return cue uses shared commands for self-similar voice");
+            Check(VoicePromptText.FormatForVoice("Look way left.", VoiceCondition.SelfSimilar) == "Look way left." &&
+                VoicePromptText.FormatForVoice("Look way right.", VoiceCondition.SelfSimilar) == "Look way right.",
+                "strong directional cues use shared commands for the self-similar voice");
             Check(VoicePromptText.FormatForVoice("Look way right.", VoiceCondition.Generic) == "Look way right.",
                 "neutral strong cue stays external");
             string[] neutralVariants = { "Look to your left.", "Look to your right.", "Try looking left.", "Try looking right.", "Search to your left.", "Search to your right." };
-            string[] selfVariants = { "I need to look to my left.", "I need to look to my right.", "I'll try looking left.", "I need to look right.", "I need to search to my left.", "I need to search to my right." };
+            string[] selfVariants = neutralVariants;
             for (int i = 0; i < neutralVariants.Length; i++)
             {
                 Check(VoicePromptText.FormatForVoice(neutralVariants[i], VoiceCondition.Generic) == neutralVariants[i], "neutral alternative remains external");
-                Check(VoicePromptText.FormatForVoice(neutralVariants[i], VoiceCondition.SelfSimilar) == selfVariants[i], "self-similar alternative is first person");
+                Check(VoicePromptText.FormatForVoice(neutralVariants[i], VoiceCondition.SelfSimilar) == selfVariants[i], "self-similar alternative uses the same wording");
             }
             for (int participant = 1; participant <= 50; participant++)
             {
                 SessionConfig.ParticipantId = $"P{participant:D3}";
                 var schedule = ChallengeSet.Rounds;
                 var firstCounts = new int[5]; var secondCounts = new int[5];
+                var identities = new[] { new System.Collections.Generic.Dictionary<string, int>(), new System.Collections.Generic.Dictionary<string, int>() };
                 var seeds = new System.Collections.Generic.HashSet<int>();
                 foreach (var trial in schedule)
                 {
@@ -568,6 +616,12 @@ class VoiceIsolationChecks
                         "start wall follows actual previous target, including practice and block boundary");
                     Check(seeds.Add(trial.layoutSeed), "each trial has its own layout seed");
                     (trial.blockIndex == 0 ? firstCounts : secondCounts)[trial.AbsoluteTheta / 45]++;
+                    string identity = trial.target.shape + ":" + trial.target.color;
+                    var counts = identities[trial.blockIndex];
+                    counts[identity] = counts.ContainsKey(identity) ? counts[identity] + 1 : 1;
+                    if (trial.roundIndex > 0)
+                        Check(identity != schedule[trial.roundIndex - 1].target.shape + ":" + schedule[trial.roundIndex - 1].target.color,
+                            "no adjacent target identities, including block boundary");
                     if (trial.blockIndex == 0)
                     {
                         var mirror = Array.Find(schedule, t => t.blockIndex == 1 && t.anglePair == trial.anglePair);
@@ -575,23 +629,34 @@ class VoiceIsolationChecks
                             "paired angles mirror across the two blocks");
                     }
                 }
-                for (int half = 0; half < 4; half++)
+                Check(identities[0].Count == 24 && identities[1].Count == 24, "every identity appears in both voices");
+                int doubled = 0;
+                foreach (var identity in identities[0])
+                {
+                    Check(identity.Value == identities[1][identity.Key] && identity.Value >= 1 && identity.Value <= 2,
+                        "both voices receive identical identity counts with at most two occurrences per block");
+                    if (identity.Value == 2) doubled++;
+                }
+                Check(doubled == 16, "sixteen repeated and eight single identities per block");
+                for (int half = 0; half < ChallengeSet.TotalRounds / 5; half++)
                 {
                     var halfAngles = new System.Collections.Generic.HashSet<int>();
                     for (int i = 0; i < 5; i++) halfAngles.Add(schedule[half * 5 + i].AbsoluteTheta);
                     Check(halfAngles.Count == 5, "every five trials cover all absolute angles without early clustering");
                 }
-                int[] quota = { 2, 2, 2, 2, 2 };
+                int[] quota = { 8, 8, 8, 8, 8 };
                 for (int a = 0; a < 5; a++) Check(firstCounts[a] == quota[a] && secondCounts[a] == quota[a], "fixed per-block quotas");
                 var saved = new StringWriter(); ChallengeSet.WriteSchedule(saved);
                 var rows = saved.ToString().Trim().Split('\n');
-                Check(rows.Length == 21, "manifest documents all twenty planned trials");
+                Check(rows.Length == 81, "manifest documents all eighty planned trials");
                 for (int r = 0; r < schedule.Length; r++)
                 {
                     var cells = rows[r + 1].Trim().Split(',');
-                    Check(cells.Length == 20 && int.Parse(cells[10]) == schedule[r].SignedTheta &&
+                    Check(cells.Length == 22 && int.Parse(cells[10]) == schedule[r].SignedTheta &&
                         int.Parse(cells[11]) == schedule[r].AbsoluteTheta && int.Parse(cells[13]) == schedule[r].layoutSeed && int.Parse(cells[17]) == schedule[r].startPlane,
                         "exported angle and seed match executable plan");
+                    Check(cells[20] == ChallengeSet.TargetIdentityPolicy && cells[21] == ChallengeSet.HeightAssignmentPolicy,
+                        "manifest distinguishes implemented identity balancing from pending signed-height quotas");
                 }
                 SessionConfig.ParticipantId = "P999"; var other = ChallengeSet.Rounds;
                 SessionConfig.ParticipantId = $"P{participant:D3}";
@@ -599,6 +664,29 @@ class VoiceIsolationChecks
                 Check(restored.ToString() == saved.ToString(), "participant restart reproduces full plan");
                 Check(other[0].layoutSeed != schedule[0].layoutSeed, "participant identity changes randomization");
             }
+            foreach (bool neutralFirst in new[] { true, false })
+            {
+                Directory.CreateDirectory(SessionConfig.ParticipantPath);
+                File.WriteAllText(Path.Combine(SessionConfig.ParticipantPath, "voice-order-v1.txt"),
+                    neutralFirst ? "neutral_then_selfsimilar" : "selfsimilar_then_neutral");
+                SessionConfig.ConfigureVoiceBlocks();
+                int neutralTrials = 0, selfTrials = 0;
+                foreach (var trial in ChallengeSet.Rounds)
+                {
+                    if (SessionConfig.VoiceForRound(trial.roundIndex) == VoiceCondition.Generic) neutralTrials++;
+                    else selfTrials++;
+                }
+                Check(neutralTrials == 40 && selfTrials == 40, "both saved orders assign forty trials to each voice");
+            }
+            ChallengeSet.DebugRoundCountOverride = 7;
+            var truncated = new StringWriter(); ChallengeSet.WriteSchedule(truncated);
+            int enabled = 0;
+            foreach (var row in truncated.ToString().Trim().Split('\n'))
+                if (row.StartsWith(SessionConfig.ParticipantId + ",") && row.Split(',')[16] == "1") enabled++;
+            Check(enabled == 7 && ChallengeSet.Rounds.Length == 80, "short run preserves complete plan and flags only seven enabled trials");
+            ChallengeSet.DebugRoundCountOverride = 999;
+            Check(ChallengeSet.RoundCount == 80, "debug cannot exceed full study");
+            ChallengeSet.DebugRoundCountOverride = 0;
             foreach (var trial in ChallengeSet.Rounds)
             {
                 int targetCount = 0, colorOnly = 0, shapeOnly = 0;
@@ -714,8 +802,9 @@ namespace UnityEngine.Networking
     public static class UnityWebRequestMultimedia { public static UnityWebRequest GetAudioClip(string path, AudioType type) => new UnityWebRequest(path, "GET"); }
     public static class DownloadHandlerAudioClip { public static bool Corrupt, AlternatePeak, ForceSkewed, Quiet; static int count; public static AudioClip GetContent(UnityWebRequest request) => Corrupt ? null : new AudioClip(ForceSkewed || (AlternatePeak && count++ % 2 == 0), Quiet); }
 }
-public class VoxtralClient
+public class ElevenLabsVoiceClient
 {
+    public const string Model = "eleven_turbo_v2_5";
     public bool HasKey = true; public byte[] Audio; public int Calls; public string Error = "simulated failure";
     public System.Collections.Generic.List<string> Texts = new System.Collections.Generic.List<string>();
     public void Initialize(string key) { }

@@ -10,6 +10,7 @@ public sealed class TrialReplayRecord
     public long sequence;
     public double time;
     public int frame;
+    public string interactionPolicy, repeatEventVersion, guidanceAuditVersion;
     public string recordingId, sourceType, appVersion, buildGuid, unityVersion, utc;
     public string participantCode, sourceRunFolder, sourceTrialId;
     public int runNumber;
@@ -24,6 +25,11 @@ public sealed class TrialReplayRecord
     public bool headAvailable, gazeAvailable, xrOriginAvailable;
     // -1 = unknown/not exposed; 0 = explicitly untracked; 1 = explicitly tracked.
     public int headTracked = -1, gazeTracked = -1;
+    public long gazeObservationSequence = -1;
+    public double gazeReceiptTime, gazeInputEventTime, gazeDeliveryAge;
+    public string gazeSource, gazeInvalidReason, gazeRecordingPath;
+    public string guidanceDecisionId;
+    public GuidanceDecision guidanceDecision;
     public float dwell, audioVolume = 0.7f;
     public string hoveredId, targetId, layout;
     public TrialReplayObject[] objects;
@@ -31,6 +37,8 @@ public sealed class TrialReplayRecord
     public TrialReplayTransform[] changes;
     // Schema 2 uses controller confirmation. dwell is retained solely to read schema 1.
     public string selectionMethod, selectingHand, sampling, scheduleVersion;
+    public string targetIdentityPolicy, heightAssignmentPolicy;
+    public string neutralCatalogVersion;
     public int scheduleSeed, layoutSeed, block, anglePair, targetPlane, signedTheta, absoluteTheta;
     public TrialReplayController leftController, rightController;
     public int startPlane, readinessWall;

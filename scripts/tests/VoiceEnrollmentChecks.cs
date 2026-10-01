@@ -35,7 +35,7 @@ public static class WavUtility
     public static byte[] EncodeFromClip(UnityEngine.AudioClip clip, int frames)
     { EncodedFrames = frames; return new byte[44 + frames * 2]; }
 }
-public class VoxtralClient
+public class ElevenLabsVoiceClient
 {
     public bool HasKey = true;
     public int Calls;
@@ -54,7 +54,7 @@ public static class VoiceEnrollmentChecks
     static void Run(bool finishEarly, bool interrupted, bool withCue = false)
     {
         UnityEngine.Time.realtimeSinceStartup = 0;
-        var provider = new VoxtralClient();
+        var provider = new ElevenLabsVoiceClient();
         var enrollment = new VoiceEnrollment(); enrollment.Initialize(provider);
         enrollment.FinishRecording(); // An idle request must not stop the next recording.
         enrollment.RecordAndClone(40, beforeRecording: withCue ? (Func<IEnumerator>)BeforeRecording : null);

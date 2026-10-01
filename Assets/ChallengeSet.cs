@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// Deterministic challenge definitions for the conjunction search experiment.
 ///
-/// Design: 20 measured rounds total per session, plus separate practice.
+/// Design: 80 measured rounds total per session, plus separate practice.
 /// The agent is gaze-contingent in every round, in either voice condition.
 ///
 /// Seeded per participant, with equal absolute target-wall angle counts in both
@@ -13,19 +13,22 @@ using UnityEngine;
 public static class ChallengeSet
 {
     // Two voice blocks; guidance remains gaze-contingent throughout.
-    public const int RoundsPerBlock = 10;
+    public const int RoundsPerBlock = 40;
     public const int BlockCount = 2;
-    public const int TotalRounds = RoundsPerBlock * BlockCount; // 20
+    public const int TotalRounds = RoundsPerBlock * BlockCount; // 80
     public const int ObjectsPerRound = 168;
-    public const string ScheduleVersion = "previous-wall-angle-v4-stratified-10-trials";
+    public const string ScheduleVersion = "previous-wall-angle-v5-stratified-40-trials";
+    public const string TargetIdentityPolicy = "matched-counts-shuffled-24-plus-16-v1";
+    public const string HeightAssignmentPolicy = "unbalanced-floor-scatter-pending-reference-v1";
+    const int k_AngleCategories = 5;
     const int k_PlaneCount = 8;
     const int k_ObjectsPerPlane = ObjectsPerRound / k_PlaneCount;
-    // Optional short test run: 0 means use all 20 trials. A shorter run will not
+    // Optional short test run: 0 means use all 80 trials. A shorter run will not
     // necessarily finish both blocks or preserve the completed-trial angle balance.
     public static int DebugRoundCountOverride { get; set; }
 
     // How many measured trials the game will actually run. Clamp keeps a debug
-    // request inside 1–20; it does not change the full plan generated below.
+    // request inside 1–80; it does not change the full plan generated below.
     public static int RoundCount =>
         DebugRoundCountOverride > 0
             ? Mathf.Clamp(DebugRoundCountOverride, 1, TotalRounds)
@@ -54,7 +57,7 @@ public static class ChallengeSet
     // target wall/slot, geometry seed, and the pair linking it to the other block.
     public struct RoundDef
     {
-        public int roundIndex;       // 0-19
+        public int roundIndex;       // 0-79
         public int blockIndex;       // 0-1: counterbalanced voice blocks
         public ObjectDef target;
         public ObjectDef[] objects;  // all 168
@@ -119,14 +122,14 @@ public static class ChallengeSet
     /// </summary>
     public static void WriteSchedule(System.IO.TextWriter writer)
     {
-        writer.WriteLine("participant_id,schedule_version,schedule_seed,trial_index,block_index,trial_in_block,voice_condition,angle_pair,target_plane,wall_azimuth_deg,signed_theta_deg,absolute_theta_deg,target_slot,layout_seed,target_shape,target_color,enabled_in_run,start_plane,start_wall_azimuth_deg,theta_reference");
+        writer.WriteLine("participant_id,schedule_version,schedule_seed,trial_index,block_index,trial_in_block,voice_condition,angle_pair,target_plane,wall_azimuth_deg,signed_theta_deg,absolute_theta_deg,target_slot,layout_seed,target_shape,target_color,enabled_in_run,start_plane,start_wall_azimuth_deg,theta_reference,target_identity_policy,height_assignment_policy");
         foreach (var round in Rounds)
         {
             // Use the saved voice-block assignment, not whichever voice is speaking
-            // right now. Trial/block indices start at 0. % 10 gives position within
-            // the block: overall trial index 13 becomes position 3 in block 1.
+            // right now. Trial/block indices start at 0. % 40 gives position within
+            // the block: overall trial index 43 becomes position 3 in block 1.
             string voice = SessionConfig.VoiceBlocksEnabled ? SessionConfig.VoiceLabelForRound(round.roundIndex) : SessionConfig.VoiceTag;
-            writer.WriteLine(System.FormattableString.Invariant($"{SessionConfig.ParticipantId},{ScheduleVersion},{ScheduleSeed},{round.roundIndex},{round.blockIndex},{round.roundIndex % RoundsPerBlock},{voice},{round.anglePair},{round.targetPlane},{round.targetPlane * 45},{round.SignedTheta},{round.AbsoluteTheta},{round.targetSlot},{round.layoutSeed},{round.target.shape},{round.target.color},{(round.roundIndex < RoundCount ? 1 : 0)},{round.startPlane},{round.startPlane * 45},previous_target_wall_center"));
+            writer.WriteLine(System.FormattableString.Invariant($"{SessionConfig.ParticipantId},{ScheduleVersion},{ScheduleSeed},{round.roundIndex},{round.blockIndex},{round.roundIndex % RoundsPerBlock},{voice},{round.anglePair},{round.targetPlane},{round.targetPlane * 45},{round.SignedTheta},{round.AbsoluteTheta},{round.targetSlot},{round.layoutSeed},{round.target.shape},{round.target.color},{(round.roundIndex < RoundCount ? 1 : 0)},{round.startPlane},{round.startPlane * 45},previous_target_wall_center,{TargetIdentityPolicy},{HeightAssignmentPolicy}"));
         }
     }
 
@@ -154,7 +157,7 @@ public static class ChallengeSet
     /// <summary>
     /// Build one of the two practice trials (practiceIndex 0 or 1).
     /// Use repeatable practice-only seeds, a red sphere first and a blue cube second.
-    /// Practice does not consume any of the twenty measured trials or angle quotas.
+    /// Practice does not consume any of the eighty measured trials or angle quotas.
     /// </summary>
     public static RoundDef PracticeRound(int practiceIndex)
     {
@@ -174,7 +177,7 @@ public static class ChallengeSet
         // Replace one randomly chosen distractor, giving practice exactly one target.
         int targetIndex = rng.Next(objects.Length);
         objects[targetIndex] = target;
-        // Indices 0 and 10 select the two voice blocks for practice. They are routing
+        // Indices 0 and 40 select the two voice blocks for practice. They are routing
         // indices, not claims that these practice attempts are measured trials.
         return new RoundDef { roundIndex = practiceIndex == 0 ? 0 : RoundsPerBlock,
             blockIndex = practiceIndex, target = target, objects = objects,
@@ -183,8 +186,9 @@ public static class ChallengeSet
     }
 
     /// <summary>
-    /// Build all twenty measured trials: balance angle categories, choose directions,
-    /// shuffle each block, choose unique targets, and place each target on its wall.
+    /// Build all eighty measured trials: balance angle categories, choose directions,
+    /// shuffle each block, repeat identities with equal counts in both voice blocks,
+    /// and place each trial's sole target on its assigned wall.
     /// This chooses wall/slot and a layout seed; RotationalSearchLayout.Build uses
     /// that seed to scatter actual positions and heights within the wall boundaries.
     /// </summary>
@@ -193,10 +197,11 @@ public static class ChallengeSet
         s_Participant = SessionConfig.ParticipantId;
         var rng = new System.Random(ScheduleSeed);
 
-        // 1. Make ten angle assignments. These numbers are units of 45°, not degrees:
-        //    0, 1, 2, 3, 4 mean 0°, 45°, 90°, 135°, 180°. Repeat twice for equal counts.
+        // 1. Make forty angle assignments. These numbers are units of 45°, not degrees:
+        //    0, 1, 2, 3, 4 mean 0°, 45°, 90°, 135°, 180°. Repeat eight times for equal counts.
         //    Each assignment gets a pair ID so we can find its mirror after shuffling.
-        int[] magnitudes = { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
+        var magnitudes = new int[RoundsPerBlock];
+        for (int i = 0; i < magnitudes.Length; i++) magnitudes[i] = i % k_AngleCategories;
         var turnSteps = new int[RoundsPerBlock];
         // Flip a coin (Next(2) returns 0 or 1): keep the rightward turn or mirror it.
         // Example: magnitude 3 is a 135° right turn; its mirror is step 5 (225°,
@@ -205,25 +210,28 @@ public static class ChallengeSet
         for (int i = 0; i < turnSteps.Length; i++)
             turnSteps[i] = magnitudes[i] == 0 || rng.Next(2) == 0 ? magnitudes[i] : (8 - magnitudes[i]) % 8;
 
-        // 2. Randomize each five-trial half separately. Each half contains one of
+        // 2. Randomize each five-trial group separately. Each group contains one of
         // every |theta|, so early trials cannot exhaust the 0°/45° quota in a cluster.
-        // First coin-flip which copy of each magnitude goes in each half, then use
-        // Fisher–Yates within each half. Block two independently orders the same
+        // Shuffle the eight copies of each magnitude across groups, then use
+        // Fisher–Yates within each group. Block two independently orders the same
         // pair IDs; its directions are still mirrored below.
         var pairOrder = new int[TotalRounds];
         for (int block = 0; block < BlockCount; block++)
         {
             int start = block * RoundsPerBlock;
-            for (int i = 0; i < 5; i++)
+            int groups = RoundsPerBlock / k_AngleCategories;
+            for (int magnitude = 0; magnitude < k_AngleCategories; magnitude++)
             {
-                bool swapCopies = rng.Next(2) == 0;
-                pairOrder[start + i] = i + (swapCopies ? 5 : 0);
-                pairOrder[start + 5 + i] = i + (swapCopies ? 0 : 5);
+                var copies = new int[groups];
+                for (int copy = 0; copy < groups; copy++) copies[copy] = magnitude + copy * k_AngleCategories;
+                Shuffle(copies, rng);
+                for (int group = 0; group < groups; group++)
+                    pairOrder[start + group * k_AngleCategories + magnitude] = copies[group];
             }
-            for (int half = 0; half < 2; half++)
+            for (int group = 0; group < groups; group++)
             {
-                int offset = start + half * 5;
-                for (int i = 4; i > 0; i--)
+                int offset = start + group * k_AngleCategories;
+                for (int i = k_AngleCategories - 1; i > 0; i--)
                 {
                     int j = rng.Next(i + 1);
                     (pairOrder[offset + i], pairOrder[offset + j]) = (pairOrder[offset + j], pairOrder[offset + i]);
@@ -231,20 +239,27 @@ public static class ChallengeSet
             }
         }
 
-        // 3. List all 6 shapes × 4 colors = 24 possible targets. Shuffle the list,
-        // then use its first 20 entries so no exact target identity repeats this run.
+        // 3. List all 6 shapes × 4 colors = 24 possible targets. Both blocks use
+        // all 24 once, plus the same seeded subset of 16 a second time. Each bag
+        // is independently shuffled, with no immediate repeat at bag boundaries.
+        // Thus both voices have identical identity counts, without claiming 80
+        // globally unique targets or pairing exact geometry/identity across voices.
         var allTargets = new List<(int si, int ci)>();
         for (int si = 0; si < Shapes.Length; si++)
             for (int ci = 0; ci < ColorNames.Length; ci++)
                 allTargets.Add((si, ci));
 
-        for (int i = allTargets.Count - 1; i > 0; i--)
+        Shuffle(allTargets, rng);
+        var repeatedTargets = allTargets.GetRange(0, RoundsPerBlock - allTargets.Count);
+        var targetOrder = new List<(int si, int ci)>(TotalRounds);
+        for (int block = 0; block < BlockCount; block++)
         {
-            int j = rng.Next(i + 1);
-            (allTargets[i], allTargets[j]) = (allTargets[j], allTargets[i]);
+            AppendTargetBag(targetOrder, allTargets, rng);
+            AppendTargetBag(targetOrder, repeatedTargets, rng);
         }
 
         s_Rounds = new RoundDef[TotalRounds];
+        var layoutSeeds = new HashSet<int>();
         // Both practices happen before measured trials. Continue from the last practice
         // target, then from each measured target, including across the block break.
         int startPlane = PracticeRound(1).targetPlane;
@@ -253,7 +268,7 @@ public static class ChallengeSet
         {
             // 4. Build this trial's object identities. tsi/tci are the target's
             // shape/color indices into the lookup arrays at the top of this file.
-            var (tsi, tci) = allTargets[r];
+            var (tsi, tci) = targetOrder[r];
             var target = MakeObj(tsi, tci);
 
             // Distractor pool A: target color, different shape.
@@ -310,22 +325,55 @@ public static class ChallengeSet
             int destination = plane * k_ObjectsPerPlane + slot;
             (objects[targetIndex], objects[destination]) = (objects[destination], objects[targetIndex]);
 
-            // 6. Save the trial. Integer division r / 10 maps indices 0–9 to block 0
-            // and 10–19 to block 1. The layout seed controls the separate horizontal
+            // 6. Save the trial. Integer division r / 40 maps indices 0–39 to block 0
+            // and 40–79 to block 1. The layout seed controls the separate horizontal
             // position/height draws, so a balanced wall angle need not equal the
             // object's exact bearing. Both the seed and actual positions are logged.
+            // Random draws can collide. Retry so every trial really has a distinct
+            // layout seed, as promised by the schedule manifest and validator.
+            int layoutSeed;
+            do { layoutSeed = rng.Next(1, int.MaxValue); } while (!layoutSeeds.Add(layoutSeed));
             s_Rounds[r] = new RoundDef
             {
                 roundIndex = r,
                 blockIndex = r / RoundsPerBlock,
                 target = target,
                 objects = objects.ToArray(), startPlane = startPlane, targetPlane = plane, targetSlot = slot,
-                layoutSeed = rng.Next(1, int.MaxValue), anglePair = pair
+                layoutSeed = layoutSeed, anglePair = pair
             };
             startPlane = plane;
         }
 
         Debug.Log($"[ChallengeSet] Generated {TotalRounds} balanced rounds: {ScheduleVersion}, seed={ScheduleSeed}");
+    }
+
+    /// <summary>
+    /// Shuffle a unique-identity bag and append it to the target sequence. If its
+    /// first target equals the previous bag's last target, exchange its first two
+    /// entries. A bag has no internal duplicates, so this prevents immediate repeats
+    /// without redrawing identities or changing either block's identity counts.
+    /// </summary>
+    static void AppendTargetBag(List<(int si, int ci)> order, List<(int si, int ci)> source, System.Random rng)
+    {
+        var bag = new List<(int si, int ci)>(source);
+        Shuffle(bag, rng);
+        if (order.Count > 0 && order[order.Count - 1] == bag[0])
+            (bag[0], bag[1]) = (bag[1], bag[0]);
+        order.AddRange(bag);
+    }
+
+    /// <summary>
+    /// Fisher–Yates shuffle: work backward, choose uniformly among the unplaced
+    /// entries (0 through i inclusive), and swap the chosen entry into position i.
+    /// Already placed entries stay untouched; every ordering is equally likely.
+    /// </summary>
+    static void Shuffle<T>(IList<T> values, System.Random rng)
+    {
+        for (int i = values.Count - 1; i > 0; i--)
+        {
+            int j = rng.Next(i + 1);
+            (values[i], values[j]) = (values[j], values[i]);
+        }
     }
 
     /// <summary>
