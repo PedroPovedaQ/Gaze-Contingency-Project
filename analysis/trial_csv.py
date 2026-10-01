@@ -22,6 +22,7 @@ from mega_csv import csv_rows, replay_rows
 
 SCHEMA = "trial-performance-subjective-v1"
 CONTACT_METHOD = "first_explicitly_tracked_ray_intersection_snapshot_v1"
+MOTION_METHOD = "tracked_frame_and_selection_intervals_v2"
 BASE_FIELDS = [
     "export_schema",
     "participant_id",
@@ -78,6 +79,8 @@ BASE_FIELDS = [
     "gross_head_rotation_x_deg",
     "gross_head_rotation_y_deg",
     "gross_head_rotation_z_deg",
+    "head_motion_method",
+    "head_motion_observation_count",
     "head_motion_interval_count",
     "head_motion_covered_seconds",
     "head_motion_gap_count",
@@ -232,6 +235,7 @@ class Trial:
     active_instruction: str | None = None
     wrong: int = 0
     intervals: int = 0
+    motion_observations: int = 0
     gaps: int = 0
     covered: float = 0
     movement: float = 0
@@ -359,20 +363,28 @@ class Trial:
             if self.active_instruction and kind != "audio_playback_end":
                 self.interrupted += 1
             self.active_instruction = None
-        if kind != "sample":
+        if kind not in ("sample", "selection"):
+            return
+        # Older selection records may contain no head observation at all. New
+        # trigger snapshots do: retain their valid final movement, or their gap.
+        if kind == "selection" and "headAvailable" not in r:
             return
         if r.get("searchActive") is not True:
             self.previous_head = None
             self.previous_sample = None
             return
-        self.samples += 1
+        self.motion_observations += 1
         self.row["search_exposure_seconds"] = max(
             elapsed, nonnegative(self.row.get("search_exposure_seconds")) or 0
         )
-        gaze_valid, controller_valid = self.contacts(r, elapsed)
-        self.valid_gaze += int(gaze_valid)
-        self.valid_controller += int(controller_valid)
-        self.unknown_gaze += int(r.get("gazeTracked", -1) == -1)
+        if kind == "sample":
+            # Contact/validity denominators remain rendered-frame samples;
+            # selection contacts were handled above and are separately sourced.
+            self.samples += 1
+            gaze_valid, controller_valid = self.contacts(r, elapsed)
+            self.valid_gaze += int(gaze_valid)
+            self.valid_controller += int(controller_valid)
+            self.unknown_gaze += int(r.get("gazeTracked", -1) == -1)
         pos, q = vector(r.get("headPosition")), quaternion(r.get("headRotation"))
         valid_head = (
             r.get("headAvailable") is True and r.get("headTracked") == 1 and pos and q
@@ -384,7 +396,7 @@ class Trial:
             self.gaps += 1
         self.previous_sample = r["time"]
         if valid_head:
-            self.geometry(pos, q, elapsed)
+            self.geometry(pos, q, elapsed, kind)
             if self.previous_head is not None:
                 t, old_pos, old_q = self.previous_head
                 delta_time = r["time"] - t
@@ -424,7 +436,7 @@ class Trial:
             self.row.setdefault("first_controller_contact_source", r["kind"])
         return gaze_valid, controller_valid
 
-    def geometry(self, head: tuple, q: tuple, elapsed: float) -> None:
+    def geometry(self, head: tuple, q: tuple, elapsed: float, source: str = "sample") -> None:
         if self.row.get("geometry_reference") or not self.target:
             return
         target = vector(self.target.get("position"))
@@ -448,12 +460,13 @@ class Trial:
             )
             if bearing is not None and head_yaw is not None
             else None,
-            geometry_reference="first_tracked_head_sample_after_search_start",
+            geometry_reference=f"first_tracked_head_{source}_after_search_start",
             geometry_reference_search_seconds=elapsed,
         )
 
     def finish(self) -> dict:
         row = self.row
+        row['head_motion_method'] = MOTION_METHOD
         if not row.get("replay_file"):
             self.flags.add("no_matching_replay")
         if self.started:
@@ -474,6 +487,7 @@ class Trial:
             elif row["instruction_count"] != self.instructions:
                 self.flags.add("instruction_count_cross_source_mismatch")
             row.update(
+                head_motion_observation_count=self.motion_observations,
                 gaze_total_samples=self.samples,
                 gaze_valid_samples=self.valid_gaze,
                 gaze_unknown_tracking_samples=self.unknown_gaze,

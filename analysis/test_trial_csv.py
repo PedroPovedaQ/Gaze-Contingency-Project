@@ -210,6 +210,63 @@ class TrialCSVTests(unittest.TestCase):
         self.assertAlmostEqual(float(a["gross_head_rotation_y_deg"]), 2)
         self.assertEqual(a["head_motion_interval_count"], "1")
 
+    def test_selection_pose_retains_final_motion_without_inflating_frame_counts(self):
+        selection = dict(self.sample(2.15, .15, 1.4, -177), kind='selection', correct=True,
+                         objectId='target', selectingHand='right')
+        self.records = self.records[:5] + [selection, self.sample(2.2, .2, 99, 0),
+                                          dict(kind='end', time=3, complete=True)]
+        self.save()
+        row = self.read()[0][0]
+        self.assertAlmostEqual(float(row['gross_head_translation_m']), 1.4)
+        self.assertAlmostEqual(float(row['gross_head_rotation_deg']), 4)
+        self.assertEqual(row['head_motion_interval_count'], '2')
+        self.assertAlmostEqual(float(row['head_motion_covered_seconds']), .15)
+        self.assertEqual(row['head_motion_observation_count'], '3')
+        self.assertEqual(row['head_motion_method'], 'tracked_frame_and_selection_intervals_v2')
+        self.assertEqual(row['gaze_total_samples'], '2')
+
+    def test_selection_motion_keeps_invalid_gaps_and_legacy_absence_separate(self):
+        baseline = self.records[:5]
+        for case in ('invalid', 'missing', 'late'):
+            with self.subTest(case=case):
+                selection = dict(self.sample(2.15, .15, 99, 0), kind='selection', correct=True,
+                                 objectId='target', selectingHand='right')
+                if case == 'invalid': selection['headTracked'] = 0
+                if case == 'missing': selection.pop('headAvailable')
+                if case == 'late': selection.update(time=2.5, searchSeconds=.5)
+                self.records = baseline + [selection, dict(kind='end', time=3, complete=True)]
+                self.save()
+                row = self.read('export-'+case)[0][0]
+                self.assertAlmostEqual(float(row['gross_head_translation_m']), 1)
+                self.assertEqual(row['head_motion_interval_count'], '1')
+                self.assertEqual(row['head_motion_observation_count'], '2' if case == 'missing' else '3')
+
+    def test_first_tracked_selection_geometry_is_explicit_and_not_zero_motion(self):
+        selection = dict(self.sample(2.05, .05, 0, 0), kind='selection', correct=True,
+                         objectId='target', selectingHand='right')
+        self.records = self.records[:3] + [selection, dict(kind='end', time=3, complete=True)]
+        self.save()
+        row = self.read()[0][0]
+        self.assertEqual(row['geometry_reference'], 'first_tracked_head_selection_after_search_start')
+        self.assertAlmostEqual(float(row['target_distance_m']), math.sqrt(10))
+        self.assertEqual(row['gross_head_translation_m'], '')
+        self.assertEqual(row['gaze_total_samples'], '0')
+
+    def test_wrong_selection_retains_excursion_and_invalid_selection_breaks_motion(self):
+        original = list(self.records)
+        wrong = dict(self.sample(2.05, .05, 2, 180), kind='selection', correct=False,
+                     objectId='other', selectingHand='right')
+        self.records = original[:4] + [wrong] + original[4:]
+        self.save()
+        row = self.read('wrong-pose')[0][0]
+        self.assertAlmostEqual(float(row['gross_head_translation_m']), 3)
+        self.assertEqual(row['head_motion_interval_count'], '2')
+        wrong['headTracked'] = 0
+        self.save()
+        row = self.read('invalid-wrong-pose')[0][0]
+        self.assertEqual(row['gross_head_translation_m'], '')
+        self.assertEqual(row['head_motion_interval_count'], '0')
+
     def test_unknown_tracking_does_not_become_valid_gaze(self):
         self.records[4]["gazeTracked"] = -1
         self.records[4]["rightController"]["tracked"] = -1

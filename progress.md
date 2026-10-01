@@ -1,5 +1,7 @@
 ## 2026-10-01 — overnight continuation
 
+- Reproduced omitted trigger-time motion in trial CSVs (synthetic path 1.0 m exported instead of the observed 1.4 m). Motion method v2 now includes tracked correct/incorrect selection poses, preserves invalid/gap/pause breaks, excludes post-capture movement and identifies a selection-only geometry reference. Frame gaze-quality denominators remain unchanged. Four regressions and all 156 Python tests pass; new method/count fields preserve export provenance.
+
 - Extended strict import to shared replay parsing after reproducing a textual `complete: "false"` footer accepted without warning. Reject non-finite JSON and malformed declared schema/sequence/time, booleans and tracking states before downstream metrics. All 152 Python tests pass; P020 retains exactly 10,119 records / 9,703 samples with its existing incomplete-prefix warnings. Corrected #20 documentation: repeat request/delivery counting is implemented; zone-arrival/revisit definitions remain open.
 
 - Reproduced a raw-eye import false pass: JSON `valid: "false"` was treated as true and yielded 100% valid time; a complete receipt without a row count was also accepted. Added strict declared-boolean/numeric identity checks and typed clean-close row counts, preserving missing-count receipts as incomplete. All 151 Python tests pass, including the combined audit. Original raw data remains unchanged.

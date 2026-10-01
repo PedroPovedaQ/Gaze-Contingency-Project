@@ -29,6 +29,8 @@ Planned but unstarted, interrupted and practice trials remain separate, explicit
 
 The original objective record is preserved in `source_trial_json`. Its legacy fixation/saccade labels are source provenance, not newly validated measures. Planned schedule columns are retained as `source_schedule__...`. Raw scene, gaze, motion and audio sources remain necessary for reconstruction.
 
+**October 1 motion method:** `head_motion_method=tracked_frame_and_selection_intervals_v2` includes explicitly tracked head poses saved at correct and incorrect trigger selections, including the final observed movement before capture. `head_motion_observation_count` counts considered frame/selection poses; gaze-validity sample counts still use only rendered-frame samples. Invalid poses, pauses and excessive time gaps break the path; later post-capture poses are excluded. Older selection records without head-observation fields add nothing. A selection can supply the first observed geometry reference when no tracked frame exists; `geometry_reference` explicitly identifies that case. One pose supplies geometry, not a measured zero-length path. Preserve method versions when comparing exports; previous exports are not rewritten.
+
 ## Subjective values and later enrichment
 
 The run's `nasa_tlx.csv` is imported automatically when present. Additional wide-format questionnaires use repeatable arguments:

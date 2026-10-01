@@ -1,8 +1,40 @@
 # Overnight work and morning verification — October 1, 2026
 
-Latest verified state: exact raw/replay observation links passed full Unity integration and Android packaging. The browser timeline now imports raw replay files and preserves source samples and gaps; verification details are recorded below. Work remains local with no device install or hardware acceptance. See the latest checkpoint for the current artifact fingerprint.
+## Latest verified checkpoint — 05:41 EDT
 
-Status: work in progress. This report is updated during the overnight run ending at 06:00 America/New_York. It is not study approval or hardware acceptance.
+Local implementation and offline checks have advanced; **headset/research acceptance remains pending**. Work is committed on `codex/reconcile-meeting-20260922` in `/tmp/gaze-v2-project-update-20260922`. Nothing was pushed. Unrelated pre-existing deletions and Unity's existing ProjectSettings modification remain outside these commits.
+
+| Area | Verified locally | What remains |
+|---|---|---|
+| Study flow | 40+40 measured trials, two separate practice trials; balanced absolute theta/identity counts; hidden-target shared guidance; right-controller controls | Physical full-session flow; signed-height reference/quotas still undecided |
+| Eye measurement | Shared validity/freshness stream, diagnostic/independent targets, raw/replay links, spatial/timing reports and strict import checks | Actual Focus Vision accuracy, drift, field availability, native sample access/rate and validated eye events |
+| Voice/guidance | Six candidates per gender; 44 shared cue variants; horizontal then vertical policy; replay preserves overlapping success audio | Headset audition, haptics, pacing/interruptions and identity/level quality; no paid requests made overnight |
+| Recording/replay | Separate per-trial export; combined consistency audit; browser/native exact samples and indexed reconstruction; P020 comparison passed at 44 cursors | A newly recorded current-build run with matching video/audio; interactive new-input rehearsal remains open |
+| Documents | Reconciled local run sheet and survey references; successful native LaTeX compilations; original editable study figure | Researcher wording/anchors/order/burden review, venue sizing and any later live publication |
+
+**Latest analysis verification:** 156 Python tests passed (`/tmp/gaze-python-selection-motion-final.log`); browser replay/video suites passed. Full Unity integration and real-engine silent audio checks passed earlier in this same run; no runtime changes followed the packaged build. Those checks do not establish headset behavior.
+
+**Packaged APK:** `Builds/CodexAndroid/codex_build.apk`, 71,127,664 bytes; SHA-256 `85972d62dd7e4a61b521675e967ed0f062ab7a2a14100e8bddb4425f81c11eda`. Offline packaging succeeded in 82.9 s (`/tmp/gaze-android-native-state.log`). Older package hashes below are superseded.
+
+**Current deployment attempt:** the correct Unity project was reopened and the required Build And Run menu command dispatched successfully. The log records build start but no terminal result yet; the APK remains the previously verified file. ADB lists no Vive. Native UI inspection reports the Mac locked. Do not infer installation or launch from menu dispatch. Unity remains open; unlock/connect and inspect its pending build/device dialog in the morning. Logs: `/tmp/gaze-unity-final-morning-editor.log` and `/tmp/gaze-unity-final-menu-dispatch.log`.
+
+## Pedro's morning sequence
+
+1. **Unlock/connect first.** Confirm the intended Unity checkout above, authorize the Vive's existing ADB connection if prompted, and inspect the pending build result before starting another build. The current APK is available for the device run.
+2. **Short debug smoke test.** Keep the left controller off. Complete setup, preview/select a voice, accept audio, open Settings, toggle guidance boundaries, Pause/Continue and Repeat guidance. Check right-ray highlighting, one entry pulse, trigger release/re-press, wrong-selection continuation and correct selection. Then repeat the listening checks in the other voice condition.
+3. **Calibrate and check gaze.** Fit the headset and run vendor calibration. Use Eye check at independent low/mid/high, seam/distance and head-orientation targets; hold each at least two seconds. Keep offset fit separate from held-out validation, and repeat drift checks after refitting/between blocks. No automatic offset correction is enabled. See [measurement instructions](../gaze-measurement-validation.md).
+4. **Exercise guidance failures.** In the correct wall, look up/down without another area-entry cue. Test blinks, boundary jitter, overshoot/return, tracking loss/recovery and pause/resume. Check varied directions, hidden target identity, success chime/reinforcement and interruptions in both voices. Report exact trial and behavior when something fails.
+5. **Close and inspect one recording.** Use the normal thank-you/exit path so the eye writer can close; returning Home alone is not a clean-close guarantee. Copy the run, matching eye files and replay/audio folders. Run the [combined audit](../../analysis/README.md#combined-recording-audit-before-analysis); repeat `--eye`/`--replay` for all matching files. Inspect incomplete/failure findings, one trial CSV and a selection-time snapshot. Preserve original files. Intentionally stopped runs use `--allow-incomplete` and remain incomplete.
+6. **Check actual replay/video.** Load that run in browser and Unity viewers. Compare exact source samples, target/object placement, head/right-controller rays, trial/voice boundaries and speech/chime overlap. Attach its matching video and check synchronization at several points; P020 has no matching supplied video and predates today's contract.
+7. **Then test the full schedule.** A short debug run is not an 80-trial acceptance test. Verify the trial-40 voice/survey boundary, final capture/success/close, thermal/storage behavior and all full-session audit outputs.
+
+**Researcher decisions still needed:** signed-height reference/deadband/range; primary outcome, meaningful effect and enrollment/model; final survey subset/scales/timing and interview/coding plan; gaze quality/recalibration/exclusion criteria and event validation; any additional clone prosody and its comparability; consent/cloud lifecycle review. No live Qualtrics/Overleaf publication or institutional approval was claimed.
+
+The [editable figure and caption](../../resources/figures/follow-my-voice-study-flow-20261001.md), [source-clock audit](../vive-eye-clock-audit.md), [power sensitivity report](../voice-power-sensitivity.md), [trial CSV definitions](../trial-performance-csv.md) and [GitHub board](https://github.com/users/PedroPovedaQ/projects/2) contain the detailed next steps. #34 is Ready for headset QA; hardware-dependent tasks remain open.
+
+## Earlier checkpoints — evidence history
+
+The following notes preserve the work chronology. Their older test counts, pending-build notes, commit state and artifact hashes are superseded by the latest verified checkpoint above.
 
 ## Implemented and checked locally
 
@@ -255,3 +287,9 @@ All **151 analysis tests passed**, `/tmp/gaze-python-strict-eye-final.log`, incl
 The shared replay reader also accepted a textual `complete: "false"` footer without a warning. It now rejects malformed declared completion/selection/visibility flags, noninteger head/gaze tracking states, boolean/fractional sequence/schema/time values and non-finite JSON measurements. Missing historical fields are still handled as unavailable by consumers; an absent/false completion flag remains incomplete. The link-audit test now expects malformed declared types to fail at the shared reader, while a missing tracking field still produces an explicit finding.
 
 All **152 Python tests passed**, `/tmp/gaze-python-strict-replay-final.log`. P020 was read again without changing its files: the same 10,119 records / 9,703 samples remain, with truncated-tail and absent-footer warnings. Corrected the trial-CSV remaining-work list to reflect implemented repeat request/delivery counts; zone-arrival/revisit definitions remain open. No runtime/APK change.
+
+## Selection-time motion export — 05:41 EDT
+
+Trial motion totals previously omitted the head pose saved at trigger selection. The baseline regression exported 1.0 m instead of the synthetic observed 1.4 m (`/tmp/gaze-selection-motion-before.log`). The exporter now uses tracked frame and correct/incorrect selection poses under `head_motion_method=tracked_frame_and_selection_intervals_v2`. It retains pose-observation counts separately from rendered-frame gaze-quality denominators, includes recorded excursions at incorrect selections, and stops at capture. Invalid poses, pauses and excessive gaps still break integration; older selections without head-observation fields add nothing.
+
+When the only tracked head observation is a selection, its geometry reference is explicit and a path remains unavailable rather than zero. Four regressions cover final movement/rotation, invalid and legacy selection cases, selection-only geometry and wrong-selection excursions. All **156 Python tests pass**, `/tmp/gaze-python-selection-motion-final.log`. Re-export to a new output directory so previous method results remain intact. This offline analysis change requires no APK rebuild.
