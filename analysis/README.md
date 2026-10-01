@@ -47,7 +47,24 @@ Coordinate checks use the saved origin quaternion/translation to compare replay-
 
 See [methods, assumptions, outputs and decisions still needed](../docs/voice-power-sensitivity.md). Saved synthetic results are in `analysis/power/results-20261001/`. This does not select an outcome, sample size or exclusion rule, and does not turn repeated block surveys into independent trial outcomes. The current complete-run descriptive exporter remains unchanged. Final mixed-model/censoring choices and power justification require the actual-task pilot and researcher decisions in #16.
 
-## One-Command Runner (Recommended)
+## Combined recording audit before analysis
+
+**Implemented; recording consistency only:** after copying a closed run and its explicitly matching eye/replay files, run:
+
+```sh
+python3 analysis/audit_recording.py /copied/GazeData/P001/run_001 \
+  --eye /copied/EyeMeasurements/recording/gaze_observations.jsonl \
+  --replay /copied/GazeReplays/recording/recording.jsonl \
+  --out /reports/P001-run001-audit
+```
+
+Repeat `--eye` and `--replay` for all matching files, including eye-recording restarts. Choose a new output directory outside the supplied recording directories. Nothing is pulled, uploaded or rewritten. Use the analysis Python environment described below; `--no-plots` generates tables without matplotlib figures. Use `--allow-incomplete` to inspect an interrupted run; its aggregate result remains incomplete even if its retained records agree.
+
+The command runs the existing session, exact recording-link/audio-asset, guidance and per-eye-file quality checks. It keeps each command, stdout/stderr log and report even when another check fails, hashes the known source files/sidecars before and after, and writes `audit_report.json` after each step. A report left at `running` is interrupted, never a pass. Inspect the individual findings; no guessed filename joins are performed.
+
+Exit 0 / `consistent` means the selected recording checks agree. Exit 1 means a check failed, found an inconsistency or observed source changes. Exit 2 / `evidence_incomplete` means missing completion/provenance evidence or an intentionally partial session. The declared nominal/short-run counts are retained separately; a successful short debug session is not a full-study check. The report never certifies native 120 Hz, spatial accuracy, validated eye events, survey completeness, voice naturalness or video/acoustic synchronization. P020's historical recording lacks current raw links and cannot retrospectively pass this current-contract audit.
+
+## Descriptive analysis runner
 
 From the project root:
 
