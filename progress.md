@@ -1,5 +1,7 @@
 ## 2026-10-01 — overnight continuation
 
+- Verified the actual incomplete P020 source in both replay viewers: all 44 sampled/event cursor comparisons agree on original sample fields, source lines, freshness and 168 object positions. Original bytes remain unchanged; desktop/mobile pages were inspected. Fixed browser event jumps to preserve sequence boundaries, including multiple events at the same timestamp; both browser suites pass. P020 lacks the current gaze-link contract and matching video, so this is historical reconstruction evidence only.
+
 - Native full-session replay now seeks from saved trial snapshots while retaining absolute source lines. Full-prefix equivalence passed across 80 trials/exact boundaries/random rewinds. In the 652 MB synthetic fixture, 240 late/mid/early seeks improved from p95 111.6 ms to 1.35 ms; no GUI/headset performance claim. Reproduced and fixed missing selection-time object movements in both capture and reconstruction; full Unity integration passed. Saved reproducible benchmark evidence.
 
 - Reconciled the existing survey references with 40+40 trials, separate practice, six choices per gender and hidden-target shared guidance. Added separately labeled draft reliance/use-percentage items and clarified neutral debrief probes, timing and response provenance. Both native LaTeX compilations pass; final layout, anchors/burden and capture/coding choices remain researcher review. Updated/read back #26; no live survey or import restoration.

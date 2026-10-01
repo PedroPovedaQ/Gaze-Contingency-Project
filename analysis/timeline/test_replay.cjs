@@ -24,6 +24,12 @@ const { execFileSync } = require('node:child_process');
  const duplicateHTML=path.join(temp,'duplicate.html');
  execFileSync('python3',[path.join(analysis,'replay_timeline.py'),duplicate,
   '--output',path.join(temp,'duplicate.json'),'--html',duplicateHTML]);
+ // Event navigation must not include observations later in the same timestamp.
+ const equalEvents=JSON.parse(JSON.stringify(records));equalEvents[5].time=equalEvents[4].time;equalEvents[6].time=equalEvents[4].time;
+ equalEvents.splice(5,0,{...equalEvents[4],kind:'audio_playback_start',text:'Look left.'});equalEvents.forEach((r,i)=>r.sequence=i);
+ const eventSource=path.join(temp,'equal-events.jsonl'),eventHTML=path.join(temp,'equal-events.html');
+ fs.writeFileSync(eventSource,equalEvents.map(r=>JSON.stringify(r)).join('\n')+'\n');
+ execFileSync('python3',[path.join(analysis,'replay_timeline.py'),eventSource,'--output',path.join(temp,'equal-events.json'),'--html',eventHTML]);
  const browser=await chromium.launch({headless:true});
  const page=await browser.newPage({viewport:{width:1280,height:1000}}),errors=[];
  page.on('pageerror',error=>errors.push(error.message));
@@ -86,6 +92,20 @@ const { execFileSync } = require('node:child_process');
   await page.locator('#p20-next-sample').click();
   assert.equal((await raw()).sample.sequence,6);
   assert.match(await target().getAttribute('data-tooltip'),/Y 2.00 m/);
+  await page.goto(pathToFileURL(eventHTML).href);
+  await page.locator('#p20-next').click();
+  assert.equal((await raw()).sample.sequence,3);
+  assert.equal((await raw()).latestEvent.raw.sequence,4);
+  await page.locator('#p20-next').click();
+  assert.equal((await raw()).latestEvent.raw.sequence,5);
+  assert.equal((await raw()).sample.sequence,3);
+  await page.locator('#p20-event').selectOption({label:'1.00 s · search_start · sequence 4'});
+  assert.equal((await raw()).sample.sequence,3);
+  assert.match((await raw()).sampleStatus,/Historical/);
+  assert.equal((await raw()).latestEvent.raw.sequence,4);
+  await page.locator('#p20-next-sample').click();assert.equal((await raw()).sample.sequence,6);
+  await page.locator('#p20-next-sample').click();assert.equal((await raw()).sample.sequence,7);
+  await page.locator('#p20-previous-sample').click();assert.equal((await raw()).sample.sequence,6);
   assert.deepEqual(errors,[]);
   console.log('PASS: direct JSONL import, exact source samples, sample stepping, object movement, pause gaps, cursor export, backward reconstruction, mobile layout.');
  } finally {await browser.close();fs.rmSync(temp,{recursive:true,force:true});}

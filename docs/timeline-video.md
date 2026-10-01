@@ -84,3 +84,9 @@ The [saved measurements, fixture hashes and limitations](../analysis/timeline/be
 ## Phase boundaries in source inspection
 
 **Implemented locally:** a pause, resume, search start, trial transition or recording stop invalidates the displayed prior pose immediately, even when it is younger than the configured maximum age. A new source observation is required before rendering resumes. The inspector retains the prior record as historical evidence. The Unity viewer uses the same phase-boundary rule; this does not establish headset tracking validity or clock synchronization.
+
+### Exact event cursors
+
+**Implemented locally:** selecting a recorded event or using **Next event** stops at that event's source sequence, including when several events/samples share a timestamp. Sample stepping also preserves sequence. Ordinary time scrubbing shows the latest eligible record at the cursor. Cursor snapshots retain the selected sequence; use it with the recording identity when comparing runtimes, because decimal timestamp parsers can differ at the last floating-point bit. This is not a measured clock offset.
+
+**Historical check — October 1:** the incomplete P020 package loaded in both Unity and the direct-import browser viewer. Forty-four cursor comparisons agreed on source sample fields/lines, freshness and 168 object positions within serialization tolerance. The valid prefix was retained and the incomplete ending remained explicit. This supports legacy reconstruction, not the current study's hardware, native eye rate, acoustic fidelity or video synchronization. Participant artifacts remain local and ignored by Git.
