@@ -36,6 +36,12 @@ Exit **0** means the supplied package is consistent with these checks; **1** mea
 
 Coordinate checks use the saved origin quaternion/translation to compare replay-local valid rays with raw world rays. They do not establish that the raw hardware conversion is correct. This report does not validate video/audio assets, surveys, physiological eye events, native 120 Hz, acoustic timing or task-wide spatial accuracy. Historical replays remain readable, but cannot gain missing raw-observation provenance retrospectively.
 
+## Voice-study power/sensitivity planning
+
+**Protocol proposal; synthetic assumptions only:** `python3 analysis/voice_sensitivity.py --config analysis/power/voice_sensitivity.json --out /path/to/new-report` generates a paired-test sensitivity benchmark and a trial-level simulation analyzed as order-adjusted participant log-time differences. It compares 10 versus the selected 40 trials per voice across participant counts, voice-response variability, serial correlation and missingness. Null rejection, bias, retained N and Monte Carlo uncertainty are explicit; the informative-loss scenario is a failure-mode stress test. Separate binomial recruitment scenarios distinguish an expected retained count from a stated completion probability.
+
+See [methods, assumptions, outputs and decisions still needed](../docs/voice-power-sensitivity.md). Saved synthetic results are in `analysis/power/results-20261001/`. This does not select an outcome, sample size or exclusion rule, and does not turn repeated block surveys into independent trial outcomes. The current complete-run descriptive exporter remains unchanged. Final mixed-model/censoring choices and power justification require the actual-task pilot and researcher decisions in #16.
+
 ## One-Command Runner (Recommended)
 
 From the project root:

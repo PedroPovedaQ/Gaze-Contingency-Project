@@ -1,5 +1,7 @@
 ## 2026-10-01 — overnight continuation
 
+- Advanced #16 with a reproducible, explicitly hypothetical 40+40 voice sensitivity package: participant-level order-adjusted log-time contrasts, trial correlation/geometry, heterogeneous voice effects, random/informative loss, paired benchmarks and recruitment assurance. Saved 120 scenarios × 2,000 simulations, tables/figure/configuration/hashes. All 123 Python tests pass. Final primary outcome, effect threshold, model/missingness rules and enrollment remain researcher decisions; no participant data or protocol approval used.
+
 - Added exact replay-to-raw gaze recording identity on every sampled/selected observation and a versioned link contract. New recording-links audit checks run/trial/voice/object/selection consistency, timestamps and world/local coordinate transforms; preserves invalid/legacy/incomplete evidence and hashes explicitly supplied inputs. Real production-header/reopened-stream Unity tests and all 115 Python tests pass. Fresh Android APK packaged successfully in 84.3 s (71,125,376 bytes); device installation/measurement validation remain pending. Updated replay documentation to the current 40+40/shared-command/right-only flow.
 
 - 02:08 EDT: Android APK rebuilt successfully with the completed-trial preservation fix (269.7 s; 71,124,916 bytes; fingerprint in morning report). Updated current system overview/study hub to remove obsolete dwell/shelf guidance; current overview/QA links pass. No device deployment.

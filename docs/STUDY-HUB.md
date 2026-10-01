@@ -29,6 +29,8 @@ Both voices will use shared participant-directed commands (“turn left,” “l
 
 **Open decisions:** headset audition/acceptance of the implemented six-per-gender catalog, cadence and spatial thresholds, optional prosody/treatment comparability, primary outcomes and power/sensitivity, final survey items/scoring, calibration acceptance and hardware verification. Existing tasks and ownership are in the [September 30 task map](meeting-reconciliation-2026-09-30.md#existing-task-ownership).
 
+**Power planning progress, October 1:** a [reproducible sensitivity report](voice-power-sensitivity.md) compares participant counts and 10 versus 40 trials per voice using explicit synthetic variance/correlation/missingness assumptions. It provides analytical benchmarks, simulation uncertainty and bias checks, and recruitment-retention scenarios. Final outcome, meaningful effect, model, sample size and missingness policy remain open; this is not evidence that 40+40 is adequately powered.
+
 The [long procedure](experiment-procedure.md) now separates the current implementation from historical decisions; the [local run sheet](protocol/overleaf/experimenter-run-sheet.tex) is reconciled and compiles. Live Overleaf, final survey/interview instruments and [IRB sources](irb/source/protocol.md) still require review/synchronization under #27/#18; these notes do not claim an approved IRB packet.
 
 ## Survey shelf

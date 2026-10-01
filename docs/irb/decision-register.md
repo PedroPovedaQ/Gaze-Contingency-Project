@@ -1,5 +1,11 @@
 # IRB Protocol Decision Register
 
+## 2026-10-01 — Current implementation and preliminary sensitivity evidence
+
+**Implemented locally, hardware acceptance pending:** the current source implements two 40-trial voice blocks, hidden target identity, shared imperative guidance, horizontal-then-vertical directions and right-controller selection. This supersedes historical statements below that the current runtime still uses ten trials or announces the target. See [current procedure](../experiment-procedure.md).
+
+**Protocol proposal / open decisions:** [the new sensitivity package](../voice-power-sensitivity.md) implements explicit hypothetical repeated-trial scenarios, paired benchmarks, order adjustment, missingness/bias checks and recruitment-retention calculations. It does not select or approve the primary outcome, smallest meaningful effect, alpha, missingness rule, final analysis model or participant target. The older four-cell/48-participant source packet is not justification for the current two-voice design. Signed-height reference/quotas, actual-task burden/variance and institutional reconciliation remain open. No submission, recruitment authorization or institutional approval is represented by this local entry.
+
 ## 2026-09-28 — Meeting reconciliation and linked implementation tasks
 
 **Current decision / protocol proposal:** [September 28 meeting record](../meeting-reconciliation-2026-09-28.md) records 40 trials per voice, balanced signed height deltas, agent-led coarse-to-fine horizontal/vertical guidance, more frequent short varied cues, varied success speech, loading text and onboarding changes. It defines a one-file-per-trial performance/subjective export with separate reconstruction sources and draft reliance measures. Confirmed follow-up: both target identity and location are hidden from the participant and known to the agent. Guidance first reaches the correct vertical wall, then directs up/down within that wall. Only the right controller is required for setup, menus, wrist controls and trigger selection; no left-controller dependency. Vertical reference, turn/look threshold and later passthrough checkpoint remain explicit open decisions. See GitHub #19 and linked owners. This records requested work, not runtime behavior, questionnaire validation or IRB approval.

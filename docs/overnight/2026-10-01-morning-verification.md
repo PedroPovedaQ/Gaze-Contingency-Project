@@ -1,6 +1,6 @@
 # Overnight work and morning verification — October 1, 2026
 
-Latest verified state: exact raw/replay observation links passed full Unity integration and Android packaging; all 115 Python tests passed. Work remains local with no device install or hardware acceptance. See the latest checkpoint at the end for the current artifact fingerprint.
+Latest verified state: exact raw/replay observation links passed full Unity integration and Android packaging; all 123 Python tests passed, including new synthetic power/sensitivity checks. Work remains local with no device install or hardware acceptance. See the latest checkpoint at the end for the current artifact fingerprint.
 
 Status: work in progress. This report is updated during the overnight run ending at 06:00 America/New_York. It is not study approval or hardware acceptance.
 
@@ -149,3 +149,11 @@ Full Unity integration passed (`/tmp/gaze-unity-recording-links-final.log`), inc
 Fresh APK build succeeded in **84.3 s**, process exit 0: `Builds/CodexAndroid/codex_build.apk`, **71,125,376 bytes**, SHA-256 `6cd898b9885fe6c3fcc2e9654ee4d7ee39afdde5280d3d4c067a1e82c3a0de4b`. Log: `/tmp/gaze-android-recording-links.log`. This supersedes earlier APK fingerprints. Graphical Unity is currently closed for batch work; reopen the correct project near the morning handoff. The prior locked-Mac Build And Run failure and absent ADB device remain unresolved; no installation/launch is claimed.
 
 Morning: after a consented headset run, pull the entire run, all linked raw recordings, and replay package. Run the session, recording-links, eye-quality and guidance checks documented in `docs/voice-study-qa.md`; inspect each report's incomplete evidence as well as errors. Native 120 Hz, target accuracy, physical haptics, audio/voice quality and device interruption/overhead remain empirical checks.
+
+## Initial power/sensitivity work — #16
+
+Saved `docs/voice-power-sensitivity.md`, `analysis/voice_sensitivity.py`, explicit configuration and `analysis/power/results-20261001/` artifacts. These simulate hypothetical repeated-trial log-time data and analyze participant contrasts with order adjustment, not a frozen mixed-effects/censored model. 120 cells × 2,000 simulations compare N=15/20/30/48, 10 versus 40 trials per voice, null/5%/10% effects, trial correlation, voice heterogeneity and random/informative loss. Inputs are synthetic; no P020 or participant data is fitted. Recruitment assurance is distinct from an expected retained count.
+
+All **123 Python tests pass**, including eight new statistical/tooling checks (`/tmp/gaze-python-with-power.log`). Saved script/config hashes match; plot inspected. The conventional paired benchmark reproduces approximately d_z=.457 at N=48, alpha .025 and 80% power, but this does not validate the older four-condition design for the current study. Illustrative 40-trial/N20 no-loss scenarios range from roughly 16% to 41% detection for a 10% ratio change; informative missingness can inflate false positives rather than improve inference.
+
+**Needs researcher review:** select primary estimand, meaningful effect, alpha/multiplicity, aggregate versus mixed/censored model, missingness/timeout rules, analyzable N and recruitment allowance. Run the current hidden-target task pilot to constrain noise, correlation, person-specific voice effects and burden. No final N, exclusion rule, recruitment change, IRB submission or study-power claim was made. The current complete-run descriptive exporter is unchanged. Android runtime/source is unchanged since the latest successful recording-link APK.
