@@ -74,3 +74,22 @@ Tracking context: [replay #28](https://github.com/PedroPovedaQ/Gaze-Contingency-
 ### Audio reconstruction checks
 
 `TrialReplayAudioChecks.Run` is included in the integration suite and can also run through **Tools → Codex → Trial Replay → Verify Audio Reconstruction**. It tests overlapping speech/effects, repeated asset references with different volumes, source-sequence boundaries, stop/seek/pause/speed/disposal, missing assets and malformed WAV headers using synthetic samples. For the separate silent real-engine check, use `-batchmode -nographics -executeMethod TrialReplayAudioChecks.RunEngine` without `-quit`; it exits with a result after Editor updates verify both sources advance, one can stop independently and disposal leaves the study scene unchanged. This does not establish audible fidelity; compare speech/chime overlap and interruption timing during the morning replay check.
+
+### Native full-session state-seek check — October 1
+
+The Unity viewer loaded a clearly synthetic 80-trial, 432,000-sample, 168-object-per-trial recording (652 MB source). Across 240 descending seeks to late/middle/early positions in every trial, the full-prefix reference had p95 **111.6 ms** and max **476.5 ms**; the indexed saved-trial implementation had p95 **1.35 ms** and max **7.36 ms** on an M4/32 GiB Mac, Unity 6000.3.10f1. Both verified every selected trial, sample context and static object position. Load took 10.23 s / 9.54 s respectively; the indexed run's sampled process working set after load was about 2.15 GB. These are one-run synchronous state timings, not GUI paint, cold-load, peak-memory or headset guarantees. All saved samples remain available.
+
+The index starts reconstruction at the latest eligible complete trial snapshot and preserves absolute JSONL source lines. Regression checks compare every state field and transform against full-prefix replay across 80 trials, equal timestamps and random rewinds. Trial changes clear prior readiness; selection records now capture and apply object movements since the last frame, before round advancement.
+
+Reproduce with new paths:
+
+```bash
+python3 analysis/timeline/benchmark_fixture.py /path/to/synthetic.jsonl --seconds 60 --unity-geometry
+# In a separate Unity batch process, with the project closed:
+# Set GAZE_REPLAY_BENCHMARK_SOURCE=/path/to/synthetic.jsonl
+# Set GAZE_REPLAY_BENCHMARK_OUTPUT=/path/to/new-report.json
+# Optional reference mode: GAZE_REPLAY_BENCHMARK_MODE=full-prefix
+# Then invoke -batchmode -nographics -quit -executeMethod TrialReplayBenchmark.Run
+```
+
+[Saved measurements and source/fixture hashes](../analysis/timeline/benchmarks/2026-10-01/native-capacity.json) contain synthetic evidence only. The large fixture is not committed. Actual headset reconstruction and full-window usability still require verification.

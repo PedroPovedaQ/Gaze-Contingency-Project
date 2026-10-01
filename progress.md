@@ -1,5 +1,7 @@
 ## 2026-10-01 — overnight continuation
 
+- Native full-session replay now seeks from saved trial snapshots while retaining absolute source lines. Full-prefix equivalence passed across 80 trials/exact boundaries/random rewinds. In the 652 MB synthetic fixture, 240 late/mid/early seeks improved from p95 111.6 ms to 1.35 ms; no GUI/headset performance claim. Reproduced and fixed missing selection-time object movements in both capture and reconstruction; full Unity integration passed. Saved reproducible benchmark evidence.
+
 - Reconciled the existing survey references with 40+40 trials, separate practice, six choices per gender and hidden-target shared guidance. Added separately labeled draft reliance/use-percentage items and clarified neutral debrief probes, timing and response provenance. Both native LaTeX compilations pass; final layout, anchors/burden and capture/coding choices remain researcher review. Updated/read back #26; no live survey or import restoration.
 
 - Reworked native replay audio to preserve overlapping success chimes and speech, per-event volume for reused clips, natural/recorded stop limits and seek offsets. Playback owns disposable preview-scene sources; malformed WAV lengths/rates and invalid playback volumes are rejected. Full Unity integration and the silent real-engine check pass, including independent sources, seeking, cleanup and unchanged study-scene state. Acoustic listening remains a morning check.

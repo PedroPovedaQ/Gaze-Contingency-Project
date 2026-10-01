@@ -218,7 +218,7 @@ public sealed class TrialReplayRecorder : MonoBehaviour
         var r = Record("selection"); r.objectId = info.objectId; r.correct = correct;
         try
         {
-            Resolve(); CapturePoses(r);
+            Resolve(); CapturePoses(r); CaptureObjectChanges(r);
             r.selectingHand = m_Controllers != null ? m_Controllers.SelectingHand : null;
             Write(r);
             if (correct) m_TrialReady = false;

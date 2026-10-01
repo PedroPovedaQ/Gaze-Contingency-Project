@@ -5,12 +5,16 @@ import math
 from pathlib import Path
 
 
-def generate(path: Path, trials: int = 80, seconds: int = 20, hz: int = 90):
+def generate(path: Path, trials: int = 80, seconds: int = 20, hz: int = 90, unity_geometry: bool = False):
     if min(trials, seconds, hz) <= 0:
         raise ValueError('Trial count, seconds and synthetic cadence must be positive')
     sequence = 0
     point = lambda x,y,z: dict(x=x,y=y,z=z)
     rotation = dict(x=0,y=0,z=0,w=1)
+    geometry = dict(meshes=[dict(id='synthetic_cube',
+        vertices=[point(-.5,-.5,-.5),point(.5,-.5,-.5),point(.5,.5,-.5),point(-.5,.5,-.5),
+                  point(-.5,-.5,.5),point(.5,-.5,.5),point(.5,.5,.5),point(-.5,.5,.5)],
+        triangles=[0,2,1,0,3,2,4,5,6,4,6,7,0,1,5,0,5,4,3,7,6,3,6,2,0,4,7,0,7,3,1,2,6,1,6,5])]) if unity_geometry else {}
     with path.open('x') as handle:
         def write(kind, time, context=None, **fields):
             nonlocal sequence
@@ -18,7 +22,7 @@ def generate(path: Path, trials: int = 80, seconds: int = 20, hz: int = 90):
             handle.write(json.dumps(record,separators=(',',':'))+'\n');sequence+=1
         write('header',0,recordingId='SYNTHETIC-CAPACITY-CHECK',utc='2026-10-01T00:00:00Z',
               sourceType='synthetic-benchmark',origin=point(0,0,0),originRotation=rotation,
-              sampling='Synthetic frame cadence; no device or participant measurements')
+              sampling='Synthetic frame cadence; no device or participant measurements',**geometry)
         for trial in range(trials):
             start=trial*(seconds+3)+1
             context=dict(participantCode='SYNTHETIC_CAPACITY',runNumber=1,round=trial,block=trial//40,
@@ -33,6 +37,9 @@ def generate(path: Path, trials: int = 80, seconds: int = 20, hz: int = 90):
                                     planeId=i//21,planeSlot=i%21,mesh='synthetic_cube',
                                     position=point(round(2*math.sin(angle),5),.1+(i%21)*.12,round(2*math.cos(angle),5)),
                                     rotation=rotation,scale=point(.1,.1,.1)))
+            if unity_geometry:
+                for obj in objects:
+                    obj['rgba']=dict(r=.15,g=.35,b=.9,a=1)
             write('trial',start+.1,context,objects=objects,targetId='object_0',absoluteTheta=(trial%5)*45,
                   signedTheta=(trial%5)*45,startPlane=0,targetPlane=trial%5)
             write('search_start',start+1,context)
@@ -70,5 +77,6 @@ if __name__=='__main__':
     parser.add_argument('--trials',type=int,default=80)
     parser.add_argument('--seconds',type=int,default=20)
     parser.add_argument('--hz',type=int,default=90)
+    parser.add_argument('--unity-geometry',action='store_true',help='Include saved mesh geometry/colors for the native Unity reader')
     args=parser.parse_args()
-    print(json.dumps(generate(args.output,args.trials,args.seconds,args.hz)))
+    print(json.dumps(generate(args.output,args.trials,args.seconds,args.hz,args.unity_geometry)))

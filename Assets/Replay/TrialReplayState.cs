@@ -31,7 +31,7 @@ public sealed class TrialReplayState
         if (r.kind == "sample" || r.kind.StartsWith("readiness_", StringComparison.Ordinal)) Readiness = r;
         if (r.kind == "trial")
         {
-            Trial = r; Sample = Selection = null; Visible = Searching = false;
+            Trial = r; Sample = Selection = Readiness = null; Visible = Searching = false;
             Transforms.Clear();
             foreach (var o in r.objects)
                 Transforms.Add(o.id, new TrialReplayTransform { id = o.id, position = o.position, rotation = o.rotation, scale = o.scale });
@@ -39,8 +39,6 @@ public sealed class TrialReplayState
         else if (r.kind == "sample" && Trial != null && r.trialId == Trial.trialId)
         {
             Sample = r; Visible = r.visible; Searching = r.searchActive;
-            if (r.changes != null)
-                foreach (var t in r.changes) Transforms[t.id] = t;
         }
         else if (r.kind == "selection" && Trial != null && r.trialId == Trial.trialId)
         {
@@ -53,6 +51,8 @@ public sealed class TrialReplayState
         else if (r.kind == "search_start" || r.kind == "search_resumed") Visible = Searching = true;
         else if (r.kind == "search_paused" || r.kind == "application_paused" || r.kind == "transition" || r.kind == "stop" || r.kind == "end")
         { Visible = Searching = false; }
+        if ((r.kind == "sample" || r.kind == "selection") && Trial != null && r.trialId == Trial.trialId && r.changes != null)
+            foreach (var transform in r.changes) Transforms[transform.id] = transform;
     }
 
     public bool HasCurrentSample(double time, double maxAge = DefaultMaxSampleAgeSeconds)
@@ -85,15 +85,17 @@ public sealed class TrialReplayTimeline
     public double Duration => Records.Count == 0 ? 0 : Records[Records.Count - 1].time;
     public TrialReplayRecord Header => Records[0];
     int m_Next;
+    readonly List<int> m_TrialIndices = new List<int>();
     double m_Time = -1;
     long m_MaxSequence = long.MaxValue;
 
     public TrialReplayTimeline(List<TrialReplayRecord> records)
     {
         Records = records;
-        foreach (var r in records)
+        for (int i = 0; i < records.Count; i++)
         {
-            if (r.kind == "trial") Trials.Add(r);
+            var r = records[i];
+            if (r.kind == "trial") { Trials.Add(r); m_TrialIndices.Add(i); }
             if (r.meshes != null) foreach (var mesh in r.meshes) Meshes[mesh.id] = mesh;
         }
     }
@@ -102,9 +104,20 @@ public sealed class TrialReplayTimeline
     {
         if (double.IsNaN(time) || double.IsInfinity(time)) throw new ArgumentOutOfRangeException(nameof(time));
         time = Math.Max(0, Math.Min(Duration, time));
-        // Backward seek reconstructs from the validated prefix. Forward playback is incremental.
-        if (time < m_Time || (time == m_Time && maxSequence < m_MaxSequence))
-        { State.Reset(); m_Next = 0; SampleSourceLine = 0; }
+        // Trial snapshots contain the complete object state. Earlier trials cannot
+        // affect this trial, so jump to its saved snapshot on a rewind/long seek.
+        // Keep absolute record indices: exported source lines must not be rebased.
+        int low = 0, high = m_TrialIndices.Count;
+        while (low < high)
+        {
+            int middle = (low + high) / 2;
+            var trial = Records[m_TrialIndices[middle]];
+            if (trial.time < time || (trial.time == time && trial.sequence <= maxSequence)) low = middle + 1;
+            else high = middle;
+        }
+        int snapshot = low == 0 ? 0 : m_TrialIndices[low - 1];
+        if (time < m_Time || (time == m_Time && maxSequence < m_MaxSequence) || snapshot > m_Next)
+        { State.Reset(); m_Next = snapshot; SampleSourceLine = 0; }
         while (m_Next < Records.Count && (Records[m_Next].time < time ||
             (Records[m_Next].time == time && Records[m_Next].sequence <= maxSequence)))
         {

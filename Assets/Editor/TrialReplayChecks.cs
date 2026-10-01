@@ -75,6 +75,7 @@ public static class TrialReplayChecks
             CheckWriterFlush(root);
             CheckReadinessReplay();
             CheckReplayFreshnessAndSequences();
+            CheckIndexedSeek();
             TrialReplayAudioChecks.Run();
             // Graphics verification is separate so these checks also run with -nographics.
             Debug.Log("[TrialReplayChecks] PASS: roundtrip, 168 objects, wrong/correct choice, pause, rewind, motion, recovery, corruption, traversal, version, overwrite, controller tracking/trigger/hit, no dwell, legacy schema, audio.");
@@ -82,6 +83,55 @@ public static class TrialReplayChecks
         finally { Directory.Delete(root, true); }
     }
     sealed class CaptureObserved : Exception { }
+    static void CheckIndexedSeek()
+    {
+        var records = new List<TrialReplayRecord> { new TrialReplayRecord { kind="header",sequence=0 } };
+        for (int i=0;i<80;i++)
+        {
+            string id="synthetic-"+i; double start=i*5+1;
+            var objects=new[]{new TrialReplayObject { id="target",target=true,position=new Vector3(0,i,0),rotation=Quaternion.identity,scale=Vector3.one }};
+            foreach(var record in new[]{
+                new TrialReplayRecord{kind="transition",time=start},
+                new TrialReplayRecord{kind="trial",time=start,objects=objects},
+                new TrialReplayRecord{kind="readiness_started",time=start+.1,readinessActive=true},
+                new TrialReplayRecord{kind="search_start",time=start+.2},
+                new TrialReplayRecord{kind="sample",time=start+.2,visible=true,searchActive=true,
+                    changes=new[]{new TrialReplayTransform{id="target",position=new Vector3(i,1,0),rotation=Quaternion.identity,scale=Vector3.one}}},
+                new TrialReplayRecord{kind="search_paused",time=start+.3},
+                new TrialReplayRecord{kind="search_resumed",time=start+.4},
+                new TrialReplayRecord{kind="sample",time=start+.5,visible=true,searchActive=true},
+                new TrialReplayRecord{kind="selection",time=start+.6,objectId="target",correct=true}
+            }) { record.sequence=records.Count;record.trialId=id;records.Add(record); }
+        }
+        records.Add(new TrialReplayRecord{kind="end",sequence=records.Count,time=401});
+        var timeline=new TrialReplayTimeline(records);
+        Action<double,long> check=(time,sequence)=>
+        {
+            timeline.Seek(time,sequence);
+            var reference=new TrialReplayState();int line=0,sampleLine=0;
+            foreach(var record in records)
+            {
+                if(record.time>time || record.time==time && record.sequence>sequence)break;
+                reference.Apply(record);line++;
+                if(reference.Sample==record)sampleLine=line;else if(reference.Sample==null)sampleLine=0;
+            }
+            var actual=timeline.State;
+            Assert(actual.Trial==reference.Trial && actual.Sample==reference.Sample && actual.Selection==reference.Selection &&
+                actual.Readiness==reference.Readiness && actual.PoseBoundary==reference.PoseBoundary && actual.Visible==reference.Visible &&
+                actual.Searching==reference.Searching && timeline.CurrentSourceLine==line && timeline.SampleSourceLine==sampleLine,
+                "Indexed seeks must equal full-prefix state and original source lines.");
+            Assert(actual.Transforms.Count==reference.Transforms.Count,"Indexed seek keeps the whole object snapshot.");
+            foreach(var pair in reference.Transforms)
+                Assert(actual.Transforms[pair.Key].position==pair.Value.position && actual.Transforms[pair.Key].rotation==pair.Value.rotation &&
+                    actual.Transforms[pair.Key].scale==pair.Value.scale,"Indexed seek preserves exact transforms.");
+        };
+        // Reverse every boundary, then step to both sides of identical timestamps.
+        for(int i=records.Count-1;i>=0;i--){check(records[i].time,records[i].sequence);check(records[i].time,records[i].sequence-1);}
+        var rng=new System.Random(71);
+        for(int i=0;i<400;i++)check(rng.NextDouble()*401,long.MaxValue);
+        check(0,long.MaxValue);check(401,long.MaxValue);
+        Debug.Log("[TrialReplayChecks] PASS: indexed seeks equal full-prefix reconstruction across 80 trials, exact boundaries and random rewinds.");
+    }
     static void CheckReplayFreshnessAndSequences()
     {
         var obj = new TrialReplayObject { id="target",position=Vector3.zero,rotation=Quaternion.identity,scale=Vector3.one };
@@ -308,6 +358,9 @@ public static class TrialReplayChecks
             writer.Append(new TrialReplayRecord { kind = "header", recordingId = "synthetic-hook", sourceType = "synthetic_demo", sequence = 0 });
             Set(recorder, "m_Sequence", 1L);
             Call(recorder, "ObjectsReady", 0, "Blue", "Cube");
+            // A transform change after the last frame still belongs to the exact
+            // accepted-selection snapshot, before round advance destroys objects.
+            obj.transform.position = new Vector3(.3f, 1.2f, 2.4f);
             Set(selector, "<TelemetryFrame>k__BackingField", Time.frameCount);
             Set(selector, "<SelectingHand>k__BackingField", "left");
             Set(selector, "<LeftTelemetry>k__BackingField", new ControllerRaySelector.TelemetrySample {
@@ -344,6 +397,11 @@ public static class TrialReplayChecks
                 recordedRequest.guidanceDecisionId==recordedDecision.guidanceDecisionId,
                 "Replay joins audio requests to the exact saved decision, not a nearby frame");
             var selection = recording.Records.Find(r => r.kind == "selection");
+            Assert(selection.changes != null && selection.changes.Length == 1 && selection.changes[0].id == "fixture_target" &&
+                selection.changes[0].position == obj.transform.position,"Selection must record geometry changed since the last sample.");
+            recording.Seek(selection.time,selection.sequence);
+            Assert(recording.State.Transforms["fixture_target"].position == obj.transform.position,
+                "Selection-time object changes must reconstruct in the native viewer.");
             Assert(selection != null && selection.round == 0 && selection.objectId == "fixture_target" && selection.correct && selection.dwell == 0 && selection.selectionMethod == "controller_ray_trigger_press_v1",
                 "Recorder must retain original trial identity before the real game advances.");
             Assert(selection.selectingHand == "left" && selection.leftController.triggerHeld == 1 &&

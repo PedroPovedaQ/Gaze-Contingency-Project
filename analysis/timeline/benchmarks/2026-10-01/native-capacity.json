@@ -1,0 +1,68 @@
+{
+  "reference": {
+    "schema": "unity-replay-capacity-v1",
+    "sourceSha256": "d9542c55e23377ebe436468d4a0c5d865ef3ef8c3006a4be275c6758dce77ee2",
+    "sourceType": "synthetic-benchmark",
+    "unity": "6000.3.10f1",
+    "os": "Mac OS X 15.6.0",
+    "cpu": "Apple M4",
+    "seekMode": "full-prefix-reference",
+    "seekPattern": "Descending late/middle/early (90%, 50%, 10%) within each saved trial interval",
+    "trials": 80,
+    "records": 432322,
+    "systemMemoryMB": 32768,
+    "seekQueries": 240,
+    "sourceBytes": 651699027,
+    "managedBytesAfterLoad": 2262151168,
+    "processWorkingSetAfterLoad": 2234073088,
+    "loadSeconds": 10.2327281,
+    "seekP95Milliseconds": 111.6066,
+    "seekMaxMilliseconds": 476.50370000000004,
+    "allTrialIdentitiesVerified": true,
+    "limitation": "Synthetic data; synchronous state seeks only. No rendering, acoustic, sensor-rate or headset validation. Host not isolated; managed memory excludes native allocations."
+  },
+  "indexed": {
+    "schema": "unity-replay-capacity-v1",
+    "sourceSha256": "d9542c55e23377ebe436468d4a0c5d865ef3ef8c3006a4be275c6758dce77ee2",
+    "sourceType": "synthetic-benchmark",
+    "unity": "6000.3.10f1",
+    "os": "Mac OS X 15.6.0",
+    "cpu": "Apple M4",
+    "seekMode": "indexed-trial-snapshots",
+    "seekPattern": "Descending late/middle/early (90%, 50%, 10%) within each saved trial interval",
+    "trials": 80,
+    "records": 432322,
+    "systemMemoryMB": 32768,
+    "seekQueries": 240,
+    "sourceBytes": 651699027,
+    "managedBytesAfterLoad": 2178232320,
+    "processWorkingSetAfterLoad": 2154070016,
+    "loadSeconds": 9.5410129,
+    "seekP95Milliseconds": 1.3485,
+    "seekMaxMilliseconds": 7.3635,
+    "allTrialIdentitiesVerified": true,
+    "limitation": "Synthetic data; synchronous state seeks only. No rendering, acoustic, sensor-rate or headset validation. Host not isolated; managed memory excludes native allocations."
+  },
+  "schema": "native-replay-capacity-evidence-v1",
+  "fixture": {
+    "trials": 80,
+    "secondsPerTrial": 60,
+    "syntheticFrameHz": 90,
+    "objectsPerTrial": 168,
+    "sourceBytes": 651699027,
+    "sha256": "d9542c55e23377ebe436468d4a0c5d865ef3ef8c3006a4be275c6758dce77ee2",
+    "regenerationHashMatched": true
+  },
+  "sourceFiles": {
+    "Assets/Editor/TrialReplayBenchmark.cs": "85d96454627ef8146d384e351b52b8ed341c63ea1892e89643ac01272605090c",
+    "analysis/timeline/benchmark_fixture.py": "8bc92d2565f157a926a3efdfab9e0d771bc206f78d7cf06ae77bf4ddc1fca613",
+    "Assets/Replay/TrialReplayState.cs": "50a47cdd255909a9fe310fd8978b179f2a7120f37be0eda286ab5e7428987932"
+  },
+  "notes": [
+    "One run per mode; same source file, query locations and validation checks.",
+    "Reference applies the full source prefix for each descending seek; indexed mode uses the production saved-trial index.",
+    "Process working set and managed memory are point samples after load, not peaks; no isolated-host or cold-cache control.",
+    "No GUI paint/render, audio listening, device cadence or sensor accuracy measurement.",
+    "Earlier exploratory early-trial-only measurements are superseded by the 240-query comparison here."
+  ]
+}
