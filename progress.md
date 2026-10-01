@@ -1,5 +1,7 @@
 ## 2026-10-01 — overnight continuation
 
+- Extended strict import to shared replay parsing after reproducing a textual `complete: "false"` footer accepted without warning. Reject non-finite JSON and malformed declared schema/sequence/time, booleans and tracking states before downstream metrics. All 152 Python tests pass; P020 retains exactly 10,119 records / 9,703 samples with its existing incomplete-prefix warnings. Corrected #20 documentation: repeat request/delivery counting is implemented; zone-arrival/revisit definitions remain open.
+
 - Reproduced a raw-eye import false pass: JSON `valid: "false"` was treated as true and yielded 100% valid time; a complete receipt without a row count was also accepted. Added strict declared-boolean/numeric identity checks and typed clean-close row counts, preserving missing-count receipts as incomplete. All 151 Python tests pass, including the combined audit. Original raw data remains unchanged.
 
 - Added `analysis/audit_recording.py` to run session, exact raw/replay/audio links, guidance and eye-quality validators from explicit local inputs. It retains failures and incomplete evidence, source hashes/change checks, command logs and declared short/full-session context; seven real-command regressions pass and the full Python suite now passes 149 tests. No hardware, survey or acoustic acceptance is inferred. Corrected the Unity refocus helper's misleading blanket permission advice for a locked/unavailable menu.

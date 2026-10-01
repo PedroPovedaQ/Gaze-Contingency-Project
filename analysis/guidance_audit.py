@@ -164,7 +164,7 @@ def audit(eyes, replay):
     return dict(report_version=VERSION, contract=supported, status='issues_found' if issues else
                 'legacy_or_unknown_contract' if not supported else 'no_decisions' if not records else 'consistent',
                 decisions=records, issues=issues, issue_counts=dict(Counter(i['code'] for i in issues)),
-                replay_complete=bool(replay[-1].get('kind') == 'end' and replay[-1].get('complete')),
+                replay_complete=replay[-1].get('kind') == 'end' and replay[-1].get('complete') is True,
                 limits='Consistency only; no native rate, spatial correctness, fixation or acoustic onset validation.')
 
 

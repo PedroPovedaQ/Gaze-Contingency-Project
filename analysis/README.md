@@ -66,6 +66,8 @@ Exit 0 / `consistent` means the selected recording checks agree. Exit 1 means a 
 
 Raw eye JSON flags must be actual booleans, not text such as `"false"`; numeric timestamps/sequences cannot be booleans. Malformed declared values are rejected rather than coerced into valid gaze. A clean-close claim also requires a nonnegative integer `acceptedRows` matching the retained file. Missing counts remain incomplete, and invalidly typed counts/flags are errors. These rules do not invent fields absent from older recordings.
 
+The shared replay reader likewise rejects non-finite JSON measurements, malformed sequence/time/schema values, non-boolean declared completion/selection/visibility flags and noninteger gaze/head tracking states. A missing or false footer-completion flag stays incomplete. Malformed declared types fail before link/CSV/timeline derivation; absent historical fields retain each consumer's existing missing-evidence handling. The historical P020 prefix still loads unchanged with both truncated-tail and missing-footer warnings.
+
 ## Descriptive analysis runner
 
 From the project root:

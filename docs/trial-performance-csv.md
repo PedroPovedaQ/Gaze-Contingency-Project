@@ -49,7 +49,7 @@ Before collection, `survey_status` is `pending_or_not_collected`. A block respon
 ## Remaining #20 work
 
 - Freeze the first-gaze persistence/noise rule if the primary outcome requires more than first recorded ray contact (#7/#14).
-- Define and record final correct-zone arrival, unique-zone/revisit metrics and distinct guidance-repeat requests/deliveries (#8/#21). Their columns currently remain blank with explicit status.
+- Define and record final correct-zone arrival and unique-zone/revisit metrics (#8/#21). These columns remain blank with explicit status. Distinct repeat requests/deliveries are implemented under the versioned contract described below; real headset behavior still needs validation.
 - Freeze the planned vertical quota reference; `target_minus_head_height_m` is descriptive geometry, not the selected above/below quota variable (#10).
 - Integrate device-side per-trial writing if required; this implementation is an offline export, not automatic on-headset persistence.
 - Validate fresh full-session data and finalized survey exports on the headset/analysis workflow (#17/#28). P020 is an incomplete older task, not acceptance evidence for 40+40 hidden-target trials.

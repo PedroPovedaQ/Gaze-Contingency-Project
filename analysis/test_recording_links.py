@@ -187,7 +187,11 @@ class RecordingLinkTests(unittest.TestCase):
                 changed=copy.deepcopy(rows)
                 changed[2].update(gazeObservationSequence=-1,gazeTracked=value)
                 self.write(replay,changed)
-                self.assertIn('invalid_replay_tracking_flag',audit(run,[eye],[replay])['issue_counts'])
+                # Malformed declared types now fail in the shared reader before
+                # any consumer can coerce them into a valid tracking claim.
+                with self.assertRaises(ValueError): audit(run,[eye],[replay])
+            changed=copy.deepcopy(rows);changed[2].pop('gazeTracked');self.write(replay,changed)
+            self.assertIn('invalid_replay_tracking_flag',audit(run,[eye],[replay])['issue_counts'])
 
     def test_referenced_audio_completeness_hashes_and_cli_reports(self):
         with tempfile.TemporaryDirectory() as directory:

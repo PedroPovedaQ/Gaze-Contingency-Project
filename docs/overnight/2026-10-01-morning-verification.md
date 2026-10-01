@@ -249,3 +249,9 @@ The refocus helper's failure message now asks to check lock/menu availability an
 Reproduced two standalone eye-report false passes: `valid: "false"` produced 100% valid time, and `complete: true` without `acceptedRows` was reported complete. The raw reader now rejects non-boolean declared flags, boolean schema/sequence/timestamps, malformed recording IDs and nonnumeric declared timing. Clean-close counts require a nonnegative integer and a matching retained-row count; missing counts stay incomplete. Missing historical fields are not invented or retroactively added.
 
 All **151 analysis tests passed**, `/tmp/gaze-python-strict-eye-final.log`, including the existing link/guidance reports and combined runner. New regressions cover malformed JSON values and completion receipts. This changes offline import validation only; no APK rebuild is needed.
+
+## Shared replay import repair — 05:35 EDT
+
+The shared replay reader also accepted a textual `complete: "false"` footer without a warning. It now rejects malformed declared completion/selection/visibility flags, noninteger head/gaze tracking states, boolean/fractional sequence/schema/time values and non-finite JSON measurements. Missing historical fields are still handled as unavailable by consumers; an absent/false completion flag remains incomplete. The link-audit test now expects malformed declared types to fail at the shared reader, while a missing tracking field still produces an explicit finding.
+
+All **152 Python tests passed**, `/tmp/gaze-python-strict-replay-final.log`. P020 was read again without changing its files: the same 10,119 records / 9,703 samples remain, with truncated-tail and absent-footer warnings. Corrected the trial-CSV remaining-work list to reflect implemented repeat request/delivery counts; zone-arrival/revisit definitions remain open. No runtime/APK change.
