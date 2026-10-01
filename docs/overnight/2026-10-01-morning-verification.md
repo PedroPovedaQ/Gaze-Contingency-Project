@@ -1,14 +1,14 @@
 # Overnight work and morning verification — October 1, 2026
 
-## Latest verified checkpoint — 05:41 EDT
+## Final overnight handoff — 06:00 EDT
 
-Local implementation and offline checks have advanced; **headset/research acceptance remains pending**. Work is committed on `codex/reconcile-meeting-20260922` in `/tmp/gaze-v2-project-update-20260922`. Nothing was pushed. Unrelated pre-existing deletions and Unity's existing ProjectSettings modification remain outside these commits.
+The authorized overnight work window is complete. Local implementation and offline checks have advanced; **headset/research acceptance remains pending**. Work is committed on `codex/reconcile-meeting-20260922` in `/tmp/gaze-v2-project-update-20260922`. Nothing was pushed. Unrelated pre-existing deletions remain outside these commits; no unrelated settings changes were staged.
 
 | Area | Verified locally | What remains |
 |---|---|---|
 | Study flow | 40+40 measured trials, two separate practice trials; balanced absolute theta/identity counts; hidden-target shared guidance; right-controller controls | Physical full-session flow; signed-height reference/quotas still undecided |
 | Eye measurement | Shared validity/freshness stream, diagnostic/independent targets, raw/replay links, spatial/timing reports and strict import checks | Actual Focus Vision accuracy, drift, field availability, native sample access/rate and validated eye events |
-| Voice/guidance | Six candidates per gender; 44 shared cue variants; horizontal then vertical policy; replay preserves overlapping success audio | Headset audition, haptics, pacing/interruptions and identity/level quality; no paid requests made overnight |
+| Voice/guidance | Six candidates per gender; 44 guidance variants plus four success phrases; horizontal then vertical policy; replay preserves overlapping success audio | Headset audition, haptics, pacing/interruptions and identity/level quality; no paid requests made overnight |
 | Recording/replay | Separate per-trial export; combined consistency audit; browser/native exact samples and indexed reconstruction; P020 comparison passed at 44 cursors | A newly recorded current-build run with matching video/audio; interactive new-input rehearsal remains open |
 | Documents | Reconciled local run sheet and survey references; successful native LaTeX compilations; original editable study figure | Researcher wording/anchors/order/burden review, venue sizing and any later live publication |
 
@@ -16,7 +16,11 @@ Local implementation and offline checks have advanced; **headset/research accept
 
 **Packaged APK:** `Builds/CodexAndroid/codex_build.apk`, 71,127,664 bytes; SHA-256 `85972d62dd7e4a61b521675e967ed0f062ab7a2a14100e8bddb4425f81c11eda`. Offline packaging succeeded in 82.9 s (`/tmp/gaze-android-native-state.log`). Older package hashes below are superseded.
 
-**Current deployment attempt:** the correct Unity project was reopened and the required Build And Run menu command dispatched successfully. The log records build start but no terminal result yet; the APK remains the previously verified file. ADB lists no Vive. Native UI inspection reports the Mac locked. Do not infer installation or launch from menu dispatch. Unity remains open; unlock/connect and inspect its pending build/device dialog in the morning. Logs: `/tmp/gaze-unity-final-morning-editor.log` and `/tmp/gaze-unity-final-menu-dispatch.log`.
+**Current deployment attempt:** the correct Unity project was reopened and the required Build And Run menu command dispatched successfully. The log records build start but no terminal result yet; the APK remains the previously verified file. ADB lists no Vive. Native UI inspection reports the Mac locked. Do not infer installation or launch from menu dispatch. Unity remains open; unlock/connect and inspect its pending build/device dialog in the morning. Logs: `/tmp/gaze-unity-final-morning-editor.log` and `/tmp/gaze-unity-final-menu-dispatch.log`. The latest graphical attempt also logged an inconsistent-import result for `Assets/XR/Settings/OpenXRPackageSettings.asset`; inspect this alongside the pending build state. It is not a confirmed terminal build failure, and no settings repair was guessed while the UI was locked.
+
+**Restore is complete:** the approved recovery of `GazeDataLogger`, `GazeHighlightManager`, and `ShapeObjectFactory` is included in the local implementation. There is no pending restore permission request.
+
+**Task readback:** #11, #23 and #24 now separate implemented guidance/voice behavior from headset and researcher gates; their saved issue bodies were read back exactly and all remain In Progress. #19, #20, #28 and #35 also have verified overnight updates. #34 remains Ready for headset QA. No research or headset task was marked verified solely from desktop tests.
 
 ## Pedro's morning sequence
 

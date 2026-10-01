@@ -1,5 +1,7 @@
 ## 2026-10-01 — overnight continuation
 
+- 06:00 EDT: overnight work window complete. Final handoff reconciled: approved three-script restore is complete; #11/#23/#24 issue bodies read back exactly with remaining device/research gates and In Progress status. Corrected phrase inventory to 44 guidance variants plus four success responses. Current APK fingerprint remains verified; Build And Run was dispatched, but no terminal result or connected Vive is present. No push or headset acceptance claim.
+
 - Re-exported the original incomplete P020 package under the new motion method: 22 stable measured/practice IDs, one row per file, eight changed motion rows and matching source hashes; local ignored comparison artifacts retain warnings and leave originals unchanged. Added explicit three-directory (`GazeData`, `EyeMeasurements`, `GazeReplays`) transfer instructions because the older analysis pull fetches only trial data. No device copy was performed.
 
 - Reproduced omitted trigger-time motion in trial CSVs (synthetic path 1.0 m exported instead of the observed 1.4 m). Motion method v2 now includes tracked correct/incorrect selection poses, preserves invalid/gap/pause breaks, excludes post-capture movement and identifies a selection-only geometry reference. Frame gaze-quality denominators remain unchanged. Four regressions and all 156 Python tests pass; new method/count fields preserve export provenance.
