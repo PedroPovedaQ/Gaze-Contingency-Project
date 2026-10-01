@@ -13,6 +13,7 @@ import re
 SUMMARY_COLUMNS = [
     "voice_condition", "voice_order", "trial_id", "outcome", "session_outcome", "search_started_at", "objects_ready_at", "capture_at", "schema_version",
     "participant_id", "run_number", "condition", "run_condition", "round_schedule", "block", "round_index",
+    "rounds_per_block", "total_rounds", "nominal_total_rounds", "debug_round_override",
     "shape", "color", "completed", "time_to_find", "wrong_captures",
     "fixation_time_on_target", "fixation_time_on_distractors",
     "fixation_count_total", "fixation_count_on_target", "fixation_count_on_distractors",
@@ -39,11 +40,16 @@ def _load_blink_metrics(run_dir: Path, total_time_seconds: float) -> tuple[int, 
 
     blink_count = 0
     has_eye_signal = False
+    has_blink_measurement = False
 
     try:
         with open(gaze_log, encoding="utf-8-sig", newline="") as f:
             reader = csv.DictReader(f)
             for row in reader:
+                # Modern acquisition files intentionally leave events unavailable until
+                # the detector is independently validated. Openness alone is not a blink count.
+                if row.get("eye_event_measurement") == "ray_intersection_proxy_not_validated_fixation":
+                    return -1, -1.0
                 left_open = (row.get("left_eye_open") or "").strip()
                 right_open = (row.get("right_eye_open") or "").strip()
                 if left_open or right_open:
@@ -52,14 +58,17 @@ def _load_blink_metrics(run_dir: Path, total_time_seconds: float) -> tuple[int, 
                 blink_raw = (row.get("blink") or "").strip()
                 if blink_raw:
                     try:
-                        blink_count += int(float(blink_raw))
+                        value = float(blink_raw)
+                        if value in (0, 1):
+                            blink_count += int(value)
+                            has_blink_measurement = True
                     except ValueError:
                         pass
     except OSError as e:
         print(f"Skipping blink recompute for {gaze_log}: {e}")
         return -1, -1.0
 
-    if not has_eye_signal:
+    if not has_eye_signal or not has_blink_measurement:
         return -1, -1.0
 
     try:
@@ -192,6 +201,10 @@ def load_all_summaries(data_dir: Path) -> pd.DataFrame:
                 "capture_at": r.get("capture_at", -1),
                 "schema_version": data.get("schema_version", 1),
                 "round_schedule": data.get("round_schedule", "unknown"),
+                "rounds_per_block": rounds_per_block,
+                "total_rounds": data.get("total_rounds", 2*rounds_per_block),
+                "nominal_total_rounds": data.get("nominal_total_rounds", 2*rounds_per_block),
+                "debug_round_override": data.get("debug_round_override", 0),
                 "block": block,
                 "round_index": round_idx,
                 "shape": r.get("shape", ""),
