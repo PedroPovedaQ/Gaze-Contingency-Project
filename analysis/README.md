@@ -64,6 +64,8 @@ The command runs the existing session, exact recording-link/audio-asset, guidanc
 
 Exit 0 / `consistent` means the selected recording checks agree. Exit 1 means a check failed, found an inconsistency or observed source changes. Exit 2 / `evidence_incomplete` means missing completion/provenance evidence or an intentionally partial session. The declared nominal/short-run counts are retained separately; a successful short debug session is not a full-study check. The report never certifies native 120 Hz, spatial accuracy, validated eye events, survey completeness, voice naturalness or video/acoustic synchronization. P020's historical recording lacks current raw links and cannot retrospectively pass this current-contract audit.
 
+Raw eye JSON flags must be actual booleans, not text such as `"false"`; numeric timestamps/sequences cannot be booleans. Malformed declared values are rejected rather than coerced into valid gaze. A clean-close claim also requires a nonnegative integer `acceptedRows` matching the retained file. Missing counts remain incomplete, and invalidly typed counts/flags are errors. These rules do not invent fields absent from older recordings.
+
 ## Descriptive analysis runner
 
 From the project root:

@@ -1,5 +1,7 @@
 ## 2026-10-01 — overnight continuation
 
+- Reproduced a raw-eye import false pass: JSON `valid: "false"` was treated as true and yielded 100% valid time; a complete receipt without a row count was also accepted. Added strict declared-boolean/numeric identity checks and typed clean-close row counts, preserving missing-count receipts as incomplete. All 151 Python tests pass, including the combined audit. Original raw data remains unchanged.
+
 - Added `analysis/audit_recording.py` to run session, exact raw/replay/audio links, guidance and eye-quality validators from explicit local inputs. It retains failures and incomplete evidence, source hashes/change checks, command logs and declared short/full-session context; seven real-command regressions pass and the full Python suite now passes 149 tests. No hardware, survey or acoustic acceptance is inferred. Corrected the Unity refocus helper's misleading blanket permission advice for a locked/unavailable menu.
 
 - Audited HTC requested-pose time and Khronos EXT expressed-pose time against the primary specifications and installed SDK. Documented the proposed native diagnostic route, its limits and connected-device evidence matrix; corrected the measurement plan's stale pre-implementation/current-state wording. Native capture time/sequence and true 120 Hz remain unknown, not unlocked by a timestamp field.

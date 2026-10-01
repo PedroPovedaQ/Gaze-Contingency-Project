@@ -18,6 +18,43 @@ def sample(t, direction=None, **extra):
 
 
 class EyeQualityTests(unittest.TestCase):
+    def test_json_reader_rejects_truthy_strings_and_boolean_numbers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/'gaze_observations.jsonl'
+            base = sample(1, schema=1, kind='gaze_observation', recordingId='synthetic')
+            for field, value in (('valid', 'false'), ('newInputUpdate', 'false'), ('deviceAvailable', 1),
+                                 ('leftPupilValid', 'true'), ('validationTargetPresent', None),
+                                 ('schema', True), ('sequence', True), ('receiptTime', True),
+                                 ('recordingId', 1), ('recordingId', '  '), ('inputEventTime', True),
+                                 ('ageSeconds', '.01'), ('maxDeliveryAgeSeconds', False)):
+                with self.subTest(field=field, value=value):
+                    path.write_text(json.dumps(dict(base, **{field:value}))+'\n')
+                    with self.assertRaises(ValueError):
+                        read_recording(path)
+            # Actual boolean false remains an explicit invalid observation.
+            path.write_text(json.dumps(dict(base, valid=False))+'\n')
+            rows, warnings = read_recording(path)
+            self.assertIs(rows[0]['valid'], False)
+            self.assertEqual(warnings, [])
+
+    def test_clean_close_requires_typed_count_and_boolean_completion(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/'gaze_observations.jsonl'
+            receipt = path.parent/'end_status.json'
+            rows = [sample(1)]
+            receipt.write_text('{"complete":true}')
+            status = recording_status(path, rows, [])
+            self.assertIs(status['complete'], False)
+            self.assertIn('count is missing', status['reason'])
+            for record in ({'complete':'false','acceptedRows':1}, {'complete':1,'acceptedRows':1},
+                           {'complete':True,'acceptedRows':True}, {'complete':True,'acceptedRows':1.0},
+                           {'complete':True,'acceptedRows':-1}):
+                receipt.write_text(json.dumps(record))
+                with self.assertRaises(ValueError):
+                    recording_status(path, rows, [])
+            receipt.write_text('{"complete":true,"acceptedRows":1}')
+            self.assertIs(recording_status(path, rows, [])['complete'], True)
+
     def test_trial_quality_does_not_hide_loss_or_bridge_pauses_and_practice(self):
         rows = [sample(1, sourceTrialId='a'), sample(1.05, sourceTrialId='a',valid=False),
                 sample(1.1, sourceTrialId='a',valid=False),

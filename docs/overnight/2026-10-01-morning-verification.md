@@ -243,3 +243,9 @@ All **149 Python tests passed**, `/tmp/gaze-python-audit-bundle-final.log`, incl
 `docs/vive-eye-clock-audit.md` records the primary-source and installed-package finding: HTC's gaze result time is documented as the requested information time; EXT gaze sample time may be clamped, predicted or interpolated, or unavailable. Unity's current managed eye pose does not expose that EXT structure. A proposed diagnostic native route still requires implementation, supported semantics and headset validation; neither timestamp alone proves native sample identity. The existing measurement plan now labels its September 28 baseline historical and links the implemented October 1 tools.
 
 The refocus helper's failure message now asks to check lock/menu availability and only suggests Accessibility when macOS reports authorization failure. `bash -n` passes; a new hardware/UI dispatch remains for the final morning handoff. No Unity runtime change or APK rebuild is required for this analysis/documentation unit.
+
+## Raw import type/completion repair — 05:31 EDT
+
+Reproduced two standalone eye-report false passes: `valid: "false"` produced 100% valid time, and `complete: true` without `acceptedRows` was reported complete. The raw reader now rejects non-boolean declared flags, boolean schema/sequence/timestamps, malformed recording IDs and nonnumeric declared timing. Clean-close counts require a nonnegative integer and a matching retained-row count; missing counts stay incomplete. Missing historical fields are not invented or retroactively added.
+
+All **151 analysis tests passed**, `/tmp/gaze-python-strict-eye-final.log`, including the existing link/guidance reports and combined runner. New regressions cover malformed JSON values and completion receipts. This changes offline import validation only; no APK rebuild is needed.

@@ -12,6 +12,11 @@ from collections import defaultdict
 from pathlib import Path
 
 DETECTOR_VERSION = 'world-ray-ivt-candidate-v2'
+BOOLEAN_FIELDS = ('sourceCaptureTimeKnown', 'sourceSequenceKnown', 'newInputUpdate', 'deviceAvailable',
+                  'tracked', 'poseValid', 'valid', 'focused', 'headValid', 'validationTargetPresent',
+                  'practice', 'htcGazeAvailable', 'leftValid', 'rightValid', 'pupilAvailable',
+                  'leftPupilValid', 'rightPupilValid', 'opennessAvailable', 'leftOpennessValid',
+                  'rightOpennessValid')
 
 
 def vector(value):
@@ -418,16 +423,22 @@ def read_recording(path):
                     warnings.append('Interrupted final JSON line omitted; retained prefix only.')
                     break
                 raise ValueError(f'Corrupt eye JSON at line {line_number}') from None
-            if not isinstance(row, dict) or row.get('schema') != 1 or row.get('kind') != 'gaze_observation':
+            if not isinstance(row, dict) or type(row.get('schema')) is not int or row['schema'] != 1 or row.get('kind') != 'gaze_observation':
                 raise ValueError(f'Unsupported eye record at line {line_number}')
-            if not isinstance(row.get('sequence'), int) or row['sequence'] < 0:
+            if type(row.get('sequence')) is not int or row['sequence'] < 0:
                 raise ValueError(f'Invalid observation sequence at line {line_number}')
-            if not row.get('recordingId'):
+            if not isinstance(row.get('recordingId'), str) or not row['recordingId'].strip():
                 raise ValueError(f'Missing recording identity at line {line_number}')
             if rows and (row['sequence'] <= rows[-1]['sequence'] or row['recordingId'] != rows[0]['recordingId']):
                 raise ValueError(f'Mixed recording identity or unordered sequence at line {line_number}')
-            if not isinstance(row.get('receiptTime'), (int,float)) or not math.isfinite(row['receiptTime']) or row['receiptTime'] < 0:
+            if type(row.get('receiptTime')) not in (int,float) or not math.isfinite(row['receiptTime']) or row['receiptTime'] < 0:
                 raise ValueError(f'Invalid receipt timestamp at line {line_number}')
+            for field in BOOLEAN_FIELDS:
+                if field in row and type(row[field]) is not bool:
+                    raise ValueError(f'Invalid boolean {field} at line {line_number}')
+            for field in ('inputEventTime', 'ageSeconds', 'htcQueryReceiptTime', 'maxDeliveryAgeSeconds'):
+                if field in row and (type(row[field]) not in (int, float) or not math.isfinite(row[field])):
+                    raise ValueError(f'Invalid numeric {field} at line {line_number}')
             rows.append(row)
     if not rows:
         raise ValueError('No observations')
@@ -439,8 +450,14 @@ def recording_status(path, rows, warnings):
     result = json.loads(receipt.read_text()) if receipt.exists() else dict(complete=False, reason='No clean-close receipt; recording may be active or interrupted')
     if not isinstance(result, dict):
         raise ValueError('Invalid eye recording end-status structure')
+    if 'complete' in result and type(result['complete']) is not bool:
+        raise ValueError('Invalid eye recording completion flag')
+    if 'acceptedRows' in result and (type(result['acceptedRows']) is not int or result['acceptedRows'] < 0):
+        raise ValueError('Invalid eye recording accepted row count')
     # A clean-close marker cannot override an incomplete or mismatched file.
-    if warnings or (result.get('acceptedRows') is not None and result['acceptedRows'] != len(rows)):
+    if result.get('complete') is True and 'acceptedRows' not in result:
+        result = dict(result, complete=False, reason='Clean-close row count is missing')
+    if warnings or ('acceptedRows' in result and result['acceptedRows'] != len(rows)):
         result = dict(result, complete=False, reason='Recovered prefix or row-count mismatch')
     return result
 
