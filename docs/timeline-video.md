@@ -1,17 +1,30 @@
 # Run video in the trial timeline
 
-**Implemented locally — September 28, 2026.** The browser timeline can display a locally selected headset video alongside the recorded scene overview and data cursor. One video and alignment belong to one run; switching its trials seeks within the same recording. This extends the browser prototype for [#37](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/37). It does not start video capture, render Unity video from telemetry, or add video to the performance CSV.
+**Implemented locally — October 1, 2026.** The browser timeline imports a saved replay JSONL, displays its recorded scene overview and exact source samples, and can display a locally selected headset video alongside them. One video and alignment belong to one recording; switching its trials seeks within the same recording. This extends [#37](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/37). It does not start video capture, render Unity video from telemetry, or add video to the performance CSV.
 
 ## Open a run
 
-Package an existing prepared `timeline-data.json` (the current P020 preparation format):
+Create a page directly from a copied/closed replay package:
+
+```bash
+python3 analysis/replay_timeline.py /path/to/recording.jsonl \
+  --output /path/to/new-timeline-data.json --html /path/to/new-timeline.html
+```
+
+Optionally add `--trial-export /path/to/trial-csv-export` to show the performance/subjective table from `analysis/trial_csv.py`. That folder must contain `manifest.json` and `trials.csv`, and the manifest must reference the exact replay SHA-256. Rows join by recording identity and exact trial identity, including separate practice IDs. Mismatched participant/run/voice/block values are rejected when present. Final results and block/session responses are explicitly labeled as context, not values measured at the moving cursor. Without that explicit export, the page shows summary data as unavailable.
+
+The importer retains all saved frame samples and pose-bearing selections, source line/sequence, raw gaze recording ID and observation sequence, and original clock fields. It does not resample or interpolate. Next/previous sample controls step those saved observations; event selection jumps to pause/readiness/audio/selection records. Click an overhead object to inspect its recorded metadata and transformations; backward scrubbing rebuilds the prior layout. Save cursor snapshot downloads JSON with original sample, latest event, source fingerprint, current object positions and separately labeled final summary. The raw-record panel retains historical samples through gaps but labels them as historical.
+
+The default `--max-sample-age 0.1` hides poses after 100 ms without another saved sample. This is a configurable display freshness rule, **not** a fixation threshold or evidence of sensor acquisition rate. Untracked/unavailable head and gaze poses are hidden; recorded object visibility and search pauses are honored. Search lanes exclude pauses. The display cadence is render-frame cadence, not native eye-sensor Hz. Source JSONL/WAV, independent eye files, object meshes and trial CSVs remain authoritative and are not replaced by the page. Run the recording/link validators separately; successful display is not package acceptance.
+
+Prepared historical P020 pages are still supported:
 
 ```bash
 python3 analysis/timeline_page.py /path/to/timeline-data.json \
   --output /path/to/timeline-video.html
 ```
 
-Open the HTML file in a browser, or serve its directory on localhost. The page has no external dependencies or upload/network requests. Existing output files are never overwritten. Source recordings remain unchanged. The existing P020 data preparation is still a prototype; this command packages its prepared run data, not arbitrary raw replay JSONL.
+Open the HTML file in a browser, or serve its directory on localhost. The page has no external dependencies or upload/network requests. Existing output files are never overwritten. Source recordings remain unchanged. Full-rate long recordings produce large HTML files; representative full-session browser memory/performance remains a verification item. The overhead view collapses height and does not render the original Unity scene, camera background or replay WAVs; use the native replay viewer for 3D/audio.
 
 1. Choose the run's headset recording under **Run video**. Browser-playable MP4 (H.264) or WebM is recommended.
 2. Pause the timeline at an identifiable event, such as a trigger selection. With the video controls, find and pause the same event in the footage.
@@ -19,7 +32,7 @@ Open the HTML file in a browser, or serve its directory on localhost. The page h
 4. Use the timeline's play/pause, speed, scrubber, trial selector and event jump controls. Video audio is off initially; enable **Video audio** to listen.
 5. **Save alignment** downloads a small JSON sidecar. Reopening the page requires reattaching the same video and restoring that sidecar. It records the run identity, filename/size/last-modified metadata, manual offset and timestamp. This is file matching metadata, not a cryptographic identity check.
 
-The sidecar is specific to the participant and recording UTC identity. Wrong-run or mismatched-file restoration is rejected. Browser file permissions are temporary: saving alignment does not save or upload the video bytes. Keep the footage and sidecar with the run's raw package under the study's existing storage rules.
+The sidecar is specific to participant, recording UTC and recording ID for new imports (legacy prepared pages use participant/UTC). Wrong-run or mismatched-file restoration is rejected. Browser file permissions are temporary: saving alignment does not save or upload the video bytes. Keep the footage and sidecar with the run's raw package under the study's existing storage rules.
 
 ## Timing and coverage
 
@@ -35,8 +48,10 @@ Before video start or after video end, the player hides the frame and labels mis
 
 ```bash
 python3 -m unittest discover -s analysis -p 'test_timeline_page.py' -v
+python3 -m unittest discover -s analysis -p 'test_replay_timeline.py' -v
 # Requires Node, Playwright with Chromium, Python and ffmpeg on the machine:
 node analysis/timeline/test_video.cjs
+node analysis/timeline/test_replay.cjs
 ```
 
-The browser test generates clearly synthetic footage and checks local attachment, alignment, scrubbing, shared trial-clock mapping, speed/pause, coverage gaps, settings export/restore, wrong-run rejection, corrupt media recovery and mobile layout. Optional `TIMELINE_TEST_SCREENSHOTS=/path/to/output` writes desktop/mobile captures. No participant media is required.
+The video browser test generates clearly synthetic footage and checks local attachment, alignment, scrubbing, shared trial-clock mapping, speed/pause, coverage gaps, settings export/restore, wrong-run rejection, corrupt media recovery and mobile layout. The replay browser test imports raw synthetic JSONL and checks fixed cursor samples/source IDs, stepping, object movement/inspection, pause gaps, exported snapshots, event jumps and backward reconstruction. Python tests include 80 synthetic trial identities and the 39→40 voice boundary, missing tracking, interrupted tails, corruption and exact summary linkage. The short 80-trial fixture verifies context, not sustained hardware capture or full-session browser performance. Optional `TIMELINE_TEST_SCREENSHOTS=/path/to/output` writes captures. No participant media is required.

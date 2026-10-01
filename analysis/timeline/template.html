@@ -6,7 +6,11 @@
     <label class="form-label">Playback speed<select class="form-select" id="p20-speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
     <button class="btn btn-primary" id="p20-play" type="button">Play</button>
     <button class="btn" id="p20-next" type="button">Next event</button>
+    <button class="btn" id="p20-previous-sample" type="button">Previous sample</button>
+    <button class="btn" id="p20-next-sample" type="button">Next sample</button>
+    <button class="btn" id="p20-export" type="button">Save cursor snapshot</button>
   </div>
+  <label class="form-label">Recorded event<select class="form-select" id="p20-event"><option value="">Jump to an event…</option></select></label>
   <div id="p20-meta" aria-live="polite"></div>
   <label class="form-label" for="p20-time">Trial timeline · <output id="p20-clock" class="tabular-nums"></output></label>
   <input class="form-range" type="range" id="p20-time" min="0" step="0.01" value="0" aria-label="Seconds since trial announcement" />
@@ -47,6 +51,12 @@
   </div>
   <div class="card"><span class="text-small">Spoken cue · text only</span><div id="p20-speech"></div></div>
   <div id="p20-choice" aria-live="polite"></div>
+  <details><summary>Exact recorded sample and latest event</summary><pre id="p20-raw"></pre></details>
+  <details id="p20-object-details"><summary>Selected object · recorded fields</summary><pre id="p20-object">Select an object in the overhead view.</pre></details>
+  <details><summary>Final trial performance and subjective context</summary>
+    <p class="text-small">These are end-of-trial results, not values known at the cursor. Block/session survey responses repeat as context; they are not independent trial measurements. Blank values mean unavailable.</p>
+    <table class="table table-sm"><tbody id="p20-summary"></tbody></table>
+  </details>
   <details><summary>Recording coverage and display precision</summary><div id="p20-coverage"></div></details>
 </div>
 <style>
@@ -60,6 +70,8 @@
 #p20-timeline .p20-key .p20-controller{background:var(--viz-series-3)}
 #p20-timeline #p20-meta,#p20-timeline #p20-choice{margin-block:12px}
 #p20-timeline td{overflow-wrap:anywhere}
+#p20-timeline pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:400px;overflow:auto}
+#p20-timeline th{overflow-wrap:anywhere;max-width:220px}
 #p20-timeline details{margin-top:16px}
 @media(max-width:620px){#p20-timeline .p20-snapshot{grid-template-columns:1fr;gap:8px}}
 </style>
@@ -69,7 +81,7 @@
  const root=document.getElementById('p20-timeline'), data=JSON.parse(document.getElementById('p20-records').textContent);
  const el=id=>root.querySelector('#p20-'+id), select=el('trial'), slider=el('time'), play=el('play');
  const ns='http://www.w3.org/2000/svg';
- let index=0,time=0,playing=false,last=0,animation;
+ let index=0,time=0,playing=false,last=0,animation,sampleOverride=null,selectedObject=null;
  const fmt=n=>Number(n).toFixed(2), tri=()=>data.trials[index];
  const svg=(tag,attrs,parent,text)=>{const n=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));if(text!==undefined)n.textContent=text;parent.appendChild(n);return n;};
  const text=(p,x,y,t,anchor='start')=>svg('text',{x,y,'text-anchor':anchor,fill:'var(--foreground)','font-size':12},p,t);
@@ -77,18 +89,24 @@
  const xyz=v=>v?v.map(n=>Number(n).toFixed(2)).join(', ')+' m':'Unavailable';
  const object=(t,id)=>t.objects.find(o=>o[0]===id);
  const name=(t,id)=>id?(object(t,id)?.[1]||id):'None';
- data.trials.forEach((t,i)=>{const o=document.createElement('option');o.value=i;o.textContent=t.label+' · '+t.targetName+(t.completeTime?'':' · unfinished');select.append(o)});
+ data.trials.forEach((t,i)=>{const o=document.createElement('option');o.value=i;o.textContent=t.label+' · '+t.targetName+(t.completeTime!==null?'':' · unfinished');select.append(o)});
  function persist(){window.openai?.setWidgetState?.({modelContent:{participant:data.participant,trial:tri().label,sourceTrialId:tri().sourceId,secondsAfterAnnouncement:time},privateContent:{index,time}})?.catch(()=>{});}
  function stop(){playing=false;play.textContent='Play';cancelAnimationFrame(animation);video.pause();}
- function load(i,at=0){stop();index=i;select.value=i;slider.max=tri().end-tri().start;time=Math.max(0,Math.min(+slider.max,at));draw();syncVideo(true);}
+ function load(i,at=0){stop();sampleOverride=null;selectedObject=null;index=i;select.value=i;slider.max=tri().end-tri().start;time=Math.max(0,Math.min(+slider.max,at));renderRows(el('summary'),Object.entries(tri().summary||{Status:'No explicitly linked trial export supplied'}));el('event').replaceChildren(new Option('Jump to an event…',''));tri().events.forEach((e,i)=>el('event').append(new Option(`${fmt(e.time-tri().start)} s · ${e.kind} · sequence ${e.raw?.sequence??'unknown'}`,String(i))));draw();syncVideo(true);}
  function sample(t,at){let lo=0,hi=t.samples.length;while(lo<hi){const m=(lo+hi)>>1;if(t.samples[m][0]<=at)lo=m+1;else hi=m;}return lo?t.samples[lo-1]:null;}
+ const reached=(r,at,sequence=Infinity)=>r.time<at||(r.time===at&&(r.raw?.sequence??r.sequence??-1)<=sequence);
+ function layout(t,at,sequence=Infinity){if(at<t.snapshotTime||(at===t.snapshotTime&&(t.trialRecord?.sequence??-1)>sequence))return {...t,objects:[]};const objects=t.objects.map(o=>o.slice());for(const record of t.objectChanges||[]){if(!reached(record,at,sequence))break;for(const c of record.changes){const o=objects.find(o=>o[0]===c.id);if(o)o.splice(2,3,c.position.x,c.position.y,c.position.z);}}return {...t,objects};}
+ function objectFields(t,id,at,sequence=Infinity){if(at<t.snapshotTime||(at===t.snapshotTime&&(t.trialRecord?.sequence??-1)>sequence))return null;const original=t.trialRecord?.objects?.find(o=>o.id===id);if(!original)return object(layout(t,at,sequence),id)??null;let value={...original};for(const record of t.objectChanges||[]){if(!reached(record,at,sequence))break;const c=record.changes.find(c=>c.id===id);if(c)value={...value,...c};}return value;}
+ function renderRows(table,rows){table.replaceChildren();for(const [k,v] of rows){const row=document.createElement('tr'),th=document.createElement('th'),td=document.createElement('td');th.scope='row';th.textContent=k;td.textContent=v===null||v===''?'Unavailable':String(v);row.append(th,td);table.append(row);}}
+ function cursor(){const t=tri(),nominal=t.start+time,s=sampleOverride===null?sample(t,nominal):t.samples[sampleOverride],at=sampleOverride===null?nominal:s?.[0]??nominal;const stale=!s||(t.maxSampleAge!==undefined?at-s[0]>t.maxSampleAge:t.gaps.some(g=>at>g[0]&&at<g[1]));const sequence=sampleOverride===null?Infinity:s?.[15]?.sequence??Infinity;return {t,at,s,stale,sequence,state:t.stateChanges?.filter(r=>reached(r,at,sequence)).at(-1)};}
  function drawLanes(t,at){
   const p=el('lanes'),w=p.clientWidth||700;p.setAttribute('viewBox',`0 0 ${w} 154`);p.replaceChildren();
   const left=77,right=w-14,span=t.end-t.start,X=n=>left+(n-t.start)/span*(right-left);
   const bar=(a,b,y,color,label)=>svg('rect',{x:X(a),y,width:Math.max(.8,X(b)-X(a)),height:14,fill:color,'data-tooltip':label},p);
   ['Readiness','Search','Speech','Choice'].forEach((label,i)=>text(p,0,20+i*28,label));
   bar(t.start,t.searchStart??t.end,9,'var(--muted)','Announcement / readiness');
-  if(t.searchStart!==null)bar(t.searchStart,t.completeTime??t.end,37,'var(--viz-series-1)','Active search');
+  if(t.searchSegments) t.searchSegments.forEach(([a,b])=>bar(a,b,37,'var(--viz-series-1)','Active search (pauses excluded)'));
+  else if(t.searchStart!==null)bar(t.searchStart,t.completeTime??t.end,37,'var(--viz-series-1)','Active search');
   t.speech.forEach(a=>bar(Math.max(t.start,a.start),Math.min(t.end,a.end),65,'var(--viz-series-2)',a.text));
   t.events.filter(e=>e.kind==='selection').forEach(e=>{
    const x=X(e.time);svg('path',{d:`M ${x} 91 l 6 7 -6 7 -6 -7 Z`,fill:e.correct?'var(--viz-series-1)':'var(--viz-series-4)','data-tooltip':`${e.correct?'Correct':'Wrong'}: ${name(t,e.object)} · ${fmt(e.time-t.start)} s`},p);
@@ -97,10 +115,11 @@
   const ticks=w<440?3:5;
   for(let i=0;i<ticks;i++){const n=i*span/(ticks-1);text(p,left+n/span*(right-left),132,fmt(n)+' s',i===0?'start':i===ticks-1?'end':'middle');}
  }
- function drawMap(t,s,at,gap){
+ function drawMap(t,s,at,gap,state){
   const p=el('map'),w=p.clientWidth||330,h=285;p.setAttribute('viewBox',`0 0 ${w} ${h}`);p.replaceChildren();
   if(at<t.snapshotTime){text(p,w/2,120,'Layout not yet recorded','middle');return;}
-  const points=t.objects.map(o=>[o[2],o[4]]);if(s)points.push([s[4][0],s[4][2]]);
+  const points=t.objects.map(o=>[o[2],o[4]]);if(s?.[4]&&!gap&&s[13])points.push([s[4][0],s[4][2]]);
+  if(!points.length){text(p,w/2,120,'No recorded layout available','middle');return;}
   const xs=points.map(p=>p[0]),zs=points.map(p=>p[1]),minX=Math.min(...xs),maxX=Math.max(...xs),minZ=Math.min(...zs),maxZ=Math.max(...zs);
   const scale=Math.min((w-38)/(maxX-minX+.5),(h-50)/(maxZ-minZ+.5)),cx=(minX+maxX)/2,cz=(minZ+maxZ)/2;
   const X=x=>w/2+(x-cx)*scale,Z=z=>h/2-(z-cz)*scale;
@@ -108,8 +127,10 @@
   svg('defs',{},p);const clip=svg('clipPath',{id:'p20-map-clip'},p.firstChild);svg('rect',{x:8,y:8,width:w-16,height:h-20},clip);
   const g=svg('g',{'clip-path':'url(#p20-map-clip)'},p);
   for(const o of t.objects){
-   const hit=s&&[s[8],s[9][7],s[10][7]].includes(o[0]);
-   svg('circle',{cx:X(o[2]),cy:Z(o[4]),r:o[0]===t.target?5:hit?4:2.1,fill:o[0]===t.target?'var(--viz-series-1)':'var(--muted-foreground)',opacity:o[0]===t.target||hit?1:.45,'data-tooltip':`${o[1]} · ${o[0]} · Y ${fmt(o[3])} m`},g);
+   if(state&&state.visible===false)continue;
+   const hit=s&&!gap&&[s[7]===1?s[8]:null,s[9][2]===1?s[9][7]:null,s[10][2]===1?s[10][7]:null].includes(o[0]);
+   const dot=svg('circle',{cx:X(o[2]),cy:Z(o[4]),r:o[0]===t.target?5:hit?4:2.1,fill:o[0]===t.target?'var(--viz-series-1)':'var(--muted-foreground)',opacity:o[0]===t.target||hit?1:.45,'data-tooltip':`${o[1]} · ${o[0]} · Y ${fmt(o[3])} m`,role:'button',tabindex:0,'aria-label':'Inspect '+o[1]+' '+o[0]},g);
+   const inspect=()=>{selectedObject=o[0];el('object-details').open=true;draw();};dot.addEventListener('click',inspect);dot.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();inspect();}});
   }
   if(s&&!gap){
    if(s[13]){svg('circle',{cx:X(s[4][0]),cy:Z(s[4][2]),r:5,fill:'var(--foreground)'},p);text(p,X(s[4][0])+8,Z(s[4][2])-8,'Head');}
@@ -117,28 +138,36 @@
    s.slice(9,11).forEach((c,i)=>{if(c[1]&&c[2]===1){const line=path(c[5],c[6],'var(--viz-series-3)',i===0?'4 3':'',c[3]===1?3:1.5);line.setAttribute('clip-path','url(#p20-map-clip)');}});
   }
   if(gap)text(p,w/2,h/2,'Recording gap · poses hidden','middle');
+  else if(state&&state.visible===false)text(p,w/2,h-20,'Objects hidden in recorded state','middle');
   text(p,8,h-3,'+Z ↑ · +X → · fixed recording origin');
  }
  function draw(){
-  const t=tri(),at=t.start+time,s=sample(t,at),gap=t.gaps.some(g=>at>g[0]&&at<g[1]);
+  const {t,at,s,stale:gap,state,sequence}=cursor(),currentLayout=layout(t,at,sequence),fresh=gap?null:s;
   slider.value=time;el('clock').textContent=fmt(time)+' / '+fmt(t.end-t.start)+' s';
-  el('meta').textContent=t.label+' · '+t.targetName+' · |θ| '+t.theta+'° · '+(t.completeTime?'Completed in '+fmt(t.duration)+' s active search':t.searchStart!==null?'Search incomplete in saved data':'Search never started in saved data');
-  drawLanes(t,at);drawMap(t,s,at,gap);
-  const target=object(t,t.target),selection=t.events.filter(e=>e.kind==='selection'&&e.time<=at).at(-1);
-  const completed=t.completeTime!==null&&at>=t.completeTime;
+  el('meta').textContent=t.label+' · '+t.targetName+' · |θ| '+(t.theta??'unknown')+'° · '+(t.completeTime!==null?'Completed in '+(t.duration===null?'unknown':fmt(t.duration))+' s active search':t.searchStart!==null?'Search incomplete in saved data':'Search never started in saved data');
+  drawLanes(t,at);drawMap(currentLayout,s,at,gap,state);
+  const target=object(currentLayout,t.target),selection=t.events.filter(e=>e.kind==='selection'&&reached(e,at,sequence)).at(-1),event=t.events.filter(e=>reached(e,at,sequence)).at(-1);
+  const completed=t.stateChanges?state?.completed===true:t.completeTime!==null&&at>=t.completeTime;
   const started=t.searchStart!==null&&at>=t.searchStart;
-  const phase=completed?'Completed':started?'Searching':s?.[11]?'Readiness':'Announcement / transition';
-  const rows=[['State',gap?'Recording gap':phase],['Sample',s?`Frame ${s[1]} · ${fmt(at-s[0])} s before cursor`:'Not yet available'],['Search clock',completed?fmt(t.duration)+' s':started?(s&&s[0]>=t.searchStart?fmt(s[2]):'0.00')+' s':'Not started'],['Eye tracking',s?tracked(s[7]):'Unknown'],['Gaze hit',s?name(t,s[8]):'Unknown'],['Controller hit L / R',s?name(t,s[9][7])+' / '+name(t,s[10][7]):'Unknown'],['Trigger held L / R',s?s[9][3]+' / '+s[10][3]:'Unknown'],['Head XYZ',s&&s[13]?xyz(s[4]):'Unavailable'],['Target XYZ',at>=t.snapshotTime?xyz(target?.slice(2,5)):'Not yet recorded']];
-  const table=el('data');table.replaceChildren();rows.forEach(([k,v])=>{const row=document.createElement('tr'),th=document.createElement('th'),td=document.createElement('td');th.scope='row';th.textContent=k;td.textContent=v;row.append(th,td);table.append(row)});
-  const speech=t.speech.find(e=>e.start<=at&&e.end>at);el('speech').textContent=speech?.text||'No recorded speech playing';
+  const phase=completed?'Completed':state?(state.searching?'Searching':state.readiness?'Readiness':started?'Paused / transition':'Announcement / transition'):started?'Searching':fresh?.[11]?'Readiness':'Announcement / transition';
+  const raw=s?.[15],hit=c=>c&&c[0]&&c[1]&&c[2]===1?name(t,c[7]):'Unknown',decision=t.events.filter(e=>reached(e,at,sequence)&&e.kind==='guidance_decision').at(-1)?.raw?.guidanceDecision,parameters=t.trialRecord||{};
+  const rows=[['State',phase+(gap?' · no current pose':'' )],['Sample',s?`Frame ${s[1]} · sequence ${raw?.sequence??'unknown'} · line ${s[16]??'unknown'} · ${fmt(at-s[0])} s before cursor`:'Not yet available'],['Recording clock',fmt(at)+' s'],['Search clock',completed?(t.duration===null?'Unknown':fmt(t.duration)+' s'):started&&fresh&&fresh[2]!==null?fmt(fresh[2])+' s':'Unavailable'],['Eye tracking',fresh?tracked(fresh[7]):'Unknown'],['Gaze hit',fresh&&fresh[14]&&fresh[7]===1?name(t,fresh[8]):'Unknown'],['Controller hit L / R',hit(fresh?.[9])+' / '+hit(fresh?.[10])],['Trigger held L / R',fresh?tracked(fresh[9][3])+' / '+tracked(fresh[10][3]):'Unknown'],['Head XYZ',fresh&&fresh[13]?xyz(fresh[4]):'Unavailable'],['Target XYZ',at>=t.snapshotTime?xyz(target?.slice(2,5)):'Not yet recorded'],['Raw gaze link',raw?`${raw.gazeRecordingId||'Unknown'} / ${raw.gazeObservationSequence??'unknown'}`:'Unknown'],['Gaze delivery age at sample',raw&&Number.isFinite(raw.gazeDeliveryAge)?fmt(raw.gazeDeliveryAge)+' s':'Unknown'],['Gaze invalid reason',raw?.gazeInvalidReason||'Not recorded'],['Latest event',event?`${event.kind} · sequence ${event.raw?.sequence??'unknown'}`:'None']];
+  renderRows(el('data'),rows.concat([['Participant / run / block',`${data.participant} / ${raw?.runNumber??parameters.runNumber??'unknown'} / ${raw?.block??parameters.block??'unknown'}`],['Voice',raw?.voice??parameters.voice??'Unknown'],['Start / target plane',`${parameters.startPlane??'unknown'} / ${parameters.targetPlane??'unknown'}`],['Signed nominal theta',parameters.signedTheta===undefined?'Unknown':parameters.signedTheta+'°'],['Latest guidance decision',decision?`${decision.stage} · ${decision.phrase||decision.reason}`:'Not recorded']]));
+  el('raw').textContent=JSON.stringify({sampleStatus:gap?'Historical sample; not current':fresh?'Latest preceding recorded sample':'Unavailable',sampleSourceLine:s?.[16],sample:raw??null,latestEvent:event??null,latestGuidanceDecision:decision??null},null,2);
+  el('object').textContent=selectedObject?JSON.stringify(objectFields(t,selectedObject,at,sequence),null,2):'Select an object in the overhead view.';
+  const speech=t.speech.filter(e=>(e.start<at||(e.start===at&&(e.sequence??-1)<=sequence))&&e.end>at);el('speech').textContent=speech.length?speech.map(e=>e.text).join(' · '):'No recorded speech playing';
   el('choice').textContent=selection?`${selection.correct?'Correct':'Incorrect'} selection: ${name(t,selection.object)} at ${fmt(selection.search)} s active search.`:'No selection yet.';
-  el('coverage').textContent=`${t.sampleCount.toLocaleString()} original frame samples; median interval implies ${t.medianHz} Hz (render-frame cadence, not native eye-sensor rate). Display reduced to 5 Hz plus state changes; latest preceding sample, no interpolation. X/Y/Z are metres relative to the saved recording origin; top-down dots collapse height. Dashed controller ray = left; solid = right. Original JSONL/WAV retained for full 3D/audio replay. ${data.complete?'':'Recording is incomplete.'} ${(data.warnings||[]).join(' ')}`;
+  el('coverage').textContent=`${t.sampleCount.toLocaleString()} original frame samples; median interval implies ${t.medianHz??'unknown'} Hz (render-frame cadence, not native eye-sensor rate). ${data.displayPolicy||'Legacy display reduced to 5 Hz plus state changes; latest preceding sample, no interpolation.'} X/Y/Z are metres relative to the saved recording origin; top-down dots collapse height. Dashed controller ray = left; solid = right. Original JSONL/WAV retained for full 3D/audio replay. ${data.complete?'':'Recording is incomplete.'} ${(data.warnings||[]).join(' ')}`;
  }
  function frame(now){if(!playing)return;if(last && (!videoReady() || offset===null || !covered() || (!video.seeking && (video.readyState>=3 || video.ended))))time=Math.min(+slider.max,time+(now-last)/1000*Number(el('speed').value));last=now;draw();syncVideo();if(time>=+slider.max){stop();persist();}else animation=requestAnimationFrame(frame);}
- play.addEventListener('click',()=>{if(playing){stop();persist();return;}if(videoFile && offset===null){setVideoStatus('Align the video or remove it before timeline playback.');return;}if(time>=+slider.max)time=0;playing=true;last=0;play.textContent='Pause';syncVideo(true);animation=requestAnimationFrame(frame)});
- slider.addEventListener('input',()=>{stop();time=+slider.value;draw();syncVideo(true)});slider.addEventListener('change',persist);
+ play.addEventListener('click',()=>{if(playing){stop();persist();return;}if(videoFile && offset===null){setVideoStatus('Align the video or remove it before timeline playback.');return;}sampleOverride=null;if(time>=+slider.max)time=0;playing=true;last=0;play.textContent='Pause';syncVideo(true);animation=requestAnimationFrame(frame)});
+ slider.addEventListener('input',()=>{stop();sampleOverride=null;time=+slider.value;draw();syncVideo(true)});slider.addEventListener('change',persist);
  select.addEventListener('change',()=>{load(+select.value);persist()});
- el('next').addEventListener('click',()=>{stop();const t=tri(),at=t.start+time,e=t.events.find(e=>e.time>at+.001&&['selection','search_start','audio_playback_start'].includes(e.kind));time=e?e.time-t.start:+slider.max;draw();syncVideo(true);persist()});
+ el('event').addEventListener('change',()=>{if(el('event').value==='')return;stop();sampleOverride=null;time=tri().events[Number(el('event').value)].time-tri().start;draw();syncVideo(true);persist();});
+ el('next').addEventListener('click',()=>{stop();sampleOverride=null;const t=tri(),at=t.start+time,e=t.events.find(e=>e.time>at+.001&&['selection','search_start','audio_playback_start'].includes(e.kind));time=e?e.time-t.start:+slider.max;draw();syncVideo(true);persist()});
+ function stepSample(direction){stop();const t=tri();if(!t.samples.length)return;const at=t.start+time;let i=sampleOverride??t.samples.indexOf(sample(t,at));if(direction<0&&i>=0&&t.samples[i][0]<at)i++;sampleOverride=Math.max(0,Math.min(t.samples.length-1,i+direction));time=t.samples[sampleOverride][0]-t.start;draw();syncVideo(true);persist();}
+ el('previous-sample').addEventListener('click',()=>stepSample(-1));el('next-sample').addEventListener('click',()=>stepSample(1));
+ el('export').addEventListener('click',()=>{const {t,at,s,stale,state,sequence}=cursor();const snapshot={schema:'timeline-cursor-v1',recordingId:data.recordingId??null,source:data.source??null,trialId:t.sourceId,recordingSeconds:at,selectedSequence:Number.isFinite(sequence)?sequence:null,poseCurrent:!stale,sampleSourceLine:s?.[16]??null,sample:s?.[15]??null,legacyDisplaySample:s&&!s[15]?s:null,state:state??null,objects:layout(t,at,sequence).objects,selectedObject:selectedObject?objectFields(t,selectedObject,at,sequence):null,trialParameters:t.trialRecord??null,latestEvent:t.events.filter(e=>reached(e,at,sequence)).at(-1)??null,finalTrialSummary:t.summary??null,summaryProvenance:data.summaryProvenance??null};const url=URL.createObjectURL(new Blob([JSON.stringify(snapshot,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='trial-cursor.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
  function restore(state){const s=state?.privateContent;if(s&&Number.isInteger(s.index)&&data.trials[s.index])load(s.index,Number(s.time)||0);}
  __VIDEO_CODE__
  el('title').textContent=data.participant+' · Recorded run timeline';
