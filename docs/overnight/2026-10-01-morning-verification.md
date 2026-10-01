@@ -1,0 +1,117 @@
+# Overnight work and morning verification — October 1, 2026
+
+Latest verified state: Android APK includes the diagnostic-panel clearance fix; 95 Python tests passed. Local analysis commits: `64d8325`, `932f516`; runtime commit: `77f85f6` (fresh Unity compile hook passed). No device install or hardware acceptance. See the latest checkpoint at the end for the current artifact fingerprint.
+
+Status: work in progress. This report is updated during the overnight run ending at 06:00 America/New_York. It is not study approval or hardware acceptance.
+
+## Implemented and checked locally
+
+- Restored the three authorized dependencies: `GazeDataLogger`, `GazeHighlightManager`, `ShapeObjectFactory`.
+- Replaced the restored logger's independent device/hover/blink pipeline with the same valid/fresh gaze stream used by guidance. Compatibility CSV retains invalid rows and blanks unmeasured poses/events; continuous raw eye JSONL remains separate. Re-enabling logging appends instead of destroying prior rows, and incompatible pre-existing headers stop logging visibly rather than overwrite data.
+- Kept unavailable blink counts unavailable in downstream analysis even when eye openness exists. Updated voice-policy metadata to the shared imperative wording now used in both conditions.
+- Invalid gaze cannot inject non-finite poses into reconstruction records. Native eye/pupil/openness validity now also checks numeric validity. Non-finite values use unavailable placeholders with false validity; they are not measured zeros.
+- Corrected the Unity compile helper's stale-lock check. A lockfile with no live holder no longer substitutes an old editor log for a fresh compile.
+- Fresh Unity batch compilation and `GazeQualityChecks.Run` passed. The full `StudyVerificationChecks.Run` suite passed its gaze/CSV, physics filtering, controller edges, readiness, guidance boundaries, voice selection and replay checks. Hardware accuracy/rate are explicitly excluded from this evidence.
+- Python analysis suite: 66 tests passed. Focused C# gaze and voice-isolation checks passed.
+
+- Added right-only study ray policy and a right-ray control panel for Settings, Pause and Repeat guidance. Settings reuse the original menu, dock in front of the participant and pause active search/readiness; closing settings restores the Continue checkpoint. Left-controller, hand-poke and gaze UI activation are disabled during the study. Hardware layout/comfort remain unverified.
+- Repeat requests and actual delivered repeats are distinct, versioned events. Per-trial exports preserve unknown versus zero and avoid double-counting CSV and replay sources. `instruction_count` includes delivered repeats; `hint_count` excludes them. Final success feedback now remains in the trial event recording before it closes.
+- Eye report recovery now preserves an interrupted final JSON prefix, rejects corrupt middle records/mixed identities/unordered sequences and checks clean-close row counts. Invalid numeric placeholders export as blank measurements.
+
+- Implemented the selected 40+40 schedule (80 measured trials), eight per absolute-angle category per block, eight stratified five-trial groups and mirrored angle pairs. Sixteen target identities repeat twice and eight once per block, identically counted across voices; no adjacent target repeats. Versioned manifest/summary/replay/export explicitly identify signed-height balancing as pending, not implemented. Across 50 participant IDs, tests cover reproducibility, angle/identity quotas, target slots, both voice orders and debug truncation.
+- Strengthened the study-package validator: it checks all 80 planned rows, geometry, pair quotas, reference chaining, target repetition, voice assignment, unique layout seeds, enabled-trial flags and summary/manifest agreement. Shared-command recordings must actually have equal prepared phrase sets across voices.
+- Corrected the replay integration fixture to exercise the real 40-trial block boundary. Fresh full Unity suite passed in `/tmp/gaze-unity-40-trials-2.log`. The further right-ray startup/modality regression check and full suite passed in `/tmp/gaze-unity-40-trials-final.log`.
+- Updated 14 existing GitHub tasks with restored-dependency and current implementation evidence; moved 12 applicable cards to In Progress. Removed obsolete deferred labels from active horizontal/vertical guidance #11 and applied app/P0. No task was closed or marked headset-verified.
+
+- Expanded to six voices per gender by appending Liam and Laura, retaining all previous indices/IDs. All twelve cards have fictional portraits; eight were generated with the built-in image tool, with prompts/provenance in `docs/voice-avatar-prompts-2026-10-01.json`. Catalog inventory snapshots persist per participant/run and do not imply audition/rating. Unity integration and graphical six-card checks passed for both presentations; inspected `/tmp/gaze-ray-menu-male-six.png` and `/tmp/gaze-ray-menu-female-six.png`. Fixture audio is deliberately unavailable, so acoustic checks remain pending.
+- Added an offline **Build Android APK** command so packaging can be tested without a connected headset. Build failures now throw instead of returning success to batch automation. First Android packaging succeeded in 676.4 seconds (`/tmp/gaze-android-overnight.log`), with a reported 1145.9 MB build. Its old Temp output was removed when Unity exited; the helper now targets ignored `Builds/CodexAndroid/` so the next package persists. No device was installed or launched.
+
+## Review continuation — 00:57 EDT
+
+- Completed the ten selected review perspectives sequentially under the user instruction; this was a self-review, not independent/external review. Receipt: `/tmp/compound-engineering-501/ce-code-review/20261001-044134-0fa53ef9/review.json`. Two explicit-plan gaps were retained: per-trial/spatial quality summaries and guidance-decision/sample provenance. No broad completion/merge claim.
+- Implemented the first gap: phase-aware `trial_eye_quality.csv`; per-target mean-direction offset, yaw/pitch bias, segment-specific angular SD and observation/time missingness. Invalid heartbeats now break spatial precision. The whole Python suite passed **72 tests**, including six new regression cases. Method definitions and limitations are in `analysis/README.md`.
+- Added `guidance-decision-v1`: original observation/request snapshots, correction revalidation/abandonment, invalid suspension and audio lifecycle IDs. Voice fixtures passed and full Unity integration passed (`/tmp/gaze-unity-guidance-provenance-final.log`). Header/summary advertise the audit version. A fresh Android package is building (`/tmp/gaze-android-provenance.log`); the prior APK remains stale until this completes.
+
+## Needs Pedro / Vive verification
+
+1. Confirm the new full schedule displays 80 measured trials and switches voice after trial 40. Two practice trials remain separate. Start with a debug-short run for device checks; a short run does not establish full-session completion.
+2. Connect the Focus Vision, fit it correctly and run the headset's eye calibration. Use **Eye check** during setup or explicit pause; hold each independent dot for at least two seconds before **Next target**. Check low/mid/high positions, wall seams, distances and head orientations. Repeat drift targets after re-donning/between blocks.
+3. Record separate **Offset fit** and **Held-out** checks. Export with `analysis/eye_quality.py`; reject apparent corrections that worsen held-out regions. No correction is automatically applied.
+4. Verify actual input delivery intervals, validity/gaps and sensor-timing capability. HTC's advertised 120 Hz and a 120 Hz timer do not prove distinct hardware observations. Native 120 Hz remains unestablished.
+5. In trials, look up/down within the correct wall, blink, cross a boundary, overshoot, lose/recover tracking and pause/resume. Confirm only relevant cues play, invalid gaze suspends new directions, and vertical scanning does not retrigger area arrival.
+6. Listen in both voice conditions: identical command wording, short varied cues, success chime and varied reinforcement, no hidden target identity leak. Judge pacing, voice identity, comfortable levels and whether success completes before transition.
+7. With the left controller off, complete setup, open/close Settings, switch the guidance boundary, Pause/Continue and Repeat guidance. Opening settings during search must pause/hide the trial and closing must require Continue. Verify physical right-controller ray highlight, one entry vibration, trigger release/re-press, wrong-choice continuation and correct selection across all eight walls. Device haptics, comfort and full session flow cannot be established by editor fixtures.
+
+## Open research decisions / evidence
+
+- Independently annotated fixation, saccade and blink validation is still required. Candidate analysis is explicitly unvalidated; no pupil-based workload score is inferred.
+- Signed target-height quotas need a confirmed reference, zero/deadband and magnitude range before implementing 20 above/20 below. Current seeded floor-relative scatter is explicitly unbalanced.
+- Power/sensitivity and participant burden for 40+40 trials remain to justify; repeated trials are not independent participants.
+- Final candidate-rating endpoints/order/ties, questionnaire wording/scoring and institutional consent/cloud lifecycle review require researcher decisions. No live survey publication or IRB submission is performed overnight.
+- Pre-existing unrelated deletions remain outside the repair scope. Unity recreated existing script metadata with the original GUIDs during import; inspect those import-only changes before committing.
+
+## Evidence and resume pointers
+
+- Worktree: `/tmp/gaze-v2-project-update-20260922`.
+- Branch: `codex/reconcile-meeting-20260922`.
+- Fresh compile/gaze log: `/tmp/gaze-unity-overnight.log`.
+- Integration logs: `/tmp/gaze-unity-integration-2.log` and `/tmp/gaze-unity-right-controls-2.log` (includes right-only policy fixture).
+- First integration attempt exposed an edit-mode fixture lifecycle omission; the test now explicitly initializes the shared stream, and the second run passed.
+- Run `StudyVerificationChecks.Run` in Unity batch mode or **Tools → Codex → Check Study Integration** for offline checks.
+- Detailed measurement guide: `docs/gaze-measurement-validation.md`.
+
+- Fixed annotation matching for empty Unity/CSV context IDs and prevented candidate events/precision pairs from crossing device changes. Two new regressions passed; detector v2 remains unvalidated.
+
+## Current continuation — 00:38 EDT
+
+- Latest full Unity integration passed: `/tmp/gaze-unity-pause-durability.log`. Includes twelve-candidate catalog JSON, stable practice/39→40/79→80 trial linkage, frozen voice metadata, and compatibility-CSV snapshot metadata. No historical rows relabeled.
+- Presented-trial linkage is now repaired: raw eye/replay/CSV preserve the completed trial through success feedback, and replay voice assignment no longer depends on event-listener order.
+- Added a collision retry to guarantee distinct layout seeds; the existing schedule suite passed again across 50 participant IDs. Updated the authoritative gaze/telemetry guide to match shared-stream acquisition and current guidance.
+- Android packaging completed successfully in 280.4 s (`/tmp/gaze-android-overnight-final.log`). Persistent APK exists at `Builds/CodexAndroid/codex_build.apk`: 71,123,184 bytes, SHA-256 `7c79c215d647ed295a2a6d0de72402f2c76f1b9ae1e6be8583caefa80dbd571a`. It predates the following settings/pause-flush repairs; rebuild after final review. No device install/launch.
+- Before committing, review intended paths only; pre-existing unrelated deletions remain unapproved. Before final handoff, run the requested refocus/build-and-run helper against the correct Unity project and report actual device outcome. No headset currently attached.
+
+### Settings and pause durability repairs — verified locally
+
+Settings now enforces pause if readiness/search begins while the menu was already open. New lifecycle checks cover setup → active search and setup → readiness, hidden stimuli/Continue, closing without automatic resume and explicit Continue returning to the correct stage.
+
+Eye/replay application-pause handlers now enqueue an ordered background flush after the final observation/pause marker. A real-file test fault-injects stalled storage, verifies the Unity caller stays responsive, releases the worker and verifies the last row is readable before disposal or the 90-write interval. The writer remains usable on resume and rejects flush requests after closure. Enqueue races with worker shutdown return a recording failure rather than leaking an exception. This is best effort, not fsync or proof against immediate OS termination; hardware interruption checks remain required.
+
+Full Unity integration passed with these additions (`/tmp/gaze-unity-pause-durability.log`). The replay fixture's deliberately closed-writer error is expected failure-path coverage, not a failed real recording.
+
+### Earlier review checkpoint — superseded by completed review above
+
+Simplification completed with one dead-state removal (unused replay eye source/device fields and scene search); current full Unity suite passed again in `/tmp/gaze-unity-review-cleanup.log`. Corrected the setup completion copy to shared guidance wording. Formal `ce-code-review mode:agent base:HEAD` has completed scope/intent and selected full depth. Run directory: `/tmp/compound-engineering-501/ce-code-review/20261001-044134-0fa53ef9`. Read `context.json`, `intent.md`, `requirements.md`, `scope.json` and `criteria-map.json`; persona selection is saved in `roster.json`; next read the remainder of `dispatch-reviewers.md`, `action-class-rubric.md`, `subagent-template.md`, `diff-scope.md`, `findings-schema.json` and selected persona assets, then execute sequential inline passes. Cross-model/subagent delegation is not started under user AGENTS; no independent-review credit is claimed. Execute reviews sequentially under user AGENTS. Forty new source/test/avatar files are staged solely so the review includes them; no commit or push. Remaining unrelated deletions are not candidate changes. No live process remains.
+
+## Packaging and provenance audit — 01:18 EDT
+
+- Fresh Android packaging succeeded in **305.2 seconds** (`/tmp/gaze-android-provenance.log`, process exit 0). Current persistent APK: `Builds/CodexAndroid/codex_build.apk`, **71,124,672 bytes**, SHA-256 `3606afefa715bc4b5fa626c06dc947b6b1debfca8eaeea4978db9d4a7d9c3369`. This package includes the guidance audit version in replay headers and trial summaries. No headset installed/launched. It supersedes the older APK evidence above.
+- Added the offline guidance audit command documented in `analysis/README.md`. It preserves exact original eye observation joins, flags mismatched trial/phrase/staleness claims, and distinguishes requested, abandoned, cancelled and software playback outcomes. Incomplete/legacy recordings do not establish hardware acceptance.
+- Morning data check: after a short recording, pull the raw eye file and matching replay JSONL, run both `eye_quality.py` and `guidance_audit.py`, inspect completeness and all reported inconsistencies, then compare cue behavior with the observed headset session. This is required before claiming actual joins work on-device.
+
+- Final analysis run for this slice: **82 tests passed**, `/tmp/gaze-python-guidance-audit-final.log`; `git diff --check` passed. Next unblocked measurement-plan work: capability CSV and delivery-interval plots with explicit source-clock limitations. No live build/test process remains. No commit/push yet; unrelated deletions remain excluded.
+
+## Timing-report and panel-clearance continuation
+
+The eye-quality CLI now includes phase delivery/capability/clock tables plus timing PNG/SVG. All 91 Python tests passed (`/tmp/gaze-python-timing.log`). The inspected fixture is at the directory recorded in `/tmp/gaze-timing-fixture-path`; it is explicitly synthetic. Do not use it as device-rate evidence.
+
+The diagnostic panel previously covered the right-side local fit targets. It now moves lower while a dot is active. A new geometry check and full Unity integration are running (`/tmp/gaze-unity-diagnostic-clearance.log`); rebuild the APK afterward. The last package fingerprint remains historical until then.
+
+### Verified checkpoint — 01:30 EDT
+
+Analysis tools/tests/README are committed locally as `64d8325` (`feat(analysis): audit gaze quality and guidance provenance`); seven named paths only, no push. Other runtime/document changes are still uncommitted. Diagnostic-panel geometry and full Unity integration passed, process exit 0 (`/tmp/gaze-unity-diagnostic-clearance.log`). Android rebuild is running in `/tmp/gaze-android-diagnostic-clearance.log`; collect that process before starting another Unity operation.
+
+## Latest completed checkpoint — 01:38 EDT
+
+- Local commits: `64d8325` (gaze quality/timing/guidance audit, seven files) and `932f516` (schedule-aware voice comparisons and unavailable-blink preservation, five files). No push. Runtime and protocol/doc changes remain pending a scoped commit; unrelated deletions remain excluded.
+- Fixed the old descriptive analysis gate that demanded exactly 14 trials. Current 80-trial sessions pair by participant/run and declared 40-trial blocks; historical 14-trial sessions remain supported. Debug/shortened sessions, restarts, duplicate/missing IDs or indices, wrong/missing voice assignments and invalid/missing search durations do not become complete pairs. This does not resolve the power-analysis decision.
+- All **95 analysis tests passed**, including actual voice-pair CSV readback, `/tmp/gaze-python-eighty-analysis-final.log`. Full Unity integration passed with the panel-clearance geometry check in `/tmp/gaze-unity-diagnostic-clearance.log`.
+- Android packaging **succeeded in 216.3 s**, process exit 0, `/tmp/gaze-android-diagnostic-clearance.log`. Current APK: `Builds/CodexAndroid/codex_build.apk`, **71,122,616 bytes**, SHA-256 **`77f8d2b433e5db825ec8c8e55aebee2db693b10e075aac734a83faa57dfa4b22`**. This supersedes all older package fingerprints above; no installation/launch.
+- No live build/test process remains. Remaining next steps include scoped runtime/document commits, any other unblocked task gaps, and the required correct-project Unity refocus/Build And Run before the final handoff. Headset tasks and research decisions above remain open.
+
+- GitHub #34 moved to **Ready for headset QA** and read back in Project 2; only the completed software checklist items were checked. The issue remains open/unverified. Test the complete right-controller-only flow with the left controller off; exact steps are in the updated issue.
+
+## Operator reconciliation and local checkpoint
+
+The existing open run sheet now reflects 40+40 measured trials, two separate practice trials, hidden-target guidance, six choices per gender, shared imperative wording, right-controller controls and current previous-wall readiness. Built-in LaTeX compilation passed. Independent gaze validation is a pilot procedure; signed-height balancing and formal research decisions remain explicitly open. The procedure register now identifies old first-person, 14-trial, fixed-front and offline-provider designs as historical. GitHub #27 was updated and read back; live Overleaf/Qualtrics and submission artifacts are not synchronized by this local edit.
+
+Runtime checkpoint `77f85f6` contains 81 explicitly selected files and passed a fresh Unity compile hook. Unrelated deletions and generated ProjectSettings changes were excluded. No remote branch was pushed.

@@ -1,3 +1,82 @@
+## 2026-10-01 — overnight continuation
+
+- 01:50 EDT: saved the reviewed runtime, controller, voice, replay and validator changes in local commit `77f85f6`; the Git compile hook completed a fresh successful Unity compile. No push. Scoped commit excludes all unrelated deletions and Unity-generated ProjectSettings change. Task #27 update read back successfully.
+
+- 01:50 EDT: reconciled the open run sheet with 40+40 measured trials, two separate practices, hidden target, shared guidance, right-controller controls and six voices per gender. Native LaTeX compilation succeeded. Added an explicit current/historical boundary to the procedure register; height balancing, hardware validation, final survey/interview/consent details and live publication remain pending.
+
+- GitHub #34 moved to **Ready for headset QA** and read back in Project 2; only the completed software checklist items were checked. The issue remains open/unverified. Test the complete right-controller-only flow with the left controller off; exact steps are in the updated issue.
+
+- 01:38 EDT: saved schedule-aware descriptive voice comparisons and unavailable-blink preservation in local commit `932f516`. The old hardcoded 14-trial pairing now supports the saved 40+40 schedule, rejects short/debug/restarted/malformed pairs and retains historical 7+7 support. All 95 Python tests passed. Fresh Android APK with the diagnostic panel fix built in 216.3 s (71,122,616 bytes); current SHA-256 is in the morning report. No device install/launch.
+
+- 01:30 EDT: saved the seven analysis/report files in local commit `64d8325` (91 tests passing). Other index entries and unrelated deletions were excluded. Diagnostic panel clearance and full Unity integration passed (`/tmp/gaze-unity-diagnostic-clearance.log`); rebuilding Android with that fix. Native rate and headset checks remain open.
+
+- 01:28 EDT: added per-phase delivery/capability/clock tables and timing figures; inspected a labeled synthetic outage plot. All 91 Python tests pass. HTC query counters deduplicate copied fields by host query time, and native-rate/loss conclusions remain unknown. Found and repaired diagnostic panel occlusion of right-side fit dots; full Unity geometry/integration verification is running. This small runtime change requires another APK before handoff.
+
+- 01:18 EDT: Android packaging succeeded (305.2 s; current APK 71,124,672 bytes, SHA-256 in the morning report), no device install. Added offline exact-observation guidance audit and ten regressions for joins, two clock origins, invalid/stale claims, revalidation, cancellation, phrase mismatches, legacy/incomplete recordings and CLI safety. GitHub #15/#22/#24 reflect the implementation and remaining hardware checks.
+
+- 01:07 EDT: added guidance decision/source-observation audit linkage, correction commitment/abandonment and correlated software playback events. Immutable snapshot, replay round-trip and voice lifecycle tests passed; full Unity integration passed (`/tmp/gaze-unity-guidance-provenance-final.log`). Python quality CLI regression brings the suite to 72 passing tests. New APK packaging is running; no headset validation claimed.
+
+- 00:57 EDT: completed sequential self-review artifact (no independent peer credit), retaining two concrete measurement-plan gaps. Implemented per-trial search-only quality CSV and per-target direction bias/angular spread/time missingness. Invalid heartbeats split precision segments. All 71 Python tests passed; guidance decision provenance is the next remaining review item. Hardware acceptance is unchanged.
+
+- Persistent Android APK packaged successfully (280.4 s, 71,123,184-byte APK); no device installed. Subsequent settings lifecycle repair prevents readiness/search running behind already-open Settings; ordered pause flush preserves the last eye/replay rows without blocking on storage. File-level stalled-writer and setup→readiness/search→Continue regressions passed in the full Unity suite (`/tmp/gaze-unity-pause-durability.log`). Rebuild required after review. Marked old beta-menu documentation explicitly historical and linked current behavior.
+
+
+- Android packaging succeeded in 676.4 seconds (1145.9 MB reported), no device deployment. Found Temp output disappears at editor exit; switched helper to ignored persistent `Builds/CodexAndroid/` for next build. Expanded catalog to six per gender by appending Liam/Laura, preserving previous indices; all twelve cards now have fictional portraits, eight generated with built-in image tool and saved with prompt provenance. Catalog inventory snapshots are versioned per participant/run.
+- Fixed shared eye/CSV trial linkage across capture/feedback and 39→40/79→80: a presented-trial context stays stable until the next actual transition. Practice remains separate; replay's voice routing is independent of listener order. Canonical Unity integration including new context fixture passed, pure voice/cache/saved-choice tests passed; both six-card graphical checks passed and were visually inspected. Latest full Unity integration passed (`/tmp/gaze-unity-six-final.log`), and all 66 Python tests passed after fixing empty-context annotation matching and cross-device event/precision continuity. Rewrote the authoritative gaze guide to match the new pipeline and guaranteed distinct layout seeds with collision retry (schedule suite passed). Persistent APK packaging is running.
+
+
+- Full 40+40 schedule and right-controller startup/modal-input regression passed canonical Unity checks; all 63 Python tests passed. Graphical voice-menu checks passed and preview inspected. Updated #10/#13/#28 and project overview with actual local schedule progress; height quotas and headset acceptance remain open.
+- Added offline APK build entry point with explicit batch failure propagation. Android packaging started without AutoRunPlayer (`/tmp/gaze-android-overnight.log`); no headset attached. No participant data deleted, external audio requested, or study approval claimed.
+
+## 2026-09-30 — overnight run (ends October 1 at 06:00)
+
+- Late-evening continuation: implemented 40 measured trials per voice (80 total), eight per absolute angle, generalized stratified randomization, same target-identity counts across voices with no adjacent repeats, and explicit pending-height-policy metadata. Voice/schedule checks passed across 50 participant IDs and both voice orders. Updated replay fixture for the actual new block boundary; full Unity integration passed. Python suite now 63 tests, including versioned manifest geometry/quota/identity and summary consistency. GitHub evidence refreshed on 13 tasks; 12 relevant cards In Progress, #11 no longer deferred. Right-ray policy now recovers from hand-mode startup; latest integration rerun passed (`/tmp/gaze-unity-40-trials-final.log`).
+
+
+- User authorized restoring the three required scripts and autonomous in-scope task work until 06:00. Restored the dependencies; migrated the gaze CSV logger to SharedGazeStream, preserved invalid gaps and unavailable eye events, and made re-enable append-safe. Added an actual Unity CSV integration fixture and downstream missing-blink regressions.
+- Fresh canonical Unity batch compilation and gaze checks passed, replacing the earlier temporary dependency-fixture evidence. Full offline study integration checks passed (gaze/CSV, real physics ray filtering, trigger gates, readiness, boundaries, voice choices and replay). Python analysis: 54 tests passed. Device accuracy/rate, physical haptics and listening remain pending.
+- Added right-ray-only settings/pause/repeat controls, disabled left/hand/gaze UI activation, and retained existing settings content via front docking. Added versioned requested/delivered repeat counts and non-repeat hint counts, final-success event retention, and raw-eye interrupted-prefix/identity/row-count validation. Latest analysis suite: 60 tests; updated Unity right-only integration suite passed. Physical UI/voice/haptics remain in the morning verification list.
+- Fixed stale-lock handling in the compile helper and shared-imperative voice metadata. Working report and verification list: `docs/overnight/2026-10-01-morning-verification.md`. Continuing with right-controller-only access and other unblocked project tasks; no issue is closed on the strength of implementation alone.
+
+## 2026-09-30
+
+- Implemented a shared validity-aware EXT gaze adapter with independently flagged HTC eye/pupil/openness probes, raw/native/world coordinate records, input delivery timestamps, invalid/stale heartbeats and bounded continuous JSONL recording. Removed late visual X flipping; replay/readiness/guidance/trial intersection summaries now consume the shared ray.
+- Added right-ray researcher eye diagnostics and separate 54-point spatial validation, nine-point offset-fit, independent held-out and five-point drift checks. Added raw CSV/spatial quality reports, held-out offset evaluation and explicitly unvalidated fixation/saccade/blink candidates with annotation comparison. Native 120 Hz and hardware accuracy remain unestablished.
+- Implemented shared imperative conversational guidance, within-wall vertical cues, validity cancellation, hidden-target trial/readiness wording, `Loading...`, and chime/varied success speech with transition ordering. Preserved existing five-per-gender catalog and clone audio treatment.
+- Verification: runtime C# compilation passed in an external fixture using Git versions of three pre-existing deleted legacy scripts; this is conditional compilation, not a successful build of the current checkout. Focused gaze, layout, voice isolation and enrollment checks and 7 eye-quality / 22 trial-CSV tests passed. All 50 analysis tests passed using the repository's shared Python environment after system Python lacked pandas; runtime and editor assemblies compiled in the temporary dependency fixture. See `docs/gaze-measurement-validation.md` for operation and hardware gates.
+- Updated and read back GitHub #14/#35/#22/#15/#11/#23/#24/#12/#20 with local implementation evidence and explicit hardware/validation blockers; no issue closed. Full independent/code-review delivery gate and actual Unity Build And Run remain pending the canonical dependency repair.
+- Pending: response to restoring GazeDataLogger/GazeHighlightManager/ShapeObjectFactory; the deleted scripts remain untouched. No ADB headset was connected. No hardware validity/rate claims, task completion, commit or push.
+
+## 2026-09-30
+
+- Saved researcher decisions in `docs/meeting-reconciliation-2026-09-30.md`: shared participant-directed imperative wording, more conversational/less silent contextual guidance, 6–8 voices per gender, `Loading...`, varied success chime/reinforcement, descriptive filenames and separate trial-performance/subjective versus motion/reconstruction data. Retained hidden-target, right-controller-only and 40+40 decisions.
+- Updated the study hub and added precedence notes to the September 28 reconciliation, voice-choice baseline and measures register. Extra cloned-voice prosody/personality remains an open pilot proposal; natural recording instructions remain, and possible voice-identity/style confounding is explicit.
+- Updated and read back 15 existing GitHub issue bodies (#7, #8, #11, #12, #16, #19, #20, #21, #22, #23, #24, #25, #27, #29, #33), preserving older history and task status. No new duplicate tasks or implementation/completion claims. Local link and whitespace checks passed. Runtime/LaTeX sources were not changed for this notes update; no build, commit or push.
+
+## 2026-09-28
+
+- Researched ten primary/methodological gaze references and saved `docs/plans/2026-09-28-vive-eye-gaze-measurement-plan.md`, with direct DOI/full-text links, method-transfer limits, current source audit and implementation/test gates mapped to #14/#35/#22/#8/#15/#20/#16.
+- Confirmed HTC documents standalone Focus Vision per-eye support and nominal binocular 120 Hz; installed wrapper's predicted-display-time usage does not establish native sampling. Found active X-position flip in the study scene with Update/LateUpdate measurement-order risk; requires known-target validation, not an untested removal.
+- Proposed shared validity/freshness-aware acquisition, independent spatial validation/drift checks, head-aware event analysis, horizontal-then-vertical assistance and separately validated workload measures. No gaze runtime, protocol thresholds, GitHub status or participant data changed. Existing voice/guidance edits preserved.
+
+## 2026-09-28
+
+- Replaced runtime Voxtral cloning/TTS with ElevenLabs instant voice cloning and `eleven_turbo_v2_5`; both conditions share the model, retaining natural recording instructions and clone-only treatment. New cache namespace prevents old Voxtral audio reuse; manifests explicitly record voice condition.
+- Expanded selection to five male and five female voices, preserving original saved option positions. Authenticated catalog lookup verified the supplied local key and voice IDs (including the Janet alias); no participant sample was uploaded.
+- Added production-client transport checks for multipart WAV/authentication, verification and malformed responses, access/quota errors and non-audio rejection. Expanded selection/isolation checks across ten voices.
+- Live TTS returned HTTP 200/audio for all ten choices. Unity voice-choice and ray-menu checks passed, including five cards per gender. Enrollment/client, voice-isolation and layout tests pass; Unity and LaTeX compilation pass. Build And Run could not install because no Android device is connected.
+- Updated session validation to use explicit voice condition and the saved neutral ID with legacy-manifest compatibility; recorded round/object counts replace outdated defaults where present.
+- Updated runtime documentation and the run-sheet choices. Open: fresh headset enrollment/auditions, microphone clone quality, and matching cloud-provider consent/retention details. No approval or live cloning success implied.
+
+## 2026-09-28
+
+- Applied researcher clarification: retain the headset timing/progress/status panel while removing its target name/color content. Readiness status now refers to the agent, and wrong-selection timeout restores only generic status rather than a target label. Preserved survey controls, timers and trial progress; added assertions to existing ray-menu Editor checks. Browser timeline unchanged; full hidden-target conversion (including separate readiness labels and spoken identity) remains pending. Changes remain local. Unity live-editor compilation passed; Android Build And Run was attempted but no headset was connected. Editor UI regression assertions were added; their menu execution was unavailable in this session.
+
+## 2026-09-28
+
+- Began #24 follow-up after v3/main integration: expanded guidance to 32 source phrases with explicit self-similar first-person mappings; normal directional cue eligibility shortened from four to two seconds without overlapping speech. Added varied area/return phrasing without changing the existing relevance/debounce/cooldown rules. Expanded regression coverage for phrase inventories, cycling, direction preservation and first-person coverage. Layout/gaze and voice-isolation tests pass; hardware listening remains pending.
+- Identified the headset bottom goal/status/timer panel in FindObjectUI and requested clarification against the browser timeline's bottom data/cue panel. Panel removal is pending the user's answer. These follow-up changes remain local and uncommitted.
+
 ## 2026-09-28
 
 - Prepared all current Unity interaction/guidance, protocol/meeting/survey, per-trial CSV and timeline-video changes for the requested v3 then main integration. Both remote target histories are ancestors of the current work, so fast-forward integration is available without discarding commits. Participant recordings, credentials, generated analysis outputs and Unity performance-test build metadata remain local/ignored.

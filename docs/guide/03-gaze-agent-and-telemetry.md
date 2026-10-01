@@ -1,265 +1,97 @@
-# Gaze Agent and Telemetry Guide
+# Gaze agent and telemetry guide
 
-This document explains how the gaze-aware assistance layer works in the current project:
+**Implemented locally — October 1, 2026; Vive verification pending.** This guide describes the shared gaze pipeline, controller selection and horizontal-then-vertical guidance currently in the source. It supersedes the earlier hover-based, warmer/colder guidance description. The study has two voice blocks of 40 measured trials each, plus separate practice. Both voices receive the same participant-directed commands; the agent knows the target identity and guides the participant without announcing it.
 
-- how eye gaze flows from hardware to hover detection and logging
-- how controller highlight and confirmation work
-- how the always gaze-contingent hint policy uses target proximity
-- what gets logged, where it goes, and how to debug incorrect hints
+## 1. One gaze observation for measurement and decisions
 
-The code paths described here are the ones currently used by the Unity project. File names are included so you can jump straight to the implementation.
+`SharedGazeStream` reads the OpenXR EXT Input System eye pose. Each observation preserves the uncorrected pose, converted world ray, delivery and receipt times, validity, head/tracking-origin poses, trial context and optional HTC per-eye signals. Guidance, readiness, trial intersection timing, compatibility CSV and replay consume this shared observation. No head-direction fallback is substituted for missing eye gaze.
 
-## 1. High-level flow
+The stream records input updates and per-frame heartbeats, including invalid and stale states. `newInputUpdate` means a changed Input System delivery timestamp/device; it does not prove a new physical sensor observation. The HTC queries have a separate receipt time and are not assumed synchronized with the EXT pose. A render rate or polling rate is not a sensor sampling rate. Native 120 Hz acquisition remains unestablished.
 
-The runtime loop is:
+New guidance decisions require a tracked, valid pose, application focus, a known fresh delivery timestamp, and a usable tracking parent. Available HTC data can additionally invalidate the combined observation when both eyes are invalid. The default delivery-age ceiling is 100 ms. `TryGetValid` rechecks freshness at use time, so a previously valid snapshot cannot remain usable indefinitely.
 
-1. The headset provides eye gaze pose data.
-2. The `XRGazeInteractor` uses that pose to raycast into the scene.
-3. Gaze hover events feed telemetry and hints independently of controller selection.
-4. The hint generator chooses an `off-target` or `on-track/very-close` gaze-aware line.
-5. The telemetry logger records gaze pose, hover state, blink state, target metadata, and game state every frame.
+Unity already converts the EXT pose; `GazeCoordinates` applies its tracking-parent transform once. The former late X mutation in `EyeGazeRayVisual` has been removed. Optional local-origin X mirroring is a recorded diagnostic, defaults off, and does not modify preserved raw data. It is not an automatically validated calibration correction.
 
-The important thing to keep in mind is that the line visual is only a visual aid. The underlying gaze interactor and telemetry pipeline can still run even if the ray is hidden.
+**Protocol proposal / pilot settings:** freshness, stability and directional tolerances below need headset validation. They are not validated fixation thresholds or evidence of measurement accuracy.
 
-## 2. Eye gaze pipeline
+## 2. Visuals and right-controller selection
 
-The gaze pipeline is built on the standard Unity/XRI gaze stack plus project-specific logging and hint logic.
+`EyeGazeRayVisual` controls the optional orange gaze line independently of acquisition. Hiding the line does not disable the stream. `GazeHighlightManager` remains a serialized anchor/configuration component; physiological event detection does not depend on its hover events.
 
-Relevant pieces:
+`ControllerRaySelector` highlights the right-controller ray's object intersection blue and gives one short entry pulse. A fresh right-trigger press selects during active search. Looking alone never selects. Held triggers cannot carry selection across pauses, trials or tracking loss. Foreground UI blocks object selection; search objects remain fixed rather than being grabbed.
 
-- `XRGazeInteractor` drives hover detection from gaze pose.
-- `EyeGazeRayVisual` renders the orange line when enabled.
-- `GazeHighlightManager` identifies the gaze anchor; `ControllerRaySelector` handles selection feedback.
-- `GazeDataLogger` records gaze and hover telemetry.
-- `HintGenerator` converts gaze state into spoken feedback.
+`StudyRayControls` provides right-ray Settings, Pause and Repeat guidance controls. Opening Settings pauses active search/readiness, docks the existing wrist menu and hides the checkpoint. Closing Settings returns to Continue. The study disables left-controller, hand-poke and gaze UI activation; passive left-controller telemetry can still be present. Haptics, menu reachability and comfort require physical-device verification.
 
-The project notes in `agents.md` are important here: the HTC Vive Focus Vision gaze tracking is available through OpenXR, but the visual line is not the same thing as the sensor data. Hiding the line does not disable tracking.
+The compatibility `dwell_progress` column remains zero. New summaries identify `controller_ray_trigger_press_v1`. Historical hover/fixation/saccade fields remain interaction proxies, not validated physiological events.
 
-### Why the ray can be off while data is still collected
+## 3. Guidance from horizontal area to vertical alignment
 
-The visual line is controlled separately from the gaze interactor.
+`HintGenerator` uses the shared valid ray and the hidden target's actual position:
 
-```csharp
-// ARFeatureController.cs
-public void ToggleGazeRay(bool enabled)
-{
-    if (m_GazeInteractor == null) return;
+1. Determine the horizontal wall sector independently of gaze height. Looking up or down within that wall does not count as leaving/reentering the area.
+2. Outside the target wall, give left/right guidance. Larger turns use chair-turn language.
+3. Inside the wall, correct horizontal error beyond 5° before giving vertical guidance.
+4. With horizontal alignment, use up/down for elevation error beyond 3°, otherwise an alignment phrase such as “Right there.”
 
-    var lineRenderer = m_GazeInteractor.GetComponent<LineRenderer>();
-    if (lineRenderer != null) lineRenderer.enabled = enabled;
+Near-vertical gaze has an unstable azimuth and is treated as unavailable for area decisions, not as a manufactured exit. Invalid or stale gaze cancels pending guidance and suspends new decisions. Directional candidates must remain stable for 150 ms. Ordinary hints are eligible 1.25 seconds after the preceding request, when speech is available. This is an eligibility interval, not a promise of uninterrupted speech or a fixed acoustic onset interval.
 
-    var lineVisual = m_GazeInteractor.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactors.Visuals.XRInteractorLineVisual>();
-    if (lineVisual != null) lineVisual.enabled = enabled;
-}
-```
+`DirectionalHintPolicy` supplies 44 shared variants across ordinary directions, larger turns, area entry, return, vertical directions and alignment. Both voice conditions use the same wording policy. `RequestRepeat` repeats the current valid direction rather than an obsolete direction or the hidden object identity.
 
-That toggle only changes the renderable ray. The gaze interactor, hover callbacks, and telemetry still work because they are driven by the underlying tracked pose and interaction components, not by the line renderer itself.
+### Area entry, overshoot and interruption
 
-That separation is intentional:
+`GazeZoneEntryGate` debounces horizontal arrival and suppresses repeated area messages during vertical scanning. `GazeReturnCueGate` requires a stable 100 ms visit followed by a 250 ms horizontal exit; return eligibility lasts two seconds, with a six-second cue cooldown. Tracking gaps clear return evidence. These are pilot interaction settings, not blink/fixation definitions.
 
-- you can run the study with a clean visual UI
-- you still collect eye gaze data for analysis
-- the agent can still generate hints from gaze behavior
+Area/return corrections can interrupt ongoing guidance. Pending corrections recheck gaze and active-search relevance before delivery; a queued correction does not consume its cooldown until speech is committed. A stale directional instruction is interrupted after a stable change. Ordinary area entry and overshoot retain separate correction reasons in telemetry.
 
-## 3. Controller highlight and confirmation
+Correct selection produces a chime and varied positive reinforcement in the active voice. Trial recording stays open through this feedback, and transition waits for it. Search completion time ends at selection; feedback time does not extend the performance measure.
 
-**Implemented (September 22):** `ControllerRaySelector` highlights the actual physical-controller ray intersection light blue. A fresh trigger press confirms that object during active search. Gaze hover remains available to telemetry and hints, but never charges a highlight or captures. `GazeHighlightManager` is retained only as the serialized gaze anchor and wall-filter configuration.
+## 4. Recording layers and stable trial identity
 
-Held triggers cannot repeat captures or carry across pauses, rounds or tracking loss. XRI grab selection is filtered out so search objects stay fixed. Foreground UI hits are not search-object selections. Controller physics masks are restricted to searchable layer 8 during octagonal search and restored afterward; near grabbing is disabled during search.
+| Output | Purpose and limitations |
+| --- | --- |
+| `EyeMeasurements/<UTC>_<recording_id>/gaze_observations.jsonl` | Continuous raw/used observations, delivery updates and heartbeats, validity/gaps, independent validation targets and optional HTC signals. Preserve this source for quality analysis. |
+| `capabilities.json`, `end_status.json` | Device/source/clock limitations and clean-close/error receipt. An absent receipt leaves completeness unverified. |
+| `GazeData/<participant>/<run>/gaze_log.csv` | Per-frame compatibility table linked to the raw observation sequence/file. Includes invalid rows; unmeasured gaze/event fields remain blank. It does not establish sensor rate. Preparation uses separate unique directories. |
+| Trial summary, object manifest and trial/performance CSV | Search timing, controller/gaze intersections, outcomes, instructions, schedule provenance and linked subjective measurements. Block ratings repeated in trial exports remain block measurements. |
+| Replay JSONL and motion/event exports | Scene reconstruction, object state, head/controller/gaze samples and event timing. Frame sampling is distinct from continuous raw eye acquisition. |
 
-The old `dwell_progress` CSV column remains zero for schema compatibility. Trial summaries label these runs `selection_method: controller_ray_trigger_press_v1`. Historical hover-derived fixation/saccade labels remain interaction proxies; this selection change does not validate them as physiological eye events. Device verification remains pending.
+The manager's **presented trial** remains stable while success feedback plays, even though its next-objective counter has advanced. Raw gaze, compatibility CSV and replay preserve the completed trial's round and voice across that interval, including the 39→40 block boundary and final trial. Practice is explicitly marked and does not borrow a measured-trial ID. New observations are not retroactive corrections to historical files.
 
-## 4. Hint generation
+Compatibility logging appends when re-enabled; a conflicting existing CSV header fails visibly instead of overwriting data. The continuous eye writer is bounded: overflow/write errors stop recording with an error. Interrupted final JSON records can be recovered as explicitly incomplete prefixes; corrupt middle records, mixed recording IDs and unordered sequences are rejected by analysis.
 
-`HintGenerator` is where the project decides what the voice assistant says during each round.
+Repeat requests and delivered repetitions have separate versioned events. `instruction_count` includes delivered repeats, while `hint_count` excludes them. A missing historical measure remains unknown rather than becoming zero; repeated CSV/replay evidence is not counted twice. See [trial export definitions](../trial-performance-csv.md).
 
-**Implemented:** The agent is always gaze-contingent, in either voice condition. The rotational task uses gaze-relative left/right guidance and a target-area cue. The first directional hint is eligible immediately when search starts, after the target announcement and readiness gate, provided gaze is valid and speech is available. Later directional hints retain a 4-second minimum spacing. Target-area cues retain their 0.1-second gaze-entry debounce.
+## 5. Independent accuracy and eye-event validation
 
-### Gaze-aware mode
+Use **Eye check** during setup or explicit pause. The diagnostic panel shows raw gaze, validity/reason, delivery age, head pose, rates and error to a visible independent dot. It never treats the hidden search target as an accuracy reference. Validation covers low/middle/high elevations, different bearings/distances and a wall seam; separate offset-fit, held-out and drift sets are available.
 
-In gaze-aware rounds, the system answers:
+`analysis/eye_quality.py` reports delivery intervals, valid coverage/gaps, per-target angular error and dispersion. It can evaluate a proposed angular offset on a disjoint held-out set without applying it live. Candidate fixation/saccade/blink detection is explicitly unvalidated; tracking loss alone never becomes a blink, and events do not bridge trial/target/gap boundaries. Pupil availability is recorded without inventing a workload score.
 
-> Is the user looking near enough to the target area, and are they on the correct bookcase side?
+Follow the [measurement and validation procedure](../gaze-measurement-validation.md) for target counts, commands, annotation comparisons and hardware gates. Quality must be established before interpreting eye events or comparing exploratory eye measures with NASA-TLX. Repeated block scores are not independent trial outcomes.
 
-If yes, the assistant uses on-track/very-close phrasing. If no, it uses off-target phrasing.
+## 6. Voice isolation and delivery evidence
 
-Important implementation detail:
+Self-similar speech uses its clone provider/cache only. Missing enrollment, keys or synthesis success never silently falls back to a neutral voice. Neutral caches include the actual provider voice ID. Setup now offers six voices per gender presentation; [voice choices](../voice-choices.md) documents the catalog, persistence and remaining rating decisions.
 
-- opposite-bookcase gaze is forced to `off-target`, even if other signals are noisy
+Audio request/ready/start/end/failure events and clip manifests provide software delivery evidence, not measured acoustic onset. Both audio checks use the same Accept Audio instruction in their respective voices. Confirmation requires successful completed playback. The candidate inventory snapshot records availability, not proof that a participant auditioned or rated every candidate.
 
-```csharp
-// HintGenerator.cs
-const float k_VeryCloseDistanceMeters = 0.16f;
-const float k_NearTargetDistanceMeters = 0.30f;
-const float k_NearTargetAngleDeg = 14f;
-const float k_NearTargetRayDistanceMeters = 0.18f;
-const float k_HotMemoryWindow = 5.5f;
-```
+## 7. Debugging and verification
 
-Core classifier shape:
+- Check observation validity, delivery age and tracking-origin pose before interpreting a wrong direction. Separate a missing signal from an incorrect coordinate conversion.
+- Inspect target wall, actual target position and gaze azimuth/elevation. A target's exact bearing can differ from its balanced wall-center theta.
+- Compare requested, started and interrupted audio events. A requested hint is not necessarily delivered speech.
+- Verify presented-trial ID/voice during capture, success feedback and the next transition.
+- Check right-trigger release/re-press, foreground UI blocking and pause state for selection failures.
+- Run `StudyVerificationChecks.Run` for desktop integration checks, plus the focused C# and Python suites. They do not verify headset accuracy, rate, acoustic levels, haptics or fit/recenter behavior.
 
-```csharp
-if (hasLooked && IsWrongBookcase(targetInfo, lookedInfo))
-    return Pick(k_GA_Cold);
+Main source files: `SharedGazeStream`, `GazeCoordinates`, `GazeQualityPolicy`, `GazeDiagnosticView`, `HintGenerator`, `DirectionalHintPolicy`, `GazeZoneEntryGate`, `GazeReturnCueGate`, `ControllerRaySelector`, `StudyRayControls`, `GazeDataLogger`, `TrialDataLogger`, `TrialReplayRecorder` and `VoiceSynthesizer`.
 
-bool veryCloseNow = IsVeryCloseEvidence(targetInfo, lookedInfo, hasLooked);
-bool nearNow = HasNearEvidence(targetInfo, lookedInfo, hasLooked);
-if (veryCloseNow || nearNow)
-    return Pick(veryCloseNow ? k_GA_Hot_VeryClose : k_GA_Hot_Track);
-```
+## Guidance decision audit (implemented October 1)
 
-The aware side now uses personable phrases such as:
+`guidance-decision-v1` is recorded in the replay header and trial summary. A `guidance_decision` event contains a frozen snapshot: unique decision ID, stage, reason, semantic category, exact phrase, policy version, raw-eye recording ID/observation sequence, original input-delivery and receipt times, decision time, delivery age/availability, trial identity and current gating state. `uncertaintyStatus=not_estimated_pilot_thresholds` is deliberate; thresholds are not validated uncertainty estimates.
 
-- off-target: `"You're way off right now."`, `"Look in a different area."`
-- on-track: `"You're on the right track."`
-- very-close: `"You're very close."`, `"Stay with this area."`
+Ordinary and repeated guidance records its request before synthesis. Area/return corrections record the original request and a separate committed snapshot after relevance is checked again; both use the same decision ID. Abandoned fades emit `guidance_decision_aborted`. Invalid gaze logs a suspension when its reason changes, rather than flooding a row every frame. The repeat request counter remains separate from delivered-repeat counts.
 
-## 5. Proximity logic in detail
+Audio request, playback start/end and cancellation carry `decision_id` for the corresponding guidance request. The structured replay also exposes `guidanceDecisionId` and the nested `guidanceDecision` snapshot. Trial event CSV stores the same snapshot JSON in its escaped detail cell. Joins use eye recording ID + observation sequence, not a nearby rendered frame. `decisionTime`, gaze receipt/input times use Unity realtime seconds; replay `time` is relative to its fixed recording start. Audio start remains a **software playback call**, not verified acoustic onset or sensor-to-audio latency. Old recordings have no inferred decision IDs.
 
-This is the part that most often causes confusion when debugging.
-
-### What `on-track` means
-
-`on-track` means the user appears to be moving toward the right target area but is not in the tightest proximity bucket.
-
-### What `very-close` means
-
-`very-close` means the user is tightly aligned with the target area and the assistant can use stronger keep-going language.
-
-### What `off-target` means
-
-`off-target` means the current evidence does not support near-target guidance.
-If the system resolves gaze to the opposite bookcase column, this is forced off-target.
-
-### Mitigations in the current code
-
-- hovered-object evidence is preferred before physics ray fallback
-- nearest-to-ray fallback exists for near-miss collider cases
-- recent near-target evidence is remembered briefly (`k_HotMemoryWindow`) to reduce jittery flips
-- opposite-bookcase mismatch forces off-target response
-
-## 6. Logging outputs
-
-`GazeDataLogger` writes a per-frame CSV file with gaze and game context. This is the main source of telemetry for later analysis.
-
-```csharp
-// GazeDataLogger.cs
-if (!m_EyeDeviceSearched)
-{
-    var devices = new List<InputDevice>();
-    InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.EyeTracking, devices);
-    if (devices.Count > 0)
-        m_EyeDevice = devices[0];
-    m_EyeDeviceSearched = true;
-}
-
-if (m_EyeDevice.isValid && m_EyeDevice.TryGetFeatureValue(CommonUsages.eyesData, out Eyes eyes))
-{
-    // log gaze pose, fixation, blink/open-state, and hover context
-}
-```
-
-### What gets logged
-
-The current CSV includes, among other fields:
-
-- timestamp and frame index
-- gaze origin and direction
-- gaze rotation
-- left and right eye data
-- fixation point
-- hovered object name, shape, color, and shelf level
-- whether the hovered object matches the active target
-- legacy dwell progress (always zero)
-- current objective shape, color, and round index
-- game state
-- whether the gaze ray visual is visible
-- blink state and blink count
-
-### Where it goes
-
-**Implemented:** measured gaze rows are written to `gaze_log.csv` in the participant/run directory under `Application.persistentDataPath/GazeData`. Preparation and practice use unique preparation directories, so a later session cannot overwrite their rows.
-
-### Why this matters
-
-This logger lets you separate three different questions:
-
-1. what the participant’s eyes were doing
-2. what object the interaction system thought was hovered
-3. what hint the assistant chose to speak
-
-That separation is useful when debugging incorrect feedback, because the visual ray can be hidden while the gaze data is still present in the log.
-
-## 7. A few implementation details worth remembering
-
-### The gaze ray visual is not the sensor
-
-If you disable the line visual, you only hide the line. You do not disable:
-
-- eye tracking
-- hover callbacks
-- controller confirmation
-- hint generation
-- telemetry logging
-
-That is why the study can run with the ray turned off for UX reasons but still keep the data stream alive.
-
-### Transition periods are intentionally quieter
-
-During transitions, the game hides the current goal and uses a blank pause before spawning the next set of objects. This applies between rounds and at the start of round 1. That avoids priming the participant with timing cues.
-
-### All rounds are gaze-contingent
-
-**Implemented:** New run folders identify `gaze_aware` and the selected voice. Trial summaries record `always_gaze_aware`, two voice blocks and seven rounds per block. Legacy alternating data remains historical; the loader continues to interpret its original labels.
-
-## 8. Debugging incorrect hints
-
-Use this checklist when the assistant says the wrong thing.
-
-- Confirm the run condition is `gaze_aware` and the expected voice is selected.
-- Check whether the gaze ray visual is merely hidden, not disabled at the tracking level.
-- Inspect the CSV log to see what object was actually hovered.
-- Verify whether the hovered object matches the active target shape, color, and shelf slot.
-- Check whether the user was near the target but not exactly on it; proximity fallbacks may matter.
-- Look for recent wrong-capture events, which can bias the next response toward off-target language.
-- Check the target-proximity evidence used to choose the hint.
-- Make sure the target object and the hovered object both have the expected spawn metadata.
-- Verify that the controller trigger is released before a fresh confirmation press.
-- If hints repeat too often, check the hint cadence and proximity classification.
-
-## 9. Code pointers
-
-These are the main files to inspect together when debugging the gaze agent:
-
-- [`Assets/HintGenerator.cs`](../../Assets/HintGenerator.cs)
-- [`Assets/GazeHighlightManager.cs`](../../Assets/GazeHighlightManager.cs)
-- [`Assets/GazeDataLogger.cs`](../../Assets/GazeDataLogger.cs)
-- [`Assets/MRTemplateAssets/Scripts/ARFeatureController.cs`](../../Assets/MRTemplateAssets/Scripts/ARFeatureController.cs)
-
-## 10. Short summary
-
-If you only remember one thing:
-
-- `ARFeatureController` controls the visual ray
-- `ControllerRaySelector` handles controller highlight and trigger capture
-- `HintGenerator` turns gaze state into gaze-responsive speech
-- `GazeDataLogger` records the data needed to audit what happened
-
-That separation is what makes the system debuggable. When hints are wrong, always ask whether the issue is in the gaze signal, the hover/capture layer, or the language choice layer.
-
-### Voice-condition isolation
-
-**Implemented:** self-similar runs route only to their clone cache/provider. Missing clone, pending enrollment, missing provider/key or synthesis failure never trigger neutral TTS. Neutral male/female caches include the exact voice ID. Unowned device-wide saved clone IDs are ignored; startup requires fresh self-similar enrollment. Enrollment failure holds task start and offers Retry or explicit neutral selection. Run `scripts/test-voice-isolation.sh` for deterministic failure/cache checks; this does not validate headset audio quality or provider availability.
-
-**Implemented — schema 2:** the trial logger begins timing at `OnSearchStarted`, uses the manager's pause-aware clock, and records each trial's assigned voice/outcome. `object_manifest.csv` maps stable trial/object IDs to world positions; gaze rows carry the same IDs and a practice flag. Audio request/ready/start/end/failure events identify manifest clips. NASA-TLX is written per block into the run folder. See [voice-study QA](../voice-study-qa.md) for field validation and the difference between software playback timestamps and acoustic onset.
-
-
-### Guidance-area entry and overshoot (implemented, 2026-09-27)
-
-`HintGenerator` now uses `FindObjectGameManager.IsGazeInSearchSector`: a horizontal ray/wall-sector test independent of gaze height. Looking upward/downward on the same wall does not rearm the area cue. Near-vertical gaze abstains rather than manufacturing an exit. Object raycasts and object-level telemetry retain their existing behavior.
-
-`GazeReturnCueGate` qualifies a return cue after a 100 ms stable visit and 250 ms stable horizontal exit; eligibility expires after two seconds. It clears visit history on tracking loss and allows one cue per visit with a six-second cooldown. These beta tuning values are not validated fixation measures. Neutral wording is “Go back. That was the correct area.”; self-similar wording is “I need to go back. That was the correct area.” Both are preloaded.
-
-Correction fades recheck relevance and consume the cue cooldown only when the replacement speech is committed, not when a fade is queued. Stable arrival cancels stale left/right speech even while the area cue is cooling down. Existing `audio_area_correction` telemetry distinguishes a return using `gaze_overshoot_return`; ordinary area entry retains `gaze_target_plane`.
-
-The two audio-level checks use the same participant instruction from `VoicePromptText.AudioLevelCheck`: hover the controller over Accept Audio and press the trigger to confirm an acceptable audio level. Each uses its own voice condition, and confirmation remains gated on completed successful playback.
+**Implemented — October 1 offline audit:** `analysis/guidance_audit.py` joins decision IDs to exact raw-eye recording/sequence pairs and software audio events. It exports per-decision outcomes and inconsistency rows, preserving unavailable/legacy/incomplete states. See `analysis/README.md` for the command, clock definitions and limits. This enables morning data-integrity checks; it does not validate the physical gaze or acoustic response.

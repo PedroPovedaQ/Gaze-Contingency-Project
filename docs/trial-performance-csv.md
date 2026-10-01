@@ -61,3 +61,9 @@ python3 -m unittest discover -s analysis -p 'test_*csv.py' -v
 ```
 
 Coverage includes one-row trial files, raw/combined equivalence, tracked contacts, selection snapshots, active clocks, quaternion wraparound, pause/gap handling, playback-versus-prefetch counting, CSV/replay isolation, wrong-run/voice/duplicate survey rejection, practice separation, truncation/corruption, deterministic re-export and overwrite refusal.
+
+## September 30 provenance additions (implemented locally)
+
+`repeat_request_count` records requests, including requests made without usable gaze; delivered repeat count records actual audio starts. `instruction_count` includes delivered repeats, whereas `hint_count` excludes them. `repeat_event_version` establishes whether zero is known; historical absence stays blank. CSV and replay are alternative evidence sources, not additive counts. `interaction_policy` records right-controller-only input.
+
+`target_identity_policy` and `height_assignment_policy` accompany `schedule_version`. The 80-trial version balances absolute wall angles and identity counts between voices; it explicitly does not yet impose signed-height quotas. Raw files and old versions remain unchanged.

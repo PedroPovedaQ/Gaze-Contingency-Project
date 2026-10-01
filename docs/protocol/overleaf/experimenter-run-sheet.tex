@@ -61,18 +61,18 @@
 \field{Preferred voice ID} & \field{Survey version} \\
 \end{tabularx}
 \vspace{8pt}
-\action{RESEARCHER ONLY}{Two counterbalanced voice blocks: one uses the participant-preferred voice and the other uses the self-similar voice. Each participant experiences both voices; use the saved assigned order. A block comprises multiple trials, and each trial is one target-object search. Both will use gaze-contingent directional guidance. Before each search, the participant will charge a world-fixed readiness cross on the previous target wall; the first practice will use the front wall. Say ``first block'' and ``second block''; do not suggest that either voice should improve performance.}
+\action{RESEARCHER ONLY}{Two counterbalanced voice blocks: one uses the participant-preferred voice and the other uses the self-similar voice. Each participant experiences both voices; use the saved assigned order. Each block contains 40 measured trials (80 total), preceded by two separate practice trials, one per voice. Each trial is one search for a target whose identity is known only to the agent. Both voices will use the same participant-directed guidance wording and right-controller ray/trigger selection. This is implemented locally; headset acceptance and study approval remain separate checks. Before each search, the participant will charge a world-fixed readiness cross on the previous target wall; the first practice will use the front wall. Say ``first block'' and ``second block''; do not suggest that either voice should improve performance.}
 \step{Before participant arrives}
 {\color{ActionInk}\itshape
 \begin{itemize}
-\item {Sanitize and test the Head Mounted Display (HMD) and controllers.}
+\item {Sanitize and test the Head Mounted Display (HMD) and right controller. The left controller will not be required; verify setup, menus, settings, pause and selection with it off.}
 \item {Open Unity and Qualtrics.}
 \item {Enter coded ID and assigned voice-block order.}
 \item {Prepare consent, baseline survey, both block surveys, final interview and session/event record. Use one defined TLX collection route and avoid duplicate administration.}
 \end{itemize}
 }
 \step{1 Welcome and consent}
-\say{SAY}{``Thank you for coming. Today you will be performing a search task in mixed reality. In this task, you will stay seated and turn to find virtual objects by their color and shape. A voice assistant will provide hints. You will be performing this task for a number of trials over two task blocks, each using a different assistant voice. You may pause, take a break or stop at any time without penalty.''}
+\say{SAY}{``Thank you for coming. Today you will be performing a search task in mixed reality. In this task, you will stay seated and use the chair to turn toward virtual objects. You will not be told which object to find ahead of each trial. A voice assistant will guide you toward it; you will use that guidance to choose an object. You will be performing this task for a number of trials over two task blocks, each using a different assistant voice. You may pause, take a break or stop at any time without penalty.''}
 \say{SAY}{``We will ask you to record a short voice sample to create a synthetic version of your voice. We will also record eye-gaze and task data under a study code. Please read the consent form for what will be collected, where it will be processed and how it will be handled.''}
 
 \action{ACTION}{Obtain consent.}
@@ -84,26 +84,28 @@
 \say{SURVEY ITEM / AGENT GENDER PREFERENCE}{``What gender presentation would you prefer for the agent's voice?''}
 \say{SURVEY ITEM / AGENT ACCENT PREFERENCE}{``What accent would you prefer the agent's voice to have?''}
 
-\action{ACTION / CANDIDATE PREPARATION}{Save the requested preferences and configure the selected voice for the participant-preferred block. Implemented pilot setup: first select the agent's gender presentation, then select one of the two voices offered for that gender. Let the participant hear the sample, switch voices if desired, and confirm the choice before recording. The current choices are Eric or Roger (male) and Janet or Sarah (female); these are American-accent candidates. Record a requested accent separately if it is not offered.}
+\action{ACTION / CANDIDATE PREPARATION}{Save the requested preferences and configure the selected voice for the participant-preferred block. Implemented pilot setup: first select the agent's gender presentation, then select one of the six voices offered for that gender. Let the participant hear the sample, switch voices if desired, and confirm the choice before recording. The current choices are Eric, Roger, Chris, Will, Brian, or Liam (male) and Janet, Sarah, Jessica, Matilda, Bella, or Laura (female); these are American-accent candidates. Record a requested accent separately if it is not offered.}
 \say{SAY}{``We will now record the short voice sample described in the consent form. After the tone, please read the displayed passage in your usual speaking voice.''}
 
 \say{ASK / AUDIO CHECK}{``Can you hear the voice clearly and at a comfortable volume?''}
 
 \step{3 Fit and calibrate the headset}
 \say{SAY}{``Remain seated in this chair. You may turn the chair, your body and your head to look around, but do not stand or walk. Tell me immediately if you feel dizzy, nauseated, strained, uncomfortable or unsteady.''}
-\action{ACTION}{Fit equipment and verify tracking, perform the automated eye-calibration protocol.}
+\action{ACTION}{Fit equipment and verify tracking; perform the headset eye-calibration protocol. Record any fit adjustment or recalibration.}
+
+\action{PROTOCOL PROPOSAL / PILOT VALIDATION}{Before measured trials, use the researcher diagnostic view to check independent low, middle and high targets, wall boundaries, distances and head orientations. Keep offset-fit targets separate from held-out validation; do not apply an unvalidated correction. Check drift between blocks and after fit changes. Log missing or stale gaze. A polling rate or advertised 120 Hz specification will not establish the delivered native acquisition rate. Freeze acceptance criteria after hardware validation.}
 
 \say{ASK}{``Can you see clearly? Does the equipment feel comfortable? Do you feel well enough to continue?''}
 \step{4. Pre-Block Activity}
-\say{SAY}{``First, I will explain the task. In each trial, you will search for one object. The agent will tell you which object to find, for example, `Locate the blue sphere.' You will point the controller ray at the matching object to highlight it, then press the trigger to select it. Selecting the correct object will complete the trial; if you select an incorrect object, you will hear an error ding- continue searching for the same target. You will then continue over several more rounds with the agent asking you locate one object in each round.''}
+\say{SAY}{``First, I will explain the task. In each trial, you will search for one object. The agent will know the target, but it will not tell you its color or shape. You will follow its directions toward the correct area, then make smaller left/right and up/down adjustments. You will point the right controller ray at an object to highlight it, then press the trigger to select it. A correct selection will complete the trial with a chime and a brief spoken response. After an incorrect selection, you will continue following the guidance toward the same target. You will repeat this task over the trials in each block.''}
 \say{SAY}{``If you would like a rest, let me know. We will normally take it between trials, before the next search begins. You can also ask us to pause or stop immediately at any time.''}
 \action{BREAKS AND TIMING}{Requested rest breaks normally occur after a trial ends and before the next search begins. Do not start the next search until the participant is ready. Breaks and questionnaires are outside active-search time. If a participant needs to pause during a trial, pause immediately, suspend active-search timing and record the interruption and its duration separately. Retain the interrupted-trial record; do not silently replace it or count break time as search time.}
 
 \clearpage
 
 \step{5. Familiarization}
-\action{ACTION}{At the 360 search start checkpoint, seat the participant at the intended center facing the chosen room-front reference. Point the controller ray at \emph{Center and begin}, then pull the trigger. Record the reference; do not recenter to wherever the participant happens to face later.}
-\say{SAY}{``Objects will appear around you, and you will be able to turn in your chair through all 360 degrees. Find the described object that the agent asks you to find. You will turn while staying seated, point the controller ray at the matching object to highlight it, then press the trigger to select it. ''}
+\action{ACTION}{At the 360 search start checkpoint, seat the participant at the intended center facing the chosen room-front reference. Point the right controller ray at \emph{Center and begin}, then pull the trigger. Record the reference; do not recenter to wherever the participant happens to face later.}
+\say{SAY}{``Objects will appear around you, and you will be able to turn in your chair through all 360 degrees. You will rely on the agent to guide you toward an object without naming it. You will use the chair to turn while staying seated, point the right controller ray at an object to highlight it, then press the trigger to select it. ''}
 
 \begin{center}
 \begin{tikzpicture}[scale=0.8]
@@ -125,16 +127,17 @@
 {\small\color{Gray}Schematic, not to scale. Illustrates seated rotation only.}
 \end{center}
 \say{SAY}{``The next trials will be practice trials to help you become familiar with the task.''}
-\action{ACTION}{Allow the user to complete the object-selection practice trials.}
+\action{ACTION}{Allow the participant to complete two separate practice trials, one with each voice. Exclude these from the 80 measured trials. Verify ray highlighting, haptic feedback, trigger selection and access to pause before continuing.}
 \say{ASK}{``Do you have any questions about the controls or task?''}
 \say{SAY}{``When you are ready, we will begin the first task block.''}
 \clearpage
 \step{6 First task block}
-\action{CURRENT SCHEDULE / PROTOCOL PROPOSAL}{10 experimental trials in this voice block; practice trials are separate. Each absolute target-wall angle ($|\theta| = 0^\circ, 45^\circ, 90^\circ, 135^\circ, 180^\circ$) will occur twice. Angles will be measured from the readiness cross on the previous target wall to the next target wall center. Verify the installed build schedule before participant use.}
-\action{IMPLEMENTED READINESS GATE / PILOT VERIFICATION}{Before each trial, the participant will look at the entire readiness cross until its left-to-right fill completes. The cross will stay at the center of the previous target wall. One second of continuous valid gaze within its padded area and completion of the target announcement will both be required. Looking away, tracking loss or pausing will reset the fill. Search timing will begin only when the objects appear. Confirm headset usability before participant use.}
-\action{ANGLE ASSIGNMENT AND RECORDING}{Trial order and object heights will be randomized using recorded seeds. Within each block, trials 1--5 and 6--10 will each include one of every absolute wall-angle category, in randomized order. The second block will mirror left/right wall assignments and independently shuffle trial order while preserving the same absolute-angle counts. For example, a start wall at $315^\circ$ and target wall at $0^\circ$ will give signed $\theta=+45^\circ$ and $|\theta|=45^\circ$. Confirm that the trial schedule and actual object positions are saved; exact object bearings and measured head rotation are separate from wall-angle categories.}
+\action{IMPLEMENTED LOCALLY / HEADSET VERIFICATION PENDING}{40 experimental trials in this voice block; practice trials are separate. Each absolute target-wall angle ($|\theta| = 0^\circ, 45^\circ, 90^\circ, 135^\circ, 180^\circ$) will occur eight times. Angles will be measured from the readiness cross on the previous target wall to the next target wall center. Verify the installed build schedule before participant use.}
+\action{IMPLEMENTED READINESS GATE / PILOT VERIFICATION}{Before each trial, the participant will look at the entire readiness cross until its left-to-right fill completes. The cross will stay at the center of the previous target wall. One second of continuous valid gaze within its padded area and completion of the non-identifying trial announcement will both be required. Looking away, tracking loss or pausing will reset the fill. Search timing will begin only when the objects appear. Confirm headset usability before participant use.}
+\action{ANGLE ASSIGNMENT AND RECORDING}{Trial order and object heights will be randomized using recorded seeds. Within each block, each of the eight consecutive groups of five trials will include one of every absolute wall-angle category, in randomized order. The second block will mirror left/right wall assignments and independently shuffle trial order while preserving the same absolute-angle counts. For example, a start wall at $315^\circ$ and target wall at $0^\circ$ will give signed $\theta=+45^\circ$ and $|\theta|=45^\circ$. Confirm that the trial schedule and actual object positions are saved; exact object bearings and measured head rotation are separate from wall-angle categories.}
+\action{OPEN DECISION / VERTICAL BALANCE}{Current object heights are randomized relative to the floor. Equal above/below target-height quotas are not implemented; the reference height, deadband and magnitude allocation remain unresolved. Record actual object geometry and height deltas; do not describe the current schedule as vertically balanced.}
 \action{RESEARCHER SETTINGS}{Confirm the saved first voice and planned trial schedule. Keep object layout, selection method, guidance policy and the finalized prompt wording constant across voices.}
-\say{SAY}{``We will now begin the first task block. Find each target as quickly and accurately as you comfortably can. Stay seated and use the same controller ray and trigger selection you practiced. Tell me if you need to pause.''}
+\say{SAY}{``We will now begin the first task block. Find each target as quickly and accurately as you comfortably can. Follow the agent, stay seated and use the same right-controller ray and trigger selection you practiced. Tell me if you need to pause.''}
 \action{ACTION}{Start block; monitor safety.}
 \say{AT COMPLETION SAY}{``That task block is complete. Please stop and lower your hands comfortably.''}
 \say{SAY}{``The next questions will ask about your workload, your experience of the activity and the agent. Please answer based on the block you just finished.''}
@@ -142,7 +145,7 @@
 \say{SAY}{``You may take a short break of up to 5 minutes. Tell me when you are ready to continue.''}
 \say{BEFORE CONTINUING ASK}{``Do you feel comfortable and well enough to continue?''}
 \step{7 Second task block}
-\action{CURRENT SCHEDULE / PROTOCOL PROPOSAL}{10 experimental trials using the other assigned voice, with two trials at each absolute target-wall angle, for 20 experimental trials across both blocks. Retain incomplete or interrupted trials with their outcomes; do not add replacement trials merely to reach 10 valid attempts.}
+\action{IMPLEMENTED LOCALLY / HEADSET VERIFICATION PENDING}{40 experimental trials using the other assigned voice, with eight trials at each absolute target-wall angle, for 80 experimental trials across both blocks. Retain incomplete or interrupted trials with their outcomes; do not add replacement trials merely to reach 40 valid attempts.}
 \say{SAY}{``We will now begin the second task block. This block will use the other assistant voice. The task and selection method will remain the same. Find each target as quickly and accurately as you comfortably can, and tell me if you need to pause.''}
 \action{ACTION}{Start block; monitor safety.}
 \say{AT COMPLETION SAY}{``The search task is complete. Please stop turning. We will finish the questions about this block, then I will help you remove the headset.''}
@@ -167,10 +170,11 @@
 {\color{ActionInk}\itshape
 \begin{itemize}
 \item {Confirm both block surveys and final interview/symptom records, or record why incomplete. }
-\item {Match participant, run, block and voice identifiers.}
+\item {Match participant, run, block, trial and voice identifiers across the trial-performance/subjective CSV, motion/reconstruction data, raw gaze and replay records. Verify the saved schedule and outcomes; document missing records and survey values without inventing replacements.}
 \item {Secure data and sanitize equipment.}
 \end{itemize}
 }
 \step{Appendix Current recording passage}
-\meeting{CURRENT RECORDING PASSAGE}{``Locate the red sphere. Look toward the upper shelf. Move your gaze slowly to the right. Check the blue cube near the center. Compare each object's color and shape. Scan the lower row from left to right. Look beside the purple cylinder. Point the controller ray at the target and check its highlight. Press the trigger to select the matching object. Take a short pause. Get ready for the next trial.''}
+\action{RESEARCHER ONLY}{This is voice-enrollment reading material, not a trial instruction. Its example object names must not be used to disclose measured-trial targets. Keep the natural speaking-voice instruction in Section 2.}
+\meeting{CURRENT RECORDING PASSAGE}{``Locate the red sphere. Look toward the upper shelf. Move your gaze slowly to the right. Check the blue cube near the center. Compare each object's color and shape. Scan the lower row from left to right. Look beside the purple cylinder. Point the controller ray at the target and check its highlight. Press the trigger to select the matching object. Take a short pause. Get ready for the next round.''}
 \end{document}

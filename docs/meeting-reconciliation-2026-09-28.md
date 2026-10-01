@@ -1,5 +1,7 @@
 # Meeting reconciliation — received September 28, 2026
 
+**September 30 update:** [New meeting decisions](meeting-reconciliation-2026-09-30.md) supersede the loading spelling (`Loading...`), first-person clone language (shared participant-directed imperatives), and catalog target (6–8 voices per gender). The 40+40 schedule, hidden target and separate trial/motion data remain current.
+
 **Source:** researcher-supplied whiteboard photograph and typed meeting notes in this chat. Meeting date itself is unconfirmed. **Status: current decisions / protocol proposals and implementation backlog**, not a claim of new runtime behavior, validated instruments, completed power analysis, or institutional approval.
 
 This record supersedes conflicting older trial-count, warmer/colder-only, deferred-guidance and mega-CSV-only requirements. Two counterbalanced voice blocks remain participant-preferred versus self-similar; the photograph's “generic” label does not silently change the comparison. Preserve actual voice IDs and historical condition labels.

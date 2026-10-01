@@ -1,6 +1,6 @@
 # Study hub
 
-Updated **September 22, 2026**. Start here for the current study plan, questionnaires and research sources. [Latest meeting reconciliation: progress, owners and next steps](meeting-reconciliation-2026-09-22.md).
+Updated **September 30, 2026**. Start with the [latest meeting decisions and task map](meeting-reconciliation-2026-09-30.md) and [September 28 data/guidance requirements](meeting-reconciliation-2026-09-28.md). Older implementation snapshots below are dated evidence, not current runtime verification.
 
 **Current status:** working beta; protocol and survey forms are being finalized. IRB not yet submitted, per the researcher. This page separates current planning from implemented behavior and older documents.
 
@@ -17,26 +17,19 @@ Updated **September 22, 2026**. Start here for the current study plan, questionn
 
 ## Current protocol at a glance
 
-**Protocol proposal — current researcher direction:** seat the participant at the center of the search field and have them rotate to find objects. Compare the participant's explicitly **preferred voice** with their **self-similar voice**, in two counterbalanced blocks. Both voices provide gaze-contingent warmer/colder guidance. Gaze is measured independently; **controller ray + trigger selects**. Voice preparation uses cloud services. This supersedes arbitrary generic-voice and gaze-dwell requirements, but does not change the beta by itself.
+**Protocol proposal — current researcher direction:** two counterbalanced preferred/self-similar voice blocks, **40 measured trials each** plus separate practice. The agent knows the target; the participant discovers it through horizontal guidance to the correct wall, then within-wall up/down guidance, and selects with the **right controller ray + trigger**. Target identity stays out of participant speech/UI.
 
-**Protocol proposal — session flow:**
+Both voices will use shared participant-directed commands (“turn left,” “look slightly up”), short conversational variants and less silent contextual assistance. Setup will offer **6–8 candidates per chosen gender** and show `Loading...` during normal processing. Correct selection will receive a chime and varied reinforcement from the active voice. Extra cloned-voice pitch/personality remains an **Open decision** to pilot, with voice-identity/style confounds documented.
 
-1. Consent, background questions and baseline symptom check.
-2. Early voice sample/cloning and curated preferred-voice previews, every candidate's rating/rank and saved exact voice identity; #24 defines necessary exposure.
-3. Headset fitting, built-in eye calibration, readability/custom validation and fixed-front reference; researcher delivers task instructions.
-4. Short practice for search, controller selection, target repetition and tracking. Two practice trials are provisional; voice exposure and readiness criterion remain open.
-5. First voice block. Each trial: **return to fixed front → hear target → reveal objects → rotate/search with warmer/colder hints → controller ray/trigger selects target**. Provisional schedule: 30 trials per voice, 60 measured plus two practice.
-6. External block-specific questionnaires and break up to five minutes. Proposed battery: NASA-TLX, IMI, selected Guo agent-perception measures, separate voice/accent similarity and liking ratings, and technical checks. Final items/order and one TLX collection route remain open.
-7. Re-don headset, revalidate tracking and alignment to the same front, then complete the second voice block and its questionnaires.
-8. Post-exposure symptoms, voice preference, final interview and debrief. Verify files and survey joins.
+**Protocol proposal — session flow:** consent/background and early natural-voice sample; preferred-voice previews and selection; headset fitting/calibration/validation and task instructions; separate practice; first 40-trial voice block; block questionnaires and breaks outside active trial timing; tracking/alignment revalidation; second voice block and questionnaires; final interview/debrief and file checks. Survey battery, scoring and validation thresholds remain to finalize.
 
-**Implemented on audited v2 (`6457c1f`):** the beta has eight planes at 45-degree intervals, seven objects per plane (56 total), two practice trials and 14 measured trials in two neutral/self-similar voice blocks. Selection remains gaze dwell; the comparator is a male/female neutral profile. Eight starter clips load before remaining audio prepares in the background. The shared script modes are merged.
+**Data contract:** one performance/subjective CSV per trial plus separate motion/reconstruction data, joined by stable IDs/timestamps. Preserve raw events, objects and audio/video references. Block ratings repeated in trial rows retain their original scope.
 
-**Implementation gaps:** preferred-voice evaluations (#33), controller selection/repeat (#34), fixed-front reset and 30+30 schedule (#10/#13), external survey gates, calibration metadata, canonical trial rows and completion validation. The final shared [voice script mode](voice-script-pilot.md) still needs selection. Replay work is on a separate local branch, not on audited `v2`. See the [evidence table](meeting-reconciliation-2026-09-22.md#progress-actually-on-v2).
+**Implemented evidence, dated:** [Voice choices](voice-choices.md) records the September 28 five-per-gender local implementation and pending headset checks; [trial CSV export](trial-performance-csv.md) describes the existing post-session exporter. Meeting decisions are not proof that all runtime behavior is implemented. Earlier September 22 v2/dwell/14-round and 30+30 planning descriptions are superseded for the current study design.
 
-**Open decisions:** candidate matching/scales/ranking/exposure; trigger press versus hold and repeat mapping; first-gaze rule and calibration validation; practice policy; 30-per-voice angle allocation; shared wording; survey selection; primary outcome and sample justification; timeout and actual pilot date. See the [decision register](meeting-reconciliation-2026-09-22.md#open-decision-register).
+**Open decisions:** final 6–8 catalog identities/count, cadence and spatial thresholds, optional prosody/treatment comparability, primary outcomes and power/sensitivity, final survey items/scoring, calibration acceptance and hardware verification. Existing tasks and ownership are in the [September 30 task map](meeting-reconciliation-2026-09-30.md#existing-task-ownership).
 
-[Current decision detail](thesis-study-alignment.md) is the best companion to this summary. The [long procedure](experiment-procedure.md) and [IRB protocol source](irb/source/protocol.md) still contain historical sections and require reconciliation. They are not frozen operator scripts.
+The [long procedure](experiment-procedure.md), [run sheet](protocol/overleaf/experimenter-run-sheet.tex) and [IRB source](irb/source/protocol.md) require reconciliation under #27/#18; these notes do not claim a synchronized or approved IRB packet.
 
 ## Survey shelf
 
