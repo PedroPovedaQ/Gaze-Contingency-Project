@@ -9,19 +9,25 @@ public sealed class TrialReplayState
     public TrialReplayRecord Selection { get; private set; }
     public TrialReplayRecord Audio { get; private set; }
     public TrialReplayRecord Readiness { get; private set; }
+    public TrialReplayRecord PoseBoundary { get; private set; }
+    // A display freshness rule, not a fixation threshold or acquisition-rate claim.
+    public const double DefaultMaxSampleAgeSeconds = 0.1;
     public bool Visible { get; private set; }
     public bool Searching { get; private set; }
     public readonly Dictionary<string, TrialReplayTransform> Transforms = new Dictionary<string, TrialReplayTransform>();
 
     public void Reset()
     {
-        Trial = Sample = Selection = Audio = Readiness = null;
+        Trial = Sample = Selection = Audio = Readiness = PoseBoundary = null;
         Visible = Searching = false;
         Transforms.Clear();
     }
 
     public void Apply(TrialReplayRecord r)
     {
+        if (r.kind == "trial" || r.kind == "transition" || r.kind == "search_start" ||
+            r.kind == "search_resumed" || r.kind == "search_paused" || r.kind == "application_paused" ||
+            r.kind == "stop" || r.kind == "end") PoseBoundary = r;
         if (r.kind == "transition" || r.kind == "end" || r.kind == "stop") Readiness = null;
         if (r.kind == "sample" || r.kind.StartsWith("readiness_", StringComparison.Ordinal)) Readiness = r;
         if (r.kind == "trial")
@@ -40,7 +46,9 @@ public sealed class TrialReplayState
         else if (r.kind == "selection" && Trial != null && r.trialId == Trial.trialId)
         {
             Selection = r;
-            if (r.schema >= 2 && (r.leftController != null || r.rightController != null)) Sample = r;
+            // Even an unavailable selection pose replaces an older valid one.
+            // Schema 1 selections did not carry pose observations.
+            if (r.schema >= 2) Sample = r;
             if (r.correct) Visible = Searching = false;
         }
         else if (r.kind == "search_start" || r.kind == "search_resumed") Visible = Searching = true;
@@ -48,6 +56,20 @@ public sealed class TrialReplayState
         { Visible = Searching = false; if (r.kind != "transition") Audio = null; }
         if (r.kind == "audio_playback_start") Audio = r;
         if (r.kind == "audio_playback_end" || r.kind == "audio_cancelled" || r.kind == "audio_failure") Audio = null;
+    }
+
+    public bool HasCurrentSample(double time, double maxAge = DefaultMaxSampleAgeSeconds)
+    {
+        return Sample != null && Trial != null && Sample.trialId == Trial.trialId &&
+            (PoseBoundary == null || Sample.sequence > PoseBoundary.sequence) &&
+            IsFresh(Sample, time, maxAge);
+    }
+
+    public static bool IsFresh(TrialReplayRecord record, double time, double maxAge = DefaultMaxSampleAgeSeconds)
+    {
+        return record != null && !double.IsNaN(time) && !double.IsInfinity(time) &&
+            !double.IsNaN(maxAge) && !double.IsInfinity(maxAge) && maxAge > 0 &&
+            time >= record.time && time <= record.time + maxAge;
     }
 }
 
@@ -59,10 +81,15 @@ public sealed class TrialReplayTimeline
     public readonly TrialReplayState State = new TrialReplayState();
     public string Warning { get; internal set; }
     public string DirectoryPath { get; internal set; }
+    public string FilePath { get; internal set; }
+    public int CurrentSourceLine => m_Next;
+    public int SampleSourceLine { get; private set; }
+    public TrialReplayRecord CurrentRecord => m_Next > 0 ? Records[m_Next - 1] : null;
     public double Duration => Records.Count == 0 ? 0 : Records[Records.Count - 1].time;
     public TrialReplayRecord Header => Records[0];
     int m_Next;
     double m_Time = -1;
+    long m_MaxSequence = long.MaxValue;
 
     public TrialReplayTimeline(List<TrialReplayRecord> records)
     {
@@ -74,12 +101,20 @@ public sealed class TrialReplayTimeline
         }
     }
 
-    public void Seek(double time)
+    public void Seek(double time, long maxSequence = long.MaxValue)
     {
+        if (double.IsNaN(time) || double.IsInfinity(time)) throw new ArgumentOutOfRangeException(nameof(time));
         time = Math.Max(0, Math.Min(Duration, time));
         // Backward seek reconstructs from the validated prefix. Forward playback is incremental.
-        if (time < m_Time) { State.Reset(); m_Next = 0; }
-        while (m_Next < Records.Count && Records[m_Next].time <= time) State.Apply(Records[m_Next++]);
-        m_Time = time;
+        if (time < m_Time || (time == m_Time && maxSequence < m_MaxSequence))
+        { State.Reset(); m_Next = 0; SampleSourceLine = 0; }
+        while (m_Next < Records.Count && (Records[m_Next].time < time ||
+            (Records[m_Next].time == time && Records[m_Next].sequence <= maxSequence)))
+        {
+            var record = Records[m_Next++]; State.Apply(record);
+            if (State.Sample == record) SampleSourceLine = m_Next;
+            else if (State.Sample == null) SampleSourceLine = 0;
+        }
+        m_Time = time; m_MaxSequence = maxSequence;
     }
 }

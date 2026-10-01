@@ -80,3 +80,7 @@ node analysis/timeline/benchmark.cjs /path/to/synthetic-timeline.html /path/to/n
 ```
 
 The [saved measurements, fixture hashes and limitations](../analysis/timeline/benchmarks/2026-10-01/capacity.json) contain no participant data. These checks retain all observations; no sample decimation was used to make the test pass.
+
+## Phase boundaries in source inspection
+
+**Implemented locally:** a pause, resume, search start, trial transition or recording stop invalidates the displayed prior pose immediately, even when it is younger than the configured maximum age. A new source observation is required before rendering resumes. The inspector retains the prior record as historical evidence. The Unity viewer uses the same phase-boundary rule; this does not establish headset tracking validity or clock synchronization.

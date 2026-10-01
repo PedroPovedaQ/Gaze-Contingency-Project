@@ -126,7 +126,7 @@ public static class TrialReplayFile
         if (records.Count == 0) throw new InvalidDataException("Empty replay.");
         if (records[records.Count - 1].kind != "end" || !records[records.Count - 1].complete)
             warning = warning ?? "Recording is incomplete; only the saved prefix is available.";
-        return new TrialReplayTimeline(records) { DirectoryPath = info.DirectoryName, Warning = warning };
+        return new TrialReplayTimeline(records) { DirectoryPath = info.DirectoryName, FilePath = info.FullName, Warning = warning };
     }
 
     static void Check(Vector3 v)

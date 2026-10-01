@@ -18,6 +18,12 @@ public sealed class TrialReplayRenderer : IDisposable
     public float Yaw = 0, Pitch = 25, Distance = 5;
     public bool RecordedHead, Overhead, ShowGaze = true, ShowTarget, ShowControllers = true;
     public Camera Camera => m_Preview.camera;
+    public double MaxSampleAgeSeconds = TrialReplayState.DefaultMaxSampleAgeSeconds;
+    public bool SampleCurrent { get; private set; }
+    public bool UsingRecordedHead { get; private set; }
+    public bool GazeDrawn => m_Ray.enabled;
+    public bool LeftControllerDrawn => m_LeftRay.enabled;
+    public bool RightControllerDrawn => m_RightRay.enabled;
 
     public TrialReplayRenderer(TrialReplayTimeline timeline)
     {
@@ -54,11 +60,19 @@ public sealed class TrialReplayRenderer : IDisposable
     }
     void DrawController(LineRenderer line, TrialReplayController c)
     {
-        line.enabled = ShowControllers && c != null && c.rayAvailable && c.tracked == 1;
+        line.enabled = ShowControllers && ControllerUsable(c);
         if (!line.enabled) return;
         line.SetPosition(0, c.rayOrigin); line.SetPosition(1, c.rayEnd);
         line.startWidth = line.endWidth = c.triggerHeld == 1 ? 0.018f : 0.009f;
     }
+    public static bool ControllerUsable(TrialReplayController controller) =>
+        controller != null && controller.available && controller.rayAvailable && controller.tracked == 1;
+
+    public static bool GazeUsable(TrialReplayRecord sample) =>
+        sample != null && sample.gazeAvailable && sample.gazeTracked == 1 && sample.gazeDirection.sqrMagnitude > 0.000001f;
+
+    public static bool HeadUsable(TrialReplayRecord sample) =>
+        sample != null && sample.headAvailable && sample.headTracked == 1;
 
     Material Material(Color color)
     {
@@ -70,9 +84,11 @@ public sealed class TrialReplayRenderer : IDisposable
         m_Materials.Add(mat); return mat;
     }
 
-    public void Prepare(TrialReplayTimeline timeline, double time, bool forceVisible = false)
+    public void Prepare(TrialReplayTimeline timeline, double time, bool forceVisible = false, long maxSequence = long.MaxValue)
     {
-        timeline.Seek(time); var state = timeline.State;
+        timeline.Seek(time, maxSequence); var state = timeline.State;
+        SampleCurrent = state.HasCurrentSample(time, MaxSampleAgeSeconds);
+        var sample = SampleCurrent && !forceVisible ? state.Sample : null;
         if (state.Trial != null && m_Trial != state.Trial.trialId)
         {
             foreach (var obj in m_Objects.Values) UnityEngine.Object.DestroyImmediate(obj);
@@ -100,31 +116,34 @@ public sealed class TrialReplayRenderer : IDisposable
             if (!forceVisible)
             {
                 if (ShowTarget && o.target) color = Color.green;
-                if (state.Sample != null && state.Sample.hoveredId == o.id) color = Color.Lerp(color, new Color(1, 0.6f, 0.05f), 0.65f);
-                if (ShowControllers && state.Sample != null &&
-                    (state.Sample.leftController?.hoveredId == o.id || state.Sample.rightController?.hoveredId == o.id))
+                if (GazeUsable(sample) && sample.hoveredId == o.id) color = Color.Lerp(color, new Color(1, 0.6f, 0.05f), 0.65f);
+                if (ShowControllers && sample != null &&
+                    ((ControllerUsable(sample.leftController) && sample.leftController.hoveredId == o.id) ||
+                     (ControllerUsable(sample.rightController) && sample.rightController.hoveredId == o.id)))
                     color = Color.Lerp(color, Color.cyan, 0.7f);
                 if (state.Selection != null && state.Selection.objectId == o.id && time - state.Selection.time <= 0.3) color = Color.white;
             }
             m_Objects[o.id].GetComponent<Renderer>().sharedMaterial.color = color;
         }
-        var sample = state.Sample;
         var readiness = state.Readiness;
-        bool showCross = readiness != null && readiness.readinessActive && !readiness.readinessPaused;
+        bool showCross = !forceVisible && !state.Searching && TrialReplayState.IsFresh(readiness, time, MaxSampleAgeSeconds) &&
+            (state.PoseBoundary == null || readiness.sequence > state.PoseBoundary.sequence) &&
+            readiness.readinessActive && !readiness.readinessPaused;
         DrawCrossLine(m_CrossHorizontal, readiness, showCross, new Vector3(-0.1f, 0, 0), new Vector3(0.1f, 0, 0));
         DrawCrossLine(m_CrossVertical, readiness, showCross, new Vector3(0, -0.1f, 0), new Vector3(0, 0.1f, 0));
         DrawCrossLine(m_CrossCharge, readiness, showCross && readiness.readinessProgress > 0,
             new Vector3(-0.2f, -0.18f, 0), new Vector3(-0.2f + 0.4f * (readiness?.readinessProgress ?? 0), -0.18f, 0));
         DrawController(m_LeftRay, forceVisible ? null : sample?.leftController);
         DrawController(m_RightRay, forceVisible ? null : sample?.rightController);
-        if (RecordedHead && sample != null && sample.headAvailable)
+        UsingRecordedHead = RecordedHead && HeadUsable(sample);
+        if (UsingRecordedHead)
             Camera.transform.SetPositionAndRotation(sample.headPosition, sample.headRotation);
         else
         {
             var rotation = Quaternion.Euler(Overhead ? 89 : Pitch, Yaw, 0);
             Camera.transform.SetPositionAndRotation(rotation * new Vector3(0, 0, -Distance), rotation);
         }
-        m_Ray.enabled = !forceVisible && ShowGaze && (state.Visible || showCross) && sample != null && sample.gazeAvailable && sample.gazeTracked != 0;
+        m_Ray.enabled = ShowGaze && (state.Visible || showCross) && GazeUsable(sample);
         if (m_Ray.enabled)
         {
             m_Ray.SetPosition(0, sample.gazeOrigin);

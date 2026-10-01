@@ -100,7 +100,15 @@ __TRIAL_PAYLOADS__
  function layout(t,at,sequence=Infinity){if(at<t.snapshotTime||(at===t.snapshotTime&&(t.trialRecord?.sequence??-1)>sequence))return {...t,objects:[]};const objects=t.objects.map(o=>o.slice());for(const record of t.objectChanges||[]){if(!reached(record,at,sequence))break;for(const c of record.changes){const o=objects.find(o=>o[0]===c.id);if(o)o.splice(2,3,c.position.x,c.position.y,c.position.z);}}return {...t,objects};}
  function objectFields(t,id,at,sequence=Infinity){if(at<t.snapshotTime||(at===t.snapshotTime&&(t.trialRecord?.sequence??-1)>sequence))return null;const original=t.trialRecord?.objects?.find(o=>o.id===id);if(!original)return object(layout(t,at,sequence),id)??null;let value={...original};for(const record of t.objectChanges||[]){if(!reached(record,at,sequence))break;const c=record.changes.find(c=>c.id===id);if(c)value={...value,...c};}return value;}
  function renderRows(table,rows){table.replaceChildren();for(const [k,v] of rows){const row=document.createElement('tr'),th=document.createElement('th'),td=document.createElement('td');th.scope='row';th.textContent=k;td.textContent=v===null||v===''?'Unavailable':String(v);row.append(th,td);table.append(row);}}
- function cursor(){const t=tri(),nominal=t.start+time,s=sampleOverride===null?sample(t,nominal):t.samples[sampleOverride],at=sampleOverride===null?nominal:s?.[0]??nominal;const stale=!s||(t.maxSampleAge!==undefined?at-s[0]>t.maxSampleAge:t.gaps.some(g=>at>g[0]&&at<g[1]));const sequence=sampleOverride===null?Infinity:s?.[15]?.sequence??Infinity;return {t,at,s,stale,sequence,state:t.stateChanges?.filter(r=>reached(r,at,sequence)).at(-1)};}
+ function cursor(){
+  const t=tri(),nominal=t.start+time,s=sampleOverride===null?sample(t,nominal):t.samples[sampleOverride],at=sampleOverride===null?nominal:s?.[0]??nominal;
+  const sequence=sampleOverride===null?Infinity:s?.[15]?.sequence??Infinity;
+  const boundary=t.events.filter(e=>reached(e,at,sequence)&&['trial','transition','search_start','search_resumed','search_paused','application_paused','stop','end'].includes(e.kind)).at(-1);
+  const predatesBoundary=s&&boundary&&(Number.isInteger(boundary.raw?.sequence)&&Number.isInteger(s[15]?.sequence)?s[15].sequence<=boundary.raw.sequence:s[0]<=boundary.time);
+  const expired=s&&(t.maxSampleAge!==undefined?at>s[0]+t.maxSampleAge:t.gaps.some(g=>at>g[0]&&at<g[1]));
+  const stale=!s||!!predatesBoundary||!!expired;
+  return {t,at,s,stale,sequence,state:t.stateChanges?.filter(r=>reached(r,at,sequence)).at(-1)};
+ }
  function drawLanes(t,at){
   const p=el('lanes'),w=p.clientWidth||700;p.setAttribute('viewBox',`0 0 ${w} 154`);p.replaceChildren();
   const left=77,right=w-14,span=t.end-t.start,X=n=>left+(n-t.start)/span*(right-left);
@@ -139,7 +147,7 @@ __TRIAL_PAYLOADS__
    if(s[14]&&s[7]===1){const a=s[5],v=s[6],b=a.map((n,i)=>n+v[i]*3);const line=path(a,b,'var(--viz-series-2)','');line.setAttribute('clip-path','url(#p20-map-clip)');}
    s.slice(9,11).forEach((c,i)=>{if(c[1]&&c[2]===1){const line=path(c[5],c[6],'var(--viz-series-3)',i===0?'4 3':'',c[3]===1?3:1.5);line.setAttribute('clip-path','url(#p20-map-clip)');}});
   }
-  if(gap)text(p,w/2,h/2,'Recording gap · poses hidden','middle');
+  if(gap)text(p,w/2,h/2,'No current pose · gap or phase boundary','middle');
   else if(state&&state.visible===false)text(p,w/2,h-20,'Objects hidden in recorded state','middle');
   text(p,8,h-3,'+Z ↑ · +X → · fixed recording origin');
  }

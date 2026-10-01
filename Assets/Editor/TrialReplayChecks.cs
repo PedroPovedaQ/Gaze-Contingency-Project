@@ -19,6 +19,7 @@ public static class TrialReplayChecks
             string file = CreateDemo(Path.Combine(root, "demo"));
             var timeline = TrialReplayFile.Read(file);
             Assert(timeline.Warning == null && timeline.Trials.Count == 1, "Round trip complete recording.");
+            Assert(TrialReplayWindow.Snapshot(timeline,1,.1).sourceFile==Path.GetFullPath(file),"Snapshot retains the actual opened source filename.");
             Assert(timeline.Trials[0].objects.Length == 168, "All 168 objects recorded.");
             timeline.Seek(1.6); Assert(timeline.State.Selection.objectId == "o01" && !timeline.State.Selection.correct, "Wrong choice identity retained.");
             timeline.Seek(2.5); Assert(!timeline.State.Visible, "Pause hides stimuli.");
@@ -73,12 +74,67 @@ public static class TrialReplayChecks
             CheckWriterBackpressure(root);
             CheckWriterFlush(root);
             CheckReadinessReplay();
+            CheckReplayFreshnessAndSequences();
             // Graphics verification is separate so these checks also run with -nographics.
             Debug.Log("[TrialReplayChecks] PASS: roundtrip, 168 objects, wrong/correct choice, pause, rewind, motion, recovery, corruption, traversal, version, overwrite, controller tracking/trigger/hit, no dwell, legacy schema, audio.");
         }
         finally { Directory.Delete(root, true); }
     }
     sealed class CaptureObserved : Exception { }
+    static void CheckReplayFreshnessAndSequences()
+    {
+        var obj = new TrialReplayObject { id="target",position=Vector3.zero,rotation=Quaternion.identity,scale=Vector3.one };
+        var records = new List<TrialReplayRecord> {
+            new TrialReplayRecord { kind="header",sequence=0,recordingId="synthetic-sequences",sourceType="synthetic_demo" },
+            new TrialReplayRecord { kind="trial",sequence=1,time=.5,trialId="first",objects=new[]{obj} },
+            new TrialReplayRecord { kind="search_start",sequence=2,time=1,trialId="first" },
+            new TrialReplayRecord { kind="sample",sequence=3,time=1,trialId="first",visible=true,searchActive=true,
+                headAvailable=true,headTracked=1,gazeAvailable=true,gazeTracked=1,gazeDirection=Vector3.forward,
+                gazeRecordingId="raw-fixture",gazeObservationSequence=17 },
+            new TrialReplayRecord { kind="sample",sequence=4,time=1,trialId="first",visible=true,searchActive=true,
+                headAvailable=true,headTracked=-1,gazeAvailable=true,gazeTracked=-1,gazeDirection=Vector3.forward,
+                changes=new[]{new TrialReplayTransform { id="target",position=Vector3.right,rotation=Quaternion.identity,scale=Vector3.one }} },
+            new TrialReplayRecord { kind="search_paused",sequence=5,time=1.02,trialId="first" },
+            new TrialReplayRecord { kind="search_resumed",sequence=6,time=1.03,trialId="first" },
+            new TrialReplayRecord { kind="sample",sequence=7,time=1.04,trialId="first",visible=true,searchActive=true,
+                headAvailable=true,headTracked=1,gazeAvailable=true,gazeTracked=1,gazeDirection=Vector3.forward },
+            new TrialReplayRecord { kind="transition",sequence=8,time=1.05,trialId="second" },
+            new TrialReplayRecord { kind="trial",sequence=9,time=1.06,trialId="second",objects=new[]{obj} }
+        };
+        var timeline = new TrialReplayTimeline(records);
+        timeline.Seek(1,3);
+        Assert(timeline.State.HasCurrentSample(1.1) && !timeline.State.HasCurrentSample(1.100001),"Display age boundary is explicit.");
+        Assert(!timeline.State.HasCurrentSample(.99) && !timeline.State.HasCurrentSample(double.NaN) &&
+            !timeline.State.HasCurrentSample(1,0),"Future/nonfinite/invalid-age poses are unavailable.");
+        Assert(timeline.CurrentSourceLine==4 && timeline.SampleSourceLine==4 && timeline.State.Sample.sequence==3,
+            "Exact sequence seek retains the original JSONL line.");
+        timeline.Seek(1,4);
+        Assert(timeline.State.Transforms["target"].position==Vector3.right &&
+            !TrialReplayRenderer.GazeUsable(timeline.State.Sample) && !TrialReplayRenderer.HeadUsable(timeline.State.Sample),
+            "Unknown tracking is not usable, even if a numeric pose exists.");
+        timeline.Seek(1,3);
+        Assert(timeline.State.Transforms["target"].position==Vector3.zero && timeline.State.Sample.sequence==3,
+            "Backward seek within one timestamp removes later transform changes.");
+        var snapshot=TrialReplayWindow.Snapshot(timeline,1,.1,3);
+        var restored=JsonUtility.FromJson<TrialReplayWindow.CursorSnapshot>(JsonUtility.ToJson(snapshot));
+        Assert(restored.sampleCurrent && restored.sampleSourceLine==4 && restored.sample.gazeRecordingId=="raw-fixture" &&
+            restored.sample.gazeObservationSequence==17 && restored.transforms[0].position==Vector3.zero && string.IsNullOrEmpty(restored.sourceFile),
+            "Cursor export preserves source identity, raw links, sequence and transforms.");
+        timeline.Seek(1.02);
+        Assert(!timeline.State.HasCurrentSample(1.02) && timeline.State.Sample.sequence==4,
+            "Pause invalidates old pose without discarding historical evidence.");
+        timeline.Seek(1.03); Assert(!timeline.State.HasCurrentSample(1.03),"Resume waits for a new sample.");
+        timeline.Seek(1.04); Assert(timeline.State.HasCurrentSample(1.04),"Tracking recovers on a new sample.");
+        timeline.Seek(1.05); Assert(!timeline.State.HasCurrentSample(1.05),"Transition cannot carry a previous trial pose.");
+        timeline.Seek(1.06); Assert(timeline.State.Sample==null && timeline.SampleSourceLine==0,"New trial clears old sample linkage.");
+        Assert(!TrialReplayRenderer.ControllerUsable(new TrialReplayController { available=false,rayAvailable=true,tracked=1 }),
+            "Unavailable controllers cannot draw rays or hover highlights.");
+        timeline.Seek(1,3); timeline.State.Apply(new TrialReplayRecord { kind="selection",schema=2,sequence=10,time=1,
+            trialId="first",objectId="target",correct=true });
+        Assert(timeline.State.Sample.sequence==10 && !TrialReplayRenderer.GazeUsable(timeline.State.Sample),
+            "Unavailable selection observations must replace older tracked poses.");
+        Debug.Log("[TrialReplayChecks] PASS: pose freshness, phase boundaries, unknown tracking, exact sequence rewind and source snapshot.");
+    }
     static void CheckReadinessReplay()
     {
         var state = new TrialReplayState();
@@ -334,6 +390,8 @@ public static class TrialReplayChecks
         using (var renderer = new TrialReplayRenderer(timeline) { RecordedHead = true })
         {
             renderer.Prepare(timeline, 1);
+            Assert(renderer.SampleCurrent && renderer.GazeDrawn && renderer.LeftControllerDrawn && renderer.UsingRecordedHead,
+                "Fresh tracked fixture draws recorded head/gaze/controller evidence.");
             var image = renderer.Capture(1280, 720);
             try
             {
@@ -344,6 +402,25 @@ public static class TrialReplayChecks
                 Assert(colored > 500, "Rendered preview must contain visible geometry, not a black/empty image.");
             }
             finally { UnityEngine.Object.DestroyImmediate(image); }
+            // Remove a range of source samples to create a real saved-frame gap.
+            var saved = timeline.State.Sample;
+            saved.gazeTracked = -1; saved.headTracked = -1;
+            saved.leftController.tracked=0; saved.leftController.rayAvailable=false;
+            renderer.Prepare(timeline,1);
+            Assert(!renderer.GazeDrawn && !renderer.LeftControllerDrawn && !renderer.UsingRecordedHead,
+                "Unknown/lost tracking does not draw rays or drive the recorded-head camera.");
+            saved.gazeTracked=1; saved.headTracked=1; saved.leftController.tracked=1; saved.leftController.rayAvailable=true;
+            var withGap = new List<TrialReplayRecord>(timeline.Records);
+            withGap.RemoveAll(r => r.time>1 && r.time<1.5 && r.kind=="sample");
+            var gapTimeline = new TrialReplayTimeline(withGap);
+            renderer.Prepare(gapTimeline,1.25);
+            Assert(!renderer.SampleCurrent && !renderer.GazeDrawn && !renderer.LeftControllerDrawn && !renderer.UsingRecordedHead,
+                "A saved-frame gap hides all current pose claims and uses an orbit overview.");
+            renderer.Prepare(gapTimeline,1.5);
+            Assert(renderer.SampleCurrent && renderer.GazeDrawn && renderer.UsingRecordedHead,
+                "The next recorded tracked sample restores drawing after a gap.");
+            renderer.Prepare(gapTimeline,1);
+            Assert(renderer.GazeDrawn && renderer.UsingRecordedHead,"Backward seek restores prior valid drawing.");
         }
         Debug.Log("[TrialReplayChecks] Render PASS: " + Path.Combine(root, "preview.png"));
 

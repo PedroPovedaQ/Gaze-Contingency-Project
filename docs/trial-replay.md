@@ -46,8 +46,12 @@ All positions are metres in Unity axes (+Y up, +Z forward), relative to one fixe
 3. Select a trial, play/pause, scrub, change speed or jump to the next choice/audio event.
 4. Choose **Orbit**, **Recorded head** or **Overhead**. Right-drag to orbit and scroll to zoom.
 5. Toggle **Gaze**, **Controllers** and **Target** overlays. Controller rays thicken while the trigger is held; the status text shows each trigger value and unknown state.
+6. Use **Previous sample** / **Next sample** to inspect individual observations, including records with identical timestamps. Expand **Source samples and cursor state** for the original JSON, source line/sequence, raw-eye recording/observation link, tracking flags and delivery age.
+7. **Save cursor snapshot** writes a new JSON containing source path/header, exact sample/current record and current object transforms. It never overwrites the recording or an existing export. Keep the snapshot with the source package; it is an inspection artifact, not a new participant trial.
 
 Playback uses an isolated preview scene; it does not run study logic, synthesize speech or write participant responses. Backward seeking reconstructs recorded state. The recorded-head view uses a fixed preview field of view. Overlays/materials are illustrative, not the headset's original rendering. Audio plays only at 1×, follows recorded start/stop events and is omitted when its asset is missing. Interruption envelopes, capture sound effects and acoustic onset are not reconstructed exactly.
+
+The viewer holds a pose for at most the configurable **Max pose age** (default 0.1 seconds) and clears it across trial/search/pause/stop boundaries until a new observation arrives. Unknown tracking (`-1`) never draws a measured gaze/controller ray or drives the recorded-head camera. If head tracking is unavailable, the labeled orbit overview is shown. Historical values remain inspectable through gaps. This is a display rule, not a validated sensor freshness threshold, acquisition rate or fixation definition. No pose interpolation is performed.
 
 ## Reliability and verification
 

@@ -64,7 +64,8 @@ const { execFileSync } = require('node:child_process');
   assert.equal(snapshot.finalTrialSummary,null);
   assert.equal(snapshot.selectedObject.position.y,2);
   await page.locator('#p20-event').selectOption({label:'1.05 s · search_paused · sequence 7'});
-  assert.match(await rows(),/Paused \/ transition/);
+  assert.match(await rows(),/Paused \/ transition · no current pose/);
+  assert.match(await rows(),/Head XYZ\s+Unavailable/); // Only 30 ms old, but before the pause boundary.
   await seek(2.01);
   assert.match(await rows(),/Completed/);
   assert.match(await page.locator('#p20-choice').innerText(),/Correct selection/);
