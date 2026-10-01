@@ -1,0 +1,179 @@
+{
+  "schema": "timeline-capacity-evidence-v1",
+  "date": "2026-10-01",
+  "host": {
+    "cpu": "Apple M4",
+    "memoryGiB": 32,
+    "macOS": "15.6",
+    "python": "3.13.5"
+  },
+  "fixtures": [
+    {
+      "trials": 80,
+      "secondsPerTrial": 20,
+      "syntheticFrameHz": 90,
+      "samples": 144000,
+      "objectsPerTrial": 168,
+      "sourceBytes": 219006597,
+      "sourceSha256": "42c55f9c8cd33a47dcaac21ca1cf72b34a6d1715bdd8cc8bf69d393c66edcb9a"
+    },
+    {
+      "trials": 80,
+      "secondsPerTrial": 40,
+      "syntheticFrameHz": 90,
+      "samples": 288000,
+      "objectsPerTrial": 168,
+      "sourceBytes": 435394891,
+      "sourceSha256": "5d6e0c1b06e79ff550188502c0c434ecf7409202acf63077e1253626d4291e98"
+    },
+    {
+      "trials": 80,
+      "secondsPerTrial": 60,
+      "syntheticFrameHz": 90,
+      "samples": 432000,
+      "objectsPerTrial": 168,
+      "sourceBytes": 651147633,
+      "sourceSha256": "0ccf9ca6f233e7a09ab441a51df0ea5a3eaa2c4c03bbe1b3e02c9b88ff8cef6d"
+    }
+  ],
+  "before20": {
+    "schema": "synthetic-timeline-capacity-v1",
+    "timestamp": "2026-10-01T07:19:50.725Z",
+    "browserVersion": "151.0.7922.34",
+    "htmlBytes": 288876899,
+    "trials": 80,
+    "loadMs": 1919.712708,
+    "synchronousTrialSwitchMs": {
+      "median": 1.0999999046325684,
+      "p95": 1.6000001430511475,
+      "max": 2.200000047683716
+    },
+    "synchronousSeekMs": {
+      "median": 0.8999998569488525,
+      "p95": 1.2000000476837158,
+      "max": 4.900000095367432
+    },
+    "playbackAnimationIntervalMs": {
+      "median": 16.699999999999818,
+      "p95": 18.5,
+      "max": 18.699999999999818,
+      "frames": 181
+    },
+    "sampledJSHeapBytes": 269196520,
+    "notes": [
+      "Synthetic desktop Chromium check; no headset, eye-rate, audio or video validation.",
+      "Synchronous action timings exclude subsequent paint. Animation intervals include playback rendering for three seconds.",
+      "Heap sampled after interaction; not peak process memory. Cold OS/browser cache and hardware differ across machines."
+    ]
+  },
+  "before40": {
+    "outcome": "failed",
+    "htmlBytes": 570400919,
+    "pageErrors": [
+      "Unexpected end of JSON input"
+    ],
+    "symptom": "No data inspector rows; 30-second wait expired",
+    "diagnostic": "Reproduced in a separate Chromium load with pageerror capture"
+  },
+  "after40": {
+    "schema": "synthetic-timeline-capacity-v1",
+    "timestamp": "2026-10-01T07:27:02.093Z",
+    "browserVersion": "151.0.7922.34",
+    "htmlBytes": 507951372,
+    "trials": 80,
+    "loadMs": 2024.606083,
+    "synchronousTrialSwitchMs": {
+      "median": 14.900000095367432,
+      "p95": 21,
+      "max": 22.40000009536743
+    },
+    "synchronousSeekMs": {
+      "median": 1.0999999046325684,
+      "p95": 3,
+      "max": 5.799999952316284
+    },
+    "playbackAnimationIntervalMs": {
+      "median": 16.699999999999818,
+      "p95": 18.299999999999272,
+      "max": 18.699999999999818,
+      "frames": 181
+    },
+    "sampledJSHeapBytes": 13438888,
+    "notes": [
+      "Synthetic desktop Chromium check; no headset, eye-rate, audio or video validation.",
+      "Synchronous action timings exclude subsequent paint. Animation intervals include playback rendering for three seconds.",
+      "Heap sampled after interaction; not peak process memory. Cold OS/browser cache and hardware differ across machines."
+    ]
+  },
+  "after60First": {
+    "schema": "synthetic-timeline-capacity-v1",
+    "timestamp": "2026-10-01T07:31:14.456Z",
+    "browserVersion": "151.0.7922.34",
+    "htmlBytes": 757794953,
+    "trials": 80,
+    "loadMs": 3191.5824999999995,
+    "synchronousTrialSwitchMs": {
+      "median": 22.299999952316284,
+      "p95": 34.39999985694885,
+      "max": 40.59999990463257
+    },
+    "synchronousSeekMs": {
+      "median": 1.1000001430511475,
+      "p95": 1.6000001430511475,
+      "max": 4
+    },
+    "playbackAnimationIntervalMs": {
+      "median": 16.600000000000364,
+      "p95": 18.599999999999454,
+      "max": 18.699999999999818,
+      "frames": 181
+    },
+    "sampledJSHeapBytes": 19012684,
+    "notes": [
+      "Synthetic desktop Chromium check; no headset, eye-rate, audio or video validation.",
+      "Synchronous action timings exclude subsequent paint. Animation intervals include playback rendering for three seconds.",
+      "Heap sampled after interaction; not peak process memory. Cold OS/browser cache and hardware differ across machines."
+    ]
+  },
+  "after60WithIdentityChecks": {
+    "schema": "synthetic-timeline-capacity-v1",
+    "timestamp": "2026-10-01T07:33:30.945Z",
+    "browserVersion": "151.0.7922.34",
+    "htmlBytes": 757794953,
+    "trials": 80,
+    "verifiedTrialIdentities": 80,
+    "loadMs": 2679.015792,
+    "synchronousTrialSwitchMs": {
+      "median": 23.700000047683716,
+      "p95": 34,
+      "max": 57.799999952316284
+    },
+    "synchronousSeekMs": {
+      "median": 1.2000000476837158,
+      "p95": 2.4000000953674316,
+      "max": 3.9000000953674316
+    },
+    "playbackAnimationIntervalMs": {
+      "median": 16.699999999999818,
+      "p95": 18.5,
+      "max": 18.800000000000182,
+      "frames": 180
+    },
+    "sampledJSHeapBytes": 18803124,
+    "notes": [
+      "Synthetic desktop Chromium check; no headset, eye-rate, audio or video validation.",
+      "Synchronous action timings exclude subsequent paint. Animation intervals include playback rendering for three seconds.",
+      "Heap sampled after interaction; not peak process memory. Cold OS/browser cache and hardware differ across machines."
+    ]
+  },
+  "harnessRepair": "An intermediate run failed because the new check called DOM textContent as a function. Corrected the benchmark harness and reran; this was not an application failure.",
+  "scripts": {
+    "analysis/timeline/benchmark_fixture.py": "0839616c11e8e4eca6418627cc0a5835f2e2ea237f6869766c1663e70fb0cdc0",
+    "analysis/timeline/benchmark.cjs": "fdb317284f753d52bf548f7be180833fe8c7e5adc1dea2e437fa7a4860e3fe76"
+  },
+  "limits": [
+    "Synthetic capacity evidence only. No participant recording, headset, real video, native eye acquisition, spatial accuracy or validated eye-event claim.",
+    "Browser heap figures are sampled JS heap, not total/peak process memory. Conversion and full-rate files remain substantial.",
+    "No cache purge or exclusive-host control; these are capacity checks, not reproducible latency guarantees."
+  ]
+}

@@ -245,6 +245,10 @@ if __name__ == '__main__':
     data = prepare(args.replay, args.trial_export, args.max_sample_age)
     with args.output.open('x') as handle:
         json.dump(data, handle, allow_nan=False, ensure_ascii=True, separators=(',', ':'))
+    trial_count = len(data['trials'])
+    # The page packager reads the saved JSON. Release this full-session object
+    # graph before that second parse rather than retaining two copies together.
+    del data
     if args.html:
         build(args.output, args.html)
-    print(f'Prepared {len(data["trials"])} trials')
+    print(f'Prepared {trial_count} trials')

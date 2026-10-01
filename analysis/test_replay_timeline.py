@@ -21,7 +21,7 @@ def fixture():
                 gazeRecordingId='raw-a', gazeObservationSequence=5, gazeDeliveryAge=.01,
                 rightController=dict(available=True, tracked=1, rayAvailable=True,
                                      triggerHeld=0, rayOrigin=v, rayEnd=dict(x=0,y=1,z=4)))
-    rows = [dict(schema=2, kind='header', time=0, recordingId='replay-a', utc='2026-10-01T00:00:00Z'),
+    rows = [dict(schema=2, kind='header', time=0, recordingId='replay-a', sourceType='synthetic_demo', utc='2026-10-01T00:00:00Z'),
             row('transition', 1),
             row('trial', 1.1, targetId='target', absoluteTheta=45,
                 objects=[dict(id='target',color='Blue',shape='Cube',position=dict(x=0,y=1,z=4))]),

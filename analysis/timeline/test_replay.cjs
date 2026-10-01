@@ -19,6 +19,7 @@ const { execFileSync } = require('node:child_process');
  const duplicate=path.join(temp,'duplicate.jsonl');
  const records=fs.readFileSync(path.join(temp,'recording.jsonl'),'utf8').trim().split('\n').map(JSON.parse);
  records[6].time=records[5].time;
+ records[0].sourceType=123; // Malformed legacy metadata must display unknown, not crash.
  fs.writeFileSync(duplicate,records.map(r=>JSON.stringify(r)).join('\n')+'\n');
  const duplicateHTML=path.join(temp,'duplicate.html');
  execFileSync('python3',[path.join(analysis,'replay_timeline.py'),duplicate,
@@ -32,6 +33,7 @@ const { execFileSync } = require('node:child_process');
  const target=()=>page.locator('#p20-map circle[data-tooltip^="Blue Cube"]');
  try {
   await page.goto(pathToFileURL(html).href);
+  assert.match(await page.locator('#p20-run-summary').innerText(),/Synthetic fixture · no participant measurements/);
   assert.match(await rows(),/Not yet available/);
   await seek(1.01);
   assert.match(await rows(),/Searching/);
@@ -75,6 +77,7 @@ const { execFileSync } = require('node:child_process');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   if(process.env.TIMELINE_TEST_SCREENSHOTS){fs.mkdirSync(process.env.TIMELINE_TEST_SCREENSHOTS,{recursive:true});await page.screenshot({path:path.join(process.env.TIMELINE_TEST_SCREENSHOTS,'raw-replay-mobile.png'),fullPage:true});}
   await page.goto(pathToFileURL(duplicateHTML).href);await seek(1.01);
+  assert.match(await page.locator('#p20-run-summary').innerText(),/Source type unknown/);
   assert.equal((await raw()).sample.sequence,6);
   await page.locator('#p20-previous-sample').click();
   assert.equal((await raw()).sample.sequence,5);

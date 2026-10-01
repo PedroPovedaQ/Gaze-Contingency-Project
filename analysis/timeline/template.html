@@ -76,13 +76,15 @@
 @media(max-width:620px){#p20-timeline .p20-snapshot{grid-template-columns:1fr;gap:8px}}
 </style>
 <script id="p20-records" type="application/json">__P20_DATA__</script>
+__TRIAL_PAYLOADS__
 <script>
 (()=>{
  const root=document.getElementById('p20-timeline'), data=JSON.parse(document.getElementById('p20-records').textContent);
  const el=id=>root.querySelector('#p20-'+id), select=el('trial'), slider=el('time'), play=el('play');
  const ns='http://www.w3.org/2000/svg';
- let index=0,time=0,playing=false,last=0,animation,sampleOverride=null,selectedObject=null;
- const fmt=n=>Number(n).toFixed(2), tri=()=>data.trials[index];
+ let index=0,time=0,playing=false,last=0,animation,sampleOverride=null,selectedObject=null,loadedTrial=null;
+ const fmt=n=>Number(n).toFixed(2), tri=()=>loadedTrial||data.trials[index];
+ function readTrial(i){const metadata=data.trials[i];return metadata.payloadId?JSON.parse(document.getElementById(metadata.payloadId).textContent):metadata;}
  const svg=(tag,attrs,parent,text)=>{const n=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));if(text!==undefined)n.textContent=text;parent.appendChild(n);return n;};
  const text=(p,x,y,t,anchor='start')=>svg('text',{x,y,'text-anchor':anchor,fill:'var(--foreground)','font-size':12},p,t);
  const tracked=n=>n===1?'Yes':n===0?'No':'Unknown';
@@ -92,7 +94,7 @@
  data.trials.forEach((t,i)=>{const o=document.createElement('option');o.value=i;o.textContent=t.label+' · '+t.targetName+(t.completeTime!==null?'':' · unfinished');select.append(o)});
  function persist(){window.openai?.setWidgetState?.({modelContent:{participant:data.participant,trial:tri().label,sourceTrialId:tri().sourceId,secondsAfterAnnouncement:time},privateContent:{index,time}})?.catch(()=>{});}
  function stop(){playing=false;play.textContent='Play';cancelAnimationFrame(animation);video.pause();}
- function load(i,at=0){stop();sampleOverride=null;selectedObject=null;index=i;select.value=i;slider.max=tri().end-tri().start;time=Math.max(0,Math.min(+slider.max,at));renderRows(el('summary'),Object.entries(tri().summary||{Status:'No explicitly linked trial export supplied'}));el('event').replaceChildren(new Option('Jump to an event…',''));tri().events.forEach((e,i)=>el('event').append(new Option(`${fmt(e.time-tri().start)} s · ${e.kind} · sequence ${e.raw?.sequence??'unknown'}`,String(i))));draw();syncVideo(true);}
+ function load(i,at=0){stop();sampleOverride=null;selectedObject=null;index=i;loadedTrial=readTrial(i);select.value=i;slider.max=tri().end-tri().start;time=Math.max(0,Math.min(+slider.max,at));renderRows(el('summary'),Object.entries(tri().summary||{Status:'No explicitly linked trial export supplied'}));el('event').replaceChildren(new Option('Jump to an event…',''));tri().events.forEach((e,i)=>el('event').append(new Option(`${fmt(e.time-tri().start)} s · ${e.kind} · sequence ${e.raw?.sequence??'unknown'}`,String(i))));draw();syncVideo(true);}
  function sample(t,at){let lo=0,hi=t.samples.length;while(lo<hi){const m=(lo+hi)>>1;if(t.samples[m][0]<=at)lo=m+1;else hi=m;}return lo?t.samples[lo-1]:null;}
  const reached=(r,at,sequence=Infinity)=>r.time<at||(r.time===at&&(r.raw?.sequence??r.sequence??-1)<=sequence);
  function layout(t,at,sequence=Infinity){if(at<t.snapshotTime||(at===t.snapshotTime&&(t.trialRecord?.sequence??-1)>sequence))return {...t,objects:[]};const objects=t.objects.map(o=>o.slice());for(const record of t.objectChanges||[]){if(!reached(record,at,sequence))break;for(const c of record.changes){const o=objects.find(o=>o[0]===c.id);if(o)o.splice(2,3,c.position.x,c.position.y,c.position.z);}}return {...t,objects};}
@@ -167,11 +169,12 @@
  el('next').addEventListener('click',()=>{stop();sampleOverride=null;const t=tri(),at=t.start+time,e=t.events.find(e=>e.time>at+.001&&['selection','search_start','audio_playback_start'].includes(e.kind));time=e?e.time-t.start:+slider.max;draw();syncVideo(true);persist()});
  function stepSample(direction){stop();const t=tri();if(!t.samples.length)return;const at=t.start+time;let i=sampleOverride??t.samples.indexOf(sample(t,at));if(direction<0&&i>=0&&t.samples[i][0]<at)i++;sampleOverride=Math.max(0,Math.min(t.samples.length-1,i+direction));time=t.samples[sampleOverride][0]-t.start;draw();syncVideo(true);persist();}
  el('previous-sample').addEventListener('click',()=>stepSample(-1));el('next-sample').addEventListener('click',()=>stepSample(1));
- el('export').addEventListener('click',()=>{const {t,at,s,stale,state,sequence}=cursor();const snapshot={schema:'timeline-cursor-v1',recordingId:data.recordingId??null,source:data.source??null,trialId:t.sourceId,recordingSeconds:at,selectedSequence:Number.isFinite(sequence)?sequence:null,poseCurrent:!stale,sampleSourceLine:s?.[16]??null,sample:s?.[15]??null,legacyDisplaySample:s&&!s[15]?s:null,state:state??null,objects:layout(t,at,sequence).objects,selectedObject:selectedObject?objectFields(t,selectedObject,at,sequence):null,trialParameters:t.trialRecord??null,latestEvent:t.events.filter(e=>reached(e,at,sequence)).at(-1)??null,finalTrialSummary:t.summary??null,summaryProvenance:data.summaryProvenance??null};const url=URL.createObjectURL(new Blob([JSON.stringify(snapshot,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='trial-cursor.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+ el('export').addEventListener('click',()=>{const {t,at,s,stale,state,sequence}=cursor();const snapshot={schema:'timeline-cursor-v1',recordingId:data.recordingId??null,recordingHeader:data.header??null,source:data.source??null,trialId:t.sourceId,recordingSeconds:at,selectedSequence:Number.isFinite(sequence)?sequence:null,poseCurrent:!stale,sampleSourceLine:s?.[16]??null,sample:s?.[15]??null,legacyDisplaySample:s&&!s[15]?s:null,state:state??null,objects:layout(t,at,sequence).objects,selectedObject:selectedObject?objectFields(t,selectedObject,at,sequence):null,trialParameters:t.trialRecord??null,latestEvent:t.events.filter(e=>reached(e,at,sequence)).at(-1)??null,finalTrialSummary:t.summary??null,summaryProvenance:data.summaryProvenance??null};const url=URL.createObjectURL(new Blob([JSON.stringify(snapshot,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='trial-cursor.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
  function restore(state){const s=state?.privateContent;if(s&&Number.isInteger(s.index)&&data.trials[s.index])load(s.index,Number(s.time)||0);}
  __VIDEO_CODE__
  el('title').textContent=data.participant+' · Recorded run timeline';
- el('run-summary').textContent=(data.complete?'Completed recording':'Incomplete recording')+' · '+data.trials.filter(t=>!t.practice&&t.completeTime!==null).length+' measured trials completed · '+data.trials.filter(t=>t.practice).length+' practice trials';
+ const sourceType=typeof data.header?.sourceType==='string'?data.header.sourceType:'unknown',sourceLabel=sourceType==='editor_simulation'?'Editor simulation / rehearsal':sourceType==='live_headset'?'Headset recording':sourceType.startsWith('synthetic')?'Synthetic fixture · no participant measurements':'Source type unknown';
+ el('run-summary').textContent=sourceLabel+' · '+(data.complete?'Completed recording':'Incomplete recording')+' · '+data.trials.filter(t=>!t.practice&&t.completeTime!==null).length+' non-practice trials completed · '+data.trials.filter(t=>t.practice).length+' practice trials';
  load(0,0);restore(window.openai?.widgetState);
  window.addEventListener('openai:set_globals',e=>{if(e.detail?.globals?.widgetState)restore(e.detail.globals.widgetState)});
  new ResizeObserver(()=>draw()).observe(el('lanes'));

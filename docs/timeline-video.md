@@ -24,7 +24,9 @@ python3 analysis/timeline_page.py /path/to/timeline-data.json \
   --output /path/to/timeline-video.html
 ```
 
-Open the HTML file in a browser, or serve its directory on localhost. The page has no external dependencies or upload/network requests. Existing output files are never overwritten. Source recordings remain unchanged. Full-rate long recordings produce large HTML files; representative full-session browser memory/performance remains a verification item. The overhead view collapses height and does not render the original Unity scene, camera background or replay WAVs; use the native replay viewer for 3D/audio.
+Open the HTML file in a browser, or serve its directory on localhost. The page has no external dependencies or upload/network requests. Existing output files are never overwritten. Source recordings remain unchanged. Full-rate long recordings produce large HTML files; new raw imports embed separate trial payloads and parse only the selected trial. This avoids the single-payload failure observed in a 570 MB page and releases the prior trial's parsed graph on switching. Publishing the page is atomic and refuses overwrites even if another file appears while packaging. The overhead view collapses height and does not render the original Unity scene, camera background or replay WAVs; use the native replay viewer for 3D/audio.
+
+The page labels the recorded source as headset, editor simulation/rehearsal, synthetic or unknown. It does not infer research eligibility from a clean recording footer or relabel an editor rehearsal as participant evidence. Exported snapshots include the original header and coordinate-origin metadata.
 
 1. Choose the run's headset recording under **Run video**. Browser-playable MP4 (H.264) or WebM is recommended.
 2. Pause the timeline at an identifiable event, such as a trigger selection. With the video controls, find and pause the same event in the footage.
@@ -55,3 +57,26 @@ node analysis/timeline/test_replay.cjs
 ```
 
 The video browser test generates clearly synthetic footage and checks local attachment, alignment, scrubbing, shared trial-clock mapping, speed/pause, coverage gaps, settings export/restore, wrong-run rejection, corrupt media recovery and mobile layout. The replay browser test imports raw synthetic JSONL and checks fixed cursor samples/source IDs, stepping, object movement/inspection, pause gaps, exported snapshots, event jumps and backward reconstruction. Python tests include 80 synthetic trial identities and the 39→40 voice boundary, missing tracking, interrupted tails, corruption and exact summary linkage. The short 80-trial fixture verifies context, not sustained hardware capture or full-session browser performance. Optional `TIMELINE_TEST_SCREENSHOTS=/path/to/output` writes captures. No participant media is required.
+
+## Full-session synthetic capacity check — October 1
+
+An Apple M4 with 32 GiB memory, macOS 15.6 and headless Chromium 151.0.7922.34 loaded the separate-trial pages below. Each fixture has 80 trials and 168 objects per trial. The synthetic 90 Hz cadence is generated test data, not a headset measurement.
+
+| Fixture | Saved samples | HTML size | Observed load | Trial-switch p95 | Scrub p95 |
+|---|---:|---:|---:|---:|---:|
+| 40 seconds/trial, old single payload | 288,000 | 570 MB | Failed JSON parsing; no inspector | — | — |
+| 40 seconds/trial, separate payloads | 288,000 | 508 MB | 2.02 s | 21 ms | 3.0 ms |
+| 60 seconds/trial, separate payloads | 432,000 | 758 MB | 2.68 s | 34 ms | 2.4 ms |
+
+The final 60-second run checked the source trial identity after switching/scrubbing all 80 trials. An earlier run of that same page loaded in 3.19 s. Its 3-second playback probe had an animation-interval p95 of about 18.5 ms. The final sampled JavaScript heap was 18.8 MB; this excludes DOM storage and is **not** total or peak browser memory. Offline generation of the 60-second fixture's page took about 121 seconds in that run. No cold-cache or exclusive-host control was used, so these are capacity checks, not latency guarantees. Actual recorded-run/Unity/video comparison, other machines and very long individual trials remain verification items.
+
+Reproduce with new output paths (the generated files are deliberately large):
+
+```bash
+python3 analysis/timeline/benchmark_fixture.py /path/to/synthetic-recording.jsonl --seconds 60
+python3 analysis/replay_timeline.py /path/to/synthetic-recording.jsonl \
+  --output /path/to/synthetic-data.json --html /path/to/synthetic-timeline.html
+node analysis/timeline/benchmark.cjs /path/to/synthetic-timeline.html /path/to/new-report.json
+```
+
+The [saved measurements, fixture hashes and limitations](../analysis/timeline/benchmarks/2026-10-01/capacity.json) contain no participant data. These checks retain all observations; no sample decimation was used to make the test pass.
