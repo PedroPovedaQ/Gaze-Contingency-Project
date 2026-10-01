@@ -1,6 +1,6 @@
 # Vive Focus Vision: gaze accuracy and measurement plan
 
-Date: 2026-09-28. **Protocol proposal / implementation plan**, grounded in the current checkout and primary sources. No new gaze runtime implementation or headset validation was performed. Existing uncommitted voice/guidance work is preserved.
+Date: 2026-09-28; implementation status updated October 1. **Protocol proposal / implementation plan**, grounded in the source audit below. The September 28 baseline is historical. The diagnostic, shared stream, spatial validation workflow, raw/replay joins and candidate-analysis reports are now implemented locally; see [current implementation and checks](../gaze-measurement-validation.md). Hardware accuracy, native 120 Hz and physiological event validity remain unverified. Research acceptance criteria below remain proposals.
 
 ## Recommendation
 
@@ -25,9 +25,9 @@ These are a targeted set of methods papers and the relevant earlier study refere
 
 The supplied PeriSpike screenshot remains contextual evidence only: its Quest Pro 90 Hz and normalized-viewport settings are not Focus Vision settings. A complete identifiable paper is needed before adopting additional methods from that excerpt.
 
-## Implemented baseline and concrete gaps
+## Historical September 28 baseline and concrete gaps
 
-Audit paths are relative to this repository.
+Audit paths are relative to this repository. This table describes the pre-implementation audit, not the October 1 runtime. The current stream retains invalid/transition rows, gates guidance on validity/freshness, exposes optional HTC signals and no longer mutates gaze through the visual X flip.
 
 | Area | Current evidence | Missing mechanism |
 |---|---|---|
@@ -48,6 +48,8 @@ Audit paths are relative to this repository.
 **Source-audited limitation:** installed `ViveEyeTracker.cs` lines 558–591 requests `predictedDisplayTime` and initializes the output time to that value. Do not treat that field as verified capture time. Neither the tutorial's `Update()` polling nor this wrapper demonstrates a native sample queue. Do not patch `Library/PackageCache` as the permanent solution.
 
 **Open decision:** genuine 120 Hz capture depends on a supported way to retrieve distinct source observations and establish timestamp semantics. A faster timer, 120 FPS, repeated rows, interpolation, or changing predicted gaze values cannot prove it. If the current API only exposes a frame-delivered pose, record the achieved rate and limitation. Do not switch SDK, streaming mode or device without an explicit design decision.
+
+**October 1 source audit:** [clock semantics and connected-device evidence plan](../vive-eye-clock-audit.md). HTC's result time denotes the requested information time; EXT sample time may be clamped, predicted or interpolated and is not exposed by the current managed pose control. Neither alone proves raw sensor identity. Keep native capture time/sequence unknown until the supported acquisition contract is established.
 
 ## Sequenced implementation
 

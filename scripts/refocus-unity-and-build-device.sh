@@ -16,8 +16,8 @@ end tell
 APPLESCRIPT
 then
     echo "Unity focused, but menu dispatch failed." >&2
-    echo "Grant Accessibility permission to your terminal/Codex app in:" >&2
-    echo "System Settings > Privacy & Security > Accessibility" >&2
+    echo "Check that the Mac is unlocked and the intended Unity project's Tools > Codex menu is available." >&2
+    echo "If macOS reports an authorization error, check System Settings > Privacy & Security > Accessibility." >&2
     exit 1
 fi
 

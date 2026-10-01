@@ -2,6 +2,8 @@
 
 **Implemented locally; hardware validation pending.** This change implements the measurement tools and pilot guidance policy from the [measurement plan](plans/2026-09-28-vive-eye-gaze-measurement-plan.md). It does **not** establish native 120 Hz acquisition, task-wide eye accuracy, validated fixations/blinks/saccades, or an eye-derived workload measure.
 
+The [October 1 clock audit](vive-eye-clock-audit.md) separates HTC requested pose time, EXT expressed pose time and physical sensor capture time. The current managed adapter cannot establish the latter; the proposed native diagnostic route is not enabled or validated.
+
 ## What changed
 
 - `SharedGazeStream` captures the OpenXR EXT Input System eye pose and input-event timestamp. Guidance, readiness, trial intersection summaries and replay consume the same snapshot/ray. It never substitutes head gaze. Input age, tracking/pose validity, application focus and available bilateral HTC validity gate new decisions.
