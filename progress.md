@@ -1,3 +1,9 @@
+## 2026-10-07 — recover the saved study implementation
+
+- Restored tracked source at `8da2eea` into the managed `gaze-recovered` worktree on `codex/recovered-study-20261007`; original edits remain untouched. The two older missing protocol/material checkpoints are already included, and no extra staged changes remain in their missing worktree indexes.
+- Re-ran all 156 analysis tests successfully and verified shared Python environment helpers. Preserved surviving P020 preview HTML and embedded nine-trial data with hashes as derived, incomplete evidence. Original raw P020 files, generated results and APK were not found in checked local locations; headset copies remain unchecked because no device is connected.
+- Documented voice hint preparation, local geometry/phrase selection, cache playback, interruption and timing. Identified the stale self-similar `FirstPerson` audio metadata label for follow-up; no runtime logic changed. No build, deployment, paid audio calls or push. See `docs/overnight/2026-10-07-recovery.md`.
+
 ## 2026-10-01 — overnight continuation
 
 - 06:00 EDT: overnight work window complete. Final handoff reconciled: approved three-script restore is complete; #11/#23/#24 issue bodies read back exactly with remaining device/research gates and In Progress status. Corrected phrase inventory to 44 guidance variants plus four success responses. Current APK fingerprint remains verified; Build And Run was dispatched, but no terminal result or connected Vive is present. No push or headset acceptance claim.
