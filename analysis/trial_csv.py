@@ -19,12 +19,19 @@ from pathlib import Path
 from typing import Any
 
 from mega_csv import csv_rows, replay_rows
+from motion_csv import write_motion_package
+from trial_zones import ZoneVisits
+from tlx_scoring import score_tlx
 
-SCHEMA = "trial-performance-subjective-v1"
+SCHEMA = "trial-performance-subjective-v2"
 CONTACT_METHOD = "first_explicitly_tracked_ray_intersection_snapshot_v1"
 MOTION_METHOD = "tracked_frame_and_selection_intervals_v2"
 BASE_FIELDS = [
     "export_schema",
+    "session_mode",
+    "data_purpose",
+    "exclude_from_study_analysis",
+    "analysis_exclusion_reason",
     "participant_id",
     "run_number",
     "session_id",
@@ -68,9 +75,16 @@ BASE_FIELDS = [
     "controller_contact_status",
     "contact_method",
     "final_gaze_method",
-    "time_to_final_correct_zone_seconds",
+    "completion_timing_definition",
     "zones_visited_count",
+    "unique_zones_visited_count",
+    "zone_transition_count",
+    "zone_revisit_count",
+    "zone_observation_gap_count",
     "zone_measurement_status",
+    "zone_measurement_method",
+    "zone_stability_seconds",
+    "zone_max_gap_seconds",
     "gross_head_translation_m",
     "gross_head_translation_x_m",
     "gross_head_translation_y_m",
@@ -107,6 +121,8 @@ BASE_FIELDS = [
     "geometry_reference_search_seconds",
     "scheduled_height_delta_m",
     "scheduled_height_reference",
+    "scheduled_height_reference_y_m",
+    "scheduled_height_status",
     "schedule_version",
     "target_identity_policy",
     "height_assignment_policy",
@@ -130,6 +146,9 @@ BASE_FIELDS = [
     "nasa_tlx_effort",
     "nasa_tlx_frustration",
     "nasa_tlx_score",
+    "nasa_tlx_scoring_method",
+    "nasa_tlx_scoring_status",
+    "nasa_tlx_performance_direction",
     "quality_flags",
     "source_summary",
     "source_trial_json",
@@ -212,6 +231,24 @@ def encode(value: Any) -> str:
     return str(value)
 
 
+def data_labels(summary: dict, run: Path, practice: bool = False) -> dict:
+    """Label explicit non-study runs; an unknown legacy mode is not certification."""
+    mode = summary.get("session_mode") or "not_recorded"
+    participant = str(summary.get("participant_id", ""))
+    if mode == "synthetic_demo" or participant.startswith("SYNTHETIC_"):
+        purpose, excluded, reason = "synthetic", True, "synthetic_demo"
+    elif mode == "neutral_quick_test" or participant == "DEV_NEUTRAL" or "dev_quick_test_" in run.name:
+        purpose, excluded, reason = "development", True, "neutral_quick_test"
+    elif mode == "study":
+        purpose, excluded, reason = "study_declared", False, ""
+    else:
+        purpose, excluded, reason = "unknown", None, "session_mode_not_recognized_or_recorded"
+    if practice:
+        excluded, reason = True, "practice"
+    return dict(session_mode=mode, data_purpose=purpose,
+                exclude_from_study_analysis=excluded, analysis_exclusion_reason=reason)
+
+
 @dataclass
 class Trial:
     row: dict
@@ -242,11 +279,16 @@ class Trial:
     rotation: float = 0
     move_axes: list = field(default_factory=lambda: [0.0, 0.0, 0.0])
     rot_axes: list = field(default_factory=lambda: [0.0, 0.0, 0.0])
+    zones: ZoneVisits = field(default_factory=ZoneVisits)
+    planned_target_y: float | None = None
 
     def consume(self, r: dict, max_gap: float) -> None:
         kind = r["kind"]
         elapsed = nonnegative(r.get("searchSeconds"))
+        if not self.started:
+            self.zones.capture_cross(r)
         if kind == "trial":
+            self.zones.layout = r.get("layout")
             targets = [o for o in r.get("objects", []) if o.get("target") is True]
             if len(targets) > 1:
                 raise ValueError(f"Multiple replay targets: {self.row['trial_id']}")
@@ -292,6 +334,7 @@ class Trial:
                 pos = vector(self.target.get("position"))
                 if pos:
                     self.row.update(zip(("target_x", "target_y", "target_z"), pos))
+                    self.planned_target_y = pos[1]
             return
         # Object movement must affect the next geometry sample; never regenerate
         # positions from a seed or mix world CSV coordinates with replay poses.
@@ -303,10 +346,21 @@ class Trial:
             if self.started:
                 raise ValueError(f"Duplicate search onset: {self.row['trial_id']}")
             self.started = True
+            if (self.zones.layout == "rotational_scatter_v4" and
+                    self.zones.cross_y is not None and self.planned_target_y is not None):
+                self.row.update(
+                    scheduled_height_delta_m=self.planned_target_y-self.zones.cross_y,
+                    scheduled_height_reference="recorded_readiness_cross_y_v1",
+                    scheduled_height_reference_y_m=self.zones.cross_y,
+                    scheduled_height_status="observed_trial_layout_relative_to_cross",
+                )
             if self.row.get("outcome") in (None, "not_started"):
                 self.row["outcome"] = "incomplete"
             return
+        if kind == "application_paused":
+            self.zones.gap()
         if kind == "search_paused":
+            self.zones.gap()
             self.paused = True
             self.previous_head = None
             self.previous_sample = None
@@ -316,6 +370,8 @@ class Trial:
             self.previous_sample = None
         if not self.started or self.ended or self.paused:
             return
+        if kind in ("sample", "selection"):
+            self.zones.observe(r)
         if elapsed is None:
             self.flags.add("missing_active_search_clock")
             return
@@ -538,10 +594,17 @@ class Trial:
             contact_method=CONTACT_METHOD,
             final_gaze_method="last_observed_tracked_target_intersection_not_fixation",
             head_rotation_method="shortest_quaternion_increment_fixed_frame_rotation_vector_axes_v1",
-            zone_measurement_status="not_exported_pending_zone_definition",
+            completion_timing_definition="final_correct_controller_selection"
+            if row.get("selection_method") in ("controller_ray_trigger", "controller_ray_trigger_press_v1")
+            else "legacy_gaze_dwell_completion" if "dwell" in (row.get("selection_method") or "").lower()
+            else "recorded_completion_method_not_documented",
             repeat_count_status=row.get("repeat_count_status", "not_recorded_as_distinct_request_delivery_events"),
-            subjective_scoring_status="raw_responses_only",
+            subjective_scoring_status="raw_responses_and_explicit_tlx_mean"
+            if row.get("nasa_tlx_scoring_status") == "scored_all_six_dimensions" else "raw_responses_only",
         )
+        row.update(self.zones.fields())
+        row.setdefault("scheduled_height_status", "missing_recorded_cross_or_target_layout")
+        row.setdefault("nasa_tlx_scoring_status", "no_nasa_tlx_response")
         row["quality_flags"] = ";".join(sorted(self.flags))
         return row
 
@@ -563,6 +626,7 @@ def read_summary(run: Path) -> tuple[dict, dict[str, Trial]]:
             block = index // int(summary["rounds_per_block"])
         row = {
             "export_schema": SCHEMA,
+            **data_labels(summary, run),
             "participant_id": participant,
             "run_number": run_number,
             "session_id": session,
@@ -813,6 +877,7 @@ def add_replays(
                     trials[tid] = Trial(
                         {
                             "export_schema": SCHEMA,
+                            **data_labels(summary, run, practice=True),
                             "participant_id": expected[0],
                             "run_number": None,
                             "session_id": None,
@@ -874,7 +939,7 @@ def join_surveys(
     inputs: set[Path],
     warnings: list[str],
 ) -> None:
-    native = run / "nasa_tlx.csv"
+    native = (run / "nasa_tlx.csv").resolve()
     paths = ([native] if native.exists() else []) + paths
     names = set()
     seen = set()
@@ -960,6 +1025,7 @@ def join_surveys(
                         "frustration",
                     ):
                         t.row["nasa_tlx_" + item] = r.get(item)
+                    t.row.update(score_tlx(r))
     for t in trials.values():
         t.row.setdefault(
             "survey_status",
@@ -983,12 +1049,23 @@ def export(
     replays: Path | None = None,
     survey_paths: list[Path] | None = None,
     max_gap_seconds: float = 0.1,
+    include_motion: bool = False,
 ) -> dict:
     run, output = run.resolve(), output.resolve()
     if output.exists():
         raise FileExistsError(f"Choose a new export directory: {output}")
     if not math.isfinite(max_gap_seconds) or max_gap_seconds <= 0:
         raise ValueError("max_gap_seconds must be finite and positive")
+    # Snapshot before parsing: a change during the first pass must not become
+    # the accepted baseline for a later motion pass or the provenance manifest.
+    candidates = {run / name for name in (
+        "trial_summary.json", "trial_schedule.csv", "object_manifest.csv",
+        "trial_events.csv", "voice-library-manifest.json", "nasa_tlx.csv")}
+    candidates.update(path.resolve() for path in survey_paths or [])
+    if replays is not None:
+        candidates.update(path.resolve() for path in (
+            [replays] if replays.is_file() else replays.rglob("recording.jsonl")))
+    initial_fingerprints = {path.resolve(): fingerprint(path.resolve()) for path in candidates if path.is_file()}
     summary, trials = read_summary(run)
     inputs = {run / "trial_summary.json"}
     warnings = []
@@ -1004,6 +1081,9 @@ def export(
     add_source_records(run, summary, trials, inputs)
     add_replays(run, replays, summary, trials, inputs, warnings, max_gap_seconds)
     join_surveys(run, summary, trials, survey_paths or [], inputs, warnings)
+    inputs = {path.resolve() for path in inputs}
+    if not inputs.issubset(initial_fingerprints):
+        raise ValueError("Source files changed during export; use copied, stopped recordings")
     rows = [t.finish() for t in trials.values()]
     fields = (
         BASE_FIELDS + sorted(set().union(*(r.keys() for r in rows)) - set(BASE_FIELDS))
@@ -1012,17 +1092,18 @@ def export(
     )
     manifest = {
         "schema": SCHEMA,
+        **data_labels(summary, run),
         "participant_id": str(summary["participant_id"]),
         "run_number": summary["run_number"],
         "trial_count": len(rows),
         "max_motion_gap_seconds": max_gap_seconds,
         "warnings": sorted(set(warnings)),
-        "inputs": [fingerprint(p) for p in sorted(inputs)],
+        "inputs": [initial_fingerprints[p] for p in sorted(inputs)],
         "trials": [],
         "contact_policy": CONTACT_METHOD
         + "; interaction proxy, no persistence threshold, not validated fixation",
         "motion_policy": "observed adjacent tracked samples only; no bridging pauses, invalid tracking or gaps; no interpolation",
-        "geometry_policy": "first tracked post-onset head pose to recorded target; vertical quota reference remains unspecified",
+        "geometry_policy": "first tracked post-onset head pose to recorded target; planned height uses recorded cross Y at readiness, not head Y",
         "survey_policy": "raw responses repeated with scope/provenance; do not count block answers as independent trial observations",
         "missing_policy": "blank means unavailable/not observed; see status columns; zero requires observed evidence",
         "reconstruction_policy": "retain source JSONL/audio/scene/gaze files; these summaries do not replace them",
@@ -1053,6 +1134,10 @@ def export(
                 {"trial_id": tid, "file": name, "is_practice": row["is_practice"]}
             )
         write(staged / "trials.csv", rows)
+        if include_motion:
+            manifest["motion"] = write_motion_package(staged, rows, manifest["trials"])
+        if manifest["inputs"] != [fingerprint(p) for p in sorted(inputs)]:
+            raise ValueError("Source files changed during export; use copied, stopped recordings")
         (staged / "manifest.json").write_text(
             json.dumps(manifest, indent=2, ensure_ascii=False) + "\n"
         )
@@ -1069,9 +1154,11 @@ def main() -> None:
     parser.add_argument("--replays", type=Path)
     parser.add_argument("--survey", type=Path, action="append", default=[])
     parser.add_argument("--max-motion-gap-seconds", type=float, default=0.1)
+    parser.add_argument("--motion", action="store_true", help="Also export separate raw motion CSVs from matched replays")
     args = parser.parse_args()
     report = export(
-        args.run, args.output, args.replays, args.survey, args.max_motion_gap_seconds
+        args.run, args.output, args.replays, args.survey, args.max_motion_gap_seconds,
+        include_motion=args.motion,
     )
     print(f"Exported {report['trial_count']} trials to {args.output}")
     for warning in report["warnings"]:

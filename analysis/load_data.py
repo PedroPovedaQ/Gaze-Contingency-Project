@@ -8,6 +8,7 @@ from pathlib import Path
 import pandas as pd
 import csv
 import re
+from tlx_scoring import score_tlx
 
 
 SUMMARY_COLUMNS = [
@@ -320,18 +321,22 @@ def load_nasa_tlx(data_dir: Path) -> pd.DataFrame:
     Columns: participant_id, condition, mental, physical, temporal,
              performance, effort, frustration
 
-    Raw TLX = sum of all 6 subscale scores (each 0-100).
+    Raw TLX = mean of all six dimensions (0-100), only with explicit scale
+    metadata and performance direction. Historical raw dimensions are retained.
     """
     frames = []
     for tlx_path in sorted(data_dir.rglob("nasa_tlx.csv")):
         try:
             df = pd.read_csv(tlx_path, encoding="utf-8-sig")
-            subscales = ["mental", "physical", "temporal", "performance", "effort", "frustration"]
+            if df.empty:
+                continue
             if "condition" in df.columns:
                 df["run_condition"] = df["condition"]
                 df["condition"] = df["condition"].apply(_normalize_tlx_condition)
-            if all(column in df.columns for column in subscales):
-                df["raw_tlx"] = df[subscales].sum(axis=1)
+            scored = pd.DataFrame([score_tlx(row) for row in df.to_dict("records")], index=df.index)
+            for column in scored.columns:
+                df[column] = scored[column]
+            df["raw_tlx"] = pd.to_numeric(scored["nasa_tlx_score"], errors="coerce")
             df["source_file"] = str(tlx_path)
             frames.append(df)
         except (OSError, ValueError) as error:

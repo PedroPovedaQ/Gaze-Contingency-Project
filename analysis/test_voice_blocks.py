@@ -99,8 +99,22 @@ class VoiceBlockTests(unittest.TestCase):
                 "P001,gaze_aware_voice-selfsimilar,20,20,20,20,20,20,1,1\n")
             rows = load_nasa_tlx(Path(directory))
             self.assertEqual(list(rows.block), [0, 1])
-            self.assertEqual(list(rows.raw_tlx), [60, 120])
+            self.assertTrue(rows.raw_tlx.isna().all())
+            self.assertEqual(list(rows.nasa_tlx_scoring_status), ["missing_scale_metadata"] * 2)
             self.assertEqual(len(set(rows.run_condition)), 2)
+
+    def test_tlx_partial_file_cannot_supply_an_unvalidated_preexisting_total(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory, "nasa_tlx.csv")
+            path.write_text("participant_id,mental,raw_tlx,scale_min,scale_max,performance_direction\n"
+                            "P001,10,300,0,100,high_is_poor\n")
+            rows = load_nasa_tlx(Path(directory))
+            self.assertTrue(rows.raw_tlx.isna().all())
+            self.assertEqual(rows.nasa_tlx_scoring_status.iloc[0], "missing_or_invalid_dimension")
+            path.write_text("participant_id,mental,physical,temporal,performance,effort,frustration,scale_min,scale_max,performance_direction\n"
+                            "P001,10,20,30,40,50,60,0,100,high_is_poor\n")
+            rows = load_nasa_tlx(Path(directory))
+            self.assertEqual(rows.raw_tlx.iloc[0], 35)
 
     def test_two_orders_keep_search_time_and_pair_only_complete_runs(self):
         with tempfile.TemporaryDirectory() as directory:

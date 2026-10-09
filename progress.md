@@ -1,3 +1,134 @@
+## 2026-10-08 — GitHub checkpoint
+
+- Prepared all current recovered-study changes for GitHub in two commits: headset guidance/readiness/prompt/menu fixes, and trial analysis/desktop replay with supporting documentation. Retained the existing build and test evidence below.
+- Checked changed files for credential patterns, oversized files and whitespace errors; ignored API configuration, build outputs and local participant recordings remain outside the commit. Target: `origin/codex/recovered-study-20261007`.
+
+## 2026-10-08 — Stationary eye and settings controls
+
+- **Implemented locally:** removed per-frame head following from the Eye Check launcher, diagnostic panel and left settings controls. Menus anchor in world space and stay upright while the head turns, tilts or translates. Opening/reopening places panels near the current view once; starting a validation check moves its panel below the target grid once, using the same fixed anchor as the dots.
+- Pause/Continue checkpoints also stay world-fixed and reposition only when shown again after Settings closes. Right-ray input, hover haptics, pause behavior and diagnostic target measurements remain unchanged.
+- Explicitly refreshed Unity scripts and passed the full study integration suite, including a new head-translation/yaw/pitch/roll regression for launchers, open panels and Continue, plus reopening placement. Android Build And Run succeeded in 63.7 seconds; verified fresh install and running PID 32016 on Vive FA5AR3N00385 with activity status ok. Existing device data retained. Wearer comfort/reach check remains. No commit/push.
+
+## 2026-10-08 — Sustained target confirmation and continuing guidance
+
+- **Implemented locally:** “You're on it!” after a 1.5-second tracked right-controller target hold, with valid nearby gaze at speech onset. Blinks do not erase controller evidence; confirmation finishes through a later pointer departure, while invalid gaze and lifecycle stops still interrupt.
+- Added “Keep going.” for same-direction progress; retained explicit directions when stalled, moving away, changing direction or manually requesting a repeat. Added 0.35-second speech settling and within-wall hysteresis, and suppressed redundant same-direction overshoot interruptions.
+- Inspected the latest development recording: pointing speech was cancelled about 0.06 seconds after commitment and a downward hint was immediately replaced by a downward return cue. Original recording retained on device; read-only local copy at `/tmp/gaze-guidance-followup/recent.jsonl`.
+- Gaze-policy, rotational-layout and voice-isolation tests passed; first new tests failed against missing behavior before implementation. Unity integration passed including the runtime 1.5-second hold and controller evidence during a blink. Final foreground Unity integration passed. Android Build And Run succeeded in 86.1 seconds (`/tmp/gaze-prompt-editor-20261008.log`); verified fresh install, running PID 30761 and activity status ok on Vive FA5AR3N00385. Existing data retained. Scoped inline review per AGENTS (no subagents): reused the entry gate, consolidated direction/error logic and checked speech priority after controller departure. No commit/push. Wearer validation remains.
+
+## 2026-10-08 — Auditable P020 gaze-coordinate correction
+
+- Added an exact-recording correction profile keyed by SHA-256, recording ID and build GUID. It reverses the historical local-X origin reflection using each saved XR-origin pose; direction is unchanged and the actual eye–head offset is retained.
+- Replay distinguishes Corrected gaze from original Raw gaze. Missing valid reference data suppresses correction, without substituting a head-anchored ray. No recording, hit ID, summary or trial metric is rewritten.
+- Added a separate derived CSV/audit exporter: 9,703 sample rows, 8,134 tracked corrections, explicit invalid gaps, source hash and profile. Median gaze–head offset 1.655 m → 0.0241 m. Readiness cross angle median 20.66° → 8.40°; remaining error is not calibrated accuracy, and readiness membership is not independent ground truth.
+- Added synthetic reflection/frame-transform tests and real-file regression checks for every tracked sample, original-data preservation and reference validity. Current study Assets remain untouched.
+
+## 2026-10-08 — Larger replay display selectors
+
+- Replaced tiny viewport checkboxes with 42-pixel-high clickable controls, 16-point labels and 22-pixel state boxes. Seven display options wrap into two to four columns based on available width.
+- Reserved space below the viewport for all controls and the room-context note; display toggles retain existing behavior.
+
+## 2026-10-08 — Seated replay chair clearance
+
+- Moved the complete illustrative chair 14 cm backward relative to the avatar to reduce seat/knee clipping; body and recorded head/controllers are unchanged.
+- Built Trial Review 1.8, passed the existing Unity verification suite and real P020 checks, and visually inspected seating at 30 s. Updated both P20 launchers. Researched alternative Kenney appearances; no avatar replacement selected or installed.
+
+## 2026-10-08 — Remove irrelevant left-controller replay ray
+
+- Desktop replay now omits the left-controller ray while retaining right-controller and eye-gaze rays. Historical left-hand data and controller/hand model remain unchanged.
+- Change is confined to the standalone renderer adapter; added a both-controllers-tracked regression check. No main study Assets changes.
+
+## 2026-10-08 — Gaze visible before cross charge completes
+
+- Fixed the desktop replayer eye-origin ray being gated only by object visibility. It now also appears during fresh, active, unpaused readiness, including zero and partial cross charge.
+- Valid head/gaze and freshness checks still apply; pause, transition and stale samples suppress the ray. Study recording data and main Unity project are unchanged.
+- Added regression coverage for readiness visibility, recovery, toggles and rewind, and a real P020 charging-sample check (0.5474 s, 8.34% charge).
+
+## 2026-10-08 — Replay wall and room toggles
+
+- Implemented locally in Trial Review 1.5: independent Study walls and Room background toggles. Eight-wall rotational snapshots get inferred octagon outlines; the generic backdrop adds a neutral floor/grid and cutaway outer walls. Both default on and are labeled illustrative/inferred.
+- Context uses snapshot origin/rotation and object extents; no study object, tracking, or measurement data changes. Unknown layouts do not get invented octagonal study walls.
+- New Unity checks pass for independent toggles, radius/origin/rotation, trial switching/rewind, empty/unknown snapshots and data preservation. Existing replay checks plus 98 P020 camera samples and three Python tests pass. Built and visually checked the P020 room/walls; updated launchers to 1.5. Main study Assets/device untouched.
+
+## 2026-10-08 — Replay hands and eye-origin presentation
+
+- Implemented locally in the isolated Trial Review desktop viewer: both hands follow recorded controller grip anchors using deterministic two-bone IK; elbows/arm length adaptation remain illustrative. Controllers retain exact recorded transforms. Extreme reach is bounded and disclosed; invalid tracking resets the affected arm.
+- Added default eye-origin gaze display and separate Raw gaze toggle. The display preserves recorded direction and discloses raw-origin distance; no recorded samples, hit IDs, or metrics change. P020 at 30 s has about 1.52 m raw-head origin separation, requiring a separate coordinate audit.
+- Built and visually inspected Trial Review 1.4 on P020. New Unity checks pass for both hands, grip orientation/position, limits, rewind, gaps, invalid tracking, eye origin/direction and raw preservation. Existing replay/audio/CSV checks, 98 real camera samples and three Python preparation checks pass.
+- Updated P20 launchers. Main study Assets, Unity session and headset build were not changed by this replay work. Finger gripping and participant-specific body proportions remain illustrative/untracked.
+
+## 2026-10-08 — immediate vertical arrival and controller/gaze confirmation
+
+- **Implemented locally:** area arrival includes immediate up/down refinement in one prepared clip; pointing confirmation requires an exact right-controller target hit plus valid gaze in an expanded circular angular region. Fresh controller telemetry and audio-fade revalidation prevent stale confirmations; stable-entry/latching avoid continuous repeats.
+- Added development-only admin wrist controls for the target vicinity ring and 0–20° extra radius (1° steps, default 6°). Study sessions hide the ring and retain the default; selection colliders and raw gaze remain unchanged. Added angular/ray evidence and admin-setting events to guidance decision snapshots.
+- **Verification in progress:** the new phrase-library regression first failed for the missing arrival clip, then passed. Rotational layout, gaze policy/history and voice isolation scripts pass. Unity integration passed for angular vicinity, correct/distractor target hits, stale controller data, and development-only settings. A scoped inline correctness/reuse/quality/efficiency review kept the radius separate from selection/fixation data, removed redundant opening state, and aligned follow-up guidance with vertical-first arrival. Final foreground Unity integration passed, including rendered-ring geometry verification; inspected `/tmp/gaze-vicinity-ring-preview.png`. Development ring previews remain live while settings pause the trial, without advancing speech or guidance gates. Final Android Build And Run succeeded in 407.7 seconds (`/tmp/gaze-prompt-editor-20261008.log`); verified install timestamp, running PID 28816 and activity launch status ok on Vive FA5AR3N00385. Existing app data retained. Hardware tolerance validation remains open.
+
+## 2026-10-08 — human, Vive controllers and swivel chair in replay (side chat)
+
+- **Implemented locally:** CC0 Kenney human in third-person/overhead, seated on an illustrative swivel chair; official Focus 3 controller meshes from the installed SDK follow independent recorded controller poses. First person hides the body; tracking gaps hide unavailable models.
+- Chair seat follows estimated torso yaw while recorded head rotation remains independent. A labeled display-only neck allowance/turn-rate estimate supports deterministic scrubbing; actual torso/chair motion was not recorded. Static hands do not imply tracked full-body pose.
+- Trial Review 1.3 Mac build and new actor/torso checks passed, as did P020 pose/CSV checks and three isolation tests. Opened and visually verified P020 third person. Vendor notices/provenance included. No study/device modifications, commit or push.
+
+## 2026-10-08 — standalone Trial Review desktop app (side chat)
+
+- **Implemented locally:** separate macOS Unity app with first-person recorded-head reconstruction, orbit/overhead, saved audio, trial/event/sample navigation, timeline and decoded sample inspector, plus exact-hash-matched final performance/subjective CSV context. Reuses shared replay code in an isolated generated project; no live-study Assets/settings changed.
+- Universal app built successfully; three isolation tests and Unity state/audio/CSV checks passed. Verified 98 P020 head poses across nine recorded trials and matching actual CSV joins. App launched with copied P020 package; truncated ending is prominently labeled. Native UI mouse automation was unreliable; hands-on controls/audio validation remains.
+- **Open:** MP4 export, passthrough footage and embodied third-person avatars are outside this version. No device deployment, commit or push. See `work_log/2026-10-08-trial-review-desktop-side-chat.md` and `tools/trial-review/README.md`.
+
+## 2026-10-08 — shared coaching-style study prompts
+
+- **Implemented locally:** one `StudyPromptCard` resource/component supplies the original coaching Inter font, dark surface, rounded template sprite and shared button/text styling across voice setup, recording/loading/audio checks, start/readiness instructions, trial status and block/completion screens. Rewrote participant instructions as a brief heading plus an action. Survey item wording, scoring, hidden-target rules and gaze-cross stimulus remain unchanged.
+- Removed the redundant original Coaching UI scene instance and its wrist-menu relaunch button; kept the shared style source prefab. Clarified that surface selection is obsolete: removed surface-tap copy from study setup; current eight-wall trials start through seated centering, without a surface tap. Checkpoint cards now also use the shared component. Preserved background ray blocking in the shared card.
+- Original CoachingCardRoot sprite reference was missing in this recovered project; the shared card uses the surviving rounded sprite from the same MR template. Resource generation validates both sprite and font. Reused original screen actions/layouts, right-ray trigger confirmation, haptic hover, six avatars and selection borders.
+- **Verification:** first full Unity integration and ray-menu checks passed; inspected rendered voice menus and survey. Corrected underlying participant-status text showing through survey headers. Final ray-menu and full study-integration checks passed (`/tmp/gaze-prompt-final-ui-20261008.log`, `/tmp/gaze-prompt-final-integration-20261008.log`); rendered setup/voice/survey/completion cards inspected. Final ray-menu checks also passed in the foreground Editor after preserving card ray blocking. Final Android Build And Run succeeded (233.4 seconds; `/tmp/gaze-prompt-editor-20261008.log`), installed and launched on Vive FA5AR3N00385 (PID 20376; activity status ok). Existing data retained; wearer check of comfort/readability remains. Scoped inline reuse/quality/efficiency review removed obsolete color parameters; review stayed within prompt edits, preserving pre-existing research/runtime/analysis work.
+
+## 2026-10-08 — clarified trial measurements and NASA-TLX scoring (side chat)
+
+- **Implemented locally:** v2 offline export uses final correct selection timing, unique zones plus stable transitions/revisits, and planned target height relative to the recorded readiness-cross/plane midpoint. Valid gaze and source-aware continuity gate observed zone counts; debounce is a pilot export policy, not fixation validation. Removed the proposed incomplete-trial pause calculation.
+- Added explicit six-dimension raw NASA-TLX mean (0–100), validated scale/direction metadata, corrected legacy totals and aligned subscale plots while preserving raw responses. Historical ambiguous surveys remain unscored.
+- Full analysis suite passed (178 tests); independent reviews completed and synthetic workbook/CSV package refreshed. **Open:** headset validation, runtime survey endpoint labels and scale metadata, and any height-balancing quotas. No Unity/device/build, commit or push actions. Handoff: `work_log/2026-10-08-trial-demo-export-side-chat.md`.
+
+## 2026-10-08 — readiness cross rejected valid HTC eye data
+
+- **Diagnosed:** DEV_NEUTRAL run 002 never charged because EXT `isTracked` remained false; 4,264/4,999 inspected rows had at least one valid native eye, including 4,235 binocular rows. Native-binocular and EXT directions differed by a median 0.36 degrees; this agreement is not independent accuracy validation. The later headset-off rows correctly showed tracking loss.
+- **Implemented locally:** require fresh, explicitly valid binocular HTC rays plus tracked head/focus for a labeled derived-ray fallback when EXT is untracked. Retain raw EXT flags/poses; no fabricated validity, head fallback, loosened charge threshold or rate claim. Added regression for the observed flag disagreement, blinks, monocular loss, stale sources, absent tracking parent/head, invalid rays and preservation of valid EXT.
+- Red regression reproduced the bug in fresh Unity (`/tmp/gaze-native-red-20261008.log`). Final full Unity integration passed (`/tmp/gaze-native-final-check-20261008.log`) and focused gaze policy/history checks passed. Also separated offline raw EXT spatial/event/offset analysis from valid native-derived rows, with explicit source labeling/counts; preserved CSV/replay and used-ray availability. Native derived-ray accuracy and eye-event validation remain open. Targeted manual review kept unrelated branch/side-chat edits out of scope. All 179 analysis tests passed, including the source-separation regression. APK build succeeded (207.9 seconds; `/tmp/gaze-native-build-20261008.log`), installed with `adb install -r`, and cold-launched successfully on Vive FA5AR3N00385. Unity reopened, existing data retained. Physical cross charging and independent known-target accuracy still require the wearer.
+
+## 2026-10-08 — trial demo sheets and separate motion export (side chat)
+
+- **Implemented locally:** added optional per-trial/combined motion CSV export, explicit synthetic/development exclusion labels, and pre-read/final source fingerprint checks. Added reproducible three-case synthetic demo sheets, block survey examples and a full trial-column dictionary. Raw replay remains necessary for object/event/audio reconstruction.
+- Two independent reviewers checked joins, missingness, source provenance and all 156 example motion records. Fixed source-change and symlinked-survey regressions. Full analysis suite passed (162 tests); workbook inspected and rendered successfully.
+- **Open:** fresh headset export validation, final-zone/zone-count definitions, signed-height quota reference, and downstream filtering of development data. No Unity/device/build, commit or push actions here. See `work_log/2026-10-08-trial-demo-export-side-chat.md` for files, artifacts and main-chat handoff.
+
+## 2026-10-08 — quick-test first-trial readiness fix
+
+- Device run `DEV_NEUTRAL/run_001` stopped with `readiness_start_wall_mismatch` before search (0 seconds): the skipped practice sequence left the actual start at wall 0 while the saved schedule expected wall 3. Preserved the stopped run.
+- **Implemented:** quick-test schedules now anchor to the centered forward wall 0, with a distinct `quick-origin0-v1` schedule suffix and mode-aware cache invalidation. Normal study schedules still continue from the final practice target. All planned signed thetas and subsequent previous-target transitions remain unchanged.
+- Reproduced the defect with a failing regression, then passed the fixed schedule/voice tests, including same-ID mode switches. Added a Unity regression exercising the real readiness coroutine for all 40 quick-test transitions. Fresh Unity integration passed, including the actual readiness coroutine for all 40 quick-test transitions and a forward first cross. APK build succeeded (706.5 seconds), `adb install -r` succeeded, and cold launch returned `Status: ok` on Vive FA5AR3N00385. Existing data/audio retained. Verification/build logs: `/tmp/gaze-quick-origin-check-20261008.log` and `/tmp/gaze-quick-origin-build-20261008.log`. Cleared only unused LMDB lock files (preserved under `/tmp/gaze-unity-stale-locks-20261008-1791505598`) to recover a stalled Editor startup; asset databases remained intact.
+
+## 2026-10-08 — restore neutral voice configuration and relaunch
+
+- Diagnosed device failure: the recovered checkout had no ignored `Assets/StreamingAssets/api_keys.json`, leaving neutral synthesis without a provider credential. Linked the original project's existing local file into this checkout; the source remains unchanged, and the link is Git-ignored. No credential values were printed or committed.
+- Verified actual Eric speech synthesis for “The object is to the left.” with HTTP 200. Rebuilt and ran on the connected Vive successfully (113.5-second incremental build). Fresh device process 14532 reports `[VoiceAssist] Loaded API keys` and `Ready. Key=present`. Existing app data remains intact; Unity stays open.
+
+## 2026-10-08 — deploy neutral quick test to Vive
+
+- Corrected the Android build helper to set both the selected build-target group and BuildPlayer target group to Android. The installed OpenXR validator reads the selected group; stale desktop selection incorrectly rejected the already-enabled Android Composition Layers feature. No XR feature settings were changed.
+- Vive Focus Vision `FA5AR3N00385` is connected and authorized. Android APK built successfully in 572 seconds; `adb install -r` succeeded and Android launch returned `Status: ok` with the app process running (PID 12770). Existing app data was preserved. The headset was asleep at launch; sent a wake event and reissued launch successfully to the existing top-most app. Headset interaction still needs wearing/waking the Vive. Build log: `/tmp/gaze-neutral-quick-build-20261008.log`.
+
+## 2026-10-08 — neutral quick-test shortcut
+
+- **Implemented:** added a right-controller ray button on the first setup screen to enter a session-only neutral development mode. Eric's neutral library is prepared without clone enrollment; study intro, audio acceptance and practice are skipped, while centering, trial readiness, guidance and loggers remain active.
+- Runs contain one 40-trial block (or the existing shorter debug override), with matching schedule flags. `DEV_NEUTRAL`, the run-folder prefix, session-mode sidecar and trial-summary mode distinguish test data. New-participant reset restores normal study behavior. Audio preparation failures stay blocked with a neutral retry/cancel path.
+- Verification: focused voice checks pass for neutral-only preparation, missing clone, development identity, schedule and reset. Unity offline study integration passed, including the start-screen ray button, unarmed/no-audio guard and blocked quick-test failure path. Required Build And Run was dispatched but failed the existing OpenXR Composition Layers Support validation; no APK was deployed and no Vive is connected. Unity remains open. No paid/provider calls were made during development.
+
+## 2026-10-08 — initial target direction and gaze-history return cues
+
+- Implemented the first directional cue as “The object is to the left/right,” with truthful above/below/ahead cases when already horizontally aligned. Practice/new trials reset the opening; same-trial resume does not. Both voices prepare all 53 guidance phrases.
+- Added a bounded three-second target-relative gaze history with source IDs/timestamps and same-wall horizontal/vertical passage detection. Invalid/stale gaps, duplicate deliveries, device/recording changes and pauses cannot manufacture a crossing. Direction-specific return cues revalidate before interruption; frozen history is retained in guidance-decision telemetry. Thresholds are pilot settings, not validated fixation or perception evidence.
+- Focused gaze-history, rotational-layout and voice-isolation checks pass; all 156 Python analysis tests pass. Unity 6000.3.10f1 offline study integration passed, including opening-cue trial/resume lifecycle and history serialization (`/tmp/gaze-target-history-unity-verified-20261008.log`). No provider audio was requested during development.
+- Opened the recovered project in Unity and dispatched the required Build And Run; Android preprocessing failed OpenXR validation because Composition Layers Support is required by the installed Composition Layers package (`/tmp/gaze-target-history-editor-final-20261008.log`). No APK was deployed. No Vive is connected; headset behavior remains unverified. Unity remains open.
+
 ## 2026-10-07 — recover the saved study implementation
 
 - Restored tracked source at `8da2eea` into the managed `gaze-recovered` worktree on `codex/recovered-study-20261007`; original edits remain untouched. The two older missing protocol/material checkpoints are already included, and no extra staged changes remain in their missing worktree indexes.

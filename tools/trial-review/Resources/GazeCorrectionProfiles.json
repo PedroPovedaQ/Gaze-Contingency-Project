@@ -1,0 +1,12 @@
+{
+  "profiles": [
+    {
+      "id": "p020-local-x-unmirror-v1",
+      "recordingId": "72945966761b49a0941c46c758a073df",
+      "buildGuid": "d8e0752d47384428894824940cd543be",
+      "sha256": "cb68e2b79c69ab421b7f6c4562c669dfcb91f0f268e1d09b7cd74ef4b0ede362",
+      "method": "reflect_origin_across_recorded_xr_local_x_v1",
+      "evidence": "Historical EyeGazeRayVisual.LateUpdate flips localPosition.x only; d9868a7 study scene m_FlipX=1. P020 reflection residual to head 0.0222–0.0297 m across 8134 tracked samples. Recording hash limits applicability; other sessions require independent review. Direction is unchanged. Not a calibration or fixation validation."
+    }
+  ]
+}

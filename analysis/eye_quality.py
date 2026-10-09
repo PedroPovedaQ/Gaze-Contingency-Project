@@ -62,6 +62,15 @@ def valid_interval_seconds(row, dt, max_gap):
     return max(0, min(dt, freshness-float(row.get('ageSeconds', 0))))
 
 
+def raw_ext_valid(row):
+    """Used-ray validity must not rehabilitate the rejected raw EXT pose.
+
+    Native derived-ray spatial/event analysis needs a separate validated method.
+    Keep those rows for used-ray availability and CSV/replay, not EXT statistics.
+    """
+    return bool(row.get('valid')) and row.get('raySource', 'OpenXR_EXT') == 'OpenXR_EXT'
+
+
 def spatial_bias(accepted, segments):
     """World-frame bias and within-contiguous-segment radial angular spread.
 
@@ -195,14 +204,14 @@ def summarize(rows, settle=.25, max_gap=.1):
     spatial=[]
     for (validation,set_name,target), values in groups.items():
         start=values[0]['receiptTime']
-        accepted=[r for r in values if r.get('newInputUpdate') and r.get('valid') and r['receiptTime']-start>=settle]
+        accepted=[r for r in values if r.get('newInputUpdate') and raw_ext_valid(r) and r['receiptTime']-start>=settle]
         errors=[r['targetErrorDegrees'] for r in accepted]
         accepted_ids={id(r) for r in accepted}
         differences, segments, current = [], [], []
         previous = None
         for row in values:
             if not row.get('newInputUpdate'):
-                if not row.get('valid'):
+                if not raw_ext_valid(row):
                     if current: segments.append(current)
                     current, previous = [], None
                 continue
@@ -221,9 +230,9 @@ def summarize(rows, settle=.25, max_gap=.1):
         settled = [r for r in values if r.get('newInputUpdate') and r['receiptTime']-start >= settle]
         settled_rows = [r for r in values if r['receiptTime']-start >= settle]
         observed_seconds = settled_rows[-1]['receiptTime']-settled_rows[0]['receiptTime'] if settled_rows else 0.
-        valid_seconds = sum(valid_interval_seconds(a, b['receiptTime']-a['receiptTime'], max_gap)
+        valid_seconds = sum(valid_interval_seconds(dict(a, valid=raw_ext_valid(a)), b['receiptTime']-a['receiptTime'], max_gap)
                             for a,b in zip(settled_rows,settled_rows[1:]))
-        spatial.append(dict(validation_id=validation,set=set_name,target=target,
+        spatial.append(dict(validation_id=validation,set=set_name,target=target,spatial_ray_source="OpenXR_EXT",
                             samples=len(accepted),recorded_updates=sum(bool(r.get('newInputUpdate')) for r in values),
                             settled_updates=len(settled), invalid_settled_updates=len(settled)-len(accepted),
                             invalid_update_fraction=(len(settled)-len(accepted))/len(settled) if settled else None,
@@ -235,7 +244,9 @@ def summarize(rows, settle=.25, max_gap=.1):
                             precision_pairs=len(differences),
                             rms_s2s_deg=math.sqrt(statistics.mean(x*x for x in differences)) if differences else None,
                             **spatial_bias(accepted, segments)))
-    return dict(schema=1,report_version='eye-quality-v2-phase-aware',poll_rows=len(rows),input_updates=len(updates),elapsed_seconds=elapsed,
+    return dict(schema=1,report_version='eye-quality-v3-source-aware-ext',
+                native_fallback_rows=sum(r.get('raySource') == 'HTC_binocular_mean' for r in rows),
+                spatial_analysis_source='OpenXR_EXT_only; native derived ray requires separate validation',poll_rows=len(rows),input_updates=len(updates),elapsed_seconds=elapsed,
                 input_delivery_hz=1/statistics.mean(intervals) if intervals else None,
                 delivery_interval_median_ms=1000*percentile(intervals,.5) if intervals else None,
                 delivery_interval_p90_ms=1000*percentile(intervals,.9) if intervals else None,
@@ -267,7 +278,7 @@ def evaluate_offset(rows, fit_id, heldout_id, settle=.25):
     for (run,target),group in grouped.items():
         start=group[0]['receiptTime']
         for r in group:
-            if not r.get('valid') or r['receiptTime']-start<settle:continue
+            if not raw_ext_valid(r) or r['receiptTime']-start<settle:continue
             expected={k:r['validationTarget'][k]-r['rawWorldOrigin'][k] for k in ('x','y','z')}
             actual=angles(r['rawWorldDirection']);wanted=angles(expected)
             prepared.append((run,target,r,expected,actual,wanted))
@@ -308,11 +319,11 @@ def candidate_events(rows, velocity=60, min_fixation=.1, max_gap=.1, closed=.2):
         segment=None
     for row in rows:
         key=(row.get('sourceTrialId'),row.get('validationId'),row.get('targetId'),row.get('phase'),
-             row.get('deviceId'))
+             row.get('deviceId'),row.get('raySource', 'OpenXR_EXT'))
         if key!=context:
             flush();previous=None;blink=None;context=key
         if not row.get('newInputUpdate'):
-            if not row.get('valid'):
+            if not raw_ext_valid(row):
                 flush();previous=None
                 if blink is not None and row['receiptTime']-blink[1]>max_gap:blink=None
             continue
@@ -330,7 +341,7 @@ def candidate_events(rows, velocity=60, min_fixation=.1, max_gap=.1, closed=.2):
                 events.append(dict(kind='candidate_blink',start=blink[0],end=t,
                                    trial_id=row.get('sourceTrialId'),validation_id=row.get('validationId')))
             blink=None
-        if not row.get('valid'):
+        if not raw_ext_valid(row):
             flush();previous=None;continue
         if previous is None:
             previous=row;continue
@@ -403,7 +414,7 @@ def flat(row):
         if not row.get(side+'PupilValid'): result[side+'PupilMm']=None
         if not row.get(side+'OpennessValid'): result[side+'Openness']=None
     if not row.get('validationTargetPresent') or not row.get('valid'):
-        result['targetErrorDegrees']=result['mirroredOriginErrorDegrees']=None
+        result['targetErrorDegrees']=result['mirroredOriginErrorDegrees']=result['usedTargetErrorDegrees']=None
     return result
 
 

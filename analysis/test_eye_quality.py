@@ -18,6 +18,21 @@ def sample(t, direction=None, **extra):
 
 
 class EyeQualityTests(unittest.TestCase):
+    def test_native_fallback_cannot_validate_untracked_ext_measurements(self):
+        rows = [sample(1+i*.02, raySource='HTC_binocular_mean', tracked=False,
+                       validationTargetPresent=True, validationId='check', validationSet='validation',
+                       targetId='center', targetErrorDegrees=0, mirroredOriginErrorDegrees=0,
+                       usedTargetErrorDegrees=2) for i in range(20)]
+        report = summarize(rows, settle=0)
+        self.assertEqual(report['spatial'][0]['samples'], 0)
+        self.assertEqual(report['spatial'][0]['valid_seconds'], 0)
+        self.assertIsNone(report['spatial'][0]['median_error_deg'])
+        self.assertEqual(report['native_fallback_rows'], 20)
+        self.assertEqual(candidate_events(rows), [])
+        # CSV retains the labeled used ray; invalid target errors never become measured zero.
+        self.assertEqual(flat(rows[0])['raySource'], 'HTC_binocular_mean')
+        self.assertIsNone(flat(dict(rows[0], valid=False))['usedTargetErrorDegrees'])
+
     def test_json_reader_rejects_truthy_strings_and_boolean_numbers(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory)/'gaze_observations.jsonl'
@@ -137,7 +152,7 @@ class EyeQualityTests(unittest.TestCase):
             self.assertEqual(exported[0]['calibration_id'],'')
             self.assertEqual(exported[0]['exclusion_reason'],'')
             report=json.loads((output/'quality_report.json').read_text())
-            self.assertEqual(report['report_version'],'eye-quality-v2-phase-aware')
+            self.assertEqual(report['report_version'],'eye-quality-v3-source-aware-ext')
             self.assertEqual(report['trials'][0]['valid_time_fraction'],1)
             self.assertFalse(report['recording_end_status']['complete'])
             timing=json.loads((output/'timing_report.json').read_text())
