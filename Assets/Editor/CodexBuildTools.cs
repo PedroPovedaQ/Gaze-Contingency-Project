@@ -62,10 +62,16 @@ public static class CodexBuildTools
         Directory.CreateDirectory(k_OutputDir);
         string apkPath = Path.Combine(k_OutputDir, k_OutputApk);
 
+        // OpenXR's composition-layer validator reads the selected group, even
+        // when BuildPlayer targets Android. Keep it aligned with this build so
+        // a selected desktop profile cannot incorrectly validate desktop settings.
+        EditorUserBuildSettings.selectedBuildTargetGroup = BuildTargetGroup.Android;
+
         var options = new BuildPlayerOptions
         {
             scenes = enabledScenes,
             target = BuildTarget.Android,
+            targetGroup = BuildTargetGroup.Android,
             locationPathName = apkPath,
             options = additionalOptions | (launchOnDevice ? BuildOptions.AutoRunPlayer : BuildOptions.None)
         };

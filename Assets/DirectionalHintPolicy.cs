@@ -13,7 +13,50 @@ public static class DirectionalHintPolicy
     public const string UpPhrase = "Look up.";
     public const string DownPhrase = "Look down.";
     public const string AlignedPhrase = "Right there.";
-    public const string Version = "gaze-directional-v7-shared-coarse-fine";
+    public const string PointingPhrase = "You're on it!";
+    public const string KeepGoingPhrase = "Keep going.";
+    public const string Version = "gaze-directional-v10-sustained-pointing";
+    static readonly string[] k_AreaLead = { "You're in the right area.", "This is the right area.",
+        "You're in the correct area.", "You're in the right spot." };
+
+    // One prepared clip: there is no cadence delay between arrival and refinement.
+    public static string AreaEntry(string direction, int index) =>
+        k_AreaLead[((index % k_AreaLead.Length) + k_AreaLead.Length) % k_AreaLead.Length] + " " + direction;
+
+    public static string WithinArea(float yawError, float pitchError, string previous = null)
+    {
+        // Separate arrival/departure thresholds stop small eye movements toggling
+        // between aligned and directional speech. Raw gaze and metrics are unchanged.
+        if (previous == UpPhrase && pitchError > 1.5f) return UpPhrase;
+        if (previous == DownPhrase && pitchError < -1.5f) return DownPhrase;
+        if (previous == AlignedPhrase && Math.Abs(pitchError) <= 4.5f && Math.Abs(yawError) <= 7) return AlignedPhrase;
+        if (Math.Abs(pitchError) > 3) return pitchError > 0 ? UpPhrase : DownPhrase;
+        if (previous == RightPhrase && yawError > 3) return RightPhrase;
+        if (previous == LeftPhrase && yawError < -3) return LeftPhrase;
+        if (Math.Abs(yawError) > 5) return yawError > 0 ? RightPhrase : LeftPhrase;
+        return AlignedPhrase;
+    }
+
+    public static bool RequiresInterruption(string current, string desired) =>
+        desired != null && desired != current && desired != AlignedPhrase;
+
+    public static float DirectionError(string direction, float yaw, float pitch) =>
+        direction == UpPhrase || direction == DownPhrase ? Math.Abs(pitch) : Math.Abs(yaw);
+
+    // Encourage actual progress, not standing still or moving the wrong way.
+    public static string FollowUp(string direction, string previous, float error, float previousError, int index, bool far) =>
+        direction == previous && direction != AlignedPhrase && error <= previousError - 2
+            ? KeepGoingPhrase : Variant(direction, index, false, far);
+
+    public static string Opening(string direction) => direction == LeftPhrase ? "The object is to the left." :
+        direction == RightPhrase ? "The object is to the right." :
+        direction == UpPhrase ? "The object is above where you're looking." :
+        direction == DownPhrase ? "The object is below where you're looking." :
+        "The object is ahead of you. Keep looking here.";
+
+    public static string PassedTarget(string direction) => direction == LeftPhrase ? "Go back a little to the left." :
+        direction == RightPhrase ? "Go back a little to the right." :
+        direction == UpPhrase ? "Go back up a little." : "Go back down a little.";
 
     static readonly string[] k_Left = { LeftPhrase, "Look to your left.", "A little more left.", "Search to your left.",
         "Keep looking left.", "Look more to your left.", "Continue looking left.", "Scan to your left." };
@@ -51,6 +94,14 @@ public static class DirectionalHintPolicy
         var phrases = new List<string>();
         foreach (var group in new[] { k_Left, k_Right, k_FarLeft, k_FarRight, k_Area, k_Return, k_Up, k_Down, k_Aligned })
             phrases.AddRange(group);
+        foreach (var direction in new[] { LeftPhrase, RightPhrase, UpPhrase, DownPhrase, AlignedPhrase })
+            phrases.Add(Opening(direction));
+        foreach (var direction in new[] { LeftPhrase, RightPhrase, UpPhrase, DownPhrase })
+            phrases.Add(PassedTarget(direction));
+        foreach (var direction in new[] { LeftPhrase, RightPhrase, UpPhrase, DownPhrase, AlignedPhrase })
+            for (int i = 0; i < k_AreaLead.Length; i++) phrases.Add(AreaEntry(direction, i));
+        phrases.Add(PointingPhrase);
+        phrases.Add(KeepGoingPhrase);
         return phrases.ToArray();
     }
 

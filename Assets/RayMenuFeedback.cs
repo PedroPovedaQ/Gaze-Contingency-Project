@@ -62,14 +62,14 @@ public class RayMenuFeedback : MonoBehaviour, IPointerEnterHandler, IPointerExit
         var rect = go.GetComponent<RectTransform>();
         rect.sizeDelta = size; rect.anchoredPosition = position;
         var image = go.GetComponent<Image>();
-        image.color = new Color(0.16f, 0.35f, 0.48f, 1f);
+        StudyPromptCard.StyleButton(image);
         var button = go.GetComponent<Button>(); button.targetGraphic = image;
         button.onClick.AddListener(action); Attach(button);
         var text = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
         text.transform.SetParent(go.transform, false);
         var tmp = text.GetComponent<TextMeshProUGUI>();
         tmp.rectTransform.sizeDelta = new Vector2(size.x - 20, 54);
-        tmp.text = label; tmp.fontSize = 25; tmp.alignment = TextAlignmentOptions.Center;
+        tmp.text = label; StudyPromptCard.StyleText(tmp, 25);
         tmp.enableAutoSizing = true; tmp.fontSizeMin = 19; tmp.fontSizeMax = 25;
         tmp.raycastTarget = false;
         return button;

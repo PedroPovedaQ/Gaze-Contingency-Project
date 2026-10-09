@@ -268,6 +268,13 @@ public class VoiceAssistantController : MonoBehaviour
 
     void PlayIntroIfPossible()
     {
+        if (SessionConfig.NeutralQuickTest)
+        {
+            m_IntroPlayed = true;
+            m_IntroRequested = false;
+            m_IntroPlayingOrQueued = false;
+            return;
+        }
         if (m_IntroPlayed)
             return;
 

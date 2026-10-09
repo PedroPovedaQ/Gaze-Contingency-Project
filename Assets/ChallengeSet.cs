@@ -17,7 +17,9 @@ public static class ChallengeSet
     public const int BlockCount = 2;
     public const int TotalRounds = RoundsPerBlock * BlockCount; // 80
     public const int ObjectsPerRound = 168;
-    public const string ScheduleVersion = "previous-wall-angle-v5-stratified-40-trials";
+    public static string ScheduleVersion => SessionConfig.NeutralQuickTest
+        ? "previous-wall-angle-v5-stratified-40-trials-quick-origin0-v1"
+        : "previous-wall-angle-v5-stratified-40-trials";
     public const string TargetIdentityPolicy = "matched-counts-shuffled-24-plus-16-v1";
     public const string HeightAssignmentPolicy = "unbalanced-floor-scatter-pending-reference-v1";
     const int k_AngleCategories = 5;
@@ -29,10 +31,10 @@ public static class ChallengeSet
 
     // How many measured trials the game will actually run. Clamp keeps a debug
     // request inside 1–80; it does not change the full plan generated below.
-    public static int RoundCount =>
+    public static int RoundCount => System.Math.Min(SessionConfig.NeutralQuickTest ? RoundsPerBlock : TotalRounds,
         DebugRoundCountOverride > 0
             ? Mathf.Clamp(DebugRoundCountOverride, 1, TotalRounds)
-            : TotalRounds;
+            : TotalRounds);
 
     static readonly string[] Shapes = { "Sphere", "Cube", "Pyramid", "Cylinder", "Star", "Capsule" };
     static readonly string[] ColorNames = { "Red", "Blue", "Yellow", "Purple" };
@@ -79,6 +81,7 @@ public static class ChallengeSet
 
     static RoundDef[] s_Rounds;
     static string s_Participant;
+    static bool s_NeutralQuickTest;
     /// <summary>
     /// Turn the coded participant ID into the starting number for our random draws.
     /// The same ID gives the same seed, so restarting reproduces the same schedule
@@ -110,7 +113,8 @@ public static class ChallengeSet
         get
         {
             SessionConfig.EnsureParticipantId();
-            if (s_Rounds == null || s_Participant != SessionConfig.ParticipantId) Generate();
+            if (s_Rounds == null || s_Participant != SessionConfig.ParticipantId ||
+                s_NeutralQuickTest != SessionConfig.NeutralQuickTest) Generate();
             return s_Rounds;
         }
     }
@@ -195,6 +199,7 @@ public static class ChallengeSet
     static void Generate()
     {
         s_Participant = SessionConfig.ParticipantId;
+        s_NeutralQuickTest = SessionConfig.NeutralQuickTest;
         var rng = new System.Random(ScheduleSeed);
 
         // 1. Make forty angle assignments. These numbers are units of 45°, not degrees:
@@ -260,9 +265,10 @@ public static class ChallengeSet
 
         s_Rounds = new RoundDef[TotalRounds];
         var layoutSeeds = new HashSet<int>();
-        // Both practices happen before measured trials. Continue from the last practice
-        // target, then from each measured target, including across the block break.
-        int startPlane = PracticeRound(1).targetPlane;
+        // Study trials continue from the final practice target. Quick test skips
+        // practice, so anchor it to the centered forward wall instead. Subsequent
+        // targets still use the same signed steps, preserving the theta balance.
+        int startPlane = SessionConfig.NeutralQuickTest ? 0 : PracticeRound(1).targetPlane;
 
         for (int r = 0; r < TotalRounds; r++)
         {

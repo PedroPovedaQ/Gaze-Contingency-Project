@@ -135,6 +135,19 @@ public static class SessionConfig
 
     public const string ScheduleVersion = "voice-blocks-v1";
     public static bool VoiceBlocksEnabled { get; private set; }
+    /// <summary>Explicit, session-only development shortcut; never a study voice condition.</summary>
+    public static bool NeutralQuickTest { get; private set; }
+
+    public static void ConfigureNeutralQuickTest()
+    {
+        ResetForNewParticipant();
+        NeutralQuickTest = true;
+        ParticipantId = "DEV_NEUTRAL";
+        SelectNeutralVoice(NeutralVoiceProfile.Male, 0); // Eric, an existing catalog voice/cache.
+        Voice = VoiceCondition.Generic;
+        TrySetPerspective(VoicePerspective.External);
+        Directory.CreateDirectory(ParticipantPath);
+    }
     public static bool NeutralFirst { get; private set; }
     public static string VoiceOrder => NeutralFirst ? "neutral_then_selfsimilar" : "selfsimilar_then_neutral";
     public static int CurrentBlock { get; private set; }
@@ -212,6 +225,7 @@ public static class SessionConfig
 
     public static VoiceCondition VoiceForRound(int round)
     {
+        if (NeutralQuickTest) return VoiceCondition.Generic;
         bool firstBlock = round < ChallengeSet.RoundsPerBlock;
         return firstBlock == NeutralFirst ? VoiceCondition.Generic : VoiceCondition.SelfSimilar;
     }
@@ -247,6 +261,7 @@ public static class SessionConfig
         // Record the voice condition in the folder name so runs are self-describing.
         string voiceTag = VoiceBlocksEnabled ? "blocks-" + VoiceOrder : VoiceTag;
         ConditionLabel = $"{ConditionLabel}_voice-{voiceTag}";
+        if (NeutralQuickTest) ConditionLabel = "dev_quick_test_" + ConditionLabel;
 
         // Reset any stale run state that also resets the session should clear the
         // cloned voice id (handled by ResetForNewParticipant).
@@ -263,6 +278,8 @@ public static class SessionConfig
         string folderName = $"run_{RunNumber:D3}_{ConditionLabel}_{timestamp}";
         CurrentRunFolder = Path.Combine(participantDir, folderName);
         Directory.CreateDirectory(CurrentRunFolder);
+        File.WriteAllText(Path.Combine(CurrentRunFolder, "session-mode-v1.txt"),
+            NeutralQuickTest ? "mode=neutral_quick_test\nstudy_data=false\n" : "mode=study\n");
         using (var catalog = new StreamWriter(Path.Combine(CurrentRunFolder, "neutral-catalog-v1.json")))
             WriteNeutralCatalog(catalog);
 
@@ -299,6 +316,7 @@ public static class SessionConfig
     {
         Debug.Log($"{k_Tag} Resetting session state for a new participant");
         VoiceBlocksEnabled = false;
+        NeutralQuickTest = false;
         CurrentBlock = 0;
         ParticipantId = "";
         RunNumber = 0;

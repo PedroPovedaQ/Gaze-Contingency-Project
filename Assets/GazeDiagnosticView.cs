@@ -19,6 +19,7 @@ public sealed class GazeDiagnosticView : MonoBehaviour
     string m_Set, m_ValidationId;
     Vector3 m_Anchor;
     Quaternion m_Heading;
+    Pose m_PanelAnchor;
     double m_Start, m_LastRefresh;
     long m_Deliveries, m_Rows;
     void Start()
@@ -37,13 +38,18 @@ public sealed class GazeDiagnosticView : MonoBehaviour
         RayMenuFeedback.CreateButton(m_Panel.transform,"Close",new Vector2(210,-260),new Vector2(195,60),()=>SetVisible(false));
         m_Launcher=Canvas("Eye check launcher",new Vector2(230,70));
         RayMenuFeedback.CreateButton(m_Launcher.transform,"Eye check",Vector2.zero,new Vector2(220,60),()=>SetVisible(true));
-        m_Panel.SetActive(false); m_Start=Time.realtimeSinceStartupAsDouble;
+        m_Panel.SetActive(false); m_Launcher.SetActive(false); m_Start=Time.realtimeSinceStartupAsDouble;
     }
     void Observe(GazeObservation sample) { m_Rows++; if(sample.newInputUpdate) m_Deliveries++; }
     public void SetVisible(bool visible)
     {
         // Never expose calibration stimuli during active experimental search.
         if(visible && m_Game!=null && m_Game.SearchActive) return;
+        if(visible && !Visible && Camera.main!=null)
+        {
+            m_PanelAnchor=MenuPose(Camera.main.transform);
+            Position(m_Panel,m_PanelAnchor,PanelOffset(m_Target!=null));
+        }
         Visible=visible; if(m_Panel!=null)m_Panel.SetActive(visible);
         if(!visible) Finish();
     }
@@ -53,23 +59,23 @@ public sealed class GazeDiagnosticView : MonoBehaviour
         bool search=m_Game!=null && m_Game.SearchActive;
         // Researcher launch control is only available in setup or an explicit pause, not trial readiness.
         bool canCheck=m_Game==null || m_Game.ResearcherPaused || m_Game.CurrentState!=FindObjectGameManager.GameState.Playing;
-        m_Launcher.SetActive(!Visible && canCheck);
         if(search || !canCheck) SetVisible(false);
-        Transform head=Camera.main.transform;
-        Position(m_Panel,head,PanelOffset(m_Target!=null));
-        Position(m_Launcher,head,new Vector3(.55f,-.4f,1.1f));
+        bool showLauncher=!Visible && canCheck && !search;
+        if(showLauncher && !m_Launcher.activeSelf)
+            Position(m_Launcher,MenuPose(Camera.main.transform),new Vector3(.55f,-.4f,1.1f));
+        m_Launcher.SetActive(showLauncher);
         if(!Visible || Time.realtimeSinceStartupAsDouble-m_LastRefresh<.1) return;
         m_LastRefresh=Time.realtimeSinceStartupAsDouble;
         var s=m_Stream.Latest;if(s==null)return;
         double elapsed=Math.Max(.001,Time.realtimeSinceStartupAsDouble-m_Start);
         string error=s.valid && s.validationTargetPresent ? s.targetErrorDegrees.ToString("F2")+" deg" : "not available";
         m_Text.text=$"<b>Eye measurement — researcher check</b>\n"+
-            $"Valid: {s.valid}  {s.invalidReason}\nDelivery age: {s.ageSeconds*1000:F1} ms (sensor age unknown)\n"+
+            $"Valid: {s.valid}  {s.invalidReason}  Ray: {s.raySource}\nDelivery age: {s.ageSeconds*1000:F1} ms (sensor age unknown)\n"+
             $"Input updates: {m_Deliveries/elapsed:F1}/s; rows: {m_Rows/elapsed:F1}/s\n<b>Native 120 Hz: not established</b>\n"+
             $"Raw origin: {s.rawWorldOrigin:F3}\nRaw direction: {s.rawWorldDirection:F3}\n"+
             $"Head: {s.headPosition:F2}; rotation: {s.headRotation.eulerAngles:F1}\n"+
             $"HTC L/R valid: {s.htcGazeAvailable} / {s.leftValid}/{s.rightValid}\n"+
-            $"Correction: {s.correction}; known-target error: {error}\n"+
+            $"Correction: {s.correction}; EXT error: {error}; used: {(s.valid && s.validationTargetPresent ? s.usedTargetErrorDegrees.ToString("F2")+" deg" : "n/a")}\n"+
             $"X-mirrored-origin comparison: {(s.valid && s.validationTargetPresent ? s.mirroredOriginErrorDegrees.ToString("F2") : "n/a")} deg\n"+
             $"{m_Set ?? "Choose a separate check below."}  target {m_TargetIndex+1}\n"+
             (m_Target!=null ? $"Turn toward the dot; hold gaze, then Next.\nDot bearing: {m_Target.transform.position-m_Anchor:F1}\n" : "")+
@@ -81,6 +87,8 @@ public sealed class GazeDiagnosticView : MonoBehaviour
         if(Camera.main==null)return;
         Finish();m_Set=set;m_ValidationId=Guid.NewGuid().ToString("N");m_TargetIndex=0;
         m_Anchor=Camera.main.transform.position;m_Heading=Quaternion.Euler(0,Camera.main.transform.eulerAngles.y,0);
+        m_PanelAnchor=new Pose(m_Anchor,m_Heading);
+        Position(m_Panel,m_PanelAnchor,PanelOffset(true));
         m_Target=GameObject.CreatePrimitive(PrimitiveType.Sphere);m_Target.name="Independent eye validation dot";
         Destroy(m_Target.GetComponent<Collider>());m_Target.transform.localScale=Vector3.one*.025f;
         m_Target.GetComponent<Renderer>().material.color=Color.magenta;
@@ -106,11 +114,14 @@ public sealed class GazeDiagnosticView : MonoBehaviour
     }
     public void Finish()
     {
+        bool hadTarget=m_Target!=null;
         if(m_Target!=null)Destroy(m_Target);m_Target=null;
         m_Stream?.SetValidationTarget(null,null,null,null);m_Set=null;
+        if(hadTarget && m_Panel!=null)Position(m_Panel,m_PanelAnchor,PanelOffset(false));
     }
-    static void Position(GameObject panel,Transform head,Vector3 offset)
-    {panel.transform.position=head.TransformPoint(offset);panel.transform.rotation=head.rotation;}
+    static Pose MenuPose(Transform head) => new Pose(head.position,Quaternion.Euler(0,head.eulerAngles.y,0));
+    static void Position(GameObject panel,Pose anchor,Vector3 offset)
+    {if(panel!=null)panel.transform.SetPositionAndRotation(anchor.position+anchor.rotation*offset,anchor.rotation);}
     // Keep the opaque panel below the local eye-validation grid. At its idle
     // height it covers the +15-degree fit dots at middle and low elevation.
     static Vector3 PanelOffset(bool targetActive) => new Vector3(.75f,targetActive?-.85f:-.15f,1.35f);

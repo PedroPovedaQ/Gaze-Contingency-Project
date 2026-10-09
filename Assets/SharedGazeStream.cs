@@ -101,7 +101,9 @@ public sealed class SharedGazeStream : MonoBehaviour
     {
         sample = Latest;
         return isActiveAndEnabled && sample != null && sample.valid && m_Focused &&
-            GazeQualityPolicy.IsFresh(true, sample.inputEventTime, Time.realtimeSinceStartupAsDouble, m_MaxDeliveryAgeSeconds);
+            GazeQualityPolicy.IsFresh(true, sample.inputEventTime, Time.realtimeSinceStartupAsDouble, m_MaxDeliveryAgeSeconds) &&
+            (sample.raySource != "HTC_binocular_mean" ||
+                GazeQualityPolicy.IsFresh(true, sample.htcQueryReceiptTime, Time.realtimeSinceStartupAsDouble, m_MaxDeliveryAgeSeconds));
     }
     public bool TryHit(out SpawnableObjectInfo info)
     {
@@ -176,12 +178,15 @@ public sealed class SharedGazeStream : MonoBehaviour
             s.opennessAvailable=m_LastNative.opennessAvailable;s.leftOpennessValid=m_LastNative.leftOpennessValid;s.rightOpennessValid=m_LastNative.rightOpennessValid;
             s.leftOpenness=m_LastNative.leftOpenness;s.rightOpenness=m_LastNative.rightOpenness;
         }
-        if(s.htcGazeAvailable && !s.leftValid && !s.rightValid)
-        { s.valid=false; s.invalidReason="both_native_eyes_invalid"; }
+        // Native polling happens after the initial receipt time; compare freshness against
+        // the clock AFTER that query, otherwise every new native row looks future-dated.
+        ResolveUsableRay(s, m_Interactor != null && m_Interactor.transform.parent != null,
+            Time.realtimeSinceStartupAsDouble, m_MaxDeliveryAgeSeconds);
         if (ValidationTarget != null)
         {
             s.validationTargetPresent = true; s.validationTarget = ValidationTarget.position;
             s.targetErrorDegrees = Vector3.Angle(s.rawWorldDirection, s.validationTarget - s.rawWorldOrigin);
+            s.usedTargetErrorDegrees = s.valid ? Vector3.Angle(s.worldDirection, s.validationTarget - s.worldOrigin) : 0;
             if (m_Interactor != null && m_Interactor.transform.parent != null)
             {
                 var mirrored = s.rawLocalOrigin; mirrored.x = -mirrored.x;
@@ -191,6 +196,31 @@ public sealed class SharedGazeStream : MonoBehaviour
         }
         Latest = s;
         Record(s); Observed?.Invoke(s);
+    }
+
+    // Resolve the recorded source flags into the one ray used by readiness and guidance.
+    public static void ResolveUsableRay(GazeObservation s, bool hasTrackingParent, double now, double maxAge)
+    {
+        if(s.htcGazeAvailable && !s.leftValid && !s.rightValid)
+        { s.valid=false; s.invalidReason="both_native_eyes_invalid"; return; }
+        // Some Focus Vision runs deliver fresh, finite EXT poses with isTracked=false,
+        // while the separate HTC API explicitly marks both eye poses valid. Use those
+        // native rays, not the invalid EXT pose. Keep its original tracked/raw fields.
+        // Require both eyes: do not silently change to monocular tracking after a blink.
+        if (s.valid || s.tracked || !hasTrackingParent || !s.focused || !s.headValid ||
+            !s.htcGazeAvailable || !s.leftValid || !s.rightValid ||
+            !GazeQualityPolicy.IsFresh(true,s.inputEventTime,now,maxAge) ||
+            !GazeQualityPolicy.IsFresh(true,s.htcQueryReceiptTime,now,maxAge)) return;
+        if (!Finite(s.leftWorldOrigin) || !Finite(s.rightWorldOrigin) ||
+            !Finite(s.leftWorldDirection) || !Finite(s.rightWorldDirection) ||
+            s.leftWorldDirection.sqrMagnitude < .5f || s.rightWorldDirection.sqrMagnitude < .5f) return;
+        Vector3 direction = s.leftWorldDirection.normalized + s.rightWorldDirection.normalized;
+        if (direction.sqrMagnitude < .5f) return;
+        s.worldOrigin = (s.leftWorldOrigin + s.rightWorldOrigin) * .5f;
+        s.worldDirection = direction.normalized;
+        s.raySource = "HTC_binocular_mean";
+        s.valid = true;
+        s.invalidReason = "";
     }
 
     // Keep eye/replay linkage on the completed trial during success speech. The

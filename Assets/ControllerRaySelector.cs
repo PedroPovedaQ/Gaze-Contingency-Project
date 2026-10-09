@@ -45,6 +45,7 @@ public class ControllerRaySelector : MonoBehaviour
     public TelemetrySample LeftTelemetry { get; private set; }
     public TelemetrySample RightTelemetry { get; private set; }
     public int TelemetryFrame { get; private set; } = -1;
+    public double TelemetryTime { get; private set; }
     public string SelectingHand { get; private set; }
 
     TelemetrySample ReadTelemetry(InteractorHandedness hand, bool search)
@@ -129,6 +130,7 @@ public class ControllerRaySelector : MonoBehaviour
         LeftTelemetry = ReadTelemetry(InteractorHandedness.Left, search);
         RightTelemetry = ReadTelemetry(InteractorHandedness.Right, search);
         TelemetryFrame = Time.frameCount;
+        TelemetryTime = Time.realtimeSinceStartupAsDouble;
         if (!search) { m_LastRayTargets.Clear(); return; }
         foreach (var ray in m_Rays)
         {

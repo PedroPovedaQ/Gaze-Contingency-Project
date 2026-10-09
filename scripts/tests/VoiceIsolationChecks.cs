@@ -723,7 +723,50 @@ class VoiceIsolationChecks
             clock.Begin(4000); clock.Pause(4003);
             Check(clock.Elapsed(6000) == 3, "next trial starts a fresh search clock");
             SessionConfig.ResetForNewParticipant();
-            Console.WriteLine("PASS: missing/pending clone, missing provider/key, failed/short audio, offline cache, neutral selection and busy-state isolation.");
+            SessionConfig.SelfSimilarVoiceId = "old-participant-clone";
+            SessionConfig.SelfSimilarEnrollmentPending = true;
+            SessionConfig.ConfigureNeutralQuickTest();
+            Check(SessionConfig.NeutralQuickTest && !SessionConfig.VoiceBlocksEnabled &&
+                SessionConfig.Voice == VoiceCondition.Generic && SessionConfig.NeutralVoiceName == "Eric" &&
+                SessionConfig.SelfSimilarVoiceId == "" && !SessionConfig.SelfSimilarEnrollmentPending,
+                "quick test clears participant/clone state and uses neutral only");
+            Check(SessionConfig.ParticipantId == "DEV_NEUTRAL" && ChallengeSet.RoundCount == 40,
+                "quick test has a separate development identity and one 40-trial block");
+            var quickPlan = ChallengeSet.Rounds;
+            Check(quickPlan[0].startPlane == 0, "quick test starts at the centered wall without practice");
+            string quickRun = SessionConfig.BeginRun();
+            Check(quickRun.Contains("dev_quick_test") && File.ReadAllText(Path.Combine(quickRun, "session-mode-v1.txt")).Contains("study_data=false"),
+                "quick test data cannot be mistaken for a coded participant run");
+            var quickSchedule = new StringWriter(); ChallengeSet.WriteSchedule(quickSchedule);
+            var scheduleLines = quickSchedule.ToString().Trim().Split('\n');
+            for (int i = 1; i < scheduleLines.Length; i++)
+                Check(scheduleLines[i].Split(',')[16] == (i <= 40 ? "1" : "0"), "schedule flags only the executed quick-test block");
+            provider.Calls = 0; UnityWebRequest.Requests.Clear();
+            DownloadHandlerAudioClip.Corrupt = false; DownloadHandlerAudioClip.Quiet = false;
+            Drain(synth.PrepareLibraries(new[] { "Quick test neutral guidance." }, null, ok => prepared = ok, neutralOnly: true));
+            Check(prepared && synth.LibraryReady && provider.Calls == 0 && SessionConfig.Voice == VoiceCondition.Generic,
+                "neutral-only library becomes ready without a clone request");
+            foreach (var audit in (IEnumerable)typeof(VoiceSynthesizer).GetField("m_Audit", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth))
+                Check((string)audit.GetType().GetField("voice_condition").GetValue(audit) != "selfsimilar", "quick-test manifest has no clone clips");
+            Check(SessionConfig.VoiceForRound(40) == VoiceCondition.Generic, "quick test never changes to the cloned voice");
+            SessionConfig.ResetForNewParticipant();
+            Check(!SessionConfig.NeutralQuickTest && ChallengeSet.RoundCount == 80 && SessionConfig.ParticipantId == "",
+                "new participant restores the full study schedule and disables shortcut");
+            SessionConfig.ParticipantId = "DEV_NEUTRAL"; // Same seed: mode must still invalidate cached geometry.
+            var studyPlan = ChallengeSet.Rounds;
+            Check(studyPlan[0].startPlane == ChallengeSet.PracticeRound(1).targetPlane,
+                "study still starts from the last practice target");
+            for (int i = 0; i < quickPlan.Length; i++)
+            {
+                Check(quickPlan[i].SignedTheta == studyPlan[i].SignedTheta,
+                    "quick-test origin preserves every planned signed theta");
+                if (i > 0) Check(quickPlan[i].startPlane == quickPlan[i - 1].targetPlane,
+                    "quick-test transitions continue from each actual prior target");
+            }
+            SessionConfig.ConfigureNeutralQuickTest();
+            Check(ChallengeSet.Rounds[0].startPlane == 0, "re-entering quick test resets cached starting geometry");
+            SessionConfig.ResetForNewParticipant();
+            Console.WriteLine("PASS: voice isolation, cache, audio failures, neutral quick-test preparation, development identity and schedule/reset.");
         }
         finally { Directory.Delete(root, true); }
     }

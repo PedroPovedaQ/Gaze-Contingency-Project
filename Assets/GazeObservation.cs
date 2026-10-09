@@ -11,6 +11,9 @@ public sealed class GazeObservation
         timeSemantics = "input_state_delivery_not_sensor_capture", coordinateFrame = "Unity_world_metres",
         participant, sourceTrialId, phase, voice, invalidReason, validationId, validationSet, targetId,
         correction = "none", recordingId;
+    // source/raw*/tracked describe EXT acquisition; raySource identifies worldOrigin/worldDirection.
+    // HTC fallback is a derived binocular mean, never a claimed native combined-gaze sample.
+    public string raySource = "OpenXR_EXT";
     public double receiptTime, inputEventTime, ageSeconds, htcQueryReceiptTime;
     public bool sourceCaptureTimeKnown, sourceSequenceKnown, newInputUpdate, deviceAvailable,
         tracked, poseValid, valid, focused, headValid, validationTargetPresent, practice;
@@ -24,5 +27,5 @@ public sealed class GazeObservation
     public Vector3 leftNativeOrigin, rightNativeOrigin, leftWorldOrigin, rightWorldOrigin, leftWorldDirection, rightWorldDirection;
     public Quaternion leftNativeRotation = Quaternion.identity, rightNativeRotation = Quaternion.identity;
     public float leftPupilMm, rightPupilMm, leftOpenness, rightOpenness;
-    public float targetErrorDegrees, mirroredOriginErrorDegrees, maxDeliveryAgeSeconds;
+    public float usedTargetErrorDegrees, targetErrorDegrees, mirroredOriginErrorDegrees, maxDeliveryAgeSeconds;
 }

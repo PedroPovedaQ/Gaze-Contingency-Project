@@ -6,6 +6,16 @@ using System;
 public sealed class GuidanceDecision
 {
     public int schema = 1;
+    // Optional target-bearing evidence for current and future audits. Empty on historical records.
+    public bool targetGeometryAvailable;
+    public float targetYawError, targetPitchError;
+    public bool targetVicinityMeasured, controllerEvidenceValid, controllerOnTarget, devVicinityRingEnabled;
+    public float targetVicinityErrorDegrees, targetVicinityRadiusDegrees, targetVicinityPaddingDegrees;
+    public string targetObjectId, controllerTargetObjectId;
+    public int controllerTelemetryFrame = -1;
+    public double controllerTelemetryTime;
+    public string targetHistoryPolicy = "target-bearing-crossing-v1";
+    public GazeTargetHistory.Sample[] targetHistory;
     public string decisionId, stage, reason, category, phrase, policyVersion,
         uncertaintyStatus = "not_estimated_pilot_thresholds",
         eyeRecordingId, participant, sourceTrialId, source, phase;

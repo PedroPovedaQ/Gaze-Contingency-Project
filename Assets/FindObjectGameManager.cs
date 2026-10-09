@@ -363,13 +363,14 @@ public class FindObjectGameManager : MonoBehaviour
             voice = GetComponent<VoiceAssistantController>();
         } while (selector == null || !selector.IsComplete || voice == null || !voice.IsReady);
         // Let the setup confirmation disappear before showing the independent start gate.
-        yield return new WaitForSeconds(3.1f);
+        if (!SessionConfig.NeutralQuickTest) yield return new WaitForSeconds(3.1f);
         if (m_TechnicallyStopped || m_CenterAccepted) yield break;
         m_UI.HideStartPrompt();
         if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
         while (!m_CenterAccepted && !m_TechnicallyStopped)
         {
-            m_Checkpoint.Show("<b>360° SEARCH BETA</b>\nSit at the center and face your chosen forward direction.\nEight planes will surround you, 21 objects on each.\nStay seated and turn to search.",
+            m_Checkpoint.Show((SessionConfig.NeutralQuickTest ? "<b>NEUTRAL QUICK TEST · DEVELOPMENT ONLY</b>\n" : "<b>360° SEARCH BETA</b>\n") +
+                "Sit at the center and face your chosen forward direction.\nEight planes will surround you, 21 objects on each.\nStay seated and turn to search.",
                 "Center and begin");
             while (m_Checkpoint.Waiting && !m_TechnicallyStopped) yield return null;
             if (m_TechnicallyStopped || m_CenterAccepted) yield break;
@@ -561,8 +562,9 @@ public class FindObjectGameManager : MonoBehaviour
             m_ShelvesBuilt = true;
         }
 
-        IsPractice = true; m_PracticeIndex = 0;
-        SetPracticeObjective();
+        IsPractice = !SessionConfig.NeutralQuickTest; m_PracticeIndex = 0;
+        if (IsPractice) SetPracticeObjective();
+        else OnGameStarted?.Invoke(); // Start the normal loggers before the first test trial.
         StartCoroutine(BeginFirstRoundTransition());
     }
 

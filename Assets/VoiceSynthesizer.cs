@@ -33,6 +33,7 @@ public class VoiceSynthesizer : MonoBehaviour
     public string PreparationStage { get; private set; }
     public bool LibraryReady { get; private set; }
     bool m_Preparing;
+    VoiceCondition[] m_LibraryVoices = { VoiceCondition.Generic, VoiceCondition.SelfSimilar };
     bool m_GeneratedAudio;
     HashSet<string> m_OnDemandPhrases;
     float m_MatchedRms;
@@ -72,7 +73,7 @@ public class VoiceSynthesizer : MonoBehaviour
     }
 
     public IEnumerator PrepareLibraries(string[] phrases, Action<string> progress, Action<bool> done,
-        string[] onDemandPhrases = null)
+        string[] onDemandPhrases = null, bool neutralOnly = false)
     {
         SessionConfig.LockPerspective();
         Stop();
@@ -82,12 +83,14 @@ public class VoiceSynthesizer : MonoBehaviour
         m_OnDemandPhrases = onDemandPhrases == null ? null : new HashSet<string>(onDemandPhrases);
         m_MatchedRms = 0;
         m_Preparing = true;
+        m_LibraryVoices = neutralOnly ? new[] { VoiceCondition.Generic }
+            : new[] { VoiceCondition.Generic, VoiceCondition.SelfSimilar };
         m_Audit.Clear();
         foreach (var clip in m_PreparedClips.Values) Destroy(clip);
         m_PreparedClips.Clear();
         var originalVoice = SessionConfig.Voice;
         bool success = true;
-        foreach (var voice in new[] { VoiceCondition.Generic, VoiceCondition.SelfSimilar })
+        foreach (var voice in m_LibraryVoices)
         {
             SessionConfig.Voice = voice;
             for (int i = 0; i < phrases.Length; i++)
@@ -189,7 +192,7 @@ public class VoiceSynthesizer : MonoBehaviour
         // Interleave voices so upcoming prompts are ready in either condition.
         foreach (string phrase in phrases)
             if (m_OnDemandPhrases.Contains(phrase))
-                foreach (var voice in new[] { VoiceCondition.Generic, VoiceCondition.SelfSimilar })
+                foreach (var voice in m_LibraryVoices)
                     m_BackgroundQueue.Enqueue(new KeyValuePair<VoiceCondition, string>(voice, phrase));
     }
 

@@ -35,6 +35,19 @@ public static class VoiceChoiceChecks
                     "Catalog inventory matches each unique stable option");
             }
             var selector = host.AddComponent<VoiceModeSelector>();
+            selector.Initialize(null);
+            typeof(VoiceModeSelector).GetMethod("RefreshChoices", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(selector, null);
+            var canvas = (GameObject)Field("m_CanvasGO").GetValue(selector);
+            Check(Array.Exists(canvas.GetComponentsInChildren<TMPro.TextMeshProUGUI>(),
+                label => label.text == "Quick test — neutral voice"), "Start panel exposes the neutral quick-test ray button.");
+            selector.StartNeutralQuickTest();
+            Check(Phase(selector) == "WaitingToStart" && !selector.IsComplete,
+                "Shortcut cannot start without released-controller arming and an audio system.");
+            Field("m_Phase").SetValue(selector, Enum.Parse(Field("m_Phase").FieldType, "QuickTestFailed"));
+            typeof(VoiceModeSelector).GetMethod("RefreshChoices", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(selector, null);
+            Check(!selector.IsComplete && Array.Exists(canvas.GetComponentsInChildren<TMPro.TextMeshProUGUI>(),
+                label => label.text == "Cancel session") && !Array.Exists(canvas.GetComponentsInChildren<TMPro.TextMeshProUGUI>(),
+                label => label.text == "Record again"), "Quick-test failure stays blocked without routing to clone enrollment.");
             Field("m_PerspectiveChosen").SetValue(selector, true);
             Field("m_Phase").SetValue(selector, Enum.Parse(Field("m_Phase").FieldType, "Choosing"));
             foreach (var chosenGender in new[] { NeutralVoiceProfile.Male, NeutralVoiceProfile.Female })
@@ -62,6 +75,9 @@ public static class VoiceChoiceChecks
         }
         finally
         {
+            var selector = host.GetComponent<VoiceModeSelector>();
+            if (selector != null && Field("m_CanvasGO").GetValue(selector) is GameObject canvas)
+                UnityEngine.Object.DestroyImmediate(canvas);
             UnityEngine.Object.DestroyImmediate(host);
             SessionConfig.SelectNeutralVoice(gender, option); SessionConfig.Voice = voice;
         }

@@ -13,6 +13,7 @@ public static class ReadinessGateChecks
     public static void Run()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play mode before checks.");
+        CheckQuickTestTransitions();
         var charge = new StudyReadinessCharge();
         for (int i = 0; i < 12; i++) Check(!charge.Step(true, false, false, 0.1f, 1), "Charge alone cannot bypass announcement.");
         Check(charge.Progress == 1, "Continuous gaze fills charge.");
@@ -65,5 +66,49 @@ public static class ReadinessGateChecks
         }
         finally { UnityEngine.Object.DestroyImmediate(host); UnityEngine.Object.DestroyImmediate(camera); }
         Debug.Log("[ReadinessGateChecks] PASS: continuous gaze, resets, audio gate, no timer bypass, fixed world cross, padded whole-cross region and search onset.");
+    }
+
+    static void CheckQuickTestTransitions()
+    {
+        var quickFlag = typeof(SessionConfig).GetField("<NeutralQuickTest>k__BackingField",
+            BindingFlags.Static | BindingFlags.NonPublic);
+        bool originalQuick = SessionConfig.NeutralQuickTest;
+        string originalParticipant = SessionConfig.ParticipantId;
+        var host = new GameObject("QuickTestReadinessFixture"); host.SetActive(false);
+        try
+        {
+            // Avoid creating participant files in an Editor regression fixture.
+            quickFlag.SetValue(null, true); SessionConfig.ParticipantId = "DEV_NEUTRAL";
+            var ui = host.AddComponent<FindObjectUI>();
+            var game = host.AddComponent<FindObjectGameManager>();
+            var gate = host.AddComponent<TrialReadinessGate>();
+            Set(game, "m_UI", ui); Set(game, "m_Readiness", gate);
+            Set(game, "m_UseRotationalLayout", true);
+            Set(game, "m_SeatedRotation", Quaternion.identity);
+            Set(game, "m_RotationalRadius", 1.5f);
+            string stopped = null;
+            game.OnSessionStopped += reason => stopped = reason;
+            var transition = typeof(FindObjectGameManager).GetMethod("BeginFirstRoundTransition",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            for (int i = 0; i < ChallengeSet.RoundsPerBlock; i++)
+            {
+                Set(game, "m_CurrentRound", i);
+                Set(game, "m_LastCompletedPlane", i == 0 ? 0 : ChallengeSet.Rounds[i - 1].targetPlane);
+                var routine = (System.Collections.IEnumerator)transition.Invoke(game, null);
+                Check(routine.MoveNext() && stopped == null && gate.Active,
+                    "Quick test reaches readiness without a start-wall mismatch, including trial 1.");
+                Check(gate.Wall == ChallengeSet.Rounds[i].startPlane && game.PresentedRoundIndex == i,
+                    "Actual readiness wall and presented trial match the saved quick-test schedule.");
+                if (i == 0) Check(gate.Wall == 0 && gate.Position.z > 0 && Mathf.Abs(gate.Position.x) < .001f,
+                    "The first quick-test cross appears in front of the centered user.");
+                gate.Cancel();
+            }
+            Debug.Log("[ReadinessGateChecks] PASS: all 40 quick-test transitions reach the planned wall; first cross is forward.");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(host);
+            quickFlag.SetValue(null, originalQuick); SessionConfig.ParticipantId = originalParticipant;
+        }
     }
 }

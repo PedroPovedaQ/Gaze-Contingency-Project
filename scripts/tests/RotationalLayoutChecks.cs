@@ -28,7 +28,14 @@ class RotationalLayoutChecks
             for (int i = 0; i < 8; i++) variants.Add(DirectionalHintPolicy.Variant(direction, i, false, true));
             Check(variants.Count == 4, "large turns have four directional alternatives");
         }
-        Check(DirectionalHintPolicy.AllPhrases().Length == 44, "all 44 distinct guidance phrases are prepared");
+        foreach (var phrase in new[] { "You're in the right area. Look up.",
+            "You're in the right area. Look down.", "You're on it!", "Keep going." })
+            Check(Array.IndexOf(DirectionalHintPolicy.AllPhrases(), phrase) >= 0,
+                "New arrival and pointing cues must be prepared before trials: " + phrase);
+        Check(DirectionalHintPolicy.WithinArea(12,10)=="Look up.", "Inside the correct wall, height takes priority over small horizontal error");
+        Check(DirectionalHintPolicy.WithinArea(-12,-10)=="Look down.", "Height-first guidance also handles downward search");
+        Check(DirectionalHintPolicy.WithinArea(12,0)=="Look right.", "Refine horizontal direction once height is aligned");
+        Check(DirectionalHintPolicy.WithinArea(0,0)=="Right there.", "Aligned gaze never invents another correction");
         foreach (int degrees in new[] { -179, -135, -91, -90, -45, 0, 45, 90, 91, 135, 179 })
         {
             double radians = degrees * Math.PI / 180;

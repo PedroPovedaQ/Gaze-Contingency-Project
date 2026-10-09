@@ -15,9 +15,8 @@ public class FindObjectUI : MonoBehaviour
     const float k_StartPromptDistance = 1.55f;
     const float k_StartPromptVerticalOffset = -0.12f;
     const string k_StartPromptDefaultText =
-        "Tap the table to begin the simulation.\n\n" +
-        "Once the round starts, the current goal will appear on the table.";
-    const string k_StartPromptWaitingText = "Please wait...";
+        "<b>Take a seat</b>\nComplete voice setup, then select Center and begin.";
+    const string k_StartPromptWaitingText = "<b>Loading...</b>";
 
     Canvas m_Canvas;
     RectTransform m_CanvasRect;
@@ -90,7 +89,7 @@ public class FindObjectUI : MonoBehaviour
 
         // Background
         var bgGO = CreatePanel(m_CanvasGO.transform, "Background",
-            new Vector2(640, 460), new Color(0f, 0f, 0f, 0.75f));
+            new Vector2(640, 460));
         bgGO.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
 
         // Agent state debug
@@ -118,19 +117,18 @@ public class FindObjectUI : MonoBehaviour
         m_TimerText.color = new Color(1f, 0.9f, 0.5f, 1f);
 
         m_StartPromptPanel = CreatePanel(bgGO.transform, "StartPromptPanel",
-            new Vector2(560f, 180f), new Color(0.07f, 0.12f, 0.18f, 0.96f));
+            new Vector2(560f, 180f));
         m_StartPromptPanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, 20f);
         m_StartPromptText = CreateText(m_StartPromptPanel.transform, "StartPromptText",
             new Vector2(500f, 136f), Vector2.zero, 34f);
         m_StartPromptText.alignment = TextAlignmentOptions.Center;
-        m_StartPromptText.color = new Color(0.86f, 0.96f, 1f, 1f);
-        m_StartPromptText.overflowMode = TextOverflowModes.Overflow;
+        m_StartPromptText.overflowMode = TextOverflowModes.Ellipsis;
         m_StartPromptText.text = k_StartPromptDefaultText;
         m_StartPromptPanel.SetActive(false);
 
         // Completion panel
         m_CompletionPanel = CreatePanel(m_CanvasGO.transform, "CompletionPanel",
-            new Vector2(640, 460), new Color(0.08f, 0.12f, 0.16f, 0.94f));
+            new Vector2(640, 460));
         m_CompletionText = CreateText(m_CompletionPanel.transform, "CompletionText",
             new Vector2(608, 118), new Vector2(0, 164), 24);
         m_CompletionText.alignment = TextAlignmentOptions.Center;
@@ -390,6 +388,7 @@ public class FindObjectUI : MonoBehaviour
         MoveCanvasInFrontOfUser();
         m_CanvasGO.SetActive(true);
         m_CompletionPanel.SetActive(true);
+        if (m_AgentStateText != null) m_AgentStateText.enabled = false;
         m_ObjectiveText.text = "";
         m_ProgressText.text = "";
         m_TimerText.text = "";
@@ -407,9 +406,9 @@ public class FindObjectUI : MonoBehaviour
         if (m_CompletionText != null)
         {
             m_CompletionText.text =
-                $"All {total} rounds complete!\n" +
+                $"<b>{total} trials complete</b>\n" +
                 $"Time: {timeStr}\n" +
-                "Complete NASA-TLX below.";
+                "Rate the workload below, then select Submit NASA-TLX.";
         }
         SetResetButtonVisible(false);
         InitializeNasaTlxSurvey();
@@ -424,7 +423,7 @@ public class FindObjectUI : MonoBehaviour
 
     public void SetSurveyBlockLabel(int blockNumber)
     {
-        if (m_CompletionText != null) m_CompletionText.text = $"Block {blockNumber} complete.\nRate workload for this block only.";
+        if (m_CompletionText != null) m_CompletionText.text = $"<b>Block {blockNumber} complete</b>\nRate the workload for this block, then submit your answers.";
     }
 
     public void HideBlockSurvey()
@@ -441,6 +440,7 @@ public class FindObjectUI : MonoBehaviour
         MoveCanvasInFrontOfUser();
         m_CanvasGO.SetActive(true);
         m_CompletionPanel.SetActive(true);
+        if (m_AgentStateText != null) m_AgentStateText.enabled = false;
         m_CompletionText.fontSize = 24f;
         m_CompletionText.overflowMode = TextOverflowModes.Overflow;
         m_CompletionText.enableWordWrapping = true;
@@ -462,14 +462,14 @@ public class FindObjectUI : MonoBehaviour
         MoveCanvasInFrontOfUser();
         m_CanvasGO.SetActive(true);
         m_CompletionPanel.SetActive(true);
+        if (m_AgentStateText != null) m_AgentStateText.enabled = false;
         m_CompletionText.fontSize = 28f;
         m_CompletionText.overflowMode = TextOverflowModes.Overflow;
         m_CompletionText.enableWordWrapping = true;
         m_CompletionText.rectTransform.sizeDelta = new Vector2(608f, 180f);
         m_CompletionText.rectTransform.anchoredPosition = new Vector2(0f, 80f);
         m_CompletionText.text =
-            "Thank you for your participation in this experiment.\n\n" +
-            "Please remove the headset now and have a great day.";
+            "<b>Thank you for taking part</b>\nYou can remove the headset now.";
         if (m_NasaTlxSurveyRoot != null) m_NasaTlxSurveyRoot.SetActive(false);
         SetResetButtonVisible(false);
         m_ShowingPostSurveyStats = false;
@@ -493,9 +493,7 @@ public class FindObjectUI : MonoBehaviour
         m_CanvasGO.SetActive(true);
         if (m_CompletionPanel != null) m_CompletionPanel.SetActive(false);
         if (m_StartPromptPanel != null) m_StartPromptPanel.SetActive(true);
-        if (m_StartPromptText != null) m_StartPromptText.text = GetComponent<FindObjectGameManager>()?.RotationalBetaEnabled == true
-            ? "360° search beta\nComplete voice setup, then center and begin while seated."
-            : k_StartPromptDefaultText;
+        if (m_StartPromptText != null) m_StartPromptText.text = k_StartPromptDefaultText;
         if (m_ObjectiveText != null) m_ObjectiveText.enabled = false;
         if (m_ProgressText != null) m_ProgressText.enabled = false;
         if (m_TimerText != null) m_TimerText.enabled = false;
@@ -574,15 +572,11 @@ public class FindObjectUI : MonoBehaviour
         }
     }
 
-    static GameObject CreatePanel(Transform parent, string name, Vector2 size, Color color)
+    static GameObject CreatePanel(Transform parent, string name, Vector2 size)
     {
-        var go = new GameObject(name);
-        go.transform.SetParent(parent, false);
-        var rect = go.AddComponent<RectTransform>();
-        rect.sizeDelta = size;
-        rect.anchoredPosition = Vector2.zero;
-        var img = go.AddComponent<UnityEngine.UI.Image>();
-        img.color = color;
+        var go = StudyPromptCard.Create(parent, name, size);
+        // Survey rows retain a subtle tonal separation without a second visual theme.
+        if (name.StartsWith("NasaRow")) go.GetComponent<Image>().color = new Color(.16f,.16f,.16f,1);
         return go;
     }
 
@@ -595,7 +589,7 @@ public class FindObjectUI : MonoBehaviour
         rootRect.anchoredPosition = new Vector2(0f, -52f);
 
         var surveyBg = CreatePanel(m_NasaTlxSurveyRoot.transform, "SurveyCard",
-            new Vector2(604f, 332f), new Color(0.06f, 0.09f, 0.12f, 0.98f));
+            new Vector2(604f, 332f));
         surveyBg.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
 
         var title = CreateText(m_NasaTlxSurveyRoot.transform, "NasaTitle",
@@ -615,7 +609,7 @@ public class FindObjectUI : MonoBehaviour
             float y = 98f - i * 40f;
 
             var rowBg = CreatePanel(m_NasaTlxSurveyRoot.transform, $"NasaRowBg{i}",
-                new Vector2(576f, 34f), new Color(0.12f, 0.16f, 0.2f, 0.72f));
+                new Vector2(576f, 34f));
             rowBg.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, y);
 
             var label = CreateText(m_NasaTlxSurveyRoot.transform, $"NasaLabel{i}",
@@ -645,7 +639,7 @@ public class FindObjectUI : MonoBehaviour
         }
 
         m_NasaSubmitButton = CreateButton(m_NasaTlxSurveyRoot.transform, "NasaSubmitButton",
-            new Vector2(326f, 40f), new Vector2(0f, -138f), new Color(0.16f, 0.2f, 0.24f, 1f));
+            new Vector2(326f, 40f), new Vector2(0f, -138f));
         m_NasaSubmitButton.onClick.AddListener(SubmitNasaTlxSurvey);
         m_NasaSubmitText = CreateText(m_NasaSubmitButton.transform, "NasaSubmitText",
             new Vector2(300f, 30f), Vector2.zero, 20f);
@@ -657,7 +651,7 @@ public class FindObjectUI : MonoBehaviour
     void CreateResetButton(Transform parent)
     {
         m_ResetButton = CreateButton(parent, "ResetButton",
-            new Vector2(326f, 44f), new Vector2(0f, -178f), new Color(0.42f, 0.2f, 0.12f, 1f));
+            new Vector2(326f, 44f), new Vector2(0f, -178f));
         m_ResetButton.onClick.AddListener(HandleResetButtonClicked);
         m_ResetButtonText = CreateText(m_ResetButton.transform, "ResetButtonText",
             new Vector2(300f, 30f), Vector2.zero, 20f);
@@ -692,11 +686,12 @@ public class FindObjectUI : MonoBehaviour
         rect.sizeDelta = size;
         rect.anchoredPosition = position;
         var tmp = go.AddComponent<TextMeshProUGUI>();
-        tmp.raycastTarget = false;
-        tmp.fontSize = fontSize;
-        tmp.color = Color.white;
-        tmp.enableWordWrapping = true;
-        tmp.overflowMode = TextOverflowModes.Ellipsis;
+        if (name == "FixationCross")
+        {
+            // The gaze-readiness stimulus keeps its existing font and dimensions.
+            tmp.fontSize = fontSize; tmp.raycastTarget = false;
+        }
+        else StudyPromptCard.StyleText(tmp, fontSize);
         return tmp;
     }
 
@@ -771,7 +766,7 @@ public class FindObjectUI : MonoBehaviour
         return slider;
     }
 
-    static Button CreateButton(Transform parent, string name, Vector2 size, Vector2 position, Color normalColor)
+    static Button CreateButton(Transform parent, string name, Vector2 size, Vector2 position)
     {
         var buttonGO = new GameObject(name);
         buttonGO.transform.SetParent(parent, false);
@@ -779,11 +774,11 @@ public class FindObjectUI : MonoBehaviour
         rect.sizeDelta = size;
         rect.anchoredPosition = position;
         var image = buttonGO.AddComponent<Image>();
-        image.color = normalColor;
+        StudyPromptCard.StyleButton(image);
         var button = buttonGO.AddComponent<Button>();
         button.transition = Selectable.Transition.ColorTint;
         var colors = button.colors;
-        colors.normalColor = normalColor;
+        colors.normalColor = Color.white;
         colors.highlightedColor = new Color(0.2f, 0.55f, 0.9f, 1f);
         colors.pressedColor = new Color(0.15f, 0.45f, 0.78f, 1f);
         colors.selectedColor = new Color(0.2f, 0.55f, 0.9f, 1f);

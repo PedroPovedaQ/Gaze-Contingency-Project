@@ -37,6 +37,7 @@ public static class ControllerSelectionChecks
 
         CheckRightRayPolicy();
         CheckSettingsLifecycle();
+        CheckStationaryMenus();
 
         var obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
         obj.SetActive(false);
@@ -123,6 +124,74 @@ public static class ControllerSelectionChecks
         finally
         {
             UnityEngine.Object.DestroyImmediate(controlsObject); UnityEngine.Object.DestroyImmediate(rig); UnityEngine.Object.DestroyImmediate(handObject);
+        }
+    }
+
+    static void CheckStationaryMenus()
+    {
+        var dev=typeof(SessionConfig).GetProperty("NeutralQuickTest");
+        bool originalDev=SessionConfig.NeutralQuickTest;
+        var previousCamera = Camera.main;
+        var cameraObject = new GameObject("StationaryMenuCamera", typeof(Camera));
+        var host = new GameObject("StationaryMenuFixture"); host.SetActive(false);
+        var controlsPanel = new GameObject("ControlsFixture", typeof(RectTransform));
+        GameObject eyePanel = null, launcher = null, checkpointPanel = null;
+        GazeDiagnosticView eye = null;
+        var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        void Set(object target, string name, object value) => target.GetType().GetField(name,flags).SetValue(target,value);
+        object Read(object target,string name) => target.GetType().GetField(name,flags).GetValue(target);
+        void Call(object target,string name) => target.GetType().GetMethod(name,flags).Invoke(target,null);
+        Pose PoseOf(GameObject panel) => new Pose(panel.transform.position,panel.transform.rotation);
+        void Unmoved(GameObject panel,Pose pose,string name) => Check(
+            Vector3.Distance(panel.transform.position,pose.position)<.0001f &&
+            Quaternion.Angle(panel.transform.rotation,pose.rotation)<.01f,name+" stays fixed while the head moves");
+        try
+        {
+            dev.SetValue(null,false);
+            if(previousCamera!=null)previousCamera.tag="Untagged";
+            cameraObject.tag="MainCamera";
+            cameraObject.transform.SetPositionAndRotation(new Vector3(1,1.6f,2),Quaternion.Euler(15,30,8));
+            var game=host.AddComponent<FindObjectGameManager>();
+            var controls=host.AddComponent<StudyRayControls>();
+            Set(controls,"m_Game",game);Set(controls,"m_Panel",controlsPanel);
+            foreach(string field in new[]{"m_SettingsButton","m_PauseButton","m_RepeatButton"})
+            {
+                var button=new GameObject(field,typeof(RectTransform),typeof(UnityEngine.UI.Button));
+                button.transform.SetParent(controlsPanel.transform,false);Set(controls,field,button.GetComponent<UnityEngine.UI.Button>());
+            }
+            var vicinity=new GameObject("HiddenVicinityControls");vicinity.transform.SetParent(controlsPanel.transform);
+            Set(controls,"m_VicinityControls",vicinity);
+            Call(controls,"LateUpdate");var controlsPose=PoseOf(controlsPanel);
+            host.AddComponent<SharedGazeStream>();eye=host.AddComponent<GazeDiagnosticView>();
+            Call(eye,"Start");Set(eye,"m_Game",null);Call(eye,"Update");
+            eyePanel=(GameObject)Read(eye,"m_Panel");launcher=(GameObject)Read(eye,"m_Launcher");
+            var launcherPose=PoseOf(launcher);
+            cameraObject.transform.SetPositionAndRotation(new Vector3(2,1.8f,3),Quaternion.Euler(-25,100,-10));
+            Call(controls,"LateUpdate");Call(eye,"Update");
+            Unmoved(controlsPanel,controlsPose,"Settings launcher");Unmoved(launcher,launcherPose,"Eye-check launcher");
+            eye.SetVisible(true);Call(eye,"Update");var eyePose=PoseOf(eyePanel);
+            controls.ToggleSettings();var openControlsPose=PoseOf(controlsPanel);
+            var checkpoint=host.AddComponent<StudyCheckpoint>();checkpoint.Show("Paused");
+            checkpointPanel=(GameObject)Read(checkpoint,"m_Panel");var checkpointPose=PoseOf(checkpointPanel);
+            cameraObject.transform.SetPositionAndRotation(new Vector3(-1,1.5f,2),Quaternion.Euler(20,-60,15));
+            Call(eye,"Update");Call(controls,"LateUpdate");
+            Unmoved(eyePanel,eyePose,"Open eye panel");Unmoved(controlsPanel,openControlsPose,"Open settings controls");
+            Unmoved(checkpointPanel,checkpointPose,"Continue checkpoint");
+            Check(Quaternion.Angle(eyePanel.transform.rotation,Quaternion.Euler(0,100,0))<.01f,"Menus stay upright, ignoring head pitch and roll");
+            eye.SetVisible(false);eye.SetVisible(true);
+            Check(Vector3.Distance(eyePanel.transform.position,eyePose.position)>.5f,"Reopening places eye panel near the new view");
+            controls.ToggleSettings();controls.ToggleSettings();
+            Check(Vector3.Distance(controlsPanel.transform.position,openControlsPose.position)>.5f,"Reopening deliberately repositions settings");
+            Debug.Log("[ControllerSelectionChecks] PASS: eye/settings launchers, open menus and Continue stay world-fixed through head movement; reopen reanchors upright.");
+        }
+        finally
+        {
+            foreach(var panel in new[]{eyePanel,launcher,checkpointPanel,controlsPanel})
+                if(panel!=null)UnityEngine.Object.DestroyImmediate(panel);
+            if(eye!=null)Call(eye,"OnDestroy");
+            UnityEngine.Object.DestroyImmediate(host);UnityEngine.Object.DestroyImmediate(cameraObject);
+            if(previousCamera!=null)previousCamera.tag="MainCamera";
+            dev.SetValue(null,originalDev);
         }
     }
 
