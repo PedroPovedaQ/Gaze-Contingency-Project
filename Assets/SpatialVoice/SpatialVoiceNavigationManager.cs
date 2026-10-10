@@ -47,6 +47,7 @@ namespace SpatialVoice
             if (m_Database == null) m_Database = Resources.Load<NavigationPhraseDatabase>("SpatialVoice/NavigationPhrases");
             if (m_Database == null) throw new InvalidOperationException("Navigation catalog is missing.");
             m_Database.Validate();
+            foreach (var phrase in m_Database.phrases) SpeechPhraseMetadata.Register(phrase.text, phrase.metadata);
         }
         void OnEnable() { m_Lifetime = new CancellationTokenSource(); }
         void OnDisable() { Cancel(); m_Lifetime?.Cancel(); m_Lifetime?.Dispose(); m_Lifetime = null; }

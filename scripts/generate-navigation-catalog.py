@@ -31,9 +31,14 @@ def catalog():
             for tone in TONES:
                 entries.append(dict(id=f"nav_a{angle_bin:02d}_d{distance_bin}_{tone}", text=texts[tone][distance_bin],
                     constraints=dict(min_angle=lo, max_angle=hi, min_distance_meters=minimum, max_distance_meters=maximum),
-                    metadata=dict(tone=tone, urgency='low')))
+                    metadata=dict(tone=tone, urgency='low', intent='turn' if midpoint >= 60 else 'direction',
+                        horizontal='none' if midpoint == 0 else bearing, vertical='none',
+                        magnitude='large' if midpoint >= 90 else 'small' if midpoint <= 35 else 'medium',
+                        stage='outside_target_wall', interruptPolicy='replace_if_misleading',
+                        requires=['fresh_valid_gaze', 'matching_angle_and_distance', 'prepared_voice_clip'],
+                        canBeSupersededBy=['target_wall_reached', 'target_acquired', 'direction_reversed'])))
     assert len(entries) == len({p['id'] for p in entries}) == len({p['text'] for p in entries}) == 300
-    return dict(version='signed-navigation-v1', navigation_phrases=entries)
+    return dict(version='signed-navigation-v2-semantic', navigation_phrases=entries)
 
 
 if __name__ == '__main__':

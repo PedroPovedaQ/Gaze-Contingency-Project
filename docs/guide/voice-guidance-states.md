@@ -54,7 +54,7 @@ Target confirmation still requires the target to be the unique closest candidate
 
 **Implemented v20 (pilot):** ordinary guidance still finishes before the next cue. A stable area-entry, return, overshoot or target-confirmation correction can now ask Jev in parallel whether an unfinished direction has become misleading. At most one request is made per utterance, with a 400ms budget. The current audio continues while the request is pending. Missing keys, errors, a finish decision, expired answers or changed evidence retain finish-phrase behavior. No network request is sent on every gaze tick.
 
-Local rules protect the first 650ms, the last 600ms of the recorded speech window (excluding the clone's effect tail), acknowledgments and the trigger reminder; interruptions have a 2.5-second cooldown. Every request needs prepared replacement audio and valid qualified gaze. Only current approval can start a linear fade from the current volume to zero over a nominal **150ms of unscaled real time**, then stop. Unity applies volume per frame, so the stop occurs on the first frame at or after the deadline, not a sample-accurate 150ms guarantee. After fading, recheck the correction; drop it if gaze/target evidence changed. Do not reverse the fade partway through.
+Local rules protect the first 650ms, the last 1,000ms of the recorded speech window (excluding the clone's effect tail), acknowledgments and the trigger reminder; interruptions have a 2.5-second cooldown. Every request needs prepared replacement audio and valid qualified gaze. Only current approval can start a linear fade from the current volume to zero over a nominal **150ms of unscaled real time**, then stop. Unity applies volume per frame, so the stop occurs on the first frame at or after the deadline, not a sample-accurate 150ms guarantee. After fading, recheck the correction; drop it if gaze/target evidence changed. Do not reverse the fade partway through.
 
 The post-sentence gap remains 0.55 seconds, or one second after acknowledgments. Invalid gaze suspends new decisions immediately; after the existing 250ms tracking grace, current guidance fades out locally without consulting Jev. Pause, trial cancellation, setup/opening cancellation and disabling the component retain immediate stop semantics.
 
@@ -88,3 +88,13 @@ Pause, completion and session cancellation still stop speech immediately. Sustai
 Decision events distinguish `turn_progress_milestone`, `recent_target_departure`, wall arrival/exit and narrow target-bearing overshoot. They include actual target yaw/pitch, planned remaining turn degrees, vertical metres/fraction, latest qualified target-visit receipt time and eye-observation sequence, plus existing gaze source IDs. Original eye observations are preserved.
 
 **Wearer checks:** 0-to-180 and 180-to-0 turns; targets on either side of the opposite wall; stop/backtrack across a milestone; enter high/low targets; look at the target then away diagonally; overshoot the wall; blink; reacquire; select with the right trigger. Listen for false direction reversals, repeated progress messages and truncated speech.
+
+### v21 semantic and continuation refinements
+
+**Implemented:** structured phrase meaning now accompanies Jev decisions. Unknown phrases
+and finish-only metadata cannot be interrupted; ordinary progress cues and a redundant
+same-wall arrival cannot request an interruption. See [the semantic pipeline](spatial-voice-navigation.md#structured-speech-semantics-v21-2026-10-10).
+
+Within the wall, “A bit more” / “Just a little more” can follow a direction only after
+at least 2° of improvement, with at most 10° remaining and, for vertical/diagonal guidance,
+at most 20% plane-height error. One continuation per unchanged direction prevents a loop.

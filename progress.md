@@ -1,3 +1,14 @@
+## 2026-10-10 — Semantic Jev speech and near-target continuations
+
+- **Implemented v21:** explicit intent/axes/magnitude/stage/prerequisites/interruption policy for the 300 catalog phrases and all 215 guidance texts. Jev receives structured current/proposed meaning, playback, event and compact gaze/geometry context. The existing study playback, voice identity, normalization and replay archive remain in use.
+- **Implemented:** “A bit more.” / “Just a little more.” require actual same-direction progress (at least 2°), at most 10° remaining and at most 20% plane-height error when vertical; one continuation per unchanged direction. Stalling/reversal uses explicit directions.
+- **Interruption tuning:** protect the final one second, unknown/finish-only phrases, ordinary progress and redundant same-wall arrival locally. Keep 650ms onset protection, 400ms advice deadline, one advice attempt per utterance and 150ms fade. These gates contain observed incorrect raw Jev approvals.
+- **Live verification:** 43 synthetic interruption cases × 3 = 129 calls; 117 completed responses matched expected effective behavior after local gates, 12 deadline fallbacks safely finished (8 missed desired cuts). Completed-response median 203ms, p95 333ms. 16 navigation selections returned eligible nonrepeating phrases. Nine synthetic Eric audio clips generated for listening previews; no participant recordings sent.
+- **Offline verification:** voice isolation/fade, gaze quality/history, transport/PCM, rotational layout and enrollment pass. Unity catalog and study integration pass, including JSON/asset semantics and all 2,888 angle/distance grid checks. See `docs/testing/2026-10-10-jev-speech/report.md` for evidence and limitations.
+- **Review:** Code review: skipped (ce-code-review unavailable) — its independent reviewer/finish-agent dispatch conflicts with this session's inline-only AGENTS rule. Manual diff review and simplification completed; no independent receipt claimed. Unity's transient unrelated preload changes were not intentionally edited.
+- **Device:** Android Build And Run succeeded in 94.9s; installed on Vive FA5AR3N00385 at 18:52:31, running PID 5896. No matching fatal/null-reference/missing-method/metadata exceptions in current-process startup logs.
+- **Open validation:** headset listening and perceived naturalness, particularly neutral versus cloned prosody and fast gaze transitions. Synthetic audio previews are timing demonstrations, not headset recordings.
+
 ## 2026-10-10 — Checkpoint before primary checkout synchronization
 
 - Saved the accumulated headset guidance, gaze diagnostics, spatial voice pipeline and desktop replay work as a local checkpoint for merging into the primary project folder.

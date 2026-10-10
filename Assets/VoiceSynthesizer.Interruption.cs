@@ -8,6 +8,8 @@ public partial class VoiceSynthesizer
 {
     [SerializeField] bool m_UseJevInterruptions = true;
     public Func<string, CancellationToken, Task<bool>> InterruptionAdvisor { private get; set; }
+    public SpatialVoice.SpeechGuidanceEvidence GuidanceEvidence { get; } = new SpatialVoice.SpeechGuidanceEvidence();
+    string m_SpeechStartStage = "unknown";
     long m_PlaybackGeneration, m_AdviceAttemptGeneration = -1;
     double m_LastSmoothInterruption = -100, m_AdviceStarted;
     bool m_DropCorrection;
@@ -23,6 +25,7 @@ public partial class VoiceSynthesizer
     public bool CanConsiderGuidanceInterruption => m_UseJevInterruptions && InterruptionAdvisor != null &&
         m_InterruptionCoroutine == null && IsSpeaking && m_AudioSource.clip != null &&
         (m_CurrentContext == "tip" || m_CurrentContext == "guidance_repeat") &&
+        SpatialVoice.SpeechPhraseMetadata.Describe(m_CurrentPhrase).interruptPolicy == "replace_if_misleading" &&
         GuidanceSpeechPolicy.CanConsiderInterruption(GuidanceSpeechPolicy.IsAcknowledgment(m_CurrentPhrase) ||
             m_CurrentPhrase == DirectionalHintPolicy.SelectionReminderPhrase,
             m_AudioSource.time, SpeechRemaining,
@@ -30,7 +33,9 @@ public partial class VoiceSynthesizer
 
     bool ApproveInterruption(string phrase, string reason, Func<bool> stillRelevant)
     {
-        if (!CanConsiderGuidanceInterruption || phrase == m_CurrentPhrase) return false;
+        if (!CanConsiderGuidanceInterruption || !GuidanceSpeechPolicy.IsCorrectionEvent(reason) ||
+            GuidanceSpeechPolicy.IsRedundantArrival(reason, m_SpeechStartStage) || phrase == m_CurrentPhrase ||
+            !SpatialVoice.SpeechPhraseMetadata.CanReplace(m_CurrentPhrase, phrase)) return false;
         if (m_Advice != null)
         {
             if (phrase != m_AdvicePhrase || reason != m_AdviceReason || !ValidateInterruptionAdvice())
@@ -50,9 +55,8 @@ public partial class VoiceSynthesizer
         m_AdviceStarted = Time.realtimeSinceStartupAsDouble;
         m_AdviceCancellation = new CancellationTokenSource();
         m_AdviceCancellation.CancelAfter(TimeSpan.FromSeconds(GuidanceSpeechPolicy.AdviceDeadline));
-        string state = string.Format(CultureInfo.InvariantCulture,
-            "Seated gaze-guidance trial. Current instruction: {0}. Proposed correction: {1}. Stable evidence: {2}. Playback elapsed {3:F2}s; remaining {4:F2}s. Gaze and replacement audio are locally qualified. Decide semantic usefulness, not word boundaries.",
-            m_CurrentPhrase, phrase, reason, m_AudioSource.time, SpeechRemaining);
+        string state = SpatialVoice.SpeechInterruptionState.Create(m_CurrentPhrase, phrase, reason,
+            m_AudioSource.time, SpeechRemaining, GuidanceEvidence, m_CurrentContext, m_SpeechStartStage);
         AdviceTelemetry("requested");
         try { m_Advice = InterruptionAdvisor(state, m_AdviceCancellation.Token); }
         catch (Exception e) { AdviceTelemetry("finish_on_" + e.GetType().Name); CancelInterruptionAdvice(); }

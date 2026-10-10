@@ -28,12 +28,14 @@ namespace SpatialVoice
             foreach (var p in choices)
             {
                 if (criteria.ContainsKey(p.text)) throw new ArgumentException("Candidate texts must be unique.");
-                criteria[p.text] = "Tone: " + p.tone + ". Geometrically valid; choose for conversational fit.";
+                criteria[p.text] = new JObject { ["tone"] = p.tone.ToString(), ["word_count"] = p.text.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Length,
+                    ["semantics"] = JObject.FromObject(p.metadata ?? SpeechPhraseMetadata.Describe(p.text)),
+                    ["geometrically_valid"] = true };
             }
             return new JObject {
                 ["model"] = "typesafe-ai/jev", ["state"] = state,
                 ["questions"] = new JObject { ["navigation_phrase"] = new JObject {
-                    ["type"] = "choice", ["instructions"] = "Choose one short navigation phrase. Prefer the requested tone, avoid repeating the last phrase. Do not infer task success or target passage.",
+                    ["type"] = "choice", ["instructions"] = "Choose one short navigation phrase. Prefer the requested tone and never repeat the last phrase when another valid choice exists. For Casual guidance, use a short Direct cue as the next alternative; avoid Technical wording unless Technical is requested. Do not infer task success or target passage.",
                     ["criteria"] = criteria } }
             }.ToString(Formatting.None);
         }
@@ -57,13 +59,13 @@ namespace SpatialVoice
         public async Task<bool> ShouldInterruptAsync(string state, CancellationToken cancellation)
         {
             var payload = new JObject {
-                ["model"] = "typesafe-ai/jev", ["state"] = state,
+                ["model"] = "typesafe-ai/jev", ["state"] = JObject.Parse(state),
                 ["questions"] = new JObject { ["speech_action"] = new JObject {
                     ["type"] = "choice",
-                    ["instructions"] = "Choose finish_phrase by default. Choose fade_out only when the current spoken instruction is now misleading or contradicts a stable new target/area confirmation, and enough audio remains for interrupting to help. Minor refinements, repeated directions and conversational variation should finish. This is semantic advice, not word-boundary detection.",
+                    ["instructions"] = "Does the new verified event make the CURRENT instruction misleading? Use authored semantics and evidence, not the word right in right area. A proposed target_confirmation means stop searching, not a completed trigger selection. Do not infer word boundaries.",
                     ["criteria"] = new JObject {
-                        ["finish_phrase"] = "Preserve the current sentence; reassess after it finishes.",
-                        ["fade_out"] = "Fade the now-misleading instruction for 150 milliseconds, stop, then revalidate the proposed correction." }
+                        ["finish_phrase"] = "The current direction remains correct, is merely refined, or either phrase has unknown semantics. An arrival_already_acknowledged_by_current_stage=true cannot interrupt: this is the SAME wall. Also finish if evidence is invalid, current interruptPolicy is finish, playback is not tip/guidance_repeat, elapsed < 0.65s or remaining < 1s. Progress and same-direction rewording always wait.",
+                        ["fade_out"] = "Valid stable event supersedes an interruptible search instruction with enough speech left: target acquired/pointed at, a confirmed reversal after passing/leaving the target, or target wall reached while still turning toward it. Current turn/search/return instruction would now move the listener away. Not for same-direction refinement or added diagonal." }
                 } }
             }.ToString(Formatting.None);
             return ParseInterruption(await RequestAsync(payload, cancellation, 400).ConfigureAwait(false));

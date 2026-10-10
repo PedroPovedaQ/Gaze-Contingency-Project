@@ -106,6 +106,12 @@ class GazeQualityChecks
         Check(!pointing.Update(true,true,1.99),"tracking gap resets incomplete hold");
         Check(pointing.Update(true,true,2.0),"fresh full hold after tracking recovery");
         Check(DirectionalHintPolicy.PointingPhrase=="You're on it!","requested short confirmation");
+        Check(DirectionalHintPolicy.FollowUp("Look right.","Look right.",7,12,0,false)=="A bit more.","near-target improvement earns a short context-dependent continuation");
+        Check(DirectionalHintPolicy.FollowUp("Look right.","Look right.",7,12,1,false)=="Just a little more.","near-target continuation has variation");
+        Check(DirectionalHintPolicy.FollowUp("Look right.","Look right.",7,7,0,false)=="Look right.","standing still never gets a bit more");
+        Check(DirectionalHintPolicy.FollowUp("Look left.","Look right.",7,12,0,false)=="Look left.","reversal needs a named direction");
+        Check(DirectionalHintPolicy.FollowUp("Look right.","Look right.",5,9,0,false,true)=="Look right.","continuation cannot loop");
+        Check(DirectionalHintPolicy.FollowUp("Look up.","Look up.",7,12,0,false,false,.6f)=="Keep going.","large vertical remainder is not a bit more");
         Check(DirectionalHintPolicy.FollowUp("Look right.","Look right.",40,60,0,true)=="Keep going.","progressing same direction gets continuation");
         // Reproduce trial 1: every improving observation used to request Keep going again.
         float[] recordedYaw = {163.2f,124.7f,177.9f,162.7f,157f,103.2f,65.4f,31.2f};

@@ -23,7 +23,7 @@ flowchart TD
     D --> K
 ```
 
-The study normally finishes a phrase and observes its audible gap. The v20 pilot permits bounded Jev-approved correction fades; see [speech scheduling](voice-guidance-states.md#speech-scheduling-and-evidence). It does not
+The study normally finishes a phrase and observes its audible gap. The v21 pilot permits bounded Jev-approved correction fades; see [speech scheduling](voice-guidance-states.md#speech-scheduling-and-evidence). It does not
 request AI decisions every frame. A candidate is reconsidered only at a qualified
 ordinary turn hint. A changed target, trial, voice, invalid gaze or arrival in the target
 wall cancels pending selection. Final geometry must still fit the selected phrase.
@@ -65,7 +65,7 @@ No provider generation is performed by the catalog generator or offline tests.
 `JevDecisionClient` posts to the documented `https://ai-gateway.vercel.sh/typesafe/v1/systemone`, using
 Bearer auth, `model: typesafe-ai/jev`, a state string and
 `questions.navigation_phrase = {type: choice, instructions, criteria}`. `criteria` maps
-candidate **text** to tone descriptions. `answers.navigation_phrase.choice` must exactly
+candidate **text** to structured tone, word-count and authored semantics. `answers.navigation_phrase.choice` must exactly
 match an offered text; malformed or unoffered choices cannot become speech.
 
 This differs from the requested `api.jev.ai/v1/decisions`/`choices` contract, which was
@@ -155,6 +155,55 @@ preserved and verified first. The integrated study path retains all three today.
   vertical cues, cancellation across trials, clone/neutral identity isolation, audible
   endings and measured streaming underruns/latency. The live smoke commands accept a path to ignored configuration: `bash scripts/test-spatial-voice.sh --live /path/to/api_keys.json` (three Jev decisions) or `--live-eleven` (one short synthetic neutral utterance). These incur provider usage and never print credential values.
 
-### Interruption pilot evidence (2026-10-10)
+### Structured speech semantics (v21, 2026-10-10)
 
-**Implemented:** `ShouldInterruptAsync` uses a separate typed `speech_action` choice (`finish_phrase` / `fade_out`) through the same gateway. The synthesizer owns the live-state, single-request, freshness and local timing guards. `--live-interruption /path/to/api_keys.json` warms the shared client then runs four synthetic cases. Jev approved stable wall arrival and opposite-direction overshoot, rejected equivalent wording and brief jitter; measured calls were 247/243/199/175ms. This is a small transport/decision smoke test, not validation of human conversational naturalness or phoneme boundaries.
+**Implemented:** the 300 catalog entries now carry intent, horizontal/vertical axes,
+magnitude, stage, interruption policy, prerequisites and superseding events. Geometry
+still filters candidates locally; Jev chooses wording within that set. The same metadata
+is serialized into the Inspector asset. `SpeechPhraseMetadata` also authors the meaning
+of all 215 existing guidance texts; the editor importer exports these to
+`Assets/Resources/SpatialVoice/guidance-phrase-semantics.json`. That export is a generated
+reference; change the policy/metadata source and reimport to change these runtime cues.
+
+Interruption state is a JSON object containing current/proposed phrase semantics,
+playback context, current speech's starting stage, qualified event, and a compact current
+gaze/geometry snapshot. `gazeAgeSeconds` is **receipt age**, not proof of sensor sampling
+rate. No participant identifiers, raw eye trace or recordings are included. "Right area"
+has no right-turn meaning unless its authored directional cue explicitly says right.
+
+Unity protects unknown wording and `interruptPolicy=finish` locally. It also rejects
+routine/progress events, redundant arrival after an instruction started within the target
+wall, short onsets/endings, and obsolete approvals. Jev cannot override these guards.
+Only verified arrival, overshoot/departure or acquisition events can ask for a correction.
+The first 650ms and final 1s of speech are protected; effect tails do not extend speech.
+Most short recorded phrases therefore finish naturally. Eligible approved corrections
+retain the 150ms realtime fade (applied on Unity frames, not sample-accurate word boundaries).
+
+**Implemented:** “A bit more.” and “Just a little more.” require the same direction,
+at least 2° improvement since the previous instruction, no previous continuation in
+that direction, and at most 10° remaining error. A vertical/diagonal cue additionally
+requires at most 20% of the plane height. Stalling, reversal or a changed vertical band
+uses an explicit direction. Outside-wall turn milestones keep their separate policy.
+Both voice conditions use the same eligibility rules.
+
+**Verification:** [scenario report](../testing/2026-10-10-jev-speech/report.md).
+The final runs covered 43 synthetic scenarios × 3 calls = 129 requests: 117 completed
+responses produced the expected effective behavior after local guards; 12 deadline
+fallbacks finished the phrase. This does not mean Jev alone was always correct, nor does
+it establish human naturalness or headset latency. Some test cases deliberately query
+Jev despite a local veto, to test that the veto contains incorrect advice.
+
+Commands (live modes incur provider usage; only use ignored local configuration):
+
+```sh
+bash scripts/test-spatial-voice.sh
+bash scripts/test-spatial-voice.sh --scenario-suite /path/to/api_keys.json scripts/tests/jev-interruption-scenarios.json /tmp/jev-results.json 3
+bash scripts/test-spatial-voice.sh --scenario-suite /path/to/api_keys.json scripts/tests/jev-interruption-holdouts.json /tmp/jev-additional.json 3
+bash scripts/test-spatial-voice.sh --navigation-suite /path/to/api_keys.json /tmp/navigation-results.json
+bash scripts/test-spatial-voice.sh --audition /path/to/api_keys.json /tmp/speech-audition
+```
+
+The file named `holdouts` contains additional scenarios that were used during tuning;
+it is not an untouched evaluation set. Non-deadline effective mismatches fail the live
+scenario command; timeouts are reported separately. Offline regression covers production
+fade timing, stale results, protected semantics and near-target progress eligibility.

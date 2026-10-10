@@ -1,0 +1,4121 @@
+{
+  "version": "guidance-semantics-v1",
+  "phrases": [
+    {
+      "text": "Look left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look to your left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "A little more left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Search to your left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep looking left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look more to your left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Continue looking left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Scan to your left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look to your right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "A little more right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Search to your right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep looking right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look more to your right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Continue looking right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Scan to your right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Turn to your left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep turning left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "A bit farther left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Turn farther left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Turn to your right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep turning right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "A bit farther right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Turn farther right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the correct area. Keep looking.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "within_target_wall",
+        "interruptPolicy": "finish",
+        "requires": [
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "This is the correct area. Keep looking.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "within_target_wall",
+        "interruptPolicy": "finish",
+        "requires": [
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Stay in this area and keep looking.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "within_target_wall",
+        "interruptPolicy": "finish",
+        "requires": [
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Keep searching in this area.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "within_target_wall",
+        "interruptPolicy": "finish",
+        "requires": [
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Go back. That was the correct area.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Go back to that area.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Look back toward the area you just left.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Return to the area you were looking at.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Right there.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right around there.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep looking right there.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You should see it there.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Yep, that's it!",
+      "semantics": {
+        "intent": "target_confirmation",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "target_acquired",
+        "interruptPolicy": "finish",
+        "requires": [
+          "qualified_target_gaze"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Yes, that's it!",
+      "semantics": {
+        "intent": "target_confirmation",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "target_acquired",
+        "interruptPolicy": "finish",
+        "requires": [
+          "qualified_target_gaze"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "That's the one!",
+      "semantics": {
+        "intent": "target_confirmation",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "target_acquired",
+        "interruptPolicy": "finish",
+        "requires": [
+          "qualified_target_gaze"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "You've got it!",
+      "semantics": {
+        "intent": "target_confirmation",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "target_acquired",
+        "interruptPolicy": "finish",
+        "requires": [
+          "qualified_target_gaze"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "The object is to the left.",
+      "semantics": {
+        "intent": "trial_opening",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "before_search",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "The object is to the right.",
+      "semantics": {
+        "intent": "trial_opening",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "before_search",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "The object is above where you're looking.",
+      "semantics": {
+        "intent": "trial_opening",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "before_search",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "The object is below where you're looking.",
+      "semantics": {
+        "intent": "trial_opening",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "before_search",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "The object is ahead of you. Keep looking here.",
+      "semantics": {
+        "intent": "trial_opening",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "before_search",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Go back a little to the left.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Go back a little to the right.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Go back up a little.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Go back down a little.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. Look left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. Look left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. Look left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. Look left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. Look right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. Look right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. Look right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. Look right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. A little higher.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. A little higher.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. A little higher.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. A little higher.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. A little lower.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. A little lower.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. A little lower.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. A little lower.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. Right there.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. Right there.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. Right there.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. Right there.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. A little higher and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. A little higher and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. A little higher and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. A little higher and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. A little higher and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. A little higher and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. A little higher and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. A little higher and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. A little lower and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. A little lower and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. A little lower and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. A little lower and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. A little lower and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. A little lower and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. A little lower and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. A little lower and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "A little higher.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look a little higher.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Just a little higher.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "A little lower.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look a little lower.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Just a little lower.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "A little higher and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look a little higher and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Just a little higher and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "A little higher and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look a little higher and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Just a little higher and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "A little lower and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look a little lower and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Just a little lower and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "A little lower and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look a little lower and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Just a little lower and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "small",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Go back up.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Go back down.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. Look higher.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. Look higher.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. Look higher.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. Look higher.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. Look lower.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. Look lower.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. Look lower.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. Look lower.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. Look higher and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. Look higher and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. Look higher and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. Look higher and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. Look higher and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. Look higher and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. Look higher and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. Look higher and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. Look lower and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. Look lower and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. Look lower and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. Look lower and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. Look lower and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. Look lower and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. Look lower and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. Look lower and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look higher.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look further higher.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep looking higher.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look lower.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look further lower.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep looking lower.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look higher and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look further higher and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep looking higher and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look higher and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look further higher and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep looking higher and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look lower and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look further lower and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep looking lower and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look lower and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look further lower and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep looking lower and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "medium",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Go back way up.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Go back way down.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. Look way higher.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. Look way higher.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. Look way higher.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. Look way higher.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. Look way lower.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. Look way lower.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. Look way lower.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. Look way lower.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. Look way higher and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. Look way higher and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. Look way higher and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. Look way higher and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. Look way higher and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. Look way higher and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. Look way higher and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. Look way higher and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. Look way lower and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. Look way lower and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. Look way lower and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. Look way lower and left.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Right area. Look way lower and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "This is the right area. Look way lower and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're in the right area. Look way lower and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Stay in this area. Look way lower and right.",
+      "semantics": {
+        "intent": "area_arrival",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "within_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "stable_wall_entry"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look way higher.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Much higher.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look much higher.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look way lower.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Much lower.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look much lower.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look way higher and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Much higher and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look much higher and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look way higher and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Much higher and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look much higher and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look way lower and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Much lower and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look much lower and left.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look way lower and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Much lower and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Look much lower and right.",
+      "semantics": {
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "You're on it!",
+      "semantics": {
+        "intent": "target_confirmation",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "target_acquired",
+        "interruptPolicy": "finish",
+        "requires": [
+          "controller_target_hit",
+          "qualified_target_gaze"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Keep going.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "new_turn_milestone"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "A bit more.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "finish",
+        "requires": [
+          "recent_explicit_direction",
+          "same_direction",
+          "measured_progress",
+          "small_remaining_error",
+          "continuation_not_already_used"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Just a little more.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "within_target_wall",
+        "interruptPolicy": "finish",
+        "requires": [
+          "recent_explicit_direction",
+          "same_direction",
+          "measured_progress",
+          "small_remaining_error",
+          "continuation_not_already_used"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "That's it, keep turning.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "new_turn_milestone"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Keep going that way.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "new_turn_milestone"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Turn way left.",
+      "semantics": {
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Go back left.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Turn way right.",
+      "semantics": {
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "qualified_direction"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Go back right.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Go back up and left.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Go back up and right.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Go back down and left.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Go back down and right.",
+      "semantics": {
+        "intent": "return_to_target",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "verified_target_departure"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Aim at it with your right controller and press the trigger.",
+      "semantics": {
+        "intent": "selection_reminder",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "target_acquired",
+        "interruptPolicy": "finish",
+        "requires": [
+          "sustained_target_gaze"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Look for the cross below and to your left and hold your gaze on it to begin the next round.",
+      "semantics": {
+        "intent": "readiness_reminder",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "between_trials",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Look for the cross to your left and hold your gaze on it to begin the next round.",
+      "semantics": {
+        "intent": "readiness_reminder",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "between_trials",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Look for the cross above and to your left and hold your gaze on it to begin the next round.",
+      "semantics": {
+        "intent": "readiness_reminder",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "between_trials",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Look for the cross below you and hold your gaze on it to begin the next round.",
+      "semantics": {
+        "intent": "readiness_reminder",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "between_trials",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Look for the cross ahead of you and hold your gaze on it to begin the next round.",
+      "semantics": {
+        "intent": "readiness_reminder",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "between_trials",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Look for the cross above you and hold your gaze on it to begin the next round.",
+      "semantics": {
+        "intent": "readiness_reminder",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "between_trials",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Look for the cross below and to your right and hold your gaze on it to begin the next round.",
+      "semantics": {
+        "intent": "readiness_reminder",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "between_trials",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Look for the cross to your right and hold your gaze on it to begin the next round.",
+      "semantics": {
+        "intent": "readiness_reminder",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "between_trials",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Look for the cross above and to your right and hold your gaze on it to begin the next round.",
+      "semantics": {
+        "intent": "readiness_reminder",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "between_trials",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
+    }
+  ]
+}

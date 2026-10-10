@@ -44,6 +44,13 @@ class VoiceIsolationChecks
     }
     static void CheckSmoothInterruptions(VoiceSynthesizer synth, string next)
     {
+        string actualNext = DirectionalHintPolicy.AreaEntry(DirectionalHintPolicy.DownPhrase, 0);
+        string scope = "el-clone-" + SessionConfig.SelfSimilarVoiceId;
+        var cachePath = typeof(VoiceSynthesizer).GetMethod("GetCachePath", BindingFlags.Instance | BindingFlags.NonPublic);
+        var clips = (System.Collections.Generic.Dictionary<string, AudioClip>)typeof(VoiceSynthesizer).GetField("m_PreparedClips", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth);
+        string oldPath = (string)cachePath.Invoke(synth, new object[] { VoicePromptText.FormatForVoice(next, SessionConfig.Voice), scope });
+        string newPath = (string)cachePath.Invoke(synth, new object[] { VoicePromptText.FormatForVoice(actualNext, SessionConfig.Voice), scope });
+        clips[newPath] = clips[oldPath]; next = actualNext;
         var source = (AudioSource)typeof(VoiceSynthesizer).GetField("m_AudioSource", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth);
         int requests = 0, committed = 0;
         bool relevant = true;
@@ -53,7 +60,8 @@ class VoiceIsolationChecks
             synth.Stop(); Time.unscaledTime += 3;
             Set(synth, "m_LastSmoothInterruption", -100d);
             Set(synth, "m_CurrentContext", "tip");
-            Set(synth, "m_CurrentPhrase", "Keep turning to your right toward the back.");
+            Set(synth, "m_CurrentPhrase", "Turn way right.");
+            Set(synth, "m_SpeechStartStage", "outside_target_wall");
             source.clip = new AudioClip { length = 4 }; source.time = 1; source.volume = .4f; source.HoldPlayback = true;
             relevant = true;
             pending = new System.Threading.Tasks.TaskCompletionSource<bool>();
@@ -95,6 +103,24 @@ class VoiceIsolationChecks
         Check(ReferenceEquals(fade,MonoBehaviour.LastRoutine), "Invalid tracking ticks do not restart fade");
         Time.unscaledTime += .076f; fade.MoveNext();
         Check(source.StopCalls==before+1 && source.VolumeAtStop==0, "Tracking loss fades without Jev");
+        Begin(); source.time=3.3f; count=requests;
+        Check(!synth.TryAreaCorrection(next, () => true) && requests==count,"Let the final 0.7 seconds finish rather than clipping the last word");
+        Begin(); synth.TryAreaCorrection(next, () => relevant); source.time=3.05f; pending.SetResult(true);
+        Check(!synth.TryAreaCorrection(next, () => relevant), "Recheck protected ending after remote approval arrives");
+        Begin(); count=requests;
+        Check(!synth.TryAreaCorrection(next, () => true, reason:"stable_direction") && requests==count,
+            "Ordinary refinement cannot become an interruption request");
+        Begin(); count=requests;
+        Check(!synth.TryAreaCorrection(next, () => true, reason:"turn_progress_milestone") && requests==count,
+            "Progress encouragement waits rather than interrupting");
+        Begin(); count=requests; Set(synth,"m_SpeechStartStage","within_target_wall");
+        Set(synth,"m_CurrentPhrase","Look to your right.");
+        Check(!synth.TryAreaCorrection(next, () => true) && requests==count, "Same-wall arrival does not interrupt an existing within-wall cue");
+        foreach (var protectedText in new[] { "Unregistered wording.", DirectionalHintPolicy.BitMorePhrase, DirectionalHintPolicy.LittleMorePhrase })
+        {
+            Begin(); count=requests; Set(synth,"m_CurrentPhrase",protectedText);
+            Check(!synth.TryAreaCorrection(next, () => true) && requests==count, "Unknown meaning and small progress cues finish locally");
+        }
         Begin(); source.time=3.7f; count=requests;
         Check(!synth.TryAreaCorrection(next, () => true) && requests==count,"Protect near-complete phrase locally");
         Begin(); source.time=3.1f; Set(synth,"m_CurrentSpeechSeconds",3.6d); count=requests;

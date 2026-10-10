@@ -698,6 +698,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         m_AudioSource.clip = clip;
         m_AudioSource.volume = 0.7f;
         m_AudioSource.pitch = 1f;
+        m_SpeechStartStage = GuidanceEvidence.valid ? (GuidanceEvidence.insideTargetWall ? "within_target_wall" : "outside_target_wall") : "unknown";
         m_AudioSource.Play();
         AudioTelemetry("audio_playback_start", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};effect_profile={InnerThoughtVoice.Profile(wantSelfSimilar)};text={m_PreparingText}");
         while (m_AudioSource.isPlaying) yield return null;

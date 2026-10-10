@@ -23,7 +23,10 @@ public static class DirectionalHintPolicy
     public const string DownLeftPhrase = "Look down and a little to your left.";
     public const string DownRightPhrase = "Look down and a little to your right.";
     public const string KeepGoingPhrase = "Keep going.";
-    public const string Version = "gaze-directional-v20-bounded-jev-fade";
+    public const string BitMorePhrase = "A bit more.";
+    public const string LittleMorePhrase = "Just a little more.";
+    public static bool IsContinuation(string phrase) => phrase == KeepGoingPhrase || phrase == BitMorePhrase || phrase == LittleMorePhrase;
+    public const string Version = "gaze-directional-v21-semantic-speech";
     static readonly string[] k_AreaLead = { "Right area.", "This is the right area.",
         "You're in the right area.", "Stay in this area." };
 
@@ -82,7 +85,9 @@ public static class DirectionalHintPolicy
     public static string FollowUp(string direction, string previous, float error, float previousError, int index, bool far,
         bool continuationUsed = false, float verticalFraction = 0) =>
         !continuationUsed && direction == previous && direction != AlignedPhrase && error <= previousError - 2
-            ? KeepGoingPhrase : Variant(direction, index, false, far, verticalFraction);
+            ? (!far && error <= 10 && (!HasVertical(direction) || Math.Abs(verticalFraction) <= .2f)
+                ? ((index & 1) == 0 ? BitMorePhrase : LittleMorePhrase) : KeepGoingPhrase)
+            : Variant(direction, index, false, far, verticalFraction);
 
     public static string Opening(string direction) => direction == LeftPhrase ? "The object is to the left." :
         direction == RightPhrase ? "The object is to the right." :
@@ -167,6 +172,8 @@ public static class DirectionalHintPolicy
         phrases.Add(LookingPhrase);
         phrases.Add(PointingPhrase);
         phrases.Add(KeepGoingPhrase);
+        phrases.Add(BitMorePhrase);
+        phrases.Add(LittleMorePhrase);
         phrases.AddRange(k_Progress);
         foreach (var direction in new[] { LeftPhrase, RightPhrase })
         { phrases.Add(Turn(direction, 180, 0)); phrases.Add(ReturnToArea(direction)); }

@@ -94,6 +94,14 @@ public class HintGenerator : MonoBehaviour
         string desired = Evaluate(out bool valid, out bool inside, out bool far);
         bool pointing = EvaluatePointing(valid);
         bool looking = EvaluateLooking(valid);
+        var speechEvidence = m_Voice.GuidanceEvidence; // Reuse the snapshot buffer; serialize only on a request.
+        speechEvidence.valid = valid; speechEvidence.insideTargetWall = inside;
+        speechEvidence.targetGazeQualified = looking;
+        speechEvidence.controllerOnTarget = m_ControllerEvidenceValid && m_ControllerOnTarget;
+        speechEvidence.gazeAgeSeconds = m_EvaluatedSample == null ? -1 : System.Math.Max(0, Time.realtimeSinceStartupAsDouble - m_EvaluatedSample.receiptTime);
+        speechEvidence.geometryAvailable = m_GeometryAvailable;
+        speechEvidence.yawErrorDegrees = m_YawError; speechEvidence.pitchErrorDegrees = m_PitchError;
+        speechEvidence.verticalMeasured = m_VerticalMeasured; speechEvidence.verticalPlaneFraction = m_VerticalFraction;
         bool revisit = m_TargetRevisit.Update(valid, looking, Time.timeAsDouble);
         bool selectionReminderDue = m_SelectionReminder.Step(valid && looking && m_TargetAcknowledged, Time.unscaledDeltaTime);
         bool lookingEntry = m_LookingEntry.Update(valid, looking, Time.timeAsDouble);
@@ -313,7 +321,7 @@ public class HintGenerator : MonoBehaviour
             m_ContinuationUsed || (DirectionalHintPolicy.HasVertical(desired) && verticalBand != m_LastVerticalBand), m_VerticalFraction);
         RememberDirection(desired);
         if (!inside) m_Turn.MarkSpoken(desired, m_TurnRemaining);
-        if (wording == DirectionalHintPolicy.KeepGoingPhrase) m_ContinuationUsed = true;
+        if (DirectionalHintPolicy.IsContinuation(wording)) m_ContinuationUsed = true;
         var request = Decision("requested", progress ? "turn_progress_milestone" : "stable_direction", desired, wording, true, inside, far, true);
         Record(request);
         m_Voice.Speak(wording,"tip",guidanceDecisionId:request.decisionId);

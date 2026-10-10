@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using Newtonsoft.Json.Linq;
 using SpatialVoice;
 using UnityEditor;
 using UnityEngine;
@@ -12,6 +13,15 @@ public static class SpatialNavigationChecks
     {
         var db = Resources.Load<NavigationPhraseDatabase>("SpatialVoice/NavigationPhrases");
         Check(db != null && db.phrases.Length == 300, "300-entry ScriptableObject loads"); db.Validate();
+        var authored = (JArray)JObject.Parse(System.IO.File.ReadAllText("Assets/Resources/SpatialVoice/navigation-phrases.json"))["navigation_phrases"];
+        for (int i = 0; i < db.phrases.Length; i++)
+            Check(db.phrases[i].id == (string)authored[i]["id"] &&
+                JToken.DeepEquals(JToken.FromObject(db.phrases[i].metadata),
+                    JToken.FromObject(authored[i]["metadata"].ToObject<SpeechPhraseMetadata>())), "asset semantics match JSON at " + i);
+        var guidance = (JArray)JObject.Parse(System.IO.File.ReadAllText("Assets/Resources/SpatialVoice/guidance-phrase-semantics.json"))["phrases"];
+        foreach (var row in guidance)
+            Check((string)row["semantics"]["intent"] != "unknown" && JToken.DeepEquals(row["semantics"],
+                JToken.FromObject(SpeechPhraseMetadata.Describe((string)row["text"]))), "guidance semantics export matches runtime");
         var output = new NavigationPhrase[4];
         foreach (float distance in new[] { 0f, .5f, 1f, 2f, 4f, 8f, 12f, 9999f })
             for (int angle = -180; angle <= 180; angle++)

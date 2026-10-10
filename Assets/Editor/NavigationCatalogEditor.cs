@@ -26,6 +26,7 @@ public static class NavigationCatalogEditor
                     id = (string)row["id"], text = (string)row["text"],
                     minAngle = (float)c["min_angle"], maxAngle = (float)c["max_angle"],
                     minDistance = (float)c["min_distance_meters"], maxDistance = (float)c["max_distance_meters"],
+                    metadata = row["metadata"].ToObject<SpeechPhraseMetadata>(),
                     tone = (NavigationTone)Enum.Parse(typeof(NavigationTone), (string)row["metadata"]["tone"], true)
                 };
             }
@@ -34,6 +35,14 @@ public static class NavigationCatalogEditor
             if (asset == null) { AssetDatabase.CreateAsset(scratch, AssetPath); scratch = null; }
             else { Undo.RecordObject(asset, "Import navigation phrases"); asset.phrases = scratch.phrases; asset.version = scratch.version; EditorUtility.SetDirty(asset); }
             AssetDatabase.SaveAssets();
+            var guidance = new JArray();
+            var seen = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
+            foreach (var phrase in DirectionalHintPolicy.AllPhrases())
+                if (seen.Add(phrase)) guidance.Add(new JObject { ["text"] = phrase,
+                    ["semantics"] = JObject.FromObject(SpeechPhraseMetadata.Describe(phrase)) });
+            File.WriteAllText("Assets/Resources/SpatialVoice/guidance-phrase-semantics.json", new JObject {
+                ["version"] = "guidance-semantics-v1", ["phrases"] = guidance }.ToString());
+            AssetDatabase.Refresh();
             Debug.Log("[SpatialVoice] Imported navigation catalog.");
         }
         finally { if (scratch != null) UnityEngine.Object.DestroyImmediate(scratch); }

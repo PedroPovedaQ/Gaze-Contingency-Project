@@ -15,6 +15,7 @@ namespace SpatialVoice
         [Range(-180, 180)] public float minAngle, maxAngle;
         [Min(0)] public float minDistance, maxDistance;
         public NavigationTone tone;
+        public SpeechPhraseMetadata metadata;
 
         public bool Matches(float angle, float distance) => NavigationGeometry.Finite(angle) &&
             NavigationGeometry.Finite(distance) && angle >= minAngle &&
@@ -41,6 +42,10 @@ namespace SpatialVoice
                     !NavigationGeometry.Finite(p.minDistance) || !NavigationGeometry.Finite(p.maxDistance) ||
                     p.minDistance < 0 || p.minDistance >= p.maxDistance || !Enum.IsDefined(typeof(NavigationTone), p.tone))
                     throw new ArgumentException("Invalid navigation phrase: " + p.id);
+                string horizontal = p.maxAngle <= 0 ? "left" : p.minAngle >= 0 ? "right" : "none";
+                if (p.metadata == null || p.metadata.intent == "unknown" || p.metadata.horizontal != horizontal ||
+                    p.metadata.vertical != "none" || p.metadata.interruptPolicy != "replace_if_misleading")
+                    throw new ArgumentException("Invalid navigation semantics: " + p.id);
             }
         }
     }
