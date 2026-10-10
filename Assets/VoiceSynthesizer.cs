@@ -12,7 +12,7 @@ using UnityEngine.Networking;
 /// Caches generated MP3 files on disk so repeated phrases (tips, congrats, etc.)
 /// play instantly from local storage after the first synthesis.
 /// </summary>
-public class VoiceSynthesizer : MonoBehaviour
+public partial class VoiceSynthesizer : MonoBehaviour
 {
     const string k_Tag = "[VoiceSynth]";
     const string k_BaseUrl = "https://api.elevenlabs.io/v1/text-to-speech/";
@@ -179,10 +179,35 @@ public class VoiceSynthesizer : MonoBehaviour
         catch (Exception e) { Fail("Could not save voice manifest: " + e.Message); return false; }
     }
 
+    /// <summary>Catalog selection may only choose already-normalized, voice-scoped audio.
+    /// A cache file alone is not enough: the current library must have admitted the clip.</summary>
+    public bool IsPreparedPhrase(string phrase)
+    {
+        if (!LibraryReady || string.IsNullOrEmpty(m_CacheDir)) return false;
+        bool clone = SessionConfig.Voice == VoiceCondition.SelfSimilar;
+        string id = clone ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId;
+        if (string.IsNullOrEmpty(id) || (clone && SessionConfig.SelfSimilarEnrollmentPending)) return false;
+        string path = GetCachePath(VoicePromptText.FormatForVoice(phrase, SessionConfig.Voice),
+            clone ? $"el-clone-{id}" : $"el-{id}");
+        return m_PreparedClips.ContainsKey(path);
+    }
+
     public bool IsSpeaking => m_AudioSource != null && m_AudioSource.isPlaying;
     // Read-only observer access to the exact normalized clip used by playback.
     public AudioClip ReplayClip => m_AudioSource != null ? m_AudioSource.clip : null;
     public bool IsBusy => m_InterruptionCoroutine != null || m_SpeakCoroutine != null || IsSpeaking;
+    double m_LastGuidanceEnd = -100;
+    bool m_LastGuidanceWasAcknowledgment;
+    string m_CurrentPhrase;
+    public bool GuidanceReady => GuidanceSpeechPolicy.CanStart(IsBusy,
+        Time.realtimeSinceStartupAsDouble, m_LastGuidanceEnd, m_LastGuidanceWasAcknowledgment);
+
+    void MarkGuidanceEnd()
+    {
+        if (m_CurrentContext != "tip" && m_CurrentContext != "guidance_repeat") return;
+        m_LastGuidanceEnd = Time.realtimeSinceStartupAsDouble;
+        m_LastGuidanceWasAcknowledgment = GuidanceSpeechPolicy.IsAcknowledgment(m_CurrentPhrase);
+    }
 
     public void StartBackgroundLoading(string[] phrases)
     {
@@ -198,6 +223,7 @@ public class VoiceSynthesizer : MonoBehaviour
 
     void Update()
     {
+        ValidateInterruptionAdvice();
         if (!LibraryReady || m_Preparing || m_SetupAnnouncement || IsBusy ||
             m_BackgroundLoading || m_BackgroundQueue.Count == 0) return;
         m_BackgroundCoroutine = StartCoroutine(LoadNextBackgroundClip());
@@ -257,6 +283,7 @@ public class VoiceSynthesizer : MonoBehaviour
         // Identity and key checks happen inside the coroutine so prepared audio works offline.
         Stop();
         m_CurrentContext = context;
+        m_CurrentPhrase = text;
         m_GuidanceDecisionId = guidanceDecisionId;
         m_SpeakCoroutine = StartCoroutine(SpeakCoroutine(text, requestedVoice: requestedVoice));
     }
@@ -299,10 +326,11 @@ public class VoiceSynthesizer : MonoBehaviour
     // Decisions are recorded separately from speech requests and audible starts.
     // Keep serialized snapshots out of the audio cache identity and spoken text.
     public void RecordGuidanceDecision(string json) => Telemetry?.Invoke("guidance_decision", "guidance", "", json);
+    public void RecordNavigationStatus(string json) => Telemetry?.Invoke("navigation_status", "guidance", "", json);
 
     void AudioTelemetry(string kind, string context, string clip, string detail)
     {
-        if (!string.IsNullOrEmpty(m_GuidanceDecisionId) && (context == "tip" || context == "guidance_repeat"))
+        if (!string.IsNullOrEmpty(m_GuidanceDecisionId) && (context == "tip" || context == "guidance_repeat" || context == "guidance_opening" || context == "readiness_reminder"))
             detail = "decision_id=" + m_GuidanceDecisionId + ";" + detail;
         Telemetry?.Invoke(kind, context, clip, detail);
     }
@@ -310,6 +338,8 @@ public class VoiceSynthesizer : MonoBehaviour
     public bool TryAreaCorrection(string phrase, Func<bool> stillRelevant, Action onCommitted = null,
         string reason = "gaze_target_plane", string guidanceDecisionId = null)
     {
+        // Only a bounded, current Jev approval may replace unfinished guidance.
+        // Missing/late/failed advice preserves the normal finish-phrase policy.
         if (!LibraryReady || m_InterruptionCoroutine != null || m_SetupAnnouncement ||
             (m_CurrentContext != null && m_CurrentContext != "tip" && m_CurrentContext != "guidance_repeat" && m_CurrentContext != "prefetch")) return false;
         bool self = SessionConfig.Voice == VoiceCondition.SelfSimilar;
@@ -318,6 +348,8 @@ public class VoiceSynthesizer : MonoBehaviour
         string path = GetCachePath(VoicePromptText.FormatForVoice(phrase, SessionConfig.Voice),
             (self ? "el-clone-" : "el-") + voiceId);
         if (!m_PreparedClips.ContainsKey(path) || !stillRelevant()) return false;
+        if (!GuidanceReady && !ApproveInterruption(phrase, reason, stillRelevant)) return false;
+        m_DropCorrection = false;
         m_PendingCorrectionDecisionId = guidanceDecisionId;
         m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(phrase, stillRelevant, onCommitted, reason, guidanceDecisionId));
         return true;
@@ -325,22 +357,39 @@ public class VoiceSynthesizer : MonoBehaviour
 
     IEnumerator FadeToAreaCorrection(string phrase, Func<bool> stillRelevant, Action onCommitted, string reason, string decisionId)
     {
-        yield return null;
+        yield return null; // Store the cancellable handle before executing any completion path.
+        bool correction = phrase != null;
+        if (correction && (!stillRelevant() || m_DropCorrection))
+        { m_InterruptionCoroutine = null; AbandonCorrection("stale_before_fade"); yield break; }
         float volume = m_AudioSource.volume;
-        float start = Time.unscaledTime;
-        while (IsSpeaking && Time.unscaledTime - start < 0.04f)
+        bool faded = IsSpeaking;
+        double start = Time.realtimeSinceStartupAsDouble;
+        if (faded)
         {
-            if (!stillRelevant())
-            { m_AudioSource.volume = volume; m_InterruptionCoroutine = null; AbandonCorrection("stale_during_fade"); yield break; }
-            m_AudioSource.volume = volume * (1f - (Time.unscaledTime - start) / 0.04f);
-            yield return null;
+            AudioTelemetry("audio_fade_start", m_CurrentContext ?? "", m_ActiveClipKey ?? "",
+                "fade_seconds=0.150;reason=" + reason);
+            // Once a fade starts, complete it rather than audibly pumping the gain back up.
+            // The replacement is independently revalidated after the old audio has stopped.
+            while (Time.realtimeSinceStartupAsDouble - start < GuidanceSpeechPolicy.FadeSeconds)
+            {
+                float t = (float)((Time.realtimeSinceStartupAsDouble - start) / GuidanceSpeechPolicy.FadeSeconds);
+                m_AudioSource.volume = Mathf.Lerp(volume, 0f, t);
+                yield return null;
+            }
+            m_AudioSource.volume = 0f; // Stop must observe silence, never the restored gain.
+            m_LastSmoothInterruption = Time.realtimeSinceStartupAsDouble;
         }
-        m_AudioSource.volume = volume;
+        bool commit = correction && !m_DropCorrection && stillRelevant();
+        string oldClip = m_ActiveClipKey ?? "";
         m_InterruptionCoroutine = null;
-        if (!stillRelevant()) { AbandonCorrection("stale_before_commit"); yield break; }
-        m_PendingCorrectionDecisionId = null;
-        Telemetry?.Invoke("audio_area_correction", "tip", m_ActiveClipKey ?? "",
-            (decisionId == null ? "" : "decision_id=" + decisionId + ";") + reason + ";fade_seconds=0.04");
+        if (commit) m_PendingCorrectionDecisionId = null;
+        else AbandonCorrection("stale_after_fade");
+        Stop();
+        m_AudioSource.volume = volume;
+        if (!commit) yield break;
+        Telemetry?.Invoke("audio_area_correction", "tip", oldClip,
+            (decisionId == null ? "" : "decision_id=" + decisionId + ";") + reason +
+            (faded ? ";fade_seconds=0.150" : ";fade_seconds=0"));
         Speak(phrase, "tip", guidanceDecisionId: decisionId);
         onCommitted?.Invoke();
     }
@@ -355,13 +404,15 @@ public class VoiceSynthesizer : MonoBehaviour
 
     public void Stop()
     {
+        CancelInterruptionAdvice();
+        m_PlaybackGeneration++;
+        m_CurrentSpeechSeconds = -1;
         if (m_InterruptionCoroutine != null)
         {
             StopCoroutine(m_InterruptionCoroutine);
             m_InterruptionCoroutine = null;
         }
         AbandonCorrection("cancelled_before_commit");
-        if (m_AudioSource != null) m_AudioSource.volume = 0.7f;
         if (m_BackgroundCoroutine != null)
         {
             StopCoroutine(m_BackgroundCoroutine);
@@ -376,22 +427,26 @@ public class VoiceSynthesizer : MonoBehaviour
         }
 
         if (m_AudioSource != null && m_AudioSource.isPlaying)
-            m_AudioSource.Stop();
+        { MarkGuidanceEnd(); m_AudioSource.Stop(); }
+        if (m_AudioSource != null) m_AudioSource.volume = 0.7f;
 
         if (m_ActiveClipKey != null) AudioTelemetry("audio_cancelled", m_CurrentContext ?? "", m_ActiveClipKey, "");
         m_ActiveClipKey = null;
         m_CurrentContext = null;
+        m_CurrentPhrase = null;
         m_GuidanceDecisionId = null;
     }
 
-    public void InterruptIfAbout(string context)
+    public void InterruptIfAbout(string context, bool immediate = false)
     {
-        if (!string.IsNullOrEmpty(m_CurrentContext) &&
-            m_CurrentContext.Equals(context, StringComparison.OrdinalIgnoreCase))
-        {
-            Debug.Log($"{k_Tag} Interrupting speech about '{context}'");
-            Stop();
-        }
+        if (string.IsNullOrEmpty(m_CurrentContext) || !m_CurrentContext.Equals(context, StringComparison.OrdinalIgnoreCase)) return;
+        if (immediate || (context != "tip" && context != "guidance_repeat") || !IsSpeaking) { Stop(); return; }
+        // Sustained gaze loss uses the same fade, without waiting on a remote decision.
+        // Repeated invalid ticks never restart it, and cannot preserve a queued correction.
+        m_DropCorrection = true;
+        CancelInterruptionAdvice();
+        if (m_InterruptionCoroutine == null)
+            m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(null, null, null, "gaze_unavailable", null));
     }
 
     public IEnumerator SpeakRecordingIntroduction() => SpeakSetupAnnouncement(
@@ -636,12 +691,17 @@ public class VoiceSynthesizer : MonoBehaviour
         if (LibraryReady && !m_Preparing && !SaveManifest()) yield break;
         AudioTelemetry("audio_ready", m_CurrentContext ?? "", Path.GetFileNameWithoutExtension(filePath), $"duration={clip.length:F4}");
         if (m_Preparing || silent) yield break;
+        m_CurrentSpeechSeconds = -1;
+        foreach (var audit in m_Audit)
+            if (audit.clip_id == m_ActiveClipKey && audit.speech_samples > 0)
+            { m_CurrentSpeechSeconds = (double)audit.speech_samples / (clip.channels * clip.frequency); break; }
         m_AudioSource.clip = clip;
         m_AudioSource.volume = 0.7f;
         m_AudioSource.pitch = 1f;
         m_AudioSource.Play();
         AudioTelemetry("audio_playback_start", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};effect_profile={InnerThoughtVoice.Profile(wantSelfSimilar)};text={m_PreparingText}");
         while (m_AudioSource.isPlaying) yield return null;
+        MarkGuidanceEnd();
         AudioTelemetry("audio_playback_end", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};text={m_PreparingText}");
         m_ActiveClipKey = null;
     }

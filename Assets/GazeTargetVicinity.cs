@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// Circular angular region enclosing the target collider, plus an adjustable margin.
@@ -42,7 +43,35 @@ public sealed class GazeTargetVicinity : MonoBehaviour
     public static bool ControllerCurrent(ControllerRaySelector.TelemetrySample sample, int frame,
         double receiptTime, int currentFrame, double now) => sample.available && sample.rayAvailable &&
         sample.tracked == 1 && frame >= 0 && frame <= currentFrame && currentFrame - frame <= 1 &&
-        GazeQualityPolicy.IsFresh(true, receiptTime, now, .1);
+            GazeQualityPolicy.IsFresh(true, receiptTime, now, .1);
+
+    // Compare angular distance to each collider's center, never physical distance
+    // from the headset or radius-normalized error. Only rings containing gaze
+    // compete. Near-equal angles are ambiguous rather than list-order dependent.
+    public static GameObject ClosestObject(Vector3 origin, Vector3 direction,
+        IReadOnlyList<GameObject> objects, float padding, out int candidateCount,
+        out bool ambiguous, out float closestError)
+    {
+        candidateCount = 0; ambiguous = false; closestError = 0;
+        GameObject closest = null;
+        float best = float.PositiveInfinity, second = float.PositiveInfinity;
+        if (objects == null) return null;
+        for (int i = 0; i < objects.Count; i++)
+        {
+            var obj = objects[i];
+            if (obj == null || !obj.activeInHierarchy || !obj.TryGetComponent<Collider>(out var collider) || !collider.enabled)
+                continue;
+            if (!Measure(origin, direction, collider.bounds, padding, out float error, out float radius) || error > radius)
+                continue;
+            candidateCount++;
+            if (error < best) { second = best; best = error; closest = obj; }
+            else if (error < second) second = error;
+        }
+        if (closest == null) return null;
+        closestError = best;
+        ambiguous = second - best <= .01f;
+        return ambiguous ? null : closest;
+    }
 
     public void Draw(Vector3 origin, Bounds bounds, float radiusDegrees, bool inside)
     {

@@ -35,10 +35,10 @@ def prepare(project):
         hashes[relative] = hashlib.sha256(data).hexdigest()
         return data.decode('utf-8')
 
-    for name in ['TrialReplayData', 'TrialReplayState', 'TrialReplayFile', 'TrialReplayAudio']:
+    for name in ['TrialReplayData', 'TrialReplayGaze', 'TrialReplayState', 'TrialReplayFile', 'TrialReplayAudio']:
         (shared / (name + '.cs')).write_text(source('Assets/Replay/' + name + '.cs'))
     # Pure data/policy dependencies only; no recorders, bootstraps, credentials or XR.
-    for name in ['GuidanceDecision', 'GazeObservation', 'GazeTargetHistory', 'DirectionalHintPolicy']:
+    for name in ['GuidanceDecision', 'GazeObservation', 'GazeQuickAlignment', 'GazeTargetHistory', 'DirectionalHintPolicy']:
         (shared / (name + '.cs')).write_text(source('Assets/' + name + '.cs'))
 
     audio = source('Assets/Editor/TrialReplayAudioPreview.cs')
@@ -98,6 +98,8 @@ def prepare(project):
             shutil.copyfile(original, destination / original.name)
             hashes[str(original.relative_to(ROOT))] = hashlib.sha256(original.read_bytes()).hexdigest()
     shutil.copyfile(htc / 'LICENSE.txt', destination / 'LICENSE.txt')
+    (assets / 'StreamingAssets').mkdir(exist_ok=True)
+    shutil.copyfile(HERE / 'live_bridge.py', assets / 'StreamingAssets/live_bridge.py')
     notices = assets / 'StreamingAssets/ThirdPartyNotices'
     notices.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(htc / 'LICENSE.txt', notices / 'HTC-LICENSE.txt')

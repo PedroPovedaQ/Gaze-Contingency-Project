@@ -33,12 +33,7 @@ public static class TrialReplayFile
     {
         var records = new List<TrialReplayRecord>();
         string warning = null;
-        var ids = new HashSet<string>();
-        var trials = new HashSet<string>();
-        var meshes = new HashSet<string>();
-        string trial = null, targetId = null;
-        long sequence = -1;
-        double time = -1;
+        var validator = new Validator(Path.GetDirectoryName(Path.GetFullPath(file)));
         var info = new FileInfo(file);
         if (info.Length > 1024L * 1024 * 1024) throw new InvalidDataException("Replay exceeds the 1 GiB viewer limit; split it before opening.");
         using (var reader = new StreamReader(file))
@@ -59,69 +54,8 @@ public static class TrialReplayFile
                     { warning = "Incomplete trailing record omitted."; break; }
                     throw new InvalidDataException("Corrupt JSON inside replay.");
                 }
-                if (r == null || (r.schema != 1 && r.schema != Schema) ||
-                    (records.Count > 0 && r.schema != records[0].schema) || string.IsNullOrEmpty(r.kind) || r.sequence <= sequence ||
-                    double.IsNaN(r.time) || double.IsInfinity(r.time) || r.time < 0 || r.time < time)
-                    throw new InvalidDataException("Unsupported schema or invalid replay ordering.");
-                if (records.Count == 0 && (r.kind != "header" || string.IsNullOrEmpty(r.recordingId)))
-                    throw new InvalidDataException("Replay must begin with an identified header.");
-                if (records.Count > 0 && (r.kind == "header" || records[records.Count - 1].kind == "end"))
-                    throw new InvalidDataException("Unexpected header or records after end.");
-                if (r.schema >= 2)
-                {
-                    if (!Finite(r.readinessProgress) || r.readinessProgress < 0 || r.readinessProgress > 1 ||
-                        r.readinessWall < 0 || r.readinessWall > 7)
-                        throw new InvalidDataException("Invalid readiness gate state.");
-                    Check(r.readinessPosition); Check(r.readinessRotation);
-                }
-                if (r.meshes != null) foreach (var m in r.meshes)
-                {
-                    if (m == null || string.IsNullOrEmpty(m.id) || !meshes.Add(m.id) || m.vertices == null || m.triangles == null ||
-                        m.vertices.Length > 200000 || m.triangles.Length > 600000 || m.triangles.Length % 3 != 0)
-                        throw new InvalidDataException("Invalid replay mesh.");
-                    foreach (var v in m.vertices) Check(v);
-                    foreach (int i in m.triangles) if (i < 0 || i >= m.vertices.Length) throw new InvalidDataException("Invalid mesh index.");
-                }
-                if (r.kind == "trial")
-                {
-                    if (string.IsNullOrEmpty(r.trialId) || !trials.Add(r.trialId) || r.objects == null || r.objects.Length == 0 || r.objects.Length > 512)
-                        throw new InvalidDataException("Invalid trial snapshot.");
-                    trial = r.trialId; targetId = r.targetId; ids.Clear(); int targets = 0;
-                    foreach (var o in r.objects)
-                    {
-                        if (o == null || string.IsNullOrEmpty(o.id) || !ids.Add(o.id) || !meshes.Contains(o.mesh))
-                            throw new InvalidDataException("Invalid object identity or missing mesh.");
-                        Check(o.position); Check(o.scale); Check(o.rotation);
-                        if (o.target) { targets++; if (o.id != r.targetId) throw new InvalidDataException("Target identity mismatch."); }
-                    }
-                    if (targets != 1) throw new InvalidDataException("Trial requires exactly one target.");
-                }
-                if (r.kind == "sample" || r.kind == "selection")
-                {
-                    if (trial == null || r.trialId != trial) throw new InvalidDataException("Sample/selection has no matching trial.");
-                    if (r.kind == "selection" && !ids.Contains(r.objectId)) throw new InvalidDataException("Unknown selected object.");
-                    if (r.kind == "selection" && r.correct != (r.objectId == targetId)) throw new InvalidDataException("Selection correctness disagrees with target.");
-                    if (!string.IsNullOrEmpty(r.hoveredId) && !ids.Contains(r.hoveredId)) throw new InvalidDataException("Unknown hovered object.");
-                    if (r.gazeTracked < -1 || r.gazeTracked > 1 || r.headTracked < -1 || r.headTracked > 1 ||
-                        !Finite(r.dwell) || r.dwell < 0 || r.dwell > 1 || double.IsNaN(r.searchSeconds) || double.IsInfinity(r.searchSeconds) || r.searchSeconds < 0)
-                        throw new InvalidDataException("Invalid tracking, dwell or search measurement.");
-                    Check(r.headPosition); Check(r.headRotation); Check(r.gazeOrigin); Check(r.gazeDirection);
-                    Check(r.xrOriginPosition); Check(r.xrOriginRotation);
-                    if (r.schema >= 2)
-                    {
-                        if (r.dwell != 0) throw new InvalidDataException("Controller replay cannot report dwell selection.");
-                        Check(r.leftController, ids); Check(r.rightController, ids);
-                    }
-                    if (r.changes != null) foreach (var t in r.changes)
-                    {
-                        if (!ids.Contains(t.id)) throw new InvalidDataException("Unknown moved object.");
-                        Check(t.position); Check(t.rotation); Check(t.scale);
-                    }
-                }
-                if (r.kind == "audio_playback_start" && (!Finite(r.audioVolume) || r.audioVolume < 0 || r.audioVolume > 1))
-                    throw new InvalidDataException("Invalid recorded audio volume.");
-                if (!string.IsNullOrEmpty(r.clip)) AssetPath(info.DirectoryName, r.clip);
-                records.Add(r); sequence = r.sequence; time = r.time;
+                validator.Accept(r);
+                records.Add(r);
                 if (records.Count > MaxRecords) throw new InvalidDataException("Too many replay records.");
             }
         }
@@ -129,6 +63,88 @@ public static class TrialReplayFile
         if (records[records.Count - 1].kind != "end" || !records[records.Count - 1].complete)
             warning = warning ?? "Recording is incomplete; only the saved prefix is available.";
         return new TrialReplayTimeline(records) { DirectoryPath = info.DirectoryName, FilePath = info.FullName, Warning = warning };
+    }
+
+    // Shared by saved-file and incremental live readers: identical evidence checks.
+    public sealed class Validator
+    {
+        readonly HashSet<string> ids = new HashSet<string>();
+        readonly HashSet<string> trials = new HashSet<string>();
+        readonly HashSet<string> meshes = new HashSet<string>();
+        string trial = null, targetId = null;
+        long sequence = -1;
+        double time = -1;
+        readonly string directory;
+        int count, schema;
+        string lastKind;
+        public Validator(string directory) { this.directory = directory; }
+        public void Accept(TrialReplayRecord r)
+        {
+            if (r == null || (r.schema != 1 && r.schema != Schema) ||
+                (count > 0 && r.schema != schema) || string.IsNullOrEmpty(r.kind) || r.sequence <= sequence ||
+                double.IsNaN(r.time) || double.IsInfinity(r.time) || r.time < 0 || r.time < time)
+                throw new InvalidDataException("Unsupported schema or invalid replay ordering.");
+            if (count == 0 && (r.kind != "header" || string.IsNullOrEmpty(r.recordingId)))
+                throw new InvalidDataException("Replay must begin with an identified header.");
+            if (count > 0 && (r.kind == "header" || lastKind == "end"))
+                throw new InvalidDataException("Unexpected header or records after end.");
+            if (r.schema >= 2)
+            {
+                if (!Finite(r.readinessProgress) || r.readinessProgress < 0 || r.readinessProgress > 1 ||
+                    r.readinessWall < 0 || r.readinessWall > 7)
+                    throw new InvalidDataException("Invalid readiness gate state.");
+                Check(r.readinessPosition); Check(r.readinessRotation);
+            }
+            if (r.meshes != null) foreach (var m in r.meshes)
+            {
+                if (m == null || string.IsNullOrEmpty(m.id) || !meshes.Add(m.id) || m.vertices == null || m.triangles == null ||
+                    m.vertices.Length > 200000 || m.triangles.Length > 600000 || m.triangles.Length % 3 != 0)
+                    throw new InvalidDataException("Invalid replay mesh.");
+                foreach (var v in m.vertices) Check(v);
+                foreach (int i in m.triangles) if (i < 0 || i >= m.vertices.Length) throw new InvalidDataException("Invalid mesh index.");
+            }
+            if (r.kind == "trial")
+            {
+                if (string.IsNullOrEmpty(r.trialId) || !trials.Add(r.trialId) || r.objects == null || r.objects.Length == 0 || r.objects.Length > 512)
+                    throw new InvalidDataException("Invalid trial snapshot.");
+                trial = r.trialId; targetId = r.targetId; ids.Clear(); int targets = 0;
+                foreach (var o in r.objects)
+                {
+                    if (o == null || string.IsNullOrEmpty(o.id) || !ids.Add(o.id) || !meshes.Contains(o.mesh))
+                        throw new InvalidDataException("Invalid object identity or missing mesh.");
+                    Check(o.position); Check(o.scale); Check(o.rotation);
+                    if (o.target) { targets++; if (o.id != r.targetId) throw new InvalidDataException("Target identity mismatch."); }
+                }
+                if (targets != 1) throw new InvalidDataException("Trial requires exactly one target.");
+            }
+            if (r.kind == "sample" || r.kind == "selection")
+            {
+                if (trial == null || r.trialId != trial) throw new InvalidDataException("Sample/selection has no matching trial.");
+                if (r.kind == "selection" && !ids.Contains(r.objectId)) throw new InvalidDataException("Unknown selected object.");
+                if (r.kind == "selection" && r.correct != (r.objectId == targetId)) throw new InvalidDataException("Selection correctness disagrees with target.");
+                if (!string.IsNullOrEmpty(r.hoveredId) && !ids.Contains(r.hoveredId)) throw new InvalidDataException("Unknown hovered object.");
+                if (r.gazeTracked < -1 || r.gazeTracked > 1 || r.headTracked < -1 || r.headTracked > 1 ||
+                    !Finite(r.dwell) || r.dwell < 0 || r.dwell > 1 || double.IsNaN(r.searchSeconds) || double.IsInfinity(r.searchSeconds) || r.searchSeconds < 0)
+                    throw new InvalidDataException("Invalid tracking, dwell or search measurement.");
+                Check(r.headPosition); Check(r.headRotation); Check(r.gazeOrigin); Check(r.gazeDirection);
+                Check(r.xrOriginPosition); Check(r.xrOriginRotation);
+                if (r.schema >= 2)
+                {
+                    if (r.dwell != 0) throw new InvalidDataException("Controller replay cannot report dwell selection.");
+                    Check(r.leftController, ids); Check(r.rightController, ids);
+                }
+                if (r.changes != null) foreach (var t in r.changes)
+                {
+                    if (!ids.Contains(t.id)) throw new InvalidDataException("Unknown moved object.");
+                    Check(t.position); Check(t.rotation); Check(t.scale);
+                }
+            }
+            if (r.kind == "audio_playback_start" && (!Finite(r.audioVolume) || r.audioVolume < 0 || r.audioVolume > 1))
+                throw new InvalidDataException("Invalid recorded audio volume.");
+            if (!string.IsNullOrEmpty(r.clip)) AssetPath(directory, r.clip);
+            if (++count > MaxRecords) throw new InvalidDataException("Too many replay records.");
+            schema = r.schema; lastKind = r.kind; sequence = r.sequence; time = r.time;
+        }
     }
 
     static void Check(Vector3 v)

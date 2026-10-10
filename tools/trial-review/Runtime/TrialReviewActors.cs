@@ -52,6 +52,7 @@ public sealed class TrialReviewActors : IDisposable
     public void Prepare(TrialReplayTimeline timeline,double time,bool firstPerson,bool showBody,bool showControllers,bool showEyeRay=false,TrialReviewGazeCorrection correction=null)
     {
         if(m_Timeline!=timeline){m_Timeline=timeline;m_Torso=new TrialReviewTorsoTrack(timeline);}
+        m_Torso.Refresh(timeline);
         var sample=timeline.State.HasCurrentSample(time)?timeline.State.Sample:null;
         float torsoYaw;
         bool hasTorso=m_Torso.TryGet(sample,out torsoYaw);
@@ -78,14 +79,15 @@ public sealed class TrialReviewActors : IDisposable
             (state.PoseBoundary==null||readiness.sequence>state.PoseBoundary.sequence)&&
             readiness.trialId==state.Trial?.trialId&&readiness.readinessActive&&!readiness.readinessPaused;
         Ray corrected=default;
-        CorrectionApplied=validGaze&&correction!=null&&correction.TryGet(sample,out corrected);
+        bool recordedRay=sample!=null&&sample.gazeRayVersion==TrialReplayGaze.Version;
+        CorrectionApplied=validGaze&&!recordedRay&&correction!=null&&correction.TryGet(sample,out corrected);
         CorrectedHeadOffset=CorrectionApplied?Vector3.Distance(corrected.origin,sample.headPosition):float.NaN;
         // For a supported recording, missing XR reference must not silently become a cosmetic head ray.
-        bool rayAvailable=validGaze&&(correction==null||!correction.Supported||CorrectionApplied);
+        bool rayAvailable=validGaze&&(recordedRay||correction==null||!correction.Supported||CorrectionApplied);
         m_EyeRay.enabled=showEyeRay&&rayAvailable&&(state.Visible||charging);
         if(m_EyeRay.enabled)
         {
-            var origin=CorrectionApplied?corrected.origin:m_Anchor.position;
+            var origin=recordedRay?sample.gazeOrigin:CorrectionApplied?corrected.origin:m_Anchor.position;
             var direction=CorrectionApplied?corrected.direction:sample.gazeDirection.normalized;
             m_EyeRay.SetPosition(0,origin);
             m_EyeRay.SetPosition(1,origin+direction*3);

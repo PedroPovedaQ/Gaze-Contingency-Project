@@ -14,6 +14,7 @@ public sealed class TrialReviewEnvironment : IDisposable
     public bool WallsVisible => m_Walls.activeSelf;
     public bool RoomVisible => m_Room.activeSelf;
     public int WallCount { get; private set; }
+    public Vector3[] DegreePositions { get; private set; } = Array.Empty<Vector3>();
     public Vector3 Center { get; private set; }
     public float Radius { get; private set; }
     public float Floor { get; private set; }
@@ -34,7 +35,7 @@ public sealed class TrialReviewEnvironment : IDisposable
     {
         if(!ReferenceEquals(m_Trial,trial))
         {
-            m_Trial=trial;Clear(m_Walls);Clear(m_Room);WallCount=0;
+            m_Trial=trial;Clear(m_Walls);Clear(m_Room);WallCount=0;DegreePositions=Array.Empty<Vector3>();
             if(trial?.objects!=null&&trial.objects.Length>0)Build(trial);
         }
         m_Walls.SetActive(showWalls&&WallCount>0);
@@ -65,10 +66,13 @@ public sealed class TrialReviewEnvironment : IDisposable
             if(radius>.1f)
             {
                 Radius=radius;
+                DegreePositions=new Vector3[8];
                 float half=radius*Mathf.Tan(Mathf.PI/8);
                 foreach(var group in groups)
                 {
                     var rotation=Quaternion.Euler(0,group.Key*45,0);
+                    // Match the headset's layout-relative label height and forward convention.
+                    DegreePositions[group.Key]=Center+trial.originRotation*(rotation*new Vector3(0,.43f,radius));
                     Vector3 a=rotation*new Vector3(-half,bottom,radius),b=rotation*new Vector3(half,bottom,radius);
                     Vector3 c=b+Vector3.up*height,d=a+Vector3.up*height;
                     Line(m_Walls,new[]{a,b,c,d,a},m_Outline,.012f);

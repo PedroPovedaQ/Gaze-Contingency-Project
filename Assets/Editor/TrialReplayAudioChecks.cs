@@ -75,6 +75,25 @@ public static class TrialReplayAudioChecks
             }
             Assert(output.Active.Count==0,"Window disposal releases owned clips.");
             Assert(Convert.ToBase64String(File.ReadAllBytes(path))==Convert.ToBase64String(bytes),"Playback never modifies source WAV.");
+            string fading = Path.Combine(root, "fading.jsonl");
+            var fadeRecords = new[] {
+                new TrialReplayRecord{kind="header",sequence=0,recordingId="fade-audio",sourceType="synthetic_demo"},
+                new TrialReplayRecord{kind="audio_playback_start",sequence=1,time=0,clip="clip.wav",audioVolume=.5f},
+                new TrialReplayRecord{kind="audio_fade_start",sequence=2,time=.5,detail="fade_seconds=0.150;reason=test"},
+                new TrialReplayRecord{kind="audio_cancelled",sequence=3,time=.65},
+                new TrialReplayRecord{kind="end",sequence=4,time=1,complete=true}
+            };
+            var fadeLines = new List<string>(); foreach(var r in fadeRecords) fadeLines.Add(JsonUtility.ToJson(r));
+            File.WriteAllLines(fading,fadeLines);
+            var fadeOutput = new Output();
+            using(var preview = new TrialReplayAudioPreview(TrialReplayFile.Read(fading),fadeOutput))
+            {
+                preview.Sync(.55,true,1);
+                var clip = fadeOutput.Played[0];
+                Assert(Math.Abs(clip.Samples[4000]-.2f)<.0001 && Math.Abs(clip.Samples[4600]-.1f)<.0001,
+                    "Recorded 150ms fade reconstructs full and half gain, including seek into the fade.");
+                Assert(Math.Abs(clip.Samples[clip.Samples.Length-1])<.001, "Fade reaches silence at cancellation.");
+            }
             File.Delete(path);
             var missing=new TrialReplayAudioPlan(timeline);
             Assert(missing.Segments.Count==0 && missing.Warnings.Count==3,"Missing assets remain explicit, never regenerated.");

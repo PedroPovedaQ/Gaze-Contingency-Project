@@ -1,14 +1,101 @@
 # Trial Review desktop app
 
+## Live Wi-Fi mode
+
+**Implemented locally, October 10, 2026.** The desktop viewer can receive the
+headset's existing recordings over wireless ADB, reconstruct the current run,
+and archive new runs automatically. No different study build or Unity server is
+required. The headset remains the source of truth and continues recording if
+the computer disconnects. This is buffered live telemetry reconstruction, not
+passthrough screen video or a new sensor acquisition path.
+
+1. Put the Vive and Mac on the same trusted Wi-Fi network. The network must allow
+   devices to reach each other (guest/client-isolated networks may not).
+2. Launch the desktop app, choose **Wi-Fi settings**, then **Connect Wi-Fi**. Enter the
+   headset IPv4 address if wireless ADB is already enabled. Otherwise leave it
+   blank and connect one authorized headset by USB once; the receiver enables
+   ADB TCP/IP and then uses only the Wi-Fi endpoint. The installed Android SDK
+   `adb` and `/usr/bin/python3` are required on the Mac.
+3. Wait for **WI-FI CONNECTED** before unplugging USB. Start trials normally in
+   the headset. **Follow live** follows the newest run with a 200 ms viewer buffer;
+   actual delay also includes headset flushes, transfer and parsing time. The receiver
+   waits 100 ms between transfer passes. Full-file hash verification waits until
+   replay growth stops so it does not block live transfer. Initial catch-up/reconnect
+   joins the buffered edge instead of playing through the backlog.
+   **Waiting for headset signal** replaces the scene while no fresh tracked samples
+   are arriving, including paused/closed runs, tracking loss and disconnection.
+   A connected ADB transport alone does not count as a live headset. After two seconds
+   without observed source-file growth the view waits; an explicit pause marker waits
+   immediately. Normal fresh chunk parsing does not interrupt an already following view.
+   An initially offline headset is retried automatically at the configured address.
+   Repeated **Follow live** clicks do not rewind an already-following view.
+4. Select first person, third person or overhead as usual. Scrubbing, selecting a
+   trial, pausing or changing playback speed leaves follow mode while archiving
+   continues. **Follow live** returns to the latest run. Saved WAV playback at
+   1× follows the recorded events, including interruptions. Late/missing assets
+   are reported; missing speech is never synthesized.
+5. **Open saved files** opens `~/Documents/Trial Review Live/` by default.
+   `data/GazeReplays/<run>/recording.jsonl` and `audio/` form the replay package;
+   `data/EyeMeasurements/`, `data/GazeData/` and `data/PreparationLogs/` retain
+   raw eye observations, trial/CSV metadata and preparation logs. These are the
+   app-generated files; external surveys, microphone recordings and headset
+   video must be collected separately.
+6. Let pending bytes reach zero and file hashes finish verifying before closing
+   the receiver. **Stop receiver** or quitting the viewer stops wireless copying;
+   it does not stop the study or delete either copy. Reconnect to recover missed
+   bytes and new runs while the source files still exist on the headset.
+
+On first connection the receiver takes the newest replay and current/latest
+supporting folders, plus any folders explicitly linked by that replay. It then
+watches all new folders in the four recording roots, including runs created
+while disconnected or between receiver sessions. It does not import all older
+history on first connection. The archive is tied to the physical headset serial
+and application ID; another headset needs a different output directory.
+
+**Backup status is evidence, not a completeness claim:** `live-status.json` reports
+connection, copied bytes and verified-file counts. `data/wireless-manifest.json`
+contains source size/mtime and SHA-256 for verified files. Hash equality means the
+saved file matches that source snapshot; a still-growing or prematurely stopped
+recording is not thereby a completed experiment. Partial JSONL tails wait for more
+bytes. The viewer freezes on lost connectivity and validates sequence, geometry
+and tracking using the same checks as offline replay. There is no inferred motion
+across missing observations. A 1 GiB/two-million-record live-view limit stops the
+preview with an error while the receiver continues archiving.
+
+Launch directly into live mode:
+
+```sh
+open '/path/Trial Review.app' --args --live --endpoint 192.168.1.208:5555
+```
+
+Launch arguments apply when starting the app. If it is already open, use its
+**Open run…** or **Follow live** controls instead of starting a second instance.
+The IP above is an example and can change. `--live-output '/path/to/archive'`
+selects another destination. To run just the receiver without the viewer:
+
+```sh
+python3 tools/trial-review/live_bridge.py --endpoint HEADSET_IP:5555 \
+  --output "$HOME/Documents/Trial Review Live"
+```
+
+ADB TCP/IP may need enabling again after a headset reboot. No public/cloud server
+is used. Keep the Mac awake and receiver running during collection. The headset
+copy protects against Wi-Fi loss; do not delete it until the archive is verified.
+
+Tests cover interrupted/resumed transfers, short reads, file rewrites/truncation,
+path containment, new-run discovery across restart, linked raw-eye/trial/audio
+files, partial UTF-8 JSONL tails, exact record reconstruction, new meshes/trials,
+rewind, late WAV arrival and continuous playback through audio-plan updates.
+
 **Implemented locally, October 8, 2026.** A separate macOS Unity app reconstructs
 saved trial packages in 3D. It defaults to recorded-head first person and offers
 orbit/overhead cameras, saved speech/effect playback, trial/event navigation,
 sample stepping, a run timeline, and a cursor-data inspector. A separate Final
 data tab imports performance/subjective CSVs from the exact recording.
 
-The application opens copied/stopped `recording.jsonl` packages with their `audio/`
-folder. It does not launch the study, connect to the Vive, invoke voice providers,
-record participants, or upload files. The build contains only synthetic example
+Offline mode opens copied/stopped `recording.jsonl` packages with their `audio/`
+folder; live mode adds wireless copying from the Vive. Neither mode launches the
+study, invokes voice providers, starts trials or uploads to external services. The build contains only synthetic example
 data; participant recordings stay outside the application bundle.
 
 ## Build
@@ -30,19 +117,30 @@ XR packages or Editor instance are changed. Never point it at the study project.
 This is a local development app, not a notarized distribution release. Neither
 Android deployment nor a headset is required to run it.
 
-## Use
+## Open a saved recording
+
+New recordings with `gazeRayVersion=recorded_used_and_unaligned_ray_v1` preserve the actual used eye ray and the selected source before quick alignment, both in the same recording coordinate frame. **Recorded gaze** uses the saved eye origin/direction without moving it to the avatar's head or applying the alignment again. **Before alignment** shows the separately saved pre-correction ray. The cursor inspector reports source, alignment ID/status, applied flag and yaw/pitch correction; stepping backward restores those recorded values, and invalid/stale gaze stays hidden. The standalone build verification exercises the live quick-alignment engine, recorder mapping, JSON round trip and first/third-person renderer with synthetic data.
+
+These are additive schema-2 fields: older recordings remain readable. P020's exact-recording legacy X-origin recovery is unchanged. Old recordings without alignment evidence cannot acquire a retrospective quick calibration. A passed quick check is not task-wide accuracy validation.
 
 1. Launch the app; the bundled **synthetic** demo is the default.
-2. **Browse…** to a replay package and select `recording.jsonl`, or paste its path
-   and choose **Open run**. Loading a large recording is synchronous and may take
+2. **Open run…** (or the session selector) opens the file browser. Choose a replay
+   package and select `recording.jsonl`. Loading a large recording is synchronous and may take
    time; recordings are bounded to the shared reader's 1 GiB/two-million-record limit.
-3. Select a trial from the left. **Play**, scrub the run timeline, choose an event,
-   or step through source samples. Playback audio is supported at 1×; seeking,
+3. Search trials by number, voice, ID, block or angle; filter All / Study / Practice.
+   Select a trial from the left. **Play**, drag the timeline ruler, click a speech/event
+   segment, or use the sample/event stepping buttons. Toggle **Selected trial / Whole session**
+   to change the displayed time range. Track times are relative to that range;
+   original session timestamps remain in raw data. Playback audio is supported at 1×; seeking,
    stopping, cancellation and overlapping saved effects use the shared audio plan.
 4. **First person** follows recorded tracked head poses. **Third person** supports
-   right-drag and wheel zoom. **Overhead** is a second researcher view. Toggle gaze,
-   controller and target overlays independently. The seated human and chair are explicitly illustrative; the body/chair estimate is not recorded torso tracking.
-5. **At cursor** shows sample age, tracking, hits, trigger state and decoded data.
+   right-drag and wheel zoom; **Reset view** restores the default orbit. Camera controls
+   stay visible even before a recording loads. **Overhead** is a second researcher view. Toggle gaze,
+   controller and target overlays independently. **Walls** controls the inferred wall outlines;
+   **Degrees** separately controls the angle labels, including when walls are hidden.
+   The seated human and chair are explicitly illustrative; the body/chair estimate is not recorded torso tracking.
+5. **At cursor** shows sample age, tracking, trigger state, current saved speech and
+   gaze provenance. **Show raw observation** expands the detailed sample including hits.
    Unknown tracking is `-1`; absent legacy fields may appear as schema defaults in
    the decoded object. The source file remains authoritative.
 6. **Final data → Choose CSV export…** loads a directory with `manifest.json` and
@@ -51,10 +149,32 @@ Android deployment nor a headset is required to run it.
    run and block. Missing/unmatched rows stay unavailable. Final results and repeated
    block survey responses are explicitly distinguished from cursor measurements.
 
+### Timeline and trial export (desktop redesign)
+
+**Implemented locally:** speech segments follow the saved audio plan, including recorded
+cancellations and missing-asset warnings. The gaze lane displays usable replay observations
+with the existing 100 ms display freshness limit; invalid samples and longer gaps break the
+lane. These are not fixations or acquisition-rate measurements. Event markers link to exact
+record sequences. Playback speed cycles through 0.25×, 0.5×, 1× and 2×; volume and mute apply
+only to this standalone player. Saved audio plays at 1× only.
+
+**Export trial data…** works on a stopped, saved recording. It creates a new folder in
+`~/Documents/Trial Review Exports/` containing samples.csv, events.csv, objects.csv,
+observations.jsonl, a source-hash manifest and a README. Initial object positions are in
+objects.csv; subsequent transforms and supported replay fields are included in decoded JSON; keep the original recording for byte-exact source data. This is a
+recorded-observation subset, not a replacement for the full replay/audio package or the
+separate eye-acquisition stream. A loaded, hash-matched performance/subjective row is copied
+to final-summary.csv; absent summaries and questionnaires are never fabricated. Export is
+disabled for a growing live recording: open its stopped saved copy first.
+
+**Follow live** remains a separate top-level action. **Wi-Fi settings** shows endpoint,
+archive progress and receiver controls. Scrubbing leaves live follow while archiving continues.
+The waiting viewport displays only the large centered “Waiting for headset signal” heading.
+
 Launch a specific package and summary from a terminal:
 
 ```bash
-open -n '/path/Trial Review.app' --args \
+open '/path/Trial Review.app' --args \
   --recording '/path/package/recording.jsonl' --summary '/path/export'
 ```
 
@@ -166,7 +286,7 @@ recorded-head first person remains the default.
 
 ## Wall and room toggles
 
-**Implemented locally:** **Study walls** toggles wire outlines for the eight-wall
+**Implemented locally:** **Walls** toggles wire outlines and **Degrees** independently toggles the 0°–315° labels. Either overlay can be shown without the other. Labels use the saved layout orientation (0° is forward), stay readable in all camera views, and apply to both live and saved replay. They are viewer overlays, not evidence that the participant saw the guides. The outlines represent eight-wall
 rotational layouts. Radius is inferred from snapshot object-plane positions; height
 spans the snapshot objects. **Room background** independently toggles a neutral
 floor, one-metre floor grid and four outer room surfaces. Both start enabled.

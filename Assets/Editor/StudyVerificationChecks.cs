@@ -13,6 +13,7 @@ public static class StudyVerificationChecks
         GazeWallFilterChecks.Run();
         ControllerSelectionChecks.Run();
         ReadinessGateChecks.Run();
+        StudyFeedbackChecks.Run();
         GuidanceBoundaryChecks.Run();
         VoiceChoiceChecks.Run();
         TrialReplayChecks.Run();

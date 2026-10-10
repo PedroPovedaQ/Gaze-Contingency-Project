@@ -17,6 +17,7 @@ public sealed class TrialReplayRenderer : IDisposable
     string m_Trial;
     public float Yaw = 0, Pitch = 25, Distance = 5;
     public bool RecordedHead, Overhead, ShowGaze = true, ShowTarget, ShowControllers = true;
+    public bool ShowUnalignedGaze;
     public Camera Camera => m_Preview.camera;
     public double MaxSampleAgeSeconds = TrialReplayState.DefaultMaxSampleAgeSeconds;
     public bool SampleCurrent { get; private set; }
@@ -33,8 +34,20 @@ public sealed class TrialReplayRenderer : IDisposable
         m_Preview.camera.fieldOfView = 65;
         m_Root = new GameObject("Replay preview (isolated)");
         m_Preview.AddSingleGO(m_Root);
+        AddMeshes(timeline);
+        m_Ray = MakeRay("Recorded gaze", new Color(1, 0.55f, 0.1f));
+        m_LeftRay = MakeRay("Left controller", Color.cyan);
+        m_RightRay = MakeRay("Right controller", new Color(0.65f, 0.4f, 1));
+        m_CrossHorizontal = MakeRay("Readiness cross horizontal", Color.white);
+        m_CrossVertical = MakeRay("Readiness cross vertical", Color.white);
+        m_CrossCharge = MakeRay("Readiness left-to-right charge", Color.green);
+    }
+
+    void AddMeshes(TrialReplayTimeline timeline)
+    {
         foreach (var pair in timeline.Meshes)
         {
+            if (m_Meshes.ContainsKey(pair.Key)) continue;
             var saved = pair.Value;
             var mesh = new Mesh { name = pair.Key, indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
             mesh.vertices = saved.vertices; mesh.triangles = saved.triangles;
@@ -42,12 +55,6 @@ public sealed class TrialReplayRenderer : IDisposable
             else mesh.RecalculateNormals();
             mesh.RecalculateBounds(); m_Meshes.Add(pair.Key, mesh);
         }
-        m_Ray = MakeRay("Recorded gaze", new Color(1, 0.55f, 0.1f));
-        m_LeftRay = MakeRay("Left controller", Color.cyan);
-        m_RightRay = MakeRay("Right controller", new Color(0.65f, 0.4f, 1));
-        m_CrossHorizontal = MakeRay("Readiness cross horizontal", Color.white);
-        m_CrossVertical = MakeRay("Readiness cross vertical", Color.white);
-        m_CrossCharge = MakeRay("Readiness left-to-right charge", Color.green);
     }
 
     LineRenderer MakeRay(string name, Color color)
@@ -86,6 +93,7 @@ public sealed class TrialReplayRenderer : IDisposable
 
     public void Prepare(TrialReplayTimeline timeline, double time, bool forceVisible = false, long maxSequence = long.MaxValue)
     {
+        AddMeshes(timeline);
         timeline.Seek(time, maxSequence); var state = timeline.State;
         SampleCurrent = state.HasCurrentSample(time, MaxSampleAgeSeconds);
         var sample = SampleCurrent && !forceVisible ? state.Sample : null;
@@ -143,14 +151,18 @@ public sealed class TrialReplayRenderer : IDisposable
             var rotation = Quaternion.Euler(Overhead ? 89 : Pitch, Yaw, 0);
             Camera.transform.SetPositionAndRotation(rotation * new Vector3(0, 0, -Distance), rotation);
         }
-        m_Ray.enabled = ShowGaze && (state.Visible || showCross) && GazeUsable(sample);
+        bool unaligned = ShowUnalignedGaze && sample != null && sample.gazeRayVersion == TrialReplayGaze.Version;
+        m_Ray.enabled = ShowGaze && (state.Visible || showCross) && GazeUsable(sample) &&
+            (!unaligned || (sample.gazeUnalignedAvailable && sample.gazeUnalignedDirection.sqrMagnitude > .000001f));
         if (m_Ray.enabled)
         {
-            m_Ray.SetPosition(0, sample.gazeOrigin);
+            Vector3 origin = unaligned ? sample.gazeUnalignedOrigin : sample.gazeOrigin;
+            Vector3 direction = unaligned ? sample.gazeUnalignedDirection : sample.gazeDirection;
+            m_Ray.SetPosition(0, origin);
             float length = 3;
             if (!string.IsNullOrEmpty(sample.hoveredId) && state.Transforms.TryGetValue(sample.hoveredId, out var target))
-                length = Vector3.Distance(sample.gazeOrigin, target.position);
-            m_Ray.SetPosition(1, sample.gazeOrigin + sample.gazeDirection.normalized * length);
+                length = Vector3.Distance(origin, target.position);
+            m_Ray.SetPosition(1, origin + direction.normalized * length);
         }
     }
 

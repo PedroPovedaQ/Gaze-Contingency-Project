@@ -38,6 +38,8 @@ public class VoiceAssistantController : MonoBehaviour
     int m_SuccessVariant;
     public bool SuccessFeedbackBusy { get; private set; }
     static readonly string[] k_SuccessPhrases = { "Nice work.", "Well done.", "You got it.", "That's it. Nicely done." };
+    Coroutine m_OpeningCoroutine;
+    System.Action<string,string,string,string> m_OpeningAudioObserver;
     Coroutine m_RoundAnnounceCoroutine;
     Coroutine m_IntroAnnounceCoroutine;
     VoiceModeSelector m_VoiceModeSelector;
@@ -108,7 +110,7 @@ public class VoiceAssistantController : MonoBehaviour
 
     IEnumerator LoadKeys()
     {
-        string elevenLabsKey = "";
+        string elevenLabsKey = "", gatewayKey = "";
         string keysPath = System.IO.Path.Combine(Application.streamingAssetsPath, k_KeysFile);
 
         string url = keysPath;
@@ -123,6 +125,7 @@ public class VoiceAssistantController : MonoBehaviour
             {
                 var keys = JsonUtility.FromJson<ApiKeys>(request.downloadHandler.text);
                 elevenLabsKey = keys.elevenlabs_key;
+                gatewayKey = keys.jev_key;
                 Debug.Log($"{k_Tag} Loaded API keys");
             }
             else
@@ -135,6 +138,9 @@ public class VoiceAssistantController : MonoBehaviour
         m_VoiceSynthesizer.Initialize(elevenLabsKey);
         m_VoiceSynthesizer.PlaybackFailed += HandleAudioFailure;
         m_HintGenerator.Initialize(elevenLabsKey, m_AgentContext, m_VoiceSynthesizer, m_CoverageTracker);
+        var navigation = gameObject.AddComponent<SpatialVoice.StudyNavigationVoiceBridge>();
+        navigation.Initialize(gatewayKey, elevenLabsKey, m_VoiceSynthesizer);
+
 
         // Self-similar voice: enrollment (mic -> clone) + the on-entry mode picker.
         var enrollment = gameObject.AddComponent<VoiceEnrollment>();
@@ -163,6 +169,7 @@ public class VoiceAssistantController : MonoBehaviour
     public static string[] PhraseLibrary()
     {
         var phrases = new System.Collections.Generic.HashSet<string>(HintGenerator.AllPhrases());
+        phrases.UnionWith(SpatialVoice.StudyNavigationVoiceBridge.Phrases());
         phrases.Add(k_CompletionLine); phrases.Add(StudyIntroLine); phrases.Add(k_ClosingLine); phrases.Add(AudioCheckLine); phrases.UnionWith(k_SuccessPhrases);
         foreach (var round in ChallengeSet.Rounds)
         {
@@ -220,6 +227,7 @@ public class VoiceAssistantController : MonoBehaviour
 
     void OnDisable()
     {
+        CancelSearchOpening();
         if (m_VoiceSynthesizer != null) m_VoiceSynthesizer.PlaybackFailed -= HandleAudioFailure;
         if (m_VoiceModeSelector != null)
             m_VoiceModeSelector.SelectionCompleted -= HandleVoiceSelected;
@@ -397,6 +405,53 @@ public class VoiceAssistantController : MonoBehaviour
         m_IntroAnnounceCoroutine = null;
     }
 
+    public void AnnounceSearchOpening(int round)
+    {
+        if (m_OpeningCoroutine != null) return;
+        m_OpeningCoroutine = StartCoroutine(SearchOpening(round));
+    }
+    public void CancelSearchOpening()
+    {
+        if (m_OpeningCoroutine != null) StopCoroutine(m_OpeningCoroutine);
+        m_OpeningCoroutine = null;
+        if (m_OpeningAudioObserver != null && m_VoiceSynthesizer != null)
+            m_VoiceSynthesizer.Telemetry -= m_OpeningAudioObserver;
+        m_OpeningAudioObserver = null;
+        m_VoiceSynthesizer?.InterruptIfAbout("guidance_opening");
+    }
+    bool OpeningStillCurrent(int round) => m_GameManager != null &&
+        m_GameManager.CurrentState == FindObjectGameManager.GameState.Playing &&
+        m_GameManager.CurrentObjectiveIndex == round && !m_GameManager.SearchActive &&
+        !m_GameManager.ResearcherPaused && m_GameManager.Readiness != null && m_GameManager.Readiness.Completed;
+
+    IEnumerator SearchOpening(int round)
+    {
+        yield return null; // Store the handle before cancellation/failure callbacks can run.
+        if (m_VoiceSynthesizer == null || m_HintGenerator == null)
+        { m_OpeningCoroutine = null; m_GameManager.TechnicalStop("audio_failure: opening unavailable"); yield break; }
+        string phrase = null, decisionId = null;
+        while (OpeningStillCurrent(round) && !m_HintGenerator.TryPrepareOpening(out phrase, out decisionId))
+            yield return null; // Invalid gaze never supplies a guessed opening direction.
+        if (!OpeningStillCurrent(round)) { m_OpeningCoroutine = null; yield break; }
+        bool finished = false;
+        m_OpeningAudioObserver = (kind, context, clip, detail) => {
+            if (kind == "audio_playback_end" && context == "guidance_opening" &&
+                detail != null && detail.Contains("decision_id=" + decisionId + ";")) finished = true;
+        };
+        m_VoiceSynthesizer.Telemetry += m_OpeningAudioObserver;
+        m_GameManager.RecordReadinessEvent("opening_direction_started");
+        m_VoiceSynthesizer.Speak(phrase, "guidance_opening", guidanceDecisionId: decisionId);
+        while (OpeningStillCurrent(round) && m_VoiceSynthesizer.IsBusy) yield return null;
+        m_VoiceSynthesizer.Telemetry -= m_OpeningAudioObserver; m_OpeningAudioObserver = null;
+        m_OpeningCoroutine = null;
+        if (!OpeningStillCurrent(round)) yield break;
+        // Idle alone is not success: Stop(), failed playback or a replacement clip
+        // must not accidentally reveal objects and begin the measured search.
+        if (!finished || !string.IsNullOrEmpty(m_VoiceSynthesizer.LastError))
+        { m_GameManager.TechnicalStop("audio_failure: opening interrupted"); yield break; }
+        m_GameManager.CompleteOpeningDirection(round);
+    }
+
     public void RepeatReadinessAnnouncement()
     {
         if (m_GameManager == null || m_GameManager.Readiness == null || !m_GameManager.Readiness.Active) return;
@@ -467,6 +522,7 @@ public class VoiceAssistantController : MonoBehaviour
     struct ApiKeys
     {
         public string elevenlabs_key;
+        public string jev_key; // Optional local configuration; never logged.
     }
 
     static AudioClip CreateWrongCaptureCue()

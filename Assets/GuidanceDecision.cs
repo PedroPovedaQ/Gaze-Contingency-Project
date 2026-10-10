@@ -9,8 +9,17 @@ public sealed class GuidanceDecision
     // Optional target-bearing evidence for current and future audits. Empty on historical records.
     public bool targetGeometryAvailable;
     public float targetYawError, targetPitchError;
-    public bool targetVicinityMeasured, controllerEvidenceValid, controllerOnTarget, devVicinityRingEnabled;
+    public float turnRemainingDegrees;
+    public double recentTargetVisitReceiptTime = -1;
+    public long recentTargetVisitObservationSequence = -1;
+    public bool verticalGuidanceMeasured;
+    public float verticalErrorMetres, guidancePlaneHeightMetres, verticalErrorPlaneFraction;
+    public bool gazeOnTarget, targetVicinityMeasured, controllerEvidenceValid, controllerOnTarget, devVicinityRingEnabled;
     public float targetVicinityErrorDegrees, targetVicinityRadiusDegrees, targetVicinityPaddingDegrees;
+    public string gazeVicinityWinnerObjectId;
+    public int gazeVicinityCandidateCount;
+    public bool gazeVicinityAmbiguous;
+    public float gazeVicinityClosestErrorDegrees;
     public string targetObjectId, controllerTargetObjectId;
     public int controllerTelemetryFrame = -1;
     public double controllerTelemetryTime;

@@ -14,6 +14,11 @@ public sealed class GazeObservation
     // source/raw*/tracked describe EXT acquisition; raySource identifies worldOrigin/worldDirection.
     // HTC fallback is a derived binocular mean, never a claimed native combined-gaze sample.
     public string raySource = "OpenXR_EXT";
+    // Preserve the selected EXT/native ray before any participant alignment, independently of raw EXT.
+    public Vector3 unalignedWorldOrigin, unalignedWorldDirection;
+    public string alignmentId, alignmentStatus = "none";
+    public bool alignmentApplied;
+    public float alignmentYawDegrees, alignmentPitchDegrees;
     public double receiptTime, inputEventTime, ageSeconds, htcQueryReceiptTime;
     public bool sourceCaptureTimeKnown, sourceSequenceKnown, newInputUpdate, deviceAvailable,
         tracked, poseValid, valid, focused, headValid, validationTargetPresent, practice;

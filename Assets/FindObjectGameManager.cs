@@ -57,6 +57,7 @@ public class FindObjectGameManager : MonoBehaviour
     bool m_PausedDuringReadiness;
     public TrialReadinessGate Readiness => m_Readiness;
     public bool AnnouncementReady { get; private set; }
+    bool m_OpeningDirectionReady;
     public bool ResearcherPaused => m_ResearcherPaused;
     public event System.Action<string> OnReadinessEvent;
     public void RecordReadinessEvent(string name) => OnReadinessEvent?.Invoke(name);
@@ -66,13 +67,31 @@ public class FindObjectGameManager : MonoBehaviour
             AnnouncementReady = true;
     }
 
+    public void BeginOpeningDirection(int round)
+    {
+        if (!CanOpenSearch(round) || m_OpeningDirectionReady) return;
+        var voice = GetComponent<VoiceAssistantController>();
+        if (voice == null) { TechnicalStop("audio_failure: opening voice unavailable"); return; }
+        voice.AnnounceSearchOpening(round);
+    }
+    bool CanOpenSearch(int round) => !m_TechnicallyStopped && m_State == GameState.Playing &&
+        m_CurrentRound == round && !SearchActive && !m_ResearcherPaused && AnnouncementReady &&
+        m_Readiness != null && m_Readiness.Active && m_Readiness.Completed;
+
+    public void CompleteOpeningDirection(int round)
+    {
+        if (!CanOpenSearch(round)) return;
+        m_OpeningDirectionReady = true;
+        RecordReadinessEvent("opening_direction_completed");
+        BeginSearch(round);
+    }
+
     public void BeginSearch(int round)
     {
-        if (m_TechnicallyStopped || m_State != GameState.Playing || m_CurrentRound != round || SearchActive || m_ResearcherPaused ||
-            !AnnouncementReady || m_Readiness == null || !m_Readiness.Completed) return;
+        if (!CanOpenSearch(round) || !m_OpeningDirectionReady) return;
         foreach (var obj in m_SpawnedObjects)
             if (obj != null && obj.TryGetComponent<MeshRenderer>(out var renderer)) renderer.enabled = true;
-        m_UI.HideFixationCross();
+        m_Readiness.Finish();
         SearchActive = true;
         m_SearchClock.Begin(Time.timeAsDouble);
         m_UI.ShowRoundAudioWait(false);
@@ -87,6 +106,7 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_TechnicallyStopped || m_State == GameState.Completed) return;
         m_SearchClock.Pause(Time.timeAsDouble);
         m_TechnicallyStopped = true; SearchActive = false;
+        GetComponent<VoiceAssistantController>()?.CancelSearchOpening();
         m_Readiness?.Cancel();
         if (m_StartAfterIntroCoroutine != null) { StopCoroutine(m_StartAfterIntroCoroutine); m_StartAfterIntroCoroutine = null; }
         m_UI.PauseTimer();
@@ -113,7 +133,11 @@ public class FindObjectGameManager : MonoBehaviour
     {
         if ((!SearchActive && (m_Readiness == null || !m_Readiness.Active)) || m_ResearcherPaused) return;
         m_PausedDuringReadiness = !SearchActive;
-        if (m_PausedDuringReadiness) { m_Readiness.ResetCharge(); m_UI.HideFixationCross(); }
+        if (m_PausedDuringReadiness)
+        {
+            GetComponent<VoiceAssistantController>()?.CancelSearchOpening();
+            m_OpeningDirectionReady = false; m_Readiness.ResetCharge(); m_UI.HideFixationCross();
+        }
         m_ResearcherPaused = true; SearchActive = false; m_SearchClock.Pause(Time.timeAsDouble);
         m_UI.PauseTimer(); m_ControllerSelector?.ResetSelection();
         GetComponent<VoiceSynthesizer>()?.Stop(); GetComponent<HintGenerator>()?.CancelPending();
@@ -172,13 +196,29 @@ public class FindObjectGameManager : MonoBehaviour
     [SerializeField] bool m_ShowDegreeGuides = true;
     readonly List<GameObject> m_DegreeGuides = new();
     float m_FloorHeight;
+    public float SearchPlaneHeight => m_MaxObjectHeight + 0.1f;
+
+    // Intersect the eye ray with the target wall's object plane, even above or
+    // below its outline. Clamping would understate a large vertical correction.
+    public bool TryVerticalGuidanceError(Vector3 origin, Vector3 direction, int plane, float targetY,
+        out float heightError)
+    {
+        heightError = 0;
+        if (plane < 0 || plane >= RotationalSearchLayout.PlaneCount || SearchPlaneHeight <= 0) return false;
+        Vector3 normal = m_SeatedRotation * Quaternion.Euler(0, plane * RotationalSearchLayout.PlaneAngleDegrees, 0) * Vector3.forward;
+        var wall = new Plane(normal, m_SpawnCenter + normal * m_RotationalRadius);
+        var ray = new Ray(origin, direction);
+        if (!wall.Raycast(ray, out float distance) || distance <= 0) return false;
+        heightError = targetY - ray.GetPoint(distance).y;
+        return !float.IsNaN(heightError) && !float.IsInfinity(heightError);
+    }
     public bool IsInsideSearchPlane(Vector3 point, int plane)
     {
         Quaternion rotation = m_SeatedRotation * Quaternion.Euler(0, plane * RotationalSearchLayout.PlaneAngleDegrees, 0);
         Vector3 local = Quaternion.Inverse(rotation) * (point - m_SpawnCenter);
         float halfWidth = m_RotationalRadius * Mathf.Tan(Mathf.PI / RotationalSearchLayout.PlaneCount);
         return Mathf.Abs(local.x) <= halfWidth && point.y >= m_FloorHeight &&
-            point.y <= m_FloorHeight + m_MaxObjectHeight + 0.1f;
+            point.y <= m_FloorHeight + SearchPlaneHeight;
     }
     // Guidance zones are horizontal sectors. Vertical scanning must not count as
     // leaving/reentering the correct area or trigger an overshoot cue.
@@ -584,7 +624,7 @@ public class FindObjectGameManager : MonoBehaviour
     {
         m_DegreeGuides.Clear();
         float bottom = m_FloorHeight - m_SpawnCenter.y;
-        float top = bottom + m_MaxObjectHeight + 0.1f;
+        float top = bottom + SearchPlaneHeight;
         float halfWidth = RotationalSearchLayout.FrameHalfWidth(m_RotationalRadius);
         var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default");
         if (shader != null)
@@ -801,6 +841,7 @@ public class FindObjectGameManager : MonoBehaviour
             m_SearchClock.Pause(Time.timeAsDouble);
             SearchActive = false;
             m_UI.PauseTimer();
+            TargetCrumble.Play(obj, this);
             if (IsPractice)
             {
                 GetComponent<VoiceSynthesizer>()?.Stop(); GetComponent<HintGenerator>()?.CancelPending();
@@ -885,7 +926,8 @@ public class FindObjectGameManager : MonoBehaviour
     IEnumerator BeginFirstRoundTransition()
     {
         m_State = GameState.Transitioning;
-        AnnouncementReady = false;
+        AnnouncementReady = false; m_OpeningDirectionReady = false;
+        GetComponent<VoiceAssistantController>()?.CancelSearchOpening();
         m_ControllerSelector?.ResetSelection();
         m_UI.HideObjectiveDuringTransition();
         var planned = IsPractice ? ChallengeSet.PracticeRound(m_PracticeIndex) : ChallengeSet.Rounds[m_CurrentRound];

@@ -92,12 +92,19 @@ public sealed class TrialReplayTimeline
     public TrialReplayTimeline(List<TrialReplayRecord> records)
     {
         Records = records;
-        for (int i = 0; i < records.Count; i++)
-        {
-            var r = records[i];
-            if (r.kind == "trial") { Trials.Add(r); m_TrialIndices.Add(i); }
-            if (r.meshes != null) foreach (var mesh in r.meshes) Meshes[mesh.id] = mesh;
-        }
+        for (int i = 0; i < records.Count; i++) Index(records[i], i);
+    }
+
+    void Index(TrialReplayRecord r, int index)
+    {
+        if (r.kind == "trial") { Trials.Add(r); m_TrialIndices.Add(index); }
+        if (r.meshes != null) foreach (var mesh in r.meshes) Meshes[mesh.id] = mesh;
+    }
+
+    // Caller must validate through TrialReplayFile.Validator before appending.
+    public void AppendValidated(TrialReplayRecord record)
+    {
+        Index(record, Records.Count); Records.Add(record);
     }
 
     public void Seek(double time, long maxSequence = long.MaxValue)

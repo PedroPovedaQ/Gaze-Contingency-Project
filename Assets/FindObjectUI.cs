@@ -42,6 +42,7 @@ public class FindObjectUI : MonoBehaviour
     GameObject m_CrossCanvasGO;
     TextMeshProUGUI m_FixationCross;
     UnityEngine.UI.Image m_ReadinessFill;
+    RectTransform m_ReadinessCrossMask;
     TextMeshProUGUI m_CrossGoalText;
 
     public event System.Action OnStatsDismissed;
@@ -148,7 +149,7 @@ public class FindObjectUI : MonoBehaviour
         crossRect.sizeDelta = new Vector2(200, 200);
         m_CrossCanvasGO.transform.localScale = Vector3.one * 0.002f;
 
-        // White background panel behind the cross so the black "+" is visible
+        // Yellow advances over white while the cross fills from gray to black.
         var crossBg = new GameObject("CrossBg");
         crossBg.transform.SetParent(m_CrossCanvasGO.transform, false);
         var crossBgRect = crossBg.AddComponent<RectTransform>();
@@ -159,7 +160,7 @@ public class FindObjectUI : MonoBehaviour
         var charge = new GameObject("ReadinessCharge");
         charge.transform.SetParent(m_CrossCanvasGO.transform, false);
         m_ReadinessFill = charge.AddComponent<UnityEngine.UI.Image>();
-        m_ReadinessFill.color = new Color(0.15f, 0.85f, 0.75f, 0.85f);
+        m_ReadinessFill.color = new Color32(255, 201, 4, 255); // UCF yellow, #FFC904.
         m_ReadinessFill.raycastTarget = false;
         m_ReadinessFill.rectTransform.pivot = new Vector2(0f, 0.5f);
         m_ReadinessFill.rectTransform.anchoredPosition = new Vector2(-100f, 0f);
@@ -168,8 +169,21 @@ public class FindObjectUI : MonoBehaviour
         m_FixationCross = CreateText(m_CrossCanvasGO.transform, "FixationCross",
             new Vector2(200, 200), Vector2.zero, 140);
         m_FixationCross.alignment = TextAlignmentOptions.Center;
-        m_FixationCross.color = Color.black;
+        m_FixationCross.color = new Color(0.45f, 0.45f, 0.45f, 1f);
         m_FixationCross.text = "+";
+
+        var crossCharge = new GameObject("CrossCharge", typeof(RectTransform), typeof(UnityEngine.UI.RectMask2D));
+        crossCharge.transform.SetParent(m_CrossCanvasGO.transform, false);
+        m_ReadinessCrossMask = crossCharge.GetComponent<RectTransform>();
+        m_ReadinessCrossMask.pivot = new Vector2(0f, 0.5f);
+        m_ReadinessCrossMask.anchoredPosition = new Vector2(-100f, 0f);
+        var chargedCross = CreateText(crossCharge.transform, "FixationCross",
+            new Vector2(200, 200), new Vector2(100, 0), 140);
+        chargedCross.rectTransform.anchorMin = chargedCross.rectTransform.anchorMax = new Vector2(0f, 0.5f);
+        chargedCross.alignment = TextAlignmentOptions.Center;
+        chargedCross.color = Color.black;
+        chargedCross.text = "+";
+        SetReadinessProgress(0);
 
         m_CrossGoalText = CreateText(m_CrossCanvasGO.transform, "CrossGoalText",
             new Vector2(240, 80), Vector2.zero, 20);
@@ -246,8 +260,11 @@ public class FindObjectUI : MonoBehaviour
     }
     public void SetReadinessProgress(float progress)
     {
+        var size = new Vector2(200f * Mathf.Clamp01(progress), 200f);
         if (m_ReadinessFill != null)
-            m_ReadinessFill.rectTransform.sizeDelta = new Vector2(200f * Mathf.Clamp01(progress), 200f);
+            m_ReadinessFill.rectTransform.sizeDelta = size;
+        if (m_ReadinessCrossMask != null)
+            m_ReadinessCrossMask.sizeDelta = size;
     }
     public bool IsGazeInsideReadinessCross(Vector3 origin, Vector3 direction, float paddingMetres)
     {

@@ -16,7 +16,7 @@ BOOLEAN_FIELDS = ('sourceCaptureTimeKnown', 'sourceSequenceKnown', 'newInputUpda
                   'tracked', 'poseValid', 'valid', 'focused', 'headValid', 'validationTargetPresent',
                   'practice', 'htcGazeAvailable', 'leftValid', 'rightValid', 'pupilAvailable',
                   'leftPupilValid', 'rightPupilValid', 'opennessAvailable', 'leftOpennessValid',
-                  'rightOpennessValid')
+                  'rightOpennessValid', 'alignmentApplied')
 
 
 def vector(value):
@@ -398,7 +398,7 @@ def flat(row):
             for axis,v in value.items():result[key+'_'+axis]=v
         else: result[key]=value
     if not row.get('valid'):
-        for prefix in ('worldOrigin_', 'worldDirection_'):
+        for prefix in ('worldOrigin_', 'worldDirection_', 'unalignedWorldOrigin_', 'unalignedWorldDirection_'):
             for key in list(result):
                 if key.startswith(prefix): result[key] = None
     if not row.get('poseValid', True):

@@ -28,6 +28,12 @@ public sealed class TrialReplayRecord
     public long gazeObservationSequence = -1;
     public double gazeReceiptTime, gazeInputEventTime, gazeDeliveryAge;
     public string gazeSource, gazeInvalidReason, gazeRecordingPath, gazeRecordingId, gazeLinkVersion;
+    // Additive schema-2 fields. gazeOrigin/Direction already contain the live used ray;
+    // playback must never reapply these angles or move its origin to the avatar's head.
+    public string gazeRayVersion, gazeRaySource, gazeAlignmentId, gazeAlignmentStatus;
+    public bool gazeAlignmentApplied, gazeUnalignedAvailable;
+    public float gazeAlignmentYawDegrees, gazeAlignmentPitchDegrees;
+    public Vector3 gazeUnalignedOrigin, gazeUnalignedDirection;
     public string guidanceDecisionId;
     public GuidanceDecision guidanceDecision;
     public float dwell, audioVolume = 0.7f;

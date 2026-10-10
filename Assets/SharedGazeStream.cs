@@ -25,6 +25,7 @@ public sealed class SharedGazeStream : MonoBehaviour
     public string ValidationSet { get; private set; }
     public string ValidationTargetId { get; private set; }
     public Transform ValidationTarget { get; private set; }
+    public GazeQuickAlignment QuickAlignment { get; } = new GazeQuickAlignment();
     public bool MirrorLocalOriginX { get => m_MirrorLocalOriginX; set => m_MirrorLocalOriginX = value; }
     public event Action<GazeObservation> Observed;
     GazeObservation m_LastNative;
@@ -33,6 +34,7 @@ public sealed class SharedGazeStream : MonoBehaviour
     FindObjectGameManager m_Game;
     TrialReplayWriter m_Writer;
     string m_RecordingId;
+    string m_FinalizedAlignmentId;
     long m_Sequence, m_AcceptedRows;
     double m_LastInput = -1, m_NextResolve;
     int m_LastDevice = -1;
@@ -53,6 +55,7 @@ public sealed class SharedGazeStream : MonoBehaviour
     void OnEnable() => InputSystem.onAfterUpdate += AfterInput;
     void OnDisable()
     {
+        ClearQuickAlignment("Eye measurement stopped; repeat quick alignment.");
         InputSystem.onAfterUpdate -= AfterInput;
         if (m_Writer == null) return;
         m_Writer.Dispose();
@@ -67,9 +70,14 @@ public sealed class SharedGazeStream : MonoBehaviour
         m_Writer=null;
     }
     void OnDestroy() { if (Instance == this) Instance = null; }
-    void OnApplicationFocus(bool focus) { m_Focused = focus; if (!focus) Capture(); }
+    void OnApplicationFocus(bool focus)
+    {
+        m_Focused = focus;
+        if (!focus) { ClearQuickAlignment("Application focus lost; repeat alignment after headset adjustment."); Capture(); }
+    }
     void OnApplicationPause(bool paused)
     {
+        if (paused) ClearQuickAlignment("Application paused; repeat quick alignment.");
         m_Focused = !paused; Capture();
         if (paused && m_Writer != null && RecordingError == null && !m_Writer.RequestFlush())
         {
@@ -115,6 +123,34 @@ public sealed class SharedGazeStream : MonoBehaviour
     }
     public void SetValidationTarget(Transform target, string id, string set, string targetId)
     { ValidationTarget = target; ValidationId = id; ValidationSet = set; ValidationTargetId = targetId; }
+
+    public void ClearQuickAlignment(string reason)
+    {
+        QuickAlignment.CancelOrClear(reason, Time.realtimeSinceStartupAsDouble);
+        SaveQuickAlignmentResult();
+    }
+
+    void SaveQuickAlignmentResult()
+    {
+        var result = QuickAlignment.Report;
+        if (result == null || result.outcome == "collecting" || result.id == m_FinalizedAlignmentId) return;
+        try
+        {
+            if (RecordingError != null || string.IsNullOrEmpty(RecordingPath))
+                throw new IOException("Eye measurement recording is unavailable.");
+            string path = Path.Combine(Path.GetDirectoryName(RecordingPath), "quick_alignment_" + result.id + ".json");
+            File.WriteAllText(path + ".tmp", JsonUtility.ToJson(result, true));
+            File.Move(path + ".tmp", path);
+        }
+        catch (Exception e)
+        {
+            QuickAlignment.CancelOrClear("Alignment result could not be saved: " + e.Message, Time.realtimeSinceStartupAsDouble);
+            RecordingError = e.Message;
+            Debug.LogError("[SharedGaze] Alignment not applied: " + e.Message);
+        }
+        // A failed save stops correction; do not retry failed disk I/O on every eye sample.
+        m_FinalizedAlignmentId = result.id;
+    }
 
     void Capture()
     {
@@ -182,6 +218,17 @@ public sealed class SharedGazeStream : MonoBehaviour
         // the clock AFTER that query, otherwise every new native row looks future-dated.
         ResolveUsableRay(s, m_Interactor != null && m_Interactor.transform.parent != null,
             Time.realtimeSinceStartupAsDouble, m_MaxDeliveryAgeSeconds);
+        s.unalignedWorldOrigin = s.worldOrigin; s.unalignedWorldDirection = s.worldDirection;
+        // Gather uncorrected observations from the ACTUAL usable source, including HTC fallback.
+        // Do not allow a mid-search or unrecorded calibration to alter guidance.
+        bool studyPlaying = m_Game != null && m_Game.CurrentState == FindObjectGameManager.GameState.Playing && !m_Game.ResearcherPaused;
+        if (RecordingError != null || (QuickAlignment.IsRunning && studyPlaying))
+            ClearQuickAlignment("Alignment interrupted by study activity or recording failure.");
+        if (QuickAlignment.IsRunning && ValidationSet == "quick" && ValidationId == QuickAlignment.Report.id &&
+            ValidationTargetId == "target_" + QuickAlignment.TargetIndex)
+            QuickAlignment.Observe(s);
+        SaveQuickAlignmentResult();
+        QuickAlignment.Apply(s);
         if (ValidationTarget != null)
         {
             s.validationTargetPresent = true; s.validationTarget = ValidationTarget.position;

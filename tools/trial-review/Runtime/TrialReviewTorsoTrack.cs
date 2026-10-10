@@ -8,12 +8,15 @@ public sealed class TrialReviewTorsoTrack
 {
     public const float NeckYawAllowance = 35f, MaxTurnDegreesPerSecond = 90f;
     readonly Dictionary<long,float> m_Yaws = new Dictionary<long,float>();
-    public TrialReviewTorsoTrack(TrialReplayTimeline timeline)
+    readonly TrialReplayState state = new TrialReplayState();
+    bool continuous; double lastTime; float yaw;
+    int processed;
+    public TrialReviewTorsoTrack(TrialReplayTimeline timeline) { Refresh(timeline); }
+    public void Refresh(TrialReplayTimeline timeline)
     {
-        var state=new TrialReplayState();
-        bool continuous=false;double lastTime=0;float yaw=0;
-        foreach(var record in timeline.Records)
+        for (; processed < timeline.Records.Count; processed++)
         {
+            var record = timeline.Records[processed];
             state.Apply(record);
             if(state.PoseBoundary==record)continuous=false;
             if(state.Sample!=record)continue;

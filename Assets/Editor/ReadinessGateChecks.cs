@@ -42,11 +42,13 @@ public static class ReadinessGateChecks
             var game = host.AddComponent<FindObjectGameManager>();
             var gate = host.AddComponent<TrialReadinessGate>();
             Set(game, "m_UI", ui); Set(game, "m_Readiness", gate);
+            Set(gate,"m_UI",ui); Set(gate,"m_Game",game);
             Set(game, "m_State", FindObjectGameManager.GameState.Playing);
             game.MarkAnnouncementReady(0);
             game.BeginSearch(0);
             Check(!game.SearchActive, "Audio callback cannot bypass gaze gate.");
             Set(gate, "<Completed>k__BackingField", true);
+            Set(gate, "<Active>k__BackingField", true);
             Set(game, "<AnnouncementReady>k__BackingField", false);
             game.BeginSearch(0);
             Check(!game.SearchActive, "Completed gaze cannot bypass audio gate.");
@@ -61,8 +63,20 @@ public static class ReadinessGateChecks
             Set(voice, "m_IntroPlayingOrQueued", false);
             Check(!wait.MoveNext() && game.AnnouncementReady && !game.SearchActive,
                 "Finished audio marks readiness but does not directly start search.");
+            var hiddenObject=GameObject.CreatePrimitive(PrimitiveType.Cube); hiddenObject.transform.SetParent(host.transform);
+            var renderer=hiddenObject.GetComponent<MeshRenderer>(); renderer.enabled=false;
+            ((System.Collections.Generic.List<GameObject>)typeof(FindObjectGameManager).GetField("m_SpawnedObjects",
+                BindingFlags.Instance|BindingFlags.NonPublic).GetValue(game)).Add(hiddenObject);
             game.MarkAnnouncementReady(0); game.BeginSearch(0);
-            Check(game.SearchActive && !cross.activeSelf, "Both gates start search and hide cross.");
+            Check(!renderer.enabled && !game.SearchActive && game.CurrentSearchSeconds == 0, "Cross and setup audio alone cannot reveal objects or start timing before opening direction.");
+            var completeOpening=typeof(FindObjectGameManager).GetMethod("CompleteOpeningDirection");
+            completeOpening.Invoke(game,new object[]{1});
+            Check(!game.SearchActive,"A stale opening for another trial cannot start this trial");
+            Set(game,"m_ResearcherPaused",true); completeOpening.Invoke(game,new object[]{0});
+            Check(!game.SearchActive,"Opening completion during pause cannot reveal objects");
+            Set(game,"m_ResearcherPaused",false);
+            completeOpening.Invoke(game,new object[]{0});
+            Check(renderer.enabled && game.SearchActive && !cross.activeSelf && !gate.Active, "Completed opening direction reveals objects, starts search and hides cross.");
         }
         finally { UnityEngine.Object.DestroyImmediate(host); UnityEngine.Object.DestroyImmediate(camera); }
         Debug.Log("[ReadinessGateChecks] PASS: continuous gaze, resets, audio gate, no timer bypass, fixed world cross, padded whole-cross region and search onset.");
@@ -83,6 +97,7 @@ public static class ReadinessGateChecks
             var game = host.AddComponent<FindObjectGameManager>();
             var gate = host.AddComponent<TrialReadinessGate>();
             Set(game, "m_UI", ui); Set(game, "m_Readiness", gate);
+            Set(gate,"m_UI",ui); Set(gate,"m_Game",game);
             Set(game, "m_UseRotationalLayout", true);
             Set(game, "m_SeatedRotation", Quaternion.identity);
             Set(game, "m_RotationalRadius", 1.5f);

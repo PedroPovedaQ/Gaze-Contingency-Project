@@ -7,7 +7,7 @@ using UnityEngine.XR.Interaction.Toolkit.UI;
 /// <summary>Researcher eye check, separate from hidden experimental targets. Right-ray controls.</summary>
 public sealed class GazeDiagnosticView : MonoBehaviour
 {
-    static readonly Vector2 k_PanelSize = new Vector2(880,640);
+    static readonly Vector2 k_PanelSize = new Vector2(880,800);
     const float k_CanvasScale = .0009f;
     public static GazeDiagnosticView Instance { get; private set; }
     public bool Visible { get; private set; }
@@ -28,14 +28,17 @@ public sealed class GazeDiagnosticView : MonoBehaviour
         m_Stream.Observed+=Observe;
         m_Game=FindFirstObjectByType<FindObjectGameManager>();
         m_Panel=Canvas("Eye diagnostic panel",k_PanelSize);
-        m_Text=Label(m_Panel.transform,new Vector2(0,85),new Vector2(830,440));
-        RayMenuFeedback.CreateButton(m_Panel.transform,"Validation",new Vector2(-315,-185),new Vector2(195,60),()=>Begin("validation"));
-        RayMenuFeedback.CreateButton(m_Panel.transform,"Offset fit",new Vector2(-105,-185),new Vector2(195,60),()=>Begin("fit"));
-        RayMenuFeedback.CreateButton(m_Panel.transform,"Held-out",new Vector2(105,-185),new Vector2(195,60),()=>Begin("heldout"));
-        RayMenuFeedback.CreateButton(m_Panel.transform,"Drift",new Vector2(315,-185),new Vector2(195,60),()=>Begin("drift"));
-        RayMenuFeedback.CreateButton(m_Panel.transform,"Next target",new Vector2(-210,-260),new Vector2(195,60),Next);
-        RayMenuFeedback.CreateButton(m_Panel.transform,"Finish check",new Vector2(0,-260),new Vector2(195,60),Finish);
-        RayMenuFeedback.CreateButton(m_Panel.transform,"Close",new Vector2(210,-260),new Vector2(195,60),()=>SetVisible(false));
+        m_Text=Label(m_Panel.transform,new Vector2(0,120),new Vector2(830,490));
+        RayMenuFeedback.CreateButton(m_Panel.transform,"Quick eye alignment",new Vector2(-210,-185),new Vector2(395,60),()=>Begin("quick"));
+        RayMenuFeedback.CreateButton(m_Panel.transform,"Clear alignment",new Vector2(210,-185),new Vector2(395,60),()=>
+        { Finish(); m_Stream.ClearQuickAlignment("Cleared by researcher."); });
+        RayMenuFeedback.CreateButton(m_Panel.transform,"Validation",new Vector2(-315,-270),new Vector2(195,60),()=>Begin("validation"));
+        RayMenuFeedback.CreateButton(m_Panel.transform,"Offset fit",new Vector2(-105,-270),new Vector2(195,60),()=>Begin("fit"));
+        RayMenuFeedback.CreateButton(m_Panel.transform,"Held-out",new Vector2(105,-270),new Vector2(195,60),()=>Begin("heldout"));
+        RayMenuFeedback.CreateButton(m_Panel.transform,"Drift",new Vector2(315,-270),new Vector2(195,60),()=>Begin("drift"));
+        RayMenuFeedback.CreateButton(m_Panel.transform,"Next target",new Vector2(-210,-350),new Vector2(195,60),Next);
+        RayMenuFeedback.CreateButton(m_Panel.transform,"Finish check",new Vector2(0,-350),new Vector2(195,60),Finish);
+        RayMenuFeedback.CreateButton(m_Panel.transform,"Close",new Vector2(210,-350),new Vector2(195,60),()=>SetVisible(false));
         m_Launcher=Canvas("Eye check launcher",new Vector2(230,70));
         RayMenuFeedback.CreateButton(m_Launcher.transform,"Eye check",Vector2.zero,new Vector2(220,60),()=>SetVisible(true));
         m_Panel.SetActive(false); m_Launcher.SetActive(false); m_Start=Time.realtimeSinceStartupAsDouble;
@@ -64,8 +67,24 @@ public sealed class GazeDiagnosticView : MonoBehaviour
         if(showLauncher && !m_Launcher.activeSelf)
             Position(m_Launcher,MenuPose(Camera.main.transform),new Vector3(.55f,-.4f,1.1f));
         m_Launcher.SetActive(showLauncher);
+        if (m_Set == "quick")
+        {
+            if (!m_Stream.QuickAlignment.IsRunning) Finish();
+            else if (m_TargetIndex != m_Stream.QuickAlignment.TargetIndex)
+            { m_TargetIndex = m_Stream.QuickAlignment.TargetIndex; PlaceTarget(); }
+        }
         if(!Visible || Time.realtimeSinceStartupAsDouble-m_LastRefresh<.1) return;
         m_LastRefresh=Time.realtimeSinceStartupAsDouble;
+        if (m_Set == "quick")
+        {
+            m_Text.text = "<b>Quick eye alignment</b>\n\n" +
+                $"Dot {m_TargetIndex + 1} of 3\n\n{m_Stream.QuickAlignment.Status}\n\n" +
+                "Look at each dot with your eyes and keep your head still.\n" +
+                "The dots will change automatically.\n\n" +
+                "Complete HTC eye calibration before this check.\n" +
+                "Finish check or Close will cancel an unfinished alignment.";
+            return;
+        }
         var s=m_Stream.Latest;if(s==null)return;
         double elapsed=Math.Max(.001,Time.realtimeSinceStartupAsDouble-m_Start);
         string error=s.valid && s.validationTargetPresent ? s.targetErrorDegrees.ToString("F2")+" deg" : "not available";
@@ -77,8 +96,9 @@ public sealed class GazeDiagnosticView : MonoBehaviour
             $"HTC L/R valid: {s.htcGazeAvailable} / {s.leftValid}/{s.rightValid}\n"+
             $"Correction: {s.correction}; EXT error: {error}; used: {(s.valid && s.validationTargetPresent ? s.usedTargetErrorDegrees.ToString("F2")+" deg" : "n/a")}\n"+
             $"X-mirrored-origin comparison: {(s.valid && s.validationTargetPresent ? s.mirroredOriginErrorDegrees.ToString("F2") : "n/a")} deg\n"+
+            $"<b>Quick alignment:</b> {m_Stream.QuickAlignment.Status}\n"+
             $"{m_Set ?? "Choose a separate check below."}  target {m_TargetIndex+1}\n"+
-            (m_Target!=null ? $"Turn toward the dot; hold gaze, then Next.\nDot bearing: {m_Target.transform.position-m_Anchor:F1}\n" : "")+
+            (m_Target!=null ? "Turn toward the dot; hold gaze, then Next.\n" : "")+
             (m_Stream.RecordingError!=null ? "<color=red>Recording error: "+m_Stream.RecordingError+"</color>" : "Logging raw samples, invalid states and timing.");
     }
     public void Begin(string set)
@@ -87,6 +107,13 @@ public sealed class GazeDiagnosticView : MonoBehaviour
         if(Camera.main==null)return;
         Finish();m_Set=set;m_ValidationId=Guid.NewGuid().ToString("N");m_TargetIndex=0;
         m_Anchor=Camera.main.transform.position;m_Heading=Quaternion.Euler(0,Camera.main.transform.eulerAngles.y,0);
+        if (set == "quick")
+        {
+            if (m_Stream.RecordingError != null || string.IsNullOrEmpty(m_Stream.RecordingPath))
+            { m_Set = null; return; }
+            m_Stream.QuickAlignment.Begin(m_Anchor, Camera.main.transform.rotation, Time.realtimeSinceStartupAsDouble);
+            m_ValidationId = m_Stream.QuickAlignment.Report.id;
+        }
         m_PanelAnchor=new Pose(m_Anchor,m_Heading);
         Position(m_Panel,m_PanelAnchor,PanelOffset(true));
         m_Target=GameObject.CreatePrimitive(PrimitiveType.Sphere);m_Target.name="Independent eye validation dot";
@@ -94,9 +121,15 @@ public sealed class GazeDiagnosticView : MonoBehaviour
         m_Target.GetComponent<Renderer>().material.color=Color.magenta;
         PlaceTarget();
     }
-    public void Next() { if(m_Target==null)return; m_TargetIndex++;PlaceTarget(); }
+    public void Next() { if(m_Target==null || m_Set=="quick")return; m_TargetIndex++;PlaceTarget(); }
     void PlaceTarget()
     {
+        if (m_Set == "quick")
+        {
+            m_Target.transform.position = m_Stream.QuickAlignment.CurrentTarget;
+            m_Stream.SetValidationTarget(m_Target.transform,m_ValidationId,m_Set,"target_"+m_TargetIndex);
+            return;
+        }
         int count=m_Set=="drift"?5:m_Set=="fit"?9:54;
         if(m_TargetIndex>=count){Finish();return;}
         // The fit grid and held-out targets are disjoint. All positions are world-fixed while sampled.
@@ -114,6 +147,8 @@ public sealed class GazeDiagnosticView : MonoBehaviour
     }
     public void Finish()
     {
+        if (m_Set == "quick" && m_Stream != null && m_Stream.QuickAlignment.IsRunning)
+            m_Stream.ClearQuickAlignment("Quick alignment cancelled before completing all checks.");
         bool hadTarget=m_Target!=null;
         if(m_Target!=null)Destroy(m_Target);m_Target=null;
         m_Stream?.SetValidationTarget(null,null,null,null);m_Set=null;
@@ -137,7 +172,8 @@ public sealed class GazeDiagnosticView : MonoBehaviour
     {
         var go=new GameObject("Diagnostic values",typeof(RectTransform),typeof(TextMeshProUGUI));go.transform.SetParent(parent,false);
         var text=go.GetComponent<TextMeshProUGUI>();text.rectTransform.sizeDelta=size;text.rectTransform.anchoredPosition=position;
-        text.fontSize=22;text.color=Color.white;text.raycastTarget=false;
+        text.fontSize=22;text.enableAutoSizing=true;text.fontSizeMin=16;text.fontSizeMax=22;
+        text.color=Color.white;text.raycastTarget=false;
         return text;
     }
     void OnDestroy()

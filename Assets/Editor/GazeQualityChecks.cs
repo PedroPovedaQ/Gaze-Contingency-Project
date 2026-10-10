@@ -79,9 +79,13 @@ public static class GazeQualityChecks
             vicinity.SetPadding(6); dev.SetValue(null,false);
             Check(!vicinity.RingVisible && vicinity.PaddingDegrees==6,"Leaving development cannot leak the target ring or radius into study");
             var controller = host.AddComponent<ControllerRaySelector>();
+            var game = host.AddComponent<FindObjectGameManager>();
+            var objects = (System.Collections.Generic.List<GameObject>)typeof(FindObjectGameManager)
+                .GetField("m_SpawnedObjects",flags).GetValue(game);
+            objects.Add(target); objects.Add(other);
             var hints = host.AddComponent<HintGenerator>();
             void Set(string name,object value) => typeof(HintGenerator).GetField(name,flags).SetValue(hints,value);
-            Set("m_Controller",controller); Set("m_Vicinity",vicinity); Set("m_EvaluatedTarget",info);
+            Set("m_GameManager",game); Set("m_Controller",controller); Set("m_Vicinity",vicinity); Set("m_EvaluatedTarget",info);
             Set("m_EvaluatedSample",new GazeObservation { valid=true,worldOrigin=Vector3.zero,worldDirection=nearby });
             var sample = new ControllerRaySelector.TelemetrySample { available=true,rayAvailable=true,tracked=1,target=target };
             void Telemetry(ControllerRaySelector.TelemetrySample value,double age=0,int frames=0)
@@ -95,17 +99,55 @@ public static class GazeQualityChecks
             Check(!Pointing(false),"Invalid gaze never qualifies even with exact controller hit");
             Check((bool)typeof(HintGenerator).GetField("m_ControllerOnTarget",flags).GetValue(hints),
                 "Blink keeps controller evidence available without allowing a gaze-free announcement");
+            bool Looking(bool valid=true) {
+                Pointing(valid);
+                return (bool)typeof(HintGenerator).GetMethod("EvaluateLooking",flags).Invoke(hints,new object[]{valid});
+            }
+            bool ExactHit() => (bool)typeof(HintGenerator).GetField("m_GazeOnTarget",flags).GetValue(hints);
+            target.layer=8; Physics.SyncTransforms();
+            Check(Looking() && !ExactHit(),"Expanded ring qualifies while exact intersection remains separately false");
+            Telemetry(default);
+            Check(Looking(),"Gaze confirmation does not require controller tracking or a controller hit");
+            Set("m_EvaluatedSample",new GazeObservation {valid=true,worldOrigin=Vector3.zero,worldDirection=Vector3.right});
+            Check(!Looking(),"Outside the ring does not qualify");
+            Set("m_EvaluatedSample",new GazeObservation {valid=true,worldOrigin=Vector3.zero,worldDirection=Vector3.forward});
+            Check(Looking() && !Looking(false),"Direct target gaze qualifies only with valid eye data");
+            var occluder=other.AddComponent<BoxCollider>(); other.layer=8;
+            other.transform.position=Vector3.forward; other.transform.localScale=Vector3.one*.1f; Physics.SyncTransforms();
+            Check(!Looking(),"Overlapping collinear rings are ambiguous and must not confirm the hidden target");
+            other.AddComponent<SpawnableObjectInfo>().objectId="distractor-1";
+            other.transform.position=Quaternion.Euler(0,6,0)*Vector3.forward*2; Physics.SyncTransforms();
+            Set("m_EvaluatedSample",new GazeObservation {valid=true,worldOrigin=Vector3.zero,worldDirection=nearby});
+            Telemetry(sample);
+            Check(!Looking() && !Pointing(),"Distractor closer to gaze wins overlapping rings even with controller on target");
+            Set("m_EvaluatedSample",new GazeObservation {valid=true,worldOrigin=Vector3.zero,worldDirection=Vector3.forward});
+            Check(Looking(),"Target wins when its angular center is closer in overlapping rings");
+            var third=GameObject.CreatePrimitive(PrimitiveType.Cube); third.transform.localScale=Vector3.one*.1f;
+            third.AddComponent<SpawnableObjectInfo>().objectId="distractor-2";
+            objects.Add(third);
+            try {
+                third.transform.position=Quaternion.Euler(0,-4,0)*Vector3.forward*2; Physics.SyncTransforms();
+                Set("m_EvaluatedSample",new GazeObservation {valid=true,worldOrigin=Vector3.zero,
+                    worldDirection=Quaternion.Euler(0,-3,0)*Vector3.forward});
+                Check(!Looking(),"Closest distractor wins among three overlapping rings");
+                objects.Reverse(); Check(!Looking(),"Winner cannot depend on spawn-list order"); objects.Reverse();
+                third.SetActive(false); Check(Looking(),"Inactive objects do not compete");
+                third.SetActive(true); third.GetComponent<Collider>().enabled=false;
+                Check(Looking(),"Disabled colliders do not compete");
+            } finally { objects.Remove(third); UnityEngine.Object.DestroyImmediate(third); }
+            occluder.enabled=false; Telemetry(sample);
+            Set("m_EvaluatedSample",new GazeObservation {valid=true,worldOrigin=Vector3.zero,worldDirection=nearby});
             var hold=(GazeZoneEntryGate)typeof(HintGenerator).GetField("m_PointingEntry",flags).GetValue(hints);
             hold.Update(true,true,0);
-            Check(!hold.Update(true,true,1.49) && hold.Update(true,true,1.51),"Runtime pointing gate requires 1.5 seconds");
+            Check(!hold.Update(true,true,.99) && hold.Update(true,true,1.0),"Runtime pointing gate requires 1 second");
             sample.target=other;Telemetry(sample);Check(!Pointing(),"Pointing at a distractor never confirms the target");
             sample.target=target;sample.tracked=0;Telemetry(sample);Check(!Pointing(),"Untracked controller cannot confirm");
             sample.tracked=1;Telemetry(sample,.2);Check(!Pointing(),"Old controller telemetry cannot confirm after a stall");
             Telemetry(sample,0,2);Check(!Pointing(),"Skipped controller frames cannot confirm");
             Set("m_EvaluatedSample",new GazeObservation {valid=true,worldOrigin=Vector3.zero,worldDirection=Vector3.back});
             Telemetry(sample);Check(!Pointing(),"Controller alone cannot confirm while gaze is elsewhere");
-            Check(DirectionalHintPolicy.WithinArea(10,10)==DirectionalHintPolicy.UpPhrase &&
-                DirectionalHintPolicy.WithinArea(-10,-10)==DirectionalHintPolicy.DownPhrase,"Arrival and follow-up both refine height before small horizontal errors");
+            Check(DirectionalHintPolicy.WithinArea(10,10)==DirectionalHintPolicy.UpRightPhrase &&
+                DirectionalHintPolicy.WithinArea(-10,-10)==DirectionalHintPolicy.DownLeftPhrase,"Arrival and follow-up combine vertical and horizontal corrections within the wall");
             Debug.Log("[GazeQualityChecks] PASS: pointing vicinity, target identity, freshness, vertical arrival and development-only radius/ring controls");
         }
         finally
@@ -191,17 +233,43 @@ public static class GazeQualityChecks
             var game = host.AddComponent<FindObjectGameManager>();
             var hint = host.AddComponent<HintGenerator>();
             typeof(HintGenerator).GetField("m_GameManager", flags).SetValue(hint, game);
-            var pending = typeof(HintGenerator).GetField("m_OpeningPending", flags);
-            var round = typeof(FindObjectGameManager).GetProperty("PresentedRoundIndex");
-            var practice = typeof(FindObjectGameManager).GetProperty("PresentedRoundIsPractice");
-            round.SetValue(game, 0); practice.SetValue(game, true);
-            hint.OnNewObjective(); Check((bool)pending.GetValue(hint), "Practice has a first direction cue");
-            pending.SetValue(hint, false); hint.CancelPending(); hint.OnNewObjective();
-            Check(!(bool)pending.GetValue(hint), "Same-trial resume does not repeat the opening");
-            practice.SetValue(game, false); hint.OnNewObjective();
-            Check((bool)pending.GetValue(hint), "First measured trial differs from practice at index zero");
-            pending.SetValue(hint, false); round.SetValue(game, 1); hint.OnNewObjective();
-            Check((bool)pending.GetValue(hint), "New measured trial gets the opening");
+            hint.OnNewObjective();
+            Check(!(bool)typeof(HintGenerator).GetField("m_TipsSuppressed",flags).GetValue(hint),"Search enables ongoing guidance");
+            Check((float)typeof(HintGenerator).GetField("m_LastTipTime",flags).GetValue(hint)==Time.time,
+                "Post-opening search waits the regular cadence instead of repeating the opening immediately");
+            var remember=typeof(HintGenerator).GetMethod("RememberDirection",flags);
+            var continuation=typeof(HintGenerator).GetField("m_ContinuationUsed",flags);
+            remember.Invoke(hint,new object[]{DirectionalHintPolicy.RightPhrase}); continuation.SetValue(hint,true);
+            remember.Invoke(hint,new object[]{DirectionalHintPolicy.RightPhrase});
+            Check((bool)continuation.GetValue(hint),"Same-direction progress cannot rearm generic encouragement");
+            remember.Invoke(hint,new object[]{DirectionalHintPolicy.DownPhrase});
+            Check(!(bool)continuation.GetValue(hint),"A new direction permits one fresh continuation");
+            continuation.SetValue(hint,true); hint.OnNewObjective();
+            Check(!(bool)continuation.GetValue(hint),"New trial resets continuation history");
+            typeof(HintGenerator).GetField("m_OpeningTurn",flags).SetValue(hint,DirectionalHintPolicy.LeftPhrase);
+            hint.OnNewObjective();
+            var turn=(GuidanceTurnState)typeof(HintGenerator).GetField("m_Turn",flags).GetValue(hint);
+            Check(turn.Resolve(179,false)==DirectionalHintPolicy.LeftPhrase,"Runtime preserves opening route across rear seam");
+            turn.MarkSpoken(DirectionalHintPolicy.LeftPhrase,180);
+            Check(turn.ProgressDue(DirectionalHintPolicy.LeftPhrase,135),"Runtime turn state recognizes a new milestone");
+            turn.MarkSpoken(DirectionalHintPolicy.LeftPhrase,135);
+            Check(!turn.ProgressDue(DirectionalHintPolicy.LeftPhrase,135),"Runtime does not replay consumed milestone");
+            var revisit=(GazeReturnCueGate)typeof(HintGenerator).GetField("m_TargetRevisit",flags).GetValue(hint);
+            revisit.Update(true,true,0); revisit.Update(true,true,.11); revisit.Update(true,false,.2);
+            Check(revisit.Update(true,false,.46),"Runtime retains a qualified recent target departure");
+            hint.CancelPending();
+            Check(!revisit.IsPending(.5) && turn.Resolve(179,false)==DirectionalHintPolicy.RightPhrase,"Cancellation clears target memory and opening route");
+            hint.OnNewObjective();
+            var lookingGate=(GazeZoneEntryGate)typeof(HintGenerator).GetField("m_LookingEntry",flags).GetValue(hint);
+            lookingGate.Update(true,true,0);
+            Check(!lookingGate.Update(true,true,.099) && lookingGate.Update(true,true,.1),"Runtime gaze gate uses exactly one tenth of a second");
+            lookingGate.MarkSpoken(.1); lookingGate.Update(true,false,1); lookingGate.Update(true,false,1.16);
+            lookingGate.Update(true,true,1.2);
+            Check(lookingGate.Update(true,true,1.71),"Runtime confirmation rearms after a brief real look-away without a cooldown");
+            hint.CancelPending();
+            Check((bool)typeof(HintGenerator).GetField("m_TipsSuppressed",flags).GetValue(hint),"Pause cancels ongoing guidance");
+            hint.OnNewObjective();
+            Check(!(bool)typeof(HintGenerator).GetField("m_TipsSuppressed",flags).GetValue(hint),"Resume restores ongoing guidance without an opening state");
             var decision = new GuidanceDecision { targetGeometryAvailable = true, targetYawError = -4,
                 targetHistory = new[] { new GazeTargetHistory.Sample { time=1.2, inputTime=1.19,
                     eyeRecordingId="fixture-eyes", observationSequence=17, yawError=.5f, pitchError=1 } } };

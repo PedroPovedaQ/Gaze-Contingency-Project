@@ -42,6 +42,70 @@ class VoiceIsolationChecks
         }
         return Math.Sqrt(power / speech);
     }
+    static void CheckSmoothInterruptions(VoiceSynthesizer synth, string next)
+    {
+        var source = (AudioSource)typeof(VoiceSynthesizer).GetField("m_AudioSource", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth);
+        int requests = 0, committed = 0;
+        bool relevant = true;
+        System.Threading.Tasks.TaskCompletionSource<bool> pending = null;
+        void Begin()
+        {
+            synth.Stop(); Time.unscaledTime += 3;
+            Set(synth, "m_LastSmoothInterruption", -100d);
+            Set(synth, "m_CurrentContext", "tip");
+            Set(synth, "m_CurrentPhrase", "Keep turning to your right toward the back.");
+            source.clip = new AudioClip { length = 4 }; source.time = 1; source.volume = .4f; source.HoldPlayback = true;
+            relevant = true;
+            pending = new System.Threading.Tasks.TaskCompletionSource<bool>();
+            synth.InterruptionAdvisor = (state, token) => { requests++; return pending.Task; };
+        }
+        Begin(); int before = source.StopCalls;
+        Check(!synth.TryAreaCorrection(next, () => relevant, () => committed++), "Advice runs in parallel without stopping speech");
+        for (int i=0;i<5;i++) synth.TryAreaCorrection(next, () => relevant);
+        Check(requests == 1 && source.StopCalls == before && source.volume == .4f, "Repeated ticks cannot flood advice or duck while pending");
+        pending.SetResult(true);
+        Check(synth.TryAreaCorrection(next, () => relevant, () => committed++), "Current approval starts fade");
+        var fade = MonoBehaviour.LastRoutine;
+        fade.MoveNext(); float start = Time.unscaledTime;
+        Time.unscaledTime = start + .075f; fade.MoveNext();
+        Check(Math.Abs(source.volume - .2f) < .001 && source.StopCalls == before, "150ms linear fade is half gain at 75ms");
+        Time.unscaledTime = start + .149f; fade.MoveNext();
+        Check(source.StopCalls == before, "Never stop before 150ms");
+        Time.unscaledTime = start + .151f; fade.MoveNext();
+        Check(source.StopCalls == before+1 && source.VolumeAtStop == 0 && committed == 1, "Stop at zero before committing fresh correction");
+        Check(Math.Abs(source.volume-.7f)<.001, "Next phrase restores normal gain");
+
+        Begin(); before=source.StopCalls;
+        synth.TryAreaCorrection(next, () => relevant); pending.SetResult(false);
+        Check(!synth.TryAreaCorrection(next, () => relevant) && source.StopCalls == before, "Finish decision preserves playback");
+        int count=requests; synth.TryAreaCorrection(next, () => relevant);
+        Check(requests==count,"One advice attempt per utterance even after a finish decision");
+        Begin(); synth.TryAreaCorrection(next, () => relevant); Time.unscaledTime += .41f; pending.SetResult(true);
+        Check(!synth.TryAreaCorrection(next, () => relevant), "Late approval discarded");
+        Begin(); synth.TryAreaCorrection(next, () => relevant); relevant=false; pending.SetResult(true);
+        Check(!synth.TryAreaCorrection(next, () => relevant), "Invalid gaze cannot accept approval");
+        Begin(); synth.TryAreaCorrection(next, () => relevant); pending.SetResult(true);
+        Check(synth.TryAreaCorrection(next, () => relevant, () => committed++), "Fresh correction can start");
+        fade=MonoBehaviour.LastRoutine; fade.MoveNext(); relevant=false; Time.unscaledTime += .16f; fade.MoveNext();
+        Check(committed==1 && !source.HoldPlayback, "Once fading, stop smoothly but discard a now-stale replacement");
+
+        Begin(); before=source.StopCalls;
+        synth.InterruptIfAbout("tip"); fade=MonoBehaviour.LastRoutine; fade.MoveNext();
+        Time.unscaledTime += .075f; fade.MoveNext(); synth.InterruptIfAbout("tip");
+        Check(ReferenceEquals(fade,MonoBehaviour.LastRoutine), "Invalid tracking ticks do not restart fade");
+        Time.unscaledTime += .076f; fade.MoveNext();
+        Check(source.StopCalls==before+1 && source.VolumeAtStop==0, "Tracking loss fades without Jev");
+        Begin(); source.time=3.7f; count=requests;
+        Check(!synth.TryAreaCorrection(next, () => true) && requests==count,"Protect near-complete phrase locally");
+        Begin(); source.time=3.1f; Set(synth,"m_CurrentSpeechSeconds",3.6d); count=requests;
+        Check(!synth.TryAreaCorrection(next, () => true) && requests==count,"Clone effect tail cannot extend interruptible speech time");
+        Begin(); Set(synth,"m_CurrentPhrase",DirectionalHintPolicy.PointingPhrase); count=requests;
+        Check(!synth.TryAreaCorrection(next, () => true) && requests==count,"Protect acknowledgment locally");
+        Begin(); synth.TryAreaCorrection(next, () => relevant); var obsolete=pending;
+        synth.Stop(); obsolete.SetResult(true);
+        Check(!source.HoldPlayback,"Lifecycle stop cannot resurrect late advice");
+        synth.InterruptionAdvisor=null;
+    }
     static void Main()
     {
         string root = Path.Combine(Path.GetTempPath(), "gaze-voice-tests-" + Guid.NewGuid());
@@ -453,17 +517,20 @@ class VoiceIsolationChecks
                     if (kind=="guidance_decision_aborted" && detail.Contains("decision_id=abandoned-decision")) abortedDecisionLogged=true;
                 };
                 synth.Telemetry += abortedTelemetry;
-                Check(synth.TryAreaCorrection(lazyPrompt, () => relevant, () => correctionCommits++, guidanceDecisionId:"abandoned-decision"), "playing hint accepts fade");
+                Check(!synth.TryAreaCorrection(lazyPrompt, () => relevant, () => correctionCommits++), "Playing go-back phrase must finish before any confirmation");
+                Check(source.HoldPlayback && source.StopCalls == stopsBeforeCorrection, "Deferred correction does not stop or fade speech");
+                source.Finish();
+                var markEnd = typeof(VoiceSynthesizer).GetMethod("MarkGuidanceEnd", BindingFlags.Instance | BindingFlags.NonPublic);
+                markEnd.Invoke(synth,null);
+                Check(!synth.TryAreaCorrection(lazyPrompt, () => true), "Natural completion starts a pause before another sentence");
+                Time.unscaledTime += .56f;
+                Check(synth.TryAreaCorrection(lazyPrompt, () => relevant, () => correctionCommits++, guidanceDecisionId:"abandoned-decision"), "Idle prepared correction is eligible after its gap");
                 var abandonedFade = MonoBehaviour.LastRoutine;
-                abandonedFade.MoveNext();
-                Time.unscaledTime += 0.02f;
-                abandonedFade.MoveNext();
-                Check(source.volume > 0 && source.volume < 0.7f, "ongoing hint fades gradually");
                 relevant = false; Drain(abandonedFade);
                 Check(Math.Abs(source.volume - 0.7f) < 0.0001f && starts == 2,
-                    "leaving target zone during fade restores volume and cancels correction");
-                Check(correctionCommits == 0, "abandoned fade must not commit the cue or consume cooldown");
-                Check(abortedDecisionLogged,"Abandoned area request records its own decision ID without playback");
+                    "Obsolete evidence cancels a pending correction before speech");
+                Check(correctionCommits == 0, "Abandoned cue does not consume cooldown");
+                Check(abortedDecisionLogged,"Abandoned request records its own decision ID without playback");
                 synth.Telemetry -= abortedTelemetry;
                 bool returnReasonLogged = false;
                 bool correctionStartLinked = false;
@@ -474,18 +541,29 @@ class VoiceIsolationChecks
                 };
                 synth.Telemetry += correctionTelemetry;
                 Check(synth.TryAreaCorrection(lazyPrompt, () => true, () => correctionCommits++, "gaze_overshoot_return","return-decision"),
-                    "prepared correction can replace a hint");
+                    "prepared correction follows the completed hint");
                 var fade = MonoBehaviour.LastRoutine;
                 Check(synth.IsBusy, "pending fade blocks ordinary hints");
                 Drain(fade);
                 Drain(MonoBehaviour.LastRoutine);
-                Check(!source.HoldPlayback && source.StopCalls > stopsBeforeCorrection, "correction cuts off unfinished speech");
+                Check(!source.HoldPlayback && source.StopCalls == stopsBeforeCorrection, "correction never cuts off unfinished speech");
                 Check(starts == 3 && failures == 0, "correction plays once without failure");
                 Check(correctionCommits == 1 && returnReasonLogged, "committed correction consumes cooldown once and logs return reason");
                 Check(correctionStartLinked,"Audible correction retains the request decision through fade and Speak reset");
+                Check(!synth.GuidanceReady,"Actual correction completion enforces the next post-playback pause");
+                Time.unscaledTime += .56f;
+                Check(synth.GuidanceReady,"Ordinary guidance resumes after its gap");
+                Set(synth,"m_CurrentContext","tip"); Set(synth,"m_CurrentPhrase",DirectionalHintPolicy.LookingPhrase);
+                markEnd.Invoke(synth,null);
+                Time.unscaledTime += .99f;
+                Check(!synth.GuidanceReady,"YEP gives the listener one second before another direction");
+                Time.unscaledTime += .02f;
+                Check(synth.GuidanceReady,"Acknowledgment pause ends normally");
+                Set(synth,"m_CurrentContext",null);
                 synth.Telemetry -= correctionTelemetry;
                 Check(provider.Calls == 0 && UnityWebRequest.Requests.Count == 0, "correction needs no network");
                 synth.PlaybackFailed -= failure; synth.Telemetry -= telemetry;
+                CheckSmoothInterruptions(synth, lazyPrompt);
             }
             var decisionEvents = new System.Collections.Generic.List<string>();
             Action<string,string,string,string> captureDecisionEvents = (kind,context,key,detail) => decisionEvents.Add(kind+"|"+detail);
@@ -774,9 +852,10 @@ class VoiceIsolationChecks
 
 namespace UnityEngine
 {
-    public static class Time { public static float unscaledTime; }
+    public class SerializeField : Attribute { }
+    public static class Time { public static float unscaledTime; public static double realtimeSinceStartupAsDouble => unscaledTime; }
     public struct Color { public float r, g, b, a; public Color(float r,float g,float b,float a=1) { this.r=r;this.g=g;this.b=b;this.a=a; } }
-    public static class Mathf { public static int Clamp(int value,int min,int max) => Math.Min(max, Math.Max(min,value)); }
+    public static class Mathf { public static float Lerp(float a,float b,float t) => a + (b-a) * Math.Min(1,Math.Max(0,t)); public static int Clamp(int value,int min,int max) => Math.Min(max, Math.Max(min,value)); }
     public class MonoBehaviour
     {
         protected static void Destroy(object value) { }
@@ -789,7 +868,7 @@ namespace UnityEngine
     public class GameObject { public T AddComponent<T>() where T : new() => new T(); }
     public class Coroutine { }
     public class WaitForSeconds { public static int Count; public WaitForSeconds(float seconds) { Count++; } }
-    public class AudioSource { public float spatialBlend, volume, pitch; public bool playOnAwake; int playPolls; public bool HoldPlayback; public int StopCalls; public bool isPlaying => HoldPlayback || playPolls-- > 0; public AudioClip clip; public void Play() { playPolls = 2; } public void Stop() { playPolls = 0; HoldPlayback = false; StopCalls++; } }
+    public class AudioSource { public float spatialBlend, volume, pitch, time; public float VolumeAtStop; public bool playOnAwake; int playPolls; public bool HoldPlayback; public int StopCalls; public bool isPlaying => HoldPlayback || playPolls-- > 0; public AudioClip clip; public void Play() { playPolls = 2; } public void Finish() { playPolls = 0; HoldPlayback = false; } public void Stop() { VolumeAtStop = volume; playPolls = 0; HoldPlayback = false; StopCalls++; } }
     public class AudioClip
     {
         public float length = 1f; public int samples => m_Data.Length / channels; public int channels = 1; public int frequency = 48000;

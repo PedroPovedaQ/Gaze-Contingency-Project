@@ -43,7 +43,9 @@ public static class TrialReviewBuild
         Directory.CreateDirectory(folder);
         string source=CreateDemo(folder);
         AssetDatabase.Refresh();
+        TrialReviewLiveChecks.Run(source);
         var timeline=TrialReplayFile.Read(source);
+        TrialReviewInterfaceChecks.Run(timeline);
         Assert(timeline.Trials.Count==3 && timeline.Meshes.Count==3,"Trial/mesh reconstruction");
         using(var renderer=new TrialReplayRenderer(timeline){RecordedHead=true})
         {
@@ -77,6 +79,7 @@ public static class TrialReviewBuild
             actors.Prepare(timeline,1,false,false,false);Assert(!actors.BodyVisible&&!actors.RightVisible,"Model toggles independent");
         }
         VerifyGazeCorrectionMath(timeline);
+        VerifyQuickAlignmentReplay();
         VerifyReadinessEyeRay();
         VerifyEnvironment(timeline);
         VerifyArmAndEye(timeline);
@@ -184,6 +187,77 @@ public static class TrialReviewBuild
         Assert(TrialReviewSummary.Hash(path)==hash,"Original file hash unchanged");
         Debug.Log($"TRIAL_REVIEW_P020_CORRECTION_PASS {count} tracked samples; head residual {min:F6}–{max:F6} m; raw preserved");
     }
+    static void VerifyQuickAlignmentReplay()
+    {
+        var alignment = new GazeQuickAlignment();
+        double clock = 10;
+        Vector3 head = new Vector3(1, 1.6f, -2);
+        Quaternion rotation = Quaternion.Euler(0, 50, 0);
+        GazeObservation Observation(Vector3 target)
+        {
+            Vector3 origin = head + rotation * new Vector3(.015f, 0, .02f);
+            var expected = Quaternion.Inverse(rotation) * (target-origin).normalized;
+            float az = Mathf.Atan2(expected.x, expected.z) + 2 * Mathf.Deg2Rad;
+            float el = Mathf.Asin(expected.y) + Mathf.Deg2Rad;
+            var measured = rotation * new Vector3(Mathf.Cos(el)*Mathf.Sin(az),Mathf.Sin(el),Mathf.Cos(el)*Mathf.Cos(az));
+            return new GazeObservation { valid=true,deviceAvailable=true,headValid=true,focused=true,newInputUpdate=true,
+                inputEventTime=clock,receiptTime=clock,sequence=(long)(clock*1000),recordingId="synthetic-quick-eye",
+                participant="synthetic",deviceId=7,raySource="HTC_binocular_mean",worldOrigin=origin,worldDirection=measured,
+                unalignedWorldOrigin=origin,unalignedWorldDirection=measured,headPosition=head,headRotation=rotation,
+                rawWorldDirection=Vector3.back }; // Rejected EXT must not replace the usable native source.
+        }
+        alignment.Begin(head,rotation,clock);
+        for(int i=0;i<600&&alignment.IsRunning;i++) { clock+=.02;alignment.Observe(Observation(alignment.CurrentTarget)); }
+        Assert(alignment.IsActive,"Replay fixture fits and validates live quick alignment");
+        rotation=Quaternion.Euler(-8,-70,3); // A different head orientation after fitting.
+        var observation=Observation(head+rotation*Vector3.forward*3);
+        var originalRaw=observation.rawWorldDirection;
+        alignment.Apply(observation);
+        var originFrame=new Vector3(3,.1f,4);var rotationFrame=Quaternion.Euler(0,35,0);
+        var inverse=Quaternion.Inverse(rotationFrame);
+        var row=new TrialReplayRecord {kind="sample",time=1,sequence=2,trialId="quick",headAvailable=true,headTracked=1,
+            headPosition=inverse*(head-originFrame),headRotation=inverse*rotation,readinessActive=true};
+        TrialReplayGaze.Capture(row,observation,true,originFrame,rotationFrame);
+        var saved=JsonUtility.FromJson<TrialReplayRecord>(JsonUtility.ToJson(row));
+        Assert(saved.gazeAlignmentApplied&&saved.gazeAlignmentId==alignment.Report.id&&saved.gazeRaySource=="HTC_binocular_mean",
+            "Alignment provenance survives capture and JSON round trip");
+        Assert(Vector3.Angle(rotationFrame*saved.gazeDirection,observation.worldDirection)<.04f &&
+            Vector3.Distance(originFrame+rotationFrame*saved.gazeOrigin,observation.worldOrigin)<.00001f,
+            "Replay reconstructs exactly the live used ray in a rotated recording frame");
+        Assert(Vector3.Angle(saved.gazeDirection,saved.gazeUnalignedDirection)>1.5f&&
+            observation.rawWorldDirection==originalRaw,"Pre-alignment and raw EXT measurements are preserved independently");
+        var cleared=JsonUtility.FromJson<TrialReplayRecord>(JsonUtility.ToJson(saved));
+        cleared.time=1.05;cleared.sequence=3;cleared.gazeAlignmentApplied=false;cleared.gazeAlignmentStatus="cleared";
+        cleared.gazeDirection=cleared.gazeUnalignedDirection;
+        var rows=new List<TrialReplayRecord>{new TrialReplayRecord{kind="header",sequence=0,gazeRayVersion=TrialReplayGaze.Version},
+            new TrialReplayRecord{kind="trial",trialId="quick",sequence=1,objects=Array.Empty<TrialReplayObject>()},saved,cleared};
+        var timeline=new TrialReplayTimeline(rows);
+        using(var actors=new TrialReviewActors())
+        using(var renderer=new TrialReplayRenderer(timeline){RecordedHead=true,ShowGaze=true})
+        {
+            foreach(double time in new[]{1.0,1.05,1.0})
+            {
+                timeline.Seek(time);actors.Prepare(timeline,time,false,true,true,true);
+                var current=timeline.State.Sample;
+                Assert(actors.EyeRay.enabled&&Vector3.Distance(actors.EyeRay.GetPosition(0),current.gazeOrigin)<.00001f,
+                    "Replay keeps measured eye origin instead of moving it onto avatar head");
+                Assert(Vector3.Angle(actors.EyeRay.GetPosition(1)-actors.EyeRay.GetPosition(0),current.gazeDirection)<.04f,
+                    "Seeking never double-applies quick correction");
+                renderer.ShowUnalignedGaze=true;renderer.Prepare(timeline,time);
+                var ray=(LineRenderer)typeof(TrialReplayRenderer).GetField("m_Ray",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(renderer);
+                Assert(renderer.GazeDrawn&&Vector3.Angle(ray.GetPosition(1)-ray.GetPosition(0),current.gazeUnalignedDirection)<.04f,
+                    "Before-alignment toggle renders the actual saved pre-correction direction");
+                Assert(renderer.UsingRecordedHead,"First-person camera still follows saved head pose");
+            }
+            timeline.Seek(2);actors.Prepare(timeline,2,false,true,true,true);renderer.Prepare(timeline,2);
+            Assert(!actors.EyeRay.enabled&&!renderer.GazeDrawn,"Replay never holds aligned or unaligned gaze across gaps");
+        }
+        var invalid=new TrialReplayRecord();observation.worldDirection=new Vector3(float.NaN,0,0);
+        TrialReplayGaze.Capture(invalid,observation,false,originFrame,rotationFrame);
+        Assert(invalid.gazeTracked==0&&!invalid.gazeUnalignedAvailable&&!invalid.gazeAlignmentApplied&&invalid.gazeDirection==Vector3.zero,
+            "Invalid recorded gaze stays a gap with no nonfinite geometry");
+        Debug.Log("TRIAL_REVIEW_QUICK_ALIGNMENT_PASS live fit -> capture -> JSON -> first/third person, exact origin, pre-alignment toggle, backwards seek, clearing and gaps");
+    }
     static void VerifyReadinessEyeRay()
     {
         var rows=new List<TrialReplayRecord>{
@@ -229,8 +303,12 @@ public static class TrialReviewBuild
             var moved=JsonUtility.FromJson<TrialReplayRecord>(original);moved.origin=new Vector3(10,2,-4);moved.originRotation=Quaternion.Euler(0,75,0);
             foreach(var o in moved.objects)o.position=moved.origin+moved.originRotation*o.position;
             environment.Prepare(moved,true,true);Assert(environment.Center==moved.origin&&Mathf.Abs(environment.Radius-3)<.001f,"Snapshot origin/rotation respected");
+            Assert(environment.DegreePositions.Length==8,"Eight degree labels");
+            for(int plane=0;plane<8;plane++)
+                Assert(Vector3.Distance(environment.DegreePositions[plane],moved.origin+moved.originRotation*(Quaternion.Euler(0,plane*45,0)*new Vector3(0,.43f,3)))<.001f,"Degree label follows saved layout rotation");
             environment.Prepare(new TrialReplayRecord{objects=Array.Empty<TrialReplayObject>()},true,true);
             Assert(!environment.WallsVisible&&!environment.RoomVisible,"No stale environment for absent layout");
+            Assert(environment.DegreePositions.Length==0,"Missing layout clears degree labels");
             environment.Prepare(null,true,true);Assert(!environment.RoomVisible,"Null trial safe");
             var unknown=JsonUtility.FromJson<TrialReplayRecord>(original);unknown.layout="unknown";
             environment.Prepare(unknown,true,true);Assert(!environment.WallsVisible&&environment.RoomVisible,"Do not invent octagonal walls for unknown layouts");

@@ -1,5 +1,12 @@
 # Gaze Contingency Project
 
+## Trial replay and live viewing
+
+The separate macOS **Trial Review** app opens saved 3D replay packages and offers
+a **Live Wi-Fi** mode for viewing and backing up headset runs wirelessly. See the
+[replay viewer README](tools/trial-review/README.md) for launching, wireless setup,
+required files, backup verification and reconstruction limits.
+
 ## Experimenter protocol
 
 **Current planning checkpoint (September 22):** [Meeting reconciliation, verified progress and next steps](docs/meeting-reconciliation-2026-09-22.md) · [GitHub project](https://github.com/users/PedroPovedaQ/projects/2). The requested comparison is preferred versus self-similar voice, with controller selection and passive gaze measurement. These changes remain implementation work.

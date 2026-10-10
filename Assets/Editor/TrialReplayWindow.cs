@@ -205,6 +205,8 @@ public sealed class TrialReplayWindow : EditorWindow
             EditorGUILayout.LabelField($"Raw gaze: {state.Sample?.gazeRecordingId ?? "unknown"} / {state.Sample?.gazeObservationSequence ?? -1}");
             EditorGUILayout.LabelField($"Head tracked: {state.Sample?.headTracked ?? -1} · gaze tracked: {state.Sample?.gazeTracked ?? -1} (-1 unknown)");
             EditorGUILayout.LabelField($"Gaze delivery age at sample: {state.Sample?.gazeDeliveryAge:F6}s · {state.Sample?.gazeInvalidReason}");
+            if (state.Sample?.gazeRayVersion == TrialReplayGaze.Version)
+                EditorGUILayout.LabelField($"Quick alignment: {state.Sample.gazeAlignmentStatus} · applied: {state.Sample.gazeAlignmentApplied} · yaw/pitch {state.Sample.gazeAlignmentYawDegrees:F2}°/{state.Sample.gazeAlignmentPitchDegrees:F2}° · {state.Sample.gazeAlignmentId}");
             EditorGUILayout.HelpBox("Last recorded values remain inspectable through gaps. Display freshness is not sensor-rate or fixation validation. Poses use the saved fixed recording origin.",MessageType.Info);
             EditorGUILayout.SelectableLabel(state.Sample == null ? "No sample recorded yet." : JsonUtility.ToJson(state.Sample,true),GUILayout.Height(180));
             EditorGUILayout.EndScrollView();

@@ -77,6 +77,7 @@ public sealed class TrialReplayRecorder : MonoBehaviour
             header.interactionPolicy = SessionConfig.InteractionPolicy; header.repeatEventVersion = SessionConfig.RepeatEventVersion;
             header.guidanceAuditVersion = SessionConfig.GuidanceAuditVersion;
             header.gazeLinkVersion = SessionConfig.GazeReplayLinkVersion;
+            header.gazeRayVersion = TrialReplayGaze.Version;
             header.neutralCatalogVersion = SessionConfig.NeutralCatalogVersion;
             header.origin = m_Origin; header.originRotation = m_OriginRotation;
             header.gazeRecordingPath = SharedGazeStream.Instance != null ? SharedGazeStream.Instance.RecordingPath : "";
@@ -251,24 +252,7 @@ public sealed class TrialReplayRecorder : MonoBehaviour
         if (head != null) { r.headPosition = Position(head.transform.position); r.headRotation = Rotation(head.transform.rotation); }
         var stream = SharedGazeStream.Instance;
         var gaze = stream != null ? stream.Latest : null;
-        r.gazeAvailable = gaze != null && gaze.deviceAvailable;
-        r.gazeTracked = stream != null && stream.TryGetValid(out _) ? 1 : 0;
-        if (gaze != null)
-        {
-            // Invalid device poses can contain NaN. Keep the explicit tracking gap
-            // without poisoning an otherwise readable reconstruction recording.
-            if (r.gazeTracked == 1)
-            {
-                r.gazeOrigin = Position(gaze.worldOrigin);
-                r.gazeDirection = Quaternion.Inverse(m_OriginRotation) * gaze.worldDirection;
-            }
-            r.gazeObservationSequence = gaze.sequence; r.gazeReceiptTime = gaze.receiptTime;
-            // Sequences are recording-local. The stream can reopen during a replay;
-            // never infer this identity from a header path captured at startup.
-            r.gazeRecordingId = gaze.recordingId;
-            r.gazeInputEventTime = gaze.inputEventTime; r.gazeDeliveryAge = gaze.ageSeconds;
-            r.gazeSource = gaze.source; r.gazeInvalidReason = gaze.invalidReason;
-        }
+        TrialReplayGaze.Capture(r, gaze, stream != null && stream.TryGetValid(out _), m_Origin, m_OriginRotation);
         r.xrOriginAvailable = m_XrOrigin != null;
         if (m_XrOrigin != null)
         { r.xrOriginPosition = Position(m_XrOrigin.transform.position); r.xrOriginRotation = Rotation(m_XrOrigin.transform.rotation); }

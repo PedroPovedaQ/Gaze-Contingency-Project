@@ -18,6 +18,24 @@ def sample(t, direction=None, **extra):
 
 
 class EyeQualityTests(unittest.TestCase):
+    def test_quick_alignment_exports_raw_selected_and_corrected_rays_separately(self):
+        row = sample(1, rawWorldDirection=dict(x=.03,y=.02,z=.99),
+                     unalignedWorldOrigin=dict(x=0,y=1.6,z=0),
+                     unalignedWorldDirection=dict(x=.03,y=.02,z=.99),
+                     worldOrigin=dict(x=0,y=1.6,z=0), alignmentId='quick-check',
+                     alignmentStatus='passed', alignmentApplied=True, alignmentYawDegrees=-2,
+                     alignmentPitchDegrees=-1)
+        output = flat(row)
+        self.assertEqual(output['rawWorldDirection_x'], .03)
+        self.assertEqual(output['unalignedWorldDirection_x'], .03)
+        self.assertEqual(output['worldDirection_x'], 0)
+        self.assertEqual(output['alignmentId'], 'quick-check')
+        self.assertEqual(output['alignmentYawDegrees'], -2)
+        invalid = flat(dict(row, valid=False, alignmentApplied=False))
+        self.assertIsNone(invalid['unalignedWorldDirection_x'])
+        self.assertIsNone(invalid['worldDirection_x'])
+        self.assertEqual(invalid['rawWorldDirection_x'], .03)
+
     def test_native_fallback_cannot_validate_untracked_ext_measurements(self):
         rows = [sample(1+i*.02, raySource='HTC_binocular_mean', tracked=False,
                        validationTargetPresent=True, validationId='check', validationSet='validation',

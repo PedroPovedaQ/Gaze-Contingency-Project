@@ -13,6 +13,27 @@ public class EyeGazeRayVisual : MonoBehaviour
     [SerializeField] bool m_FlipX = false;
 
     const string k_Tag = "[EyeGazeRay]";
+    LineRenderer m_Line;
+    XRInteractorLineVisual m_Visual;
+
+    void OnEnable() => Application.onBeforeRender += DrawSharedRay;
+    void OnDisable() => Application.onBeforeRender -= DrawSharedRay;
+
+    // Run after XRI's line update, preserving the existing wrist toggle but showing
+    // the same validity-aware, optionally aligned ray that drives study guidance.
+    // Never write to the interactor/TrackedPoseDriver transform.
+    [BeforeRenderOrder(10000)]
+    void DrawSharedRay()
+    {
+        if (m_Line == null || m_Visual == null || !m_Visual.enabled) return;
+        var stream = SharedGazeStream.Instance;
+        if (stream == null || !stream.TryGetValid(out var sample)) { m_Line.enabled = false; return; }
+        var end = sample.worldOrigin + sample.worldDirection * 10;
+        if (Physics.Raycast(sample.worldOrigin, sample.worldDirection, out var hit, 10, 1 << 8, QueryTriggerInteraction.Ignore))
+            end = hit.point;
+        m_Line.useWorldSpace = true; m_Line.positionCount = 2;
+        m_Line.SetPosition(0, sample.worldOrigin); m_Line.SetPosition(1, end); m_Line.enabled = true;
+    }
 
     void Awake()
     {
@@ -21,6 +42,7 @@ public class EyeGazeRayVisual : MonoBehaviour
         var lineRenderer = GetComponent<LineRenderer>();
         if (lineRenderer == null)
             lineRenderer = gameObject.AddComponent<LineRenderer>();
+        m_Line = lineRenderer;
 
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         lineRenderer.enabled = false; // gaze ray hidden by default
@@ -32,6 +54,7 @@ public class EyeGazeRayVisual : MonoBehaviour
         var lineVisual = GetComponent<XRInteractorLineVisual>();
         if (lineVisual == null)
             lineVisual = gameObject.AddComponent<XRInteractorLineVisual>();
+        m_Visual = lineVisual;
 
         lineVisual.lineWidth = 0.005f;
         lineVisual.overrideInteractorLineLength = true;

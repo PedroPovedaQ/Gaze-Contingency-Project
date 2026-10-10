@@ -13,6 +13,64 @@ public static class ControllerSelectionChecks
 {
     static void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
 
+    static void CheckHoverFeedback()
+    {
+        var host = new GameObject("HoverFeedbackFixture"); host.SetActive(false);
+        var obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        Material material = null;
+        try
+        {
+            var selector = host.AddComponent<ControllerRaySelector>();
+            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            var shine = typeof(ControllerRaySelector).GetMethod("Shine", flags);
+            var highlight = typeof(ControllerRaySelector).GetMethod("Highlight", flags);
+            var rotate = typeof(ControllerRaySelector).GetMethod("RotateHoveredObject", BindingFlags.Static | BindingFlags.NonPublic);
+            var renderer = obj.GetComponent<Renderer>();
+            material = new Material(AssetDatabase.LoadAssetAtPath<Shader>("Assets/MRTemplateAssets/Shaders/InteractablePrimitive.shadergraph"));
+            renderer.sharedMaterial = material;
+            Color original = new Color(.3f, .1f, .4f, .8f);
+            material.SetColor("_BaseColor", original);
+            var block = new MaterialPropertyBlock();
+            shine.Invoke(selector, new object[] { obj }); renderer.GetPropertyBlock(block);
+            Color lit = block.GetColor("_BaseColor");
+            Check(lit.r > original.r && lit.b > original.b && lit.a == original.a,
+                "Gaze shine brightens the surface and preserves alpha.");
+            Check(Mathf.Abs(lit.r / lit.b - original.r / original.b) < .001f && material.GetColor("_BaseColor") == original,
+                "Shine preserves hue and never edits the shared material.");
+            Check(block.GetColor("_EdgeHighlightColor").r > .9f, "Gaze-only shine has a bright gold rim.");
+            selector.ResetSelection(); renderer.GetPropertyBlock(block);
+            Check(block.GetColor("_BaseColor") == original && block.GetColor("_EdgeHighlightColor").a == 0,
+                "Departure/pause/reset removes surface shine and rim.");
+            highlight.Invoke(selector, new object[] { obj });
+            shine.Invoke(selector, new object[] { obj }); renderer.GetPropertyBlock(block);
+            Check(block.GetColor("_EdgeHighlightColor") == new Color(.7f,.87f,1f,1f),
+                "Controller blue rim wins while gaze still brightens the surface.");
+            selector.ResetSelection();
+            obj.transform.position = new Vector3(1,2,3); obj.transform.localScale = Vector3.one * .1f;
+            var position = obj.transform.position; var scale = obj.transform.localScale;
+            rotate.Invoke(null,new object[] { obj,true,.1f });
+            var rotation = obj.transform.rotation;
+            Check(Quaternion.Angle(Quaternion.identity,rotation) > 5 && obj.transform.position == position && obj.transform.localScale == scale,
+                "Right hover rotates in place without shifting or resizing the object.");
+            rotate.Invoke(null,new object[] { obj,false,.1f });
+            Check(Quaternion.Angle(rotation,obj.transform.rotation) < .001f,"Leaving the hitbox stops rotation in place.");
+            renderer.enabled = false;
+            rotate.Invoke(null,new object[] { obj,true,.1f });
+            shine.Invoke(selector,new object[] { obj }); renderer.GetPropertyBlock(block);
+            Check(Quaternion.Angle(rotation,obj.transform.rotation) < .001f && block.GetColor("_BaseColor") == original,
+                "Hidden pre-search and captured objects cannot animate or shine.");
+            renderer.enabled = true; obj.GetComponent<Collider>().enabled = false;
+            rotate.Invoke(null,new object[] { obj,true,.1f });
+            Check(Quaternion.Angle(rotation,obj.transform.rotation) < .001f,"Disabled hitbox cannot drive rotation.");
+            Debug.Log("[ControllerSelectionChecks] PASS: ring shine, hue/alpha restoration, controller rim priority, hover rotation and hidden-object guards.");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(host); UnityEngine.Object.DestroyImmediate(obj);
+            if (material != null) UnityEngine.Object.DestroyImmediate(material);
+        }
+    }
+
     [MenuItem("Tools/Codex/Check Controller Selection")]
     public static void Run()
     {
@@ -38,6 +96,8 @@ public static class ControllerSelectionChecks
         CheckRightRayPolicy();
         CheckSettingsLifecycle();
         CheckStationaryMenus();
+        CheckMixedRealityToggle();
+        CheckHoverFeedback();
 
         var obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
         obj.SetActive(false);
@@ -124,6 +184,45 @@ public static class ControllerSelectionChecks
         finally
         {
             UnityEngine.Object.DestroyImmediate(controlsObject); UnityEngine.Object.DestroyImmediate(rig); UnityEngine.Object.DestroyImmediate(handObject);
+        }
+    }
+
+    static void CheckMixedRealityToggle()
+    {
+        var previous = Camera.main;
+        var cameraObject = new GameObject("MixedRealityCamera", typeof(Camera));
+        var host = new GameObject("MixedRealityFixture"); host.SetActive(false);
+        try
+        {
+            if (previous != null) previous.tag="Untagged";
+            cameraObject.tag="MainCamera";
+            var camera=cameraObject.GetComponent<Camera>();
+            camera.clearFlags=CameraClearFlags.Skybox; camera.backgroundColor=Color.red;
+            var bridge=host.AddComponent<VivePassthrough>();
+            var features=host.AddComponent<UnityEngine.XR.Templates.MR.ARFeatureController>();
+            var flags=BindingFlags.Instance|BindingFlags.NonPublic;
+            typeof(VivePassthrough).GetMethod("BindFeatureController",flags).Invoke(bridge,new object[]{features});
+            features.onARPassthroughFeatureChanged.Invoke(true);
+            Check(bridge.PassthroughEnabled && camera.clearFlags==CameraClearFlags.SolidColor && camera.backgroundColor.a==0,
+                "Existing wrist toggle reveals transparent camera background for HTC underlay");
+            features.onARPassthroughFeatureChanged.Invoke(false);
+            Check(!bridge.PassthroughEnabled && camera.backgroundColor.a==1,"Wrist off makes the background opaque");
+            bridge.SetPassthroughEnabled(true);
+            Check(bridge.PassthroughEnabled && camera.backgroundColor.a==0,"Public passthrough API can enable mixed reality");
+            typeof(VivePassthrough).GetMethod("OnDisable",flags).Invoke(bridge,null);
+            Check(camera.clearFlags==CameraClearFlags.Skybox && camera.backgroundColor==Color.red,
+                "Disabling passthrough component restores previous camera settings");
+            features.onARPassthroughFeatureChanged.Invoke(false);
+            Check(bridge.PassthroughEnabled,"Disabled bridge removes its wrist listener");
+            typeof(VivePassthrough).GetMethod("OnEnable",flags).Invoke(bridge,null);
+            features.onARPassthroughFeatureChanged.Invoke(false);
+            Check(!bridge.PassthroughEnabled,"Reenabled bridge reconnects its wrist listener");
+            Debug.Log("[ControllerSelectionChecks] PASS: wrist mixed-reality bridge, camera transparency, off state, restoration and reenable; native layer needs device verification.");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(host); UnityEngine.Object.DestroyImmediate(cameraObject);
+            if(previous!=null) previous.tag="MainCamera";
         }
     }
 
