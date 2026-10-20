@@ -16,6 +16,9 @@ public static class DirectionalHintPolicy
     public const string PointingPhrase = "You're on it!";
     public const string LookingPhrase = "Yep, that's it!";
     public const string SelectionReminderPhrase = "Aim at it with your right controller and press the trigger.";
+    public const string TriggerReminderPhrase = "Press the right trigger to select it.";
+    public static string SelectionReminder(bool controllerOnTarget) => controllerOnTarget ? TriggerReminderPhrase : SelectionReminderPhrase;
+    public static bool IsSelectionReminder(string phrase) => phrase == SelectionReminderPhrase || phrase == TriggerReminderPhrase;
     public const double LookingHoldSeconds = .1;
     public const double LookingExitSeconds = .15;
     public const string UpLeftPhrase = "Look up and a little to your left.";
@@ -33,9 +36,9 @@ public static class DirectionalHintPolicy
             for (int i = 0; i < 3; i++) if (phrase == Progress(direction, i)) return true;
         return false;
     }
-    public const string Version = "gaze-directional-v23-explicit-continuations";
-    static readonly string[] k_AreaLead = { "Right area.", "This is the right area.",
-        "You're in the right area.", "Stay in this area." };
+    public const string Version = "gaze-directional-v24-prompt-events";
+    static readonly string[] k_AreaLead = { "Right area.", "Right here.",
+        "This area.", "Stay here." };
 
     // One prepared clip: there is no cadence delay between arrival and refinement.
     public static string AreaEntry(string direction, int index, float verticalFraction = 0) =>
@@ -200,6 +203,7 @@ public static class DirectionalHintPolicy
         foreach (var direction in new[] { LeftPhrase, RightPhrase, UpPhrase, DownPhrase, UpLeftPhrase, UpRightPhrase, DownLeftPhrase, DownRightPhrase })
             phrases.Add(ReturnToTarget(direction));
         phrases.Add(SelectionReminderPhrase);
+        phrases.Add(TriggerReminderPhrase);
         foreach (float yaw in new[] { -30f, 0f, 30f })
             foreach (float pitch in new[] { -20f, 0f, 20f }) phrases.Add(ReadinessReminder(yaw, pitch));
         return phrases.ToArray();

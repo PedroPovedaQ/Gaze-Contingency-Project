@@ -36,6 +36,7 @@ public sealed class TrialReplayRecord
     public Vector3 gazeUnalignedOrigin, gazeUnalignedDirection;
     public string guidanceDecisionId;
     public GuidanceDecision guidanceDecision;
+    public GuidanceStateSnapshot guidanceState;
     public float dwell, audioVolume = 0.7f;
     public string hoveredId, targetId, layout;
     public TrialReplayObject[] objects;

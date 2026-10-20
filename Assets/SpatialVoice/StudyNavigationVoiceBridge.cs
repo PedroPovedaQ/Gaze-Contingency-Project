@@ -15,22 +15,21 @@ namespace SpatialVoice
         FindObjectGameManager m_Game;
         CancellationTokenSource m_Pending;
         Func<bool> m_Relevant;
-        JevDecisionClient m_Decisions;
+        INavigationDecisionProvider m_Decisions;
         CancellationTokenSource m_Warmup;
         bool m_WarmupStarted;
         public bool IsSelecting => m_Pending != null;
-        public void Initialize(string gatewayKey, string elevenLabsKey, VoiceSynthesizer voice)
+        public void Initialize(string gatewayKey, string elevenLabsKey, VoiceSynthesizer voice, INavigationDecisionProvider decisionProvider = null)
         {
             m_Voice = voice;
-            var decisions = m_Decisions = new JevDecisionClient(gatewayKey);
+            var decisions = m_Decisions = decisionProvider ?? new JevDecisionClient(gatewayKey);
             decisions.Trace += m_Voice.RecordJevTrace;
             m_Voice.TransmissionAdvisor = decisions.Available ? decisions.ShouldTransmitAsync : null;
             m_Voice.InterruptionAdvisor = decisions.Available ? decisions.ShouldInterruptAsync : null;
             m_Game = GetComponent<FindObjectGameManager>();
             m_Navigation = gameObject.AddComponent<SpatialVoiceNavigationManager>();
             m_Navigation.Configure(gatewayKey, elevenLabsKey, () => SessionConfig.Voice == VoiceCondition.SelfSimilar
-                ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId, allowStreaming: false);
-            m_Navigation.DecisionTrace += m_Voice.RecordJevTrace;
+                ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId, allowStreaming: false, decisionProvider: decisions);
             m_Navigation.Diagnostic += status => m_Voice.RecordNavigationStatus(JsonUtility.ToJson(new CatalogEvent {
                 stage = "catalog", status = status, time = Time.realtimeSinceStartupAsDouble }));
         }
@@ -58,7 +57,7 @@ namespace SpatialVoice
             }
         }
         void OnDisable() { Cancel(); m_Warmup?.Cancel(); }
-        public void Cancel() { m_Pending?.Cancel(); }
+        public void Cancel() { m_Voice?.GuidanceScheduler.Cancel(GuidanceRequestKind.Catalog); }
 
         public bool TryRequest(Transform target, string route, Func<GuidanceSelection, bool> commit)
         {
@@ -77,8 +76,9 @@ namespace SpatialVoice
 
         async void StartRequest(Transform target, bool left, NavigationGeometry initial, Func<GuidanceSelection, bool> commit)
         {
-            using (var cancellation = new CancellationTokenSource())
+            using (var cancellation = m_Voice.GuidanceScheduler.Begin(GuidanceRequestKind.Catalog))
             {
+                var token = cancellation.Token;
                 var condition = SessionConfig.Voice;
                 string voiceId = condition == VoiceCondition.SelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId;
                 int round = m_Game.CurrentObjectiveIndex;
@@ -94,8 +94,8 @@ namespace SpatialVoice
                     string runtimeContext = m_Voice.CaptureTransmissionContext();
                     m_Voice.RecordNavigationStatus(runtimeContext);
                     var selection = await m_Navigation.ChooseGuidanceAsync(initial, "Coarse horizontal guidance; target wall not reached.",
-                        p => m_Voice.IsPreparedPhrase(p.text), cancellation.Token, runtimeContext);
-                    cancellation.Token.ThrowIfCancellationRequested();
+                        p => m_Voice.IsPreparedPhrase(p.text), token, runtimeContext);
+                    token.ThrowIfCancellationRequested();
                     if (selection != null && m_Relevant() && TryGeometry(target, out var current) &&
                         selection.Phrase.Matches(current.Angle, current.Distance) && m_Voice.IsPreparedPhrase(selection.Phrase.text))
                     {
@@ -106,7 +106,7 @@ namespace SpatialVoice
                 }
                 catch (OperationCanceledException) { }
                 catch (Exception e) { Debug.LogWarning("[SpatialVoice] Catalog selection failed: " + e.GetType().Name); }
-                finally { m_Pending = null; m_Relevant = null; }
+                finally { m_Voice.GuidanceScheduler.Complete(GuidanceRequestKind.Catalog, cancellation); m_Pending = null; m_Relevant = null; }
             }
         }
         void RecordDiscard(string id) => m_Voice.RecordJevTrace(new Newtonsoft.Json.Linq.JObject {

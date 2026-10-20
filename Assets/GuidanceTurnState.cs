@@ -20,6 +20,14 @@ public sealed class GuidanceTurnState
         return m_Route;
     }
 
+    // Async revalidation cannot change the route or consume progress.
+    public string Peek(float yaw, bool inside)
+    {
+        if (inside || Math.Abs(yaw) < 1) return null;
+        return m_Route == null || Math.Abs(yaw) < 150
+            ? (yaw >= 0 ? DirectionalHintPolicy.RightPhrase : DirectionalHintPolicy.LeftPhrase) : m_Route;
+    }
+
     public float Remaining(float yaw) => m_Route != null && Math.Abs(yaw) >= 150 &&
         (yaw >= 0) != (m_Route == DirectionalHintPolicy.RightPhrase) ? 360 - Math.Abs(yaw) : Math.Abs(yaw);
 

@@ -25,7 +25,7 @@ public partial class VoiceSynthesizer
     public bool TryGuidanceTransmission(string phrase, Func<bool> relevant, Action committed,
         string reason, string decisionId, bool? selectedSpeak = null, string selectionSource = null)
     {
-        if (!CanRequestGuidance(reason) || !IsPreparedPhrase(phrase) || !relevant()) return false;
+        if (!CanRequestGuidance(reason) || !IsPreparedPhrase(phrase) || !DirectionRepeatAllowed(phrase, reason) || !relevant()) return false;
         m_TransmissionPhrase = phrase;
         m_TransmissionCoroutine = StartCoroutine(ConsiderTransmission(phrase, relevant, committed, reason, decisionId, selectedSpeak, selectionSource));
         return true;
@@ -37,7 +37,7 @@ public partial class VoiceSynthesizer
     {
         var state = JObject.Parse(CaptureDecisionContext());
         double now = Time.realtimeSinceStartupAsDouble;
-        state["seconds_since_speech_ended"] = Math.Max(0, now - m_LastGuidanceEnd);
+        state["seconds_since_speech_ended"] = SpeechSilence(now);
         state["maximum_deferral_seconds"] = GuidanceSpeechPolicy.MaximumTransmissionDeferralSeconds;
         state["deferred_seconds"] = m_DeferredSince < 0 ? 0 : now - m_DeferredSince;
         state["locally_qualified"] = true;
@@ -55,7 +55,7 @@ public partial class VoiceSynthesizer
             SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId) && LibraryReady && relevant();
         yield return null; // Publish the handle before a synchronous response can complete.
         if (!Current()) { m_TransmissionCoroutine = null; m_TransmissionPhrase = null; yield break; }
-        var cancellation = new CancellationTokenSource();
+        var cancellation = GuidanceScheduler.Begin(GuidanceRequestKind.Transmission);
         m_TransmissionCancellation = cancellation;
         double started = Time.realtimeSinceStartupAsDouble;
         Task<bool> advice = null;
@@ -66,13 +66,19 @@ public partial class VoiceSynthesizer
             string state = new JObject { ["schema"] = "speech-transmission-v1", ["decision_id"] = id,
                 ["runtime"] = JObject.Parse(CaptureDecisionContext()), ["proposed_phrase"] = phrase,
                 ["proposed_semantics"] = JObject.FromObject(SpatialVoice.SpeechPhraseMetadata.Describe(phrase)),
-                ["reason"] = reason, ["seconds_since_speech_ended"] = Math.Max(0, started - m_LastGuidanceEnd),
+                ["reason"] = reason, ["seconds_since_speech_ended"] = SpeechSilence(started),
                 ["maximum_deferral_seconds"] = GuidanceSpeechPolicy.MaximumTransmissionDeferralSeconds,
                 ["deferred_seconds"] = m_DeferredSince < 0 ? 0 : started - m_DeferredSince,
                 ["locally_qualified"] = true }.ToString(Newtonsoft.Json.Formatting.None);
             Telemetry?.Invoke("transmission_state", "tip", "", state);
             cancellation.CancelAfter(TimeSpan.FromSeconds(GuidanceSpeechPolicy.AdviceDeadline));
-            if (selectedSpeak.HasValue)
+            if (GuidanceSpeechPolicy.IsPromptEvent(reason))
+            {
+                // Use the already qualified local event; still revalidate below and
+                // preserve the ordinary finish-phrase and post-playback gap rules.
+                outcome = "local_priority_event";
+            }
+            else if (selectedSpeak.HasValue)
             {
                 speak = selectedSpeak.Value;
                 outcome = selectionSource == "jev" ? (speak ? "speak" : "wait") : "local_fallback_catalog";
@@ -103,6 +109,9 @@ public partial class VoiceSynthesizer
                 if (Time.realtimeSinceStartupAsDouble - m_DeferredSince >= GuidanceSpeechPolicy.MaximumTransmissionDeferralSeconds)
                 { speak = true; outcome = "local_fallback_deferral_limit"; }
             }
+            // Applies even to provider failure, joint selection and deferral-limit fallback.
+            if (speak && !DirectionRepeatAllowed(phrase, reason))
+            { speak = false; outcome = "local_duplicate_suppressed"; }
             if (speak) m_DeferredSince = -1;
             Telemetry?.Invoke("transmission_decision", "tip", "", new JObject {
                 ["decision_id"] = id, ["phrase"] = phrase, ["outcome"] = outcome,
@@ -116,23 +125,23 @@ public partial class VoiceSynthesizer
             if (ReferenceEquals(m_TransmissionCancellation, cancellation))
             {
                 m_TransmissionCancellation = null;
-                cancellation.Cancel(); cancellation.Dispose();
+                GuidanceScheduler.Complete(GuidanceRequestKind.Transmission, cancellation);
                 m_TransmissionCoroutine = null; m_TransmissionPhrase = null;
             }
         }
         if (!speak || !Current() || !GuidanceReady || !IsPreparedPhrase(phrase)) yield break;
-        Speak(phrase, "tip", guidanceDecisionId: id);
-        committed?.Invoke();
+        Speak(phrase, "tip", guidanceDecisionId: id,
+            guidanceRelevant: () => relevant() && voice == SessionConfig.Voice && identity ==
+                (voice == VoiceCondition.SelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId),
+            guidanceCommitted: committed);
     }
 
     void CancelTransmission()
     {
         m_TransmissionEpoch++;
-        var cancellation = m_TransmissionCancellation;
         m_TransmissionCancellation = null;
-        cancellation?.Cancel();
+        GuidanceScheduler.Cancel(GuidanceRequestKind.Transmission);
         if (m_TransmissionCoroutine != null) StopCoroutine(m_TransmissionCoroutine);
-        cancellation?.Dispose();
         m_TransmissionCoroutine = null; m_TransmissionPhrase = null;
         m_WaitReason = null; m_WaitUntil = 0; m_DeferredSince = -1;
     }

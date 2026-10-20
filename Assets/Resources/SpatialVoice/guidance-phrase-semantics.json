@@ -907,7 +907,7 @@
       }
     },
     {
-      "text": "This is the right area. Look left.",
+      "text": "Right here. Look left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -927,7 +927,7 @@
       }
     },
     {
-      "text": "You're in the right area. Look left.",
+      "text": "This area. Look left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -947,7 +947,7 @@
       }
     },
     {
-      "text": "Stay in this area. Look left.",
+      "text": "Stay here. Look left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -987,7 +987,7 @@
       }
     },
     {
-      "text": "This is the right area. Look right.",
+      "text": "Right here. Look right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -1007,7 +1007,7 @@
       }
     },
     {
-      "text": "You're in the right area. Look right.",
+      "text": "This area. Look right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -1027,7 +1027,7 @@
       }
     },
     {
-      "text": "Stay in this area. Look right.",
+      "text": "Stay here. Look right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -1067,7 +1067,7 @@
       }
     },
     {
-      "text": "This is the right area. A little higher.",
+      "text": "Right here. A little higher.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -1087,7 +1087,7 @@
       }
     },
     {
-      "text": "You're in the right area. A little higher.",
+      "text": "This area. A little higher.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -1107,7 +1107,7 @@
       }
     },
     {
-      "text": "Stay in this area. A little higher.",
+      "text": "Stay here. A little higher.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -1147,7 +1147,7 @@
       }
     },
     {
-      "text": "This is the right area. A little lower.",
+      "text": "Right here. A little lower.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -1167,7 +1167,7 @@
       }
     },
     {
-      "text": "You're in the right area. A little lower.",
+      "text": "This area. A little lower.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -1187,7 +1187,7 @@
       }
     },
     {
-      "text": "Stay in this area. A little lower.",
+      "text": "Stay here. A little lower.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -1227,7 +1227,7 @@
       }
     },
     {
-      "text": "This is the right area. Right there.",
+      "text": "Right here. Right there.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -1247,7 +1247,7 @@
       }
     },
     {
-      "text": "You're in the right area. Right there.",
+      "text": "This area. Right there.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -1267,7 +1267,7 @@
       }
     },
     {
-      "text": "Stay in this area. Right there.",
+      "text": "Stay here. Right there.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -1307,7 +1307,7 @@
       }
     },
     {
-      "text": "This is the right area. A little higher and left.",
+      "text": "Right here. A little higher and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -1327,7 +1327,7 @@
       }
     },
     {
-      "text": "You're in the right area. A little higher and left.",
+      "text": "This area. A little higher and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -1347,7 +1347,7 @@
       }
     },
     {
-      "text": "Stay in this area. A little higher and left.",
+      "text": "Stay here. A little higher and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -1387,7 +1387,7 @@
       }
     },
     {
-      "text": "This is the right area. A little higher and right.",
+      "text": "Right here. A little higher and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -1407,7 +1407,7 @@
       }
     },
     {
-      "text": "You're in the right area. A little higher and right.",
+      "text": "This area. A little higher and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -1427,7 +1427,7 @@
       }
     },
     {
-      "text": "Stay in this area. A little higher and right.",
+      "text": "Stay here. A little higher and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -1467,7 +1467,7 @@
       }
     },
     {
-      "text": "This is the right area. A little lower and left.",
+      "text": "Right here. A little lower and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -1487,7 +1487,7 @@
       }
     },
     {
-      "text": "You're in the right area. A little lower and left.",
+      "text": "This area. A little lower and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -1507,7 +1507,7 @@
       }
     },
     {
-      "text": "Stay in this area. A little lower and left.",
+      "text": "Stay here. A little lower and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -1547,7 +1547,7 @@
       }
     },
     {
-      "text": "This is the right area. A little lower and right.",
+      "text": "Right here. A little lower and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -1567,7 +1567,7 @@
       }
     },
     {
-      "text": "You're in the right area. A little lower and right.",
+      "text": "This area. A little lower and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -1587,7 +1587,7 @@
       }
     },
     {
-      "text": "Stay in this area. A little lower and right.",
+      "text": "Stay here. A little lower and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -2027,7 +2027,7 @@
       }
     },
     {
-      "text": "This is the right area. Look higher.",
+      "text": "Right here. Look higher.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -2047,7 +2047,7 @@
       }
     },
     {
-      "text": "You're in the right area. Look higher.",
+      "text": "This area. Look higher.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -2067,7 +2067,7 @@
       }
     },
     {
-      "text": "Stay in this area. Look higher.",
+      "text": "Stay here. Look higher.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -2107,7 +2107,7 @@
       }
     },
     {
-      "text": "This is the right area. Look lower.",
+      "text": "Right here. Look lower.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -2127,7 +2127,7 @@
       }
     },
     {
-      "text": "You're in the right area. Look lower.",
+      "text": "This area. Look lower.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -2147,7 +2147,7 @@
       }
     },
     {
-      "text": "Stay in this area. Look lower.",
+      "text": "Stay here. Look lower.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -2187,7 +2187,7 @@
       }
     },
     {
-      "text": "This is the right area. Look higher and left.",
+      "text": "Right here. Look higher and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -2207,7 +2207,7 @@
       }
     },
     {
-      "text": "You're in the right area. Look higher and left.",
+      "text": "This area. Look higher and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -2227,7 +2227,7 @@
       }
     },
     {
-      "text": "Stay in this area. Look higher and left.",
+      "text": "Stay here. Look higher and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -2267,7 +2267,7 @@
       }
     },
     {
-      "text": "This is the right area. Look higher and right.",
+      "text": "Right here. Look higher and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -2287,7 +2287,7 @@
       }
     },
     {
-      "text": "You're in the right area. Look higher and right.",
+      "text": "This area. Look higher and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -2307,7 +2307,7 @@
       }
     },
     {
-      "text": "Stay in this area. Look higher and right.",
+      "text": "Stay here. Look higher and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -2347,7 +2347,7 @@
       }
     },
     {
-      "text": "This is the right area. Look lower and left.",
+      "text": "Right here. Look lower and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -2367,7 +2367,7 @@
       }
     },
     {
-      "text": "You're in the right area. Look lower and left.",
+      "text": "This area. Look lower and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -2387,7 +2387,7 @@
       }
     },
     {
-      "text": "Stay in this area. Look lower and left.",
+      "text": "Stay here. Look lower and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -2427,7 +2427,7 @@
       }
     },
     {
-      "text": "This is the right area. Look lower and right.",
+      "text": "Right here. Look lower and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -2447,7 +2447,7 @@
       }
     },
     {
-      "text": "You're in the right area. Look lower and right.",
+      "text": "This area. Look lower and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -2467,7 +2467,7 @@
       }
     },
     {
-      "text": "Stay in this area. Look lower and right.",
+      "text": "Stay here. Look lower and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -2907,7 +2907,7 @@
       }
     },
     {
-      "text": "This is the right area. Look way higher.",
+      "text": "Right here. Look way higher.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -2927,7 +2927,7 @@
       }
     },
     {
-      "text": "You're in the right area. Look way higher.",
+      "text": "This area. Look way higher.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -2947,7 +2947,7 @@
       }
     },
     {
-      "text": "Stay in this area. Look way higher.",
+      "text": "Stay here. Look way higher.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -2987,7 +2987,7 @@
       }
     },
     {
-      "text": "This is the right area. Look way lower.",
+      "text": "Right here. Look way lower.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -3007,7 +3007,7 @@
       }
     },
     {
-      "text": "You're in the right area. Look way lower.",
+      "text": "This area. Look way lower.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -3027,7 +3027,7 @@
       }
     },
     {
-      "text": "Stay in this area. Look way lower.",
+      "text": "Stay here. Look way lower.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "none",
@@ -3067,7 +3067,7 @@
       }
     },
     {
-      "text": "This is the right area. Look way higher and left.",
+      "text": "Right here. Look way higher and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -3087,7 +3087,7 @@
       }
     },
     {
-      "text": "You're in the right area. Look way higher and left.",
+      "text": "This area. Look way higher and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -3107,7 +3107,7 @@
       }
     },
     {
-      "text": "Stay in this area. Look way higher and left.",
+      "text": "Stay here. Look way higher and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -3147,7 +3147,7 @@
       }
     },
     {
-      "text": "This is the right area. Look way higher and right.",
+      "text": "Right here. Look way higher and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -3167,7 +3167,7 @@
       }
     },
     {
-      "text": "You're in the right area. Look way higher and right.",
+      "text": "This area. Look way higher and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -3187,7 +3187,7 @@
       }
     },
     {
-      "text": "Stay in this area. Look way higher and right.",
+      "text": "Stay here. Look way higher and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -3227,7 +3227,7 @@
       }
     },
     {
-      "text": "This is the right area. Look way lower and left.",
+      "text": "Right here. Look way lower and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -3247,7 +3247,7 @@
       }
     },
     {
-      "text": "You're in the right area. Look way lower and left.",
+      "text": "This area. Look way lower and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -3267,7 +3267,7 @@
       }
     },
     {
-      "text": "Stay in this area. Look way lower and left.",
+      "text": "Stay here. Look way lower and left.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "left",
@@ -3307,7 +3307,7 @@
       }
     },
     {
-      "text": "This is the right area. Look way lower and right.",
+      "text": "Right here. Look way lower and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -3327,7 +3327,7 @@
       }
     },
     {
-      "text": "You're in the right area. Look way lower and right.",
+      "text": "This area. Look way lower and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -3347,7 +3347,7 @@
       }
     },
     {
-      "text": "Stay in this area. Look way lower and right.",
+      "text": "Stay here. Look way lower and right.",
       "semantics": {
         "intent": "area_arrival",
         "horizontal": "right",
@@ -4203,6 +4203,22 @@
         "interruptPolicy": "finish",
         "requires": [
           "sustained_target_gaze"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Press the right trigger to select it.",
+      "semantics": {
+        "intent": "selection_reminder",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "target_acquired",
+        "interruptPolicy": "finish",
+        "requires": [
+          "sustained_target_gaze",
+          "controller_target_hit"
         ],
         "canBeSupersededBy": []
       }

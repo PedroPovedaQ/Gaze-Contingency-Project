@@ -399,6 +399,7 @@ public partial class VoiceAssistantController : MonoBehaviour
         // announce the round so the startup instructions remain audible.
         if (m_IntroPlayingOrQueued)
         {
+            m_HintGenerator?.SetLifecycle(GuidancePhase.Opening, "round_readiness");
             m_PendingRound = round;
             m_PendingRoundColor = color;
             m_PendingRoundShape = shape;
@@ -412,7 +413,7 @@ public partial class VoiceAssistantController : MonoBehaviour
 
         // Cross is visible now: start the next round instruction immediately.
         if (m_VoiceSynthesizer != null) m_VoiceSynthesizer.Stop();
-        if (m_HintGenerator != null) m_HintGenerator.CancelPending();
+        if (m_HintGenerator != null) { m_HintGenerator.CancelPending(); m_HintGenerator.SetLifecycle(GuidancePhase.Opening, "round_readiness"); }
 
         if (m_VoiceSynthesizer != null)
             m_VoiceSynthesizer.Speak(RoundPhrase(round, color, shape, m_GameManager != null && m_GameManager.IsPractice), "round");
@@ -435,7 +436,7 @@ public partial class VoiceAssistantController : MonoBehaviour
             m_PendingRoundColor = null;
             m_PendingRoundShape = null;
 
-            if (m_HintGenerator != null) m_HintGenerator.CancelPending();
+            if (m_HintGenerator != null) { m_HintGenerator.CancelPending(); m_HintGenerator.SetLifecycle(GuidancePhase.Opening, "round_readiness"); }
             m_VoiceSynthesizer.Speak(RoundPhrase(round, color, shape, m_GameManager != null && m_GameManager.IsPractice), "round");
         }
 

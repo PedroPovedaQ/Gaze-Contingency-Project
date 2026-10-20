@@ -4,6 +4,15 @@ public static class GuidanceSpeechPolicy
     public const double FadeSeconds = .150;
     public const double AdviceDeadline = .400;
     public const double MaximumTransmissionDeferralSeconds = 3;
+    public const double DuplicateDirectionGap = 3;
+    // Qualification and relevance remain owned by the gaze/controller state machine.
+    // Jev cannot add a second waiting period to these newly qualified events.
+    public static bool IsPromptEvent(string reason) => reason == "gaze_target_vicinity_hold" ||
+        reason == "controller_target_gaze_vicinity" || reason == "turn_progress_milestone" ||
+        reason == "gaze_target_plane" || reason == "stable_wall_entry" ||
+        reason == "sustained_target_selection_reminder";
+    public static bool IsOrdinaryDirection(string reason) => reason == "stable_direction" || reason == "catalog_turn";
+
     public const double InterruptionCooldown = 2.5;
     // Protect short phrases and their endings. Jev cannot override these local bounds.
     public static bool CanConsiderInterruption(bool acknowledgment, double elapsed, double remaining,

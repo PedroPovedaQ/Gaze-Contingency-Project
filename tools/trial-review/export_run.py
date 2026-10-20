@@ -15,6 +15,7 @@ sys.path.insert(0, str(ANALYSIS))
 from mega_csv import replay_rows
 from trial_csv import export, fingerprint
 from trial_column_dictionary import definition
+from guidance_eval import evaluate_recording
 
 
 # A projection of the authoritative trial export, not another measurement engine.
@@ -139,8 +140,13 @@ def generate(recording, root, name="", chosen=None, assigned_id="", dataset_id="
                 for row in rows:
                     writer.writerow({**labels, **row})
         condensed = write_condensed(package)
+        evaluation = evaluate_recording(recording, package)
         manifest.update(labels)
         manifest["condensed_export"] = condensed
+        manifest["guidance_evaluation"] = {
+            "file": "guidance-evaluation.json", "schema": evaluation["schema"],
+            "provenance": evaluation["provenance"], "summary": evaluation["summary"],
+            "human_ratings": "guidance-human-ratings.csv", "benchmark": "guidance-benchmark.jsonl"}
         (package / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
         (package / "README.txt").write_text(
             "trials.csv: one performance/subjective summary row per scheduled or recorded round.\n"
@@ -149,6 +155,9 @@ def generate(recording, root, name="", chosen=None, assigned_id="", dataset_id="
             "See manifest.json condensed_export for column definitions and scope. Keep trials.csv for quality/status and provenance.\n"
             "Condensed PID remains the recorded source ID; catalog reassignment is retained in trials.csv.\n"
             "Height delta is target minus head height, not cross-relative scheduled height. Subjective performance is unmapped and blank.\n"
+            "guidance-evaluation.json: automatic guidance evidence checks; not participant-perceived correctness.\n"
+            "guidance-human-ratings.csv: human review worksheet; unreviewed ratings stay blank.\n"
+            "guidance-benchmark.jsonl: recorded decision cases for subsequent model comparisons.\n"
             "participant_name, assigned_participant_id, dataset_id and dataset_name are local catalog metadata.\n"
             "participant_id and trial_id remain the original source identities.\n"
             "Blank values are unavailable, not zero. Surveys are included only when present in source data.\n"

@@ -112,7 +112,7 @@ public sealed partial class TrialReviewApp
         Panel(new Rect(0,top,rail,bottom-top));Panel(new Rect(width-inspector,top,inspector,bottom-top));
         float left=rail+14,viewWidth=width-inspector-14-left;
         m_OptionColumns=Mathf.Clamp(Mathf.FloorToInt(viewWidth/145),3,8);
-        float optionsHeight=Mathf.Ceil(10f/m_OptionColumns)*42+26;
+        float optionsHeight=Mathf.Ceil(11f/m_OptionColumns)*42+26;
         m_Viewport=new Rect(left,top+48,viewWidth,bottom-top-48-optionsHeight);
         CameraControls(new Rect(left,top,viewWidth,40));
         if(m_Timeline!=null)
@@ -250,9 +250,10 @@ public sealed partial class TrialReviewApp
         m_Renderer.RecordedHead=m_CameraMode==0;m_Renderer.Overhead=m_CameraMode==2;
         m_Renderer.ShowUnalignedGaze=recordedGaze;
         m_Renderer.Prepare(m_Timeline,m_Time,maxSequence:m_Sequence);
+        m_GuidanceState.Prepare(m_Timeline,m_Time,m_Sequence,WaitingForHeadset);
         m_Environment.Prepare(m_Timeline.State.Trial,m_ShowWalls,m_ShowRoom);
         m_Actors.Prepare(m_Timeline,m_Time,m_Renderer.RecordedHead,m_ShowBody,m_Renderer.ShowControllers,m_ShowEyeRay,m_Correction);
-        m_Vicinity.Prepare(m_Timeline,m_Renderer,m_Time,m_Sequence,m_Actors.GazeAvailable,m_Actors.GazeRay,m_ShowDetectionRing);
+        m_Vicinity.Prepare(m_Timeline,m_Renderer,m_Time,m_Sequence,m_Actors.GazeAvailable&&!WaitingForHeadset,m_Actors.GazeRay,m_ShowDetectionRing,m_GuidanceState.Current);
         if(!m_Renderer.RecordedHead&&m_Renderer.SampleCurrent&&TrialReplayRenderer.HeadUsable(m_Timeline.State.Sample))
             m_Renderer.Camera.transform.position+=m_Timeline.State.Sample.headPosition+Vector3.down*.5f;
         if(Event.current.type==EventType.Repaint)
@@ -269,6 +270,7 @@ public sealed partial class TrialReviewApp
             if(showDot)DrawGazeDot(gazePoint);
         }
         DrawDegrees();
+        DrawStateMarkers();
         DrawSubtitles();
         if(m_Renderer.RecordedHead&&!m_Renderer.UsingRecordedHead)GUI.Label(new Rect(m_Viewport.x+12,m_Viewport.y+12,m_Viewport.width-24,30),"Head pose unavailable · overview shown",m_Heading);
         m_ShowEyeRay=ViewToggle(0,m_ShowEyeRay,recordedGaze?"Eye gaze":m_Correction.Supported?"Corrected gaze":"Eye ray (display)");
@@ -281,8 +283,9 @@ public sealed partial class TrialReviewApp
         m_Renderer.ShowGaze=ViewToggle(7,m_Renderer.ShowGaze,recordedGaze?"Before alignment":"Raw gaze");
         m_ShowDetectionRing=ViewToggle(8,m_ShowDetectionRing,"Detection ring");
         m_ShowSubtitles=ViewToggle(9,m_ShowSubtitles,"Subtitles");
-        GUI.Label(new Rect(m_Viewport.x,m_Viewport.yMax+8+Mathf.Ceil(10f/m_OptionColumns)*42,m_Viewport.width,20),
-            $"Reconstructed scene · ring bounds estimated · padding {m_Vicinity.Padding:0.#}° ({(m_Vicinity.RecordedPadding?"recorded":"default")}) · right-drag to orbit",m_MutedLabel);
+        m_ShowStateMarkers=ViewToggle(10,m_ShowStateMarkers,"State markers");
+        GUI.Label(new Rect(m_Viewport.x,m_Viewport.yMax+8+Mathf.Ceil(11f/m_OptionColumns)*42,m_Viewport.width,20),
+            $"{(m_Vicinity.RecordedWinner?"Recorded highlight":"Reconstructed highlight (not recorded)")} · ring estimated · padding {m_Vicinity.Padding:0.#}° ({(m_Vicinity.RecordedPadding?"recorded":"default")})",m_MutedLabel);
         var e=Event.current;
         if(GUI.enabled&&m_Viewport.Contains(e.mousePosition)&&!m_Renderer.RecordedHead&&!WaitingForHeadset)
         {
@@ -337,18 +340,23 @@ public sealed partial class TrialReviewApp
     void Inspector(Rect rect)
     {
         GUILayout.BeginArea(rect);GUILayout.BeginHorizontal();
-        string[] tabs={"At cursor","Events","Final data","Jev"};
-        for(int i=0;i<tabs.Length;i++)if(GUILayout.Button(HelpContent(tabs[i]),m_Tab==i?m_ActiveChip:m_Chip)){m_Tab=i;m_InspectScroll=Vector2.zero;}
+        string[] tabs={"At cursor","Events","Final data","Jev","Evaluation"};
+        for(int i=0;i<tabs.Length;i++)
+        {
+            if(i==3){GUILayout.EndHorizontal();GUILayout.BeginHorizontal();}
+            if(GUILayout.Button(HelpContent(tabs[i]),m_Tab==i?m_ActiveChip:m_Chip)){m_Tab=i;m_InspectScroll=Vector2.zero;}
+        }
         GUILayout.EndHorizontal();GUILayout.Space(18);
         var state=m_Timeline.State;var trial=state.Trial;var sample=state.Sample;
-        if(m_Tab==3) JevInspector(trial);
+        if(m_Tab==4) EvaluationInspector(trial,rect.width);
+        else if(m_Tab==3) JevInspector(trial);
         else if(m_Tab==1)
         {
             m_EventScroll=GUILayout.BeginScrollView(m_EventScroll);
             var track=m_Tracks.For(trial);
             if(track!=null)foreach(var r in track.Events)
             {
-                if(GUILayout.Button($"{Clock(r.time-trial.time)} · {EventName(r.kind)}\n{r.text ?? r.detail}",m_Row))
+                if(GUILayout.Button($"{Clock(r.time-trial.time)} · {EventName(r.kind)}\n{TrialReviewGuidanceState.Transition(r)}",m_Row))
                 {m_Playing=false;Seek(r.time,r.sequence);}
             }
             GUILayout.EndScrollView();
@@ -370,6 +378,7 @@ public sealed partial class TrialReviewApp
             m_InspectScroll=GUILayout.BeginScrollView(m_InspectScroll);
             GUILayout.Label(trial==null?"No trial":$"{(trial.practice?"Practice":"Trial")} {TrialNumber(trial):00}",m_Title);GUILayout.Space(14);
             Metric("Voice",Voice(trial?.voice));Metric("Study time",Clock(m_Time));Metric("Trial time",Clock(m_Time-(trial?.time??0)));Metric("Search",state.Searching?"Active":"Inactive");
+            GuidanceInspector();
             GUILayout.Space(12);GUILayout.Label("TRACKING",m_Heading);GUILayout.Space(8);
             bool current=m_Renderer.SampleCurrent&&!WaitingForHeadset;
             Metric("Eye gaze",current&&TrialReplayRenderer.GazeUsable(sample)?"Valid ray":current?"Unavailable / invalid":"No current sample");
@@ -484,7 +493,7 @@ public sealed partial class TrialReviewApp
                 float x=X(record.time);Fill(new Rect(x,rect.y+83,3,12),m_Accent);
                 string label=x-lastLabel>125?EventName(record.kind):"";
                 if(label.Length>0)lastLabel=x;
-                if(GUI.Button(new Rect(x-3,rect.y+79,Mathf.Min(label.Length>0?122:8,rect.xMax-x+3),22),new GUIContent("  "+label,$"{Clock(record.time-start)} · {EventName(record.kind)}"),m_Small))
+                if(GUI.Button(new Rect(x-3,rect.y+79,Mathf.Min(label.Length>0?122:8,rect.xMax-x+3),22),new GUIContent("  "+label,$"{Clock(record.time-start)} · {EventName(record.kind)} · {TrialReviewGuidanceState.Transition(record)}"),m_Small))
                 {m_Playing=false;Seek(record.time,record.sequence);}
             }
         }

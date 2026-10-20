@@ -104,6 +104,7 @@ public sealed partial class TrialReviewApp
             case "Events": return "Recorded events for this trial. Click an entry to seek to it.";
             case "Final data": return "Final performance and survey values, not measurements at the cursor.";
             case "Jev": return "Requests, allowed answers, model probabilities and observed playback. Historical gaps remain unknown.";
+            case "Evaluation": return "Automatic evidence checks and separate Astra judgments. Model judgments are not participant ratings or ground truth.";
             case "Human model": return "Estimated body reconstruction anchored to recorded head/controller poses. It is not measured full-body tracking.";
             case "Walls": return "Show reconstructed search walls; this changes the viewer only.";
             case "Degrees": return "Show world-angle labels to inspect recorded turning and target placement.";
@@ -112,6 +113,7 @@ public sealed partial class TrialReviewApp
             case "Before alignment": case "Raw gaze": return "Show the available pre-alignment gaze ray for comparison; historical data is unchanged.";
             case "Corrected gaze": case "Eye ray (display)": return "Legacy gaze display reconstruction. Check provenance before interpreting its accuracy.";
             case "Detection ring": return "Target-vicinity overlay for inspection. Eligibility still depends on the recorded closest-object and validity rules.";
+            case "State markers": return "Labels captured direct gaze, vicinity winner and right-controller hits. Hidden for missing, stale or invalid state; never inferred from legacy geometry.";
             case "Subtitles": return "Show recorded speech text at the playhead, including when a saved audio file is missing.";
             case "Follow live": return "Follow the newest buffered headset recording. Scrubbing leaves live-follow mode.";
             case "Whole session": case "Selected trial": return "Switch timeline range between the complete recording and the current trial.";

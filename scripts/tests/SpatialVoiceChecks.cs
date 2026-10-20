@@ -252,8 +252,58 @@ partial class SpatialVoiceChecks
         Console.WriteLine("LIVE ElevenLabs: first_pcm_ms=" + firstAudio + ";complete_ms=" + timer.ElapsedMilliseconds +
             ";samples=" + pcm.Count + ";sample_rate=" + ElevenLabsPcmClient.SampleRate);
     }
+    sealed class FakeDecisionProvider : INavigationDecisionProvider
+    {
+        public bool Available => true;
+        public string Name => "fake";
+        public event Action<string> Trace;
+        public TaskCompletionSource<GuidanceSelection> Pending;
+        public NavigationPhrase Offered;
+        public bool BadChoice;
+        public int Calls;
+        public Task<NavigationPhrase> ChooseAsync(string state, IReadOnlyList<NavigationPhrase> candidates,
+            CancellationToken cancellation, int timeoutMilliseconds = GuidanceSpeechPolicy.CatalogChoiceDeadlineMilliseconds)
+        { Calls++; Offered=candidates[0]; Trace?.Invoke("fake_choice"); return Task.FromResult(BadChoice?new NavigationPhrase {id="not-offered",text="wrong"}:Offered); }
+        public Task<GuidanceSelection> ChooseGuidanceAsync(string state, IReadOnlyList<NavigationPhrase> candidates,CancellationToken cancellation)
+        { Calls++; Offered=candidates[0]; return Pending!=null?Pending.Task:Task.FromResult(new GuidanceSelection {Phrase=Offered,Speak=true,Source=Name}); }
+        public Task<bool> ShouldTransmitAsync(string state,CancellationToken cancellation)=>Task.FromResult(true);
+        public Task<bool> ShouldInterruptAsync(string state,CancellationToken cancellation)=>Task.FromResult(false);
+        public Task WarmAsync(CancellationToken cancellation)=>Task.CompletedTask;
+    }
+    static async Task CheckDecisionProviderSubstitution()
+    {
+        var fake=new FakeDecisionProvider();
+        var offered=new List<NavigationPhrase> {new NavigationPhrase {id="right",text="Look right."}};
+        var choice=await NavigationDecisionRequests.Choose(fake,"{}",offered,CancellationToken.None,true);
+        Check(fake.Calls==1&&choice.Phrase.id=="right"&&choice.Speak,"Injected provider is actually called with offered choices");
+        fake.BadChoice=true;
+        bool rejected=false;
+        try {await NavigationDecisionRequests.Choose(fake,"{}",offered,CancellationToken.None,false);}catch(FormatException){rejected=true;}
+        Check(rejected,"Local offered-set validation also protects against a non-Jev provider");
+        fake.BadChoice=false;fake.Pending=new TaskCompletionSource<GuidanceSelection>();
+        using(var cancellation=new CancellationTokenSource())
+        {
+            var request=NavigationDecisionRequests.Choose(fake,"{}",offered,cancellation.Token,true);
+            cancellation.Cancel(); fake.Pending.SetResult(new GuidanceSelection {Phrase=offered[0],Speak=true});
+            bool cancelled=false;try {await request;}catch(OperationCanceledException){cancelled=true;}
+            Check(cancelled,"A provider ignoring cancellation cannot publish a stale answer");
+        }
+    }
     static async Task Run()
     {
+        await CheckDecisionProviderSubstitution();
+        var exported = (JArray)JObject.Parse(System.IO.File.ReadAllText("Assets/Resources/SpatialVoice/guidance-phrase-semantics.json"))["phrases"];
+        var exportedTexts = new HashSet<string>();
+        foreach (var row in exported)
+        {
+            string text = (string)row["text"];
+            Check(exportedTexts.Add(text) && (string)row["semantics"]["intent"] != "unknown" &&
+                JToken.DeepEquals(row["semantics"], JToken.FromObject(SpeechPhraseMetadata.Describe(text))),
+                "Exported guidance meaning matches production: " + text);
+        }
+        foreach (var text in DirectionalHintPolicy.AllPhrases())
+            Check(exportedTexts.Contains(text), "Every prepared phrase has exported meaning: " + text);
+
         await ExtendedEncouragementChecks();
         var first = new RoundPerformance { measurementsAvailable=true,searchSeconds=12,guidanceStarts=2 };
         var candidates = RoundEncouragement.Candidates(first,null,_=>true);
@@ -296,7 +346,7 @@ partial class SpatialVoiceChecks
         Check((string)payload["state"] == "Target -45 degrees.", "state retained");
         foreach (var text in DirectionalHintPolicy.AllPhrases())
             Check(SpeechPhraseMetadata.Describe(text).intent != "unknown", "authored metadata exists: " + text);
-        var arrivalMetadata = SpeechPhraseMetadata.Describe("You're in the right area. A little lower.");
+        var arrivalMetadata = SpeechPhraseMetadata.Describe("Right area. A little lower.");
         Check(arrivalMetadata.horizontal == "none" && arrivalMetadata.vertical == "down", "right area is not a right-turn command");
         Check(SpeechPhraseMetadata.Describe("Go back down and left.").horizontal == "left", "authored diagonal return direction");
         Check(SpeechPhraseMetadata.Describe("Yep, that's it!").interruptPolicy == "finish", "confirmation is protected metadata");

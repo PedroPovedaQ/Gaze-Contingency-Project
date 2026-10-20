@@ -38,7 +38,7 @@ def prepare(project):
     for name in ['TrialReplayData', 'TrialReplayGaze', 'TrialReplayState', 'TrialReplayFile', 'TrialReplayAudio']:
         (shared / (name + '.cs')).write_text(source('Assets/Replay/' + name + '.cs'))
     # Pure data/policy dependencies only; no recorders, bootstraps, credentials or XR.
-    for name in ['GuidanceDecision', 'GazeObservation', 'GazeQuickAlignment', 'GazeTargetHistory', 'DirectionalHintPolicy']:
+    for name in ['GuidanceDecision', 'GuidanceStateSnapshot', 'GazeObservation', 'GazeQuickAlignment', 'GazeTargetHistory', 'DirectionalHintPolicy']:
         (shared / (name + '.cs')).write_text(source('Assets/' + name + '.cs'))
 
     # Reuse the live angular policy and collider recipe, without session/XR dependencies.
@@ -117,7 +117,8 @@ def prepare(project):
     shutil.copyfile(HERE / 'export_run.py', assets / 'StreamingAssets/export_run.py')
     analysis = assets / 'StreamingAssets/Analysis'
     analysis.mkdir(exist_ok=True)
-    for name in ['trial_csv', 'trial_column_dictionary', 'mega_csv', 'motion_csv', 'trial_zones', 'tlx_scoring']:
+    for name in ['trial_csv', 'trial_column_dictionary', 'mega_csv', 'motion_csv', 'trial_zones', 'tlx_scoring',
+                 'guidance_eval', 'guidance_audit', 'eye_quality', 'guidance_codex_judge']:
         (analysis / (name + '.py')).write_text(source('analysis/' + name + '.py'))
     notices = assets / 'StreamingAssets/ThirdPartyNotices'
     notices.mkdir(parents=True, exist_ok=True)

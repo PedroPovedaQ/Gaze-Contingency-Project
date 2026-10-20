@@ -19,6 +19,7 @@ public sealed partial class TrialReviewApp
     {
         m_ParticipantName=PlayerPrefs.GetString(NameKey,"");
         m_RunCsvFolder="";m_StudyDataFolder="";m_RunCsvStatus="";
+        m_Evaluation=null;m_Judge=null;m_JudgeFolder="";m_JudgeStatus="";m_EvaluationError="";m_JudgeRequested=false;m_EvaluationFolder="";
         InitializeCatalog();
         m_RunCsvRequested=true;
     }
@@ -48,7 +49,13 @@ public sealed partial class TrialReviewApp
         string folder=process.StandardOutput.ReadToEnd().Trim(),errorText=process.StandardError.ReadToEnd().Trim();
         int code=process.ExitCode;process.Dispose();m_RunCsvProcess=null;
         if(m_Timeline!=timeline||m_ParticipantName!=participantName||AssignedParticipantId!=assignedId||DatasetName!=datasetName)yield break;
-        if(code!=0){m_RunCsvStatus="CSV export: "+errorText;yield break;}
+        if(code!=0)
+        {
+            m_RunCsvStatus="CSV export: "+errorText;
+            // Guidance depends on the recording itself, not a complete legacy
+            // schedule/summary pair. Keep the CSV failure visible and independent.
+            yield return GenerateGuidanceEvaluation(timeline);yield break;
+        }
         try
         {
             string hash=TrialReviewSummary.Hash(timeline.FilePath);
@@ -56,6 +63,7 @@ public sealed partial class TrialReviewApp
             var summary=new TrialReviewSummary(folder,timeline,hash);
             AttachGeneratedFiles(folder);
             m_RunCsvFolder=folder;m_RunCsvStatus="Ready: condensed whiteboard CSV, full run and per-round CSVs.";
+            LoadEvaluation(folder);
             if(!m_ViewLive){m_Hash=hash;m_Summary=summary;m_ExportPath=folder;}
         }
         catch(Exception error){m_RunCsvStatus="CSV validation: "+error.Message;}

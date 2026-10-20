@@ -1,8 +1,12 @@
 # Conversational voice guidance
 
-**Implemented locally, October 10, 2026 — v20.** Headset wearer validation remains necessary; durations and tolerances are pilot interaction settings, not validated fixations or perceptual thresholds.
+**Implemented locally, October 20, 2026 — v24.** Headset wearer validation remains necessary; durations and tolerances are pilot interaction settings, not validated fixations or perceptual thresholds.
 
 The opening direction plays before the objects appear and before search timing starts. The target remains hidden from the participant. Both voice conditions use the same guidance decisions and phrase library.
+
+**Implemented October 20:** [central guidance-state architecture](central-guidance-state-machine.md) now owns the qualification gates, action priority, recent-turn/target history and lifecycle transitions. `HintGenerator` remains the Unity adapter, split into observation and state/telemetry partial files while preserving its scene component identity. An injected `INavigationDecisionProvider` supplies conversational advice (Jev by default), and a shared `GuidanceRequestScheduler` owns pending request scopes and the unsounded cue. State changes cancel stale pending work; final geometry is checked immediately before audio starts, and gates are consumed only at actual playback. Already-playing audio still follows the established interruption policy.
+
+Replay and Jev receive the same `GuidanceStateSnapshot`. Trial Review distinguishes direct gaze hit, nearest vicinity winner and right-controller hit. Historical recordings do not receive inferred central phases. Non-spatial lifecycle states remain inspectable when pose sampling stops, while spatial markers still require a fresh sample.
 
 ## Outside the target wall
 
@@ -21,8 +25,8 @@ stateDiagram-v2
 ```
 
 - Actual object position determines shortest left/right direction, including its lateral offset on the wall. An exact seated-layout 0-to-180 tie chooses right; 180-to-0 chooses left. Near the rear seam, retain the opening/initial route until the remaining angle is below 150 degrees or the target wall is entered. This prevents +/-180 jitter reversing the instruction.
-- At 90 degrees or more remaining, say “Turn way left/right.” Each newly reached 45-degree remaining-error milestone can produce one varied continuation: “Keep going,” “That's it, keep turning,” or “Keep going that way.” Repeated crossings of a consumed milestone do not rearm it. Fast movement coalesces milestones instead of queueing stale cues.
-- Cues wait for available speech and the 0.6-second ordinary interval. Jev then chooses speak or wait from the current gaze, controller, progress and playback state. Without a configured advisor, a same-direction reminder without progress waits three seconds and names the direction. These gates mean no promise to speak at every wall boundary during a fast turn.
+- At 90 degrees or more remaining, say “Turn way left/right.” Each newly reached 45-degree remaining-error milestone can produce one varied continuation: “Keep going to the right,” “That's it, keep going right,” or “Keep going right” (with matching leftward variants). Repeated crossings of a consumed milestone do not rearm it. Fast movement coalesces milestones instead of queueing stale cues.
+- Cues wait for available speech and the 0.6-second ordinary interval. New milestones and stable arrivals use a local prepared phrase, without a second Jev speak/wait decision. Jev still advises ordinary directions. A reminder with the same semantic direction/magnitude waits three seconds after the preceding directional clip ends, including on timeout; actual direction changes and new milestones remain eligible. These gates mean no promise to speak at every wall boundary during a fast turn.
 - Stable arrival combines an area acknowledgment and the current refinement in one prepared clip. A recent wall departure gives the actual direction back rather than generic “go back.”
 
 ## Inside the target wall
@@ -48,7 +52,7 @@ Vertical wording uses the actual ray intersection height on the target wall: at 
 
 A recent target-winning gaze visit lasting at least 0.1 seconds arms departure memory. A continuous valid departure of at least 0.25 seconds permits “Go back down and left,” using current geometry. The memory expires two seconds after departure, has a six-second spoken-cue cooldown, and clears on invalid gaze or lifecycle reset. Returning to the target cancels a pending departure cue. This supplements the existing narrower observed-bearing-crossing history; it does not prove the person perceived the object.
 
-Target confirmation still requires the target to be the unique closest candidate among overlapping vicinities. A fresh exact right-controller hit held for one second plus target-winning gaze can say “You're on it!” A valid 0.15-second look-away rearms gaze confirmation; returning requires another 0.1-second hold. Blinks do not count as look-away. Continuous holding gets the once-per-trial trigger reminder instead of repeated confirmations.
+Target confirmation still requires the target to be the unique closest candidate among overlapping vicinities. A fresh exact right-controller hit held for one second plus target-winning gaze can say “You're on it!” A valid 0.15-second look-away rearms gaze confirmation; returning requires another 0.1-second hold. Blinks do not count as look-away. Continuous holding gets the once-per-trial trigger reminder instead of repeated confirmations. When the right controller already hits the target, say “Press the right trigger to select it”; otherwise include aiming. Recheck controller state before speaking. Qualified confirmations/reminders skip idle transmission advice but retain current evidence and playback gates.
 
 ## Speech scheduling and evidence
 

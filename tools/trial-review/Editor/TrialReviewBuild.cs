@@ -46,6 +46,8 @@ public static class TrialReviewBuild
         TrialReviewLiveChecks.Run(source);
         var timeline=TrialReplayFile.Read(source);
         TrialReviewVicinityChecks.Run(timeline);
+        TrialReviewGuidanceStateChecks.Run(timeline);
+        TrialReviewEvaluationChecks.Run();
         TrialReviewCatalogChecks.Run(timeline);
         TrialReviewGazeLineChecks.Run();
         TrialReviewInterfaceChecks.Run(timeline);

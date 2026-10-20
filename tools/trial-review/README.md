@@ -133,8 +133,10 @@ data tab imports performance/subjective CSVs from the exact recording.
 
 Offline mode opens copied/stopped `recording.jsonl` packages with their `audio/`
 folder; live mode adds wireless copying from the Vive. Neither mode launches the
-study, invokes voice providers, starts trials or uploads to external services. The build contains only synthetic example
-data; participant recordings stay outside the application bundle.
+study, synthesizes voices or starts trials. The optional Astra evaluation sends
+allowlisted decision evidence through Codex after processing; reconstruction itself
+runs locally. The build contains only synthetic example data, and participant
+recordings stay outside the application bundle.
 
 ## Build
 
@@ -459,3 +461,18 @@ cursor while still active; already-ended speech is not replayed out of sequence.
 This is buffered reconstruction of software playback, not acoustic onset
 measurement or a guaranteed zero-latency audio stream. New headset recordings
 require the updated app; older recordings remain compatible.
+
+### Guidance state at the cursor
+
+New recordings contain a captured guidance state on each sample and `guidance_state` transition events. The **At cursor** inspector shows the stage, preceding stage, transition reason, permitted action, revision, direct gaze hit, vicinity winner, and right-controller hit. **Events** and the timeline include state transitions; clicking an event seeks its exact sequence. State markers label reconstructed objects in orange (direct gaze), gold (captured vicinity winner), and blue (right controller). The State markers toggle hides these labels independently of ray visibility.
+
+Captured vicinity winners take precedence over geometry reconstructed by the viewer. Legacy recordings retain the previous reconstructed shine, explicitly labeled **not recorded**, and have no invented guidance state or state markers. “None” means a valid observation without a hit; invalid tracking, missing state, stale samples and a disconnected live headset are shown as unavailable. Seeking backward restores the snapshot at that cursor rather than preserving later state. Ring shape remains an estimated reconstruction even when its winner was recorded.
+# October 20: state inspection and evaluation
+
+**Implemented:** the At cursor inspector shows recorded central guidance state and separate gaze-hit, vicinity-winner and controller-hit markers. Legacy snapshots remain unavailable, not inferred. Lifecycle states can persist after the last pose sample; markers cannot.
+
+The **Evaluation** tab shows automatic checks, selected/proposed versus actually played phrases, and separately labeled Astra judgments. Run CSV processing creates the local evaluation, human-rating worksheet and request-only benchmark. Automatic Astra evaluation is enabled by default for this requested workflow and can be disabled in the tab. It uses saved Codex ChatGPT authentication, account limits and an explicit Astra request; the Mac needs internet access. It does not run in the headset guidance loop.
+
+If an older run lacks a complete schedule/summary pair, the full CSV export still reports that error. Guidance evaluation can process the recording independently; it does not fabricate missing performance rows or weaken CSV validation.
+
+Results are stored separately under `~/Documents/Trial Review Evaluations`, verified against the exact exported inputs, and linked to the dataset. Pending, failed and unavailable results never become passing scores. See [evaluation documentation](../../docs/research/guidance-evaluation.md) for provenance, privacy, caching, human review and training limitations. Launch with `--evaluation` to open that tab directly.

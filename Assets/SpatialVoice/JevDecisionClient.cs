@@ -20,7 +20,7 @@ namespace SpatialVoice
 
     /// <summary>Jev chooses wording, never geometry. Uses Vercel's TypeSafe-compatible contract,
     /// not the unverified api.jev.ai endpoint. No credentials or provider bodies in errors.</summary>
-    public sealed class JevDecisionClient
+    public sealed class JevDecisionClient : INavigationDecisionProvider
     {
         public const string Endpoint = "https://ai-gateway.vercel.sh/typesafe/v1/systemone";
         static readonly HttpClient Client = new HttpClient();
@@ -36,6 +36,7 @@ namespace SpatialVoice
             else Deliver();
         }
         readonly HttpClient m_Client;
+        public string Name => "jev";
         public bool Available => !string.IsNullOrWhiteSpace(m_Key);
         public JevDecisionClient(string apiKey, HttpClient client = null) { m_Key = apiKey; m_Client = client ?? Client; }
 

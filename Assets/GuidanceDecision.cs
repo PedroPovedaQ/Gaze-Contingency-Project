@@ -6,6 +6,7 @@ using System;
 public sealed class GuidanceDecision
 {
     public int schema = 1;
+    public GuidanceStateSnapshot guidanceState;
     // Optional target-bearing evidence for current and future audits. Empty on historical records.
     public bool targetGeometryAvailable;
     public float targetYawError, targetPitchError;

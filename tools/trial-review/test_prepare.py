@@ -24,6 +24,8 @@ class PrepareChecks(unittest.TestCase):
     def test_generated_project_has_no_study_bootstrap_or_editor_runtime(self):
         with tempfile.TemporaryDirectory() as directory:
             root = prepare(Path(directory))
+            self.assertTrue((root / 'Assets/SharedReplay/GuidanceStateSnapshot.cs').exists())
+            self.assertTrue((root / 'Assets/Runtime/TrialReviewGuidanceState.cs').exists())
             self.assertFalse((root / 'Assets/StreamingAssets/api_keys.json').exists())
             self.assertFalse((root / 'Assets/Scenes/GazeContingencyStudyScene.unity').exists())
             for source in (root / 'Assets/SharedReplay').glob('*.cs'):

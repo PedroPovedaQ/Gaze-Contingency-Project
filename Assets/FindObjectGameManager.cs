@@ -97,8 +97,8 @@ public class FindObjectGameManager : MonoBehaviour
         m_UI.ShowRoundAudioWait(false);
         m_ControllerSelector?.ResetSelection();
         m_UI.ResumeTimer();
-        OnSearchStarted?.Invoke(round);
         GetComponent<HintGenerator>()?.OnNewObjective();
+        OnSearchStarted?.Invoke(round);
     }
 
     public void TechnicalStop(string reason)
@@ -106,6 +106,7 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_TechnicallyStopped || m_State == GameState.Completed) return;
         m_SearchClock.Pause(Time.timeAsDouble);
         m_TechnicallyStopped = true; SearchActive = false;
+        GetComponent<HintGenerator>()?.SetLifecycle(GuidancePhase.Stopped, reason);
         GetComponent<VoiceAssistantController>()?.CancelSearchOpening();
         m_Readiness?.Cancel();
         if (m_StartAfterIntroCoroutine != null) { StopCoroutine(m_StartAfterIntroCoroutine); m_StartAfterIntroCoroutine = null; }
@@ -138,6 +139,7 @@ public class FindObjectGameManager : MonoBehaviour
             GetComponent<VoiceAssistantController>()?.CancelSearchOpening();
             m_OpeningDirectionReady = false; m_Readiness.ResetCharge(); m_UI.HideFixationCross();
         }
+        GetComponent<HintGenerator>()?.SetLifecycle(GuidancePhase.Paused, "researcher_pause");
         m_ResearcherPaused = true; SearchActive = false; m_SearchClock.Pause(Time.timeAsDouble);
         m_UI.PauseTimer(); m_ControllerSelector?.ResetSelection();
         GetComponent<VoiceSynthesizer>()?.Stop(); GetComponent<HintGenerator>()?.CancelPending();
@@ -155,13 +157,14 @@ public class FindObjectGameManager : MonoBehaviour
         m_ResearcherPaused = false;
         if (m_PausedDuringReadiness)
         {
+            GetComponent<HintGenerator>()?.SetLifecycle(GuidancePhase.Opening, "readiness_resumed");
             AnnouncementReady = false;
             m_Readiness.Show();
             GetComponent<VoiceAssistantController>()?.RepeatReadinessAnnouncement();
             OnCheckpoint?.Invoke("readiness_resumed"); return;
         }
         SearchActive = true; m_SearchClock.Resume(Time.timeAsDouble);
-        m_UI.ResumeTimer(); GetComponent<HintGenerator>()?.OnNewObjective();
+        m_UI.ResumeTimer(); GetComponent<HintGenerator>()?.OnNewObjective(resumed: true);
         OnCheckpoint?.Invoke("search_resumed");
     }
 
@@ -842,6 +845,7 @@ public class FindObjectGameManager : MonoBehaviour
             Debug.Log($"{k_Tag} Round {m_CurrentRound + 1} correct: {info.DisplayName}");
             m_SearchClock.Pause(Time.timeAsDouble);
             SearchActive = false;
+            GetComponent<HintGenerator>()?.SetLifecycle(GuidancePhase.Completed, "correct_target_selected");
             m_UI.PauseTimer();
             TargetCrumble.Play(obj, this);
             if (IsPractice)

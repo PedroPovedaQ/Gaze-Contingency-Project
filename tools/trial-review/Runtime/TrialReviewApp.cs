@@ -63,6 +63,7 @@ public sealed partial class TrialReviewApp : MonoBehaviour
             var firstDecision=m_Tracks.Jev.Decisions.FirstOrDefault(d=>d.TrialId==m_Timeline.State.Trial?.trialId);
             if(firstDecision!=null)m_SelectedJev=firstDecision.Id;
         }
+        if(Array.IndexOf(args,"--evaluation")>=0)m_Tab=4;
         InitializeLive(args);
     }
     public IEnumerator Open(string path)
@@ -107,6 +108,7 @@ public sealed partial class TrialReviewApp : MonoBehaviour
         if (m_LiveOutput != null) PollLive();
         m_Tracks.Refresh(m_Timeline);
         UpdateRunExport();
+        UpdateEvaluation();
         if (!m_Playing || m_Timeline == null || m_Loading) return;
         m_Time = Math.Min(m_Timeline.Duration, m_Time + Time.unscaledDeltaTime * m_Speed);
         m_Sequence = long.MaxValue;

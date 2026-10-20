@@ -49,6 +49,24 @@ class DesktopRunExportTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "modified"):
             export_run.generate(self.recording, self.output)
 
+    def test_guidance_evaluation_is_linked_and_does_not_invent_ratings(self):
+        folder = export_run.generate(self.recording, self.output)
+        report_path = folder / "guidance-evaluation.json"
+        report = json.loads(report_path.read_text())
+        self.assertEqual(report["provenance"]["recording_sha256"],
+                         export_run.fingerprint(self.recording)["sha256"])
+        self.assertEqual(report["summary"]["central_state_requests"], 0)
+        with (folder / "guidance-human-ratings.csv").open(newline="") as stream:
+            ratings = list(csv.DictReader(stream))
+        self.assertTrue(all(not row["appropriateness_1_5"] for row in ratings))
+        receipt = json.loads((folder / "desktop-export.json").read_text())
+        files = {row["file"]: row["sha256"] for row in receipt["files"]}
+        for name in ("guidance-evaluation.json", "guidance-human-ratings.csv", "guidance-benchmark.jsonl"):
+            self.assertEqual(files[name], export_run.fingerprint(folder / name)["sha256"])
+        report_path.write_text("{}")
+        with self.assertRaisesRegex(ValueError, "modified"):
+            export_run.generate(self.recording, self.output)
+
     def test_condensed_projection_missing_values_and_receipt(self):
         original = self.recording.read_bytes()
         folder = export_run.generate(self.recording, self.output, assigned_id="P020")

@@ -60,6 +60,8 @@ namespace SpatialVoice
                 if (direction != DirectionalHintPolicy.AlignedPhrase)
                     result[DirectionalHintPolicy.ReturnToTarget(direction)] = Direction(direction, "return_to_target");
             }
+            result[DirectionalHintPolicy.TriggerReminderPhrase] = new SpeechPhraseMetadata {
+                intent = "selection_reminder", stage = "target_acquired", requires = new[] { "sustained_target_gaze", "controller_target_hit" } };
             foreach (var direction in new[] { DirectionalHintPolicy.LeftPhrase, DirectionalHintPolicy.RightPhrase })
             {
                 result[DirectionalHintPolicy.Turn(direction, 180, 0)] = Direction(direction, "turn", "large");
@@ -102,6 +104,7 @@ namespace SpatialVoice
     [Serializable]
     public sealed class SpeechGuidanceEvidence
     {
+        public GuidanceStateSnapshot guidanceState;
         public bool valid, insideTargetWall, targetGazeQualified, controllerOnTarget, geometryAvailable, verticalMeasured;
         public bool wallEntryQualified, gazeWithinTargetVicinity, controllerEvidenceValid, controllerTargetHoldQualified;
         public bool vicinityAmbiguous, targetAcknowledged, targetReturnPending, continuationUsed;

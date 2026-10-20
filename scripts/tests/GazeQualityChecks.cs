@@ -91,6 +91,13 @@ class GazeQualityChecks
                 "Every cross reminder must be prepared for both voices");
         Check(Array.IndexOf(DirectionalHintPolicy.AllPhrases(), DirectionalHintPolicy.SelectionReminderPhrase) >= 0,
             "Selection reminder must be prepared before search");
+        Check(DirectionalHintPolicy.SelectionReminder(true) == DirectionalHintPolicy.TriggerReminderPhrase,
+            "An aimed controller gets trigger-only wording");
+        Check(DirectionalHintPolicy.SelectionReminder(false) == DirectionalHintPolicy.SelectionReminderPhrase,
+            "A controller off target still gets aiming instructions");
+        Check(Array.IndexOf(DirectionalHintPolicy.AllPhrases(), DirectionalHintPolicy.TriggerReminderPhrase) >= 0 &&
+            DirectionalHintPolicy.IsSelectionReminder(DirectionalHintPolicy.TriggerReminderPhrase),
+            "Trigger-only reminder is prepared and protected from interruption");
         Check(GazeQualityPolicy.IsFresh(true, 10, 10.05, .1), "fresh tracked sample");
         Check(!GazeQualityPolicy.IsFresh(false, 10, 10.05, .1), "invalid sample");
         Check(!GazeQualityPolicy.IsFresh(true, 10, 10.2, .1), "stale sample");

@@ -42,8 +42,31 @@ partial class VoiceIsolationChecks
         }
         return Math.Sqrt(power / speech);
     }
+    static void CheckGuidanceScheduler()
+    {
+        var scheduler=new GuidanceRequestScheduler();
+        var catalog=scheduler.Begin(GuidanceRequestKind.Catalog); var catalogToken=catalog.Token;
+        var transmit=scheduler.Begin(GuidanceRequestKind.Transmission); var transmitToken=transmit.Token;
+        var interrupt=scheduler.Begin(GuidanceRequestKind.Interruption); var interruptToken=interrupt.Token;
+        int commits=0; bool relevant=true;
+        scheduler.QueuePlayback(()=>relevant,()=>commits++);scheduler.CancelAll();
+        Check(catalogToken.IsCancellationRequested&&transmitToken.IsCancellationRequested&&interruptToken.IsCancellationRequested,
+            "One scheduler cancels catalog, transmission and interruption scopes on transition");
+        Check(!scheduler.PlaybackQueued&&commits==0,"Cancelling queued playback never consumes the guidance gate");
+        var older=scheduler.Begin(GuidanceRequestKind.Catalog);var newer=scheduler.Begin(GuidanceRequestKind.Catalog);var newerToken=newer.Token;
+        scheduler.Complete(GuidanceRequestKind.Catalog,older);
+        Check(!newerToken.IsCancellationRequested,"A late completion cannot cancel a newer request scope");
+        scheduler.QueuePlayback(()=>relevant,()=>commits++);relevant=false;
+        Check(!scheduler.TryTakePlayback(out var commit)&&commit==null&&commits==0,"Final queued relevance rejects stale geometry without consumption");
+        relevant=true;scheduler.QueuePlayback(()=>relevant,()=>commits++);
+        Check(scheduler.TryTakePlayback(out commit)&&commits==0,"Admission yields a commit callback but does not invoke it");
+        commit();scheduler.TryTakePlayback(out commit);
+        Check(commits==1&&commit==null,"Actual playback can consume a cue only once");
+        scheduler.CancelAll();
+    }
     static void CheckTransmission(VoiceSynthesizer synth, string phrase)
     {
+        CheckGuidanceScheduler();
         bool relevant = true; int commits = 0, calls = 0;
         void Begin() { synth.Stop(); Time.unscaledTime += 5; relevant = true; commits = calls = 0; }
         Begin();
@@ -64,14 +87,14 @@ partial class VoiceIsolationChecks
         Time.unscaledTime+=.61f;
         synth.TransmissionAdvisor=(state,token)=>System.Threading.Tasks.Task.FromResult(true);
         Check(synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","speak-id"),"Wait can be reconsidered after 0.6 seconds");
-        Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Current approval commits once");Drain(MonoBehaviour.LastRoutine);
+        Drain(MonoBehaviour.LastRoutine);Check(commits==0,"Approval alone does not consume a guidance gate");Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Current approval commits once");
         Begin();
         synth.TransmissionAdvisor=(state,token)=>System.Threading.Tasks.Task.FromResult(false);
         synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","deferral-first");Drain(MonoBehaviour.LastRoutine);
         Check(commits==0,"Initial wait is respected");
         Time.unscaledTime+=3.1f;
         synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","deferral-last");Drain(MonoBehaviour.LastRoutine);
-        Check(commits==1,"Repeated waits cannot starve locally qualified guidance");Drain(MonoBehaviour.LastRoutine);
+        Check(commits==0,"Approval alone does not consume a guidance gate");Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Repeated waits cannot starve locally qualified guidance");
         Begin();
         var pending = new System.Threading.Tasks.TaskCompletionSource<bool>();
         synth.TransmissionAdvisor=(state,token)=>pending.Task;
@@ -87,23 +110,56 @@ partial class VoiceIsolationChecks
         routine=MonoBehaviour.LastRoutine;routine.MoveNext();synth.ClearGuidanceEvidence();pending.SetResult(true);Drain(routine);
         Check(commits==0,"Clearing trial evidence invalidates pending approvals even without playback");
         Begin();pending=new System.Threading.Tasks.TaskCompletionSource<bool>();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","phase-transition-id");
+        routine=MonoBehaviour.LastRoutine;routine.MoveNext();synth.CancelPendingGuidance();pending.SetResult(true);Drain(routine);
+        Check(commits==0 && !synth.IsSpeaking,"Phase transition cancels a pending Jev answer without an explicit Stop");
+        var recordedState = new GuidanceStateSnapshot { phase="Refining", previousPhase="Turning", revision=5,
+            allowedAction="Arrival", gazeValid=true, gazeHitObjectId="distractor", vicinityWinnerObjectId="target", controllerHitObjectId="other" };
+        synth.GuidanceEvidence.guidanceState=recordedState;
+        var context=Newtonsoft.Json.Linq.JObject.Parse(synth.CaptureDecisionContext());
+        Check((string)context["evidence"]["guidanceState"]["phase"]=="Refining" &&
+            (long)context["evidence"]["guidanceState"]["revision"]==5 &&
+            (string)context["evidence"]["guidanceState"]["gazeHitObjectId"]=="distractor",
+            "Jev receives the same named state, revision and object IDs as recorded replay");
+        var audio=(AudioSource)typeof(VoiceSynthesizer).GetField("m_AudioSource",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(synth);
+        audio.HoldPlayback=true; int stopped=audio.StopCalls;
+        synth.CancelPendingGuidance();
+        Check(audio.HoldPlayback && audio.StopCalls==stopped,"Ordinary phase transition never cuts an already playing phrase");
+        audio.HoldPlayback=false;
+        Begin(); synth.TransmissionAdvisor=(state,token)=>System.Threading.Tasks.Task.FromResult(true);
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","queued-phase-id");
+        Drain(MonoBehaviour.LastRoutine);
+        Check(commits==0,"Accepted decision remains unconsumed before the deferred audio starts");
+        var queuedSpeech=MonoBehaviour.LastRoutine;
+        synth.CancelPendingGuidance(); Drain(queuedSpeech);
+        Check(commits==0&&!synth.IsSpeaking,"Phase change cancels queued speech, not just pending remote requests");
+        Begin();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","queued-stale-geometry-id");
+        Drain(MonoBehaviour.LastRoutine); relevant=false; Drain(MonoBehaviour.LastRoutine);
+        Check(commits==0&&!synth.IsSpeaking,"Changed geometry between admission and audio onset discards speech without consuming a gate");
+        Begin();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","queued-fresh-id");
+        Drain(MonoBehaviour.LastRoutine); Drain(MonoBehaviour.LastRoutine);
+        Check(commits==1,"Current queued guidance consumes exactly once at playback");
+        Begin();pending=new System.Threading.Tasks.TaskCompletionSource<bool>();
+        synth.TransmissionAdvisor=(state,token)=>pending.Task;
         synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","timeout-id");
-        Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Provider timeout uses locally valid prepared guidance");Drain(MonoBehaviour.LastRoutine);
+        Drain(MonoBehaviour.LastRoutine);Check(commits==0,"Approval alone does not consume a guidance gate");Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Provider timeout uses locally valid prepared guidance");
         Begin();
         synth.TransmissionAdvisor=(state,token)=>System.Threading.Tasks.Task.FromException<bool>(new InvalidOperationException("provider unavailable"));
         synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","failed-id");
-        Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Failed advice preserves locally valid guidance");Drain(MonoBehaviour.LastRoutine);
+        Drain(MonoBehaviour.LastRoutine);Check(commits==0,"Approval alone does not consume a guidance gate");Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Failed advice preserves locally valid guidance");
         Begin();
         synth.TransmissionAdvisor=(state,token)=> { calls++; throw new Exception("Must not make a second request"); };
         synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"catalog_turn","joint-speak",true,"jev");
-        Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==1,"Joint approval skips the second API call");Drain(MonoBehaviour.LastRoutine);
+        Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==0,"Joint approval waits for playback before consumption");Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==1,"Joint approval skips the second API call");
         Begin();
         synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"catalog_turn","joint-wait",false,"jev");
         Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==0,"Joint wait stays silent");
         Check(!synth.CanRequestGuidance("catalog_turn"),"Joint wait prevents another catalog request during cooldown");
         Time.unscaledTime+=3.1f;
         synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"catalog_turn","joint-deferral",false,"jev");
-        Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==1,"Joint waits retain bounded local fallback");Drain(MonoBehaviour.LastRoutine);
+        Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==0,"Joint approval waits for playback before consumption");Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==1,"Joint waits retain bounded local fallback");
         Begin();
         synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"catalog_turn","joint-stale",true,"jev");
         routine=MonoBehaviour.LastRoutine;relevant=false;Drain(routine);
@@ -111,8 +167,81 @@ partial class VoiceIsolationChecks
         Begin();synth.TransmissionAdvisor=null;
         Check(synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","local-id") && commits==0,
             "Offline transmission defers commitment until request telemetry can be recorded");
-        Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Offline transmission commits once");Drain(MonoBehaviour.LastRoutine);
+        Drain(MonoBehaviour.LastRoutine);Check(commits==0,"Approval alone does not consume a guidance gate");Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Offline transmission commits once");
         synth.Stop();Time.unscaledTime+=5;
+    }
+
+    // Replay-derived regressions: Run 20 had delayed confirmations/milestones,
+    // timeout repeats and silence measured from the previous trial's guidance.
+    static void CheckRun20Pacing(VoiceSynthesizer synth, string prepared)
+    {
+        var markEnd = typeof(VoiceSynthesizer).GetMethod("MarkGuidanceEnd", BindingFlags.Instance | BindingFlags.NonPublic);
+        void End(string context, string phrase)
+        {
+            Set(synth, "m_CurrentContext", context); Set(synth, "m_CurrentPhrase", phrase);
+            markEnd.Invoke(synth, null); Set(synth, "m_CurrentContext", null);
+        }
+        synth.Stop(); Time.unscaledTime += 5;
+        Set(synth, "m_LastSpeechEnd", null);
+        Check(Newtonsoft.Json.Linq.JObject.Parse(synth.CaptureTransmissionContext())["seconds_since_speech_ended"].Type ==
+            Newtonsoft.Json.Linq.JTokenType.Null, "Unknown speech age is null, never a synthetic hundreds-of-seconds interval");
+        foreach (var context in new[] { "guidance_opening", "setup", "congrats", "tip" })
+        {
+            End(context, prepared); Time.unscaledTime += 1.06f;
+            double silence = (double)Newtonsoft.Json.Linq.JObject.Parse(synth.CaptureTransmissionContext())["seconds_since_speech_ended"];
+            Check(Math.Abs(silence - 1.06) < .002, "Speech age includes actual completion of " + context);
+        }
+        foreach (var reason in new[] { "gaze_target_vicinity_hold", "controller_target_gaze_vicinity",
+            "turn_progress_milestone", "gaze_target_plane", "stable_wall_entry", "sustained_target_selection_reminder" })
+        {
+            synth.Stop(); Time.unscaledTime += 5;
+            int calls = 0, commits = 0; bool relevant = true;
+            synth.TransmissionAdvisor = (state, token) => { calls++; return System.Threading.Tasks.Task.FromResult(false); };
+            Check(synth.TryGuidanceTransmission(prepared, () => relevant, () => commits++, reason, "priority"), "Qualified event queues: " + reason);
+            float requested = Time.unscaledTime;
+            Drain(MonoBehaviour.LastRoutine);
+            Check(calls == 0 && commits == 0 && Time.unscaledTime - requested < .1f,
+                "Qualified event is queued without a second advisor decision, not yet consumed: " + reason);
+            Drain(MonoBehaviour.LastRoutine);
+            Check(commits == 1, "Qualified event commits when its audio actually starts: " + reason);
+            Check(!synth.TryGuidanceTransmission(prepared, () => true, () => commits++, reason, "gap"),
+                "Priority does not bypass the post-playback gap");
+            synth.Stop(); Time.unscaledTime += 5;
+            synth.TryGuidanceTransmission(prepared, () => relevant, () => commits++, reason, "stale-priority");
+            relevant = false; Drain(MonoBehaviour.LastRoutine);
+            Check(commits == 1, "Priority still discards stale evidence: " + reason);
+        }
+        // Give the prepared test clip an authored turn meaning; test both standalone
+        // timeout advice and the joint catalog path without making real API requests.
+        var original = SpatialVoice.SpeechPhraseMetadata.Describe(prepared);
+        SpatialVoice.SpeechPhraseMetadata.Register(prepared, SpatialVoice.SpeechPhraseMetadata.Describe("Turn way right."));
+        try
+        {
+            synth.Stop(); Time.unscaledTime += 5;
+            End("guidance_opening", prepared); Time.unscaledTime += .8f;
+            int commits = 0;
+            synth.TransmissionAdvisor = (state, token) => new System.Threading.Tasks.TaskCompletionSource<bool>().Task;
+            Check(!synth.TryGuidanceTransmission(prepared, () => true, () => commits++, "stable_direction", "timeout-repeat"),
+                "Timeout fallback cannot repeat an opening direction after only 0.8 seconds of silence");
+            Check(!synth.TryGuidanceTransmission(prepared, () => true, () => commits++, "catalog_turn", "joint-repeat", true, "jev"),
+                "Joint approval cannot bypass semantic repeat suppression");
+            SpatialVoice.SpeechPhraseMetadata.Register(prepared, SpatialVoice.SpeechPhraseMetadata.Describe("Turn way left."));
+            Check(synth.TryGuidanceTransmission(prepared, () => true, () => commits++, "stable_direction", "changed-direction"),
+                "Changed direction does not inherit same-direction suppression");
+            Drain(MonoBehaviour.LastRoutine); Check(commits == 0, "Timeout admission does not consume early");
+            Drain(MonoBehaviour.LastRoutine); Check(commits == 1, "Timeout still permits a genuinely changed current direction"); Time.unscaledTime += .8f;
+            Check(!synth.TryGuidanceTransmission(prepared, () => true, () => commits++, "stable_direction", "second-repeat"),
+                "Repeated fallback after playback is suppressed");
+            Time.unscaledTime += 2.21f;
+            Check(synth.TryGuidanceTransmission(prepared, () => true, () => commits++, "stable_direction", "later-reminder"),
+                "A stalled user can receive a reminder after three seconds of silence");
+            Drain(MonoBehaviour.LastRoutine); Check(commits == 1, "Timeout reminder remains pending until playback");
+            Drain(MonoBehaviour.LastRoutine); Check(commits == 2, "Timeout reminder remains available after cooldown"); Time.unscaledTime += .8f; synth.ClearGuidanceEvidence();
+            Check(synth.TryGuidanceTransmission(prepared, () => true, () => commits++, "stable_direction", "new-trial"),
+                "A new trial clears the preceding trial's direction history");
+            synth.Stop();
+        }
+        finally { SpatialVoice.SpeechPhraseMetadata.Register(prepared, original); synth.TransmissionAdvisor = null; synth.Stop(); Time.unscaledTime += 5; }
     }
 
     static void CheckSmoothInterruptions(VoiceSynthesizer synth, string next)
@@ -159,8 +288,9 @@ partial class VoiceIsolationChecks
         Time.unscaledTime = start + .149f; fade.MoveNext();
         Check(source.StopCalls == before, "Never stop before 150ms");
         Time.unscaledTime = start + .151f; fade.MoveNext();
-        Check(source.StopCalls == before+1 && source.VolumeAtStop == 0 && committed == 1, "Stop at zero before committing fresh correction");
+        Check(source.StopCalls == before+1 && source.VolumeAtStop == 0 && committed == 0, "Stop at zero; a queued correction has not consumed its gate");
         Check(Math.Abs(source.volume-.7f)<.001, "Next phrase restores normal gain");
+        Drain(MonoBehaviour.LastRoutine); Check(committed == 1, "Fresh correction commits only at replacement playback");
 
         Begin(); before=source.StopCalls;
         synth.TryAreaCorrection(next, () => relevant); pending.SetResult(false);
@@ -175,6 +305,12 @@ partial class VoiceIsolationChecks
         Check(synth.TryAreaCorrection(next, () => relevant, () => committed++), "Fresh correction can start");
         fade=MonoBehaviour.LastRoutine; fade.MoveNext(); relevant=false; Time.unscaledTime += .16f; fade.MoveNext();
         Check(committed==1 && !source.HoldPlayback, "Once fading, stop smoothly but discard a now-stale replacement");
+        Begin(); synth.TryAreaCorrection(next, () => relevant); pending.SetResult(true);
+        Check(synth.TryAreaCorrection(next, () => relevant, () => committed++), "Fresh correction can finish its fade");
+        fade=MonoBehaviour.LastRoutine; fade.MoveNext(); Time.unscaledTime += .16f; fade.MoveNext();
+        Check(committed==1, "Finished fade has not consumed the replacement's gate before audio onset");
+        var queuedCorrection=MonoBehaviour.LastRoutine; synth.CancelPendingGuidance(); Drain(queuedCorrection);
+        Check(committed==1 && !synth.IsSpeaking, "Phase change after fade cancels queued replacement without a false acknowledgment");
 
         Begin(); before=source.StopCalls;
         synth.InterruptIfAbout("tip"); fade=MonoBehaviour.LastRoutine; fade.MoveNext();
@@ -673,6 +809,7 @@ partial class VoiceIsolationChecks
                 Check(provider.Calls == 0 && UnityWebRequest.Requests.Count == 0, "correction needs no network");
                 synth.PlaybackFailed -= failure; synth.Telemetry -= telemetry;
                 CheckTransmission(synth, lazyPrompt);
+                CheckRun20Pacing(synth, lazyPrompt);
                 CheckSmoothInterruptions(synth, lazyPrompt);
             }
             var decisionEvents = new System.Collections.Generic.List<string>();

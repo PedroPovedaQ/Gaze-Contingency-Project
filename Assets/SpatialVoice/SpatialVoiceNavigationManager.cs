@@ -17,7 +17,7 @@ namespace SpatialVoice
         [SerializeField, Range(20, 200)] int m_PrebufferMilliseconds = 60;
         AudioSource m_Source;
         AudioClip m_Clip;
-        JevDecisionClient m_Decisions;
+        INavigationDecisionProvider m_Decisions;
         ElevenLabsPcmClient m_Speech;
         Func<string> m_VoiceId;
         CancellationTokenSource m_Lifetime, m_Request;
@@ -36,11 +36,11 @@ namespace SpatialVoice
         /// <summary>Keys are injected at runtime, never serialized into a scene or catalog.
         /// Deploy public clients through an authenticated credential broker.</summary>
         public void Configure(string gatewayKey, string elevenLabsKey, Func<string> voiceId,
-            NavigationPhraseDatabase database = null, bool allowStreaming = true)
+            NavigationPhraseDatabase database = null, bool allowStreaming = true, INavigationDecisionProvider decisionProvider = null)
         {
             Cancel();
             m_StreamingAllowed = allowStreaming;
-            m_Decisions = new JevDecisionClient(gatewayKey);
+            m_Decisions = decisionProvider ?? new JevDecisionClient(gatewayKey);
             m_Decisions.Trace += json => DecisionTrace?.Invoke(json);
             m_Speech = new ElevenLabsPcmClient(elevenLabsKey);
             m_VoiceId = voiceId;
@@ -170,13 +170,9 @@ namespace SpatialVoice
                 stateJson["decision_id"] = requestId;
                 state = stateJson.ToString(Newtonsoft.Json.Formatting.None);
                 try {
-                    if (decideTransmission)
-                    {
-                        var decision = await m_Decisions.ChooseGuidanceAsync(state, candidates, token);
-                        chosen = decision.Phrase; speak = decision.Speak;
-                    }
-                    else chosen = await m_Decisions.ChooseAsync(state, candidates, token);
-                    source = "jev";
+                    var decision = await NavigationDecisionRequests.Choose(m_Decisions, state, candidates, token, decideTransmission);
+                    chosen = decision.Phrase; speak = decision.Speak;
+                    source = m_Decisions.Name;
                 }
                 catch (Exception e) when (!token.IsCancellationRequested)
                 { source = "local_fallback_" + e.GetType().Name; }

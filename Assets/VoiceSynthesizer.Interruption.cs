@@ -9,7 +9,20 @@ public partial class VoiceSynthesizer
     [SerializeField] bool m_UseJevInterruptions = true;
     public Func<string, CancellationToken, Task<bool>> InterruptionAdvisor { private get; set; }
     public SpatialVoice.SpeechGuidanceEvidence GuidanceEvidence { get; private set; } = new SpatialVoice.SpeechGuidanceEvidence();
-    public void ClearGuidanceEvidence() { CancelTransmission(); GuidanceEvidence = new SpatialVoice.SpeechGuidanceEvidence(); }
+    public void ClearGuidanceEvidence() { CancelPendingGuidance(); m_LastDirectionKey = null; GuidanceEvidence = new SpatialVoice.SpeechGuidanceEvidence(); }
+    // Phase transitions invalidate requests, not a sentence already playing.
+    public void CancelPendingGuidance()
+    {
+        bool queued = GuidanceScheduler.PlaybackQueued;
+        GuidanceScheduler.CancelAll();
+        CancelTransmission(); CancelInterruptionAdvice();
+        if (queued && m_SpeakCoroutine != null && !IsSpeaking)
+        {
+            AudioTelemetry("guidance_decision_aborted", m_CurrentContext ?? "tip", m_ActiveClipKey ?? "", "reason=phase_changed_before_playback");
+            Stop(); // Only queued guidance: never stop an already playing sentence.
+        }
+    }
+    public void RecordGuidanceState(string json) => Telemetry?.Invoke("guidance_state", "tip", "", json);
     string m_SpeechStartStage = "unknown";
     string m_LastSpokenPhrase;
 
@@ -54,7 +67,7 @@ public partial class VoiceSynthesizer
         (m_CurrentContext == "tip" || m_CurrentContext == "guidance_repeat") &&
         SpatialVoice.SpeechPhraseMetadata.Describe(m_CurrentPhrase).interruptPolicy == "replace_if_misleading" &&
         GuidanceSpeechPolicy.CanConsiderInterruption(GuidanceSpeechPolicy.IsAcknowledgment(m_CurrentPhrase) ||
-            m_CurrentPhrase == DirectionalHintPolicy.SelectionReminderPhrase,
+            DirectionalHintPolicy.IsSelectionReminder(m_CurrentPhrase),
             m_AudioSource.time, SpeechRemaining,
             Time.realtimeSinceStartupAsDouble, m_LastSmoothInterruption);
 
@@ -81,7 +94,7 @@ public partial class VoiceSynthesizer
         m_AdviceAttemptGeneration = m_PlaybackGeneration;
         m_AdvicePhrase = phrase; m_AdviceReason = reason; m_AdviceRelevant = stillRelevant;
         m_AdviceStarted = Time.realtimeSinceStartupAsDouble;
-        m_AdviceCancellation = new CancellationTokenSource();
+        m_AdviceCancellation = GuidanceScheduler.Begin(GuidanceRequestKind.Interruption);
         m_AdviceCancellation.CancelAfter(TimeSpan.FromSeconds(GuidanceSpeechPolicy.AdviceDeadline));
         string state = SpatialVoice.SpeechInterruptionState.Create(m_CurrentPhrase, phrase, reason,
             m_AudioSource.time, SpeechRemaining, GuidanceEvidence, m_CurrentContext, m_SpeechStartStage, CapturePlaybackState());
@@ -116,7 +129,7 @@ public partial class VoiceSynthesizer
 
     void CancelInterruptionAdvice()
     {
-        m_AdviceCancellation?.Cancel(); m_AdviceCancellation?.Dispose(); m_AdviceCancellation = null;
+        GuidanceScheduler.Cancel(GuidanceRequestKind.Interruption); m_AdviceCancellation = null;
         // Observe eventual faults even when a provider ignores cancellation. No Unity work here.
         if (m_Advice != null) _ = m_Advice.ContinueWith(t => { var ignored = t.Exception; },
             CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);

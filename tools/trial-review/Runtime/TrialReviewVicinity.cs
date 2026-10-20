@@ -18,9 +18,10 @@ public sealed class TrialReviewVicinity : IDisposable
     public bool RingVisible => m_Ring!=null&&m_Ring.enabled;
     public float Padding { get; private set; }=6;
     public bool RecordedPadding { get; private set; }
+    public bool RecordedWinner { get; private set; }
 
     public void Prepare(TrialReplayTimeline timeline,TrialReplayRenderer renderer,double time,long sequence,
-        bool gazeAvailable,Ray gaze,bool showRing)
+        bool gazeAvailable,Ray gaze,bool showRing,GuidanceStateSnapshot captured=null)
     {
         if(m_Timeline!=timeline){m_Timeline=timeline;m_Indexed=0;m_PaddingRecords.Clear();}
         while(m_Indexed<timeline.Records.Count)
@@ -56,6 +57,15 @@ public sealed class TrialReviewVicinity : IDisposable
         Physics.SyncTransforms(); // Collider bounds must follow this cursor's saved transforms, even when scrubbing backward.
         bool valid=state.Visible&&state.Searching&&renderer.SampleCurrent&&gazeAvailable;
         GameObject winner=valid?TrialReviewVicinityPolicy.ClosestObject(gaze.origin,gaze.direction,m_Objects,Padding,out _,out _,out _):null;
+        if(!TrialReviewGuidanceState.IsRecorded(captured))captured=null;
+        RecordedWinner=captured!=null;
+        if(captured!=null)
+        {
+            winner=null;
+            valid=valid&&captured.gazeValid;
+            if(valid&&!string.IsNullOrEmpty(captured.vicinityWinnerObjectId))
+                renderer.Objects.TryGetValue(captured.vicinityWinnerObjectId,out winner);
+        }
         WinnerId=winner!=null?winner.name:null;
         if(m_Ring!=null)m_Ring.enabled=false;
         var sample=renderer.SampleCurrent?state.Sample:null;
@@ -66,7 +76,9 @@ public sealed class TrialReviewVicinity : IDisposable
             Color color=renderer.ShowTarget&&saved.target?Color.green:saved.rgba;
             Color rim=Color.clear;
             if(valid&&winner==obj){color*=1.6f;color.a=saved.rgba.a;rim=new Color(1,.79f,.016f);}
-            if(state.Visible&&renderer.ShowControllers&&TrialReplayRenderer.ControllerUsable(sample?.rightController)&&sample.rightController.hoveredId==saved.id)
+            if(state.Visible&&renderer.SampleCurrent&&renderer.ShowControllers&&(captured!=null
+                ?captured.controllerValid&&captured.controllerHitObjectId==saved.id
+                :TrialReplayRenderer.ControllerUsable(sample?.rightController)&&sample.rightController.hoveredId==saved.id))
                 rim=new Color(.7f,.87f,1); // Controller rim retains priority, as in the study.
             if(state.Selection!=null&&state.Selection.objectId==saved.id&&time-state.Selection.time<=.3)color=Color.white;
             var material=obj.GetComponent<Renderer>().sharedMaterial;

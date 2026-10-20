@@ -6,7 +6,7 @@ using UnityEngine.XR;
 using Unity.XR.CoreUtils;
 
 /// <summary>Observes the study. Recording failures never change the live trial or its existing CSVs.</summary>
-[DefaultExecutionOrder(300)]
+[DefaultExecutionOrder(400)] // After guidance state and controller telemetry.
 public sealed class TrialReplayRecorder : MonoBehaviour
 {
     FindObjectGameManager m_Game;
@@ -256,6 +256,7 @@ public sealed class TrialReplayRecorder : MonoBehaviour
 
     void CapturePoses(TrialReplayRecord r)
     {
+        r.guidanceState = m_Game.GetComponent<HintGenerator>()?.CurrentStateSnapshot;
         r.searchActive = m_Game.SearchActive; r.visible = m_Game.SearchActive;
         var head = Camera.main;
         r.headAvailable = head != null;
@@ -346,7 +347,8 @@ public sealed class TrialReplayRecorder : MonoBehaviour
     {
         if (!m_HeaderWritten || m_Writer == null) return;
         var r = Record(kind); r.detail = context + ";" + detail;
-        if (kind == "guidance_decision")
+        if (kind == "guidance_state") r.guidanceState = JsonUtility.FromJson<GuidanceStateSnapshot>(detail);
+        else if (kind == "guidance_decision")
         {
             r.guidanceDecision = JsonUtility.FromJson<GuidanceDecision>(detail);
             r.guidanceDecisionId = r.guidanceDecision?.decisionId;

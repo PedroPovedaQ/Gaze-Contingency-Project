@@ -219,6 +219,22 @@ public partial class VoiceSynthesizer : MonoBehaviour
     public AudioClip ReplayClip => m_AudioSource != null ? m_AudioSource.clip : null;
     public bool IsBusy => m_TransmissionCoroutine != null || m_InterruptionCoroutine != null || m_SpeakCoroutine != null || IsSpeaking;
     double m_LastGuidanceEnd = -100;
+    double? m_LastSpeechEnd;
+    string m_LastDirectionKey;
+    double m_LastDirectionEnd = -100;
+    static string DirectionKey(string phrase)
+    {
+        var meaning = SpatialVoice.SpeechPhraseMetadata.Describe(phrase);
+        if (meaning.horizontal == "none" && meaning.vertical == "none") return null;
+        return meaning.horizontal + ":" + meaning.vertical + ":" + meaning.magnitude;
+    }
+    bool DirectionRepeatAllowed(string phrase, string reason) =>
+        !GuidanceSpeechPolicy.IsOrdinaryDirection(reason) || DirectionKey(phrase) == null ||
+        DirectionKey(phrase) != m_LastDirectionKey ||
+        Time.realtimeSinceStartupAsDouble - m_LastDirectionEnd >= GuidanceSpeechPolicy.DuplicateDirectionGap;
+    Newtonsoft.Json.Linq.JToken SpeechSilence(double now) => m_LastSpeechEnd.HasValue
+        ? new Newtonsoft.Json.Linq.JValue(Math.Max(0, now - m_LastSpeechEnd.Value))
+        : Newtonsoft.Json.Linq.JValue.CreateNull();
     bool m_LastGuidanceWasAcknowledgment;
     string m_CurrentPhrase;
     public bool GuidanceReady => GuidanceSpeechPolicy.CanStart(IsBusy,
@@ -226,8 +242,11 @@ public partial class VoiceSynthesizer : MonoBehaviour
 
     void MarkGuidanceEnd()
     {
-        if (m_CurrentContext != "tip" && m_CurrentContext != "guidance_repeat") return;
+        m_LastSpeechEnd = Time.realtimeSinceStartupAsDouble;
+        if (m_CurrentContext != "tip" && m_CurrentContext != "guidance_repeat" && m_CurrentContext != "guidance_opening") return;
         m_LastGuidanceEnd = Time.realtimeSinceStartupAsDouble;
+        m_LastDirectionKey = DirectionKey(m_CurrentPhrase);
+        m_LastDirectionEnd = m_LastGuidanceEnd;
         m_LastGuidanceWasAcknowledgment = GuidanceSpeechPolicy.IsAcknowledgment(m_CurrentPhrase);
     }
 
@@ -315,14 +334,17 @@ public partial class VoiceSynthesizer : MonoBehaviour
 
     void OnDisable() => Stop();
 
+    public GuidanceRequestScheduler GuidanceScheduler { get; } = new GuidanceRequestScheduler();
+
     public void Speak(string text, string context = null, VoiceCondition? requestedVoice = null,
-        string guidanceDecisionId = null)
+        string guidanceDecisionId = null, Func<bool> guidanceRelevant = null, Action guidanceCommitted = null)
     {
         // Identity and key checks happen inside the coroutine so prepared audio works offline.
         Stop();
         m_CurrentContext = context;
         m_CurrentPhrase = text;
         m_GuidanceDecisionId = guidanceDecisionId;
+        GuidanceScheduler.QueuePlayback(guidanceRelevant, guidanceCommitted);
         m_SpeakCoroutine = StartCoroutine(SpeakCoroutine(text, requestedVoice: requestedVoice));
     }
 
@@ -432,8 +454,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         Telemetry?.Invoke("audio_area_correction", "tip", oldClip,
             (decisionId == null ? "" : "decision_id=" + decisionId + ";") + reason +
             (faded ? ";fade_seconds=0.150" : ";fade_seconds=0"));
-        Speak(phrase, "tip", guidanceDecisionId: decisionId);
-        onCommitted?.Invoke();
+        Speak(phrase, "tip", guidanceDecisionId: decisionId, guidanceRelevant: stillRelevant, guidanceCommitted: onCommitted);
     }
 
     void AbandonCorrection(string reason)
@@ -481,6 +502,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         m_CurrentContext = null;
         m_CurrentPhrase = null;
         m_GuidanceDecisionId = null;
+        GuidanceScheduler.CancelPlayback();
     }
 
     public void InterruptIfAbout(string context, bool immediate = false)
@@ -520,9 +542,10 @@ public partial class VoiceSynthesizer : MonoBehaviour
         VoiceCondition? requestedVoice = null, bool silent = false, string requestedVoiceId = null)
     {
         int generation = m_PreparationGeneration;
+        long playbackGeneration = m_PlaybackGeneration;
         // Defer once so Speak has stored the coroutine handle before any early exit.
         yield return null;
-        if (generation != m_PreparationGeneration) yield break;
+        if (generation != m_PreparationGeneration || playbackGeneration != m_PlaybackGeneration) yield break;
         if (!silent) LastError = null;
         bool allowOnDemand = LibraryReady && m_OnDemandPhrases != null && m_OnDemandPhrases.Contains(text);
         bool wantSelfSimilar = (requestedVoice ?? SessionConfig.Voice) == VoiceCondition.SelfSimilar;
@@ -678,9 +701,19 @@ public partial class VoiceSynthesizer : MonoBehaviour
         m_AudioSource.volume = 0.7f;
         m_AudioSource.pitch = 1f;
         m_SpeechStartStage = GuidanceEvidence.valid ? (GuidanceEvidence.insideTargetWall ? "within_target_wall" : "outside_target_wall") : "unknown";
+        // The queued coroutine yielded after admission. Revalidate at the actual
+        // audio start; a departed gaze or changed phase must not consume its gate.
+        if (!GuidanceScheduler.TryTakePlayback(out var onGuidanceStarted))
+        {
+            AudioTelemetry("guidance_decision_aborted", m_CurrentContext ?? "tip", m_ActiveClipKey ?? "", "reason=stale_before_playback");
+            GuidanceScheduler.CancelPlayback();
+            m_ActiveClipKey = null;
+            yield break;
+        }
         m_LastSpokenPhrase = m_CurrentPhrase;
         m_AudioSource.Play();
         AudioTelemetry("audio_playback_start", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};effect_profile={InnerThoughtVoice.Profile(wantSelfSimilar)};text={m_PreparingText}");
+        onGuidanceStarted?.Invoke();
         while (m_AudioSource.isPlaying) yield return null;
         MarkGuidanceEnd();
         AudioTelemetry("audio_playback_end", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};text={m_PreparingText}");
