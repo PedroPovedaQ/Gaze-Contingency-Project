@@ -3729,15 +3729,17 @@
     {
       "text": "You're on it!",
       "semantics": {
-        "intent": "target_confirmation",
+        "intent": "controller_confirmation",
         "horizontal": "none",
         "vertical": "none",
         "magnitude": "unspecified",
         "stage": "target_acquired",
         "interruptPolicy": "finish",
         "requires": [
+          "fresh_valid_gaze",
           "controller_target_hit",
-          "qualified_target_gaze"
+          "qualified_controller_hold",
+          "gaze_in_target_vicinity"
         ],
         "canBeSupersededBy": []
       }

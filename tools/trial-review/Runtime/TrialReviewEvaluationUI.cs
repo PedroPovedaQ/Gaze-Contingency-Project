@@ -170,6 +170,8 @@ public sealed partial class TrialReviewApp
         }
         EvaluationMetric("Response median",Seconds(summary?["request_to_response_seconds"]?["median"]));
         EvaluationMetric("Playback median",Seconds(summary?["request_to_playback_seconds"]?["median"]));
+        EvaluationMetric("Confirmation sequence median",Seconds(summary?["qualification_to_playback_seconds"]?["median"]));
+        EvaluationMetric("Confirmation sequences over review budget",Text(summary?["confirmation_latency_reviews"]?["over_budget"]));
         GUILayout.Label("Software timing, not acoustic onset. Choice membership is not an accuracy score.",m_MutedLabel);
         GUILayout.Space(10);GUILayout.Label("ASTRA REVIEW",m_Heading);
         EvaluationMetric("Status",m_Judge==null?"Not evaluated":Text(m_Judge["status"]));
@@ -196,6 +198,15 @@ public sealed partial class TrialReviewApp
             EvaluationMetric("Selected / proposed",Text(row["phrase"]));
             EvaluationMetric("Recorded playback",Text(row["played_phrase"]));
             EvaluationMetric("Provider outcome",Text(row["response_status"]));
+            EvaluationMetric("Event",Text(row["event_type"]));
+            var episode=row["sequence_context"]?["confirmation_episode"];
+            if(episode!=null&&episode.Type!=JTokenType.Null)
+            {
+                EvaluationMetric("First qualified request → playback",Seconds(episode["qualification_to_playback_seconds"]));
+                EvaluationMetric("Sequence outcome",Text(episode["outcome"])+" · "+Text(episode["wait_count"])+" wait decisions");
+                EvaluationMetric("Latency review",Text(episode["latency_review"])+" · budget "+Seconds(episode["review_budget_seconds"]));
+                GUILayout.Label("Budget is an engineering review target. Timing starts at recorded qualification, not sensor onset. Missing playback remains unknown.",m_MutedLabel);
+            }
             if(row["checks"] is JArray checks)foreach(var check in checks)
                 GUILayout.Label(new GUIContent(Text(check["name"])+": "+Text(check["status"]),Text(check["detail"])),m_MutedLabel);
             var rating=TrialReviewEvaluation.Rating(m_Judge,(string)row["case_id"]);

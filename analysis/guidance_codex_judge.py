@@ -18,7 +18,7 @@ import subprocess
 import tempfile
 
 MODEL = "gpt-6-astra"
-RUBRIC_VERSION = "guidance-review-v1"
+RUBRIC_VERSION = "guidance-review-v2-sequences"
 RESULT_SCHEMA = "guidance-codex-judge-v1"
 DIMENSIONS = ("direction", "state_appropriateness", "timing", "repetition", "interruption")
 VERDICTS = ("correct", "incorrect", "unknown")
@@ -61,11 +61,32 @@ missing facts prevent a supported verdict. Do not invent target positions or tim
 'correct' means supported as appropriate in the available evidence, not globally optimal.
 Direction: chosen/proposed spatial language agrees with valid measured direction.
 State appropriateness: action fits current local stage, qualification and controller state.
+Use event_type and qualification_status to distinguish gaze_confirmation from
+controller_confirmation. Gaze confirmation acknowledges qualified looking; controller
+confirmation acknowledges a new qualified controller hold with valid gaze nearby.
+One after the other is not redundant just because both sound affirmative. Controller
+confirmation does NOT require a separate qualified gaze hold. In legacy data generic
+target_confirmation metadata may incorrectly require qualified_target_gaze; report the
+metadata conflict instead of assuming an invalid controller event.
 Timing: assess actual response/playback timing only with retrospective outcome evidence;
 request-only cases must be unknown. outcome.selected_or_proposed_phrase is not
 proof of spoken wording; only explicit played_phrase is recorded speech. Software timestamps are not acoustic onset or human delay.
+When sequence_context.confirmation_episode exists, assess the WHOLE episode including
+all waits and qualification_to_playback_seconds, not just this request's response time.
+A short final API response or being below maximum_deferral_seconds does not excuse
+accumulated delay. review_budget_seconds is an explicit engineering review target,
+not a validated human threshold. For an over-budget played episode, flag timing
+incorrect when repeated idle waits account for the delay; otherwise explain known
+blocking evidence or use unknown. Attribute episode delay to the chain, not every
+individual request. A brief first wait may be reasonable while the total is too long.
+Qualification begins at the first observed qualified request; do not invent an earlier
+sensor onset or infer continuous fixation between snapshots. Boundary-ended episodes
+without playback are unknown, not slow failures.
 Repetition: compare selected/proposed text with recorded recent speech; a single snapshot
-cannot establish a repeated-loop history. Interruption: judge actual interruption action
+cannot establish a repeated-loop history. sequence_context.recent_playback supplies
+actual same-trial history (last six starts within 15 seconds); proposals are not speech.
+Reacquisition and a change from gaze to controller confirmation can justify a new cue.
+Interruption: judge actual interruption action
 only when its observed answer and current speaking/remaining-duration evidence exist;
 otherwise unknown. A lack of events is not proof that no interruption occurred.
 When request-only evidence contains no proposed phrase, do not pretend an offered candidate
@@ -144,6 +165,33 @@ def _evidence_ids(case, decision):
     return sorted({x for x in ids if isinstance(x, str) and re.fullmatch(r"seq:\d+", x)})[:200]
 
 
+def _sequence_context(value):
+    """Allowlist compact retrospective history, never raw recordings or identifiers."""
+    if not isinstance(value, dict):
+        return {}
+    def clean(item, fields):
+        if not isinstance(item, dict):
+            raise ValueError("invalid_sequence_context")
+        result = {key: _scalar(item[key]) for key in fields if key in item}
+        result["evidence_ids"] = _evidence_ids(item, {})
+        return result
+    result = {"recent_playback": [clean(item, ("time", "phrase", "event_type"))
+                for item in value.get("recent_playback", [])[:6]]}
+    episode = value.get("confirmation_episode")
+    if isinstance(episode, dict):
+        result["confirmation_episode"] = clean(episode, (
+            "event_type", "first_qualified_request_time", "qualification_basis", "continuity",
+            "review_budget_seconds", "wait_count", "outcome",
+            "qualification_to_playback_seconds", "latency_review"))
+        attempts = episode.get("attempts", [])
+        if len(attempts) > 200:
+            raise ValueError("sequence_limit_exceeded")
+        result["confirmation_episode"]["attempts"] = [
+            clean(item, ("time", "phrase", "transmit", "response_status",
+                         "software_playback_seconds", "audio_idle")) for item in attempts]
+    return result
+
+
 def _sanitize(case, decision, number):
     payload = case.get("input", {}).get("payload", {})
     if isinstance(payload, str):
@@ -154,6 +202,15 @@ def _sanitize(case, decision, number):
               "state": _state(payload.get("state")), "questions": _questions(payload),
               "assessment_scope": "retrospective" if decision else "request_only"}
     if decision:
+        result["event_type"] = _scalar(decision.get("event_type"))
+        result["qualification_status"] = _scalar(decision.get("qualification_status"))
+        result["sequence_context"] = _sequence_context(decision.get("sequence_context"))
+        context = result["sequence_context"]
+        episode = context.get("confirmation_episode", {})
+        references = list(result["evidence_ids"]) + episode.get("evidence_ids", [])
+        for item in context.get("recent_playback", []) + episode.get("attempts", []):
+            references.extend(item["evidence_ids"])
+        result["evidence_ids"] = sorted(set(references))
         outcome = {key: _scalar(decision[key]) for key in ("response_status", "phrase", "played_phrase", "playback_status", "software_response_seconds", "software_playback_seconds") if key in decision}
         if "phrase" in outcome:
             outcome["selected_or_proposed_phrase"] = outcome.pop("phrase")

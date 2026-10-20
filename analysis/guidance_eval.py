@@ -11,6 +11,9 @@ from guidance_audit import audit, finite
 from mega_csv import replay_rows
 
 VERSION = "guidance-evaluation-v1"
+SEQUENCE_VERSION = "guidance-sequences-v1"
+# Engineering review threshold, not a validated perceptual/clinical cutoff.
+CONFIRMATION_REVIEW_SECONDS = 1.0
 RATING_FIELDS = ["rater_id", "appropriateness_1_5", "naturalness_1_5",
                  "timing_1_5", "rating_confidence", "preferred_choice", "notes"]
 CSV_FIELDS = ["case_id", "decision_id", "sourceTrialId", "trialId", "time",
@@ -127,6 +130,164 @@ def central_state_status(payload):
     return "recorded" if contains(payload.get("state")) else "unavailable_legacy_or_missing"
 
 
+def state_snapshot(state):
+    runtime = state.get("runtime") or {}
+    return runtime.get("guidanceState") or (runtime.get("evidence") or {}).get("guidanceState") or {}
+
+
+def event_type(state):
+    reason = state.get("reason")
+    action = state_snapshot(state).get("allowedAction")
+    if reason == "controller_target_gaze_vicinity" or action == "ConfirmPointing":
+        return "controller_confirmation"
+    if reason == "gaze_target_vicinity_hold" or action == "ConfirmGaze":
+        return "gaze_confirmation"
+    return "other"
+
+
+def qualification(state, kind):
+    snapshot = state_snapshot(state)
+    expected = "ConfirmGaze" if kind == "gaze_confirmation" else "ConfirmPointing"
+    if (snapshot.get("version") == "guidance-state-v1" and snapshot.get("phase")
+            and snapshot.get("allowedAction") == expected):
+        if snapshot.get("gazeValid") is True and (
+                kind == "gaze_confirmation" or snapshot.get("controllerValid") is True):
+            return "qualified"
+    gaze = state.get("runtime", {}).get("evidence", {})
+    fields = (["valid", "targetGazeQualified"] if kind == "gaze_confirmation" else
+              ["valid", "controllerEvidenceValid", "controllerOnTarget",
+               "controllerTargetHoldQualified", "gazeWithinTargetVicinity"])
+    values = [gaze.get(key) for key in fields]
+    if any(v is False for v in values):
+        return "unqualified"
+    return "qualified" if all(v is True for v in values) else "unknown"
+
+
+def add_sequence_context(decisions, replay):
+    """Retrospective event episodes; never feed future evidence into benchmark inputs.
+
+    Start at the first *recorded qualified request*, not guessed sensor onset. Only
+    exact decision-ID playback closes an episode successfully. Recorded invalidity,
+    disqualification, lifecycle boundaries and missing sample intervals break chains.
+    Sparse legacy evidence cannot establish continuous gaze qualification.
+    """
+    by_sequence = {row["sequence"]: row for row in decisions}
+    ambiguous = {row["decision_id"] for row in decisions if any(
+        c["name"] == "unique_request_identity" and c["status"] == "fail" for c in row["checks"])}
+    by_id = {row["decision_id"]: row for row in decisions if row["decision_id"] not in ambiguous}
+    active, episodes, history = {}, [], defaultdict(list)
+    last_sample = None
+    current_trial = None
+
+    def finish(kind, outcome, record=None):
+        episode, members = active.pop(kind)
+        episode["outcome"] = outcome
+        if record:
+            episode["evidence_ids"].append(evidence(record))
+        delay = (record["time"] - episode["first_qualified_request_time"]
+                 if outcome == "played" else None)
+        episode["qualification_to_playback_seconds"] = delay
+        episode["latency_review"] = ("unknown" if delay is None else
+            "over_budget" if delay > CONFIRMATION_REVIEW_SECONDS else "within_budget")
+        episode["evidence_ids"] = sorted(set(episode["evidence_ids"]))
+        for row in members:
+            row["sequence_context"]["confirmation_episode"] = episode
+        episodes.append(episode)
+
+    for record in replay:
+        trial = record.get("sourceTrialId") or record.get("trialId")
+        if trial != current_trial:
+            for kind in list(active):
+                finish(kind, "trial_changed", record)
+            current_trial, last_sample = trial, None
+        kind = record.get("kind")
+        if last_sample is not None and record["time"] - last_sample > .25:
+            for key in list(active):
+                finish(key, "observation_gap", record)
+        boundary = kind in ("search_paused", "application_paused", "selection", "trial",
+                            "transition", "end")
+        if boundary or (kind == "sample" and (record.get("gazeAvailable") is False
+                                             or record.get("gazeTracked") == 0)):
+            for key in list(active):
+                finish(key, "lifecycle_boundary" if boundary else "invalid_gaze", record)
+        if kind == "sample":
+            last_sample = record["time"]
+            snapshot = record.get("guidanceState") or {}
+            if snapshot.get("version") == "guidance-state-v1" and snapshot.get("phase"):
+                target = snapshot.get("targetObjectId")
+                for key in list(active):
+                    controller = key == "controller_confirmation"
+                    invalid = (snapshot.get("gazeValid") is False or
+                               controller and snapshot.get("controllerValid") is False)
+                    departed = (target and (
+                        snapshot.get("gazeValid") is True and "vicinityWinnerObjectId" in snapshot
+                        and snapshot["vicinityWinnerObjectId"] != target or
+                        controller and snapshot.get("controllerValid") is True
+                        and "controllerHitObjectId" in snapshot and snapshot["controllerHitObjectId"] != target))
+                    if invalid or departed:
+                        finish(key, "invalid_gaze" if invalid else "disqualified", record)
+        row = by_sequence.get(record["sequence"])
+        if row:
+            state = row["request_payload"].get("state", {})
+            state = state if isinstance(state, dict) else {}
+            if row["kind"] == "local":
+                local = record.get("guidanceDecision") or {}
+                state = {"reason": local.get("reason"), "runtime": {
+                    "guidanceState": local.get("guidanceState") or {}}}
+            row["event_type"] = event_type(state)
+            row["qualification_status"] = (qualification(state, row["event_type"])
+                if row["event_type"] != "other" else "unknown")
+            row["sequence_context"] = {
+                "version": SEQUENCE_VERSION,
+                "recent_playback": [h for h in history[trial][-6:]
+                                    if record["time"] - h["time"] <= 15],
+                "confirmation_episode": None}
+            if row["decision_id"] in ambiguous:
+                row["qualification_status"] = "unknown"
+        if identity(record) in ambiguous:
+            for key in list(active):
+                finish(key, "ambiguous_identity", record)
+            continue
+        if row:
+            for key in list(active):
+                if qualification(state, key) == "unqualified":
+                    finish(key, "disqualified", record)
+            event = row["event_type"]
+            if row["qualification_status"] == "qualified":
+                if event not in active:
+                    active[event] = (dict(
+                        event_type=event, first_qualified_request_time=row["time"],
+                        qualification_basis="first recorded qualified request; sensor onset unknown",
+                        continuity="observed request qualification only; not proof of continuous fixation",
+                        review_budget_seconds=CONFIRMATION_REVIEW_SECONDS,
+                        wait_count=0, attempts=[], evidence_ids=[]), [])
+                episode, members = active[event]
+                answer = row["answers"].get("transmit", {}).get("choice")
+                playback = state.get("runtime", {}).get("playback", {})
+                idle = (not playback["is_speaking"] and not playback["is_busy"]
+                        if all(isinstance(playback.get(k), bool)
+                               for k in ("is_speaking", "is_busy")) else None)
+                episode["wait_count"] += int(answer == "wait")
+                episode["attempts"].append(dict(
+                    time=row["time"], phrase=row["phrase"], transmit=answer,
+                    audio_idle=idle,
+                    response_status=row["response_status"],
+                    software_playback_seconds=row["software_playback_seconds"],
+                    evidence_ids=row["evidence_ids"]))
+                episode["evidence_ids"].extend(row["evidence_ids"])
+                members.append(row)
+        if kind == "audio_playback_start":
+            owner = by_id.get(identity(record))
+            event = owner.get("event_type", "other") if owner else "other"
+            if event in active and owner in active[event][1]:
+                finish(event, "played", record)
+            history[trial].append(dict(time=record["time"], phrase=record.get("text"),
+                event_type=event, evidence_ids=[evidence(record)]))
+    for key in list(active):
+        finish(key, "recording_ended")
+    return episodes
+
+
 def evaluate_recording(recording_path, output_directory):
     """Write three local artifacts and return the report. Never call a model or network.
 
@@ -214,6 +375,7 @@ def evaluate_recording(recording_path, output_directory):
                            requires_participant_mapping=needs_mapping),
                 input=dict(payload=payload), evidence_ids=[evidence(request)]))
     decisions.sort(key=lambda row: row["sequence"])
+    episodes = add_sequence_context(decisions, replay)
     # Reuse the contract auditor. Missing raw-eye input is unavailable evidence, never a failed sensor.
     consistency = audit({}, replay)
     missing_eye = [i for i in consistency["issues"] if i["code"] == "missing_exact_eye_observation"]
@@ -234,8 +396,14 @@ def evaluate_recording(recording_path, output_directory):
                                                           if r["kind"] == "local"),
                    response_status_counts=dict(Counter(r["response_status"] for r in decisions
                                                        if r["kind"] == "jev_request")),
+                   confirmation_sequence_count=len(episodes),
+                   confirmation_latency_reviews=dict(Counter(e["latency_review"] for e in episodes)),
+                   qualification_to_playback_seconds=stats(
+                       e["qualification_to_playback_seconds"] for e in episodes),
                    raw_eye_checks_unavailable=len(missing_eye), recording_consistency_issues=len(integrity))
+    provenance["sequence_evaluator_version"] = SEQUENCE_VERSION
     report = dict(schema=VERSION, provenance=provenance, summary=summary, decisions=decisions,
+                  confirmation_sequences=episodes,
                   consistency=dict(contract_supported=consistency["contract"], issues=integrity,
                                    raw_eye_status="not_supplied_use_guidance_audit_for_exact_observation_checks"),
                   warnings=warnings, replay_complete=consistency["replay_complete"],

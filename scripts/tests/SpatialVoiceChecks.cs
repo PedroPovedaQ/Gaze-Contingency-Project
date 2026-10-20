@@ -350,6 +350,10 @@ partial class SpatialVoiceChecks
         Check(arrivalMetadata.horizontal == "none" && arrivalMetadata.vertical == "down", "right area is not a right-turn command");
         Check(SpeechPhraseMetadata.Describe("Go back down and left.").horizontal == "left", "authored diagonal return direction");
         Check(SpeechPhraseMetadata.Describe("Yep, that's it!").interruptPolicy == "finish", "confirmation is protected metadata");
+        Check(SpeechPhraseMetadata.Describe(DirectionalHintPolicy.PointingPhrase).intent == "controller_confirmation" &&
+            Array.IndexOf(SpeechPhraseMetadata.Describe(DirectionalHintPolicy.PointingPhrase).requires, "qualified_controller_hold") >= 0 &&
+            Array.IndexOf(SpeechPhraseMetadata.Describe(DirectionalHintPolicy.PointingPhrase).requires, "qualified_target_gaze") < 0,
+            "Pointing confirmation describes controller hold plus vicinity, not a separate gaze hold");
         Check(SpeechPhraseMetadata.Describe("unrecognized text").intent == "unknown", "unknown wording never fabricates geometry");
         var structured = JObject.Parse(SpeechInterruptionState.Create("Go back down and left.", "Yep, that's it!",
             "gaze_target_vicinity_hold", 1, 2, new SpeechGuidanceEvidence { valid = true, targetGazeQualified = true }));

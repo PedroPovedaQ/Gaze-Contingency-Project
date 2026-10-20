@@ -195,15 +195,18 @@ partial class VoiceIsolationChecks
             "turn_progress_milestone", "gaze_target_plane", "stable_wall_entry", "sustained_target_selection_reminder" })
         {
             synth.Stop(); Time.unscaledTime += 5;
-            int calls = 0, commits = 0; bool relevant = true;
+            int calls = 0, commits = 0; bool relevant = true; float committedAt = -1;
             synth.TransmissionAdvisor = (state, token) => { calls++; return System.Threading.Tasks.Task.FromResult(false); };
-            Check(synth.TryGuidanceTransmission(prepared, () => relevant, () => commits++, reason, "priority"), "Qualified event queues: " + reason);
+            Check(synth.TryGuidanceTransmission(prepared, () => relevant,
+                () => { commits++; committedAt = Time.unscaledTime; }, reason, "priority"), "Qualified event queues: " + reason);
             float requested = Time.unscaledTime;
             Drain(MonoBehaviour.LastRoutine);
             Check(calls == 0 && commits == 0 && Time.unscaledTime - requested < .1f,
                 "Qualified event is queued without a second advisor decision, not yet consumed: " + reason);
             Drain(MonoBehaviour.LastRoutine);
             Check(commits == 1, "Qualified event commits when its audio actually starts: " + reason);
+            Check(committedAt - requested < .2f,
+                "Idle prepared event reaches playback within 0.2 simulated seconds even when advisor would wait: " + reason);
             Check(!synth.TryGuidanceTransmission(prepared, () => true, () => commits++, reason, "gap"),
                 "Priority does not bypass the post-playback gap");
             synth.Stop(); Time.unscaledTime += 5;

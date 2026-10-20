@@ -34,6 +34,36 @@ def fixture():
         row(4, 3, "end", complete=True)]
 
 
+def confirmation_sequence():
+    rows = [fixture()[0]]
+    for n, (time, choice) in enumerate(((10, "wait"), (11, "wait"), (12, "speak"))):
+        state = {"reason": "gaze_target_vicinity_hold", "proposed_phrase": "You've got it!",
+                 "runtime": {"evidence": {"valid": True, "targetGazeQualified": True},
+                             "playback": {"is_speaking": False, "is_busy": False}}}
+        for offset, stage in ((0, "request"), (1, "response")):
+            data = dict(request_id=f"d{n}", stage=stage)
+            if stage == "request":
+                data["payload"] = {"state": state, "questions": {
+                    "transmit": {"type": "choice", "criteria": {"speak": "", "wait": ""}}}}
+            else:
+                data.update(status="ok", answers={"transmit": {"choice": choice}})
+            rows.append(dict(fixture()[1], sequence=1+n*2+offset, time=time+offset*.2,
+                             detail="jev;" + json.dumps(data)))
+    rows.append(dict(fixture()[3], sequence=7, time=12.3, guidanceDecisionId="d2",
+                     text="You've got it!"))
+    rows.append(dict(fixture()[-1], sequence=8, time=13))
+    return rows
+
+
+def recovered_samples(rows):
+    rows.extend(dict(rows[0], time=tick/10, kind="sample",
+                     gazeAvailable=True, gazeTracked=1) for tick in range(106, 124))
+    rows.sort(key=lambda row: row["time"])
+    for sequence, row in enumerate(rows):
+        row["sequence"] = sequence
+    return rows
+
+
 class GuidanceEvaluationTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -208,6 +238,129 @@ class GuidanceEvaluationTests(unittest.TestCase):
         self.assertEqual(row["phrase"], "Look left.")
         self.assertIsNone(row["played_phrase"])
         self.assertEqual(row["playback_status"], "not_observed")
+
+    def test_sequence_delay_includes_both_waits_not_just_last_request(self):
+        report = self.evaluate(confirmation_sequence())
+        episode = report["confirmation_sequences"][0]
+        self.assertAlmostEqual(episode["qualification_to_playback_seconds"], 2.3)
+        self.assertEqual(episode["wait_count"], 2)
+        self.assertEqual(episode["latency_review"], "over_budget")
+        self.assertEqual(episode["outcome"], "played")
+        self.assertEqual(len(episode["attempts"]), 3)
+        for decision in report["decisions"]:
+            self.assertEqual(decision["sequence_context"]["confirmation_episode"], episode)
+        self.assertAlmostEqual(report["decisions"][-1]["software_playback_seconds"], .3)
+
+    def test_controller_confirmation_has_own_qualification_and_history(self):
+        rows = confirmation_sequence()
+        state = self.payload(rows[5])
+        state["payload"]["state"].update(reason="controller_target_gaze_vicinity",
+                                        proposed_phrase="You're on it!")
+        state["payload"]["state"]["runtime"]["evidence"] = dict(
+            valid=True, targetGazeQualified=False, controllerEvidenceValid=True,
+            controllerOnTarget=True, controllerTargetHoldQualified=True,
+            gazeWithinTargetVicinity=True)
+        self.replace_payload(rows[5], state)
+        report = self.evaluate(rows)
+        self.assertEqual(report["decisions"][-1]["event_type"], "controller_confirmation")
+        self.assertEqual(report["decisions"][-1]["qualification_status"], "qualified")
+        episode = report["decisions"][-1]["sequence_context"]["confirmation_episode"]
+        self.assertAlmostEqual(episode["qualification_to_playback_seconds"], .3)
+        self.assertEqual(episode["wait_count"], 0)
+        self.assertEqual(report["confirmation_sequences"][0]["outcome"], "disqualified")
+
+    def test_invalid_gaze_pause_and_new_trial_break_qualification_chain(self):
+        for kind in ("sample", "search_paused", "trial"):
+            with self.subTest(kind=kind):
+                rows = confirmation_sequence()
+                marker = dict(rows[0], sequence=3, time=10.5, kind=kind, gazeAvailable=False)
+                for row in rows[3:]:
+                    row["sequence"] += 1
+                rows.insert(3, marker)
+                report = self.evaluate(recovered_samples(rows))
+                episode = report["decisions"][-1]["sequence_context"]["confirmation_episode"]
+                self.assertAlmostEqual(episode["qualification_to_playback_seconds"], 1.3)
+                self.assertNotEqual(report["confirmation_sequences"][0]["outcome"], "played")
+
+    def test_missing_playback_does_not_become_slow_failure(self):
+        rows = confirmation_sequence()
+        del rows[-2]
+        report = self.evaluate(rows)
+        episode = report["confirmation_sequences"][0]
+        self.assertIsNone(episode["qualification_to_playback_seconds"])
+        self.assertEqual(episode["latency_review"], "unknown")
+
+    def test_available_device_with_untracked_gaze_breaks_episode(self):
+        rows = confirmation_sequence()
+        for row in rows[3:]:
+            row["sequence"] += 1
+        rows.insert(3, dict(rows[0], sequence=3, time=10.5, kind="sample",
+                            gazeAvailable=True, gazeTracked=0))
+        report = self.evaluate(recovered_samples(rows))
+        self.assertEqual(report["confirmation_sequences"][0]["outcome"], "invalid_gaze")
+        self.assertAlmostEqual(report["decisions"][-1]["sequence_context"]
+                               ["confirmation_episode"]["qualification_to_playback_seconds"], 1.3)
+
+    def test_recorded_snapshot_departure_breaks_episode(self):
+        for winner in ("distractor", ""):
+            with self.subTest(winner=winner):
+                rows = confirmation_sequence()
+                for row in rows[3:]:
+                    row["sequence"] += 1
+                rows.insert(3, dict(rows[0], sequence=3, time=10.5, kind="sample",
+                    gazeAvailable=True, gazeTracked=1, guidanceState={
+                        "version": "guidance-state-v1", "phase": "Refining", "gazeValid": True,
+                        "targetObjectId": "target", "vicinityWinnerObjectId": winner}))
+                report = self.evaluate(rows)
+                self.assertEqual(report["confirmation_sequences"][0]["outcome"], "disqualified")
+
+    def test_sample_gap_before_playback_does_not_wait_for_next_sample(self):
+        rows = confirmation_sequence()
+        for row in rows[3:]:
+            row["sequence"] += 1
+        rows.insert(3, dict(rows[0], sequence=3, time=10.25, kind="sample",
+                            gazeAvailable=True, gazeTracked=1))
+        report = self.evaluate(rows)
+        self.assertTrue(all(e["outcome"] != "played" for e in report["confirmation_sequences"]))
+
+    def test_duplicate_identity_cannot_start_or_close_sequence(self):
+        rows = confirmation_sequence()
+        duplicate = dict(rows[1], time=10.5)
+        rows.insert(3, duplicate)
+        for sequence, row in enumerate(rows):
+            row["sequence"] = sequence
+        report = self.evaluate(rows)
+        self.assertIsNone(report["decisions"][0]["sequence_context"]["confirmation_episode"])
+        self.assertEqual(report["confirmation_sequences"][0]["first_qualified_request_time"], 11)
+        rows[-2]["guidanceDecisionId"] = "d0"
+        report = self.evaluate(rows)
+        self.assertTrue(all(e["outcome"] != "played" for e in report["confirmation_sequences"]))
+
+    def test_local_priority_event_uses_recorded_state_action(self):
+        rows = confirmation_sequence()
+        local = dict(rows[1], kind="guidance_decision", detail="", guidanceDecisionId="d2",
+            guidanceDecision={"stage": "requested", "reason": "gaze_target_vicinity_hold",
+                "phrase": "You've got it!", "guidanceState": {
+                    "version": "guidance-state-v1", "phase": "Acquired",
+                    "allowedAction": "ConfirmGaze", "gazeValid": True}})
+        start = dict(rows[-2], time=10.04)
+        report = self.evaluate([rows[0], local, start, rows[-1]])
+        episode = report["confirmation_sequences"][0]
+        self.assertAlmostEqual(episode["qualification_to_playback_seconds"], .04)
+        self.assertEqual(episode["latency_review"], "within_budget")
+
+    def test_recent_playback_is_trial_scoped_and_preserves_event_kind(self):
+        rows = confirmation_sequence()
+        for row in rows[1:]:
+            row["sequence"] += 1
+        rows.insert(1, dict(fixture()[3], sequence=1, time=9, text="Look right.",
+                            guidanceDecisionId="previous"))
+        report = self.evaluate(rows)
+        history = report["decisions"][0]["sequence_context"]["recent_playback"]
+        self.assertEqual(history[-1]["phrase"], "Look right.")
+        rows[1]["sourceTrialId"] = "another-trial"
+        report = self.evaluate(rows)
+        self.assertEqual(report["decisions"][0]["sequence_context"]["recent_playback"], [])
 
 
 if __name__ == "__main__":

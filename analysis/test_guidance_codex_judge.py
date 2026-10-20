@@ -88,6 +88,25 @@ class JudgeTests(unittest.TestCase):
         self.assertEqual(result["state"]["runtime"]["evidence"]["guidanceState"]["phase"], "Turning")
         self.assertEqual(len(result["questions"]["navigation_phrase"]["candidates"]), 2)
 
+    def test_sequence_evidence_survives_sanitization_without_private_fields(self):
+        decision = {"event_type": "controller_confirmation", "qualification_status": "qualified",
+            "sequence_context": {"private": "DO_NOT_SEND", "recent_playback": [
+                {"time": 8, "phrase": "Yep, that's it!", "event_type": "gaze_confirmation",
+                 "evidence_ids": ["seq:8"], "participant": "DO_NOT_SEND"}],
+                "confirmation_episode": {"event_type": "controller_confirmation", "wait_count": 2,
+                    "qualification_to_playback_seconds": 2.2, "review_budget_seconds": 1,
+                    "outcome": "played", "latency_review": "over_budget",
+                    "evidence_ids": ["seq:9", "seq:10"], "attempts": [
+                        {"time": 9, "transmit": "wait", "phrase": "You're on it!",
+                         "evidence_ids": ["seq:9"], "api_key": "DO_NOT_SEND"}]}}}
+        result = _sanitize(source_case(), decision, 0)
+        self.assertNotIn("DO_NOT_SEND", json.dumps(result))
+        self.assertEqual(result["event_type"], "controller_confirmation")
+        self.assertEqual(result["sequence_context"]["confirmation_episode"]["wait_count"], 2)
+        self.assertIn("seq:10", result["evidence_ids"])
+        self.assertEqual(result["sequence_context"]["recent_playback"][0]["event_type"],
+                         "gaze_confirmation")
+
     def test_success_saved_auth_explicit_model_clean_environment_and_isolated_cwd(self):
         runner = Runner()
         with patch.dict(os.environ, {"OPENAI_API_KEY": "secret", "OPENAI_BASE_URL": "private", "JEV_KEY": "secret", "GIT_DIR": "private"}):

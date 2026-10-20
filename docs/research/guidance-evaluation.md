@@ -27,6 +27,18 @@ Each report includes the recording SHA-256, recording ID, application/build vers
 
 **Implemented:** request-to-response and request-to-playback measurements subtract replay-relative event times only. Absolute Unity snapshot times are not subtracted from replay times. These are software timestamps, not acoustic onset measurements. Missing events remain null. Duplicate request identities are flagged and excluded from benchmark/timing summaries.
 
+## Confirmation sequences
+
+**Implemented — October 20, 2026:** sequence evaluator `guidance-sequences-v1` follows a qualified confirmation through successive requests, wait responses and exact-ID playback. It measures from the **first recorded qualified request**, not an inferred sensor onset. A later request cannot reset the accumulated delay. Each participating decision receives the same retrospective episode, including evidence references, wait count and outcome. Astra receives that episode even when its requests span different evaluation batches.
+
+Gaze and controller confirmations are separate event types. Gaze confirmation requires the recorded gaze qualification. Controller confirmation requires the controller hold, controller hit and valid gaze in the target vicinity; it does not require an additional gaze hold. A new controller confirmation after a gaze acknowledgment is not automatically redundant. For newer local decisions the recorded central state's qualified action supplies the qualification evidence. Unknown legacy state stays unknown.
+
+Episodes stop at recorded disqualification, invalid gaze samples, sample gaps longer than 0.25 seconds, trial/lifecycle boundaries or matching playback. A missing playback event produces unknown latency, not a slow-failure score. Request snapshots do not prove continuous fixation between observations. The report also supplies actual recent playback from the same trial: up to six starts in the preceding 15 seconds, with event types where recorded.
+
+**Engineering review setting:** confirmation delay above 1.0 second is flagged for review. This is not a validated threshold for human perception or a headset specification. The judge must consider accumulated waits and known blockers instead of accepting a long chain merely because its final request was quick or it stayed under the live deferral limit. Protected speech, tracking loss and requalification remain distinct from avoidable idle waiting.
+
+The Evaluation tab displays sequence timing and wait count separately from individual-request latency. Retrospective context is never added to the request-only model benchmark. Rubric `guidance-review-v2-sequences` invalidates prior cached judgments.
+
 ## What the checks establish
 
 - **Choice membership:** whether a returned choice exactly matches an offered choice. An eligible answer is not necessarily a good answer.
