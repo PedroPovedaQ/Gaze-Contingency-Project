@@ -31,6 +31,8 @@ public partial class VoiceSynthesizer : MonoBehaviour
     public string LastError { get; private set; }
     public bool ProviderPolicyBlocked => LastError != null && LastError.Contains("guardrail_violation");
     public string PreparationStage { get; private set; }
+    // Completed preparation work, not an estimate of elapsed/remaining time.
+    public float PreparationProgress { get; private set; }
     public bool LibraryReady { get; private set; }
     bool m_Preparing;
     VoiceCondition[] m_LibraryVoices = { VoiceCondition.Generic, VoiceCondition.SelfSimilar };
@@ -81,6 +83,16 @@ public partial class VoiceSynthesizer : MonoBehaviour
         m_BackgroundQueue.Clear();
         m_BackgroundEnabled = false;
         LibraryReady = false;
+        PreparationProgress = 0;
+        void Report(string stage, float fraction)
+        {
+            if (preparationGeneration != m_PreparationGeneration) return;
+            PreparationStage = stage;
+            PreparationProgress = Math.Max(PreparationProgress, Math.Min(.99f, fraction));
+            progress?.Invoke(stage);
+        }
+        Report("Loading voice audio", 0);
+        if (preparationGeneration != m_PreparationGeneration) yield break;
         m_OnDemandPhrases = onDemandPhrases == null ? null : new HashSet<string>(onDemandPhrases);
         m_MatchedRms = 0;
         m_Preparing = true;
@@ -94,9 +106,11 @@ public partial class VoiceSynthesizer : MonoBehaviour
         foreach (var voice in m_LibraryVoices)
             foreach (var phrase in phrases) lines.Add(new KeyValuePair<VoiceCondition, string>(voice, phrase));
         var downloads = DownloadJobs(lines);
-        yield return DownloadLines(downloads, stage => { PreparationStage = stage; progress?.Invoke(stage); });
+        yield return DownloadLines(downloads, completed =>
+            Report($"Downloading voice lines: {completed}/{downloads.Count}", .45f * completed / Math.Max(1, downloads.Count)));
         if (preparationGeneration != m_PreparationGeneration) yield break;
         bool success = true;
+        int preparedLines = 0;
         foreach (var job in downloads)
             if (job.error != null) { Fail(job.error); success = false; break; }
         foreach (var voice in m_LibraryVoices)
@@ -104,8 +118,8 @@ public partial class VoiceSynthesizer : MonoBehaviour
             if (!success) break;
             for (int i = 0; i < phrases.Length; i++)
             {
-                PreparationStage = $"Preparing {(voice == VoiceCondition.Generic ? "neutral" : "self-similar")} voice: {i + 1}/{phrases.Length}";
-                progress?.Invoke(PreparationStage);
+                Report($"Preparing {(voice == VoiceCondition.Generic ? "neutral" : "self-similar")} voice: {i + 1}/{phrases.Length}",
+                    .45f + .45f * preparedLines / Math.Max(1, lines.Count));
                 m_PreparingText = VoicePromptText.FormatForVoice(phrases[i], voice);
                 for (int attempt = 0; attempt < 3; attempt++)
                 {
@@ -116,20 +130,20 @@ public partial class VoiceSynthesizer : MonoBehaviour
                     if (preparationGeneration != m_PreparationGeneration) yield break;
                 }
                 if (!string.IsNullOrEmpty(LastError)) { success = false; break; }
+                Report(PreparationStage, .45f + .45f * ++preparedLines / Math.Max(1, lines.Count));
             }
             if (!success) break;
         }
         if (success)
         {
-            PreparationStage = "Matching audio levels";
-            progress?.Invoke(PreparationStage);
+            Report("Matching audio levels", .90f);
             success = MatchLibraryLevels();
         }
         m_Preparing = false;
         LibraryReady = success;
         if (success)
         {
-            PreparationStage = "Saving voice manifest";
+            Report("Saving voice manifest", .92f);
             LibraryReady = SaveManifest();
         }
         if (!LibraryReady)
@@ -149,12 +163,21 @@ public partial class VoiceSynthesizer : MonoBehaviour
         {
             var replay = GetComponent<TrialReplayRecorder>();
             if (replay != null)
+            {
+                int exported = 0;
                 foreach (var prepared in m_PreparedClips.Values)
                 {
                     replay.PrepareVoiceClip(prepared);
+                    Report("Finishing audio setup", .94f + .05f * ++exported / Math.Max(1, m_PreparedClips.Count));
                     yield return null;
                     if (preparationGeneration != m_PreparationGeneration) yield break;
                 }
+            }
+            PreparationProgress = 1;
+            PreparationStage = "Audio ready";
+            progress?.Invoke(PreparationStage);
+            yield return null;
+            if (preparationGeneration != m_PreparationGeneration) yield break;
         }
         done?.Invoke(LibraryReady);
     }
@@ -354,6 +377,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         Stop();
         m_BackgroundQueue.Clear(); m_BackgroundEnabled = false;
         LibraryReady = false; m_OnDemandPhrases = null; m_MatchedRms = 0; LastError = null;
+        PreparationProgress = 0;
         m_Audit.Clear();
         foreach (var clip in m_PreparedClips.Values) Destroy(clip);
         m_PreparedClips.Clear();

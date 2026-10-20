@@ -39,7 +39,7 @@ public partial class VoiceSynthesizer
         return jobs;
     }
 
-    IEnumerator DownloadLines(List<DownloadJob> jobs, Action<string> progress = null)
+    IEnumerator DownloadLines(List<DownloadJob> jobs, Action<int> progress = null)
     {
         var workers = new List<IEnumerator>();
         foreach (var job in jobs) workers.Add(DownloadLine(job));
@@ -50,10 +50,11 @@ public partial class VoiceSynthesizer
         {
             while (run.MoveNext())
             {
-                progress?.Invoke($"Downloading voice lines: {batch.Completed}/{jobs.Count} (up to 5 at once)");
+                progress?.Invoke(batch.Completed);
                 yield return run.Current;
             }
             if (batch.Error != null && jobs.Count > 0) jobs[0].error = "Voice download failed: " + batch.Error.GetType().Name;
+            progress?.Invoke(batch.Completed);
         }
         finally
         {

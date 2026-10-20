@@ -540,9 +540,23 @@ partial class VoiceIsolationChecks
             Check(!SessionConfig.NeutralFirst, "even participant self first");
             provider.HasKey = true; provider.Audio = new byte[120];
             bool prepared = false;
+            var preparationProgress = new System.Collections.Generic.List<float>();
+            Action<string> trackPreparation = _ => {
+                float value = synth.PreparationProgress;
+                Check(value >= 0 && value <= 1, "Preparation percentage stays within bounds");
+                Check(preparationProgress.Count == 0 || value >= preparationProgress[preparationProgress.Count - 1],
+                    "Preparation percentage never runs backwards");
+                if (value == 1) Check(synth.LibraryReady &&
+                    File.Exists(Path.Combine(SessionConfig.ParticipantPath, "voice-library-manifest.json")),
+                    "100 percent requires a ready library and saved manifest");
+                preparationProgress.Add(value);
+            };
             DownloadHandlerAudioClip.AlternatePeak = true;
-            Drain(synth.PrepareLibraries(new[] { "test phrase", "another phrase" }, null, ok => prepared = ok));
+            Drain(synth.PrepareLibraries(new[] { "test phrase", "another phrase" }, trackPreparation, ok => prepared = ok));
             Check(prepared && synth.LibraryReady, "both libraries prepared");
+            Check(preparationProgress[0] == 0 && synth.PreparationProgress == 1 &&
+                preparationProgress.Exists(value => value > 0 && value < 1),
+                "Both-voice preparation reports real intermediate work and reaches 100 percent");
             var audits = (IEnumerable)typeof(VoiceSynthesizer)
                 .GetField("m_Audit", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth);
             foreach (var audit in audits)
@@ -567,9 +581,11 @@ partial class VoiceIsolationChecks
             DownloadHandlerAudioClip.AlternatePeak = false;
             Check(File.Exists(Path.Combine(SessionConfig.ParticipantPath, "voice-library-manifest.json")), "manifest saved");
             WaitForSeconds.Count = 0; provider.Calls = 0;
-            Drain(synth.PrepareLibraries(new[] { "test phrase", "another phrase" }, null, ok => prepared = ok));
+            preparationProgress.Clear();
+            Drain(synth.PrepareLibraries(new[] { "test phrase", "another phrase" }, trackPreparation, ok => prepared = ok));
             Check(prepared && provider.Calls == 0 && WaitForSeconds.Count == 0,
                 "cached preparation has no synthesis requests or artificial waits");
+            Check(preparationProgress[0] == 0 && synth.PreparationProgress == 1, "Cached preparation resets and completes progress");
             SessionConfig.Voice = VoiceCondition.SelfSimilar; run();
             Check(UnityWebRequest.Requests.Count == 0 && provider.Calls == 0, "prepared trial needs no provider request");
             synth.Speak("not in manifest"); Drain(MonoBehaviour.LastRoutine);
@@ -577,6 +593,7 @@ partial class VoiceIsolationChecks
             DownloadHandlerAudioClip.Corrupt = true;
             Drain(synth.PrepareLibraries(new[] { "test phrase" }, null, ok => prepared = ok));
             Check(!prepared && !synth.LibraryReady, "corrupt audio blocks readiness");
+            Check(synth.PreparationProgress < 1, "Failed audio never reports 100 percent");
             Check(synth.PreparationStage.Contains("neutral"), "failure reports the actual preparation stage");
             Check(File.ReadAllText(Path.Combine(SessionConfig.ParticipantPath, "voice-preparation-errors.log"))
                 .Contains(synth.LastError), "preparation error survives device log rotation");

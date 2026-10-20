@@ -39,11 +39,22 @@ public static class StudyFeedbackChecks
             var mesh = effect.GetComponent<MeshFilter>().sharedMesh;
             Check(mesh.vertexCount == 1200 && mesh.triangles.Length == 1200,
                 "Exactly 100 independent four-face fragments share one mesh.");
+            var velocities = (Vector3[])typeof(TargetCrumble)
+                .GetField("m_Velocities", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(effect);
+            foreach (Vector3 axis in new[] { Vector3.right, Vector3.left, Vector3.up, Vector3.down, Vector3.forward, Vector3.back })
+                Check(Array.Exists(velocities, velocity => Vector3.Dot(velocity.normalized, axis) > .9f),
+                    "Burst covers every spatial direction, including down and behind.");
+            var confetti = effect.transform.Find("Success confetti").GetComponent<MeshFilter>().sharedMesh;
+            var colors = effect.transform.Find("Success confetti").GetComponent<MeshRenderer>().sharedMaterials;
+            Check(confetti.vertexCount == TargetCrumble.ConfettiCount * 8 && confetti.subMeshCount == 5,
+                "120 double-sided confetti pieces use five colors.");
+            var confettiBefore = confetti.vertices;
             var before = mesh.vertices;
             typeof(TargetCrumble).GetMethod("UpdateGeometry", BindingFlags.Instance | BindingFlags.NonPublic)
                 .Invoke(effect, new object[] { .6f });
             var after = mesh.vertices;
             Check(Vector3.Distance(before[0], after[0]) > .01f, "Fragments move during the crumble.");
+            Check(Vector3.Distance(confettiBefore[0], confetti.vertices[0]) > .1f, "Confetti bursts outward.");
             for (int i = 0; i < after.Length; i++)
                 Check(!float.IsNaN(after[i].x) && !float.IsInfinity(after[i].y), "Crumble geometry stays finite.");
             float next = UnityEngine.Random.value;
@@ -56,7 +67,8 @@ public static class StudyFeedbackChecks
             typeof(TargetCrumble).GetMethod("OnDestroy", BindingFlags.Instance | BindingFlags.NonPublic)
                 .Invoke(effect, null);
             UnityEngine.Object.DestroyImmediate(effect.gameObject); effect = null;
-            Check(mesh == null, "Animation releases its owned mesh.");
+            Check(mesh == null && confetti == null && Array.TrueForAll(colors, color => color == null),
+                "Animation releases both meshes and its confetti materials.");
         }
         finally
         {
@@ -64,7 +76,7 @@ public static class StudyFeedbackChecks
             if (effect != null) UnityEngine.Object.DestroyImmediate(effect.gameObject);
             if (target != null) UnityEngine.Object.DestroyImmediate(target);
         }
-        Debug.Log("[StudyFeedbackChecks] PASS: gaze-relative cross direction, prepared reminders, 100 animated fragments, no physics/RNG interference and cleanup.");
+        Debug.Log("[StudyFeedbackChecks] PASS: gaze-relative cross direction, prepared reminders, spherical 100-piece burst, 120 confetti pieces, no physics/RNG interference and cleanup.");
     }
 
     static void CheckRoundPerformance()

@@ -46,6 +46,9 @@ public class VoiceModeSelector : MonoBehaviour
     Canvas m_Canvas;
     GameObject m_CanvasGO;
     TextMeshProUGUI m_Text;
+    GameObject m_LoadingBar;
+    RectTransform m_LoadingFill;
+    TextMeshProUGUI m_LoadingPercent;
     Button m_FinishRecordingButton;
     TextMeshProUGUI m_ActionLabel;
     bool m_StartArmed;
@@ -104,11 +107,11 @@ public class VoiceModeSelector : MonoBehaviour
         m_Phase = Phase.PreparingQuickTest;
         m_FinishRecordingButton.gameObject.SetActive(false);
         RefreshChoices();
-        SetText("<b>Loading...</b>\nNeutral quick test · Eric\nDevelopment only");
+        ShowLoading(0);
         bool ready = false;
         // Fully prepare this one voice before starting. No on-demand network wait during trials.
         yield return m_Synth.PrepareLibraries(VoiceAssistantController.PhraseLibrary(),
-            message => SetText("<b>Loading...</b>\nNeutral quick test · Eric\n" + message),
+            _ => ShowLoading(m_Synth.PreparationProgress),
             ok => ready = ok, neutralOnly: true);
         if (!ready)
         {
@@ -154,6 +157,7 @@ public class VoiceModeSelector : MonoBehaviour
         m_Text = textGO.AddComponent<TextMeshProUGUI>();
         StudyPromptCard.StyleText(m_Text, 34);
         m_Text.fontSizeMin = 22;
+        BuildLoadingBar();
 
         var buttonGO = new GameObject("FinishRecording");
         buttonGO.transform.SetParent(m_CanvasGO.transform, false);
@@ -202,7 +206,51 @@ public class VoiceModeSelector : MonoBehaviour
         if (paused) OnApplicationFocus(false);
     }
 
-    void SetText(string s) { if (m_Text != null) m_Text.text = s; }
+    void SetText(string s)
+    {
+        if (m_Text != null) m_Text.text = s;
+        if (m_LoadingBar != null) m_LoadingBar.SetActive(false);
+    }
+
+    void BuildLoadingBar()
+    {
+        m_LoadingBar = new GameObject("VoiceLoadingProgress", typeof(RectTransform), typeof(Image));
+        var track = m_LoadingBar.GetComponent<RectTransform>();
+        track.SetParent(m_CanvasGO.transform, false);
+        track.sizeDelta = new Vector2(560, 26);
+        track.anchoredPosition = new Vector2(0, -20);
+        var background = m_LoadingBar.GetComponent<Image>();
+        background.color = new Color(.18f, .18f, .18f, 1);
+        background.raycastTarget = false;
+        var fill = new GameObject("Fill", typeof(RectTransform), typeof(Image));
+        m_LoadingFill = fill.GetComponent<RectTransform>();
+        m_LoadingFill.SetParent(track, false);
+        m_LoadingFill.anchorMin = Vector2.zero;
+        m_LoadingFill.anchorMax = new Vector2(0, 1);
+        m_LoadingFill.offsetMin = m_LoadingFill.offsetMax = Vector2.zero;
+        fill.GetComponent<Image>().color = new Color(1f, .8f, 0, 1);
+        fill.GetComponent<Image>().raycastTarget = false;
+        var label = new GameObject("Percentage", typeof(RectTransform), typeof(TextMeshProUGUI));
+        var labelRect = label.GetComponent<RectTransform>();
+        labelRect.SetParent(track, false);
+        labelRect.sizeDelta = new Vector2(560, 50);
+        labelRect.anchoredPosition = new Vector2(0, -50);
+        m_LoadingPercent = label.GetComponent<TextMeshProUGUI>();
+        StudyPromptCard.StyleText(m_LoadingPercent, 30);
+        m_LoadingPercent.alignment = TextAlignmentOptions.Center;
+        m_LoadingPercent.raycastTarget = false;
+        m_LoadingBar.SetActive(false);
+    }
+
+    void ShowLoading(float progress)
+    {
+        SetText("<b>Loading...</b>\nPreparing experiment");
+        if (m_LoadingBar == null) return;
+        progress = Mathf.Clamp01(progress);
+        m_LoadingFill.anchorMax = new Vector2(progress, 1);
+        m_LoadingPercent.text = $"{(int)(progress * 100)}%";
+        m_LoadingBar.SetActive(true);
+    }
 
     void Update()
     {
@@ -505,7 +553,7 @@ public class VoiceModeSelector : MonoBehaviour
             {
                 if (s == VoiceEnrollment.State.Recording)
                     SetText($"<b>Recording</b>\nRead in your natural guiding voice. Select Finish recording when done.\n\n“{k_ReadingPassage}”");
-                if (s == VoiceEnrollment.State.Cloning) SetText("<b>Loading...</b>");
+                if (s == VoiceEnrollment.State.Cloning) ShowLoading(0);
             },
             onDone: _ =>
             {
@@ -555,10 +603,10 @@ public class VoiceModeSelector : MonoBehaviour
     {
         m_Phase = Phase.Preparing;
         if (m_Text == null) BuildPanel();
-        SetText("<b>Loading...</b>");
+        ShowLoading(0);
         yield return m_Synth.SpeakProcessingStatus(false);
         bool ready = false;
-        yield return m_Synth.PrepareLibraries(VoiceAssistantController.StarterPhrases(), SetText,
+        yield return m_Synth.PrepareLibraries(VoiceAssistantController.StarterPhrases(), _ => ShowLoading(m_Synth.PreparationProgress),
             ok => ready = ok, VoiceAssistantController.PhraseLibrary());
         if (!ready)
         {

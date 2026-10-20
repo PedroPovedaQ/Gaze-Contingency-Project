@@ -1,3 +1,16 @@
+## 2026-10-20 — Correct-selection burst and confetti
+
+- **Implemented:** correct targets explode into 100 fragments with full spherical coverage, plus 120 double-sided, five-color confetti pieces. Fast outward motion slows into a tumbling fall and shrinks away within 1.8 seconds. Both effects share the pause-aware lifetime, own and release their meshes/materials, have no colliders or rigidbodies, and leave stimulus randomization untouched.
+- **Validation:** extended the existing Unity feedback checks for all six burst directions, confetti geometry/motion, and resource cleanup; Unity editor checks passed, including the existing feedback suite. Android Build And Run succeeded in 307.5 seconds. Installed APK matches local SHA-256 `c8bfb4a3c20de283aba0f483e4fd326e98fe4df9ceb2d613f9fb8a50c2dd26b8`; app running on headset (PID 14147). Visual feel remains a wearer check.
+
+## 2026-10-20 — Voice setup loading progress
+
+- **Wording:** changed the loading subtitle to “Preparing experiment,” preserving the loading bar and percentage.
+- **Wording deployment:** whitespace checks passed; automatic Build And Run could not start because macOS could not find Unity’s Tools menu. The subsequent burst/confetti build includes this subtitle and is verified installed on the headset.
+- **Implemented:** a left-to-right UCF-yellow loading bar with a numeric 0–100% label in regular voice setup and neutral quick test. Other setup/error screens hide it; graphics do not intercept controller rays.
+- **Implemented:** progress comes from completed download/verification jobs, prepared clips, level matching, manifest persistence and replay-audio preparation. Stage weights are 45% download/check, 45% clip preparation and 10% finalization; this is work progress, not an estimate of remaining seconds. Provider-side clone creation stays at 0% because it exposes no measurable completion percentage. Regular setup still prepares its starter library first and loads remaining optional prompts afterward.
+- **Validation:** voice-isolation/download regression suite passes, including added bounds, monotonicity, cached reset, intermediate progress and failed-audio-not-100% assertions. Unity Android Build And Run succeeded (436.1 s). Installed APK matches local SHA-256 `65e3a092d5e6dfb218035ca482157b8a49f20c20ae17e6d6eced608a0f865113`; running PID 2968. Headset visual inspection remains a wearer check.
+
 ## 2026-10-20 — Sequence-aware confirmation evaluation
 
 - **Implemented:** evaluation follows recorded qualification requests through waits and playback, separates gaze confirmation from controller confirmation, and shows sequence latency in Trial Review. Tracking gaps, invalid observations, lifecycle changes and ambiguous IDs break episodes. One second is an engineering review target, not a validated perceptual threshold. Timing begins at the first recorded qualified request, not an inferred sensor onset.
