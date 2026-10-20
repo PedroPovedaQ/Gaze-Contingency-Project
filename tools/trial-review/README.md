@@ -373,7 +373,7 @@ comparison; the recorded transforms/rays are never changed to fit the human hand
 **Vive controllers** toggles both meshes and the right-controller ray. The left-controller ray is omitted; historical left-hand data and its model remain available.
 
 The **chair seat follows torso yaw**, with a stationary pedestal/base orientation;
-the head retains its separate recorded position and rotation. No torso sensor
+the seated model retains recorded head rotation, while its chair remains fixed at the layout center. First-person view retains recorded head position too. No torso sensor
 was recorded. A display-only estimate allows ±35° neck yaw before turning the
 torso/seat, at up to 90°/s using recorded observation intervals. These values are
 visualization settings, not physiological thresholds. The estimator resets at
@@ -514,3 +514,14 @@ request-only `guidance-benchmark.jsonl` remains unchanged in purpose; the separa
 `guidance-review-cases.jsonl` also covers local confirmations. `--case-id` on the judge
 limits a review to explicit cases while retaining full input hashes and reporting
 selected/available coverage. Model ratings remain advisory, never human ratings.
+
+
+### Fixed seated participant in third-person view
+
+The illustrative chair stays at the trial layout center in X/Z. Its height is fixed
+from the first usable recorded head sample in that trial, resolved in recording
+order so scrubbing does not reposition it. Torso/seat yaw and head rotation still
+animate; head translation does not drag the entire human and chair around. The
+third-person/overhead orbit center is fixed too. Controller poses, gaze rays,
+object positions, first-person head pose and exported measurements remain recorded
+data; the seated model is an illustration, not full-body tracking.

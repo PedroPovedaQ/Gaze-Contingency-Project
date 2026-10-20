@@ -194,6 +194,27 @@ class LiveBridgeTests(unittest.TestCase):
                 receiver.cycle()
                 self.assertEqual(reads[0], name, 'new events take priority over remaining clips')
 
+    def test_spoken_clip_overtakes_unused_library_in_same_live_cycle(self):
+        with tempfile.TemporaryDirectory() as d:
+            remote = Remote(); elapsed = [0.0]; reads = []
+            name = 'GazeReplays/run/recording.jsonl'
+            remote.files[name] = b'{"kind":"header"}\n'
+            for i in range(500): remote.files[f'GazeReplays/run/audio/{i}.wav'] = b'audio'
+            read = remote.read
+            def slow_read(path, offset, count):
+                reads.append(path); elapsed[0] += .3
+                return read(path, offset, count)
+            remote.read = slow_read
+            with patch('live_bridge.time.monotonic', side_effect=lambda: elapsed[0]):
+                receiver = Receiver(Path(d), remote); receiver.cycle()
+                reads.clear()
+                remote.files[name] += b'{"kind":"audio_playback_start","clip":"audio/499.wav"}\n'
+                receiver.cycle()
+                self.assertEqual(reads[:2], [name, 'GazeReplays/run/audio/499.wav'],
+                                 'heard speech must not wait behind 499 unused clips, even when replay consumes the tick budget')
+                self.assertTrue((Path(d)/'data/GazeReplays/run/audio/499.wav').is_file())
+                receiver.close()
+
     def test_prepared_audio_is_copied_before_trial_and_bulk_data(self):
         with tempfile.TemporaryDirectory() as d:
             remote = Remote()

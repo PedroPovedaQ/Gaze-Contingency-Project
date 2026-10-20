@@ -1,3 +1,21 @@
+## 2026-10-20 — Live viewer audio transfer priority
+
+- Diagnosed Run 27: 10 recorded playback events referenced WAVs not yet present locally, including controller reminders and success speech/chimes. The receiver copied the large unused library before the spoken clips; the viewer correctly did not replay those clips after their recorded intervals.
+- Receiver now promotes recent recorded playback assets within the current package and reserves one urgent atomic WAV transfer even if replay ingestion exhausts the normal 250 ms batch budget. Restarts seed recent references from a bounded replay tail. Recorded times and source files remain unchanged.
+- Regression reproduced starvation with 500 prepared clips and a 300 ms replay transfer, then passed after the fix; all 19 receiver tests pass. This improves transfer priority, not a guarantee of zero network latency or audible playback across dropouts.
+- Isolated macOS viewer build and its renderer/audio/real-recording checks passed. Relaunch stalled in Documents stop-marker access; user asked to check the macOS permission dialog. Audible live verification remains pending.
+
+## 2026-10-20 — Fixed seated human in Trial Review
+
+- **Implemented:** anchored the illustrative chair to each trial layout center, with height fixed from the first valid head sample. Preserved swivel/head rotation and recorded controller/gaze data; orbit camera no longer follows head translation. Added regression checks for center stability and no mutation of raw poses. Isolated Mac build passes, including trial-switch/rewind stability, raw-pose preservation, arm/gaze regressions and 48 camera samples from Run 26. Visually checked the centered seated participant in Run 26 at 14.83s. Final app: `~/.codex/visualizations/2026/10/20/fixed-seat-final/Trial Review.app`. Restored live mode and visually verified Wi-Fi-connected Run 27 advancing with current poses and speech.
+
+## 2026-10-20 — Checkpoint and autonomous Jev action comparison
+
+- Saved requested local checkpoint **26c8b96** before experimentation. No push.
+- **Implemented (offline only):** typed action-choice pilot with explicit eligible actions and shared sanitized current state/history; existing speak/wait baseline, interleaved repetitions, recorded retry sequences and mirrored scripted cases. Confirmation/selection/invalid-input checks remain local. No participant build change.
+- **Measured:** 212 real Mac-to-Vercel requests across exploratory and revised batches. Revised batch: median235/236ms baseline/action policy; p95366/672ms; 2/58 versus3/58 beyond450ms. All116 revised responses valid. Revised model chose encouragement10/10 eligible scripted opportunities and the recorded post-acknowledgment return correction2/2; no human-perceived or playback improvement established. One retry sequence is counted as one episode, not seven failures.
+- **Validation:** 11 focused tests pass. Detailed comparison, constraints and reproduction in `docs/testing/2026-10-20-autonomous-jev-pilot.md`; results in `analysis/pilots/20261020-actions/comparison.json`. Headset A/B and action-provider integration remain proposed; current device build stays at the tested checkpoint behavior.
+
 ## 2026-10-20 — Between-round cross instructions
 
 - **Implemented:** replaced the generic round announcement with three deterministic rotating prompts to look at the cross and hold gaze until the next round begins. Both voice conditions prepare the cues; practice disclaimer and the existing five-second gaze-relative reminder remain. No trial timing or stimulus randomization changes.

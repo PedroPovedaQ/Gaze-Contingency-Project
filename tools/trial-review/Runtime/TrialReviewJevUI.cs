@@ -105,7 +105,7 @@ public sealed partial class TrialReviewApp
             case "Final data": return "Final performance and survey values, not measurements at the cursor.";
             case "Jev": return "Requests, allowed answers, model probabilities and observed playback. Historical gaps remain unknown.";
             case "Evaluation": return "Automatic evidence checks and separate Astra judgments. Model judgments are not participant ratings or ground truth.";
-            case "Human model": return "Estimated body reconstruction anchored to recorded head/controller poses. It is not measured full-body tracking.";
+            case "Human model": return "Illustrative seated body fixed at the trial center. Head rotation and controller poses animate; the chair does not follow head translation. Not measured full-body tracking.";
             case "Walls": return "Show reconstructed search walls; this changes the viewer only.";
             case "Degrees": return "Show world-angle labels to inspect recorded turning and target placement.";
             case "Room": return "Show the illustrative room environment, not recorded passthrough video.";

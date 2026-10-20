@@ -26,6 +26,12 @@ public sealed class TrialReviewActors : IDisposable
     public float TorsoYaw => m_Body.transform.eulerAngles.y;
     readonly Transform m_Head,m_Anchor,m_ChairBase;
     readonly Quaternion m_HeadBindRotation,m_AnchorBindRotation;
+    readonly Vector3 m_ChairBindPosition,m_AnchorBindPosition;
+    TrialReplayRecord m_SeatTrial;
+    bool m_SeatResolved;
+    Vector3 m_SeatEyeReference;
+    public Vector3 SeatCenter => m_ChairBase.position;
+    public Vector3 ViewCenter => m_SeatEyeReference + Vector3.down*.5f;
     public bool BodyVisible => m_Body.activeSelf;
     public bool LeftVisible => m_Left.activeSelf;
     public bool RightVisible => m_Right.activeSelf;
@@ -38,6 +44,7 @@ public sealed class TrialReviewActors : IDisposable
         m_Anchor=m_Body.GetComponentsInChildren<Transform>(true).Single(t=>t.name=="RecordedHeadAnchor");
         m_ChairBase=m_Body.GetComponentsInChildren<Transform>(true).Single(t=>t.name=="ChairBase");
         m_HeadBindRotation=m_Head.rotation;m_AnchorBindRotation=m_Anchor.rotation;
+        m_ChairBindPosition=m_ChairBase.localPosition;m_AnchorBindPosition=m_Anchor.position;
         m_LeftArm=new TrialReviewArm(m_Body,"Left");m_RightArm=new TrialReviewArm(m_Body,"Right");
         m_LeftGrip=m_Left.transform.Find("GripAnchor");m_RightGrip=m_Right.transform.Find("GripAnchor");
         m_EyeRay=new GameObject("Illustrative eye-origin gaze").AddComponent<LineRenderer>();
@@ -59,13 +66,25 @@ public sealed class TrialReviewActors : IDisposable
         float torsoYaw;
         bool hasTorso=m_Torso.TryGet(sample,out torsoYaw);
         bool validHead=TrialReplayRenderer.HeadUsable(sample)&&hasTorso;
+        if(!ReferenceEquals(m_SeatTrial,timeline.State.Trial))
+        {
+            m_SeatTrial=timeline.State.Trial;m_SeatResolved=false;
+            m_SeatEyeReference=m_SeatTrial?.origin??Vector3.zero;
+        }
+        if(validHead&&!m_SeatResolved)
+        {
+            // Resolve in recording order, not cursor order, so seeking cannot move the seat.
+            var first=timeline.Records.FirstOrDefault(r=>r.kind=="sample"&&r.trialId==m_SeatTrial?.trialId&&TrialReplayRenderer.HeadUsable(r));
+            m_SeatEyeReference.y=(first??sample).headPosition.y;m_SeatResolved=true;
+        }
         m_Body.SetActive(showBody&&!firstPerson&&validHead);
         if(validHead)
         {
             // Seat and torso share this estimated yaw; tracked head rotation stays independent.
-            m_Body.transform.SetPositionAndRotation(Vector3.zero,Quaternion.Euler(0,torsoYaw,0));
+            var rotation=Quaternion.Euler(0,torsoYaw,0);
+            var seat=m_SeatEyeReference+Vector3.up*(m_ChairBindPosition.y-m_AnchorBindPosition.y);
+            m_Body.transform.SetPositionAndRotation(seat-rotation*m_ChairBindPosition,rotation);
             m_Head.rotation=sample.headRotation*Quaternion.Inverse(m_AnchorBindRotation)*m_HeadBindRotation;
-            m_Body.transform.position+=sample.headPosition-m_Anchor.position;
             m_ChairBase.rotation=Quaternion.identity; // Stationary base; seat swivels with the illustrative body.
         }
         Controller(m_Left,sample?.leftController,showControllers);
@@ -73,7 +92,7 @@ public sealed class TrialReviewActors : IDisposable
         m_LeftArm.Prepare(m_Body.activeSelf&&m_Left.activeSelf?m_LeftGrip:null,m_Body.transform);
         m_RightArm.Prepare(m_Body.activeSelf&&m_Right.activeSelf?m_RightGrip:null,m_Body.transform);
         bool validGaze=validHead&&TrialReplayRenderer.GazeUsable(sample);
-        GazeOriginOffset=validGaze?Vector3.Distance(sample.gazeOrigin,m_Anchor.position):float.NaN;
+        GazeOriginOffset=validGaze?Vector3.Distance(sample.gazeOrigin,sample.headPosition):float.NaN;
         var state=timeline.State;
         var readiness=state.Readiness;
         // Match cross visibility: gaze is useful before any charge accumulates, while objects are hidden.
@@ -91,7 +110,7 @@ public sealed class TrialReviewActors : IDisposable
         if(GazeAvailable)
         {
             m_EyeRay.startWidth=.008f;m_EyeRay.endWidth=.004f;
-            var origin=recordedRay?sample.gazeOrigin:CorrectionApplied?corrected.origin:m_Anchor.position;
+            var origin=recordedRay?sample.gazeOrigin:CorrectionApplied?corrected.origin:sample.headPosition;
             var direction=CorrectionApplied?corrected.direction:sample.gazeDirection.normalized;
             GazeRay=new Ray(origin,direction);
             m_EyeRay.SetPosition(0,origin);

@@ -75,9 +75,21 @@ public static class TrialReviewBuild
         {
             timeline.Seek(1);actors.Prepare(timeline,1,false,true,true);
             Assert(actors.BodyVisible && actors.RightVisible && !actors.LeftVisible,"Avatar and valid controller visibility");
-            Assert(Vector3.Distance(actors.HeadAnchor.position,timeline.State.Sample.headPosition)<.0001f,"Avatar anchors at measured head");
+            var trialOrigin=timeline.State.Trial.origin;
+            Assert(Mathf.Abs(actors.SeatCenter.x-trialOrigin.x)<.0001f&&Mathf.Abs(actors.SeatCenter.z-trialOrigin.z)<.0001f,"Chair is fixed at layout center");
+            var sample=timeline.State.Sample;var headPosition=sample.headPosition;var headRotation=sample.headRotation;
+            var seat=actors.SeatCenter;var focus=actors.ViewCenter;
+            sample.headPosition+=new Vector3(1,.25f,-2);sample.headRotation=Quaternion.Euler(30,110,0);
+            actors.Prepare(timeline,1,false,true,true);
+            Assert(Vector3.Distance(seat,actors.SeatCenter)<.0001f&&actors.ViewCenter==focus,"Head translation and rotation cannot move the seat or orbit center");
+            Assert(sample.headPosition==headPosition+new Vector3(1,.25f,-2),"Recorded head translation remains untouched");
+            sample.headPosition=headPosition;sample.headRotation=headRotation;
+            actors.Prepare(timeline,1,false,true,true);
             Assert(Quaternion.Angle(actors.HeadAnchor.rotation,timeline.State.Sample.headRotation)<.01f,"Avatar head orientation");
             Assert(actors.RightController.position==timeline.State.Sample.rightController.position && actors.RightController.rotation==timeline.State.Sample.rightController.rotation,"Controller uses recorded pose");
+            timeline.Seek(21);actors.Prepare(timeline,21,false,true,true);
+            timeline.Seek(1);actors.Prepare(timeline,1,false,true,true);
+            Assert(Vector3.Distance(seat,actors.SeatCenter)<.0001f&&actors.ViewCenter==focus,"Seat remains stable after trial switch and rewind");
             actors.Prepare(timeline,1,true,true,true);Assert(!actors.BodyVisible && actors.RightVisible,"First person hides body, retains tracked controller");
             timeline.Seek(8.2);actors.Prepare(timeline,8.2,false,true,true);Assert(!actors.BodyVisible&&!actors.RightVisible&&!actors.LeftVisible,"No model poses across gaps");
             timeline.Seek(1);var controller=timeline.State.Sample.rightController;controller.tracked=0;
@@ -351,7 +363,7 @@ public static class TrialReviewBuild
             var savedOrigin=sample.gazeOrigin;
             sample.gazeOrigin+=Vector3.right*2;
             actors.Prepare(timeline,1,false,true,true,true);
-            Assert(actors.EyeRay.enabled&&Vector3.Distance(actors.EyeRay.GetPosition(0),actors.HeadAnchor.position)<.0001f,"Eye ray originates at avatar eyes");
+            Assert(actors.EyeRay.enabled&&Vector3.Distance(actors.EyeRay.GetPosition(0),sample.headPosition)<.0001f,"Legacy eye ray uses recorded head, independent of fixed seated illustration");
             Assert(Vector3.Angle(actors.EyeRay.GetPosition(1)-actors.EyeRay.GetPosition(0),sample.gazeDirection)<.01f,"Eye ray preserves world direction");
             Assert(Mathf.Abs(actors.GazeOriginOffset-2)<.001f&&sample.gazeOrigin==savedOrigin+Vector3.right*2,"Raw offset disclosed and preserved");
             sample.gazeOrigin=savedOrigin;

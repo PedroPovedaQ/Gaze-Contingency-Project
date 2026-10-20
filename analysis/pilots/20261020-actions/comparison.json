@@ -1,0 +1,5076 @@
+{
+  "schema": "jev-action-comparison-v1",
+  "checkpoint": "26c8b96",
+  "initial": {
+    "summary": {
+      "baseline": {
+        "network_requests": 48,
+        "local_gate_cases": 12,
+        "latency_seconds": {
+          "n": 48,
+          "median": 0.2570535,
+          "p95": 0.578943,
+          "max": 0.844931
+        },
+        "errors": 0,
+        "late_over_450ms": 4,
+        "scripted_rubric_matches": 28,
+        "scripted_scored": 28,
+        "model_scripted_matches": 18,
+        "model_scripted_scored": 18,
+        "advisory_actions": {
+          "orient": 10,
+          "encourage": 0,
+          "correct": 8,
+          "refine": 12,
+          "wait": 30
+        }
+      },
+      "autonomous": {
+        "network_requests": 48,
+        "local_gate_cases": 12,
+        "latency_seconds": {
+          "n": 48,
+          "median": 0.2503825,
+          "p95": 0.490311,
+          "max": 1.012244
+        },
+        "errors": 0,
+        "late_over_450ms": 3,
+        "scripted_rubric_matches": 28,
+        "scripted_scored": 28,
+        "model_scripted_matches": 18,
+        "model_scripted_scored": 18,
+        "advisory_actions": {
+          "orient": 10,
+          "encourage": 0,
+          "correct": 3,
+          "refine": 15,
+          "wait": 32
+        }
+      }
+    },
+    "requests": [
+      {
+        "case": "turn_start",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.553365,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1842,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": false
+      },
+      {
+        "case": "turn_start",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.349188,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1808,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_90_progress",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.274065,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2086,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_90_progress",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.192671,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1995,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_45_progress",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.402661,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1987,
+        "action": "orient",
+        "text": "Look right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_45_progress",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.24851,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2074,
+        "action": "orient",
+        "text": "Look right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recent_repeat",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.237805,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1797,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recent_repeat",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.30887,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1831,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "ignored_direction_long_silence",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.29442,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1831,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "ignored_direction_long_silence",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.359415,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1797,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "wall_entry_down",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.332773,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1796,
+        "action": "refine",
+        "text": "Look lower.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "wall_entry_down",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.29247,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1834,
+        "action": "refine",
+        "text": "Look lower.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "vertical_progress",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "refine",
+          "encourage"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine",
+          "encourage"
+        ],
+        "seconds": 0.213266,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1993,
+        "action": "refine",
+        "text": "A little lower.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "vertical_progress",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "refine",
+          "encourage"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine",
+          "encourage"
+        ],
+        "seconds": 0.248886,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2083,
+        "action": "refine",
+        "text": "A little lower.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "overshoot_return",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "correct",
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.210191,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2069,
+        "action": "refine",
+        "text": "Look up and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "overshoot_return",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "correct",
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.240163,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1974,
+        "action": "correct",
+        "text": "Go back up and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "gaze_found_controller_elsewhere",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "gaze_found_controller_elsewhere",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "controller_unqualified_hold",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "controller_unqualified_hold",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "blink",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "blink",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "pause",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "pause",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "speech_playing",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "speech_playing",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recovery",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.392386,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1808,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recovery",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.421422,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1842,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_397",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.206262,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2340,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_397",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.287467,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2306,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_1052",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.243129,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3087,
+        "action": "correct",
+        "text": "Go back up and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_1052",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.413225,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2992,
+        "action": "correct",
+        "text": "Go back up and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_1190",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.250795,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2865,
+        "action": "refine",
+        "text": "Just a little lower and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_1190",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.229944,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2845,
+        "action": "refine",
+        "text": "Just a little lower and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_2554",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.355129,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3118,
+        "action": "correct",
+        "text": "Go back down and right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_2554",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.265356,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3017,
+        "action": "correct",
+        "text": "Go back down and right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3235",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3235",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3266",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.266196,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3039,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3266",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.36526,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2958,
+        "action": "correct",
+        "text": "Go back down.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3472",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.308154,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2879,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3472",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.381071,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2858,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3503",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.278194,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2872,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3503",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.238331,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2893,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3529",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.264455,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2904,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3529",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.252924,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2883,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3556",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.26741,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2896,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3556",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.247042,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2917,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3581",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.258732,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2929,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3581",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.282904,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2908,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3606",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.490311,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2908,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": false
+      },
+      {
+        "case": "recorded_3606",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.208234,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2929,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3632",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.212659,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2932,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3632",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.26249,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2911,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3778",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.233959,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2850,
+        "action": "refine",
+        "text": "A little higher.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3778",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.201244,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2883,
+        "action": "refine",
+        "text": "A little higher.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3802",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.211956,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2904,
+        "action": "refine",
+        "text": "A little higher and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3802",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.216786,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2880,
+        "action": "refine",
+        "text": "A little higher and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3828",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.251869,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2881,
+        "action": "refine",
+        "text": "A little higher and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3828",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.204618,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2905,
+        "action": "refine",
+        "text": "A little higher and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_start",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.202442,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1808,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_start",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.239637,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1842,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_90_progress",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.224513,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1995,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_90_progress",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.248896,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2086,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_45_progress",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.229077,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2074,
+        "action": "orient",
+        "text": "Look right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_45_progress",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.274024,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1987,
+        "action": "orient",
+        "text": "Look right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recent_repeat",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.28236,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1831,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recent_repeat",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.215656,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1797,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "ignored_direction_long_silence",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.209704,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1797,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "ignored_direction_long_silence",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.255968,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1831,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "wall_entry_down",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.254212,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1834,
+        "action": "refine",
+        "text": "Look lower.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "wall_entry_down",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.24461,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1796,
+        "action": "refine",
+        "text": "Look lower.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "vertical_progress",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "refine",
+          "encourage"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine",
+          "encourage"
+        ],
+        "seconds": 0.273498,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2083,
+        "action": "refine",
+        "text": "A little lower.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "vertical_progress",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "refine",
+          "encourage"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine",
+          "encourage"
+        ],
+        "seconds": 0.258139,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1993,
+        "action": "refine",
+        "text": "A little lower.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "overshoot_return",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "correct",
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.21134,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1974,
+        "action": "correct",
+        "text": "Go back up and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "overshoot_return",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "correct",
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.238009,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2069,
+        "action": "refine",
+        "text": "Look up and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "gaze_found_controller_elsewhere",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "gaze_found_controller_elsewhere",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "controller_unqualified_hold",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "controller_unqualified_hold",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "blink",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "blink",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "pause",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "pause",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "speech_playing",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "speech_playing",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recovery",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.341998,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1842,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recovery",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.332529,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1808,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_397",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.215247,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2306,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_397",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.261623,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2340,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_1052",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.306517,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2992,
+        "action": "correct",
+        "text": "Go back up and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_1052",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.227161,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3087,
+        "action": "refine",
+        "text": "Look up and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_1190",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.216235,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2845,
+        "action": "refine",
+        "text": "Just a little lower and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_1190",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.253783,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2865,
+        "action": "refine",
+        "text": "Just a little lower and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_2554",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.2287,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3017,
+        "action": "correct",
+        "text": "Go back down and right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_2554",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.262185,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3118,
+        "action": "correct",
+        "text": "Go back down and right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3235",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3235",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3266",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.222822,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2958,
+        "action": "correct",
+        "text": "Go back down.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3266",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.290808,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3039,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3472",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.258078,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2858,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3472",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.278797,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2879,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3503",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.235218,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2893,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3503",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.218288,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2872,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3529",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 1.012244,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2883,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": false
+      },
+      {
+        "case": "recorded_3529",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.578943,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2904,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": false
+      },
+      {
+        "case": "recorded_3556",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.340574,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2917,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3556",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.206974,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2896,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3581",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.235284,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2908,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3581",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.23995,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2929,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3606",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.59027,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2929,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": false
+      },
+      {
+        "case": "recorded_3606",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.248853,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2908,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3632",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.217692,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2911,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3632",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.228197,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2932,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3778",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.212497,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2883,
+        "action": "refine",
+        "text": "A little higher.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3778",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.30379,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2850,
+        "action": "refine",
+        "text": "A little higher.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3802",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.700169,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2880,
+        "action": "refine",
+        "text": "A little higher and left.",
+        "usable_within_deadline": false
+      },
+      {
+        "case": "recorded_3802",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.304969,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2904,
+        "action": "refine",
+        "text": "A little higher and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3828",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.844931,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2905,
+        "action": "refine",
+        "text": "A little higher and left.",
+        "usable_within_deadline": false
+      },
+      {
+        "case": "recorded_3828",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.243847,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2881,
+        "action": "refine",
+        "text": "A little higher and left.",
+        "usable_within_deadline": true
+      }
+    ]
+  },
+  "revised": {
+    "summary": {
+      "baseline": {
+        "network_requests": 58,
+        "local_gate_cases": 12,
+        "latency_seconds": {
+          "n": 58,
+          "median": 0.23543,
+          "p95": 0.366326,
+          "max": 0.525362
+        },
+        "errors": 0,
+        "late_over_450ms": 2,
+        "scripted_rubric_matches": 38,
+        "scripted_scored": 38,
+        "model_scripted_matches": 28,
+        "model_scripted_scored": 28,
+        "advisory_actions": {
+          "orient": 16,
+          "encourage": 0,
+          "correct": 9,
+          "refine": 14,
+          "wait": 31
+        }
+      },
+      "autonomous": {
+        "network_requests": 58,
+        "local_gate_cases": 12,
+        "latency_seconds": {
+          "n": 58,
+          "median": 0.236383,
+          "p95": 0.672398,
+          "max": 0.774597
+        },
+        "errors": 0,
+        "late_over_450ms": 3,
+        "scripted_rubric_matches": 38,
+        "scripted_scored": 38,
+        "model_scripted_matches": 28,
+        "model_scripted_scored": 28,
+        "advisory_actions": {
+          "orient": 8,
+          "encourage": 10,
+          "correct": 10,
+          "refine": 10,
+          "wait": 32
+        }
+      }
+    },
+    "requests": [
+      {
+        "case": "turn_start",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.46468,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1842,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": false
+      },
+      {
+        "case": "turn_start",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.774597,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2368,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": false
+      },
+      {
+        "case": "turn_90_progress",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.307001,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2646,
+        "action": "encourage",
+        "text": "Keep going right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_90_progress",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.277904,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1995,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_45_progress",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.218534,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1987,
+        "action": "orient",
+        "text": "Look right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_45_progress",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.236776,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2634,
+        "action": "encourage",
+        "text": "Keep going right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recent_repeat",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.23599,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2357,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recent_repeat",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.228885,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1831,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "ignored_direction_long_silence",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.282563,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1831,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "ignored_direction_long_silence",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.239113,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2357,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "wall_entry_down",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.224311,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2356,
+        "action": "refine",
+        "text": "Look lower.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "wall_entry_down",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.229869,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1834,
+        "action": "refine",
+        "text": "Look lower.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "vertical_progress",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "refine",
+          "encourage"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine",
+          "encourage"
+        ],
+        "seconds": 0.209426,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1993,
+        "action": "refine",
+        "text": "A little lower.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "vertical_progress",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "refine",
+          "encourage"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine",
+          "encourage"
+        ],
+        "seconds": 0.224988,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2643,
+        "action": "encourage",
+        "text": "Keep going down.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "overshoot_return",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "correct",
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.241558,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2629,
+        "action": "correct",
+        "text": "Go back up and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "overshoot_return",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "correct",
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.217484,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1974,
+        "action": "correct",
+        "text": "Go back up and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "gaze_found_controller_elsewhere",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "gaze_found_controller_elsewhere",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "controller_unqualified_hold",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "controller_unqualified_hold",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "blink",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "blink",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "pause",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "pause",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "speech_playing",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "speech_playing",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recovery",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.245492,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2368,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recovery",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.216762,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1842,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_397",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.208456,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2340,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_397",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.672398,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2866,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": false
+      },
+      {
+        "case": "recorded_1052",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.243685,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3647,
+        "action": "correct",
+        "text": "Go back up and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_1052",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.233959,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2992,
+        "action": "correct",
+        "text": "Go back up and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_1190",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.216846,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2865,
+        "action": "refine",
+        "text": "Just a little lower and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_1190",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.213569,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3405,
+        "action": "refine",
+        "text": "Just a little lower and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_2554",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.260876,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3678,
+        "action": "correct",
+        "text": "Go back down and right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_2554",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.188311,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3017,
+        "action": "correct",
+        "text": "Go back down and right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3235",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3235",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3266",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.218258,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3599,
+        "action": "correct",
+        "text": "Go back down.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3266",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.253544,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2958,
+        "action": "correct",
+        "text": "Go back down.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3472",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.235665,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2879,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3472",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.261947,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3418,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3503",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.229809,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3432,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3503",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.234497,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2893,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3529",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.264552,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2904,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3529",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.218352,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3443,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3556",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.233524,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3456,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3556",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.210898,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2917,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3581",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.235195,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2929,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3581",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.283566,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3468,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3606",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.192571,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3468,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3606",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.246434,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2929,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3632",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.245929,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2932,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3632",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.256749,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3471,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3778",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.211555,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3410,
+        "action": "refine",
+        "text": "A little higher.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3778",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.231762,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2883,
+        "action": "refine",
+        "text": "A little higher.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3802",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.215056,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2904,
+        "action": "refine",
+        "text": "A little higher and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3802",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.195331,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3440,
+        "action": "refine",
+        "text": "A little higher and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3828",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.319328,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3441,
+        "action": "refine",
+        "text": "A little higher and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3828",
+        "basis": "recorded_frozen_history",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.253452,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2905,
+        "action": "refine",
+        "text": "A little higher and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_turn_90_progress",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.304478,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1991,
+        "action": "orient",
+        "text": "Turn way left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_turn_90_progress",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.268899,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2640,
+        "action": "encourage",
+        "text": "Keep going left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_recent_repeat",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.323957,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2354,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_recent_repeat",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.29054,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1829,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_ignored_direction_long_silence",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.276759,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1829,
+        "action": "orient",
+        "text": "Turn way left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_ignored_direction_long_silence",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.307154,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2354,
+        "action": "orient",
+        "text": "Turn way left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_vertical_progress",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "refine",
+          "encourage"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine",
+          "encourage"
+        ],
+        "seconds": 0.30876,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2638,
+        "action": "encourage",
+        "text": "Keep going up.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_vertical_progress",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "refine",
+          "encourage"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine",
+          "encourage"
+        ],
+        "seconds": 0.233761,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1989,
+        "action": "refine",
+        "text": "A little higher.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_overshoot_return",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "baseline",
+        "expected_actions": [
+          "correct",
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.246118,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1982,
+        "action": "correct",
+        "text": "Go back down and right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_overshoot_return",
+        "basis": "scripted",
+        "repeat": 0,
+        "arm": "autonomous",
+        "expected_actions": [
+          "correct",
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.229802,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2643,
+        "action": "correct",
+        "text": "Go back down and right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_start",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.226905,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2368,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_start",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.240744,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1842,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_90_progress",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.217962,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1995,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_90_progress",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.220256,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2646,
+        "action": "encourage",
+        "text": "Keep going right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_45_progress",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.2301,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2634,
+        "action": "encourage",
+        "text": "Keep going right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "turn_45_progress",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.238635,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1987,
+        "action": "orient",
+        "text": "Look right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recent_repeat",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.366326,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1831,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recent_repeat",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.304314,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2357,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "ignored_direction_long_silence",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.286252,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2357,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "ignored_direction_long_silence",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.200524,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1831,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "wall_entry_down",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.317973,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1834,
+        "action": "refine",
+        "text": "Look lower.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "wall_entry_down",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.224234,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2356,
+        "action": "refine",
+        "text": "Look lower.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "vertical_progress",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "refine",
+          "encourage"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine",
+          "encourage"
+        ],
+        "seconds": 0.215983,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2643,
+        "action": "encourage",
+        "text": "Keep going down.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "vertical_progress",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "refine",
+          "encourage"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine",
+          "encourage"
+        ],
+        "seconds": 0.189576,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1993,
+        "action": "refine",
+        "text": "A little lower.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "overshoot_return",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "correct",
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.231361,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1974,
+        "action": "correct",
+        "text": "Go back up and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "overshoot_return",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "correct",
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.2083,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2629,
+        "action": "correct",
+        "text": "Go back up and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "gaze_found_controller_elsewhere",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "gaze_found_controller_elsewhere",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "controller_unqualified_hold",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "controller_unqualified_hold",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "blink",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "blink",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "pause",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "pause",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "speech_playing",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "speech_playing",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recovery",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.232097,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1842,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recovery",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.189173,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2368,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_397",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.240312,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2866,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_397",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.287154,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2340,
+        "action": "orient",
+        "text": "Turn way right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_1052",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.284593,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2992,
+        "action": "correct",
+        "text": "Go back up and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_1052",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.284091,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3647,
+        "action": "correct",
+        "text": "Go back up and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_1190",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.21833,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3405,
+        "action": "refine",
+        "text": "Just a little lower and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_1190",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.214363,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2865,
+        "action": "refine",
+        "text": "Just a little lower and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_2554",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.237973,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3017,
+        "action": "correct",
+        "text": "Go back down and right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_2554",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.205519,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3678,
+        "action": "correct",
+        "text": "Go back down and right.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3235",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3235",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait"
+        ],
+        "seconds": 0,
+        "status": "ok",
+        "local_only": true,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3266",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.325613,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2958,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3266",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.198089,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3599,
+        "action": "correct",
+        "text": "Go back down.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3472",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.212247,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3418,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3472",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.353588,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2879,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3503",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.303365,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2893,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3503",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.241627,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3432,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3529",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.303774,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3443,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3529",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.276812,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2904,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3556",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.253358,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2917,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3556",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.216463,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3456,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3581",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.210584,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3468,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3581",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.333435,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2929,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3606",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.328679,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2929,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3606",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.214124,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3468,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3632",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.284635,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3471,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3632",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.224867,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2932,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3778",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.225736,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2883,
+        "action": "refine",
+        "text": "A little higher.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3778",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.332347,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3410,
+        "action": "refine",
+        "text": "A little higher.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3802",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.201779,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3440,
+        "action": "refine",
+        "text": "A little higher and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3802",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.207348,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2904,
+        "action": "refine",
+        "text": "A little higher and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3828",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.231859,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2905,
+        "action": "refine",
+        "text": "A little higher and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "recorded_3828",
+        "basis": "recorded_frozen_history",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": null,
+        "eligible_actions": [
+          "wait",
+          "refine"
+        ],
+        "seconds": 0.216905,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 3441,
+        "action": "refine",
+        "text": "A little higher and left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_turn_90_progress",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.22928,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2640,
+        "action": "encourage",
+        "text": "Keep going left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_turn_90_progress",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "encourage",
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient",
+          "encourage"
+        ],
+        "seconds": 0.219137,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1991,
+        "action": "orient",
+        "text": "Turn way left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_recent_repeat",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.201424,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1829,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_recent_repeat",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "wait"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.244777,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2354,
+        "action": "wait",
+        "text": null,
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_ignored_direction_long_silence",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.275642,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2354,
+        "action": "orient",
+        "text": "Turn way left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_ignored_direction_long_silence",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "orient"
+        ],
+        "eligible_actions": [
+          "wait",
+          "orient"
+        ],
+        "seconds": 0.235052,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1829,
+        "action": "orient",
+        "text": "Turn way left.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_vertical_progress",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "refine",
+          "encourage"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine",
+          "encourage"
+        ],
+        "seconds": 0.266886,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1989,
+        "action": "refine",
+        "text": "A little higher.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_vertical_progress",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "refine",
+          "encourage"
+        ],
+        "eligible_actions": [
+          "wait",
+          "refine",
+          "encourage"
+        ],
+        "seconds": 0.367726,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2638,
+        "action": "encourage",
+        "text": "Keep going up.",
+        "usable_within_deadline": true
+      },
+      {
+        "case": "holdout_overshoot_return",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "autonomous",
+        "expected_actions": [
+          "correct",
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.712182,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 2643,
+        "action": "correct",
+        "text": "Go back down and right.",
+        "usable_within_deadline": false
+      },
+      {
+        "case": "holdout_overshoot_return",
+        "basis": "scripted",
+        "repeat": 1,
+        "arm": "baseline",
+        "expected_actions": [
+          "correct",
+          "refine"
+        ],
+        "eligible_actions": [
+          "wait",
+          "correct",
+          "refine"
+        ],
+        "seconds": 0.525362,
+        "status": "ok",
+        "local_only": false,
+        "request_bytes": 1982,
+        "action": "correct",
+        "text": "Go back down and right.",
+        "usable_within_deadline": false
+      }
+    ]
+  },
+  "limitations": [
+    "Python action eligibility is experimental; production Unity still owns a single allowed action.",
+    "Recorded cases have no human action-preference ground truth. Scripted expected sets are an engineering rubric.",
+    "Frozen history is shared across arms, not updated with counterfactual answers; no closed-loop behavior claim.",
+    "2s diagnostic transport timeout; answers after450ms would be late for the runtime.",
+    "Confirmation, completion and interruption are local/excluded; no acoustic, playback delay or participant improvement measurement.",
+    "No generated pilot phrases were added to participant audio libraries."
+  ]
+}

@@ -267,8 +267,9 @@ public sealed partial class TrialReviewApp
         m_Environment.Prepare(m_Timeline.State.Trial,m_ShowWalls,m_ShowRoom);
         m_Actors.Prepare(m_Timeline,m_Time,m_Renderer.RecordedHead,m_ShowBody,m_Renderer.ShowControllers,m_ShowEyeRay,m_Correction);
         m_Vicinity.Prepare(m_Timeline,m_Renderer,m_Time,m_Sequence,m_Actors.GazeAvailable&&!WaitingForHeadset,m_Actors.GazeRay,m_ShowDetectionRing,m_GuidanceState.Current);
-        if(!m_Renderer.RecordedHead&&m_Renderer.SampleCurrent&&TrialReplayRenderer.HeadUsable(m_Timeline.State.Sample))
-            m_Renderer.Camera.transform.position+=m_Timeline.State.Sample.headPosition+Vector3.down*.5f;
+        // The orbit follows the fixed seated center, never per-frame head translation.
+        if(!m_Renderer.RecordedHead)
+            m_Renderer.Camera.transform.position+=m_Actors.ViewCenter;
         if(Event.current.type==EventType.Repaint)
         {
             Vector3 gazePoint=default;

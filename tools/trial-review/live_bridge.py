@@ -224,6 +224,7 @@ class Receiver:
         self.initialized = self.state.get('schema') == 2
         self.parsed = {safe_relative(name): offset for name, offset in self.state.get('parsed', {}).items()
                        if isinstance(offset, int) and offset >= 0}
+        self.spoken_audio = {}; self.audio_seeded = set()
         self.tails = {}; self.stable = {}; self.revision = 0; self.audio_revision = 0
         self.last_data = 0; self.latest = ''
         # Activity is source growth observed across inventories, not archive catch-up
@@ -295,6 +296,43 @@ class Receiver:
         def digests(): return self.remote.digest(name), sha(path)
         self.verification = (name, signature, self.verifier.submit(digests))
 
+    def remember_audio(self, name, record):
+        if record.get('kind') != 'audio_playback_start': return
+        clip = record.get('clip', '')
+        # Only recorded WAVs inside this replay package can be promoted.
+        if not isinstance(clip, str) or not re.fullmatch(r'audio/[A-Za-z0-9_-]+\.wav', clip): return
+        path = str(PurePosixPath(name).parent / clip)
+        recent = self.spoken_audio.setdefault(name, [])
+        if path in recent: recent.remove(path)
+        recent.append(path)
+        del recent[:-64]
+
+    def seed_recent_audio(self, name):
+        if name in self.audio_seeded: return
+        self.audio_seeded.add(name)
+        path = self.mirror.path(name)
+        if not path.is_file(): return
+        with path.open('rb') as source:
+            offset = max(0, path.stat().st_size - 1024 * 1024)
+            source.seek(offset)
+            if offset: source.readline()  # skip a potentially partial first line
+            lines = source.read().split(b'\n')[:-1]
+        for line in lines:
+            try: self.remember_audio(name, json.loads(line))
+            except (ValueError, UnicodeDecodeError): continue
+
+    def copy_spoken_audio(self, name, inventory):
+        # One urgent atomic WAV may exceed the normal tick budget. Without this
+        # reservation, a continuously growing replay can starve its own audio.
+        for clip in reversed(self.spoken_audio.get(name, [])):
+            if clip not in inventory: continue
+            size, modified = inventory[clip]
+            if self.mirror.copy(clip, size, modified):
+                self.revision += 1; self.audio_revision += 1; self.last_data = time.time()
+                self.checked_files[clip] = (size, modified)
+                self.stable[clip] = ((size, modified), time.monotonic())
+                return
+
     def select_links(self, name, inventory):
         path = self.mirror.path(name)
         offset = self.parsed.get(name, 0)
@@ -310,6 +348,7 @@ class Receiver:
         for line in lines:
             try: record = json.loads(line)
             except (ValueError, UnicodeDecodeError): raise ValueError('Malformed complete replay line: ' + name)
+            self.remember_audio(name, record)
             participant, run = record.get('participantCode'), record.get('sourceRunFolder')
             if participant and run:
                 folder = safe_relative(f'GazeData/{participant}/{run}')
@@ -374,6 +413,8 @@ class Receiver:
             self.replay_signature = signature
         # Replay first, newest first: live preview is never held behind raw-eye catch-up.
         ordered = [d + '/recording.jsonl' for d in reversed(selected_replays)]
+        newest_replay = ordered[0] if ordered else None
+        if newest_replay: self.seed_recent_audio(newest_replay)
         # Prepared, normalized WAVs are exported during Loading, before playback.
         # Copy them ahead of bulk telemetry; playback events later reuse these files.
         ordered += [p for d in reversed(selected_replays) for p in inventory
@@ -390,13 +431,15 @@ class Receiver:
                     (entry.get('size'), entry.get('modified'), entry.get('received')) == (size, modified, size):
                 if name.endswith('/recording.jsonl') and self.parsed.get(name, 0) < size:
                     self.select_links(name, inventory)
-                    if time.monotonic() - transfer_started >= .25: break
+                if name == newest_replay: self.copy_spoken_audio(name, inventory)
+                if time.monotonic() - transfer_started >= .25: break
                 continue
             if self.mirror.copy(name, size, modified):
                 self.revision += 1; copied += 1; self.last_data = time.time()
                 if name.endswith('.wav'): self.audio_revision += 1
             self.checked_files[name] = (size, modified)
             if name.endswith('/recording.jsonl'): self.select_links(name, inventory)
+            if name == newest_replay: self.copy_spoken_audio(name, inventory)
             signature = (size, modified)
             old = self.stable.get(name)
             if old is None or old[0] != signature: self.stable[name] = (signature, now)
