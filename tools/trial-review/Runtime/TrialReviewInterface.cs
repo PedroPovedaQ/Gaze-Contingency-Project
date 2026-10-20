@@ -160,7 +160,7 @@ public sealed partial class TrialReviewApp
                 m_WaitingPyramid.Render(Time.realtimeSinceStartupAsDouble),ScaleMode.ScaleToFit,true);
         }
         m_WaitingTitle.fontSize=24;
-        GUI.Label(new Rect(m_Viewport.x+12,top+size+6,m_Viewport.width-24,32),"Waiting for connection",m_WaitingTitle);
+        GUI.Label(new Rect(m_Viewport.x+12,top+size+6,m_Viewport.width-24,32),LiveWaitingReason,m_WaitingTitle);
         m_UcfLogo??=Resources.Load<Texture2D>("UcfLogo");
         if(m_UcfLogo!=null)GUI.DrawTexture(new Rect(m_Viewport.xMax-102,m_Viewport.yMax-70,84,56),m_UcfLogo,ScaleMode.ScaleToFit,true);
     }

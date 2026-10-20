@@ -1,6 +1,6 @@
 # Conversational voice guidance
 
-**Implemented locally, October 20, 2026 — v24.** Headset wearer validation remains necessary; durations and tolerances are pilot interaction settings, not validated fixations or perceptual thresholds.
+**Implemented locally, October 20, 2026 — v25.** Headset wearer validation remains necessary; durations and tolerances are pilot interaction settings, not validated fixations or perceptual thresholds.
 
 The opening direction plays before the objects appear and before search timing starts. The target remains hidden from the participant. Both voice conditions use the same guidance decisions and phrase library.
 
@@ -26,7 +26,7 @@ stateDiagram-v2
 
 - Actual object position determines shortest left/right direction, including its lateral offset on the wall. An exact seated-layout 0-to-180 tie chooses right; 180-to-0 chooses left. Near the rear seam, retain the opening/initial route until the remaining angle is below 150 degrees or the target wall is entered. This prevents +/-180 jitter reversing the instruction.
 - At 90 degrees or more remaining, say “Turn way left/right.” Each newly reached 45-degree remaining-error milestone can produce one varied continuation: “Keep going to the right,” “That's it, keep going right,” or “Keep going right” (with matching leftward variants). Repeated crossings of a consumed milestone do not rearm it. Fast movement coalesces milestones instead of queueing stale cues.
-- Cues wait for available speech and the 0.6-second ordinary interval. New milestones and stable arrivals use a local prepared phrase, without a second Jev speak/wait decision. Jev still advises ordinary directions. A reminder with the same semantic direction/magnitude waits three seconds after the preceding directional clip ends, including on timeout; actual direction changes and new milestones remain eligible. These gates mean no promise to speak at every wall boundary during a fast turn.
+- Cues wait for available speech and the 0.1-second ordinary interval. New milestones, stable arrivals and qualified return corrections use a local prepared phrase, without a second Jev speak/wait decision. Jev still advises ordinary directions, with a one-second maximum transmission deferral. A reminder with the same semantic direction/magnitude waits three seconds after the preceding directional clip ends, including on timeout; actual direction changes and new milestones remain eligible. These gates mean no promise to speak at every wall boundary during a fast turn.
 - Stable arrival combines an area acknowledgment and the current refinement in one prepared clip. A recent wall departure gives the actual direction back rather than generic “go back.”
 
 ## Inside the target wall
@@ -60,7 +60,7 @@ Target confirmation still requires the target to be the unique closest candidate
 
 Local rules protect the first 650ms, the last 1,000ms of the recorded speech window (excluding the clone's effect tail), acknowledgments and the trigger reminder; interruptions have a 2.5-second cooldown. Every request needs prepared replacement audio and valid qualified gaze. Only current approval can start a linear fade from the current volume to zero over a nominal **150ms of unscaled real time**, then stop. Unity applies volume per frame, so the stop occurs on the first frame at or after the deadline, not a sample-accurate 150ms guarantee. After fading, recheck the correction; drop it if gaze/target evidence changed. Do not reverse the fade partway through.
 
-The October 11 post-sentence gap is 0.25 seconds, or 0.6 seconds after acknowledgments. Invalid gaze suspends new decisions immediately; after the existing 250ms tracking grace, current guidance fades out locally without consulting Jev. Pause, trial cancellation, setup/opening cancellation and disabling the component retain immediate stop semantics.
+The October 20 post-sentence gap is 0.25 seconds, or 0.1 seconds after acknowledgments. Invalid gaze suspends new decisions immediately; after the existing 250ms tracking grace, current guidance fades out locally without consulting Jev. Pause, trial cancellation, setup/opening cancellation and disabling the component retain immediate stop semantics.
 
 The pilot is controlled by **Use Jev Interruptions** on `VoiceSynthesizer` in the Inspector (enabled by default). Turning it off restores finish-phrase correction scheduling; tracking-loss fade remains. Both voice conditions share the same policy. `interruption_advice` logs decisions/discards and `audio_fade_start` records the 150ms envelope for reconstruction. Existing installed standalone replay viewers need rebuilding to gain the new envelope renderer.
 
@@ -83,7 +83,7 @@ Examples are shortened to “Turn way left,” “Right area. Look lower,” “
 | Awkward transition | Evaluation | Current behavior |
 | --- | --- | --- |
 | Go back — YEP | Cuts off the return instruction | Usually finish; a current Jev approval may fade a misleading long return, then revalidate confirmation |
-| YEP — now look down | Gives contradictory-sounding instructions too rapidly | Finish acknowledgment and wait 0.6 seconds before reevaluating |
+| YEP — now look down | Gives contradictory-sounding instructions too rapidly | Finish acknowledgment and wait 0.1 seconds before reevaluating |
 | Up — down — up during gaze motion | Speaks transient states | Finish one phrase; choose only the latest stable direction |
 | Blink cuts a word | Treats a short data gap as a speech cancellation | Immediately suspend new decisions; allow 0.25 seconds before fading current speech |
 
@@ -102,3 +102,7 @@ same-wall arrival cannot request an interruption. See [the semantic pipeline](sp
 Within the wall, “A bit more” / “Just a little more” can follow a direction only after
 at least 2° of improvement, with at most 10° remaining and, for vertical/diagonal guidance,
 at most 20% plane-height error. One continuation per unchanged direction prevents a loop.
+
+### Short turn-progress cues (October 20)
+
+**Implemented:** new 45-degree turn milestones can use “More, more.”, “Keep turning.” or “A bit further.” when a direction was explicitly spoken within six seconds and valid gaze shows at least two degrees of recent progress on that route. Progress evidence expires after 350 ms; an observed reversal greater than 0.5 degrees invalidates it immediately. Tracking gaps clear motion evidence; invalid gaze also clears the explicit-direction context. The cue is checked again immediately before playback. Otherwise the milestone names the direction. Milestones still consume only at playback, so backtracking or standing still cannot repeat one. These are pilot conversation thresholds, not fixation measures.

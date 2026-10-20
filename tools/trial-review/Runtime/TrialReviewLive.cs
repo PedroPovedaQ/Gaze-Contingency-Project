@@ -21,6 +21,8 @@ public sealed partial class TrialReviewApp
     int m_LiveIndexed, m_AudioRevision = -1;
     bool m_JoinLive, m_LiveAudioDirty, m_LiveSignalActive;
     bool WaitingForHeadset => m_FollowLive && !m_LiveSignalActive;
+    string LiveWaitingReason => m_LiveFollow.WaitingReason(ReceiverConnected, UtcSeconds,
+        m_LiveStatus?.replayUpdatedUtc ?? 0, m_LiveStatus?.replayPendingBytes ?? 0, m_LiveStream?.CaughtUp ?? true);
     static double UtcSeconds => (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
     bool ReceiverConnected => m_LiveStatus != null && m_LiveStatus.state == "connected" && UtcSeconds - m_LiveStatus.updatedUtc < 8;
     bool ReceiverRunning => m_Bridge != null && !m_Bridge.HasExited;
@@ -199,7 +201,7 @@ public sealed partial class TrialReviewApp
         string state = m_LiveStatus == null ? ReceiverRunning ? "Connecting…" : "Connect by USB once or enter the headset IP. Transfers use Wi-Fi." :
             $"{(ReceiverConnected ? "WI-FI CONNECTED" : "NOT RECEIVING")} · {m_LiveStatus.receivedBytes / 1000000:F1} MB saved · {m_LiveStatus.verifiedFiles}/{m_LiveStatus.files} files hash-verified · {m_LiveStatus.pendingBytes / 1000000:F1} MB catching up";
         GUILayout.Label(state, m_Heading);
-        string view = m_FollowLive ? WaitingForHeadset ? "Waiting for headset signal" :
+        string view = m_FollowLive ? WaitingForHeadset ? LiveWaitingReason :
             $"Following · {Math.Max(0, m_Timeline.Duration - m_Time):F1}s behind received data" : "Reviewing history; receiver continues saving while connected";
         GUILayout.Label(m_LiveStatus?.state == "error" ? m_LiveStatus.message : view + " · Headset keeps the original recording", m_MutedLabel);
         GUILayout.EndArea();

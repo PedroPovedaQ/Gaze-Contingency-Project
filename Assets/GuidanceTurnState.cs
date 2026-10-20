@@ -5,8 +5,39 @@ public sealed class GuidanceTurnState
 {
     string m_Route, m_SpokenDirection;
     float m_NextMilestone;
+    string m_ObservedDirection;
+    float m_PreviousRemaining, m_ProgressAnchor;
+    double m_ObservedAt = double.NegativeInfinity, m_ProgressAt = double.NegativeInfinity;
+    double m_ExplicitAt = double.NegativeInfinity;
 
-    public void Reset() { m_Route = m_SpokenDirection = null; m_NextMilestone = 0; }
+    public void Reset()
+    {
+        m_Route = m_SpokenDirection = null; m_NextMilestone = 0;
+        m_ExplicitAt = double.NegativeInfinity; ClearMotion();
+    }
+    void ClearMotion()
+    {
+        m_ObservedDirection = null;
+        m_ObservedAt = m_ProgressAt = double.NegativeInfinity;
+    }
+    // Short, direction-free encouragement requires recent measured progress.
+    // Gaps and reversals invalidate it without resetting consumed milestones.
+    public void Observe(bool valid, string direction, float remaining, double now)
+    {
+        if (!valid || direction == null)
+        { ClearMotion(); m_ExplicitAt = double.NegativeInfinity; return; }
+        if (direction != m_ObservedDirection || now <= m_ObservedAt || now - m_ObservedAt > .3)
+        { m_ProgressAnchor = remaining; m_ProgressAt = double.NegativeInfinity; }
+        else if (remaining > m_PreviousRemaining + .5f)
+        { m_ProgressAnchor = remaining; m_ProgressAt = double.NegativeInfinity; }
+        else if (m_ProgressAnchor - remaining >= 2)
+        { m_ProgressAt = now; m_ProgressAnchor = remaining; }
+        m_ObservedDirection = direction; m_PreviousRemaining = remaining; m_ObservedAt = now;
+    }
+    public bool BriefProgressAllowed(string direction, double now) =>
+        direction == m_SpokenDirection && direction == m_ObservedDirection &&
+        now >= m_ObservedAt && now - m_ObservedAt <= .1 &&
+        now - m_ProgressAt <= .35 && now - m_ExplicitAt <= 6;
     public void Prime(string direction) { Reset(); m_Route = direction; }
 
     // The actual target bearing includes its lateral position on the wall. Once
@@ -36,10 +67,11 @@ public sealed class GuidanceTurnState
 
     // Advance only when a cue is issued. Backtracking and crossing the same
     // milestone twice cannot earn another "keep going". Skipped milestones coalesce.
-    public void MarkSpoken(string direction, float remaining)
+    public void MarkSpoken(string direction, float remaining, double now = double.NegativeInfinity, bool explicitDirection = true)
     {
         if (direction != m_SpokenDirection || ProgressDue(direction, remaining))
             m_NextMilestone = Math.Max(0, (float)Math.Floor((remaining - .01f) / 45) * 45);
         m_SpokenDirection = direction;
+        if (explicitDirection) m_ExplicitAt = now;
     }
 }

@@ -84,15 +84,17 @@ partial class VoiceIsolationChecks
         Drain(MonoBehaviour.LastRoutine);
         Check(calls==1 && commits==0 && !synth.IsSpeaking,"Wait advice never plays or commits the phrase");
         Check(!synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","retry-id"),"Wait decisions cannot flood Jev every tick");
-        Time.unscaledTime+=.61f;
+        Time.unscaledTime+=.09f;
+        Check(!synth.CanRequestGuidance("test"),"Jev wait remains throttled before 100 milliseconds");
+        Time.unscaledTime+=.02f;
         synth.TransmissionAdvisor=(state,token)=>System.Threading.Tasks.Task.FromResult(true);
-        Check(synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","speak-id"),"Wait can be reconsidered after 0.6 seconds");
+        Check(synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","speak-id"),"Wait can be reconsidered after 0.1 seconds");
         Drain(MonoBehaviour.LastRoutine);Check(commits==0,"Approval alone does not consume a guidance gate");Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Current approval commits once");
         Begin();
         synth.TransmissionAdvisor=(state,token)=>System.Threading.Tasks.Task.FromResult(false);
         synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","deferral-first");Drain(MonoBehaviour.LastRoutine);
         Check(commits==0,"Initial wait is respected");
-        Time.unscaledTime+=3.1f;
+        Time.unscaledTime+=1.1f;
         synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","deferral-last");Drain(MonoBehaviour.LastRoutine);
         Check(commits==0,"Approval alone does not consume a guidance gate");Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Repeated waits cannot starve locally qualified guidance");
         Begin();
@@ -157,7 +159,7 @@ partial class VoiceIsolationChecks
         synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"catalog_turn","joint-wait",false,"jev");
         Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==0,"Joint wait stays silent");
         Check(!synth.CanRequestGuidance("catalog_turn"),"Joint wait prevents another catalog request during cooldown");
-        Time.unscaledTime+=3.1f;
+        Time.unscaledTime+=1.1f;
         synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"catalog_turn","joint-deferral",false,"jev");
         Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==0,"Joint approval waits for playback before consumption");Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==1,"Joint waits retain bounded local fallback");
         Begin();
@@ -192,7 +194,8 @@ partial class VoiceIsolationChecks
             Check(Math.Abs(silence - 1.06) < .002, "Speech age includes actual completion of " + context);
         }
         foreach (var reason in new[] { "gaze_target_vicinity_hold", "controller_target_gaze_vicinity",
-            "turn_progress_milestone", "gaze_target_plane", "stable_wall_entry", "sustained_target_selection_reminder" })
+            "turn_progress_milestone", "gaze_target_plane", "stable_wall_entry", "sustained_target_selection_reminder",
+            "recent_target_departure", "target_bearing_overshoot", "gaze_overshoot_return" })
         {
             synth.Stop(); Time.unscaledTime += 5;
             int calls = 0, commits = 0; bool relevant = true; float committedAt = -1;
@@ -820,7 +823,7 @@ partial class VoiceIsolationChecks
                 Check(synth.GuidanceReady,"Ordinary guidance resumes after its gap");
                 Set(synth,"m_CurrentContext","tip"); Set(synth,"m_CurrentPhrase",DirectionalHintPolicy.LookingPhrase);
                 markEnd.Invoke(synth,null);
-                Time.unscaledTime += .59f;
+                Time.unscaledTime += .09f;
                 Check(!synth.GuidanceReady,"YEP retains a short pause before another direction");
                 Time.unscaledTime += .02f;
                 Check(synth.GuidanceReady,"Acknowledgment pause ends normally");

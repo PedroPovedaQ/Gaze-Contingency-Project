@@ -73,6 +73,7 @@ public sealed class GuidanceStateMachine
     }
     public void Step(Input input)
     {
+        Turn.Observe(input.valid && !input.inside, input.direction, input.remainingTurn, input.now);
         bool looking = input.valid && input.looking;
         bool revisit = m_Revisit.Update(input.valid, looking, input.now);
         bool reminder = m_Reminder.Step(looking && TargetAcknowledged, input.deltaSeconds);
@@ -136,7 +137,7 @@ public sealed class GuidanceStateMachine
         switch (action)
         {
             case GuidanceAction.Direction:
-            case GuidanceAction.Progress: if (!inside) Turn.MarkSpoken(direction, remainingTurn); break;
+            case GuidanceAction.Progress: if (!inside) Turn.MarkSpoken(direction, remainingTurn, now, action == GuidanceAction.Direction); break;
             case GuidanceAction.ConfirmPointing:
                 m_Pointing.MarkSpoken(now); m_Looking.MarkSpoken(now); TargetAcknowledged = true;
                 if (inside) m_Wall.MarkSpoken(now); TargetHistory.Clear(); m_Return.MarkSpoken(now); break;

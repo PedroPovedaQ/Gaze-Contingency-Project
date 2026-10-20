@@ -4341,6 +4341,63 @@
         "requires": [],
         "canBeSupersededBy": []
       }
+    },
+    {
+      "text": "More, more.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "turning",
+        "interruptPolicy": "finish",
+        "requires": [
+          "fresh_valid_gaze",
+          "recent_explicit_direction",
+          "same_direction",
+          "recent_measured_progress",
+          "unconsumed_turn_milestone"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Keep turning.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "turning",
+        "interruptPolicy": "finish",
+        "requires": [
+          "fresh_valid_gaze",
+          "recent_explicit_direction",
+          "same_direction",
+          "recent_measured_progress",
+          "unconsumed_turn_milestone"
+        ],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "A bit further.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "turning",
+        "interruptPolicy": "finish",
+        "requires": [
+          "fresh_valid_gaze",
+          "recent_explicit_direction",
+          "same_direction",
+          "recent_measured_progress",
+          "unconsumed_turn_milestone"
+        ],
+        "canBeSupersededBy": []
+      }
     }
   ]
 }

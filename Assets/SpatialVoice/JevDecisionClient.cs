@@ -92,7 +92,7 @@ namespace SpatialVoice
 
         static JObject TransmissionQuestion() => new JObject {
                     ["type"] = "choice",
-                    ["instructions"] = "Choose speak or wait for an idle navigation assistant. The participant does not know the target. Use seconds_since_speech_ended as elapsed silence, not time since a request. pending_phrase is this proposed cue, not playing audio. A fresh correction after several seconds of silence is useful, even if older advice gave the opposite direction. A 0.6-second cadence is an opportunity, not an obligation. This decision cannot interrupt audio.",
+                    ["instructions"] = "Choose speak or wait for an idle navigation assistant. The participant does not know the target. Use seconds_since_speech_ended as elapsed silence, not time since a request. pending_phrase is this proposed cue, not playing audio. A fresh correction after several seconds of silence is useful, even if older advice gave the opposite direction. A 0.1-second cadence is an opportunity, not an obligation. This decision cannot interrupt audio.",
                     ["criteria"] = new JObject {
                         ["speak"] = "Valid gaze, idle audio, and an actionable proposed cue. Speak for a new direction or qualified event; also speak when silence exceeds 3 seconds and the user still needs guidance.",
                         ["wait"] = "Audio actually playing; invalid gaze; or redundant advice spoken within the past 3 seconds with no new direction/event. Also wait for target confirmations without local qualification or advice that contradicts current evidence." }

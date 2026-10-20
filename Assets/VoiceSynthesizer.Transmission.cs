@@ -118,7 +118,7 @@ public partial class VoiceSynthesizer
                 ["advice_path"] = selectedSpeak.HasValue ? "joint_catalog" : "transmission",
                 ["catalog_source"] = selectionSource,
                 ["elapsed_ms"] = (Time.realtimeSinceStartupAsDouble - started) * 1000 }.ToString(Newtonsoft.Json.Formatting.None));
-            if (outcome == "wait") { m_WaitReason = reason; m_WaitUntil = Time.realtimeSinceStartupAsDouble + .6; }
+            if (outcome == "wait") { m_WaitReason = reason; m_WaitUntil = Time.realtimeSinceStartupAsDouble + GuidanceSpeechPolicy.TransmissionRetrySeconds; }
         }
         finally
         {

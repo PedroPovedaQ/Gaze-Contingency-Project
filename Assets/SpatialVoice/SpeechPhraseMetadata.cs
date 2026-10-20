@@ -87,6 +87,11 @@ namespace SpatialVoice
             foreach (var text in new[] { DirectionalHintPolicy.BitMorePhrase, DirectionalHintPolicy.LittleMorePhrase })
                 result[text] = new SpeechPhraseMetadata { intent = "progress_encouragement", magnitude = "small",
                     stage = "within_target_wall", requires = new[] { "recent_explicit_direction", "same_direction", "measured_progress", "small_remaining_error", "continuation_not_already_used" } };
+            for (int i = 0; i < 3; i++)
+                result[DirectionalHintPolicy.BriefProgress(i)] = new SpeechPhraseMetadata {
+                    intent = "progress_encouragement", stage = "turning", interruptPolicy = "finish",
+                    requires = new[] { "fresh_valid_gaze", "recent_explicit_direction", "same_direction",
+                        "recent_measured_progress", "unconsumed_turn_milestone" } };
             result[DirectionalHintPolicy.PointingPhrase] = new SpeechPhraseMetadata {
                 intent = "controller_confirmation", stage = "target_acquired",
                 requires = new[] { "fresh_valid_gaze", "controller_target_hit", "qualified_controller_hold", "gaze_in_target_vicinity" } };

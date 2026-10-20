@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Wireless ADB receiver. Copies evidence; never starts trials or changes source files."""
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import fcntl
+import gzip
+import zlib
 import hashlib
 import ipaddress
 import json
@@ -15,6 +18,7 @@ import time
 
 ROOTS = ('GazeReplays', 'EyeMeasurements', 'GazeData', 'PreparationLogs')
 CHUNK = 2 * 1024 * 1024
+LINK_SCAN_CHUNK = 128 * 1024
 
 
 def safe_relative(name):
@@ -102,6 +106,7 @@ class Mirror:
 class Adb:
     def __init__(self, executable, endpoint, package):
         self.executable, self.endpoint = executable, endpoint
+        self.compress_text = False
         if not re.fullmatch(r'[A-Za-z0-9_.]+', package): raise ValueError('Invalid application package')
         self.root = '/sdcard/Android/data/' + package + '/files/'
 
@@ -114,12 +119,28 @@ class Adb:
         result = subprocess.run([self.executable, 'connect', self.endpoint], capture_output=True, timeout=12)
         if result.returncode: raise OSError('Cannot connect to wireless ADB')
         if self.command('get-state').strip() != b'device': raise OSError('Headset not authorized or offline')
+        try:
+            self.compress_text = gzip.decompress(self.command('exec-out', 'printf probe | gzip -1')) == b'probe'
+        except (OSError, EOFError, zlib.error):
+            self.compress_text = False
 
     def inventory(self):
         paths = ' '.join(shlex.quote(self.root + p) for p in ROOTS)
         # Missing optional folders are normal. The package directory itself must exist.
         self.command('shell', 'test -d ' + shlex.quote(self.root))
         raw = self.command('shell', "find " + paths + " -type f -exec stat -c '%s|%Y|%n' {} + 2>/dev/null; true")
+        return self.parse_inventory(raw)
+
+    def replay_inventory(self):
+        # A small stat response discovers new sessions and current replay growth
+        # without walking thousands of WAVs and archived raw-eye files each tick.
+        path = shlex.quote(self.root + 'GazeReplays')
+        raw = self.command('shell', "find " + path +
+                           " -mindepth 2 -maxdepth 2 -type f -name recording.jsonl"
+                           " -exec stat -c '%s|%Y|%n' {} + 2>/dev/null; true")
+        return self.parse_inventory(raw)
+
+    def parse_inventory(self, raw):
         result = {}
         for line in raw.decode().splitlines():
             size, modified, path = line.split('|', 2)
@@ -130,7 +151,14 @@ class Adb:
 
     def read(self, name, offset, count):
         path = shlex.quote(self.root + safe_relative(name))
-        return self.command('exec-out', f'dd if={path} bs=65536 skip={offset} count={count} iflag=skip_bytes,count_bytes status=none')
+        command = f'dd if={path} bs=65536 skip={offset} count={count} iflag=skip_bytes,count_bytes status=none'
+        compressed = self.compress_text and count >= 1024 * 1024 and name.endswith(('.jsonl', '.csv'))
+        data = self.command('exec-out', command + (' | gzip -1' if compressed else ''))
+        if not compressed: return data
+        try:
+            return gzip.decompress(data)
+        except (OSError, EOFError, zlib.error) as error:
+            raise OSError('Incomplete compressed transfer; retry without advancing offset') from error
 
     def digest(self, name):
         result = self.command('shell', 'sha256sum ' + shlex.quote(self.root + safe_relative(name)), timeout=45).decode().split()[0]
@@ -169,17 +197,83 @@ class Receiver:
         self.selected = set(self.state.get('selected', []))
         self.baseline = set(self.state.get('baseline', []))
         self.initialized = self.state.get('schema') == 2
-        self.parsed = {}; self.tails = {}; self.stable = {}; self.revision = 0; self.audio_revision = 0
+        self.parsed = {safe_relative(name): offset for name, offset in self.state.get('parsed', {}).items()
+                       if isinstance(offset, int) and offset >= 0}
+        self.tails = {}; self.stable = {}; self.revision = 0; self.audio_revision = 0
         self.last_data = 0; self.latest = ''
         # Activity is source growth observed across inventories, not archive catch-up
         # or an unrelated CSV/WAV arriving. Re-establish it after every restart.
         self.replay_signature = None; self.replay_updated = 0; self.replay_pending = 0
+        self.inventory_cache = None; self.inventory_at = float('-inf')
+        self.saved_at = float('-inf')
+        self.verifier = None; self.verification = None
+        self.inventory_worker = None; self.inventory_future = None
+        self.checked_files = {}; self.checked_at = float('-inf')
+
+    def close(self):
+        if self.verifier is not None: self.verifier.shutdown(wait=True)
+        if self.inventory_worker is not None: self.inventory_worker.shutdown(wait=True)
+
+    def current_inventory(self):
+        now = time.monotonic()
+        # Periodically recheck local files even if the headset copies are unchanged.
+        if now - self.checked_at >= 30:
+            self.checked_files.clear(); self.checked_at = now
+        full = self.inventory_cache is None
+        if full:
+            self.inventory_cache = self.remote.inventory()
+            self.inventory_at = now
+        else:
+            if self.inventory_future is not None and self.inventory_future.done():
+                future = self.inventory_future; self.inventory_future = None
+                self.inventory_at = now
+                # Surface connection errors through the existing reconnect path.
+                self.inventory_cache = future.result(); full = True
+            if self.inventory_future is None and now - self.inventory_at >= 3:
+                if self.inventory_worker is None:
+                    self.inventory_worker = ThreadPoolExecutor(max_workers=1)
+                self.inventory_future = self.inventory_worker.submit(self.remote.inventory)
+            # Fresh replay stats override the background archive snapshot, including
+            # removals. An expensive archive scan never delays current replay polling.
+            latest = self.remote.replay_inventory()
+            self.inventory_cache = {p: v for p, v in self.inventory_cache.items()
+                                    if not (p.startswith('GazeReplays/') and p.endswith('/recording.jsonl'))}
+            self.inventory_cache.update(latest)
+        return self.inventory_cache, full
+
+    def finish_verification(self):
+        if self.verification is None: return
+        name, signature, future = self.verification
+        if not future.done(): return
+        self.verification = None
+        entry = self.mirror.entries.get(name, {})
+        if (entry.get('size'), entry.get('modified')) != signature: return
+        try:
+            remote_digest, local_digest = future.result()
+        except (OSError, subprocess.SubprocessError):
+            # A slow/failed background hash must not take down a healthy live stream.
+            self.stable[name] = (signature, time.monotonic())
+            return
+        if remote_digest != local_digest:
+            if self.remote.inventory().get(name) == signature:
+                raise ValueError('Backup hash mismatch; preserve source and local copy: ' + name)
+            return
+        entry.update(sha256=remote_digest, verified=True)
+
+    def start_verification(self, name, signature):
+        if self.verifier is None: self.verifier = ThreadPoolExecutor(max_workers=1)
+        path = self.mirror.path(name)
+        # Workers only read. Manifest mutations stay on the receiver thread.
+        def digests(): return self.remote.digest(name), sha(path)
+        self.verification = (name, signature, self.verifier.submit(digests))
 
     def select_links(self, name, inventory):
         path = self.mirror.path(name)
         offset = self.parsed.get(name, 0)
+        if offset > path.stat().st_size:
+            offset = 0; self.tails.pop(name, None)
         with path.open('rb') as f:
-            f.seek(offset); data = f.read()
+            f.seek(offset); data = f.read(LINK_SCAN_CHUNK)
         self.parsed[name] = offset + len(data)
         data = self.tails.get(name, b'') + data
         lines = data.split(b'\n'); self.tails[name] = lines.pop()
@@ -200,7 +294,8 @@ class Receiver:
                 self.selected.add(eye_folders[eye_id])
 
     def cycle(self):
-        inventory = self.remote.inventory()
+        self.finish_verification()
+        inventory, full_inventory = self.current_inventory()
         replay_dirs = sorted({str(PurePosixPath(p).parent) for p in inventory if p.startswith('GazeReplays/') and p.endswith('/recording.jsonl')})
         folders = {}
         for name, (_, modified) in inventory.items():
@@ -236,22 +331,31 @@ class Receiver:
         # Copy them ahead of bulk telemetry; playback events later reuse these files.
         ordered += [p for d in reversed(selected_replays) for p in inventory
                     if p.startswith(d + '/audio/') and p.endswith('.wav')]
-        ordered += [p for p in inventory if p not in ordered]
+        priority = set(ordered)
+        ordered += [p for p in inventory if p not in priority]
         copied = 0
         transfer_started = time.monotonic()
         for name in ordered:
             if not any(name.startswith(d + '/') for d in self.selected): continue
             size, modified = inventory[name]
+            entry = self.mirror.entries.get(name, {})
+            if self.checked_files.get(name) == (size, modified) and \
+                    (entry.get('size'), entry.get('modified'), entry.get('received')) == (size, modified, size):
+                if name.endswith('/recording.jsonl') and self.parsed.get(name, 0) < size:
+                    self.select_links(name, inventory)
+                    if time.monotonic() - transfer_started >= .25: break
+                continue
             if self.mirror.copy(name, size, modified):
                 self.revision += 1; copied += 1; self.last_data = time.time()
                 if name.endswith('.wav'): self.audio_revision += 1
+            self.checked_files[name] = (size, modified)
             if name.endswith('/recording.jsonl'): self.select_links(name, inventory)
             signature = (size, modified)
             old = self.stable.get(name)
             if old is None or old[0] != signature: self.stable[name] = (signature, now)
             # Revisit playback events frequently even while a whole library is
             # arriving. Finish each atomic file, then yield after a bounded batch.
-            if copied and time.monotonic() - transfer_started >= .25: break
+            if time.monotonic() - transfer_started >= .25: break
         if selected_replays:
             name = selected_replays[-1] + '/recording.jsonl'
             self.latest = str(self.mirror.path(name))
@@ -260,16 +364,18 @@ class Receiver:
         for name, (signature, since) in self.stable.items():
             # Full-file hashes can block for seconds. Finish verification when live
             # source growth stops; all received bytes are still persisted each pass.
-            if self.replay_updated and time.time() - self.replay_updated < 2: break
+            if self.verification is not None or self.replay_updated and time.time() - self.replay_updated < 2: break
             entry = self.mirror.entries.get(name, {})
             if now - since >= 3 and not entry.get('verified') and entry.get('received') == signature[0]:
-                if not self.mirror.verify(name, *signature):
-                    # Source may still be growing; only declare corruption once its stat is unchanged.
-                    if self.remote.inventory().get(name) == signature:
-                        raise ValueError('Backup hash mismatch; preserve source and local copy: ' + name)
+                self.start_verification(name, signature)
                 break
-        self.mirror.save()
-        atomic_json(self.state_path, {'schema': 2, 'selected': sorted(self.selected), 'baseline': sorted(self.baseline)})
+        # Data bytes are fsynced on transfer. Checkpoint the larger manifest once
+        # per second rather than rewriting it for every low-latency replay poll.
+        if time.monotonic() - self.saved_at >= 1 or full_inventory:
+            self.mirror.save()
+            atomic_json(self.state_path, {'schema': 2, 'selected': sorted(self.selected), 'baseline': sorted(self.baseline),
+                'parsed': {name: offset - len(self.tails.get(name, b'')) for name, offset in self.parsed.items()}})
+            self.saved_at = time.monotonic()
         self.status('connected', f'Wi-Fi connected · {len(selected_replays)} run packages selected')
         return copied
 
@@ -324,6 +430,10 @@ def main():
                     if marker.exists() and json.loads(marker.read_text()) != identity_data:
                         raise ValueError('This archive belongs to another headset/application')
                     atomic_json(marker, identity_data)
+                    receiver.inventory_cache = None
+                    receiver.inventory_future = None
+                    receiver.checked_files.clear()
+                    receiver.replay_signature = None; receiver.replay_updated = 0
                     connected = True
                 receiver.cycle()
             except (OSError, subprocess.SubprocessError) as error:
@@ -337,6 +447,7 @@ def main():
         failed = True
         receiver.status('error', str(error)); raise
     finally:
+        receiver.close()
         receiver.mirror.save()
         if not failed:
             receiver.status('stopped', 'Receiver stopped; saved files retained. Reconnect to resume.')

@@ -27,16 +27,20 @@ public static class DirectionalHintPolicy
     public const string DownRightPhrase = "Look down and a little to your right.";
     public const string BitMorePhrase = "A bit more.";
     public const string LittleMorePhrase = "Just a little more.";
+    public static string BriefProgress(int index) =>
+        index % 3 == 0 ? "More, more." : index % 3 == 1 ? "Keep turning." : "A bit further.";
+    public static bool IsBriefProgress(string phrase) =>
+        phrase == BriefProgress(0) || phrase == BriefProgress(1) || phrase == BriefProgress(2);
     public static readonly string[] ProgressDirections = { LeftPhrase, RightPhrase, UpPhrase, DownPhrase,
         UpLeftPhrase, UpRightPhrase, DownLeftPhrase, DownRightPhrase };
     public static bool IsContinuation(string phrase)
     {
-        if (phrase == BitMorePhrase || phrase == LittleMorePhrase) return true;
+        if (phrase == BitMorePhrase || phrase == LittleMorePhrase || IsBriefProgress(phrase)) return true;
         foreach (var direction in ProgressDirections)
             for (int i = 0; i < 3; i++) if (phrase == Progress(direction, i)) return true;
         return false;
     }
-    public const string Version = "gaze-directional-v24-prompt-events";
+    public const string Version = "gaze-directional-v25-brief-turn-progress";
     static readonly string[] k_AreaLead = { "Right area.", "Right here.",
         "This area.", "Stay here." };
 
@@ -196,6 +200,7 @@ public static class DirectionalHintPolicy
         phrases.Add(PointingPhrase);
         phrases.Add(BitMorePhrase);
         phrases.Add(LittleMorePhrase);
+        for (int i = 0; i < 3; i++) phrases.Add(BriefProgress(i));
         foreach (var direction in ProgressDirections)
             for (int i = 0; i < 3; i++) phrases.Add(Progress(direction, i));
         foreach (var direction in new[] { LeftPhrase, RightPhrase })

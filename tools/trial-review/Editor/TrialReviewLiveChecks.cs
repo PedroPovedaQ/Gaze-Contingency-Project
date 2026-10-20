@@ -41,6 +41,10 @@ public static class TrialReviewLiveChecks
         Check(!follow.Ready(true, 103, 99.9, 0, false, true), "following never overrides source expiry");
         follow.Observe(new TrialReplayRecord { kind="application_paused", time=10.1 });
         Check(!follow.Ready(true, 100, 99.9, 0, true), "pause marker immediately waits despite fresh flush");
+        Check(follow.WaitingReason(true, 100, 99.9, 0, true) == "Headset app paused",
+            "A connected paused headset must not be labeled a connection failure");
+        Check(follow.WaitingReason(false, 100, 99.9, 0, true) == "Waiting for Wi-Fi connection",
+            "A real transport loss still identifies the connection problem");
         follow.Observe(new TrialReplayRecord { kind="sample", time=11, headAvailable=true, headTracked=0 });
         Check(!follow.Ready(true, 100, 99.9, 0, true), "head tracking loss waits");
         follow.Observe(new TrialReplayRecord { kind="sample", time=12, headAvailable=true, headTracked=1 });

@@ -7,18 +7,37 @@ public sealed class TrialReviewLiveFollow
     public const double SignalTimeoutSeconds = 2;
     double m_LastTime, m_SampleTime;
     bool m_TrackedSample, m_Paused;
+    string m_PauseReason;
+    bool m_HasSample;
 
     public void Observe(TrialReplayRecord record)
     {
         m_LastTime = record.time;
         if (record.kind == "sample")
         {
+            m_HasSample = true;
             m_SampleTime = record.time;
             m_TrackedSample = record.headAvailable && record.headTracked == 1;
             m_Paused = false;
         }
         else if (record.kind == "application_paused" || record.kind == "stop" || record.kind == "end")
+        {
             m_Paused = true;
+            m_PauseReason = record.kind == "application_paused" ? "Headset app paused" :
+                record.kind == "end" ? "Run complete" : "Session stopped";
+        }
+    }
+
+    public string WaitingReason(bool connected, double nowUtc, double sourceUpdatedUtc, double pendingBytes, bool caughtUp)
+    {
+        if (!connected) return "Waiting for Wi-Fi connection";
+        if (!caughtUp || pendingBytes > 0) return "Catching up with headset";
+        if (m_Paused) return m_PauseReason;
+        if (!m_HasSample) return "Waiting for a trial";
+        if (!m_TrackedSample) return "Waiting for head tracking";
+        if (sourceUpdatedUtc <= 0 || nowUtc - sourceUpdatedUtc >= SignalTimeoutSeconds)
+            return "Waiting for fresh headset samples";
+        return "Joining live view";
     }
 
     public bool Ready(bool connected, double nowUtc, double sourceUpdatedUtc, double pendingBytes, bool caughtUp, bool following = false)

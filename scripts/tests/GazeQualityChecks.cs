@@ -10,8 +10,8 @@ class GazeQualityChecks
         Check(!GuidanceSpeechPolicy.CanStart(true,10,-100,false),"A qualified 0.1-second gaze cannot cut an ongoing go-back phrase");
         Check(!GuidanceSpeechPolicy.CanStart(false,10.24,10,false),"A return cue needs a post-playback pause before YEP");
         Check(GuidanceSpeechPolicy.CanStart(false,10.26,10,false),"Fresh confirmation becomes eligible after the pause");
-        Check(!GuidanceSpeechPolicy.CanStart(false,12.59,12,true),"After YEP, directions retain a short acknowledgment pause");
-        Check(GuidanceSpeechPolicy.CanStart(false,12.61,12,true),"Latest direction is eligible after acknowledgment settles");
+        Check(!GuidanceSpeechPolicy.CanStart(false,12.09,12,true),"After YEP, directions retain a 100ms acknowledgment pause");
+        Check(GuidanceSpeechPolicy.CanStart(false,12.11,12,true),"Latest direction is eligible after acknowledgment settles");
         for(int i=0;i<4;i++) Check(GuidanceSpeechPolicy.IsAcknowledgment(DirectionalHintPolicy.Variant(DirectionalHintPolicy.LookingPhrase,i)),"All acknowledgment variants receive the same breathing room");
         Check(GuidanceSpeechPolicy.IsAcknowledgment(DirectionalHintPolicy.PointingPhrase),"Controller acknowledgment is protected by the same pause");
         Check(!GuidanceSpeechPolicy.IsAcknowledgment(DirectionalHintPolicy.ReturnToTarget(DirectionalHintPolicy.DownLeftPhrase)),"Return cue uses ordinary pacing");
@@ -53,6 +53,35 @@ class GazeQualityChecks
         Check(DirectionalHintPolicy.Progress(DirectionalHintPolicy.LeftPhrase,0)=="Keep going to the left.","Left route is explicit");
         Check(DirectionalHintPolicy.Progress(DirectionalHintPolicy.RightPhrase,0)=="Keep going to the right.","Right route is explicit");
         Check(DirectionalHintPolicy.Progress(DirectionalHintPolicy.DownLeftPhrase,0)=="Keep looking down and left.","Diagonal progress retains both axes");
+        foreach (var direction in new[] { DirectionalHintPolicy.LeftPhrase, DirectionalHintPolicy.RightPhrase })
+        {
+            var moving = new GuidanceTurnState();
+            moving.MarkSpoken(direction, 180, 0);
+            moving.Observe(true, direction, 180, 0);
+            moving.Observe(true, direction, 177, .1);
+            Check(moving.BriefProgressAllowed(direction, .1), "Recent same-route movement permits short encouragement");
+            Check(!moving.BriefProgressAllowed(direction == DirectionalHintPolicy.LeftPhrase ?
+                DirectionalHintPolicy.RightPhrase : DirectionalHintPolicy.LeftPhrase, .1), "Short encouragement cannot describe the opposite route");
+            moving.Observe(true, direction, 179, .2);
+            Check(!moving.BriefProgressAllowed(direction, .2), "Reversing immediately removes short encouragement");
+            moving.Observe(true, direction, 175, .3);
+            Check(moving.BriefProgressAllowed(direction, .3), "Resuming measured progress permits encouragement");
+            moving.Observe(true, direction, 175, .5);
+            moving.Observe(true, direction, 175, .7);
+            Check(!moving.BriefProgressAllowed(direction, .7), "Stopping expires progress even with valid gaze");
+            moving.Observe(false, direction, 175, .8);
+            moving.Observe(true, direction, 174, .9);
+            moving.Observe(true, direction, 170, 1);
+            Check(!moving.BriefProgressAllowed(direction, 1), "Tracking recovery needs an explicit direction again");
+            moving.MarkSpoken(direction, 170, 1);
+            moving.Observe(true, direction, 130, 7);
+            moving.Observe(true, direction, 127, 7.1);
+            Check(!moving.BriefProgressAllowed(direction, 7.1), "A direction older than six seconds cannot support a vague cue");
+        }
+        for (int i = 0; i < 3; i++)
+            Check(Array.IndexOf(DirectionalHintPolicy.AllPhrases(), DirectionalHintPolicy.BriefProgress(i)) >= 0 &&
+                DirectionalHintPolicy.IsContinuation(DirectionalHintPolicy.BriefProgress(i)),
+                "Short turn-progress clips are prepared and retain continuation limits");
         Check(Array.IndexOf(DirectionalHintPolicy.AllPhrases(),"Keep going.")<0 &&
             Array.IndexOf(DirectionalHintPolicy.AllPhrases(),"Keep going that way.")<0,"Directionless progress clips are no longer prepared");
         var reminder = new StudyPromptDelay(5);

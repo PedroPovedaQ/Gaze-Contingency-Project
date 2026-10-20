@@ -1,11 +1,13 @@
 import hashlib
+import gzip
 import json
 from pathlib import Path
 import tempfile
+import threading
 import unittest
 from unittest.mock import patch
 
-from live_bridge import Mirror, Receiver, safe_relative, main
+from live_bridge import Mirror, Receiver, safe_relative, main, LINK_SCAN_CHUNK, Adb
 
 
 class Remote:
@@ -17,6 +19,10 @@ class Remote:
     def inventory(self):
         return {p: (len(data), len(data)) for p, data in self.files.items()}
 
+    def replay_inventory(self):
+        return {p: (len(data), len(data)) for p, data in self.files.items()
+                if p.startswith('GazeReplays/') and p.endswith('/recording.jsonl')}
+
     def read(self, path, offset, count):
         if self.fail:
             raise OSError('wireless disconnected')
@@ -27,6 +33,118 @@ class Remote:
 
 
 class LiveBridgeTests(unittest.TestCase):
+    def test_large_text_transport_compresses_without_changing_saved_bytes(self):
+        remote = Adb('adb', '127.0.0.1:5555', 'test.app'); remote.compress_text = True
+        data = b'{"kind":"sample"}\n' * 70000
+        with patch.object(remote, 'command', return_value=gzip.compress(data)) as command:
+            self.assertEqual(remote.read('GazeReplays/run/recording.jsonl', 123, len(data)), data)
+            self.assertIn('skip=123', command.call_args.args[1])
+            self.assertTrue(command.call_args.args[1].endswith(' | gzip -1'))
+        with patch.object(remote, 'command', return_value=b'raw') as command:
+            self.assertEqual(remote.read('GazeReplays/run/recording.jsonl', 0, 3), b'raw')
+            self.assertNotIn('gzip', command.call_args.args[1])
+            remote.read('GazeReplays/run/audio/clip.wav', 0, len(data))
+            self.assertNotIn('gzip', command.call_args.args[1])
+        with patch.object(remote, 'command', return_value=b'broken gzip'):
+            with self.assertRaises(OSError): remote.read('GazeReplays/run/recording.jsonl', 0, len(data))
+        remote.compress_text = False
+        with patch.object(remote, 'command', return_value=data) as command:
+            self.assertEqual(remote.read('GazeReplays/run/recording.jsonl', 0, len(data)), data)
+            self.assertNotIn('gzip', command.call_args.args[1])
+
+    def test_active_replay_does_not_rescan_the_entire_archive_each_tick(self):
+        with tempfile.TemporaryDirectory() as d:
+            remote = Remote(); name = 'GazeReplays/run/recording.jsonl'
+            remote.files[name] = b'{"kind":"header"}\n'
+            with patch.object(remote, 'inventory', wraps=remote.inventory) as inventory, \
+                 patch('live_bridge.time.monotonic', return_value=0):
+                receiver = Receiver(Path(d), remote); receiver.cycle()
+                remote.files[name] += b'{"kind":"sample"}\n'
+                receiver.cycle()
+                self.assertEqual(inventory.call_count, 1, 'live replay must not wait on the full archive scan every tick')
+                self.assertEqual((Path(d)/'data'/name).read_bytes(), remote.files[name])
+
+    def test_slow_hash_does_not_block_new_live_samples(self):
+        with tempfile.TemporaryDirectory() as d:
+            remote = Remote(); name = 'GazeReplays/run/recording.jsonl'
+            remote.files[name] = b'{"kind":"header"}\n'
+            release, entered, finished = threading.Event(), threading.Event(), threading.Event()
+            original = remote.digest
+            def slow_digest(path):
+                entered.set(); release.wait(5); return original(path)
+            remote.digest = slow_digest
+            receiver = Receiver(Path(d), remote)
+            with patch('live_bridge.time.monotonic', return_value=0): receiver.cycle()
+            def verify_cycle():
+                try:
+                    with patch('live_bridge.time.monotonic', return_value=4): receiver.cycle()
+                finally: finished.set()
+            worker = threading.Thread(target=verify_cycle)
+            worker.start()
+            try:
+                self.assertTrue(entered.wait(2), 'fixture reaches slow verification')
+                self.assertTrue(finished.wait(.3), 'verification must not hold up live polling')
+                remote.files[name] += b'{"kind":"sample"}\n'
+                receiver.cycle()
+                self.assertEqual((Path(d)/'data'/name).read_bytes(), remote.files[name])
+            finally:
+                release.set(); worker.join(3)
+                if hasattr(receiver, 'close'): receiver.close()
+
+    def test_slow_archive_scan_does_not_block_new_session_discovery(self):
+        with tempfile.TemporaryDirectory() as d:
+            remote = Remote(); name = 'GazeReplays/run/recording.jsonl'
+            remote.files[name] = b'{"kind":"header"}\n'
+            receiver = Receiver(Path(d), remote)
+            with patch('live_bridge.time.monotonic', return_value=0): receiver.cycle()
+            release, entered = threading.Event(), threading.Event()
+            original = remote.inventory
+            def slow_inventory():
+                entered.set(); release.wait(5); return original()
+            remote.inventory = slow_inventory
+            new = 'GazeReplays/run2/recording.jsonl'
+            remote.files[new] = b'{"kind":"header"}\n'
+            try:
+                with patch('live_bridge.time.monotonic', return_value=4): receiver.cycle()
+                self.assertTrue(entered.wait(1))
+                self.assertFalse(release.is_set())
+                self.assertEqual((Path(d)/'data'/new).read_bytes(), remote.files[new])
+                self.assertFalse(receiver.inventory_future.done())
+            finally:
+                release.set(); receiver.close()
+
+    def test_background_hash_does_not_certify_a_newer_file_version(self):
+        from concurrent.futures import Future
+        with tempfile.TemporaryDirectory() as d:
+            remote = Remote(); name = 'GazeReplays/run/recording.jsonl'
+            remote.files[name] = b'{"kind":"header"}\n'
+            receiver = Receiver(Path(d), remote); receiver.cycle()
+            old = remote.inventory()[name]
+            result = Future(); result.set_result(('old-digest', 'old-digest'))
+            remote.files[name] += b'{"kind":"sample"}\n'
+            receiver.mirror.copy(name, *remote.inventory()[name])
+            receiver.verification = (name, old, result)
+            receiver.finish_verification()
+            self.assertFalse(receiver.mirror.entries[name]['verified'])
+
+    def test_historical_link_scan_is_bounded_and_resumes_without_file_growth(self):
+        with tempfile.TemporaryDirectory() as d:
+            remote = Remote(); name = 'GazeReplays/run/recording.jsonl'
+            filler = b'{"kind":"sample"}\n' * (LINK_SCAN_CHUNK // 18 + 10)
+            remote.files[name] = filler + b'{"kind":"trial_begin","participantCode":"p1","sourceRunFolder":"linked"}\n'
+            receiver = Receiver(Path(d), remote)
+            with patch('live_bridge.time.monotonic', return_value=0):
+                receiver.cycle()
+                self.assertLessEqual(receiver.parsed[name], LINK_SCAN_CHUNK)
+                self.assertNotIn('GazeData/p1/linked', receiver.selected)
+                receiver.cycle()
+                self.assertIn('GazeData/p1/linked', receiver.selected)
+                self.assertEqual((Path(d)/'data'/name).read_bytes(), remote.files[name])
+            with patch('live_bridge.time.monotonic', return_value=2): receiver.cycle()
+            resumed = Receiver(Path(d), remote)
+            self.assertEqual(resumed.parsed[name], len(remote.files[name]))
+            self.assertIn('GazeData/p1/linked', resumed.selected)
+
     def test_library_transfer_yields_to_new_playback_events(self):
         with tempfile.TemporaryDirectory() as d:
             remote = Remote(); elapsed = [0.0]; reads = []
@@ -103,7 +221,8 @@ class LiveBridgeTests(unittest.TestCase):
             receiver = Receiver(Path(d), remote); receiver.cycle()
             self.assertEqual(status()['replayUpdatedUtc'], 0, 'restart must re-establish fresh source activity')
 
-    def test_new_runs_links_raw_eye_audio_and_restart_catchup(self):
+    @patch('live_bridge.time.monotonic', return_value=0)
+    def test_new_runs_links_raw_eye_audio_and_restart_catchup(self, _clock):
         with tempfile.TemporaryDirectory() as d:
             remote = Remote()
             remote.files['GazeReplays/old/recording.jsonl'] = b'{"kind":"header"}\n'

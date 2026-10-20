@@ -90,6 +90,18 @@ while disconnected or between receiver sessions. It does not import all older
 history on first connection. The archive is tied to the physical headset serial
 and application ID; another headset needs a different output directory.
 
+The receiver polls replay-file sizes separately from the full archive. JSONL/CSV
+transfers of at least 1 MiB use gzip when the headset supports it; saved files
+remain byte-identical and uncompressed. Smaller chunks and WAVs transfer directly. Recurring
+archive scans and stable-file hash verification run in background workers; replay
+transfers retain priority. The full archive is refreshed about every three seconds
+plus scan time, with manifests checkpointed once per second and each transferred
+chunk still fsynced. Unchanged local files are rechecked every 30 seconds. Historical link discovery
+reads bounded 128 KiB chunks and checkpoints complete-line offsets, so reconnecting
+does not synchronously reparse the whole archive. Joining
+an existing recording must still catch up before it can be shown live. These are
+receiver scheduling choices, not a guarantee of headset-to-screen latency.
+
 **Backup status is evidence, not a completeness claim:** `live-status.json` reports
 connection, copied bytes and verified-file counts. `data/wireless-manifest.json`
 contains source size/mtime and SHA-256 for verified files. Hash equality means the
@@ -429,7 +441,7 @@ The recorded object transforms, rays, hits and measurements remain unchanged.
 
 While following live without a fresh headset signal, the viewport shows a shaded
 UCF-gold pyramid rotating once every 30 seconds with a subtle floating motion,
-plus “Waiting for connection.” The animation uses wall-clock time independently
+plus the actual waiting reason: Wi-Fi unavailable, archive catch-up, headset app paused, head tracking unavailable, or no fresh headset samples. The animation uses wall-clock time independently
 of trial playback and disappears when fresh live data arrives. An official UCF
 stacked logo sits in the bottom-right corner of the waiting viewport; provenance
 is in `Resources/UcfLogo-source.md`. The prop is active only during its isolated

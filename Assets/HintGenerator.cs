@@ -7,7 +7,7 @@ public partial class HintGenerator : MonoBehaviour
     public const string AreaCorrectionPhrase = DirectionalHintPolicy.AreaPhrase;
     const string k_TargetReturnCategory = "target_passage_return";
     const string k_RevisitCategory = "recent_target_return";
-    const float k_TipInterval = .6f; // Pilot cadence; same policy in both voice conditions.
+    const float k_TipInterval = GuidanceSpeechPolicy.HintIntervalSeconds; // Same pilot cadence in both voice conditions.
     readonly GuidanceStateMachine m_State = new GuidanceStateMachine();
     public GuidanceStateSnapshot CurrentStateSnapshot { get; private set; }
     long m_PublishedRevision = -1;
@@ -297,7 +297,8 @@ public partial class HintGenerator : MonoBehaviour
                 if (accepted) Record(selected);
                 return accepted;
             })) return;
-        string wording = !inside ? (progress ? DirectionalHintPolicy.Progress(desired, m_ProgressVariant) :
+        bool briefProgress = progress && !inside && m_State.Turn.BriefProgressAllowed(desired, Time.realtimeSinceStartupAsDouble);
+        string wording = !inside ? (progress ? (briefProgress ? DirectionalHintPolicy.BriefProgress(m_ProgressVariant) : DirectionalHintPolicy.Progress(desired, m_ProgressVariant)) :
             DirectionalHintPolicy.Turn(desired, m_TurnRemaining, m_Variant)) : DirectionalHintPolicy.FollowUp(desired, m_LastDirection,
             DirectionalHintPolicy.DirectionError(desired, m_YawError, m_PitchError), m_LastDirectionError, m_Variant, far,
             m_ContinuationUsed || (DirectionalHintPolicy.HasVertical(desired) && verticalBand != m_LastVerticalBand), m_VerticalFraction);
@@ -305,6 +306,7 @@ public partial class HintGenerator : MonoBehaviour
         var request = Decision("requested", ordinaryReason, desired, wording, true, inside, far, true);
         if (m_Voice.TryGuidanceTransmission(wording,
             () => Allows(ordinaryAction) && OrdinaryCueRelevant(desired, inside) &&
+                (!briefProgress || m_State.Turn.BriefProgressAllowed(desired, Time.realtimeSinceStartupAsDouble)) &&
                 (!DirectionalHintPolicy.HasVertical(desired) || verticalBand == DirectionalHintPolicy.VerticalBand(m_VerticalFraction)),
             () => {
                 m_CurrentHint = desired; m_LastTipTime = Time.time;
