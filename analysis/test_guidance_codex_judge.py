@@ -72,6 +72,19 @@ class JudgeTests(unittest.TestCase):
     def write(self, cases):
         self.benchmark.write_text("".join(json.dumps(x) + "\n" for x in cases))
 
+    def test_bounded_selection_preserves_full_artifact_identity_and_reports_scope(self):
+        self.write([source_case(0),source_case(1)])
+        runner=Runner()
+        result=judge_benchmark(self.benchmark,self.output,selected_case_ids=['source-1'],run_process=runner)
+        self.assertEqual(result['status'],'success')
+        self.assertEqual(result['benchmark_sha256'],hashlib.sha256(self.benchmark.read_bytes()).hexdigest())
+        self.assertEqual(result['assessment_scope'],'selected_cases')
+        self.assertEqual(result['selected_cases'],1)
+        self.assertEqual(result['total_available_cases'],2)
+        self.assertEqual(result['batches'][0]['case_ids'],['source-1'])
+        bad=judge_benchmark(self.benchmark,self.output,selected_case_ids=['missing'],run_process=runner)
+        self.assertEqual(bad['status'],'failed')
+
     def test_gui_fallback_resolves_executable(self):
         bundled = "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex"
         with patch("guidance_codex_judge.os.path.isfile", side_effect=lambda p: p == bundled), patch("guidance_codex_judge.os.access", return_value=True), patch("guidance_codex_judge.shutil.which", return_value="/old/codex"):
@@ -93,6 +106,9 @@ class JudgeTests(unittest.TestCase):
             "sequence_context": {"private": "DO_NOT_SEND", "recent_playback": [
                 {"time": 8, "phrase": "Yep, that's it!", "event_type": "gaze_confirmation",
                  "evidence_ids": ["seq:8"], "participant": "DO_NOT_SEND"}],
+                "recent_states": [{"time":8.5,"controller_on_target":True,"gaze_near_target":False,
+                    "phase":"TargetFound","evidence_ids":["seq:85"],"targetObjectId":"DO_NOT_SEND"}],
+                "recent_actions": [{"time":8.6,"kind":"selection","correct":True,"evidence_ids":["seq:86"]}],
                 "confirmation_episode": {"event_type": "controller_confirmation", "wait_count": 2,
                     "qualification_to_playback_seconds": 2.2, "review_budget_seconds": 1,
                     "outcome": "played", "latency_review": "over_budget",
@@ -104,6 +120,9 @@ class JudgeTests(unittest.TestCase):
         self.assertEqual(result["event_type"], "controller_confirmation")
         self.assertEqual(result["sequence_context"]["confirmation_episode"]["wait_count"], 2)
         self.assertIn("seq:10", result["evidence_ids"])
+        self.assertIn("seq:85", result["evidence_ids"])
+        self.assertIn("seq:86", result["evidence_ids"])
+        self.assertTrue(result["sequence_context"]["recent_states"][0]["controller_on_target"])
         self.assertEqual(result["sequence_context"]["recent_playback"][0]["event_type"],
                          "gaze_confirmation")
 

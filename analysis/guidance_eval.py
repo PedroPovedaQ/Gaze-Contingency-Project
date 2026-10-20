@@ -1,5 +1,6 @@
 """Offline guidance evidence and blinded-rating export; never a perceived-accuracy score."""
 import argparse
+from bisect import bisect_right
 import csv
 import hashlib
 import json
@@ -11,7 +12,7 @@ from guidance_audit import audit, finite
 from mega_csv import replay_rows
 
 VERSION = "guidance-evaluation-v1"
-SEQUENCE_VERSION = "guidance-sequences-v1"
+SEQUENCE_VERSION = "guidance-sequences-v4-observed-qualification"
 # Engineering review threshold, not a validated perceptual/clinical cutoff.
 CONFIRMATION_REVIEW_SECONDS = 1.0
 RATING_FIELDS = ["rater_id", "appropriateness_1_5", "naturalness_1_5",
@@ -55,7 +56,8 @@ def stats(values):
     values = sorted(v for v in values if finite(v) and v >= 0)
     # Nearest-rank p95: descriptive software latency, not an acoustic measurement.
     return {"count": len(values), "median": statistics.median(values) if values else None,
-            "p95": values[max(0, (95 * len(values) + 99) // 100 - 1)] if values else None}
+            "p95": values[max(0, (95 * len(values) + 99) // 100 - 1)] if values else None,
+            "maximum": values[-1] if values else None}
 
 
 def check(name, status, ids, explanation):
@@ -176,17 +178,25 @@ def add_sequence_context(decisions, replay):
         c["name"] == "unique_request_identity" and c["status"] == "fail" for c in row["checks"])}
     by_id = {row["decision_id"]: row for row in decisions if row["decision_id"] not in ambiguous}
     active, episodes, history = {}, [], defaultdict(list)
+    state_history, action_history = defaultdict(list), defaultdict(list)
+    last_state = {}
+    observation_history = defaultdict(list)
+    observed_qualification = {}
     last_sample = None
     current_trial = None
 
     def finish(kind, outcome, record=None):
         episode, members = active.pop(kind)
+        observed_qualification.pop(kind,None)
         episode["outcome"] = outcome
         if record:
             episode["evidence_ids"].append(evidence(record))
         delay = (record["time"] - episode["first_qualified_request_time"]
                  if outcome == "played" else None)
         episode["qualification_to_playback_seconds"] = delay
+        first_observed = episode.get("first_observed_qualification_time")
+        episode["observed_qualification_to_playback_seconds"] = (
+            record["time"]-first_observed if outcome=="played" and first_observed is not None else None)
         episode["latency_review"] = ("unknown" if delay is None else
             "over_budget" if delay > CONFIRMATION_REVIEW_SECONDS else "within_budget")
         episode["evidence_ids"] = sorted(set(episode["evidence_ids"]))
@@ -200,14 +210,17 @@ def add_sequence_context(decisions, replay):
             for kind in list(active):
                 finish(kind, "trial_changed", record)
             current_trial, last_sample = trial, None
+            observed_qualification.clear()
         kind = record.get("kind")
         if last_sample is not None and record["time"] - last_sample > .25:
+            observed_qualification.clear()
             for key in list(active):
                 finish(key, "observation_gap", record)
         boundary = kind in ("search_paused", "application_paused", "selection", "trial",
                             "transition", "end")
         if boundary or (kind == "sample" and (record.get("gazeAvailable") is False
                                              or record.get("gazeTracked") == 0)):
+            observed_qualification.clear()
             for key in list(active):
                 finish(key, "lifecycle_boundary" if boundary else "invalid_gaze", record)
         if kind == "sample":
@@ -215,7 +228,7 @@ def add_sequence_context(decisions, replay):
             snapshot = record.get("guidanceState") or {}
             if snapshot.get("version") == "guidance-state-v1" and snapshot.get("phase"):
                 target = snapshot.get("targetObjectId")
-                for key in list(active):
+                for key in list(set(active) | set(observed_qualification)):
                     controller = key == "controller_confirmation"
                     invalid = (snapshot.get("gazeValid") is False or
                                controller and snapshot.get("controllerValid") is False)
@@ -225,7 +238,29 @@ def add_sequence_context(decisions, replay):
                         controller and snapshot.get("controllerValid") is True
                         and "controllerHitObjectId" in snapshot and snapshot["controllerHitObjectId"] != target))
                     if invalid or departed:
-                        finish(key, "invalid_gaze" if invalid else "disqualified", record)
+                        observed_qualification.pop(key,None)
+                        if key in active: finish(key, "invalid_gaze" if invalid else "disqualified", record)
+                expected={"ConfirmGaze":"gaze_confirmation","ConfirmPointing":"controller_confirmation"}.get(snapshot.get("allowedAction"))
+                if (expected and record.get("gazeAvailable") is not False and record.get("gazeTracked") != 0
+                        and snapshot.get("gazeValid") is True
+                        and (expected=="gaze_confirmation" or snapshot.get("controllerValid") is True)):
+                    observed_qualification.setdefault(expected,(record["time"],evidence(record)))
+        snapshot = record.get("guidanceState") or {}
+        if isinstance(snapshot, dict) and snapshot.get("phase"):
+            target = snapshot.get("targetObjectId")
+            compact = {key: snapshot.get(key) for key in
+                ("phase", "allowedAction", "gazeValid", "controllerValid", "transitionReason")}
+            compact["controller_on_target"] = (snapshot.get("controllerHitObjectId") == target
+                if target and snapshot.get("controllerValid") is True else None)
+            compact["gaze_near_target"] = (snapshot.get("vicinityWinnerObjectId") == target
+                if target and snapshot.get("gazeValid") is True else None)
+            observation_history[trial].append(dict(time=record["time"], sequence=record["sequence"], **compact, evidence_ids=[evidence(record)]))
+            if compact != last_state.get(trial):
+                last_state[trial] = compact
+                state_history[trial].append(dict(time=record["time"], **compact, evidence_ids=[evidence(record)]))
+        if kind in ("selection", "search_paused", "application_paused", "audio_cancelled", "audio_playback_end", "transition"):
+            action_history[trial].append(dict(time=record["time"], kind=kind,
+                correct=record.get("correct"), evidence_ids=[evidence(record)]))
         row = by_sequence.get(record["sequence"])
         if row:
             state = row["request_payload"].get("state", {})
@@ -241,6 +276,8 @@ def add_sequence_context(decisions, replay):
                 "version": SEQUENCE_VERSION,
                 "recent_playback": [h for h in history[trial][-6:]
                                     if record["time"] - h["time"] <= 15],
+                "recent_states": [h for h in state_history[trial][-12:] if record["time"] - h["time"] <= 15],
+                "recent_actions": [h for h in action_history[trial][-12:] if record["time"] - h["time"] <= 15],
                 "confirmation_episode": None}
             if row["decision_id"] in ambiguous:
                 row["qualification_status"] = "unknown"
@@ -249,14 +286,17 @@ def add_sequence_context(decisions, replay):
                 finish(key, "ambiguous_identity", record)
             continue
         if row:
-            for key in list(active):
+            for key in list(set(active) | set(observed_qualification)):
                 if qualification(state, key) == "unqualified":
-                    finish(key, "disqualified", record)
+                    observed_qualification.pop(key,None)
+                    if key in active: finish(key, "disqualified", record)
             event = row["event_type"]
             if row["qualification_status"] == "qualified":
                 if event not in active:
                     active[event] = (dict(
                         event_type=event, first_qualified_request_time=row["time"],
+                        first_observed_qualification_time=observed_qualification.get(event,(None,None))[0],
+                        observed_qualification_basis="explicit central-state action in fresh recorded samples; missing remains unknown",
                         qualification_basis="first recorded qualified request; sensor onset unknown",
                         continuity="observed request qualification only; not proof of continuous fixation",
                         review_budget_seconds=CONFIRMATION_REVIEW_SECONDS,
@@ -275,6 +315,7 @@ def add_sequence_context(decisions, replay):
                     software_playback_seconds=row["software_playback_seconds"],
                     evidence_ids=row["evidence_ids"]))
                 episode["evidence_ids"].extend(row["evidence_ids"])
+                if event in observed_qualification: episode["evidence_ids"].append(observed_qualification[event][1])
                 members.append(row)
         if kind == "audio_playback_start":
             owner = by_id.get(identity(record))
@@ -285,6 +326,17 @@ def add_sequence_context(decisions, replay):
                 event_type=event, evidence_ids=[evidence(record)]))
     for key in list(active):
         finish(key, "recording_ended")
+    for row in decisions:
+        delay=row.get("software_playback_seconds")
+        observations=observation_history[row.get("sourceTrialId") or row.get("trialId")]
+        onset=row["time"]+delay if finite(delay) else None
+        state=None
+        if onset is not None:
+            index=bisect_right([(x["time"],x["sequence"]) for x in observations],
+                (onset,row.get("software_playback_sequence") or -1))-1
+            if index>=0 and 0<=onset-observations[index]["time"]<=.25:
+                state=dict(observations[index],age_seconds=onset-observations[index]["time"])
+        row["sequence_context"]["playback_state"]=state
     return episodes
 
 
@@ -308,7 +360,7 @@ def evaluate_recording(recording_path, output_directory):
         key = identity(record)
         if key:
             groups[key].append(record)
-    decisions, benchmark = [], []
+    decisions, benchmark, local_review_cases = [], [], []
     for key, records in groups.items():
         requests = [r for r in records if r.get("kind") == "jev_trace"
                     and detail(r).get("stage") == "request"]
@@ -354,6 +406,7 @@ def evaluate_recording(recording_path, output_directory):
                    round=request.get("round"), block=request.get("block"),
                    kind="jev_request" if requests else "local", phrase=phrase,
                    played_phrase=(start.get("text") or None) if start else None,
+                   software_playback_sequence=start["sequence"] if start else None,
                    playback_status="recorded_start" if start else "not_observed",
                    response_status=response.get("status", "missing" if requests else "local_no_model"),
                    request_payload=payload, answers=answers, checks=checks,
@@ -361,6 +414,13 @@ def evaluate_recording(recording_path, output_directory):
                    guidance_state_status=central_state_status(payload if requests else
                        {"state": (request.get("guidanceDecision") or {}).get("guidanceState")}), evidence_ids=ids)
         decisions.append(row)
+        if local and not requests:
+            local_data=local[0].get("guidanceDecision") or {}
+            local_review_cases.append(dict(schema="guidance-benchmark-v1",case_id=case_id,
+                source=dict(recording_sha256=checksum,decision_origin="local",request_sequence=request["sequence"]),
+                group=dict(trial_group=digest("trial:"+(header.get("recordingId") or checksum)+":"+(request.get("sourceTrialId") or request.get("trialId") or ""))),
+                input=dict(payload=dict(state=dict(reason=local_data.get("reason"),proposed_phrase=phrase,
+                    runtime=dict(guidanceState=local_data.get("guidanceState") or {})))),evidence_ids=[evidence(request)]))
         if requests and valid_payload and len(requests) == 1:
             participant = request.get("participantCode") or ""
             needs_mapping = not participant or participant.upper().startswith(("DEV", "TEST", "DEMO"))
@@ -384,7 +444,7 @@ def evaluate_recording(recording_path, output_directory):
         result = Counter(c["status"] for row in decisions for c in row["checks"] if c["name"].startswith(prefix))
         return {status: result[status] for status in ("pass", "fail", "unknown")}
     summary = dict(jev_requests=sum(r["kind"] == "jev_request" for r in decisions),
-                   benchmark_cases=len(benchmark), local_decisions=sum(r["kind"] == "local" for r in decisions),
+                   benchmark_cases=len(benchmark), review_cases=len(benchmark)+len(local_review_cases), local_decisions=sum(r["kind"] == "local" for r in decisions),
                    human_rating_rows=len(decisions),
                    central_state_requests=sum(r["guidance_state_status"] == "recorded" for r in decisions),
                    choice_checks=counts("choice_membership"), geometry_checks=counts("direction_sign"),
@@ -400,6 +460,12 @@ def evaluate_recording(recording_path, output_directory):
                    confirmation_latency_reviews=dict(Counter(e["latency_review"] for e in episodes)),
                    qualification_to_playback_seconds=stats(
                        e["qualification_to_playback_seconds"] for e in episodes),
+                   first_observed_qualification_to_playback_seconds=stats(
+                       e.get("observed_qualification_to_playback_seconds") for e in episodes),
+                   first_observed_latency_reviews=dict(Counter(
+                       "unknown" if e.get("observed_qualification_to_playback_seconds") is None else
+                       "over_budget" if e["observed_qualification_to_playback_seconds"]>CONFIRMATION_REVIEW_SECONDS else
+                       "within_budget" for e in episodes)),
                    raw_eye_checks_unavailable=len(missing_eye), recording_consistency_issues=len(integrity))
     provenance["sequence_evaluator_version"] = SEQUENCE_VERSION
     report = dict(schema=VERSION, provenance=provenance, summary=summary, decisions=decisions,
@@ -429,6 +495,10 @@ def evaluate_recording(recording_path, output_directory):
     (out / "guidance-evaluation.json").write_text(json.dumps(report, indent=2, allow_nan=False), encoding="utf-8")
     (out / "guidance-benchmark.jsonl").write_text(
         "".join(json.dumps(case, allow_nan=False) + "\n" for case in benchmark), encoding="utf-8")
+    # Review input additionally includes local decisions. The counterfactual model
+    # benchmark above remains exactly the recorded remote requests, without futures.
+    (out / "guidance-review-cases.jsonl").write_text(
+        "".join(json.dumps(case,allow_nan=False)+"\n" for case in benchmark+local_review_cases),encoding="utf-8")
     with ratings_path.open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=CSV_FIELDS)
         writer.writeheader()

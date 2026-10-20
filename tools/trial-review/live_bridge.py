@@ -8,6 +8,7 @@ import zlib
 import hashlib
 import ipaddress
 import json
+import math
 import os
 from pathlib import Path, PurePosixPath
 import re
@@ -145,7 +146,7 @@ class Adb:
         for line in raw.decode().splitlines():
             size, modified, path = line.split('|', 2)
             name = safe_relative(path.removeprefix(self.root))
-            if name.endswith(('.tmp', '.receiving')): continue
+            if name.endswith(('.tmp', '.receiving')) or name == 'PreparationLogs/live-headset-state.json': continue
             result[name] = (int(size), int(modified))
         return result
 
@@ -160,10 +161,34 @@ class Adb:
         except (OSError, EOFError, zlib.error) as error:
             raise OSError('Incomplete compressed transfer; retry without advancing offset') from error
 
+    def headset_state(self):
+        # Optional atomic heartbeat, independent of replay creation and archive scans.
+        path = shlex.quote(self.root + 'PreparationLogs/live-headset-state.json')
+        raw = self.command('exec-out', 'if test -f ' + path + '; then head -c 4097 ' + path + '; fi', timeout=2)
+        if not raw: return None
+        if len(raw) > 4096: raise ValueError('Oversized headset state')
+        return validate_headset_state(json.loads(raw))
+
     def digest(self, name):
         result = self.command('shell', 'sha256sum ' + shlex.quote(self.root + safe_relative(name)), timeout=45).decode().split()[0]
         if not re.fullmatch(r'[0-9a-f]{64}', result): raise OSError('Invalid remote digest')
         return result
+
+
+def validate_headset_state(value):
+    if not isinstance(value, dict) or value.get('schema') != 1:
+        raise ValueError('Unsupported headset state')
+    if value.get('phase') not in ('preparing', 'ready', 'trial', 'paused', 'error'):
+        raise ValueError('Unknown headset phase')
+    if not isinstance(value.get('sessionId'), str) or len(value['sessionId']) > 128:
+        raise ValueError('Invalid headset session')
+    for key in ('updatedUtc', 'progress01'):
+        if not isinstance(value.get(key), (float, int)) or not math.isfinite(value[key]):
+            raise ValueError('Invalid headset state number')
+    if not 0 <= value['progress01'] <= 1 or not isinstance(value.get('progressKnown'), bool):
+        raise ValueError('Invalid headset progress')
+    return {key: value.get(key) for key in
+            ('schema', 'sessionId', 'revision', 'phase', 'progressKnown', 'progress01', 'updatedUtc')}
 
 
 def wireless_endpoint(adb, requested):
@@ -209,8 +234,11 @@ class Receiver:
         self.verifier = None; self.verification = None
         self.inventory_worker = None; self.inventory_future = None
         self.checked_files = {}; self.checked_at = float('-inf')
+        self.headset_state = None; self.headset_polled = float('-inf')
+        self.headset_observed = 0; self.headset_worker = None; self.headset_future = None
 
     def close(self):
+        if self.headset_worker is not None: self.headset_worker.shutdown(wait=True)
         if self.verifier is not None: self.verifier.shutdown(wait=True)
         if self.inventory_worker is not None: self.inventory_worker.shutdown(wait=True)
 
@@ -293,7 +321,26 @@ class Receiver:
             if eye_id in eye_folders:
                 self.selected.add(eye_folders[eye_id])
 
+    def poll_headset_state(self):
+        if self.headset_future is not None and self.headset_future.done():
+            future = self.headset_future; self.headset_future = None
+            try:
+                value = future.result()
+                if value != self.headset_state:
+                    self.headset_observed = time.time() if value is not None and self.headset_state is not None else 0
+                self.headset_state = value
+            except (OSError, ValueError, subprocess.SubprocessError):
+                # Optional telemetry failure must not interrupt replay transfer.
+                self.headset_state = None; self.headset_observed = 0
+        if self.headset_future is None and time.monotonic() - self.headset_polled >= 1:
+            reader = getattr(self.remote, 'headset_state', None)
+            if reader is None: return
+            if self.headset_worker is None: self.headset_worker = ThreadPoolExecutor(max_workers=1)
+            self.headset_polled = time.monotonic()
+            self.headset_future = self.headset_worker.submit(reader)
+
     def cycle(self):
+        self.poll_headset_state()
         self.finish_verification()
         inventory, full_inventory = self.current_inventory()
         replay_dirs = sorted({str(PurePosixPath(p).parent) for p in inventory if p.startswith('GazeReplays/') and p.endswith('/recording.jsonl')})
@@ -386,6 +433,7 @@ class Receiver:
             'updatedUtc': time.time(), 'lastDataUtc': self.last_data, 'revision': self.revision, 'audioRevision': self.audio_revision,
             'replayUpdatedUtc': self.replay_updated, 'replayPendingBytes': self.replay_pending,
             'recording': self.latest, 'archive': str(self.mirror.directory),
+            'headsetState': self.headset_state, 'headsetStateObservedUtc': self.headset_observed,
             'files': len(entries), 'verifiedFiles': sum(bool(x.get('verified')) for x in entries),
             'receivedBytes': sum(x.get('received', 0) for x in entries),
             'pendingBytes': sum(max(0, x.get('size', 0)-x.get('received', 0)) for x in entries),
@@ -430,6 +478,7 @@ def main():
                     if marker.exists() and json.loads(marker.read_text()) != identity_data:
                         raise ValueError('This archive belongs to another headset/application')
                     atomic_json(marker, identity_data)
+                    receiver.headset_state = None; receiver.headset_observed = 0
                     receiver.inventory_cache = None
                     receiver.inventory_future = None
                     receiver.checked_files.clear()

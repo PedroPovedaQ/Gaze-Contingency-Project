@@ -324,6 +324,30 @@ partial class VoiceIsolationChecks
         Check(ReferenceEquals(fade,MonoBehaviour.LastRoutine), "Invalid tracking ticks do not restart fade");
         Time.unscaledTime += .076f; fade.MoveNext();
         Check(source.StopCalls==before+1 && source.VolumeAtStop==0, "Tracking loss fades without Jev");
+
+        Begin(); before=source.StopCalls; count=requests;
+        synth.SuppressSearchGuidanceForControllerTarget(); fade=MonoBehaviour.LastRoutine;
+        fade.MoveNext(); Time.unscaledTime+=.075f; fade.MoveNext();
+        synth.SuppressSearchGuidanceForControllerTarget();
+        Check(ReferenceEquals(fade,MonoBehaviour.LastRoutine) && source.StopCalls==before && Math.Abs(source.volume-.2f)<.001,
+            "Controller hit starts one smooth fade of contradictory search speech before the hold qualifies");
+        Time.unscaledTime+=.076f; fade.MoveNext();
+        Check(source.StopCalls==before+1 && source.VolumeAtStop==0 && requests==count && committed==1,
+            "Controller suppression stops at zero without Jev or a false pointing acknowledgment");
+        foreach (var protectedText in new[] { DirectionalHintPolicy.PointingPhrase, DirectionalHintPolicy.LookingPhrase,
+            DirectionalHintPolicy.SelectionReminderPhrase })
+        {
+            Begin(); before=source.StopCalls; Set(synth,"m_CurrentPhrase",protectedText);
+            synth.SuppressSearchGuidanceForControllerTarget();
+            Check(source.StopCalls==before && source.volume==.4f && typeof(VoiceSynthesizer).GetField("m_InterruptionCoroutine", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth)==null,
+                "Controller suppression preserves gaze/pointing confirmations and trigger reminders");
+        }
+        Begin(); Set(synth,"m_CurrentPhrase",DirectionalHintPolicy.BriefProgress(0));
+        synth.SuppressSearchGuidanceForControllerTarget();
+        Check(typeof(VoiceSynthesizer).GetField("m_InterruptionCoroutine", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth)!=null,"Already pointing cancels keep-going progress as well as explicit directions");
+        Begin(); Set(synth,"m_CurrentContext","success");
+        synth.SuppressSearchGuidanceForControllerTarget();
+        Check(typeof(VoiceSynthesizer).GetField("m_InterruptionCoroutine", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth)==null,"Controller suppression never cancels correct-selection feedback");
         Begin(); source.time=3.3f; count=requests;
         Check(!synth.TryAreaCorrection(next, () => true) && requests==count,"Let the final 0.7 seconds finish rather than clipping the last word");
         Begin(); synth.TryAreaCorrection(next, () => relevant); source.time=3.05f; pending.SetResult(true);
@@ -342,6 +366,29 @@ partial class VoiceIsolationChecks
             Begin(); count=requests; Set(synth,"m_CurrentPhrase",protectedText);
             Check(!synth.TryAreaCorrection(next, () => true) && requests==count, "Unknown meaning and small progress cues finish locally");
         }
+        Begin(); source.HoldPlayback=false;
+        string acknowledgment=DirectionalHintPolicy.LookingPhrase;
+        string ackPath=(string)cachePath.Invoke(synth,new object[]{VoicePromptText.FormatForVoice(acknowledgment,SessionConfig.Voice),scope});
+        clips[ackPath]=clips[oldPath];
+        Set(synth,"m_LastGuidanceWasAcknowledgment",false);
+        Set(synth,"m_LastGuidanceEnd",Time.realtimeSinceStartupAsDouble-.15);
+        Check(!synth.GuidanceReady,"Ordinary directions still wait250ms after ordinary speech");
+        Check(synth.TryAreaCorrection(acknowledgment,()=>true,()=>committed++,"gaze_target_vicinity_hold","ack-gap-regression"),
+            "Qualified upcoming acknowledgment can start150ms after ordinary speech, without inheriting250ms direction gap");
+        Drain(MonoBehaviour.LastRoutine); Drain(MonoBehaviour.LastRoutine);
+        Check(committed==2,"Prepared acknowledgment commits at actual playback after its own100ms gap");
+        Begin(); source.HoldPlayback=false; int transmissionCalls=0;
+        synth.TransmissionAdvisor=(state,token)=>{transmissionCalls++;return System.Threading.Tasks.Task.FromResult(false);};
+        Set(synth,"m_LastGuidanceWasAcknowledgment",false);
+        Set(synth,"m_LastGuidanceEnd",Time.realtimeSinceStartupAsDouble-.09);
+        Check(!synth.TryAreaCorrection(acknowledgment,()=>true,null,"gaze_target_vicinity_hold","too-early"),
+            "Qualified acknowledgment still respects its100ms minimum gap");
+        Time.unscaledTime+=.02f;
+        Check(synth.TryAreaCorrection(acknowledgment,()=>true,()=>committed++,"gaze_target_vicinity_hold","ack-transmission-gap"),
+            "Transmission-advice path also admits qualified acknowledgment after100ms");
+        Drain(MonoBehaviour.LastRoutine); Drain(MonoBehaviour.LastRoutine);
+        Check(committed==3 && transmissionCalls==0,"Final transmission readiness preserves100ms acknowledgment gap and local priority");
+        synth.TransmissionAdvisor=null;
         Begin(); source.time=3.7f; count=requests;
         Check(!synth.TryAreaCorrection(next, () => true) && requests==count,"Protect near-complete phrase locally");
         Begin(); source.time=3.1f; Set(synth,"m_CurrentSpeechSeconds",3.6d); count=requests;
@@ -900,9 +947,9 @@ partial class VoiceIsolationChecks
             SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Male, 1);
             SessionConfig.ResetForNewParticipant();
             string correction = VoicePromptText.WrongSelectionPhrase("Blue", "Cube");
-            Check(VoicePromptText.FormatForVoice(correction, VoiceCondition.Generic) == "Keep following the guidance and try another object.",
+            Check(VoicePromptText.FormatForVoice(correction, VoiceCondition.Generic) == "Try another object.",
                 "neutral wrong-selection reminder does not reveal identity");
-            Check(VoicePromptText.FormatForVoice(correction, VoiceCondition.SelfSimilar) == "Keep following the guidance and try another object.",
+            Check(VoicePromptText.FormatForVoice(correction, VoiceCondition.SelfSimilar) == "Try another object.",
                 "self-similar wrong-selection reminder does not reveal identity");
             Check(VoicePromptText.FormatForVoice("Locate the Blue Cube.", VoiceCondition.SelfSimilar) == "Locate the Blue Cube.",
                 "wrong-selection wording does not replace normal target announcements");
@@ -917,8 +964,8 @@ partial class VoiceIsolationChecks
                 Drain(MonoBehaviour.LastRoutine);
                 Check(string.IsNullOrEmpty(synth.LastError) && !synth.IsBusy, "wrong-selection reminder plays successfully");
                 Check(condition == VoiceCondition.Generic
-                    ? provider.Calls == 0 && UnityWebRequest.RequestBodies.Exists(body => body.Contains("Keep following the guidance and try another object."))
-                    : provider.Calls == 1 && provider.Texts.Contains("Keep following the guidance and try another object."),
+                    ? provider.Calls == 0 && UnityWebRequest.RequestBodies.Exists(body => body.Contains("Try another object."))
+                    : provider.Calls == 1 && provider.Texts.Contains("Try another object."),
                     "wrong-selection reminder reaches the condition's provider with exact wording");
                 Check(SessionConfig.Voice == condition, "wrong-selection reminder preserves trial voice assignment");
             }

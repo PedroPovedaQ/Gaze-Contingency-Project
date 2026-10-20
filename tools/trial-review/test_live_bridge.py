@@ -7,7 +7,7 @@ import threading
 import unittest
 from unittest.mock import patch
 
-from live_bridge import Mirror, Receiver, safe_relative, main, LINK_SCAN_CHUNK, Adb
+from live_bridge import Mirror, Receiver, safe_relative, main, LINK_SCAN_CHUNK, Adb, validate_headset_state
 
 
 class Remote:
@@ -33,6 +33,37 @@ class Remote:
 
 
 class LiveBridgeTests(unittest.TestCase):
+    def test_preparation_heartbeat_requires_change_and_expires_without_refresh(self):
+        from concurrent.futures import Future
+        with tempfile.TemporaryDirectory() as d:
+            receiver=Receiver(Path(d),Remote())
+            value={'schema':1,'sessionId':'a','phase':'preparing','progressKnown':True,
+                   'progress01':.4,'updatedUtc':10,'revision':1}
+            def complete(v):
+                receiver.headset_future=Future(); receiver.headset_future.set_result(v)
+                receiver.poll_headset_state()
+            with patch('live_bridge.time.time',return_value=100): complete(value)
+            self.assertEqual(receiver.headset_observed,0,'a stale file on first join is not live evidence')
+            with patch('live_bridge.time.time',return_value=101): complete(dict(value,updatedUtc=11,revision=2))
+            self.assertEqual(receiver.headset_observed,101)
+            with patch('live_bridge.time.time',return_value=110): complete(dict(value,updatedUtc=11,revision=2))
+            self.assertEqual(receiver.headset_observed,101,'unchanged cached file does not refresh liveness')
+            complete(dict(value,phase='ready',updatedUtc=12,revision=3))
+            self.assertEqual(receiver.headset_state['phase'],'ready')
+            complete(None); self.assertIsNone(receiver.headset_state)
+
+    def test_preparation_payload_is_bounded_and_not_archived(self):
+        remote=Adb('adb','127.0.0.1:5555','test.app')
+        value={'schema':1,'sessionId':'a','phase':'preparing','progressKnown':True,
+               'progress01':.25,'updatedUtc':10,'revision':1,'secret':'do-not-forward'}
+        with patch.object(remote,'command',return_value=json.dumps(value).encode()):
+            self.assertNotIn('secret',remote.headset_state())
+        with patch.object(remote,'command',return_value=b'x'*4097):
+            with self.assertRaises(ValueError): remote.headset_state()
+        for changes in ({'progress01':float('nan')},{'progress01':2},{'phase':'invented'}):
+            with self.assertRaises(ValueError): validate_headset_state(dict(value,**changes))
+        self.assertEqual(remote.parse_inventory(('10|1|'+remote.root+'PreparationLogs/live-headset-state.json').encode()),{})
+
     def test_large_text_transport_compresses_without_changing_saved_bytes(self):
         remote = Adb('adb', '127.0.0.1:5555', 'test.app'); remote.compress_text = True
         data = b'{"kind":"sample"}\n' * 70000

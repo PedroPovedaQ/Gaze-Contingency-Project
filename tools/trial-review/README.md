@@ -488,3 +488,29 @@ The **Evaluation** tab shows automatic checks, selected/proposed versus actually
 If an older run lacks a complete schedule/summary pair, the full CSV export still reports that error. Guidance evaluation can process the recording independently; it does not fabricate missing performance rows or weaken CSV validation.
 
 Results are stored separately under `~/Documents/Trial Review Evaluations`, verified against the exact exported inputs, and linked to the dataset. Pending, failed and unavailable results never become passing scores. See [evaluation documentation](../../docs/research/guidance-evaluation.md) for provenance, privacy, caching, human review and training limitations. Launch with `--evaluation` to open that tab directly.
+
+
+### Live preparation and paired evaluations
+
+**Implemented:** the headset publishes an atomic `PreparationLogs/live-headset-state.json`
+heartbeat, separate from participant recordings. Live mode shows **Preparing experiment**
+and its reported 0–100% progress before a trial/header exists. The receiver reads this
+small optional file independently of archive copying. Two distinct heartbeats establish
+freshness after connection; five seconds without a change makes its status unavailable.
+Missing telemetry in older builds never becomes invented loading progress. Preparation
+freezes the previous replay and does not advance study clocks.
+
+**Implemented:** the Evaluation tab can import `guidance-paired-pilots.json` beside its
+local evaluation or from `~/Documents/Trial Review Evaluations/`. It labels this as a
+separate offline dataset, displays variant metrics and representative timelines, and
+keeps unknown evidence visible. Policy replay timings are simulated, not headset or
+acoustic measurements. Paired choices do not predict what a participant would do.
+
+Sequence evaluation separates first **observed qualified central-state action** to
+software playback from qualified **request** to playback. The former requires fresh
+recorded observations; gaps leave it unknown. Recent speech, state/action transitions,
+and the last fresh state at software start accompany advisory Astra judgments. The
+request-only `guidance-benchmark.jsonl` remains unchanged in purpose; the separate
+`guidance-review-cases.jsonl` also covers local confirmations. `--case-id` on the judge
+limits a review to explicit cases while retaining full input hashes and reporting
+selected/available coverage. Model ratings remain advisory, never human ratings.

@@ -92,13 +92,21 @@ public partial class HintGenerator : MonoBehaviour
             now = Time.realtimeSinceStartupAsDouble, deltaSeconds = Time.unscaledDeltaTime,
             receiptTime = m_EvaluatedSample?.receiptTime ?? -1, observationSequence = m_EvaluatedSample?.sequence ?? -1,
             valid = valid, inside = inside, looking = looking, controllerValid = m_ControllerEvidenceValid,
-            controllerOnTarget = m_ControllerOnTarget, direction = desired, verticalFraction = m_VerticalFraction,
+            controllerOnTarget = m_ControllerOnTarget, suppressVertical = m_VisualReferenceVerticalSuppressed, direction = desired, verticalFraction = m_VerticalFraction,
             remainingTurn = m_TurnRemaining, history = TargetHistorySample(valid)
         });
         PublishState(valid);
         long revision = m_State.Revision;
-        bool Allows(GuidanceAction action) => m_State.Allows(revision, action);
+        bool Allows(GuidanceAction action)
+        {
+            // Async completion can precede LateUpdate: refresh controller telemetry
+            // for every final relevance check, including return and wall-entry cues.
+            RefreshControllerEvidence();
+            return m_State.AllowsPlayback(revision, action, m_ControllerEvidenceValid, m_ControllerOnTarget);
+        }
         UpdateSpeechEvidence(valid, inside, looking);
+        if (m_ControllerEvidenceValid && m_ControllerOnTarget)
+            m_Voice.SuppressSearchGuidanceForControllerTarget();
         if (!valid)
         {
             string reason = m_EvaluatedSample == null ? "no_gaze_observation" :
@@ -217,7 +225,8 @@ public partial class HintGenerator : MonoBehaviour
             if (m_Voice.TryAreaCorrection(phrase,
                 () => {
                     Evaluate(out bool v, out correctionInside, out correctionFar);
-                    return Allows(GuidanceAction.ReturnBearing) && Active() && v && m_State.TargetHistory.PendingDirection(Time.realtimeSinceStartupAsDouble) == passedDirection &&
+                    return Allows(GuidanceAction.ReturnBearing) && Active() && v &&
+                        !(m_VisualReferenceVerticalSuppressed && DirectionalHintPolicy.HasVertical(passedDirection)) && m_State.TargetHistory.PendingDirection(Time.realtimeSinceStartupAsDouble) == passedDirection &&
                         GazeTargetHistory.StillBeyond(passedDirection, m_YawError, m_PitchError) &&
                         DirectionalHintPolicy.PassedTarget(passedDirection, m_VerticalFraction) == phrase;
                 },
@@ -321,12 +330,12 @@ public partial class HintGenerator : MonoBehaviour
     bool OrdinaryCueRelevant(string direction, bool wasInside)
     {
         string current = Evaluate(out bool valid, out bool inside, out _);
-        bool pointing = EvaluatePointing(valid);
+        EvaluatePointing(valid);
         bool looking = EvaluateLooking(valid);
         return Active() && valid && current == direction && inside == wasInside &&
             m_State.Stable &&
-            !looking && !pointing &&
-            m_State.TargetHistory.PendingDirection(Time.realtimeSinceStartupAsDouble) == null &&
+            !looking && !(m_ControllerEvidenceValid && m_ControllerOnTarget) &&
+            m_State.PendingBearingDirection(Time.realtimeSinceStartupAsDouble, m_VisualReferenceVerticalSuppressed) == null &&
             !m_State.RevisitPending(Time.realtimeSinceStartupAsDouble);
     }
     // Recompute the latest cue after the sentence and its audible pause finish.
@@ -348,6 +357,7 @@ public partial class HintGenerator : MonoBehaviour
         string desired = Evaluate(out bool valid, out bool inside, out bool far);
         if (EvaluatePointing(valid) && m_State.PointingStable) desired = DirectionalHintPolicy.PointingPhrase;
         else if (EvaluateLooking(valid) && m_State.LookingStable) desired = DirectionalHintPolicy.LookingPhrase;
+        else if (m_ControllerEvidenceValid && m_ControllerOnTarget) desired = null;
         bool available = Active() && valid && desired != null && m_Voice != null && m_Voice.GuidanceReady;
         string phrase = available ? DirectionalHintPolicy.Variant(desired,m_Variant++,false,far, m_VerticalFraction) : "";
         var decision = Decision(available ? "requested" : "unavailable", "controller_repeat_request",
@@ -358,7 +368,15 @@ public partial class HintGenerator : MonoBehaviour
         // Repeat the current direction, not an obsolete phrase or hidden target identity.
         m_CurrentHint = desired; m_LastTipTime = Time.time;
         RememberDirection(desired);
-        m_Voice.Speak(phrase,"guidance_repeat",guidanceDecisionId:decision.decisionId);
+        var repeatTarget = m_EvaluatedTarget;
+        m_Voice.Speak(phrase,"guidance_repeat",guidanceDecisionId:decision.decisionId, guidanceRelevant: () => {
+            var current = Evaluate(out bool v, out _, out _);
+            bool pointing = EvaluatePointing(v), looking = EvaluateLooking(v);
+            if (!Active() || !v || m_EvaluatedTarget != repeatTarget) return false;
+            if (desired == DirectionalHintPolicy.PointingPhrase) return pointing && m_State.PointingStable;
+            if (desired == DirectionalHintPolicy.LookingPhrase) return looking && m_State.LookingStable;
+            return current == desired && !looking && !(m_ControllerEvidenceValid && m_ControllerOnTarget);
+        });
     }
 
     // Retain exact-hit evidence separately. Spoken confirmation uses the padded

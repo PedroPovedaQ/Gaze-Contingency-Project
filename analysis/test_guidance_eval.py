@@ -211,6 +211,10 @@ class GuidanceEvaluationTests(unittest.TestCase):
         self.assertEqual(report["decisions"][0]["kind"], "local")
         self.assertEqual(report["decisions"][0]["guidance_state_status"], "recorded")
         self.assertEqual(report["summary"]["benchmark_cases"], 0)
+        self.assertEqual(report["summary"]["review_cases"], 1)
+        cases=[json.loads(line) for line in (self.root/"out"/"guidance-review-cases.jsonl").read_text().splitlines()]
+        self.assertEqual(cases[0]["source"]["decision_origin"],"local")
+        self.assertEqual(cases[0]["input"]["payload"]["state"]["runtime"]["guidanceState"]["phase"],"Acquired")
 
     def test_default_state_placeholder_is_not_recorded_phase(self):
         for phase in (None, "", "  "):
@@ -348,6 +352,51 @@ class GuidanceEvaluationTests(unittest.TestCase):
         episode = report["confirmation_sequences"][0]
         self.assertAlmostEqual(episode["qualification_to_playback_seconds"], .04)
         self.assertEqual(episode["latency_review"], "within_budget")
+
+    def test_first_observed_qualification_includes_pre_request_wait(self):
+        rows=confirmation_sequence()
+        sample=dict(rows[0],time=9.9,kind='sample',gazeAvailable=True,gazeTracked=1,
+            guidanceState={'version':'guidance-state-v1','phase':'GazeConfirmed',
+                'allowedAction':'ConfirmGaze','gazeValid':True,'targetObjectId':'t','vicinityWinnerObjectId':'t'})
+        rows.extend(dict(sample,time=t/10) for t in range(99,124))
+        rows.sort(key=lambda row:row['time'])
+        for i,row in enumerate(rows): row['sequence']=i
+        report=self.evaluate(rows);episode=report['confirmation_sequences'][0]
+        self.assertAlmostEqual(episode['first_observed_qualification_time'],9.9)
+        self.assertAlmostEqual(episode['observed_qualification_to_playback_seconds'],2.4)
+        self.assertAlmostEqual(episode['qualification_to_playback_seconds'],2.3)
+        self.assertEqual(report['summary']['first_observed_latency_reviews']['over_budget'],1)
+
+    def test_playback_state_uses_only_prior_fresh_observation(self):
+        rows=fixture()
+        snapshot={'phase':'PointingTarget','targetObjectId':'t','controllerHitObjectId':'t',
+            'controllerValid':True,'gazeValid':True,'vicinityWinnerObjectId':'other'}
+        rows.insert(3,dict(rows[0],sequence=3,time=2.4,kind='sample',guidanceState=snapshot))
+        for i,row in enumerate(rows): row['sequence']=i
+        state=self.evaluate(rows)['decisions'][0]['sequence_context']['playback_state']
+        self.assertTrue(state['controller_on_target']);self.assertAlmostEqual(state['age_seconds'],.1)
+        rows[4]['time']=2.8
+        self.assertIsNone(self.evaluate(rows)['decisions'][0]['sequence_context']['playback_state'])
+        rows[4]['time']=2.5; rows[3]['time']=2.5; rows[3]['sequence']=5
+        rows.sort(key=lambda x:(x['time'],x['sequence']))
+        for i,row in enumerate(rows): row['sequence']=i
+        self.assertIsNone(self.evaluate(rows)['decisions'][0]['sequence_context']['playback_state'])
+
+    def test_recent_state_and_actions_do_not_conflate_pointing_with_completion(self):
+        rows=confirmation_sequence()
+        rows.append(dict(rows[0],sequence=90,time=9.5,kind="sample",guidanceState={
+            "phase":"WithinTargetWall","allowedAction":"None","targetObjectId":"target",
+            "controllerHitObjectId":"target","vicinityWinnerObjectId":"other",
+            "gazeValid":True,"controllerValid":True}))
+        rows.append(dict(rows[0],sequence=91,time=9.6,kind="audio_cancelled"))
+        rows.sort(key=lambda row:row["time"])
+        for i,row in enumerate(rows): row['sequence']=i
+        context=self.evaluate(rows)['decisions'][0]['sequence_context']
+        self.assertTrue(context['recent_states'][0]['controller_on_target'])
+        self.assertFalse(context['recent_states'][0]['gaze_near_target'])
+        self.assertEqual(context['recent_actions'][0]['kind'],'audio_cancelled')
+        self.assertNotIn('targetObjectId',context['recent_states'][0])
+        self.assertFalse(any(x['kind']=='selection' for x in context['recent_actions']))
 
     def test_recent_playback_is_trial_scoped_and_preserves_event_kind(self):
         rows = confirmation_sequence()

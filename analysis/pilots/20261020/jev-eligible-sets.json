@@ -1,0 +1,281 @@
+{
+  "schema": "jev-eligible-set-pilot-v1",
+  "basis": "Measured Mac-to-Vercel HTTP requests using synthetic states. Not headset requests or acoustic latency.",
+  "catalog_sha256": "731bca1a5a1c9ac2d908a8809d94798ab5ea1d9270288b8e8a6f0a47d5ec3bec",
+  "requests": [
+    {
+      "case": "-175:2.5:repeat0",
+      "angle": -175,
+      "distance": 2.5,
+      "eligible_count": 5,
+      "candidate_ids": [
+        "nav_a00_d2_direct",
+        "nav_a00_d2_technical",
+        "nav_a00_d2_casual",
+        "nav_a00_d2_encouraging",
+        "nav_a00_d2_casual_alternative"
+      ],
+      "configured_set": "small5_equals_full_eligible",
+      "cold_connection": true,
+      "http_status": 200,
+      "choice": "Turn left toward the back now.",
+      "status": "ok",
+      "repeated_last_phrase": false,
+      "seconds": 0.268838,
+      "within_runtime_450ms_deadline": true
+    },
+    {
+      "case": "-90:2.5:repeat0",
+      "angle": -90,
+      "distance": 2.5,
+      "eligible_count": 5,
+      "candidate_ids": [
+        "nav_a03_d2_direct",
+        "nav_a03_d2_technical",
+        "nav_a03_d2_casual",
+        "nav_a03_d2_encouraging",
+        "nav_a03_d2_casual_alternative"
+      ],
+      "configured_set": "small5_equals_full_eligible",
+      "cold_connection": false,
+      "http_status": 200,
+      "choice": "Turn left now.",
+      "status": "ok",
+      "repeated_last_phrase": false,
+      "seconds": 0.232448,
+      "within_runtime_450ms_deadline": true
+    },
+    {
+      "case": "-21:2.5:repeat0",
+      "angle": -21,
+      "distance": 2.5,
+      "eligible_count": 5,
+      "candidate_ids": [
+        "nav_a05_d2_direct",
+        "nav_a05_d2_technical",
+        "nav_a05_d2_casual",
+        "nav_a05_d2_encouraging",
+        "nav_a05_d2_casual_alternative"
+      ],
+      "configured_set": "small5_equals_full_eligible",
+      "cold_connection": false,
+      "http_status": 200,
+      "choice": "Look slightly left.",
+      "status": "ok",
+      "repeated_last_phrase": false,
+      "seconds": 0.498316,
+      "within_runtime_450ms_deadline": false
+    },
+    {
+      "case": "21:2.5:repeat0",
+      "angle": 21,
+      "distance": 2.5,
+      "eligible_count": 5,
+      "candidate_ids": [
+        "nav_a09_d2_direct",
+        "nav_a09_d2_technical",
+        "nav_a09_d2_casual",
+        "nav_a09_d2_encouraging",
+        "nav_a09_d2_casual_alternative"
+      ],
+      "configured_set": "small5_equals_full_eligible",
+      "cold_connection": false,
+      "http_status": 200,
+      "choice": "Look a little right now.",
+      "status": "ok",
+      "repeated_last_phrase": false,
+      "seconds": 0.163432,
+      "within_runtime_450ms_deadline": true
+    },
+    {
+      "case": "90:2.5:repeat0",
+      "angle": 90,
+      "distance": 2.5,
+      "eligible_count": 5,
+      "candidate_ids": [
+        "nav_a12_d2_direct",
+        "nav_a12_d2_technical",
+        "nav_a12_d2_casual",
+        "nav_a12_d2_encouraging",
+        "nav_a12_d2_casual_alternative"
+      ],
+      "configured_set": "small5_equals_full_eligible",
+      "cold_connection": false,
+      "http_status": 200,
+      "choice": "Turn farther right now.",
+      "status": "ok",
+      "repeated_last_phrase": false,
+      "seconds": 0.16046,
+      "within_runtime_450ms_deadline": true
+    },
+    {
+      "case": "175:2.5:repeat0",
+      "angle": 175,
+      "distance": 2.5,
+      "eligible_count": 5,
+      "candidate_ids": [
+        "nav_a14_d2_direct",
+        "nav_a14_d2_technical",
+        "nav_a14_d2_casual",
+        "nav_a14_d2_encouraging",
+        "nav_a14_d2_casual_alternative"
+      ],
+      "configured_set": "small5_equals_full_eligible",
+      "cold_connection": false,
+      "http_status": 200,
+      "choice": "Turn right toward the back now.",
+      "status": "ok",
+      "repeated_last_phrase": false,
+      "seconds": 0.142674,
+      "within_runtime_450ms_deadline": true
+    },
+    {
+      "case": "-175:2.5:repeat1",
+      "angle": -175,
+      "distance": 2.5,
+      "eligible_count": 5,
+      "candidate_ids": [
+        "nav_a00_d2_direct",
+        "nav_a00_d2_technical",
+        "nav_a00_d2_casual",
+        "nav_a00_d2_encouraging",
+        "nav_a00_d2_casual_alternative"
+      ],
+      "configured_set": "small5_equals_full_eligible",
+      "cold_connection": false,
+      "http_status": 200,
+      "choice": "Let's turn left toward the back.",
+      "status": "ok",
+      "repeated_last_phrase": false,
+      "seconds": 0.166082,
+      "within_runtime_450ms_deadline": true
+    },
+    {
+      "case": "-90:2.5:repeat1",
+      "angle": -90,
+      "distance": 2.5,
+      "eligible_count": 5,
+      "candidate_ids": [
+        "nav_a03_d2_direct",
+        "nav_a03_d2_technical",
+        "nav_a03_d2_casual",
+        "nav_a03_d2_encouraging",
+        "nav_a03_d2_casual_alternative"
+      ],
+      "configured_set": "small5_equals_full_eligible",
+      "cold_connection": false,
+      "http_status": 200,
+      "choice": "Let's turn left.",
+      "status": "ok",
+      "repeated_last_phrase": false,
+      "seconds": 0.163205,
+      "within_runtime_450ms_deadline": true
+    },
+    {
+      "case": "-21:2.5:repeat1",
+      "angle": -21,
+      "distance": 2.5,
+      "eligible_count": 5,
+      "candidate_ids": [
+        "nav_a05_d2_direct",
+        "nav_a05_d2_technical",
+        "nav_a05_d2_casual",
+        "nav_a05_d2_encouraging",
+        "nav_a05_d2_casual_alternative"
+      ],
+      "configured_set": "small5_equals_full_eligible",
+      "cold_connection": false,
+      "http_status": 200,
+      "choice": "Look slightly left.",
+      "status": "ok",
+      "repeated_last_phrase": false,
+      "seconds": 0.129922,
+      "within_runtime_450ms_deadline": true
+    },
+    {
+      "case": "21:2.5:repeat1",
+      "angle": 21,
+      "distance": 2.5,
+      "eligible_count": 5,
+      "candidate_ids": [
+        "nav_a09_d2_direct",
+        "nav_a09_d2_technical",
+        "nav_a09_d2_casual",
+        "nav_a09_d2_encouraging",
+        "nav_a09_d2_casual_alternative"
+      ],
+      "configured_set": "small5_equals_full_eligible",
+      "cold_connection": false,
+      "http_status": 200,
+      "choice": "Look slightly right.",
+      "status": "ok",
+      "repeated_last_phrase": false,
+      "seconds": 0.205677,
+      "within_runtime_450ms_deadline": true
+    },
+    {
+      "case": "90:2.5:repeat1",
+      "angle": 90,
+      "distance": 2.5,
+      "eligible_count": 5,
+      "candidate_ids": [
+        "nav_a12_d2_direct",
+        "nav_a12_d2_technical",
+        "nav_a12_d2_casual",
+        "nav_a12_d2_encouraging",
+        "nav_a12_d2_casual_alternative"
+      ],
+      "configured_set": "small5_equals_full_eligible",
+      "cold_connection": false,
+      "http_status": 200,
+      "choice": "Let's turn farther right.",
+      "status": "ok",
+      "repeated_last_phrase": false,
+      "seconds": 0.140634,
+      "within_runtime_450ms_deadline": true
+    },
+    {
+      "case": "175:2.5:repeat1",
+      "angle": 175,
+      "distance": 2.5,
+      "eligible_count": 5,
+      "candidate_ids": [
+        "nav_a14_d2_direct",
+        "nav_a14_d2_technical",
+        "nav_a14_d2_casual",
+        "nav_a14_d2_encouraging",
+        "nav_a14_d2_casual_alternative"
+      ],
+      "configured_set": "small5_equals_full_eligible",
+      "cold_connection": false,
+      "http_status": 200,
+      "choice": "Let's turn right toward the back.",
+      "status": "ok",
+      "repeated_last_phrase": false,
+      "seconds": 0.152413,
+      "within_runtime_450ms_deadline": true
+    }
+  ],
+  "set_comparison": {
+    "small": 5,
+    "medium_requested": 15,
+    "full_eligible": [
+      5
+    ],
+    "conclusion": "Each selected half-open geometry cell has exactly five unique eligible phrases. Small and full are identical; medium cannot be tested from this catalog without adding new valid authored options. API support for larger sets remains untested."
+  },
+  "latency_seconds": {
+    "count": 12,
+    "median": 0.16331849999999998,
+    "p95": 0.498316,
+    "maximum": 0.498316,
+    "over_threshold": 0
+  },
+  "provider_failures": 0,
+  "requests_beyond_runtime_deadline": 1,
+  "unknowns": [
+    "No participant behavior, perceptual quality, target recognition, or network performance on headset inferred.",
+    "Host pilot waits up to1.5s for diagnostics; requests exceeding450ms would miss the current Unity catalog deadline.",
+    "One question per request tests wording only; combined runtime transmit/interruption decisions are not benchmarked here."
+  ]
+}

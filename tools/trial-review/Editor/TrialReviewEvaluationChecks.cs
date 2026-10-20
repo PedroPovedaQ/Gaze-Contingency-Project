@@ -20,6 +20,12 @@ public static class TrialReviewEvaluationChecks
             try{TrialReviewEvaluation.ReadReport(path,"recording-b");}
             catch(InvalidDataException){rejected=true;}
             Assert(rejected,"different recording rejected");
+            string pilot=Path.Combine(folder,"pilots.json");
+            File.WriteAllText(pilot,"{\"schema\":\"guidance-paired-pilots-v1\",\"measurement_basis\":\"simulated clock, not headset\",\"variants\":[]}");
+            Assert(TrialReviewEvaluation.ReadPilots(pilot)!=null,"explicit simulated comparison accepted separately");
+            File.WriteAllText(pilot,"{\"schema\":\"guidance-paired-pilots-v1\",\"variants\":[]}");
+            rejected=false;try{TrialReviewEvaluation.ReadPilots(pilot);}catch(InvalidDataException){rejected=true;}
+            Assert(rejected,"comparison must declare its measurement basis");
             var report=JObject.Parse("{\"batches\":[{\"status\":\"success\",\"case_map\":{\"case-1\":\"source-case\"},\"result\":{\"cases\":[{\"case_id\":\"case-1\",\"ratings\":{\"direction\":{\"verdict\":\"unknown\",\"rationale\":\"No geometry\",\"evidence_ids\":[]}}}]}}]}");
             Assert((string)TrialReviewEvaluation.Rating(report,"source-case")["direction"]["verdict"]=="unknown","unknown remains unknown");
             Assert(TrialReviewEvaluation.Rating(report,"other")==null,"unmatched case never receives a rating");

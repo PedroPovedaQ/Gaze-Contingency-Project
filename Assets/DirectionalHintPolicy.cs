@@ -40,7 +40,7 @@ public static class DirectionalHintPolicy
             for (int i = 0; i < 3; i++) if (phrase == Progress(direction, i)) return true;
         return false;
     }
-    public const string Version = "gaze-directional-v25-brief-turn-progress";
+    public const string Version = "gaze-directional-v26-visible-reference";
     static readonly string[] k_AreaLead = { "Right area.", "Right here.",
         "This area.", "Stay here." };
 
@@ -67,6 +67,17 @@ public static class DirectionalHintPolicy
         if (up) return left ? UpLeftPhrase : right ? UpRightPhrase : UpPhrase;
         if (down) return left ? DownLeftPhrase : right ? DownRightPhrase : DownPhrase;
         return left ? LeftPhrase : right ? RightPhrase : AlignedPhrase;
+    }
+    // The bright vicinity winner is a visible conversational reference, not a
+    // replacement eye measurement. If its apparent elevation contradicts the raw
+    // vertical cue, retain only the horizontal cue; never invent the opposite one.
+    public static string ConsistentWithVisibleReference(string direction, bool referenceAvailable,
+        float targetMinusReferenceElevation, out bool verticalSuppressed)
+    {
+        verticalSuppressed = referenceAvailable && float.IsFinite(targetMinusReferenceElevation) &&
+            (HasDown(direction) && targetMinusReferenceElevation >= 0 || HasUp(direction) && targetMinusReferenceElevation <= 0);
+        if (!verticalSuppressed) return direction;
+        return HasLeft(direction) ? LeftPhrase : HasRight(direction) ? RightPhrase : null;
     }
     static bool HasUp(string d) => d == UpPhrase || d == UpLeftPhrase || d == UpRightPhrase;
     static bool HasDown(string d) => d == DownPhrase || d == DownLeftPhrase || d == DownRightPhrase;
@@ -128,6 +139,15 @@ public static class DirectionalHintPolicy
         "Go back " + (VerticalBand(verticalFraction) == 2 ? "way " : "") +
         (direction == UpPhrase ? "up" : "down") + (VerticalBand(verticalFraction) == 0 ? " a little." : ".");
 
+    // Round-index rotation varies the transition cue without consuming stimulus RNG.
+    // These prepared lines run before gaze qualification and before the trial timer.
+    public static string ReadinessPrompt(int round) => k_Readiness[((round % k_Readiness.Length) + k_Readiness.Length) % k_Readiness.Length];
+    static readonly string[] k_Readiness = {
+        "Look at the cross and hold your gaze to begin the next round.",
+        "Look for the cross and keep looking at it to start the next round.",
+        "Ready for the next round? Look at the cross until it fills."
+    };
+
     // Relative to the current valid eye ray, not the headset's original forward.
     public static string ReadinessReminder(float yaw, float pitch)
     {
@@ -183,6 +203,7 @@ public static class DirectionalHintPolicy
     public static string[] AllPhrases()
     {
         var phrases = new List<string>();
+        phrases.AddRange(k_Readiness);
         foreach (var group in new[] { k_Left, k_Right, k_FarLeft, k_FarRight, k_Area, k_Return, k_Aligned, k_Looking })
             phrases.AddRange(group);
         foreach (var direction in new[] { LeftPhrase, RightPhrase, UpPhrase, DownPhrase, AlignedPhrase })

@@ -86,7 +86,7 @@ public static class VoicePromptText
 
     // A separate source phrase keeps correction wording distinct from trial announcements.
     public static string WrongSelectionPhrase(string color, string shape) =>
-        "Keep following the guidance and try another object.";
+        "Try another object.";
 
     public static string SelfSimilar(string text)
     {

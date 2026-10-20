@@ -169,7 +169,7 @@ public partial class VoiceAssistantController : MonoBehaviour
     public const string AudioCheckLine = VoicePromptText.AudioLevelCheck;
     public static string RoundPhrase(int round, string color, string shape, bool isPractice = false) =>
         (isPractice ? "This is a practice round. It does not count toward the study. " : "") +
-        "Follow the guidance to find the object.";
+        DirectionalHintPolicy.ReadinessPrompt(round);
     public static string[] PhraseLibrary()
     {
         var phrases = new System.Collections.Generic.HashSet<string>(HintGenerator.AllPhrases());

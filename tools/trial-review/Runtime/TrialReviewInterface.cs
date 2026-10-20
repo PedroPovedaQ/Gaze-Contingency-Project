@@ -161,6 +161,19 @@ public sealed partial class TrialReviewApp
         }
         m_WaitingTitle.fontSize=24;
         GUI.Label(new Rect(m_Viewport.x+12,top+size+6,m_Viewport.width-24,32),LiveWaitingReason,m_WaitingTitle);
+        if(HeadsetPreparing)
+        {
+            float barWidth=Mathf.Min(360,m_Viewport.width-48);
+            var bar=new Rect(m_Viewport.center.x-barWidth/2,top+size+46,barWidth,12);
+            Fill(bar,new Color(.2f,.2f,.2f));
+            var loading=m_LiveStatus.headsetState;
+            if(loading.progressKnown)
+            {
+                Fill(new Rect(bar.x,bar.y,bar.width*Mathf.Clamp01(loading.progress01),bar.height),m_Accent);
+                GUI.Label(new Rect(bar.x,bar.yMax+4,bar.width,24),$"{Mathf.RoundToInt(loading.progress01*100)}%",m_WaitingTitle);
+            }
+            else GUI.Label(new Rect(bar.x,bar.yMax+4,bar.width,24),"Progress not reported",m_WaitingTitle);
+        }
         m_UcfLogo??=Resources.Load<Texture2D>("UcfLogo");
         if(m_UcfLogo!=null)GUI.DrawTexture(new Rect(m_Viewport.xMax-102,m_Viewport.yMax-70,84,56),m_UcfLogo,ScaleMode.ScaleToFit,true);
     }

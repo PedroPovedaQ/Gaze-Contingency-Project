@@ -33,6 +33,11 @@ public partial class HintGenerator
         decision.targetVicinityPaddingDegrees = m_Vicinity != null ? m_Vicinity.PaddingDegrees : GazeTargetVicinity.DefaultPaddingDegrees;
         decision.devVicinityRingEnabled = m_Vicinity != null && m_Vicinity.RingVisible;
         decision.controllerEvidenceValid = m_ControllerEvidenceValid; decision.controllerOnTarget = m_ControllerOnTarget;
+        decision.visualReferenceObjectId = m_VisualReferenceObjectId;
+        decision.visualReferenceVerticalDeltaMetres = m_VisualReferenceVerticalDelta;
+        decision.visualReferencePitchDeltaDegrees = m_VisualReferencePitchDelta;
+        decision.visualReferenceVerticalSuppressed = m_VisualReferenceVerticalSuppressed;
+        decision.visualReferenceSuppressionReason = m_VisualReferenceSuppressionReason;
         decision.targetObjectId = m_EvaluatedTarget != null ? m_EvaluatedTarget.objectId : "";
         if (m_Controller != null)
         {
@@ -70,6 +75,11 @@ public partial class HintGenerator
         e.vicinityMeasured = valid && m_VicinityMeasured;
         e.vicinityErrorDegrees = m_VicinityError; e.vicinityRadiusDegrees = m_VicinityRadius;
         e.vicinityCandidateCount = m_VicinityCandidateCount; e.vicinityAmbiguous = m_VicinityAmbiguous;
+        e.visualReferenceObjectId = m_VisualReferenceObjectId;
+        e.visualReferenceVerticalDeltaMetres = m_VisualReferenceVerticalDelta;
+        e.visualReferencePitchDeltaDegrees = m_VisualReferencePitchDelta;
+        e.visualReferenceVerticalSuppressed = m_VisualReferenceVerticalSuppressed;
+        e.visualReferenceSuppressionReason = m_VisualReferenceSuppressionReason;
         e.targetAcknowledged = m_State.TargetAcknowledged;
         e.targetReturnPending = valid && m_State.RevisitPending(Time.realtimeSinceStartupAsDouble);
         e.lastTargetSeenAgeSeconds = m_State.LastTargetVisitTime < 0 ? -1 : System.Math.Max(0, now - m_State.LastTargetVisitTime);

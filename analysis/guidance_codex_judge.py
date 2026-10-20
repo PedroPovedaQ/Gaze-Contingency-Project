@@ -18,7 +18,7 @@ import subprocess
 import tempfile
 
 MODEL = "gpt-6-astra"
-RUBRIC_VERSION = "guidance-review-v2-sequences"
+RUBRIC_VERSION = "guidance-review-v4-playback-state"
 RESULT_SCHEMA = "guidance-codex-judge-v1"
 DIMENSIONS = ("direction", "state_appropriateness", "timing", "repetition", "interruption")
 VERDICTS = ("correct", "incorrect", "unknown")
@@ -61,6 +61,15 @@ missing facts prevent a supported verdict. Do not invent target positions or tim
 'correct' means supported as appropriate in the available evidence, not globally optimal.
 Direction: chosen/proposed spatial language agrees with valid measured direction.
 State appropriateness: action fits current local stage, qualification and controller state.
+recent_states and recent_actions show observed transitions, not continuous sensor truth.
+playback_state is the most recent observed central state <=250ms before the recorded
+software start, when available. Use it to detect stale state at playback, but don't
+claim exact sensor state at onset or extrapolate direction from missing geometry.
+Valid controller-on-target evidence may justify suppressing contradictory directions before
+its hold qualifies; it does not justify an early pointing confirmation. Looking, pointing,
+and trigger-selected completion are distinct events. Never infer completion from either
+confirmation. Assess recent actual played directions versus controller entry/exit evidence;
+missing continuous coverage is unknown, not proof of a contradiction.
 Use event_type and qualification_status to distinguish gaze_confirmation from
 controller_confirmation. Gaze confirmation acknowledges qualified looking; controller
 confirmation acknowledges a new qualified controller hold with valid gaze nearby.
@@ -79,7 +88,10 @@ not a validated human threshold. For an over-budget played episode, flag timing
 incorrect when repeated idle waits account for the delay; otherwise explain known
 blocking evidence or use unknown. Attribute episode delay to the chain, not every
 individual request. A brief first wait may be reasonable while the total is too long.
-Qualification begins at the first observed qualified request; do not invent an earlier
+The request-based delay begins at the first observed qualified request. When present,
+observed_qualification_to_playback_seconds starts earlier at an explicit qualified action
+in fresh recorded central-state samples and includes any pre-request scheduling delay.
+Missing observed-state timing is unknown. Do not invent an earlier
 sensor onset or infer continuous fixation between snapshots. Boundary-ended episodes
 without playback are unknown, not slow failures.
 Repetition: compare selected/proposed text with recorded recent speech; a single snapshot
@@ -177,12 +189,22 @@ def _sequence_context(value):
         return result
     result = {"recent_playback": [clean(item, ("time", "phrase", "event_type"))
                 for item in value.get("recent_playback", [])[:6]]}
+    result["recent_states"] = [clean(item, ("time", "phase", "allowedAction", "gazeValid", "controllerValid",
+        "transitionReason", "controller_on_target", "gaze_near_target"))
+        for item in value.get("recent_states", [])[:12]]
+    result["recent_actions"] = [clean(item, ("time", "kind", "correct"))
+        for item in value.get("recent_actions", [])[:12]]
+    playback_state = value.get("playback_state")
+    result["playback_state"] = (clean(playback_state, ("time", "age_seconds", "phase", "allowedAction",
+        "gazeValid", "controllerValid", "transitionReason", "controller_on_target", "gaze_near_target"))
+        if isinstance(playback_state, dict) else None)
     episode = value.get("confirmation_episode")
     if isinstance(episode, dict):
         result["confirmation_episode"] = clean(episode, (
             "event_type", "first_qualified_request_time", "qualification_basis", "continuity",
             "review_budget_seconds", "wait_count", "outcome",
-            "qualification_to_playback_seconds", "latency_review"))
+            "qualification_to_playback_seconds", "latency_review", "first_observed_qualification_time",
+            "observed_qualification_to_playback_seconds", "observed_qualification_basis"))
         attempts = episode.get("attempts", [])
         if len(attempts) > 200:
             raise ValueError("sequence_limit_exceeded")
@@ -208,7 +230,8 @@ def _sanitize(case, decision, number):
         context = result["sequence_context"]
         episode = context.get("confirmation_episode", {})
         references = list(result["evidence_ids"]) + episode.get("evidence_ids", [])
-        for item in context.get("recent_playback", []) + episode.get("attempts", []):
+        references.extend((context.get("playback_state") or {}).get("evidence_ids", []))
+        for item in context.get("recent_playback", []) + context.get("recent_states", []) + context.get("recent_actions", []) + episode.get("attempts", []):
             references.extend(item["evidence_ids"])
         result["evidence_ids"] = sorted(set(references))
         outcome = {key: _scalar(decision[key]) for key in ("response_status", "phrase", "played_phrase", "playback_status", "software_response_seconds", "software_playback_seconds") if key in decision}
@@ -324,7 +347,7 @@ def _read_input(path):
 
 
 def _judge_locked(benchmark_path, output_directory, *, evaluation_path=None, timeout_seconds=120,
-                    max_cases_per_batch=12, run_process=subprocess.run):
+                    max_cases_per_batch=12, selected_case_ids=None, run_process=subprocess.run):
     """Return/write separate structured results. CLI/model failures never become ratings."""
     if not 1 <= max_cases_per_batch <= 20 or not 1 <= timeout_seconds <= 600:
         raise ValueError("invalid_batch_or_timeout_bound")
@@ -359,8 +382,15 @@ def _judge_locked(benchmark_path, output_directory, *, evaluation_path=None, tim
             if report.get("schema") != "guidance-evaluation-v1":
                 raise ValueError("invalid_evaluation_schema")
             decisions = {x["case_id"]: x for x in report.get("decisions", []) if isinstance(x, dict) and isinstance(x.get("case_id"), str)}
+        selected = set(selected_case_ids) if selected_case_ids is not None else None
+        if selected is not None and (not selected or not selected <= seen):
+            raise ValueError("invalid_selected_cases")
+        result["assessment_scope"] = "selected_cases" if selected is not None else "all_cases"
+        result["total_available_cases"] = len(benchmark)
+        result["selected_cases"] = len(selected) if selected is not None else len(benchmark)
         groups = {}
         for number, row in enumerate(benchmark):
+            if selected is not None and row["case_id"] not in selected: continue
             clean = _sanitize(row, decisions.get(row["case_id"], {}), number)
             group = row.get("group", {}).get("trial_group")
             # Missing trial grouping gets a case-sized batch, never mixed trials.
@@ -475,7 +505,7 @@ def _judge_locked(benchmark_path, output_directory, *, evaluation_path=None, tim
 
 
 def judge_benchmark(benchmark_path, output_directory, *, evaluation_path=None, timeout_seconds=120,
-                    max_cases_per_batch=12, run_process=subprocess.run):
+                    max_cases_per_batch=12, selected_case_ids=None, run_process=subprocess.run):
     """Run at most one judge for a destination; concurrent invocations return pending."""
     destination = Path(output_directory)
     destination.mkdir(parents=True, exist_ok=True)
@@ -488,7 +518,7 @@ def judge_benchmark(benchmark_path, output_directory, *, evaluation_path=None, t
         try:
             return _judge_locked(benchmark_path, destination, evaluation_path=evaluation_path,
                                  timeout_seconds=timeout_seconds, max_cases_per_batch=max_cases_per_batch,
-                                 run_process=run_process)
+                                 selected_case_ids=selected_case_ids, run_process=run_process)
         except KeyboardInterrupt:
             target = destination / "guidance-codex-judge.json"
             try:
@@ -509,6 +539,7 @@ def main():
     parser.add_argument("--evaluation", type=Path)
     parser.add_argument("--timeout-seconds", type=int, default=120)
     parser.add_argument("--max-cases-per-batch", type=int, default=12)
+    parser.add_argument("--case-id", action="append", help="Review only this exact case; repeat for a bounded selection. Full input hashes are retained.")
     args = parser.parse_args()
     # SIGTERM unwinds subprocess.run, which kills/waits for its child, and writes
     # interrupted status. SIGKILL cannot be handled; the OS still releases flock.
@@ -516,7 +547,7 @@ def main():
         raise KeyboardInterrupt
     signal.signal(signal.SIGTERM, interrupted)
     result = judge_benchmark(args.benchmark, args.output_directory, evaluation_path=args.evaluation,
-                             timeout_seconds=args.timeout_seconds, max_cases_per_batch=args.max_cases_per_batch)
+                             timeout_seconds=args.timeout_seconds, max_cases_per_batch=args.max_cases_per_batch, selected_case_ids=args.case_id)
     print(json.dumps({"status": result["status"], "output_path": str(args.output_directory.resolve() / "guidance-codex-judge.json")}))
     return 0 if result["status"] == "success" else 2
 

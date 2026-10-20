@@ -262,6 +262,9 @@ public partial class VoiceSynthesizer : MonoBehaviour
     string m_CurrentPhrase;
     public bool GuidanceReady => GuidanceSpeechPolicy.CanStart(IsBusy,
         Time.realtimeSinceStartupAsDouble, m_LastGuidanceEnd, m_LastGuidanceWasAcknowledgment);
+    bool GuidanceReadyFor(string phrase) => GuidanceSpeechPolicy.CanStart(IsBusy,
+        Time.realtimeSinceStartupAsDouble, m_LastGuidanceEnd,
+        m_LastGuidanceWasAcknowledgment || GuidanceSpeechPolicy.IsAcknowledgment(phrase));
 
     void MarkGuidanceEnd()
     {
@@ -434,9 +437,10 @@ public partial class VoiceSynthesizer : MonoBehaviour
         string path = GetCachePath(VoicePromptText.FormatForVoice(phrase, SessionConfig.Voice),
             (self ? "el-clone-" : "el-") + voiceId);
         if (!m_PreparedClips.ContainsKey(path) || !stillRelevant()) return false;
-        if (GuidanceReady && TransmissionAdvisor != null)
+        bool ready = GuidanceReadyFor(phrase);
+        if (ready && TransmissionAdvisor != null)
             return TryGuidanceTransmission(phrase, stillRelevant, onCommitted, reason, guidanceDecisionId);
-        if (!GuidanceReady && !ApproveInterruption(phrase, reason, stillRelevant, ref guidanceDecisionId)) return false;
+        if (!ready && !ApproveInterruption(phrase, reason, stillRelevant, ref guidanceDecisionId)) return false;
         m_DropCorrection = false;
         m_PendingCorrectionDecisionId = guidanceDecisionId;
         m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(phrase, stillRelevant, onCommitted, reason, guidanceDecisionId));

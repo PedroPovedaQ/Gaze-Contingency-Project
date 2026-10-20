@@ -8,14 +8,17 @@ using UnityEngine;
 
 public sealed partial class TrialReviewApp
 {
-    JObject m_Evaluation, m_Judge;
+    JObject m_Evaluation, m_Judge, m_PilotComparison;
+    string m_PilotError="";
     Vector2 m_EvaluationScroll;
     string m_EvaluationError="", m_JudgeStatus="", m_JudgeFolder="",m_EvaluationFolder="";
     bool m_JudgeRunning,m_JudgeRequested,m_EvaluationGenerating;
     float m_NextJudgePoll,m_EvaluationContentWidth;
+    bool SuppressAutomaticEvaluation => Array.IndexOf(Environment.GetCommandLineArgs(),"--no-auto-evaluation")>=0;
 
     void LoadEvaluation(string folder)
     {
+        LoadPilotComparison(folder);
         m_Evaluation=null; m_Judge=null; m_EvaluationError=""; m_JudgeStatus="";
         try
         {
@@ -29,7 +32,9 @@ public sealed partial class TrialReviewApp
             m_JudgeFolder=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                 "Documents","Trial Review Evaluations",Path.GetFileName(folder));
             PollJudge();
-            m_JudgeRequested=PlayerPrefs.GetInt("AutomaticAstraEvaluation",1)==1;
+            // Existing bounded results retain their declared scope. Only an explicit
+            // Run / resume action expands them; reopening must not spend more requests.
+            m_JudgeRequested=!SuppressAutomaticEvaluation&&m_Judge==null&&PlayerPrefs.GetInt("AutomaticAstraEvaluation",1)==1;
         }
         catch(Exception error){m_EvaluationError=error.Message;}
     }
@@ -77,13 +82,13 @@ public sealed partial class TrialReviewApp
     IEnumerator EvaluateWithAstra(string folder)
     {
         if(m_JudgeRunning||m_Evaluation==null)yield break;
-        if((int?)m_Evaluation["summary"]?["benchmark_cases"]==0)
-        {m_JudgeStatus="No recorded model requests to judge.";yield break;}
+        if(((int?)m_Evaluation["summary"]?["review_cases"] ?? (int?)m_Evaluation["summary"]?["benchmark_cases"])==0)
+        {m_JudgeStatus="No recorded decisions to judge.";yield break;}
         m_JudgeRunning=true;
         string output=m_JudgeFolder;
         var process=new Process { StartInfo=new ProcessStartInfo("/usr/bin/python3",
             Argument(Path.Combine(Application.streamingAssetsPath,"Analysis","guidance_codex_judge.py"))+" "+
-            Argument(Path.Combine(folder,"guidance-benchmark.jsonl"))+" "+Argument(output)+
+            Argument(ReviewCasesPath(folder))+" "+Argument(output)+
             " --evaluation "+Argument(Path.Combine(folder,"guidance-evaluation.json")))
             {UseShellExecute=false,CreateNoWindow=true,RedirectStandardOutput=true,RedirectStandardError=true}};
         System.Threading.Tasks.Task<string> stdout=null,stderr=null;
@@ -116,6 +121,12 @@ public sealed partial class TrialReviewApp
             CatalogAction(()=>m_Catalog.AttachFolderFiles(m_Dataset,output));
     }
 
+    static string ReviewCasesPath(string folder)
+    {
+        string path=Path.Combine(folder,"guidance-review-cases.jsonl");
+        return File.Exists(path)?path:Path.Combine(folder,"guidance-benchmark.jsonl");
+    }
+
     void PollJudge()
     {
         try
@@ -125,7 +136,7 @@ public sealed partial class TrialReviewApp
             var report=TrialReviewEvaluation.ReadJson(path);
             if((string)report["schema"]!="guidance-codex-judge-v1")
                 throw new InvalidDataException("Unsupported judge report.");
-            string benchmark=Path.Combine(m_EvaluationFolder,"guidance-benchmark.jsonl");
+            string benchmark=ReviewCasesPath(m_EvaluationFolder);
             string evaluation=Path.Combine(m_EvaluationFolder,"guidance-evaluation.json");
             if((string)report["benchmark_sha256"]!=TrialReviewSummary.Hash(benchmark)||
                 (string)report["evaluation_sha256"]!=TrialReviewSummary.Hash(evaluation))
@@ -147,11 +158,15 @@ public sealed partial class TrialReviewApp
         GUILayout.BeginVertical(GUILayout.Width(m_EvaluationContentWidth));
         GUILayout.Label("GUIDANCE EVALUATION",m_Heading);
         GUILayout.Label("Post-run evidence checks and model judgments. Neither is a participant rating or proof of accurate eye tracking.",m_MutedLabel);
-        bool automatic=PlayerPrefs.GetInt("AutomaticAstraEvaluation",1)==1;
+        bool automatic=!SuppressAutomaticEvaluation&&PlayerPrefs.GetInt("AutomaticAstraEvaluation",1)==1;
+        bool wasEnabled=GUI.enabled;GUI.enabled=wasEnabled&&!SuppressAutomaticEvaluation;
         bool next=GUILayout.Toggle(automatic,"Auto-evaluate with Astra");
+        GUI.enabled=wasEnabled;
+        if(SuppressAutomaticEvaluation)GUILayout.Label("Automatic evaluation disabled for this launch; manual Run / resume remains available.",m_MutedLabel);
         if(next!=automatic)
         {PlayerPrefs.SetInt("AutomaticAstraEvaluation",next?1:0);PlayerPrefs.Save();m_JudgeRequested=next;}
         if(!string.IsNullOrEmpty(m_EvaluationError))GUILayout.Label(m_EvaluationError,m_Label);
+        DrawPilotComparison();
         if(m_Evaluation==null)
         {
             GUILayout.Label(m_EvaluationGenerating?"Processing recorded guidance…":
@@ -170,12 +185,18 @@ public sealed partial class TrialReviewApp
         }
         EvaluationMetric("Response median",Seconds(summary?["request_to_response_seconds"]?["median"]));
         EvaluationMetric("Playback median",Seconds(summary?["request_to_playback_seconds"]?["median"]));
-        EvaluationMetric("Confirmation sequence median",Seconds(summary?["qualification_to_playback_seconds"]?["median"]));
+        EvaluationMetric("First observed qualification → software start",Seconds(summary?["first_observed_qualification_to_playback_seconds"]?["median"])+" median · "+
+            Seconds(summary?["first_observed_qualification_to_playback_seconds"]?["p95"])+" p95 · "+Seconds(summary?["first_observed_qualification_to_playback_seconds"]?["maximum"])+" maximum");
+        EvaluationMetric("Observed qualification episodes",Text(summary?["first_observed_qualification_to_playback_seconds"]?["count"])+" timed · "+
+            Text(summary?["first_observed_latency_reviews"]?["over_budget"])+" over 1s · "+Text(summary?["first_observed_latency_reviews"]?["unknown"])+" unknown");
+        EvaluationMetric("Confirmation request median",Seconds(summary?["qualification_to_playback_seconds"]?["median"]));
+        EvaluationMetric("Confirmation p95 / maximum",Seconds(summary?["qualification_to_playback_seconds"]?["p95"])+" / "+Seconds(summary?["qualification_to_playback_seconds"]?["maximum"]));
         EvaluationMetric("Confirmation sequences over review budget",Text(summary?["confirmation_latency_reviews"]?["over_budget"]));
         GUILayout.Label("Software timing, not acoustic onset. Choice membership is not an accuracy score.",m_MutedLabel);
         GUILayout.Space(10);GUILayout.Label("ASTRA REVIEW",m_Heading);
         EvaluationMetric("Status",m_Judge==null?"Not evaluated":Text(m_Judge["status"]));
         if(m_Judge!=null){EvaluationMetric("Requested model",Text(m_Judge["requested_model"]));EvaluationMetric("Rubric",Text(m_Judge["rubric_version"]));}
+        if(m_Judge!=null)EvaluationMetric("Assessment coverage",Text(m_Judge["selected_cases"])+" / "+Text(m_Judge["total_available_cases"])+" available cases · "+Text(m_Judge["assessment_scope"]));
         if(m_Judge!=null)EvaluationMetric("Batches",Text(m_Judge["completed_batches"])+" / "+Text(m_Judge["total_batches"]));
         GUILayout.Label(m_JudgeStatus,m_MutedLabel);
         bool enabled=GUI.enabled;GUI.enabled=enabled&&!m_JudgeRunning;
@@ -199,9 +220,20 @@ public sealed partial class TrialReviewApp
             EvaluationMetric("Recorded playback",Text(row["played_phrase"]));
             EvaluationMetric("Provider outcome",Text(row["response_status"]));
             EvaluationMetric("Event",Text(row["event_type"]));
-            var episode=row["sequence_context"]?["confirmation_episode"];
+            var context=row["sequence_context"];
+            var playbackState=context?["playback_state"];
+            EvaluationMetric("Observed state near software playback",playbackState==null||playbackState.Type==JTokenType.Null?"Unknown":
+                Text(playbackState["phase"])+" · pointing at target: "+Text(playbackState["controller_on_target"])+
+                " · gaze near target: "+Text(playbackState["gaze_near_target"])+" · sample age "+Seconds(playbackState["age_seconds"]));
+            if(context?["recent_playback"] is JArray recentSpeech)
+                foreach(var line in recentSpeech)GUILayout.Label(Text(line["time"])+"s · played: "+Text(line["phrase"]),m_MutedLabel);
+            if(context?["recent_states"] is JArray recentStates)
+                foreach(var state in recentStates.Skip(Math.Max(0,recentStates.Count-6)))GUILayout.Label(Text(state["time"])+"s · "+Text(state["phase"])+
+                    " · pointing: "+Text(state["controller_on_target"])+" · gaze near: "+Text(state["gaze_near_target"]),m_MutedLabel);
+            var episode=context?["confirmation_episode"];
             if(episode!=null&&episode.Type!=JTokenType.Null)
             {
+                EvaluationMetric("First observed qualified state → playback",Seconds(episode["observed_qualification_to_playback_seconds"]));
                 EvaluationMetric("First qualified request → playback",Seconds(episode["qualification_to_playback_seconds"]));
                 EvaluationMetric("Sequence outcome",Text(episode["outcome"])+" · "+Text(episode["wait_count"])+" wait decisions");
                 EvaluationMetric("Latency review",Text(episode["latency_review"])+" · budget "+Seconds(episode["review_budget_seconds"]));
@@ -221,6 +253,46 @@ public sealed partial class TrialReviewApp
         }
         GUILayout.EndVertical();GUILayout.EndScrollView();
     }
+    void LoadPilotComparison(string folder)
+    {
+        m_PilotComparison=null;m_PilotError="";
+        string shared=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            "Documents","Trial Review Evaluations","guidance-paired-pilots.json");
+        string path=Path.Combine(folder,"guidance-paired-pilots.json");
+        if(!File.Exists(path))path=shared;
+        if(!File.Exists(path))return;
+        try{m_PilotComparison=TrialReviewEvaluation.ReadPilots(path);}
+        catch(Exception error){m_PilotError=error.Message;}
+    }
+    void DrawPilotComparison()
+    {
+        GUILayout.Space(10);GUILayout.Label("PAIRED POLICY PILOTS",m_Heading);
+        if(Button("Refresh pilot comparison",GUILayout.Width(m_EvaluationContentWidth)))
+            LoadPilotComparison(string.IsNullOrEmpty(m_EvaluationFolder)?Application.persistentDataPath:m_EvaluationFolder);
+        if(!string.IsNullOrEmpty(m_PilotError))GUILayout.Label(m_PilotError,m_MutedLabel);
+        if(m_PilotComparison==null){GUILayout.Label("No comparison imported. Place guidance-paired-pilots.json in Documents / Trial Review Evaluations.",m_MutedLabel);return;}
+        GUILayout.Label(Text(m_PilotComparison["measurement_basis"]),m_MutedLabel);
+        GUILayout.Label("Separate offline pilot dataset; not outcomes from this selected trial. Counterfactual choices cannot predict participant behavior.",m_MutedLabel);
+        EvaluationMetric("Engineering review threshold",Seconds(m_PilotComparison["threshold_seconds"]));
+        foreach(var variant in (JArray)m_PilotComparison["variants"])
+        {
+            GUILayout.Label(Text(variant["id"])+" · "+Text(variant["source_ref"]),m_Heading);
+            if(variant["metrics"] is JObject metrics)
+                foreach(var metric in metrics.Properties())EvaluationMetric(metric.Name.Replace('_',' '),metric.Value.ToString(Newtonsoft.Json.Formatting.None));
+            if(variant["scenarios"] is JArray scenarios)
+                foreach(var scenario in scenarios)
+                {
+                    GUILayout.Label(Text(scenario["id"]),m_Heading);
+                    if(scenario["timeline"] is JArray timeline)
+                        foreach(var item in timeline.Take(12))
+                            GUILayout.Label(Text(item["time"])+"s · "+Text(item["event"])+" · "+Text(item["action"]),m_MutedLabel);
+                }
+        }
+        if(m_PilotComparison["network_comparison"]!=null)
+            EvaluationMetric("Candidate-set comparison",m_PilotComparison["network_comparison"].ToString(Newtonsoft.Json.Formatting.Indented));
+        if(m_PilotComparison["unknowns"] is JArray unknowns)
+            foreach(var unknown in unknowns)GUILayout.Label("Unknown: "+Text(unknown),m_MutedLabel);
+    }
     void EvaluationMetric(string label,string value)
     {
         GUILayout.Label(label,m_MutedLabel,GUILayout.Width(m_EvaluationContentWidth));
@@ -238,6 +310,14 @@ public static class TrialReviewEvaluation
     {
         if(new FileInfo(path).Length>32*1024*1024)throw new InvalidDataException("Evaluation report exceeds the supported size.");
         return JObject.Parse(File.ReadAllText(path));
+    }
+    public static JObject ReadPilots(string path)
+    {
+        var report=ReadJson(path);
+        if((string)report["schema"]!="guidance-paired-pilots-v1" || !(report["variants"] is JArray)
+            || string.IsNullOrEmpty((string)report["measurement_basis"]))
+            throw new InvalidDataException("Unsupported paired pilot report.");
+        return report;
     }
     public static JObject ReadReport(string path,string recordingHash)
     {

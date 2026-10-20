@@ -79,7 +79,65 @@ class GuidanceStateMachineChecks
         m.SetLifecycle(GuidancePhase.Stopped,"technical_stop",6);Check(m.Phase==GuidancePhase.Stopped,"Technical stop is not success");
         CheckAdditionalTransitions();
         CheckReturnActionPriority();
+        CheckControllerOrdering();
         Console.WriteLine("PASS centralized guidance: arrival, confirmation, consumption, blink, reacquisition, pause/resume and lifecycle tickets");
+    }
+
+    static void CheckControllerOrdering()
+    {
+        var m = new GuidanceStateMachine(); m.BeginSearch(0);
+        m.Step(Input(0,true,true)); m.Step(Input(.11,true,true));
+        m.Commit(GuidanceAction.ConfirmGaze,.11,true);
+        m.Step(Input(.2,true)); m.Step(Input(.51,true));
+        Check(m.Action==GuidanceAction.ReturnTarget,"Regression setup: queued return-down correction");
+        long queued=m.Revision;
+        m.Step(Input(.52,true,false,true));
+        Check(m.Action==GuidanceAction.None,"Controller hit must suppress return-down immediately before hold qualifies, even with gaze elsewhere");
+        Check(!m.PointingStable && !m.Allows(queued,GuidanceAction.ReturnTarget),"Unqualified hit cancels stale return without confirming");
+        m.Step(Input(1.53,true,false,true));
+        Check(m.PointingStable && m.Action==GuidanceAction.None,"Qualified controller hold still cannot invent nearby gaze");
+        m.Step(Input(1.54,true,true,true));
+        Check(m.Action==GuidanceAction.ConfirmPointing,"Qualified pointing with current nearby gaze wins immediately");
+        long pointingTicket=m.Revision;
+        m.Step(Input(1.55,true,true,false));
+        Check(!m.PointingStable && !m.Allows(pointingTicket,GuidanceAction.ConfirmPointing),"Leaving target invalidates pending pointing confirmation");
+        m.Step(Input(1.56,true,true,true)); m.Step(Input(1.67,true,true,true));
+        Check(m.Action==GuidanceAction.ConfirmGaze,"Gaze can qualify before reacquired controller hold");
+        m.Commit(GuidanceAction.ConfirmGaze,1.67,true,true);
+        m.Step(Input(2.57,true,true,true));
+        Check(m.Action==GuidanceAction.ConfirmPointing,"Gaze acknowledgment must not consume the independent pointing confirmation");
+        m.Commit(GuidanceAction.ConfirmPointing,2.57,true,true);
+        m.Step(Input(2.7,true,true,true));
+        Check(m.Action==GuidanceAction.None && m.Phase!=GuidancePhase.Completed,"Holding target is not a trigger selection or a repeat confirmation");
+        var lost=Input(2.8,true,true,true); lost.controllerValid=false; m.Step(lost);
+        Check(!m.PointingStable && m.Action!=GuidanceAction.ConfirmPointing,"Tracking loss invalidates hold despite a retained target ID");
+        m.Step(Input(3,true,true,true)); m.Step(Input(3.9,true,true,true));
+        Check(!m.PointingStable,"Tracking recovery restarts qualification");
+        m.Step(Input(4.01,true,true,true,false));
+        Check(m.Action==GuidanceAction.None && m.Phase==GuidancePhase.Suspended,"Blinks suppress speech even with a tracked controller hit");
+        m.Step(Input(4.02,true,true,true));
+        Check(m.Action!=GuidanceAction.Direction && m.Action!=GuidanceAction.ReturnTarget,"Recovery cannot produce contradictory directions");
+        m.SetLifecycle(GuidancePhase.Paused,"test",4.1);
+        Check(!m.Allows(pointingTicket,GuidanceAction.ConfirmPointing),"Pause rejects delayed pointing replies");
+        m.ResumeSearch(5); m.Step(Input(5,true,true,true)); m.Step(Input(5.11,true,true,true));
+        Check(!m.PointingStable && m.Action==GuidanceAction.ConfirmGaze,"Resume starts a new hold but gaze remains a separate event");
+        m.SetLifecycle(GuidancePhase.Completed,"correct_trigger",5.2);
+        Check(m.Phase==GuidancePhase.Completed,"Only selection lifecycle completes trial");
+
+        // Same-frame controller entry after the machine tick but before async
+        // completion/playback: the final gate must use current controller evidence.
+        foreach (GuidanceAction action in new[] { GuidanceAction.Direction, GuidanceAction.Progress, GuidanceAction.Arrival,
+            GuidanceAction.ReturnTarget, GuidanceAction.ReturnBearing, GuidanceAction.ReturnWall })
+            Check(GuidanceStateMachine.IsSearchAction(action),"All search and correction classes share the playback guard");
+        m.BeginSearch(6); m.Step(Input(6)); m.Step(Input(6.3)); queued=m.Revision;
+        var scheduler=new GuidanceRequestScheduler(); bool controllerNow=false; int commits=0;
+        scheduler.QueuePlayback(()=>m.AllowsPlayback(queued,GuidanceAction.Direction,true,controllerNow),()=>commits++);
+        controllerNow=true;
+        Check(!scheduler.TryTakePlayback(out var commit) && commit==null && commits==0,
+            "A queued direction approved by delayed Jev is rejected at actual playback on same-frame controller entry");
+        Check(m.AllowsPlayback(queued,GuidanceAction.Direction,false,true),"An invalid retained controller hit cannot block a valid direction");
+        m.Step(Input(6.4,false,false,true)); m.Step(Input(6.5));
+        Check(!m.AllowsPlayback(queued,GuidanceAction.Direction,true,false),"Late old reply cannot survive hit then departure, even when direction matches again");
     }
 
     static void CheckReturnActionPriority()
@@ -105,6 +163,24 @@ class GuidanceStateMachineChecks
         m.Step(Input(2.8));
         Check(m.Action!=GuidanceAction.ReturnWall,"Consumed wall-return does not repeat");
 
+        m.BeginSearch(3);
+        for(int i=0;i<=20;i++)
+        {
+            double time=3+i*.04; var sample=Input(time,true);
+            sample.direction=DirectionalHintPolicy.LeftPhrase; sample.suppressVertical=true;
+            sample.history=new GazeTargetHistory.Sample { time=time,inputTime=time,observationSequence=i+1,
+                deviceId=1,eyeRecordingId="reference-test",yawError=0,pitchError=i<3?8:i<5?0:-8 };
+            m.Step(sample);
+        }
+        Check(m.TargetHistory.PendingDirection(3.8)==DirectionalHintPolicy.DownPhrase && m.Action!=GuidanceAction.ReturnBearing,
+            "Visible-reference suppression also blocks a historical downward return, while preserving raw bearing history");
+        m.Commit(GuidanceAction.Arrival,3.8,true);
+        var lateral=Input(3.85,true); lateral.direction=DirectionalHintPolicy.LeftPhrase; lateral.suppressVertical=true;
+        lateral.history=new GazeTargetHistory.Sample {time=3.85,inputTime=3.85,observationSequence=22,
+            deviceId=1,eyeRecordingId="reference-test",yawError=0,pitchError=-8}; m.Step(lateral);
+        Check(m.Action==GuidanceAction.Direction && m.PendingBearingDirection(3.85,true)==null &&
+            m.TargetHistory.PendingDirection(3.85)==DirectionalHintPolicy.DownPhrase,
+            "Suppressed vertical history cannot block the horizontal fallback's final bearing guard");
         m.BeginSearch(4);
         for(int i=0;i<=20;i++)
         {

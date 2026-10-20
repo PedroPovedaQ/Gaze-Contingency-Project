@@ -1,6 +1,6 @@
 using System;
 
-public enum GuidancePhase { Inactive, Opening, Turning, Refining, AcquiringTarget, Acquired, ReadyToSelect, Suspended, Paused, Completed, Stopped }
+public enum GuidancePhase { Inactive, Opening, Turning, Refining, AcquiringTarget, Acquired, ReadyToSelect, Suspended, Paused, Completed, Stopped, PointingTarget }
 public enum GuidanceAction { None, Direction, Progress, Arrival, ConfirmGaze, ConfirmPointing, SelectionReminder, ReturnTarget, ReturnBearing, ReturnWall }
 
 /// <summary>Single owner of guidance qualification, phase transitions and action priority.
@@ -12,7 +12,7 @@ public sealed class GuidanceStateMachine
     {
         public double now, deltaSeconds, receiptTime;
         public long observationSequence;
-        public bool valid, inside, looking, controllerValid, controllerOnTarget;
+        public bool valid, inside, looking, controllerValid, controllerOnTarget, suppressVertical;
         public string direction;
         public float verticalFraction, remainingTurn;
         public GazeTargetHistory.Sample? history;
@@ -41,10 +41,24 @@ public sealed class GuidanceStateMachine
     public bool DebouncingWallExit => m_Return.IsDebouncingExit;
     public double LastTargetVisitTime { get; private set; } = -1;
     public long LastTargetVisitSequence { get; private set; } = -1;
+    public string PendingBearingDirection(double now, bool suppressVertical)
+    {
+        string direction = TargetHistory.PendingDirection(now);
+        return suppressVertical && DirectionalHintPolicy.HasVertical(direction) ? null : direction;
+    }
     public bool RevisitPending(double now) => m_Revisit.IsPending(now);
     public bool WallReturnPending(double now) => m_Return.IsPending(now);
     public bool Allows(GuidanceAction action) => Action == action && action != GuidanceAction.None;
     public bool Allows(long revision, GuidanceAction action) => Revision == revision && Allows(action);
+
+    // A controller hit blocks search immediately; this is not a qualified confirmation.
+    // Re-read live controller evidence here before AudioSource.Play, because a response
+    // can arrive after controller telemetry but before the next state-machine Step.
+    public bool AllowsPlayback(long revision, GuidanceAction action, bool controllerValid, bool controllerOnTarget) =>
+        Allows(revision, action) && !(controllerValid && controllerOnTarget && IsSearchAction(action));
+    public static bool IsSearchAction(GuidanceAction action) => action == GuidanceAction.Direction ||
+        action == GuidanceAction.Progress || action == GuidanceAction.Arrival || action == GuidanceAction.ReturnTarget ||
+        action == GuidanceAction.ReturnBearing || action == GuidanceAction.ReturnWall;
 
     void Transition(GuidancePhase phase, string reason, double now, bool force = false)
     {
@@ -105,9 +119,12 @@ public sealed class GuidanceStateMachine
             else if (reminder) Action = GuidanceAction.SelectionReminder;
             return; // Never nudge away from the target while qualifying/holding gaze.
         }
+        // Suppress search even when the eyes have not reached the winning target
+        // vicinity. Keep the hold timer and gaze validity requirements unchanged.
+        if (input.controllerValid && input.controllerOnTarget) return;
         if (!Stable || input.direction == null) return;
         if (revisit && input.direction != DirectionalHintPolicy.AlignedPhrase) Action = GuidanceAction.ReturnTarget;
-        else if (TargetHistory.PendingDirection(input.now) != null) Action = GuidanceAction.ReturnBearing;
+        else if (PendingBearingDirection(input.now, input.suppressVertical) != null) Action = GuidanceAction.ReturnBearing;
         else if (wallEntry) Action = GuidanceAction.Arrival;
         else if (returning) Action = GuidanceAction.ReturnWall;
         else if (!m_Return.IsDebouncingExit && (!input.inside || WallStable))
@@ -115,6 +132,7 @@ public sealed class GuidanceStateMachine
     }
     GuidancePhase ResolvePhase(Input input, bool looking)
     {
+        if (input.controllerValid && input.controllerOnTarget && (!looking || !PointingStable)) return GuidancePhase.PointingTarget;
         if (!looking) return input.inside ? GuidancePhase.Refining : GuidancePhase.Turning;
         if (!LookingStable) return GuidancePhase.AcquiringTarget;
         return input.controllerValid && input.controllerOnTarget ? GuidancePhase.ReadyToSelect : GuidancePhase.Acquired;
@@ -123,6 +141,7 @@ public sealed class GuidanceStateMachine
     {
         switch (phase)
         {
+            case GuidancePhase.PointingTarget: return "controller_target_waiting_for_hold_and_gaze";
             case GuidancePhase.Refining: return "target_wall_entered";
             case GuidancePhase.Turning: return "coarse_direction_needed";
             case GuidancePhase.AcquiringTarget: return "target_vicinity_entered";
@@ -143,7 +162,7 @@ public sealed class GuidanceStateMachine
                 if (inside) m_Wall.MarkSpoken(now); TargetHistory.Clear(); m_Return.MarkSpoken(now); break;
             case GuidanceAction.ConfirmGaze:
                 m_Looking.MarkSpoken(now); TargetAcknowledged = true;
-                if (controllerOnTarget) m_Pointing.MarkSpoken(now);
+                // Looking confirmation does not consume the independent pointing hold.
                 if (inside) m_Wall.MarkSpoken(now); TargetHistory.Clear(); m_Return.MarkSpoken(now); break;
             case GuidanceAction.SelectionReminder: m_Reminder.MarkSpoken(); break;
             case GuidanceAction.ReturnTarget: m_Revisit.MarkSpoken(now); TargetHistory.Clear(); m_Return.MarkSpoken(now); break;

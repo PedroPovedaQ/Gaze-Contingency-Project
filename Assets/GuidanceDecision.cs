@@ -22,6 +22,9 @@ public sealed class GuidanceDecision
     public bool gazeVicinityAmbiguous;
     public float gazeVicinityClosestErrorDegrees;
     public string targetObjectId, controllerTargetObjectId;
+    public string visualReferenceObjectId, visualReferenceSuppressionReason;
+    public float visualReferenceVerticalDeltaMetres, visualReferencePitchDeltaDegrees;
+    public bool visualReferenceVerticalSuppressed;
     public int controllerTelemetryFrame = -1;
     public double controllerTelemetryTime;
     public string targetHistoryPolicy = "target-bearing-crossing-v1";

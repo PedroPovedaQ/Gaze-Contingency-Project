@@ -111,6 +111,17 @@ class GazeQualityChecks
         for (int i = 0; i < 29; i++) Check(!selectionReminder.Step(true, .1), "Selection reminder waits for continued gaze");
         selectionReminder.Step(false, .1);
         Check(!selectionReminder.Step(true, .1), "Lost or non-target gaze clears the selection hold");
+        var crossPrompts = new System.Collections.Generic.HashSet<string>();
+        for (int round = 0; round < 40; round++)
+        {
+            string prompt = DirectionalHintPolicy.ReadinessPrompt(round);
+            crossPrompts.Add(prompt);
+            Check(prompt.Contains("cross") && prompt.Contains("next round"), "Transition directs attention to readiness cross");
+            Check(Array.IndexOf(DirectionalHintPolicy.AllPhrases(), prompt) >= 0, "Transition cue is prepared for both voices");
+            Check(prompt == DirectionalHintPolicy.ReadinessPrompt(round + 3), "Transition variation is deterministic");
+        }
+        Check(crossPrompts.Count == 3, "Three distinct cross prompts rotate between rounds");
+        Check(DirectionalHintPolicy.ReadinessPrompt(-1) == DirectionalHintPolicy.ReadinessPrompt(2), "Practice index safely selects a cue");
         Check(DirectionalHintPolicy.ReadinessReminder(-30, 20).Contains("above and to your left"), "Cross can be diagonally above gaze");
         Check(DirectionalHintPolicy.ReadinessReminder(30, -20).Contains("below and to your right"), "Cross can be diagonally below gaze");
         Check(DirectionalHintPolicy.ReadinessReminder(0, 0).Contains("ahead of you"), "Aligned cross uses ahead wording");
@@ -177,6 +188,39 @@ class GazeQualityChecks
         Check(DirectionalHintPolicy.WithinArea(0,6,"Right there.")=="Look up.","meaningful departure restores direction");
         Check(DirectionalHintPolicy.WithinArea(-12,10)=="Look up and a little to your left.","same-wall diagonal up-left correction");
         Check(DirectionalHintPolicy.WithinArea(12,-10)=="Look down and a little to your right.","same-wall diagonal down-right correction");
+        // Run26 actual playback geometry: the nearby capsule was lower than the
+        // target, but the measured eye ray was above both. Never infer up/down
+        // from a vicinity winner's position instead of the current gaze ray.
+        Check(DirectionalHintPolicy.WithinArea(-20.807457f,-4.290212f)==DirectionalHintPolicy.DownLeftPhrase,
+            "Run26 playback uses target-minus-gaze elevation, not target-minus-distractor height");
+        Check(DirectionalHintPolicy.WithinArea(-20.8f,-2.749f,DirectionalHintPolicy.DownLeftPhrase)==DirectionalHintPolicy.DownLeftPhrase,
+            "Run26 near-level continuation is existing hysteresis, not an inverted vertical sign");
+        Check(DirectionalHintPolicy.WithinArea(-20.8f,-1.4f,DirectionalHintPolicy.DownLeftPhrase)==DirectionalHintPolicy.LeftPhrase,
+            "Approaching level releases downward speech while preserving lateral guidance");
+        bool suppressed;
+        var rawRun26 = DirectionalHintPolicy.WithinArea(-20.807457f,-4.290212f);
+        Check(DirectionalHintPolicy.ConsistentWithVisibleReference(rawRun26,true,.055331f,out suppressed)==DirectionalHintPolicy.LeftPhrase && suppressed,
+            "Run26 visible capsule is below target: keep left and suppress conflicting downward component without changing raw gaze");
+        Check(DirectionalHintPolicy.ConsistentWithVisibleReference(DirectionalHintPolicy.UpRightPhrase,true,-.055331f,out suppressed)==DirectionalHintPolicy.RightPhrase && suppressed,
+            "Mirror case retains right but suppresses conflicting upward component");
+        Check(DirectionalHintPolicy.ConsistentWithVisibleReference(DirectionalHintPolicy.DownPhrase,true,.055331f,out suppressed)==null && suppressed,
+            "Vertical-only reference conflict stays quiet, never right-there or target confirmation");
+        Check(DirectionalHintPolicy.ConsistentWithVisibleReference(rawRun26,false,.055331f,out suppressed)==rawRun26 && !suppressed,
+            "Absent, ambiguous, target-self or different-wall reference preserves measured gaze direction");
+        Check(DirectionalHintPolicy.ConsistentWithVisibleReference(rawRun26,true,-.055331f,out suppressed)==rawRun26 && !suppressed,
+            "Consistent visible-reference height preserves the raw diagonal");
+        float apparentHeightDelta=(float)((Math.Atan2(.5,6)-Math.Atan2(.4,2))*180/Math.PI);
+        Check(apparentHeightDelta<0 && DirectionalHintPolicy.ConsistentWithVisibleReference(DirectionalHintPolicy.DownPhrase,
+            true,apparentHeightDelta,out suppressed)==DirectionalHintPolicy.DownPhrase && !suppressed,
+            "World-higher but visually-lower target at different distance keeps valid downward guidance");
+        Check(DirectionalHintPolicy.ConsistentWithVisibleReference(rawRun26,false,0,out suppressed)!=
+            DirectionalHintPolicy.ConsistentWithVisibleReference(rawRun26,true,.055331f,out suppressed),
+            "A queued diagonal fails direction equality when a contradictory visible reference appears before playback");
+        Check(DirectionalHintPolicy.WithinArea(-20.8f,4f,DirectionalHintPolicy.DownLeftPhrase)==DirectionalHintPolicy.UpLeftPhrase,
+            "Passing below target reverses the vertical component despite prior downward state");
+        Check(DirectionalHintPolicy.WithinArea(-17.3f,-18.53f)==DirectionalHintPolicy.DownLeftPhrase &&
+            DirectionalHintPolicy.WithinArea(-20.8f,0,DirectionalHintPolicy.DownLeftPhrase)!=DirectionalHintPolicy.DownLeftPhrase,
+            "Delayed down-left proposal loses directional eligibility if gaze becomes level before playback");
         Check(Array.IndexOf(DirectionalHintPolicy.AllPhrases(),DirectionalHintPolicy.LookingPhrase)>=0,"gaze-only confirmation prepared for both voices");
         var looking = new GazeZoneEntryGate(0, DirectionalHintPolicy.LookingHoldSeconds, DirectionalHintPolicy.LookingExitSeconds);
         looking.Update(true,true,0);

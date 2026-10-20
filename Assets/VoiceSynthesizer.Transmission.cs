@@ -17,7 +17,7 @@ public partial class VoiceSynthesizer
     double m_WaitUntil;
     double m_DeferredSince = -1;
 
-    public bool CanRequestGuidance(string reason) => GuidanceReady &&
+    public bool CanRequestGuidance(string reason, string phrase = null) => GuidanceReadyFor(phrase) &&
         !(reason == m_WaitReason && Time.realtimeSinceStartupAsDouble < m_WaitUntil);
 
     // Automatic guidance only. Setup, explicit repeat requests and success feedback
@@ -25,7 +25,7 @@ public partial class VoiceSynthesizer
     public bool TryGuidanceTransmission(string phrase, Func<bool> relevant, Action committed,
         string reason, string decisionId, bool? selectedSpeak = null, string selectionSource = null)
     {
-        if (!CanRequestGuidance(reason) || !IsPreparedPhrase(phrase) || !DirectionRepeatAllowed(phrase, reason) || !relevant()) return false;
+        if (!CanRequestGuidance(reason, phrase) || !IsPreparedPhrase(phrase) || !DirectionRepeatAllowed(phrase, reason) || !relevant()) return false;
         m_TransmissionPhrase = phrase;
         m_TransmissionCoroutine = StartCoroutine(ConsiderTransmission(phrase, relevant, committed, reason, decisionId, selectedSpeak, selectionSource));
         return true;
@@ -129,7 +129,7 @@ public partial class VoiceSynthesizer
                 m_TransmissionCoroutine = null; m_TransmissionPhrase = null;
             }
         }
-        if (!speak || !Current() || !GuidanceReady || !IsPreparedPhrase(phrase)) yield break;
+        if (!speak || !Current() || !GuidanceReadyFor(phrase) || !IsPreparedPhrase(phrase)) yield break;
         Speak(phrase, "tip", guidanceDecisionId: id,
             guidanceRelevant: () => relevant() && voice == SessionConfig.Voice && identity ==
                 (voice == VoiceCondition.SelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId),

@@ -22,6 +22,19 @@ public partial class VoiceSynthesizer
             Stop(); // Only queued guidance: never stop an already playing sentence.
         }
     }
+    // Fresh controller evidence makes search directions misleading immediately,
+    // before the pointing hold qualifies. Fade only search speech, never turn an
+    // unqualified hit into an acknowledgment or cut setup/success/confirmation.
+    public void SuppressSearchGuidanceForControllerTarget()
+    {
+        var semantics = SpatialVoice.SpeechPhraseMetadata.Describe(m_CurrentPhrase);
+        if (!IsSpeaking || (m_CurrentContext != "tip" && m_CurrentContext != "guidance_repeat") ||
+            (semantics.interruptPolicy != "replace_if_misleading" && semantics.intent != "progress_encouragement")) return;
+        m_DropCorrection = true;
+        CancelInterruptionAdvice();
+        if (m_InterruptionCoroutine == null)
+            m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(null, null, null, "controller_target_search_suppressed", null));
+    }
     public void RecordGuidanceState(string json) => Telemetry?.Invoke("guidance_state", "tip", "", json);
     string m_SpeechStartStage = "unknown";
     string m_LastSpokenPhrase;

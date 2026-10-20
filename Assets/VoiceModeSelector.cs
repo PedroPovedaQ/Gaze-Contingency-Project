@@ -43,6 +43,7 @@ public class VoiceModeSelector : MonoBehaviour
 
     VoiceEnrollment m_Enrollment;
     VoiceSynthesizer m_Synth;
+    HeadsetPreparationStatus m_LiveStatus;
     Canvas m_Canvas;
     GameObject m_CanvasGO;
     TextMeshProUGUI m_Text;
@@ -70,6 +71,8 @@ public class VoiceModeSelector : MonoBehaviour
     {
         m_Enrollment = enrollment;
         m_Synth = synth;
+        m_LiveStatus = GetComponent<HeadsetPreparationStatus>();
+        if (m_LiveStatus == null) m_LiveStatus = gameObject.AddComponent<HeadsetPreparationStatus>();
         m_PerspectiveChosen = false;
         BuildPanel();
         m_Phase = Phase.WaitingToStart;
@@ -242,18 +245,26 @@ public class VoiceModeSelector : MonoBehaviour
         m_LoadingBar.SetActive(false);
     }
 
-    void ShowLoading(float progress)
+    void ShowLoading(float progress, bool progressKnown = true)
     {
         SetText("<b>Loading...</b>\nPreparing experiment");
+        m_LiveStatus?.Set("preparing", "Preparing experiment", progressKnown, progress);
         if (m_LoadingBar == null) return;
         progress = Mathf.Clamp01(progress);
         m_LoadingFill.anchorMax = new Vector2(progress, 1);
-        m_LoadingPercent.text = $"{(int)(progress * 100)}%";
+        m_LoadingPercent.text = progressKnown ? $"{(int)(progress * 100)}%" : "Preparing experiment";
         m_LoadingBar.SetActive(true);
     }
 
     void Update()
     {
+        if (m_Phase == Phase.PreparationFailed || m_Phase == Phase.QuickTestFailed ||
+            m_Phase == Phase.EnrollmentFailed || m_Phase == Phase.Cancelled)
+            m_LiveStatus?.Set("error", "Setup needs attention");
+        else if (m_Phase != Phase.Preparing && m_Phase != Phase.PreparingQuickTest &&
+            m_Phase != Phase.Done && !(m_Phase == Phase.Enrolling && m_Enrollment != null &&
+                m_Enrollment.Current == VoiceEnrollment.State.Cloning))
+            m_LiveStatus?.Set("ready", "Voice setup");
         // Keep the panel in front of the camera if we couldn't parent at build time.
         if (m_CanvasGO != null && m_CanvasGO.transform.parent == null)
         {
@@ -553,7 +564,7 @@ public class VoiceModeSelector : MonoBehaviour
             {
                 if (s == VoiceEnrollment.State.Recording)
                     SetText($"<b>Recording</b>\nRead in your natural guiding voice. Select Finish recording when done.\n\n“{k_ReadingPassage}”");
-                if (s == VoiceEnrollment.State.Cloning) ShowLoading(0);
+                if (s == VoiceEnrollment.State.Cloning) ShowLoading(0, false);
             },
             onDone: _ =>
             {
@@ -672,6 +683,7 @@ public class VoiceModeSelector : MonoBehaviour
     void Finish(string message)
     {
         m_Phase = Phase.Done;
+        m_LiveStatus?.Set("ready", "Experiment ready", true, 1);
         RefreshChoices();
         SelectionCompleted?.Invoke();
         SetText(message + "\n\nStay seated. The center-and-begin step is next.");

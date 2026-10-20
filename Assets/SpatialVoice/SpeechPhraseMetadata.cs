@@ -99,6 +99,8 @@ namespace SpatialVoice
                 intent = "selection_reminder", stage = "target_acquired", requires = new[] { "sustained_target_gaze" } };
             foreach (var direction in new[] { DirectionalHintPolicy.LeftPhrase, DirectionalHintPolicy.RightPhrase, DirectionalHintPolicy.UpPhrase, DirectionalHintPolicy.DownPhrase, DirectionalHintPolicy.AlignedPhrase })
                 result[DirectionalHintPolicy.Opening(direction)] = new SpeechPhraseMetadata { intent = "trial_opening", stage = "before_search" };
+            for (int i = 0; i < 3; i++)
+                result[DirectionalHintPolicy.ReadinessPrompt(i)] = new SpeechPhraseMetadata { intent = "readiness_reminder", stage = "between_trials" };
             foreach (float yaw in new[] { -30f, 0f, 30f })
                 foreach (float pitch in new[] { -20f, 0f, 20f })
                     result[DirectionalHintPolicy.ReadinessReminder(yaw, pitch)] = new SpeechPhraseMetadata { intent = "readiness_reminder", stage = "between_trials" };
@@ -120,6 +122,9 @@ namespace SpatialVoice
         public float yawErrorDegrees, pitchErrorDegrees, verticalPlaneFraction;
         public float vicinityErrorDegrees, vicinityRadiusDegrees;
         public bool vicinityMeasured;
+        public string visualReferenceObjectId, visualReferenceSuppressionReason;
+        public float visualReferenceVerticalDeltaMetres, visualReferencePitchDeltaDegrees;
+        public bool visualReferenceVerticalSuppressed;
 
         public JObject Snapshot()
         {
@@ -127,6 +132,11 @@ namespace SpatialVoice
             // Missing or invalid observations are unknown, never zero-error evidence.
             if (!valid || !geometryAvailable) { result["yawErrorDegrees"] = null; result["pitchErrorDegrees"] = null; }
             if (!valid || !verticalMeasured) result["verticalPlaneFraction"] = null;
+            if (!valid || string.IsNullOrEmpty(visualReferenceObjectId))
+            {
+                result["visualReferenceVerticalDeltaMetres"] = null;
+                result["visualReferencePitchDeltaDegrees"] = null;
+            }
             if (!valid || !vicinityMeasured) { result["vicinityErrorDegrees"] = null; result["vicinityRadiusDegrees"] = null; }
             foreach (var key in new[] { "gazeAgeSeconds", "gazeReceiptAgeSeconds", "controllerAgeSeconds", "lastTargetSeenAgeSeconds" })
                 if ((double)result[key] < 0 || double.IsNaN((double)result[key]) || double.IsInfinity((double)result[key])) result[key] = null;

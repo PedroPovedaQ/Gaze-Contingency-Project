@@ -9,7 +9,8 @@ public sealed partial class TrialReviewApp
     {
         public int schema, revision, audioRevision, files, verifiedFiles;
         public string state, message, endpoint, recording, archive;
-        public double updatedUtc, lastDataUtc, receivedBytes, pendingBytes, replayUpdatedUtc, replayPendingBytes;
+        public double updatedUtc, lastDataUtc, receivedBytes, pendingBytes, replayUpdatedUtc, replayPendingBytes, headsetStateObservedUtc;
+        public TrialReviewHeadsetState headsetState;
     }
     bool m_LivePanel, m_FollowLive, m_ViewLive;
     string m_Endpoint = "", m_LiveOutput, m_BridgeError = "";
@@ -20,8 +21,9 @@ public sealed partial class TrialReviewApp
     double m_LastStatusRead, m_LastAudioRefresh;
     int m_LiveIndexed, m_AudioRevision = -1;
     bool m_JoinLive, m_LiveAudioDirty, m_LiveSignalActive;
-    bool WaitingForHeadset => m_FollowLive && !m_LiveSignalActive;
-    string LiveWaitingReason => m_LiveFollow.WaitingReason(ReceiverConnected, UtcSeconds,
+    bool HeadsetPreparing => m_FollowLive && TrialReviewHeadsetState.Fresh(m_LiveStatus?.headsetState, ReceiverConnected, UtcSeconds, m_LiveStatus?.headsetStateObservedUtc ?? 0) && m_LiveStatus.headsetState.phase == "preparing";
+    bool WaitingForHeadset => m_FollowLive && (!m_LiveSignalActive || HeadsetPreparing);
+    string LiveWaitingReason => HeadsetPreparing ? "Preparing experiment" : m_LiveFollow.WaitingReason(ReceiverConnected, UtcSeconds,
         m_LiveStatus?.replayUpdatedUtc ?? 0, m_LiveStatus?.replayPendingBytes ?? 0, m_LiveStream?.CaughtUp ?? true);
     static double UtcSeconds => (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
     bool ReceiverConnected => m_LiveStatus != null && m_LiveStatus.state == "connected" && UtcSeconds - m_LiveStatus.updatedUtc < 8;
@@ -125,6 +127,7 @@ public sealed partial class TrialReviewApp
             }
             catch (Exception e) { m_Error = e.Message; m_FollowLive = false; }
         }
+        if (HeadsetPreparing) { m_LiveSignalActive = false; m_Playing = false; m_Audio?.Stop(); }
         if (m_LiveStream == null) return;
         try
         {
@@ -161,7 +164,7 @@ public sealed partial class TrialReviewApp
                 m_Audio.Refresh(timeline); m_LastAudioRefresh = now; m_AudioRevision = m_LiveStatus?.audioRevision ?? -1; m_LiveAudioDirty = false;
             }
             if (!m_FollowLive) return;
-            bool active = m_LiveFollow.Ready(ReceiverConnected, UtcSeconds,
+            bool active = !HeadsetPreparing && m_LiveFollow.Ready(ReceiverConnected, UtcSeconds,
                 m_LiveStatus?.replayUpdatedUtc ?? 0, m_LiveStatus?.replayPendingBytes ?? 0, m_LiveStream.CaughtUp, m_LiveSignalActive);
             if (!active)
             {
@@ -205,5 +208,23 @@ public sealed partial class TrialReviewApp
             $"Following · {Math.Max(0, m_Timeline.Duration - m_Time):F1}s behind received data" : "Reviewing history; receiver continues saving while connected";
         GUILayout.Label(m_LiveStatus?.state == "error" ? m_LiveStatus.message : view + " · Headset keeps the original recording", m_MutedLabel);
         GUILayout.EndArea();
+    }
+}
+
+// Headset-owned heartbeat; never infer preparation from a silent replay or cached WAVs.
+[Serializable]
+public sealed class TrialReviewHeadsetState
+{
+    public int schema, revision;
+    public string sessionId, phase;
+    public bool progressKnown;
+    public float progress01;
+    public double updatedUtc;
+    public static bool Fresh(TrialReviewHeadsetState state, bool connected, double now, double observed)
+    {
+        // Receipt age is independent of headset/Mac clock offset. The receiver only
+        // advances observed time when the headset heartbeat itself changes.
+        return connected && state != null && state.schema == 1 && !string.IsNullOrEmpty(state.sessionId)
+            && observed > 0 && now >= observed && now - observed < 5;
     }
 }

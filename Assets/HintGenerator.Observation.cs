@@ -3,6 +3,10 @@ using UnityEngine;
 /// <summary>Unity observation adapter for the HintGenerator component; callbacks read current geometry without advancing state gates.</summary>
 public partial class HintGenerator
 {
+    string m_VisualReferenceObjectId, m_VisualReferenceSuppressionReason;
+    float m_VisualReferenceVerticalDelta, m_VisualReferencePitchDelta;
+    bool m_VisualReferenceVerticalSuppressed;
+
     bool EvaluateLooking(bool valid)
     {
         m_GazeOnTarget = false; m_GazeRayHit = "unavailable"; m_GazeHitObjectId = null;
@@ -23,20 +27,15 @@ public partial class HintGenerator
 
     bool EvaluatePointing(bool valid)
     {
-        m_VicinityMeasured = m_ControllerEvidenceValid = m_ControllerOnTarget = false;
+        RefreshControllerEvidence();
+        // Evaluate already measured this observation for visual-reference
+        // consistency; reuse its winner instead of rescanning all objects.
+        if (valid && m_VicinityMeasured)
+            return m_ControllerOnTarget && m_ClosestVicinityObject == m_EvaluatedTarget.gameObject;
+        m_VicinityMeasured = false;
         m_VicinityError = m_VicinityRadius = 0;
         m_ClosestVicinityObject = null; m_VicinityCandidateCount = 0;
         m_VicinityAmbiguous = false; m_ClosestVicinityError = 0;
-        if (m_EvaluatedTarget != null)
-        {
-            if (m_Controller == null) m_Controller = GetComponent<ControllerRaySelector>();
-            if (m_Controller != null)
-            {
-                m_ControllerEvidenceValid = GazeTargetVicinity.ControllerCurrent(m_Controller.RightTelemetry,
-                    m_Controller.TelemetryFrame, m_Controller.TelemetryTime, Time.frameCount, Time.realtimeSinceStartupAsDouble);
-                m_ControllerOnTarget = m_ControllerEvidenceValid && m_Controller.RightTelemetry.target == m_EvaluatedTarget.gameObject;
-            }
-        }
         if (!valid || m_EvaluatedTarget == null || m_EvaluatedSample == null)
         { m_Vicinity?.Hide(); return false; }
         var collider = m_EvaluatedTarget.GetComponent<Collider>();
@@ -55,6 +54,23 @@ public partial class HintGenerator
         bool targetClosest = m_ClosestVicinityObject == m_EvaluatedTarget.gameObject;
         m_Vicinity?.Draw(m_EvaluatedSample.worldOrigin, collider.bounds, m_VicinityRadius, targetClosest);
         return m_ControllerOnTarget && targetClosest;
+    }
+
+    // Controller-only refresh is cheap enough for asynchronous final playback
+    // guards; it does not redo the O(objects) gaze-vicinity winner scan.
+    void RefreshControllerEvidence()
+    {
+        m_ControllerEvidenceValid = m_ControllerOnTarget = false;
+        if (m_EvaluatedTarget != null)
+        {
+            if (m_Controller == null) m_Controller = GetComponent<ControllerRaySelector>();
+            if (m_Controller != null)
+            {
+                m_ControllerEvidenceValid = GazeTargetVicinity.ControllerCurrent(m_Controller.RightTelemetry,
+                    m_Controller.TelemetryFrame, m_Controller.TelemetryTime, Time.frameCount, Time.realtimeSinceStartupAsDouble);
+                m_ControllerOnTarget = m_ControllerEvidenceValid && m_Controller.RightTelemetry.target == m_EvaluatedTarget.gameObject;
+            }
+        }
     }
 
     void PreviewPausedVicinity()
@@ -80,6 +96,8 @@ public partial class HintGenerator
     string Evaluate(out bool valid,out bool inside,out bool far, bool advanceTurn = false)
     {
         m_GazeHitObjectId = null;
+        m_VisualReferenceObjectId = m_VisualReferenceSuppressionReason = null;
+        m_VisualReferenceVerticalDelta = m_VisualReferencePitchDelta = 0; m_VisualReferenceVerticalSuppressed = false;
         valid=inside=far=false; m_GazeOnTarget = false; m_GeometryAvailable = false; m_EvaluatedTarget = null;
         m_VerticalMeasured = false; m_VerticalError = 0; m_VerticalFraction = float.NaN;
         m_ClosestVicinityObject = null; m_VicinityCandidateCount = 0;
@@ -111,7 +129,23 @@ public partial class HintGenerator
             target.transform.position.y, out m_VerticalError);
         if (!m_VerticalMeasured) { valid = false; return null; }
         m_VerticalFraction = m_VerticalError / m_GameManager.SearchPlaneHeight;
-        return DirectionalHintPolicy.WithinArea(m_YawError, m_PitchError, m_State.Candidate);
+        string direction = DirectionalHintPolicy.WithinArea(m_YawError, m_PitchError, m_State.Candidate);
+        EvaluatePointing(valid); // Same unique padded-ring winner used for the visible shine.
+        var reference = m_ClosestVicinityObject != null ? m_ClosestVicinityObject.GetComponent<SpawnableObjectInfo>() : null;
+        bool usableReference = reference != null && reference != target && reference.planeId == target.planeId;
+        if (usableReference)
+        {
+            m_VisualReferenceObjectId = reference.objectId;
+            m_VisualReferenceVerticalDelta = target.transform.position.y - reference.transform.position.y;
+            Vector3 referenceDelta = reference.transform.position - sample.worldOrigin;
+            float referenceElevation = Mathf.Atan2(referenceDelta.y, new Vector2(referenceDelta.x, referenceDelta.z).magnitude) * Mathf.Rad2Deg;
+            m_VisualReferencePitchDelta = targetElevation - referenceElevation;
+        }
+        direction = DirectionalHintPolicy.ConsistentWithVisibleReference(direction, usableReference,
+            m_VisualReferencePitchDelta, out m_VisualReferenceVerticalSuppressed);
+        if (m_VisualReferenceVerticalSuppressed)
+            m_VisualReferenceSuppressionReason = "raw_vertical_conflicts_with_visible_distractor";
+        return direction;
     }
 
     bool TryGetTargetInfo(out SpawnableObjectInfo info)

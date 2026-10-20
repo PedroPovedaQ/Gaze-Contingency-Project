@@ -29,6 +29,11 @@ public static class TrialReviewLiveChecks
         Check(captions.At(1.5,long.MaxValue)=="Look left.","rewinding restores caption");
         captions.Clear();Check(captions.At(2,long.MaxValue)==null,"run change clears captions");
         Debug.Log("TRIAL_REVIEW_SUBTITLES_PASS start, cancellation, overlap, pause, rewind, run reset, no WAV dependency");
+        var loading=new TrialReviewHeadsetState{schema=1,sessionId="session",phase="preparing",progressKnown=true,progress01=.4f};
+        Check(TrialReviewHeadsetState.Fresh(loading,true,100,99),"pre-trial preparation heartbeat is available without a replay");
+        Check(!TrialReviewHeadsetState.Fresh(loading,true,105,99),"stale preparation cannot masquerade as live loading");
+        Check(!TrialReviewHeadsetState.Fresh(loading,false,100,99),"disconnect invalidates loading");
+        Check(!TrialReviewHeadsetState.Fresh(null,true,100,99),"legacy headset missing telemetry remains unknown");
         var follow = new TrialReviewLiveFollow();
         follow.Observe(new TrialReplayRecord { kind="sample", time=10, headAvailable=true, headTracked=1 });
         Check(!follow.Ready(true, 100, 0, 0, true), "connected historical recording must wait");
