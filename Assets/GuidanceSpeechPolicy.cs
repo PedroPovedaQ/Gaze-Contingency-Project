@@ -3,6 +3,7 @@ public static class GuidanceSpeechPolicy
 {
     public const double FadeSeconds = .150;
     public const double AdviceDeadline = .400;
+    public const double MaximumTransmissionDeferralSeconds = 3;
     public const double InterruptionCooldown = 2.5;
     // Protect short phrases and their endings. Jev cannot override these local bounds.
     public static bool CanConsiderInterruption(bool acknowledgment, double elapsed, double remaining,
@@ -18,8 +19,10 @@ public static class GuidanceSpeechPolicy
     public static bool IsRedundantArrival(string reason, string speechStartStage) =>
         (reason == "gaze_target_plane" || reason == "stable_wall_entry") && speechStartStage == "within_target_wall";
 
-    public const double OrdinaryGap = .55;
-    public const double AcknowledgmentGap = 1.0;
+    public const int CatalogChoiceDeadlineMilliseconds = 450;
+    public const double DirectionSettleSeconds = .25;
+    public const double OrdinaryGap = .25;
+    public const double AcknowledgmentGap = .6;
     public const double TrackingGrace = .25;
 
     public static bool IsAcknowledgment(string phrase)

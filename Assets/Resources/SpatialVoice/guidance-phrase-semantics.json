@@ -3743,21 +3743,6 @@
       }
     },
     {
-      "text": "Keep going.",
-      "semantics": {
-        "intent": "progress_encouragement",
-        "horizontal": "none",
-        "vertical": "none",
-        "magnitude": "unspecified",
-        "stage": "search",
-        "interruptPolicy": "finish",
-        "requires": [
-          "new_turn_milestone"
-        ],
-        "canBeSupersededBy": []
-      }
-    },
-    {
       "text": "A bit more.",
       "semantics": {
         "intent": "progress_encouragement",
@@ -3796,33 +3781,255 @@
       }
     },
     {
-      "text": "That's it, keep turning.",
+      "text": "Keep going to the left.",
       "semantics": {
         "intent": "progress_encouragement",
-        "horizontal": "none",
+        "horizontal": "left",
         "vertical": "none",
         "magnitude": "unspecified",
         "stage": "search",
         "interruptPolicy": "finish",
         "requires": [
-          "new_turn_milestone"
+          "fresh_valid_gaze",
+          "same_direction",
+          "measured_progress"
         ],
-        "canBeSupersededBy": []
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
       }
     },
     {
-      "text": "Keep going that way.",
+      "text": "That's it, keep going left.",
       "semantics": {
         "intent": "progress_encouragement",
-        "horizontal": "none",
+        "horizontal": "left",
         "vertical": "none",
         "magnitude": "unspecified",
         "stage": "search",
         "interruptPolicy": "finish",
         "requires": [
-          "new_turn_milestone"
+          "fresh_valid_gaze",
+          "same_direction",
+          "measured_progress"
         ],
-        "canBeSupersededBy": []
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep going left.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "fresh_valid_gaze",
+          "same_direction",
+          "measured_progress"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep going to the right.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "fresh_valid_gaze",
+          "same_direction",
+          "measured_progress"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "That's it, keep going right.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "fresh_valid_gaze",
+          "same_direction",
+          "measured_progress"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep going right.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "fresh_valid_gaze",
+          "same_direction",
+          "measured_progress"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep looking up.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "none",
+        "vertical": "up",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "fresh_valid_gaze",
+          "same_direction",
+          "measured_progress"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep looking down.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "none",
+        "vertical": "down",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "fresh_valid_gaze",
+          "same_direction",
+          "measured_progress"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep looking up and left.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "left",
+        "vertical": "up",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "fresh_valid_gaze",
+          "same_direction",
+          "measured_progress"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep looking up and right.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "right",
+        "vertical": "up",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "fresh_valid_gaze",
+          "same_direction",
+          "measured_progress"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep looking down and left.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "left",
+        "vertical": "down",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "fresh_valid_gaze",
+          "same_direction",
+          "measured_progress"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
+      }
+    },
+    {
+      "text": "Keep looking down and right.",
+      "semantics": {
+        "intent": "progress_encouragement",
+        "horizontal": "right",
+        "vertical": "down",
+        "magnitude": "unspecified",
+        "stage": "search",
+        "interruptPolicy": "finish",
+        "requires": [
+          "fresh_valid_gaze",
+          "same_direction",
+          "measured_progress"
+        ],
+        "canBeSupersededBy": [
+          "target_acquired",
+          "direction_reversed",
+          "target_wall_reached"
+        ]
       }
     },
     {

@@ -7,8 +7,8 @@ public class HintGenerator : MonoBehaviour
     public const string AreaCorrectionPhrase = DirectionalHintPolicy.AreaPhrase;
     const string k_TargetReturnCategory = "target_passage_return";
     const string k_RevisitCategory = "recent_target_return";
-    const double k_DirectionSettleSeconds = .35;
-    const float k_TipInterval = 2f; // Pilot cadence; same policy in both voice conditions.
+    const double k_DirectionSettleSeconds = GuidanceSpeechPolicy.DirectionSettleSeconds;
+    const float k_TipInterval = .6f; // Pilot cadence; same policy in both voice conditions.
     readonly GuidanceTurnState m_Turn = new GuidanceTurnState();
     readonly GazeReturnCueGate m_TargetRevisit = new GazeReturnCueGate();
     int m_ProgressVariant;
@@ -23,6 +23,7 @@ public class HintGenerator : MonoBehaviour
     bool m_VerticalMeasured;
     int m_CandidateVerticalBand, m_LastVerticalBand;
     bool m_GeometryAvailable, m_GazeOnTarget;
+    string m_GazeRayHit = "unavailable";
     readonly GazeZoneEntryGate m_ZoneEntry = new GazeZoneEntryGate(6, k_DirectionSettleSeconds);
     readonly GazeZoneEntryGate m_PointingEntry = new GazeZoneEntryGate(0, 1.0);
     readonly GazeZoneEntryGate m_LookingEntry = new GazeZoneEntryGate(0,
@@ -62,6 +63,7 @@ public class HintGenerator : MonoBehaviour
     }
     public void OnNewObjective()
     {
+        m_Voice?.ClearGuidanceEvidence();
         m_SelectionReminder.Reset(); m_TargetAcknowledged = false;
         m_Turn.Prime(m_OpeningTurn); m_OpeningTurn = null;
         m_TargetRevisit.Reset(); m_ProgressVariant = 0;
@@ -78,6 +80,7 @@ public class HintGenerator : MonoBehaviour
     public void OnWrongCapture() { }
     public void CancelPending()
     {
+        m_Voice?.ClearGuidanceEvidence();
         m_Navigation?.Cancel();
         m_SelectionReminder.Reset(); m_TargetAcknowledged = false;
         m_Turn.Reset(); m_TargetRevisit.Reset(); m_OpeningTurn = null;
@@ -94,14 +97,6 @@ public class HintGenerator : MonoBehaviour
         string desired = Evaluate(out bool valid, out bool inside, out bool far);
         bool pointing = EvaluatePointing(valid);
         bool looking = EvaluateLooking(valid);
-        var speechEvidence = m_Voice.GuidanceEvidence; // Reuse the snapshot buffer; serialize only on a request.
-        speechEvidence.valid = valid; speechEvidence.insideTargetWall = inside;
-        speechEvidence.targetGazeQualified = looking;
-        speechEvidence.controllerOnTarget = m_ControllerEvidenceValid && m_ControllerOnTarget;
-        speechEvidence.gazeAgeSeconds = m_EvaluatedSample == null ? -1 : System.Math.Max(0, Time.realtimeSinceStartupAsDouble - m_EvaluatedSample.receiptTime);
-        speechEvidence.geometryAvailable = m_GeometryAvailable;
-        speechEvidence.yawErrorDegrees = m_YawError; speechEvidence.pitchErrorDegrees = m_PitchError;
-        speechEvidence.verticalMeasured = m_VerticalMeasured; speechEvidence.verticalPlaneFraction = m_VerticalFraction;
         bool revisit = m_TargetRevisit.Update(valid, looking, Time.timeAsDouble);
         bool selectionReminderDue = m_SelectionReminder.Step(valid && looking && m_TargetAcknowledged, Time.unscaledDeltaTime);
         bool lookingEntry = m_LookingEntry.Update(valid, looking, Time.timeAsDouble);
@@ -113,6 +108,7 @@ public class HintGenerator : MonoBehaviour
         UpdateTargetHistory(valid);
         bool entry = m_ZoneEntry.Update(valid, inside, Time.timeAsDouble);
         bool returning = m_ReturnCue.Update(valid, inside, Time.timeAsDouble);
+        UpdateSpeechEvidence(valid, inside, looking);
         if (!valid)
         {
             string reason = m_EvaluatedSample == null ? "no_gaze_observation" :
@@ -295,36 +291,61 @@ public class HintGenerator : MonoBehaviour
             !m_Voice.GuidanceReady || Time.time-m_LastTipTime<k_TipInterval) return;
         bool progress = !inside && m_Turn.ProgressDue(desired, m_TurnRemaining);
         // While turning, earn encouragement at new 45-degree milestones. If
-        // stalled, give an explicit reminder after four seconds, never Keep going.
-        if (!inside && desired == m_LastDirection && !progress && Time.time - m_LastTipTime < 4) return;
+        // stalled, Jev decides whether another explicit cue is useful; offline fallback waits three seconds.
+        if (!m_Voice.UsesTransmissionAdvice && !inside && desired == m_LastDirection && !progress && Time.time - m_LastTipTime < 3) return;
         if (m_Navigation == null) m_Navigation = GetComponent<SpatialVoice.StudyNavigationVoiceBridge>();
         if (m_Navigation != null && m_Navigation.IsSelecting) return;
+        // A catalog wait also suppresses the ordinary fallback during its short cooldown.
+        if (!inside && !progress && !m_Voice.CanRequestGuidance("catalog_turn")) return;
         // Only ordinary coarse directions use the catalog. Milestones, return cues,
         // target acknowledgment and vertical refinement still require their stateful evidence.
         if (!inside && !progress && m_EvaluatedTarget != null && m_Navigation != null &&
-            m_Navigation.TryRequest(m_EvaluatedTarget.transform, desired, phrase =>
+            m_Navigation.TryRequest(m_EvaluatedTarget.transform, desired, selection =>
             {
+                var phrase = selection.Phrase;
                 var current = Evaluate(out bool stillValid, out bool nowInside, out bool nowFar);
                 if (!Active() || !stillValid || nowInside || current != desired ||
                     Time.timeAsDouble - m_CandidateSince < k_DirectionSettleSeconds) return false;
-                m_CurrentHint = desired; m_LastTipTime = Time.time;
-                RememberDirection(desired); m_Turn.MarkSpoken(desired, m_TurnRemaining);
                 var selected = Decision("requested", "catalog_turn:" + phrase.id, desired, phrase.text, true, false, nowFar, true);
-                Record(selected);
-                m_Voice.Speak(phrase.text, "tip", guidanceDecisionId: selected.decisionId);
-                return true;
+                selected.decisionId = selection.RequestId ?? selected.decisionId;
+                var target = m_EvaluatedTarget.transform;
+                bool accepted = m_Voice.TryGuidanceTransmission(phrase.text,
+                    () => OrdinaryCueRelevant(desired, false) && m_Navigation.IsPhraseCurrent(target, phrase),
+                    () => {
+                        m_CurrentHint = desired; m_LastTipTime = Time.time;
+                        RememberDirection(desired); m_Turn.MarkSpoken(desired, m_TurnRemaining);
+                        m_Navigation.MarkSpoken(phrase);
+                        Record(Decision("committed", "catalog_transmission_approved", desired, phrase.text, true, false, nowFar, true, selected.decisionId));
+                    }, "catalog_turn", selected.decisionId, selection.Source == "local" ? (bool?)null : selection.Speak, selection.Source);
+                if (accepted) Record(selected);
+                return accepted;
             })) return;
-        m_CurrentHint=desired; m_LastTipTime=Time.time;
-        string wording = !inside ? (progress ? DirectionalHintPolicy.Progress(m_ProgressVariant++) :
-            DirectionalHintPolicy.Turn(desired, m_TurnRemaining, m_Variant++)) : DirectionalHintPolicy.FollowUp(desired, m_LastDirection,
-            DirectionalHintPolicy.DirectionError(desired, m_YawError, m_PitchError), m_LastDirectionError, m_Variant++, far,
+        string wording = !inside ? (progress ? DirectionalHintPolicy.Progress(desired, m_ProgressVariant) :
+            DirectionalHintPolicy.Turn(desired, m_TurnRemaining, m_Variant)) : DirectionalHintPolicy.FollowUp(desired, m_LastDirection,
+            DirectionalHintPolicy.DirectionError(desired, m_YawError, m_PitchError), m_LastDirectionError, m_Variant, far,
             m_ContinuationUsed || (DirectionalHintPolicy.HasVertical(desired) && verticalBand != m_LastVerticalBand), m_VerticalFraction);
-        RememberDirection(desired);
-        if (!inside) m_Turn.MarkSpoken(desired, m_TurnRemaining);
-        if (DirectionalHintPolicy.IsContinuation(wording)) m_ContinuationUsed = true;
-        var request = Decision("requested", progress ? "turn_progress_milestone" : "stable_direction", desired, wording, true, inside, far, true);
-        Record(request);
-        m_Voice.Speak(wording,"tip",guidanceDecisionId:request.decisionId);
+        string ordinaryReason = progress ? "turn_progress_milestone" : "stable_direction";
+        var request = Decision("requested", ordinaryReason, desired, wording, true, inside, far, true);
+        if (m_Voice.TryGuidanceTransmission(wording,
+            () => OrdinaryCueRelevant(desired, inside) &&
+                (!DirectionalHintPolicy.HasVertical(desired) || verticalBand == DirectionalHintPolicy.VerticalBand(m_VerticalFraction)),
+            () => {
+                m_CurrentHint = desired; m_LastTipTime = Time.time;
+                if (progress) m_ProgressVariant++; else m_Variant++;
+                RememberDirection(desired);
+                if (!inside) m_Turn.MarkSpoken(desired, m_TurnRemaining);
+                if (DirectionalHintPolicy.IsContinuation(wording)) m_ContinuationUsed = true;
+                Record(Decision("committed", "transmission_approved:" + ordinaryReason, desired, wording, true, inside, far, true, request.decisionId));
+            }, ordinaryReason, request.decisionId)) Record(request);
+    }
+    bool OrdinaryCueRelevant(string direction, bool wasInside)
+    {
+        string current = Evaluate(out bool valid, out bool inside, out _);
+        return Active() && valid && current == direction && inside == wasInside &&
+            Time.timeAsDouble - m_CandidateSince >= k_DirectionSettleSeconds &&
+            !EvaluateLooking(valid) && !EvaluatePointing(valid) &&
+            m_TargetHistory.PendingDirection(Time.realtimeSinceStartupAsDouble) == null &&
+            !m_TargetRevisit.IsPending(Time.timeAsDouble);
     }
     // Recompute the latest cue after the sentence and its audible pause finish.
     bool CanCorrect(bool stable) => stable && (m_Voice.GuidanceReady || m_Voice.CanConsiderGuidanceInterruption);
@@ -399,12 +420,51 @@ public class HintGenerator : MonoBehaviour
     // Retain exact-hit evidence separately. Spoken confirmation uses the padded
     // region measured by EvaluatePointing, only when the target uniquely wins
     // against all overlapping object rings, including when the dev ring is hidden.
+    void UpdateSpeechEvidence(bool valid, bool inside, bool looking)
+    {
+        var e = m_Voice.GuidanceEvidence;
+        double now = Time.realtimeSinceStartupAsDouble;
+        e.snapshotTimeSeconds = now; e.phase = "search"; e.valid = valid; e.insideTargetWall = valid && inside;
+        e.wallEntryQualified = valid && inside && m_ZoneEntry.InsideStable;
+        e.gazeWithinTargetVicinity = valid && looking;
+        e.targetGazeQualified = valid && looking && m_LookingEntry.InsideStable;
+        e.gazeRayHit = valid ? m_GazeRayHit : "unavailable";
+        e.controllerEvidenceValid = m_ControllerEvidenceValid;
+        e.controllerOnTarget = m_ControllerEvidenceValid && m_ControllerOnTarget;
+        e.controllerTargetHoldQualified = e.controllerOnTarget && m_PointingEntry.InsideStable;
+        var hit = m_Controller != null ? m_Controller.RightTelemetry.target : null;
+        e.controllerRayHit = !m_ControllerEvidenceValid ? "unavailable" : e.controllerOnTarget ? "target" :
+            hit == null ? "none" : hit.GetComponentInParent<SpawnableObjectInfo>() != null ? "distractor" : "non_object";
+        e.controllerTriggerHeld = m_ControllerEvidenceValid ? m_Controller.RightTelemetry.triggerHeld : -1;
+        e.controllerAgeSeconds = m_Controller == null || m_Controller.TelemetryFrame < 0 ? -1 : System.Math.Max(0, now - m_Controller.TelemetryTime);
+        e.gazeAgeSeconds = m_EvaluatedSample == null ? -1 : System.Math.Max(0, now - m_EvaluatedSample.inputEventTime);
+        e.gazeReceiptAgeSeconds = m_EvaluatedSample == null ? -1 : System.Math.Max(0, now - m_EvaluatedSample.receiptTime);
+        e.geometryAvailable = valid && m_GeometryAvailable;
+        e.yawErrorDegrees = m_YawError; e.pitchErrorDegrees = m_PitchError;
+        e.verticalMeasured = valid && m_VerticalMeasured; e.verticalPlaneFraction = m_VerticalFraction;
+        e.vicinityMeasured = valid && m_VicinityMeasured;
+        e.vicinityErrorDegrees = m_VicinityError; e.vicinityRadiusDegrees = m_VicinityRadius;
+        e.vicinityCandidateCount = m_VicinityCandidateCount; e.vicinityAmbiguous = m_VicinityAmbiguous;
+        e.targetAcknowledged = m_TargetAcknowledged;
+        e.targetReturnPending = valid && m_TargetRevisit.IsPending(Time.timeAsDouble);
+        e.lastTargetSeenAgeSeconds = m_LastTargetVisitTime < 0 ? -1 : System.Math.Max(0, now - m_LastTargetVisitTime);
+        e.previousDirection = m_LastDirection; e.continuationUsed = m_ContinuationUsed;
+    }
+
     bool EvaluateLooking(bool valid)
     {
-        m_GazeOnTarget = valid && m_EvaluatedTarget != null && m_EvaluatedSample != null &&
-            Physics.Raycast(m_EvaluatedSample.worldOrigin, m_EvaluatedSample.worldDirection,
-                out var hit, 30, 1 << 8, QueryTriggerInteraction.Ignore) &&
-            hit.collider.GetComponentInParent<SpawnableObjectInfo>() == m_EvaluatedTarget;
+        m_GazeOnTarget = false; m_GazeRayHit = "unavailable";
+        if (valid && m_EvaluatedTarget != null && m_EvaluatedSample != null)
+        {
+            m_GazeRayHit = "none";
+            if (Physics.Raycast(m_EvaluatedSample.worldOrigin, m_EvaluatedSample.worldDirection,
+                out var hit, 30, 1 << 8, QueryTriggerInteraction.Ignore))
+            {
+                var info = hit.collider.GetComponentInParent<SpawnableObjectInfo>();
+                m_GazeOnTarget = info == m_EvaluatedTarget;
+                m_GazeRayHit = m_GazeOnTarget ? "target" : info != null ? "distractor" : "non_object";
+            }
+        }
         return valid && m_EvaluatedTarget != null && m_ClosestVicinityObject == m_EvaluatedTarget.gameObject;
     }
 
@@ -413,11 +473,11 @@ public class HintGenerator : MonoBehaviour
         phrase = decisionId = null;
         string coarse = Evaluate(out bool valid, out bool inside, out bool far);
         if (!valid) return false;
-        // Opening gives one simple direction while objects are hidden. Fine
-        // diagonal refinement begins only after the search is visible.
-        string direction = !inside && coarse != null ? coarse : Mathf.Abs(m_YawError) > 5 ? (m_YawError > 0 ? DirectionalHintPolicy.RightPhrase : DirectionalHintPolicy.LeftPhrase) :
-            Mathf.Abs(m_PitchError) > 3 ? (m_PitchError > 0 ? DirectionalHintPolicy.UpPhrase : DirectionalHintPolicy.DownPhrase) : DirectionalHintPolicy.AlignedPhrase;
-        phrase = DirectionalHintPolicy.Opening(direction);
+        // Same-wall starts can refine height and lateral position before reveal.
+        // Use fresh thresholds, without carrying the previous trial's hysteresis.
+        string direction = inside ? DirectionalHintPolicy.WithinArea(m_YawError, m_PitchError) :
+            coarse ?? DirectionalHintPolicy.AlignedPhrase;
+        phrase = DirectionalHintPolicy.Opening(direction, inside, m_VerticalFraction);
         m_OpeningTurn = !inside ? direction : null;
         var decision = Decision("requested", "presearch_target_direction", direction, phrase, true, inside, far, true);
         decisionId = decision.decisionId; Record(decision);

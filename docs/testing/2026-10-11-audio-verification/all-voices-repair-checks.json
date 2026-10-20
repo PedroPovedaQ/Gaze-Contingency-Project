@@ -1,0 +1,489 @@
+{
+  "model": "eleven_turbo_v2_5",
+  "validation": "Live ElevenLabs TTS + Scribe v2, matched with production C# VoiceAudioVerification; 3 representative phrases per catalog voice. Does not validate every library phrase or future participant clone.",
+  "results": [
+    {
+      "voice": "Eric",
+      "expected": "Okay, look left.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Okay, look left and lunge and leg",
+          "passed": false
+        },
+        {
+          "attempt": 2,
+          "transcript": "Okay, look left. Huh",
+          "passed": false
+        },
+        {
+          "attempt": 3,
+          "transcript": "Okay, look left",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_1e6ef536e2510dfdb481f5fdb25003dc796515d21ae631c1adfef7271b1a8d0d.mp3"
+    },
+    {
+      "voice": "Eric",
+      "expected": "Next, turn left approximately 165 degrees.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Next, turn left approximately 185 degrees",
+          "passed": false
+        },
+        {
+          "attempt": 2,
+          "transcript": "Next, turn left approximately 165 degrees",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_43b46031c30381c1689908a3ff095199ce0fb1dac9ae7dd45cce0adbc149a4be.mp3"
+    },
+    {
+      "voice": "Eric",
+      "expected": "Keep going to the right.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Keep going to the right",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_526d995b2a057c0120029b605580d7c42759f2c699aa048f41614ec5a0de2d9a.mp3"
+    },
+    {
+      "voice": "Roger",
+      "expected": "Okay, look left.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Okay. Look left",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_34be0678ceda685d725b77c1b80d4be75e8e03ceecd065f8e125e63b0ccc7b8d.mp3"
+    },
+    {
+      "voice": "Roger",
+      "expected": "Next, turn left approximately 165 degrees.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Next, turn left approximately 165 degrees.",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_5b247df90c5fadfafdfe0848bdc32d422c982e00ff2f978522f42bc9876e3296.mp3"
+    },
+    {
+      "voice": "Roger",
+      "expected": "Keep going to the right.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Keep going to the right",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_6f6a7966ffe8c115bfd79c79da53d4c6cbab4b14f9997d1742c30b64628c1a44.mp3"
+    },
+    {
+      "voice": "Chris",
+      "expected": "Okay, look left.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Okay, look left",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_e147bca800bcd7dd74107a6a57fc2023120c25de0f43051ed61731f167fe6fc3.mp3"
+    },
+    {
+      "voice": "Chris",
+      "expected": "Next, turn left approximately 165 degrees.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Next, turn left approximately 165 degrees",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_163a2b6026fb70aa3760ee6c538bcaf1acc907e0b50a458dd34b892510b60a3a.mp3"
+    },
+    {
+      "voice": "Chris",
+      "expected": "Keep going to the right.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Keep going to the right",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_1890b4fd996281cb58d7301607204ecf55e8c2cb57a02799c61a5ab7e81d8a6a.mp3"
+    },
+    {
+      "voice": "Will",
+      "expected": "Okay, look left.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Okay. Look left",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_40431257d804080e46e8fec23deeefca53769fb7a1a0e6a024fce1b8fd19a62b.mp3"
+    },
+    {
+      "voice": "Will",
+      "expected": "Next, turn left approximately 165 degrees.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Next, turn left approximately 165 degrees",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_12d0a74814349da2a6326bff34a9444244cf707615a9b405dc3f4f10b45baf55.mp3"
+    },
+    {
+      "voice": "Will",
+      "expected": "Keep going to the right.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Keep going to the right",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_557fb486833cc82f82ae3919185a76a80c711f8ff6c2fb8aa319298cc216b991.mp3"
+    },
+    {
+      "voice": "Brian",
+      "expected": "Okay, look left.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Okay, look left",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_601443541003440191b472c78b6a01ac91807e590a64333180c28f5cfc5ed87c.mp3"
+    },
+    {
+      "voice": "Brian",
+      "expected": "Next, turn left approximately 165 degrees.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Next, turn left approximately 165 degrees",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_acab23441f4282f7242b7c4ce464062f19981c2ad9770f2ef8fc4ea9240887ca.mp3"
+    },
+    {
+      "voice": "Brian",
+      "expected": "Keep going to the right.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Keep going to the right",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_43d130651e80248abb5926787696f79b2155bf942d9a173845ae94f7a73145ca.mp3"
+    },
+    {
+      "voice": "Liam",
+      "expected": "Okay, look left.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Okay, look left",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_2257796a3a99856fbd1075dcce14c765499750b446dc17a0c38a81293dd9bee5.mp3"
+    },
+    {
+      "voice": "Liam",
+      "expected": "Next, turn left approximately 165 degrees.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Next, turn left approximately 165 degrees",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_84f1ffc156d1b6eb11f764d99077ff630b632fcf99aed190ac9a3deeaab09e06.mp3"
+    },
+    {
+      "voice": "Liam",
+      "expected": "Keep going to the right.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Keep going to the right",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_ecdbfb5e6ecc44b1d52dd94d4961bb7fe3e567bdebc1bbd1cd270840d9e07e86.mp3"
+    },
+    {
+      "voice": "Janet",
+      "expected": "Okay, look left.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Okay, look left",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_efdb968a05764286cafb9130e9c99aa5550398c9fcc3479fe5b262ec0f6cde48.mp3"
+    },
+    {
+      "voice": "Janet",
+      "expected": "Next, turn left approximately 165 degrees.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Next, turn left approximately 165 degrees",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_50e9acc27f2f4d49e609eab3dfea70f5cb8c446c6498446031b1ee3fb0f05c3b.mp3"
+    },
+    {
+      "voice": "Janet",
+      "expected": "Keep going to the right.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Keep going to the right",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_4ab952bcba1de1bdb88e299292805cd8808325e345783eb2c36d70f1e1048742.mp3"
+    },
+    {
+      "voice": "Sarah",
+      "expected": "Okay, look left.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Okay, look left",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_eda5e31530c08e47a0df71b30acd9bb22c1c8c26e767fb543be3680c15c872ad.mp3"
+    },
+    {
+      "voice": "Sarah",
+      "expected": "Next, turn left approximately 165 degrees.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Next, turn left approximately 165 degrees",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_2c9852810fa5fb16712d6f24fd0cdebfa144420688cabf1f62128be48f155478.mp3"
+    },
+    {
+      "voice": "Sarah",
+      "expected": "Keep going to the right.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Keep going to the right",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_b39f309e2ded4ab74e5c047428c6372a455432dc9ac65113a203bac39d8d3d46.mp3"
+    },
+    {
+      "voice": "Jessica",
+      "expected": "Okay, look left.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Okay, look left",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_7698d7df307924e20365b235602ed067b8b56782fac2bf4b62c048369792698d.mp3"
+    },
+    {
+      "voice": "Jessica",
+      "expected": "Next, turn left approximately 165 degrees.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Next, turn left approximately 165 degrees",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_ef74e2c597614d41745772cb35a7eccba27ba4cf471e1d75992b5f8f7b043461.mp3"
+    },
+    {
+      "voice": "Jessica",
+      "expected": "Keep going to the right.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Keep going to the right",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_4fec701784a2ddfc9a0d1fd98f3d10644aeba58646d310d1b7837b4170df1a70.mp3"
+    },
+    {
+      "voice": "Matilda",
+      "expected": "Okay, look left.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Okay, look left",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_aaad199e59f1ac21051f42b44705c7193b7752810c759dd59b560beccc12a3a0.mp3"
+    },
+    {
+      "voice": "Matilda",
+      "expected": "Next, turn left approximately 165 degrees.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Next, turn left approximately 165 degrees",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_ce91a414030d67091da5abfde6ff53986270990d0e849ec70f37237b7feebea4.mp3"
+    },
+    {
+      "voice": "Matilda",
+      "expected": "Keep going to the right.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Keep going to the right",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_2fac342e50d29b99b662eaf40da1c3002aceefca63846527343edae47d670976.mp3"
+    },
+    {
+      "voice": "Bella",
+      "expected": "Okay, look left.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Okay, look left",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_7013de6ca5040ed28ce10fed95494fd56ac4bf1b39ab7fdd3a77b7737a7bddcf.mp3"
+    },
+    {
+      "voice": "Bella",
+      "expected": "Next, turn left approximately 165 degrees.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Next, turn left approximately 165 degrees",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_744715faf3e1c68130ef2ae92fafea0292d0538cdfaca037c0344b2c06e6b961.mp3"
+    },
+    {
+      "voice": "Bella",
+      "expected": "Keep going to the right.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Keep going to the right",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_7c07a10c52cbdde9b76a1c07296e030c8bce834a7a42d5eff30d518840e749f6.mp3"
+    },
+    {
+      "voice": "Laura",
+      "expected": "Okay, look left.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Okay, look left",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_b26b71c555173fbef4aec7d81a0a6926f025ca6d7aeb24561ae12d73caca2166.mp3"
+    },
+    {
+      "voice": "Laura",
+      "expected": "Next, turn left approximately 165 degrees.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Next, turn left approximately 165 degrees",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_ea678e5407863d9066799b59016536d8f1697cbfbbc4a0beea621617ff39777b.mp3"
+    },
+    {
+      "voice": "Laura",
+      "expected": "Keep going to the right.",
+      "passed": true,
+      "attempts": [
+        {
+          "attempt": 1,
+          "transcript": "Keep going to the right",
+          "passed": true
+        }
+      ],
+      "cache_file": "tts_40e692c7d25a00e6fbe397cbcf1d2add16618e9f5d38b9a002ff03dc2f41944c.mp3"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "version": "signed-navigation-v2-semantic",
+  "version": "signed-navigation-v2-five-options",
   "navigation_phrases": [
     {
       "id": "nav_a00_d0_direct",
@@ -8982,6 +8982,2256 @@
       },
       "metadata": {
         "tone": "encouraging",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a00_d0_casual_alternative",
+      "text": "Turn toward the back on your left.",
+      "constraints": {
+        "min_angle": -180,
+        "max_angle": -150,
+        "min_distance_meters": 0,
+        "max_distance_meters": 1
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a00_d1_casual_alternative",
+      "text": "Turn toward the back on your left.",
+      "constraints": {
+        "min_angle": -180,
+        "max_angle": -150,
+        "min_distance_meters": 1,
+        "max_distance_meters": 2
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a00_d2_casual_alternative",
+      "text": "Turn toward the back on your left.",
+      "constraints": {
+        "min_angle": -180,
+        "max_angle": -150,
+        "min_distance_meters": 2,
+        "max_distance_meters": 4
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a00_d3_casual_alternative",
+      "text": "Turn toward the back on your left.",
+      "constraints": {
+        "min_angle": -180,
+        "max_angle": -150,
+        "min_distance_meters": 4,
+        "max_distance_meters": 8
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a00_d4_casual_alternative",
+      "text": "Turn toward the back on your left.",
+      "constraints": {
+        "min_angle": -180,
+        "max_angle": -150,
+        "min_distance_meters": 8,
+        "max_distance_meters": 10000
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a01_d0_casual_alternative",
+      "text": "Turn a long way left.",
+      "constraints": {
+        "min_angle": -150,
+        "max_angle": -120,
+        "min_distance_meters": 0,
+        "max_distance_meters": 1
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a01_d1_casual_alternative",
+      "text": "Turn a long way left.",
+      "constraints": {
+        "min_angle": -150,
+        "max_angle": -120,
+        "min_distance_meters": 1,
+        "max_distance_meters": 2
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a01_d2_casual_alternative",
+      "text": "Turn a long way left.",
+      "constraints": {
+        "min_angle": -150,
+        "max_angle": -120,
+        "min_distance_meters": 2,
+        "max_distance_meters": 4
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a01_d3_casual_alternative",
+      "text": "Turn a long way left.",
+      "constraints": {
+        "min_angle": -150,
+        "max_angle": -120,
+        "min_distance_meters": 4,
+        "max_distance_meters": 8
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a01_d4_casual_alternative",
+      "text": "Turn a long way left.",
+      "constraints": {
+        "min_angle": -150,
+        "max_angle": -120,
+        "min_distance_meters": 8,
+        "max_distance_meters": 10000
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a02_d0_casual_alternative",
+      "text": "Turn farther to your left.",
+      "constraints": {
+        "min_angle": -120,
+        "max_angle": -90,
+        "min_distance_meters": 0,
+        "max_distance_meters": 1
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a02_d1_casual_alternative",
+      "text": "Turn farther to your left.",
+      "constraints": {
+        "min_angle": -120,
+        "max_angle": -90,
+        "min_distance_meters": 1,
+        "max_distance_meters": 2
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a02_d2_casual_alternative",
+      "text": "Turn farther to your left.",
+      "constraints": {
+        "min_angle": -120,
+        "max_angle": -90,
+        "min_distance_meters": 2,
+        "max_distance_meters": 4
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a02_d3_casual_alternative",
+      "text": "Turn farther to your left.",
+      "constraints": {
+        "min_angle": -120,
+        "max_angle": -90,
+        "min_distance_meters": 4,
+        "max_distance_meters": 8
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a02_d4_casual_alternative",
+      "text": "Turn farther to your left.",
+      "constraints": {
+        "min_angle": -120,
+        "max_angle": -90,
+        "min_distance_meters": 8,
+        "max_distance_meters": 10000
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a03_d0_casual_alternative",
+      "text": "Turn to your left.",
+      "constraints": {
+        "min_angle": -90,
+        "max_angle": -60,
+        "min_distance_meters": 0,
+        "max_distance_meters": 1
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a03_d1_casual_alternative",
+      "text": "Turn to your left.",
+      "constraints": {
+        "min_angle": -90,
+        "max_angle": -60,
+        "min_distance_meters": 1,
+        "max_distance_meters": 2
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a03_d2_casual_alternative",
+      "text": "Turn to your left.",
+      "constraints": {
+        "min_angle": -90,
+        "max_angle": -60,
+        "min_distance_meters": 2,
+        "max_distance_meters": 4
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a03_d3_casual_alternative",
+      "text": "Turn to your left.",
+      "constraints": {
+        "min_angle": -90,
+        "max_angle": -60,
+        "min_distance_meters": 4,
+        "max_distance_meters": 8
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a03_d4_casual_alternative",
+      "text": "Turn to your left.",
+      "constraints": {
+        "min_angle": -90,
+        "max_angle": -60,
+        "min_distance_meters": 8,
+        "max_distance_meters": 10000
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a04_d0_casual_alternative",
+      "text": "Look to your left.",
+      "constraints": {
+        "min_angle": -60,
+        "max_angle": -35,
+        "min_distance_meters": 0,
+        "max_distance_meters": 1
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a04_d1_casual_alternative",
+      "text": "Look to your left.",
+      "constraints": {
+        "min_angle": -60,
+        "max_angle": -35,
+        "min_distance_meters": 1,
+        "max_distance_meters": 2
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a04_d2_casual_alternative",
+      "text": "Look to your left.",
+      "constraints": {
+        "min_angle": -60,
+        "max_angle": -35,
+        "min_distance_meters": 2,
+        "max_distance_meters": 4
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a04_d3_casual_alternative",
+      "text": "Look to your left.",
+      "constraints": {
+        "min_angle": -60,
+        "max_angle": -35,
+        "min_distance_meters": 4,
+        "max_distance_meters": 8
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a04_d4_casual_alternative",
+      "text": "Look to your left.",
+      "constraints": {
+        "min_angle": -60,
+        "max_angle": -35,
+        "min_distance_meters": 8,
+        "max_distance_meters": 10000
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a05_d0_casual_alternative",
+      "text": "Look slightly left.",
+      "constraints": {
+        "min_angle": -35,
+        "max_angle": -15,
+        "min_distance_meters": 0,
+        "max_distance_meters": 1
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a05_d1_casual_alternative",
+      "text": "Look slightly left.",
+      "constraints": {
+        "min_angle": -35,
+        "max_angle": -15,
+        "min_distance_meters": 1,
+        "max_distance_meters": 2
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a05_d2_casual_alternative",
+      "text": "Look slightly left.",
+      "constraints": {
+        "min_angle": -35,
+        "max_angle": -15,
+        "min_distance_meters": 2,
+        "max_distance_meters": 4
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a05_d3_casual_alternative",
+      "text": "Look slightly left.",
+      "constraints": {
+        "min_angle": -35,
+        "max_angle": -15,
+        "min_distance_meters": 4,
+        "max_distance_meters": 8
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a05_d4_casual_alternative",
+      "text": "Look slightly left.",
+      "constraints": {
+        "min_angle": -35,
+        "max_angle": -15,
+        "min_distance_meters": 8,
+        "max_distance_meters": 10000
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a06_d0_casual_alternative",
+      "text": "Look just a touch left.",
+      "constraints": {
+        "min_angle": -15,
+        "max_angle": -5,
+        "min_distance_meters": 0,
+        "max_distance_meters": 1
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a06_d1_casual_alternative",
+      "text": "Look just a touch left.",
+      "constraints": {
+        "min_angle": -15,
+        "max_angle": -5,
+        "min_distance_meters": 1,
+        "max_distance_meters": 2
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a06_d2_casual_alternative",
+      "text": "Look just a touch left.",
+      "constraints": {
+        "min_angle": -15,
+        "max_angle": -5,
+        "min_distance_meters": 2,
+        "max_distance_meters": 4
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a06_d3_casual_alternative",
+      "text": "Look just a touch left.",
+      "constraints": {
+        "min_angle": -15,
+        "max_angle": -5,
+        "min_distance_meters": 4,
+        "max_distance_meters": 8
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a06_d4_casual_alternative",
+      "text": "Look just a touch left.",
+      "constraints": {
+        "min_angle": -15,
+        "max_angle": -5,
+        "min_distance_meters": 8,
+        "max_distance_meters": 10000
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "left",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a07_d0_casual_alternative",
+      "text": "Keep looking forward.",
+      "constraints": {
+        "min_angle": -5,
+        "max_angle": 5,
+        "min_distance_meters": 0,
+        "max_distance_meters": 1
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a07_d1_casual_alternative",
+      "text": "Keep looking forward.",
+      "constraints": {
+        "min_angle": -5,
+        "max_angle": 5,
+        "min_distance_meters": 1,
+        "max_distance_meters": 2
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a07_d2_casual_alternative",
+      "text": "Keep looking forward.",
+      "constraints": {
+        "min_angle": -5,
+        "max_angle": 5,
+        "min_distance_meters": 2,
+        "max_distance_meters": 4
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a07_d3_casual_alternative",
+      "text": "Keep looking forward.",
+      "constraints": {
+        "min_angle": -5,
+        "max_angle": 5,
+        "min_distance_meters": 4,
+        "max_distance_meters": 8
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a07_d4_casual_alternative",
+      "text": "Keep looking forward.",
+      "constraints": {
+        "min_angle": -5,
+        "max_angle": 5,
+        "min_distance_meters": 8,
+        "max_distance_meters": 10000
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a08_d0_casual_alternative",
+      "text": "Look just a touch right.",
+      "constraints": {
+        "min_angle": 5,
+        "max_angle": 15,
+        "min_distance_meters": 0,
+        "max_distance_meters": 1
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a08_d1_casual_alternative",
+      "text": "Look just a touch right.",
+      "constraints": {
+        "min_angle": 5,
+        "max_angle": 15,
+        "min_distance_meters": 1,
+        "max_distance_meters": 2
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a08_d2_casual_alternative",
+      "text": "Look just a touch right.",
+      "constraints": {
+        "min_angle": 5,
+        "max_angle": 15,
+        "min_distance_meters": 2,
+        "max_distance_meters": 4
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a08_d3_casual_alternative",
+      "text": "Look just a touch right.",
+      "constraints": {
+        "min_angle": 5,
+        "max_angle": 15,
+        "min_distance_meters": 4,
+        "max_distance_meters": 8
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a08_d4_casual_alternative",
+      "text": "Look just a touch right.",
+      "constraints": {
+        "min_angle": 5,
+        "max_angle": 15,
+        "min_distance_meters": 8,
+        "max_distance_meters": 10000
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a09_d0_casual_alternative",
+      "text": "Look slightly right.",
+      "constraints": {
+        "min_angle": 15,
+        "max_angle": 35,
+        "min_distance_meters": 0,
+        "max_distance_meters": 1
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a09_d1_casual_alternative",
+      "text": "Look slightly right.",
+      "constraints": {
+        "min_angle": 15,
+        "max_angle": 35,
+        "min_distance_meters": 1,
+        "max_distance_meters": 2
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a09_d2_casual_alternative",
+      "text": "Look slightly right.",
+      "constraints": {
+        "min_angle": 15,
+        "max_angle": 35,
+        "min_distance_meters": 2,
+        "max_distance_meters": 4
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a09_d3_casual_alternative",
+      "text": "Look slightly right.",
+      "constraints": {
+        "min_angle": 15,
+        "max_angle": 35,
+        "min_distance_meters": 4,
+        "max_distance_meters": 8
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a09_d4_casual_alternative",
+      "text": "Look slightly right.",
+      "constraints": {
+        "min_angle": 15,
+        "max_angle": 35,
+        "min_distance_meters": 8,
+        "max_distance_meters": 10000
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "small",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a10_d0_casual_alternative",
+      "text": "Look to your right.",
+      "constraints": {
+        "min_angle": 35,
+        "max_angle": 60,
+        "min_distance_meters": 0,
+        "max_distance_meters": 1
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a10_d1_casual_alternative",
+      "text": "Look to your right.",
+      "constraints": {
+        "min_angle": 35,
+        "max_angle": 60,
+        "min_distance_meters": 1,
+        "max_distance_meters": 2
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a10_d2_casual_alternative",
+      "text": "Look to your right.",
+      "constraints": {
+        "min_angle": 35,
+        "max_angle": 60,
+        "min_distance_meters": 2,
+        "max_distance_meters": 4
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a10_d3_casual_alternative",
+      "text": "Look to your right.",
+      "constraints": {
+        "min_angle": 35,
+        "max_angle": 60,
+        "min_distance_meters": 4,
+        "max_distance_meters": 8
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a10_d4_casual_alternative",
+      "text": "Look to your right.",
+      "constraints": {
+        "min_angle": 35,
+        "max_angle": 60,
+        "min_distance_meters": 8,
+        "max_distance_meters": 10000
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "direction",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a11_d0_casual_alternative",
+      "text": "Turn to your right.",
+      "constraints": {
+        "min_angle": 60,
+        "max_angle": 90,
+        "min_distance_meters": 0,
+        "max_distance_meters": 1
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a11_d1_casual_alternative",
+      "text": "Turn to your right.",
+      "constraints": {
+        "min_angle": 60,
+        "max_angle": 90,
+        "min_distance_meters": 1,
+        "max_distance_meters": 2
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a11_d2_casual_alternative",
+      "text": "Turn to your right.",
+      "constraints": {
+        "min_angle": 60,
+        "max_angle": 90,
+        "min_distance_meters": 2,
+        "max_distance_meters": 4
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a11_d3_casual_alternative",
+      "text": "Turn to your right.",
+      "constraints": {
+        "min_angle": 60,
+        "max_angle": 90,
+        "min_distance_meters": 4,
+        "max_distance_meters": 8
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a11_d4_casual_alternative",
+      "text": "Turn to your right.",
+      "constraints": {
+        "min_angle": 60,
+        "max_angle": 90,
+        "min_distance_meters": 8,
+        "max_distance_meters": 10000
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "medium",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a12_d0_casual_alternative",
+      "text": "Turn farther to your right.",
+      "constraints": {
+        "min_angle": 90,
+        "max_angle": 120,
+        "min_distance_meters": 0,
+        "max_distance_meters": 1
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a12_d1_casual_alternative",
+      "text": "Turn farther to your right.",
+      "constraints": {
+        "min_angle": 90,
+        "max_angle": 120,
+        "min_distance_meters": 1,
+        "max_distance_meters": 2
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a12_d2_casual_alternative",
+      "text": "Turn farther to your right.",
+      "constraints": {
+        "min_angle": 90,
+        "max_angle": 120,
+        "min_distance_meters": 2,
+        "max_distance_meters": 4
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a12_d3_casual_alternative",
+      "text": "Turn farther to your right.",
+      "constraints": {
+        "min_angle": 90,
+        "max_angle": 120,
+        "min_distance_meters": 4,
+        "max_distance_meters": 8
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a12_d4_casual_alternative",
+      "text": "Turn farther to your right.",
+      "constraints": {
+        "min_angle": 90,
+        "max_angle": 120,
+        "min_distance_meters": 8,
+        "max_distance_meters": 10000
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a13_d0_casual_alternative",
+      "text": "Turn a long way right.",
+      "constraints": {
+        "min_angle": 120,
+        "max_angle": 150,
+        "min_distance_meters": 0,
+        "max_distance_meters": 1
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a13_d1_casual_alternative",
+      "text": "Turn a long way right.",
+      "constraints": {
+        "min_angle": 120,
+        "max_angle": 150,
+        "min_distance_meters": 1,
+        "max_distance_meters": 2
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a13_d2_casual_alternative",
+      "text": "Turn a long way right.",
+      "constraints": {
+        "min_angle": 120,
+        "max_angle": 150,
+        "min_distance_meters": 2,
+        "max_distance_meters": 4
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a13_d3_casual_alternative",
+      "text": "Turn a long way right.",
+      "constraints": {
+        "min_angle": 120,
+        "max_angle": 150,
+        "min_distance_meters": 4,
+        "max_distance_meters": 8
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a13_d4_casual_alternative",
+      "text": "Turn a long way right.",
+      "constraints": {
+        "min_angle": 120,
+        "max_angle": 150,
+        "min_distance_meters": 8,
+        "max_distance_meters": 10000
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a14_d0_casual_alternative",
+      "text": "Turn toward the back on your right.",
+      "constraints": {
+        "min_angle": 150,
+        "max_angle": 180,
+        "min_distance_meters": 0,
+        "max_distance_meters": 1
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a14_d1_casual_alternative",
+      "text": "Turn toward the back on your right.",
+      "constraints": {
+        "min_angle": 150,
+        "max_angle": 180,
+        "min_distance_meters": 1,
+        "max_distance_meters": 2
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a14_d2_casual_alternative",
+      "text": "Turn toward the back on your right.",
+      "constraints": {
+        "min_angle": 150,
+        "max_angle": 180,
+        "min_distance_meters": 2,
+        "max_distance_meters": 4
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a14_d3_casual_alternative",
+      "text": "Turn toward the back on your right.",
+      "constraints": {
+        "min_angle": 150,
+        "max_angle": 180,
+        "min_distance_meters": 4,
+        "max_distance_meters": 8
+      },
+      "metadata": {
+        "tone": "casual",
+        "urgency": "low",
+        "intent": "turn",
+        "horizontal": "right",
+        "vertical": "none",
+        "magnitude": "large",
+        "stage": "outside_target_wall",
+        "interruptPolicy": "replace_if_misleading",
+        "requires": [
+          "fresh_valid_gaze",
+          "matching_angle_and_distance",
+          "prepared_voice_clip"
+        ],
+        "canBeSupersededBy": [
+          "target_wall_reached",
+          "target_acquired",
+          "direction_reversed"
+        ]
+      }
+    },
+    {
+      "id": "nav_a14_d4_casual_alternative",
+      "text": "Turn toward the back on your right.",
+      "constraints": {
+        "min_angle": 150,
+        "max_angle": 180,
+        "min_distance_meters": 8,
+        "max_distance_meters": 10000
+      },
+      "metadata": {
+        "tone": "casual",
         "urgency": "low",
         "intent": "turn",
         "horizontal": "right",

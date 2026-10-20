@@ -22,11 +22,18 @@ public static class DirectionalHintPolicy
     public const string UpRightPhrase = "Look up and a little to your right.";
     public const string DownLeftPhrase = "Look down and a little to your left.";
     public const string DownRightPhrase = "Look down and a little to your right.";
-    public const string KeepGoingPhrase = "Keep going.";
     public const string BitMorePhrase = "A bit more.";
     public const string LittleMorePhrase = "Just a little more.";
-    public static bool IsContinuation(string phrase) => phrase == KeepGoingPhrase || phrase == BitMorePhrase || phrase == LittleMorePhrase;
-    public const string Version = "gaze-directional-v21-semantic-speech";
+    public static readonly string[] ProgressDirections = { LeftPhrase, RightPhrase, UpPhrase, DownPhrase,
+        UpLeftPhrase, UpRightPhrase, DownLeftPhrase, DownRightPhrase };
+    public static bool IsContinuation(string phrase)
+    {
+        if (phrase == BitMorePhrase || phrase == LittleMorePhrase) return true;
+        foreach (var direction in ProgressDirections)
+            for (int i = 0; i < 3; i++) if (phrase == Progress(direction, i)) return true;
+        return false;
+    }
+    public const string Version = "gaze-directional-v23-explicit-continuations";
     static readonly string[] k_AreaLead = { "Right area.", "This is the right area.",
         "You're in the right area.", "Stay in this area." };
 
@@ -64,7 +71,17 @@ public static class DirectionalHintPolicy
         ? "Turn way " + (direction == LeftPhrase ? "left." : "right.")
         : Variant(direction, index, far: remaining > 45);
 
-    public static string Progress(int index) => k_Progress[((index % k_Progress.Length) + k_Progress.Length) % k_Progress.Length];
+    public static string Progress(string direction, int index)
+    {
+        string horizontal = HasLeft(direction) ? "left" : HasRight(direction) ? "right" : "";
+        if (HasVertical(direction))
+            return "Keep looking " + (HasUp(direction) ? "up" : "down") +
+                (horizontal.Length == 0 ? "" : " and " + horizontal) + ".";
+        if (horizontal.Length == 0) return AlignedPhrase;
+        int variant = ((index % 3) + 3) % 3;
+        return variant == 0 ? "Keep going to the " + horizontal + "." :
+            variant == 1 ? "That's it, keep going " + horizontal + "." : "Keep going " + horizontal + ".";
+    }
 
     public static string ReturnToTarget(string direction)
     {
@@ -86,10 +103,14 @@ public static class DirectionalHintPolicy
         bool continuationUsed = false, float verticalFraction = 0) =>
         !continuationUsed && direction == previous && direction != AlignedPhrase && error <= previousError - 2
             ? (!far && error <= 10 && (!HasVertical(direction) || Math.Abs(verticalFraction) <= .2f)
-                ? ((index & 1) == 0 ? BitMorePhrase : LittleMorePhrase) : KeepGoingPhrase)
+                ? ((index & 1) == 0 ? BitMorePhrase : LittleMorePhrase) : Progress(direction, 0))
             : Variant(direction, index, false, far, verticalFraction);
 
-    public static string Opening(string direction) => direction == LeftPhrase ? "The object is to the left." :
+    // Same-wall openings reuse prepared refinement clips, including height bands
+    // and diagonals. Other walls retain the initial left/right orientation cue.
+    public static string Opening(string direction, bool inside = false, float verticalFraction = 0) =>
+        inside ? Variant(direction, 0, verticalFraction: verticalFraction) :
+        direction == LeftPhrase ? "The object is to the left." :
         direction == RightPhrase ? "The object is to the right." :
         direction == UpPhrase ? "The object is above where you're looking." :
         direction == DownPhrase ? "The object is below where you're looking." :
@@ -119,7 +140,6 @@ public static class DirectionalHintPolicy
     static readonly string[] k_FarRight = { "Turn to your right.", "Keep turning right.", "A bit farther right.", "Turn farther right." };
     static readonly string[] k_Aligned = { AlignedPhrase, "Right around there.", "Keep looking right there.", "You should see it there." };
     static readonly string[] k_Looking = { LookingPhrase, "Yes, that's it!", "That's the one!", "You've got it!" };
-    static readonly string[] k_Progress = { KeepGoingPhrase, "That's it, keep turning.", "Keep going that way." };
     static readonly string[] k_Area = { AreaPhrase, "This is the correct area. Keep looking.",
         "Stay in this area and keep looking.", "Keep searching in this area." };
     static readonly string[] k_Return = { ReturnPhrase, "Go back to that area.",
@@ -171,10 +191,10 @@ public static class DirectionalHintPolicy
         }
         phrases.Add(LookingPhrase);
         phrases.Add(PointingPhrase);
-        phrases.Add(KeepGoingPhrase);
         phrases.Add(BitMorePhrase);
         phrases.Add(LittleMorePhrase);
-        phrases.AddRange(k_Progress);
+        foreach (var direction in ProgressDirections)
+            for (int i = 0; i < 3; i++) phrases.Add(Progress(direction, i));
         foreach (var direction in new[] { LeftPhrase, RightPhrase })
         { phrases.Add(Turn(direction, 180, 0)); phrases.Add(ReturnToArea(direction)); }
         foreach (var direction in new[] { LeftPhrase, RightPhrase, UpPhrase, DownPhrase, UpLeftPhrase, UpRightPhrase, DownLeftPhrase, DownRightPhrase })

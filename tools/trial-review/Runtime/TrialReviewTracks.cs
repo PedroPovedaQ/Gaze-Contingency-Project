@@ -14,17 +14,20 @@ public sealed class TrialReviewTracks
         public readonly List<Span> Gaze = new List<Span>();
     }
     public readonly Dictionary<string, Trial> Trials = new Dictionary<string, Trial>();
+    public readonly TrialReviewSubtitles Subtitles = new TrialReviewSubtitles();
+    public readonly TrialReviewJev Jev = new TrialReviewJev();
     TrialReplayTimeline m_Timeline;
     Trial m_Current;
     Span m_Gaze;
     int m_Next;
     public void Refresh(TrialReplayTimeline timeline)
     {
-        if (m_Timeline != timeline) { m_Timeline=timeline; m_Next=0; m_Current=null; m_Gaze=null; Trials.Clear(); }
+        if (m_Timeline != timeline) { m_Timeline=timeline; m_Next=0; m_Current=null; m_Gaze=null; Trials.Clear(); Subtitles.Clear(); Jev.Clear(); }
         if (timeline == null) return;
         for (; m_Next<timeline.Records.Count; m_Next++)
         {
             var r=timeline.Records[m_Next];
+            Subtitles.Observe(r); Jev.Observe(r);
             if (r.kind=="trial")
             {
                 CloseGaze(r.time);

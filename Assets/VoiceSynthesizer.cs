@@ -34,7 +34,6 @@ public partial class VoiceSynthesizer : MonoBehaviour
     public bool LibraryReady { get; private set; }
     bool m_Preparing;
     VoiceCondition[] m_LibraryVoices = { VoiceCondition.Generic, VoiceCondition.SelfSimilar };
-    bool m_GeneratedAudio;
     HashSet<string> m_OnDemandPhrases;
     float m_MatchedRms;
     Coroutine m_BackgroundCoroutine;
@@ -52,6 +51,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
     [Serializable] class ClipAudit
     {
         public string clip_id, voice_id, voice_condition, provider, model, text, content_version, perspective, perspective_version, effect_profile;
+        public string verification_version, source_audio_sha256;
         public float duration_seconds, rms, peak, gain, achieved_rms, requested_rms;
         public int speech_samples; // leading interleaved samples holding the words; RMS is measured here
         public bool level_limited;
@@ -77,6 +77,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
     {
         SessionConfig.LockPerspective();
         Stop();
+        int preparationGeneration = m_PreparationGeneration;
         m_BackgroundQueue.Clear();
         m_BackgroundEnabled = false;
         LibraryReady = false;
@@ -88,11 +89,19 @@ public partial class VoiceSynthesizer : MonoBehaviour
         m_Audit.Clear();
         foreach (var clip in m_PreparedClips.Values) Destroy(clip);
         m_PreparedClips.Clear();
-        var originalVoice = SessionConfig.Voice;
+        LastError = null;
+        var lines = new List<KeyValuePair<VoiceCondition, string>>();
+        foreach (var voice in m_LibraryVoices)
+            foreach (var phrase in phrases) lines.Add(new KeyValuePair<VoiceCondition, string>(voice, phrase));
+        var downloads = DownloadJobs(lines);
+        yield return DownloadLines(downloads, stage => { PreparationStage = stage; progress?.Invoke(stage); });
+        if (preparationGeneration != m_PreparationGeneration) yield break;
         bool success = true;
+        foreach (var job in downloads)
+            if (job.error != null) { Fail(job.error); success = false; break; }
         foreach (var voice in m_LibraryVoices)
         {
-            SessionConfig.Voice = voice;
+            if (!success) break;
             for (int i = 0; i < phrases.Length; i++)
             {
                 PreparationStage = $"Preparing {(voice == VoiceCondition.Generic ? "neutral" : "self-similar")} voice: {i + 1}/{phrases.Length}";
@@ -100,13 +109,13 @@ public partial class VoiceSynthesizer : MonoBehaviour
                 m_PreparingText = VoicePromptText.FormatForVoice(phrases[i], voice);
                 for (int attempt = 0; attempt < 3; attempt++)
                 {
-                    yield return SpeakCoroutine(phrases[i]);
+                    yield return SpeakCoroutine(phrases[i], requestedVoice: voice);
+                    if (preparationGeneration != m_PreparationGeneration) yield break;
                     if (string.IsNullOrEmpty(LastError) || LastError.Contains("unavailable") || ProviderPolicyBlocked) break;
                     if (attempt < 2) yield return new WaitForSeconds(1 << attempt);
+                    if (preparationGeneration != m_PreparationGeneration) yield break;
                 }
                 if (!string.IsNullOrEmpty(LastError)) { success = false; break; }
-                // Local cache reads need no provider pacing delay.
-                if (m_GeneratedAudio) yield return new WaitForSeconds(0.1f);
             }
             if (!success) break;
         }
@@ -116,7 +125,6 @@ public partial class VoiceSynthesizer : MonoBehaviour
             progress?.Invoke(PreparationStage);
             success = MatchLibraryLevels();
         }
-        SessionConfig.Voice = originalVoice;
         m_Preparing = false;
         LibraryReady = success;
         if (success)
@@ -133,6 +141,20 @@ public partial class VoiceSynthesizer : MonoBehaviour
                     $"{DateTime.UtcNow:O} | {PreparationStage} | {LastError}\n");
             }
             catch (Exception) { Debug.LogWarning($"{k_Tag} Could not persist preparation error."); }
+        }
+        // Publish the exact matched waveforms while Loading is still visible.
+        // One clip per frame avoids a whole-library serialization spike. Transfer
+        // acknowledgements never gate the participant's study.
+        if (LibraryReady)
+        {
+            var replay = GetComponent<TrialReplayRecorder>();
+            if (replay != null)
+                foreach (var prepared in m_PreparedClips.Values)
+                {
+                    replay.PrepareVoiceClip(prepared);
+                    yield return null;
+                    if (preparationGeneration != m_PreparationGeneration) yield break;
+                }
         }
         done?.Invoke(LibraryReady);
     }
@@ -195,7 +217,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
     public bool IsSpeaking => m_AudioSource != null && m_AudioSource.isPlaying;
     // Read-only observer access to the exact normalized clip used by playback.
     public AudioClip ReplayClip => m_AudioSource != null ? m_AudioSource.clip : null;
-    public bool IsBusy => m_InterruptionCoroutine != null || m_SpeakCoroutine != null || IsSpeaking;
+    public bool IsBusy => m_TransmissionCoroutine != null || m_InterruptionCoroutine != null || m_SpeakCoroutine != null || IsSpeaking;
     double m_LastGuidanceEnd = -100;
     bool m_LastGuidanceWasAcknowledgment;
     string m_CurrentPhrase;
@@ -232,14 +254,30 @@ public partial class VoiceSynthesizer : MonoBehaviour
     IEnumerator LoadNextBackgroundClip()
     {
         m_BackgroundLoading = true;
+        int generation = m_PreparationGeneration;
         yield return null;
-        var next = m_BackgroundQueue.Peek();
+        var pending = m_BackgroundQueue.ToArray();
+        var lines = new List<KeyValuePair<VoiceCondition, string>>();
+        for (int i = 0; i < Math.Min(VoiceDownloadBatch.Concurrency, pending.Length); i++) lines.Add(pending[i]);
+        var downloads = DownloadJobs(lines);
+        yield return DownloadLines(downloads);
+        if (generation != m_PreparationGeneration) yield break;
         m_CurrentContext = "prefetch";
-        yield return SpeakCoroutine(next.Value, false, next.Key, true);
+        foreach (var job in downloads)
+            if (job.error != null) Fail(job.error);
+        foreach (var next in lines)
+        {
+            // Admit downloaded clips sequentially, preserving per-voice DSP, audit and matched levels.
+            string id = next.Key == VoiceCondition.SelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId;
+            string path = GetCachePath(VoicePromptText.FormatForVoice(next.Value, next.Key),
+                next.Key == VoiceCondition.SelfSimilar ? $"el-clone-{id}" : $"el-{id}");
+            if (File.Exists(path)) yield return SpeakCoroutine(next.Value, false, next.Key, true);
+            if (generation != m_PreparationGeneration) yield break;
+            m_BackgroundQueue.Dequeue();
+        }
         // Background failures leave the clip available for a foreground retry.
         // They must not interrupt a running trial or poison a successful audio check.
         m_ActiveClipKey = null;
-        m_BackgroundQueue.Dequeue();
         m_BackgroundLoading = false;
         m_BackgroundCoroutine = null;
     }
@@ -326,7 +364,9 @@ public partial class VoiceSynthesizer : MonoBehaviour
     // Decisions are recorded separately from speech requests and audible starts.
     // Keep serialized snapshots out of the audio cache identity and spoken text.
     public void RecordGuidanceDecision(string json) => Telemetry?.Invoke("guidance_decision", "guidance", "", json);
+    public void RecordJevTrace(string json) { if (this != null) Telemetry?.Invoke("jev_trace", "jev", "", json); }
     public void RecordNavigationStatus(string json) => Telemetry?.Invoke("navigation_status", "guidance", "", json);
+    public void RecordRoundEncouragement(string json) => Telemetry?.Invoke("round_encouragement_decision", "congrats", "", json);
 
     void AudioTelemetry(string kind, string context, string clip, string detail)
     {
@@ -348,7 +388,9 @@ public partial class VoiceSynthesizer : MonoBehaviour
         string path = GetCachePath(VoicePromptText.FormatForVoice(phrase, SessionConfig.Voice),
             (self ? "el-clone-" : "el-") + voiceId);
         if (!m_PreparedClips.ContainsKey(path) || !stillRelevant()) return false;
-        if (!GuidanceReady && !ApproveInterruption(phrase, reason, stillRelevant)) return false;
+        if (GuidanceReady && TransmissionAdvisor != null)
+            return TryGuidanceTransmission(phrase, stillRelevant, onCommitted, reason, guidanceDecisionId);
+        if (!GuidanceReady && !ApproveInterruption(phrase, reason, stillRelevant, ref guidanceDecisionId)) return false;
         m_DropCorrection = false;
         m_PendingCorrectionDecisionId = guidanceDecisionId;
         m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(phrase, stillRelevant, onCommitted, reason, guidanceDecisionId));
@@ -404,7 +446,11 @@ public partial class VoiceSynthesizer : MonoBehaviour
 
     public void Stop()
     {
+        m_PreparationGeneration++;
+        m_DownloadBatch?.Dispose(); m_DownloadBatch = null;
+        m_Preparing = false;
         CancelInterruptionAdvice();
+        CancelTransmission();
         m_PlaybackGeneration++;
         m_CurrentSpeechSeconds = -1;
         if (m_InterruptionCoroutine != null)
@@ -473,14 +519,17 @@ public partial class VoiceSynthesizer : MonoBehaviour
     IEnumerator SpeakCoroutine(string text, bool setupAnnouncement = false,
         VoiceCondition? requestedVoice = null, bool silent = false, string requestedVoiceId = null)
     {
+        int generation = m_PreparationGeneration;
         // Defer once so Speak has stored the coroutine handle before any early exit.
         yield return null;
+        if (generation != m_PreparationGeneration) yield break;
         if (!silent) LastError = null;
-        m_GeneratedAudio = false;
         bool allowOnDemand = LibraryReady && m_OnDemandPhrases != null && m_OnDemandPhrases.Contains(text);
         bool wantSelfSimilar = (requestedVoice ?? SessionConfig.Voice) == VoiceCondition.SelfSimilar;
         var actualPerspective = VoicePromptText.PerspectiveForVoice(requestedVoice ?? SessionConfig.Voice);
         if (!setupAnnouncement) text = VoicePromptText.Format(text, actualPerspective);
+        if (VoiceAudioIntegrity.HasForbiddenFiller(text))
+        { Fail("Script contains a prohibited filler."); m_SpeakCoroutine = null; yield break; }
         m_PreparingText = text;
         string voiceId = requestedVoiceId ?? (wantSelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId);
         string voiceScope = wantSelfSimilar ? $"el-clone-{voiceId}" : $"el-{voiceId}";
@@ -503,6 +552,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         {
             if (!m_PreparedClips.ContainsKey(cachePath)) Fail("Clip absent from prepared library.");
             else yield return PlayFromFile(cachePath, wantSelfSimilar, voiceId, silent);
+            if (generation != m_PreparationGeneration) yield break;
             m_SpeakCoroutine = null; m_CurrentContext = null;
             yield break;
         }
@@ -512,98 +562,19 @@ public partial class VoiceSynthesizer : MonoBehaviour
             m_SpeakCoroutine = null; m_CurrentContext = null;
             yield break;
         }
-        if (File.Exists(cachePath))
+        // One admission path for setup previews, foreground speech and prepared/background libraries.
+        var job = new DownloadJob { text = text, voiceId = voiceId, path = cachePath, clone = wantSelfSimilar };
+        yield return DownloadLine(job);
+        if (generation != m_PreparationGeneration) yield break;
+        if (job.error != null || !VoiceAudioVerification.HasReceipt(cachePath, text))
         {
-            Debug.Log($"{k_Tag} Cache hit ({(wantSelfSimilar ? "self" : "generic")}): \"{Truncate(text, 40)}\"");
-            yield return PlayFromFile(cachePath, wantSelfSimilar, voiceId, silent);
-            m_SpeakCoroutine = null;
-            m_CurrentContext = null;
-            yield break;
-        }
-
-        byte[] audioData = null;
-
-        // 2) Synthesize the intended voice (ElevenLabs for both conditions).
-        if (wantSelfSimilar)
-        {
-            Debug.Log($"{k_Tag} ElevenLabs clone TTS: \"{Truncate(text, 40)}\"");
-            if (m_CloneClient == null || !m_CloneClient.HasKey)
-            {
-                Fail("Self-similar provider unavailable.");
-                m_SpeakCoroutine = null;
-                m_CurrentContext = null;
-                yield break;
-            }
-            string cloneError = null;
-            yield return m_CloneClient.Synthesize(text, voiceId,
-                b => audioData = b, e => cloneError = e);
-            if (audioData == null)
-            {
-                Fail($"Self-similar synthesis failed: {cloneError}");
-                m_SpeakCoroutine = null;
-                m_CurrentContext = null;
-                yield break;
-            }
-        }
-
-        // Neutral synthesis is reachable only for an explicitly neutral run.
-        else
-        {
-            if (string.IsNullOrEmpty(m_ApiKey))
-            {
-                Fail("Neutral voice provider unavailable.");
-                m_SpeakCoroutine = null;
-                m_CurrentContext = null;
-                yield break;
-            }
-
-            Debug.Log($"{k_Tag} ElevenLabs TTS: \"{Truncate(text, 40)}\"");
-            string url = $"{k_BaseUrl}{voiceId}";
-            string jsonBody = JsonUtility.ToJson(new TtsRequest { text = text, model_id = k_Model });
-
-            using var request = new UnityWebRequest(url, "POST");
-            request.uploadHandler = new UploadHandlerRaw(System.Text.Encoding.UTF8.GetBytes(jsonBody));
-            request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
-            request.SetRequestHeader("xi-api-key", m_ApiKey);
-            request.timeout = 15;
-
-            yield return request.SendWebRequest();
-
-            if (request.result != UnityWebRequest.Result.Success)
-            {
-                string body = request.downloadHandler?.text ?? "";
-                Fail($"Neutral synthesis failed: HTTP {request.responseCode}");
-                m_SpeakCoroutine = null;
-                m_CurrentContext = null;
-                yield break;
-            }
-            audioData = request.downloadHandler.data;
-        }
-
-        if (audioData == null || audioData.Length < 100)
-        {
-            Fail("Synthesis returned empty or truncated audio.");
-            m_SpeakCoroutine = null;
-            m_CurrentContext = null;
-            yield break;
-        }
-
-        // Save to cache (path matches whichever voice actually produced the audio).
-        try
-        {
-            File.WriteAllBytes(cachePath, audioData);
-            m_GeneratedAudio = true;
-            Debug.Log($"{k_Tag} Cached: \"{Truncate(text, 40)}\" ({audioData.Length} bytes)");
-        }
-        catch (Exception e)
-        {
-            Fail("Could not save audio: " + e.Message);
+            Fail(job.error ?? "Audio has no valid verification receipt.");
             m_SpeakCoroutine = null; m_CurrentContext = null;
             yield break;
         }
 
         yield return PlayFromFile(cachePath, wantSelfSimilar, voiceId, silent);
+        if (generation != m_PreparationGeneration) yield break;
 
         m_SpeakCoroutine = null;
         m_CurrentContext = null;
@@ -618,13 +589,17 @@ public partial class VoiceSynthesizer : MonoBehaviour
 
     IEnumerator PlayFromFile(string filePath, bool wantSelfSimilar, string voiceId, bool silent)
     {
+        int generation = m_PreparationGeneration;
         var actualPerspective = wantSelfSimilar ? VoicePerspective.FirstPerson : VoicePerspective.External;
         AudioClip clip;
         if (!m_PreparedClips.TryGetValue(filePath, out clip))
         {
+            if (!VoiceAudioVerification.HasReceipt(filePath, m_PreparingText))
+            { Fail("Unverified audio cannot enter the playable library."); yield break; }
             using (var request = UnityWebRequestMultimedia.GetAudioClip("file://" + filePath, AudioType.MPEG))
             {
                 yield return request.SendWebRequest();
+                if (generation != m_PreparationGeneration) yield break;
                 if (request.result != UnityWebRequest.Result.Success)
                 {
                     Fail("Could not decode cached audio.");
@@ -681,6 +656,8 @@ public partial class VoiceSynthesizer : MonoBehaviour
                 perspective = m_SetupAnnouncement ? "setup" : actualPerspective.ToString(),
                 perspective_version = VoicePromptText.Version,
                 effect_profile = InnerThoughtVoice.Profile(wantSelfSimilar),
+                verification_version = VoiceAudioVerification.Version,
+                source_audio_sha256 = VoiceAudioVerification.Hash(File.ReadAllBytes(filePath)),
                 duration_seconds = clip.length, rms = rms, peak = peak, gain = gain, achieved_rms = rms * gain,
                 requested_rms = requestedRms, speech_samples = treated.SpeechSamples, level_limited = levelLimited });
             if (levelLimited && LibraryReady)
@@ -689,6 +666,8 @@ public partial class VoiceSynthesizer : MonoBehaviour
         }
         // Persist before playback, including clips added after the run began.
         if (LibraryReady && !m_Preparing && !SaveManifest()) yield break;
+        if (LibraryReady && !m_Preparing)
+            GetComponent<TrialReplayRecorder>()?.PrepareVoiceClip(clip);
         AudioTelemetry("audio_ready", m_CurrentContext ?? "", Path.GetFileNameWithoutExtension(filePath), $"duration={clip.length:F4}");
         if (m_Preparing || silent) yield break;
         m_CurrentSpeechSeconds = -1;
@@ -699,6 +678,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         m_AudioSource.volume = 0.7f;
         m_AudioSource.pitch = 1f;
         m_SpeechStartStage = GuidanceEvidence.valid ? (GuidanceEvidence.insideTargetWall ? "within_target_wall" : "outside_target_wall") : "unknown";
+        m_LastSpokenPhrase = m_CurrentPhrase;
         m_AudioSource.Play();
         AudioTelemetry("audio_playback_start", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};effect_profile={InnerThoughtVoice.Profile(wantSelfSimilar)};text={m_PreparingText}");
         while (m_AudioSource.isPlaying) yield return null;
@@ -721,58 +701,10 @@ public partial class VoiceSynthesizer : MonoBehaviour
 
     IEnumerator PreCacheCoroutine(string[] phrases)
     {
-        string neutralVoiceId = SessionConfig.NeutralVoiceId;
-        int cached = 0;
-        int skipped = 0;
-
-        foreach (string sourcePhrase in phrases)
-        {
-            string phrase = VoicePromptText.FormatForVoice(sourcePhrase, VoiceCondition.Generic);
-            string path = GetCachePath(phrase, $"el-{neutralVoiceId}"); // pre-cache targets the generic voice
-            if (File.Exists(path))
-            {
-                skipped++;
-                continue;
-            }
-
-            // Throttle: one request at a time, small delay between
-            string url = $"{k_BaseUrl}{neutralVoiceId}";
-            string jsonBody = JsonUtility.ToJson(new TtsRequest
-            {
-                text = phrase,
-                model_id = k_Model
-            });
-
-            using var request = new UnityWebRequest(url, "POST");
-            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
-            request.SetRequestHeader("xi-api-key", m_ApiKey);
-            request.timeout = 15;
-
-            yield return request.SendWebRequest();
-
-            if (request.result == UnityWebRequest.Result.Success &&
-                request.downloadHandler.data != null &&
-                request.downloadHandler.data.Length >= 100)
-            {
-                try
-                {
-                    File.WriteAllBytes(path, request.downloadHandler.data);
-                    cached++;
-                }
-                catch (Exception e)
-                {
-                    Debug.LogWarning($"{k_Tag} PreCache write failed: {e.Message}");
-                }
-            }
-
-            // Small yield to avoid blocking
-            yield return null;
-        }
-
-        Debug.Log($"{k_Tag} PreCache complete: {cached} new, {skipped} already cached, {phrases.Length} total");
+        var lines = new List<KeyValuePair<VoiceCondition, string>>();
+        foreach (var phrase in phrases) lines.Add(new KeyValuePair<VoiceCondition, string>(VoiceCondition.Generic, phrase));
+        var jobs = DownloadJobs(lines);
+        yield return DownloadLines(jobs);
     }
 
     /// <summary>
@@ -798,10 +730,4 @@ public partial class VoiceSynthesizer : MonoBehaviour
         return s.Length <= maxLen ? s : s.Substring(0, maxLen) + "...";
     }
 
-    [Serializable]
-    struct TtsRequest
-    {
-        public string text;
-        public string model_id;
-    }
 }

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d98fb0550b042ba9752989b436e0aa4, type: 3}
   m_Name: NavigationPhrases
   m_EditorClassIdentifier:
-  version: signed-navigation-v2-semantic
+  version: signed-navigation-v2-five-options
   phrases:
   - id: nav_a00_d0_direct
     text: Turn left toward the back.
@@ -6599,6 +6599,1656 @@ MonoBehaviour:
     minDistance: 8
     maxDistance: 10000
     tone: 3
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a00_d0_casual_alternative
+    text: Turn toward the back on your left.
+    minAngle: -180
+    maxAngle: -150
+    minDistance: 0
+    maxDistance: 1
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a00_d1_casual_alternative
+    text: Turn toward the back on your left.
+    minAngle: -180
+    maxAngle: -150
+    minDistance: 1
+    maxDistance: 2
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a00_d2_casual_alternative
+    text: Turn toward the back on your left.
+    minAngle: -180
+    maxAngle: -150
+    minDistance: 2
+    maxDistance: 4
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a00_d3_casual_alternative
+    text: Turn toward the back on your left.
+    minAngle: -180
+    maxAngle: -150
+    minDistance: 4
+    maxDistance: 8
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a00_d4_casual_alternative
+    text: Turn toward the back on your left.
+    minAngle: -180
+    maxAngle: -150
+    minDistance: 8
+    maxDistance: 10000
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a01_d0_casual_alternative
+    text: Turn a long way left.
+    minAngle: -150
+    maxAngle: -120
+    minDistance: 0
+    maxDistance: 1
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a01_d1_casual_alternative
+    text: Turn a long way left.
+    minAngle: -150
+    maxAngle: -120
+    minDistance: 1
+    maxDistance: 2
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a01_d2_casual_alternative
+    text: Turn a long way left.
+    minAngle: -150
+    maxAngle: -120
+    minDistance: 2
+    maxDistance: 4
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a01_d3_casual_alternative
+    text: Turn a long way left.
+    minAngle: -150
+    maxAngle: -120
+    minDistance: 4
+    maxDistance: 8
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a01_d4_casual_alternative
+    text: Turn a long way left.
+    minAngle: -150
+    maxAngle: -120
+    minDistance: 8
+    maxDistance: 10000
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a02_d0_casual_alternative
+    text: Turn farther to your left.
+    minAngle: -120
+    maxAngle: -90
+    minDistance: 0
+    maxDistance: 1
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a02_d1_casual_alternative
+    text: Turn farther to your left.
+    minAngle: -120
+    maxAngle: -90
+    minDistance: 1
+    maxDistance: 2
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a02_d2_casual_alternative
+    text: Turn farther to your left.
+    minAngle: -120
+    maxAngle: -90
+    minDistance: 2
+    maxDistance: 4
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a02_d3_casual_alternative
+    text: Turn farther to your left.
+    minAngle: -120
+    maxAngle: -90
+    minDistance: 4
+    maxDistance: 8
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a02_d4_casual_alternative
+    text: Turn farther to your left.
+    minAngle: -120
+    maxAngle: -90
+    minDistance: 8
+    maxDistance: 10000
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a03_d0_casual_alternative
+    text: Turn to your left.
+    minAngle: -90
+    maxAngle: -60
+    minDistance: 0
+    maxDistance: 1
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a03_d1_casual_alternative
+    text: Turn to your left.
+    minAngle: -90
+    maxAngle: -60
+    minDistance: 1
+    maxDistance: 2
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a03_d2_casual_alternative
+    text: Turn to your left.
+    minAngle: -90
+    maxAngle: -60
+    minDistance: 2
+    maxDistance: 4
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a03_d3_casual_alternative
+    text: Turn to your left.
+    minAngle: -90
+    maxAngle: -60
+    minDistance: 4
+    maxDistance: 8
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a03_d4_casual_alternative
+    text: Turn to your left.
+    minAngle: -90
+    maxAngle: -60
+    minDistance: 8
+    maxDistance: 10000
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: left
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a04_d0_casual_alternative
+    text: Look to your left.
+    minAngle: -60
+    maxAngle: -35
+    minDistance: 0
+    maxDistance: 1
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: left
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a04_d1_casual_alternative
+    text: Look to your left.
+    minAngle: -60
+    maxAngle: -35
+    minDistance: 1
+    maxDistance: 2
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: left
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a04_d2_casual_alternative
+    text: Look to your left.
+    minAngle: -60
+    maxAngle: -35
+    minDistance: 2
+    maxDistance: 4
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: left
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a04_d3_casual_alternative
+    text: Look to your left.
+    minAngle: -60
+    maxAngle: -35
+    minDistance: 4
+    maxDistance: 8
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: left
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a04_d4_casual_alternative
+    text: Look to your left.
+    minAngle: -60
+    maxAngle: -35
+    minDistance: 8
+    maxDistance: 10000
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: left
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a05_d0_casual_alternative
+    text: Look slightly left.
+    minAngle: -35
+    maxAngle: -15
+    minDistance: 0
+    maxDistance: 1
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: left
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a05_d1_casual_alternative
+    text: Look slightly left.
+    minAngle: -35
+    maxAngle: -15
+    minDistance: 1
+    maxDistance: 2
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: left
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a05_d2_casual_alternative
+    text: Look slightly left.
+    minAngle: -35
+    maxAngle: -15
+    minDistance: 2
+    maxDistance: 4
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: left
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a05_d3_casual_alternative
+    text: Look slightly left.
+    minAngle: -35
+    maxAngle: -15
+    minDistance: 4
+    maxDistance: 8
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: left
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a05_d4_casual_alternative
+    text: Look slightly left.
+    minAngle: -35
+    maxAngle: -15
+    minDistance: 8
+    maxDistance: 10000
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: left
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a06_d0_casual_alternative
+    text: Look just a touch left.
+    minAngle: -15
+    maxAngle: -5
+    minDistance: 0
+    maxDistance: 1
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: left
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a06_d1_casual_alternative
+    text: Look just a touch left.
+    minAngle: -15
+    maxAngle: -5
+    minDistance: 1
+    maxDistance: 2
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: left
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a06_d2_casual_alternative
+    text: Look just a touch left.
+    minAngle: -15
+    maxAngle: -5
+    minDistance: 2
+    maxDistance: 4
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: left
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a06_d3_casual_alternative
+    text: Look just a touch left.
+    minAngle: -15
+    maxAngle: -5
+    minDistance: 4
+    maxDistance: 8
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: left
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a06_d4_casual_alternative
+    text: Look just a touch left.
+    minAngle: -15
+    maxAngle: -5
+    minDistance: 8
+    maxDistance: 10000
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: left
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a07_d0_casual_alternative
+    text: Keep looking forward.
+    minAngle: -5
+    maxAngle: 5
+    minDistance: 0
+    maxDistance: 1
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: none
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a07_d1_casual_alternative
+    text: Keep looking forward.
+    minAngle: -5
+    maxAngle: 5
+    minDistance: 1
+    maxDistance: 2
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: none
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a07_d2_casual_alternative
+    text: Keep looking forward.
+    minAngle: -5
+    maxAngle: 5
+    minDistance: 2
+    maxDistance: 4
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: none
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a07_d3_casual_alternative
+    text: Keep looking forward.
+    minAngle: -5
+    maxAngle: 5
+    minDistance: 4
+    maxDistance: 8
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: none
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a07_d4_casual_alternative
+    text: Keep looking forward.
+    minAngle: -5
+    maxAngle: 5
+    minDistance: 8
+    maxDistance: 10000
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: none
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a08_d0_casual_alternative
+    text: Look just a touch right.
+    minAngle: 5
+    maxAngle: 15
+    minDistance: 0
+    maxDistance: 1
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: right
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a08_d1_casual_alternative
+    text: Look just a touch right.
+    minAngle: 5
+    maxAngle: 15
+    minDistance: 1
+    maxDistance: 2
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: right
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a08_d2_casual_alternative
+    text: Look just a touch right.
+    minAngle: 5
+    maxAngle: 15
+    minDistance: 2
+    maxDistance: 4
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: right
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a08_d3_casual_alternative
+    text: Look just a touch right.
+    minAngle: 5
+    maxAngle: 15
+    minDistance: 4
+    maxDistance: 8
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: right
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a08_d4_casual_alternative
+    text: Look just a touch right.
+    minAngle: 5
+    maxAngle: 15
+    minDistance: 8
+    maxDistance: 10000
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: right
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a09_d0_casual_alternative
+    text: Look slightly right.
+    minAngle: 15
+    maxAngle: 35
+    minDistance: 0
+    maxDistance: 1
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: right
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a09_d1_casual_alternative
+    text: Look slightly right.
+    minAngle: 15
+    maxAngle: 35
+    minDistance: 1
+    maxDistance: 2
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: right
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a09_d2_casual_alternative
+    text: Look slightly right.
+    minAngle: 15
+    maxAngle: 35
+    minDistance: 2
+    maxDistance: 4
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: right
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a09_d3_casual_alternative
+    text: Look slightly right.
+    minAngle: 15
+    maxAngle: 35
+    minDistance: 4
+    maxDistance: 8
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: right
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a09_d4_casual_alternative
+    text: Look slightly right.
+    minAngle: 15
+    maxAngle: 35
+    minDistance: 8
+    maxDistance: 10000
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: right
+      vertical: none
+      magnitude: small
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a10_d0_casual_alternative
+    text: Look to your right.
+    minAngle: 35
+    maxAngle: 60
+    minDistance: 0
+    maxDistance: 1
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: right
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a10_d1_casual_alternative
+    text: Look to your right.
+    minAngle: 35
+    maxAngle: 60
+    minDistance: 1
+    maxDistance: 2
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: right
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a10_d2_casual_alternative
+    text: Look to your right.
+    minAngle: 35
+    maxAngle: 60
+    minDistance: 2
+    maxDistance: 4
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: right
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a10_d3_casual_alternative
+    text: Look to your right.
+    minAngle: 35
+    maxAngle: 60
+    minDistance: 4
+    maxDistance: 8
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: right
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a10_d4_casual_alternative
+    text: Look to your right.
+    minAngle: 35
+    maxAngle: 60
+    minDistance: 8
+    maxDistance: 10000
+    tone: 2
+    metadata:
+      intent: direction
+      horizontal: right
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a11_d0_casual_alternative
+    text: Turn to your right.
+    minAngle: 60
+    maxAngle: 90
+    minDistance: 0
+    maxDistance: 1
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a11_d1_casual_alternative
+    text: Turn to your right.
+    minAngle: 60
+    maxAngle: 90
+    minDistance: 1
+    maxDistance: 2
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a11_d2_casual_alternative
+    text: Turn to your right.
+    minAngle: 60
+    maxAngle: 90
+    minDistance: 2
+    maxDistance: 4
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a11_d3_casual_alternative
+    text: Turn to your right.
+    minAngle: 60
+    maxAngle: 90
+    minDistance: 4
+    maxDistance: 8
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a11_d4_casual_alternative
+    text: Turn to your right.
+    minAngle: 60
+    maxAngle: 90
+    minDistance: 8
+    maxDistance: 10000
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: medium
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a12_d0_casual_alternative
+    text: Turn farther to your right.
+    minAngle: 90
+    maxAngle: 120
+    minDistance: 0
+    maxDistance: 1
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a12_d1_casual_alternative
+    text: Turn farther to your right.
+    minAngle: 90
+    maxAngle: 120
+    minDistance: 1
+    maxDistance: 2
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a12_d2_casual_alternative
+    text: Turn farther to your right.
+    minAngle: 90
+    maxAngle: 120
+    minDistance: 2
+    maxDistance: 4
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a12_d3_casual_alternative
+    text: Turn farther to your right.
+    minAngle: 90
+    maxAngle: 120
+    minDistance: 4
+    maxDistance: 8
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a12_d4_casual_alternative
+    text: Turn farther to your right.
+    minAngle: 90
+    maxAngle: 120
+    minDistance: 8
+    maxDistance: 10000
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a13_d0_casual_alternative
+    text: Turn a long way right.
+    minAngle: 120
+    maxAngle: 150
+    minDistance: 0
+    maxDistance: 1
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a13_d1_casual_alternative
+    text: Turn a long way right.
+    minAngle: 120
+    maxAngle: 150
+    minDistance: 1
+    maxDistance: 2
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a13_d2_casual_alternative
+    text: Turn a long way right.
+    minAngle: 120
+    maxAngle: 150
+    minDistance: 2
+    maxDistance: 4
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a13_d3_casual_alternative
+    text: Turn a long way right.
+    minAngle: 120
+    maxAngle: 150
+    minDistance: 4
+    maxDistance: 8
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a13_d4_casual_alternative
+    text: Turn a long way right.
+    minAngle: 120
+    maxAngle: 150
+    minDistance: 8
+    maxDistance: 10000
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a14_d0_casual_alternative
+    text: Turn toward the back on your right.
+    minAngle: 150
+    maxAngle: 180
+    minDistance: 0
+    maxDistance: 1
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a14_d1_casual_alternative
+    text: Turn toward the back on your right.
+    minAngle: 150
+    maxAngle: 180
+    minDistance: 1
+    maxDistance: 2
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a14_d2_casual_alternative
+    text: Turn toward the back on your right.
+    minAngle: 150
+    maxAngle: 180
+    minDistance: 2
+    maxDistance: 4
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a14_d3_casual_alternative
+    text: Turn toward the back on your right.
+    minAngle: 150
+    maxAngle: 180
+    minDistance: 4
+    maxDistance: 8
+    tone: 2
+    metadata:
+      intent: turn
+      horizontal: right
+      vertical: none
+      magnitude: large
+      stage: outside_target_wall
+      interruptPolicy: replace_if_misleading
+      requires:
+      - fresh_valid_gaze
+      - matching_angle_and_distance
+      - prepared_voice_clip
+      canBeSupersededBy:
+      - target_wall_reached
+      - target_acquired
+      - direction_reversed
+  - id: nav_a14_d4_casual_alternative
+    text: Turn toward the back on your right.
+    minAngle: 150
+    maxAngle: 180
+    minDistance: 8
+    maxDistance: 10000
+    tone: 2
     metadata:
       intent: turn
       horizontal: right

@@ -196,7 +196,10 @@ public sealed class TrialReplayWriter : IDisposable
     }
     public bool Asset(string path, byte[] bytes) => Enqueue(() =>
     {
-        using (var f = new FileStream(path, FileMode.CreateNew)) f.Write(bytes, 0, bytes.Length);
+        // Wireless inventory ignores .tmp: a WAV becomes visible only when complete.
+        string pending = path + ".tmp";
+        using (var f = new FileStream(pending, FileMode.CreateNew)) f.Write(bytes, 0, bytes.Length);
+        File.Move(pending, path);
     });
     // Ordered behind preceding records, including the pause marker. Do not stall
     // the Unity thread on slow storage; this is a best-effort flush, not fsync or

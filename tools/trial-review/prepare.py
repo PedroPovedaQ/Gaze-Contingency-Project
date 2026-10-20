@@ -41,6 +41,16 @@ def prepare(project):
     for name in ['GuidanceDecision', 'GazeObservation', 'GazeQuickAlignment', 'GazeTargetHistory', 'DirectionalHintPolicy']:
         (shared / (name + '.cs')).write_text(source('Assets/' + name + '.cs'))
 
+    # Reuse the live angular policy and collider recipe, without session/XR dependencies.
+    vicinity = source('Assets/GazeTargetVicinity.cs')
+    measure = vicinity[vicinity.index('    public static bool Measure('):vicinity.index('    public static bool ControllerCurrent(')]
+    closest = vicinity[vicinity.index('    public static GameObject ClosestObject('):vicinity.index('    public void Draw(')]
+    factory = source('Assets/ShapeObjectFactory.cs')
+    scale = next(line.strip() for line in factory.splitlines() if 'const float k_GazeHitboxScale =' in line)
+    collider = factory[factory.index('    void ReplaceCollider('):factory.index('    static Mesh CreatePyramidMesh(')]
+    collider = collider.replace('void ReplaceCollider(', 'public static void ConfigureCollider(').replace('DestroyImmediate(col)', 'UnityEngine.Object.DestroyImmediate(col)')
+    (shared / 'TrialReviewVicinityPolicy.cs').write_text('using UnityEngine;\nusing System.Collections.Generic;\npublic static class TrialReviewVicinityPolicy\n{\n' + scale + '\n' + measure + closest + collider + '}\n')
+
     audio = source('Assets/Editor/TrialReplayAudioPreview.cs')
     audio = replace_once(audio, 'using UnityEditor.SceneManagement;\n', '')
     start = audio.index('    public sealed class EditorOutput : IOutput, IDisposable')
@@ -51,6 +61,8 @@ def prepare(project):
 
     renderer = source('Assets/Editor/TrialReplayRenderer.cs')
     renderer = replace_once(renderer, 'using UnityEditor;\n', '')
+    renderer = replace_once(renderer, '    string m_Trial;',
+        '    public IReadOnlyDictionary<string, GameObject> Objects => m_Objects;\n    string m_Trial;')
     # The study uses the right controller. Retain historical left-hand data/model, but suppress its ray.
     renderer = replace_once(renderer,
         'DrawController(m_LeftRay, forceVisible ? null : sample?.leftController);',
@@ -74,6 +86,8 @@ def prepare(project):
         }
         Camera.targetTexture = m_Texture;
         Camera.aspect = (float)width / height;
+        m_Ray.startWidth = m_Ray.endWidth = .009f;
+        if (UsingRecordedHead) TrialReviewGazeLine.FitToCamera(m_Ray, Camera, height);
         Camera.Render();
         return m_Texture;
     }
@@ -100,6 +114,11 @@ def prepare(project):
     shutil.copyfile(htc / 'LICENSE.txt', destination / 'LICENSE.txt')
     (assets / 'StreamingAssets').mkdir(exist_ok=True)
     shutil.copyfile(HERE / 'live_bridge.py', assets / 'StreamingAssets/live_bridge.py')
+    shutil.copyfile(HERE / 'export_run.py', assets / 'StreamingAssets/export_run.py')
+    analysis = assets / 'StreamingAssets/Analysis'
+    analysis.mkdir(exist_ok=True)
+    for name in ['trial_csv', 'trial_column_dictionary', 'mega_csv', 'motion_csv', 'trial_zones', 'tlx_scoring']:
+        (analysis / (name + '.py')).write_text(source('analysis/' + name + '.py'))
     notices = assets / 'StreamingAssets/ThirdPartyNotices'
     notices.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(htc / 'LICENSE.txt', notices / 'HTC-LICENSE.txt')
@@ -107,6 +126,7 @@ def prepare(project):
     shutil.copyfile(HERE / 'ThirdParty/KenneyProtagonists/SOURCE.md', notices / 'Kenney-SOURCE.md')
     (project / 'Packages').mkdir(exist_ok=True)
     (project / 'Packages/manifest.json').write_text(json.dumps({'dependencies': {
+        'com.unity.nuget.newtonsoft-json': '3.2.2',
         'com.unity.modules.audio': '1.0.0', 'com.unity.modules.animation': '1.0.0', 'com.unity.modules.imgui': '1.0.0',
         'com.unity.modules.jsonserialize': '1.0.0', 'com.unity.modules.imageconversion': '1.0.0',
         'com.unity.modules.physics': '1.0.0', 'com.unity.modules.screencapture': '1.0.0'}}, indent=2))

@@ -27,6 +27,41 @@ class Remote:
 
 
 class LiveBridgeTests(unittest.TestCase):
+    def test_library_transfer_yields_to_new_playback_events(self):
+        with tempfile.TemporaryDirectory() as d:
+            remote = Remote(); elapsed = [0.0]; reads = []
+            name = 'GazeReplays/run/recording.jsonl'
+            remote.files[name] = b'{"kind":"header"}\n'
+            for i in range(10): remote.files[f'GazeReplays/run/audio/{i}.wav'] = b'audio'
+            read = remote.read
+            def slow_read(path, offset, count):
+                reads.append(path); elapsed[0] += .2
+                return read(path, offset, count)
+            remote.read = slow_read
+            with patch('live_bridge.time.monotonic', side_effect=lambda: elapsed[0]):
+                receiver = Receiver(Path(d), remote); receiver.cycle()
+                self.assertEqual(len(reads), 2, 'large library yields after bounded copying batch')
+                reads.clear(); remote.files[name] += b'{"kind":"audio_playback_start"}\n'
+                receiver.cycle()
+                self.assertEqual(reads[0], name, 'new events take priority over remaining clips')
+
+    def test_prepared_audio_is_copied_before_trial_and_bulk_data(self):
+        with tempfile.TemporaryDirectory() as d:
+            remote = Remote()
+            remote.files['GazeReplays/run/recording.jsonl'] = b''
+            remote.files['EyeMeasurements/eye/raw.jsonl'] = b'bulk\n'
+            remote.files['GazeReplays/run/audio/clip.wav'] = b'prepared audio'
+            reads = []
+            read = remote.read
+            remote.read = lambda name, offset, count: (reads.append(name), read(name, offset, count))[1]
+            receiver = Receiver(Path(d), remote); receiver.cycle()
+            self.assertLess(reads.index('GazeReplays/run/audio/clip.wav'), reads.index('EyeMeasurements/eye/raw.jsonl'))
+            self.assertEqual((Path(d)/'data/GazeReplays/run/audio/clip.wav').read_bytes(), b'prepared audio')
+            reads.clear()
+            remote.files['GazeReplays/run/recording.jsonl'] = b'{"kind":"header"}\n'
+            receiver.cycle()
+            self.assertNotIn('GazeReplays/run/audio/clip.wav', reads, 'playback reuses already copied assets')
+
     def test_initially_offline_headset_retries_before_copying(self):
         with tempfile.TemporaryDirectory() as d:
             remote = Remote(); remote.connects = 0

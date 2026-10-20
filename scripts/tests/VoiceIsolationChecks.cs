@@ -6,7 +6,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.Networking;
 
-class VoiceIsolationChecks
+partial class VoiceIsolationChecks
 {
     static void Check(bool condition, string name) { if (!condition) throw new Exception(name); }
     static void Drain(IEnumerator routine)
@@ -42,6 +42,79 @@ class VoiceIsolationChecks
         }
         return Math.Sqrt(power / speech);
     }
+    static void CheckTransmission(VoiceSynthesizer synth, string phrase)
+    {
+        bool relevant = true; int commits = 0, calls = 0;
+        void Begin() { synth.Stop(); Time.unscaledTime += 5; relevant = true; commits = calls = 0; }
+        Begin();
+        synth.TransmissionAdvisor = (state, token) => {
+            calls++;
+            var json=Newtonsoft.Json.Linq.JObject.Parse(state);
+            Check((string)json["proposed_phrase"]==phrase && json["runtime"]["playback"]!=null && json["runtime"]["evidence"]!=null &&
+                (string)json["runtime"]["playback"]["pending_phrase"]==phrase &&
+                !(bool)json["runtime"]["playback"]["is_busy"] && (bool)json["runtime"]["playback"]["transmission_decision_pending"],
+                "Transmission receives proposed wording and current playback/gaze/controller evidence");
+            return System.Threading.Tasks.Task.FromResult(false);
+        };
+        Check(synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","wait-id"),"Transmission can queue a prepared cue");
+        Check(synth.IsBusy && !synth.GuidanceReady,"A pending decision blocks duplicate ordinary requests");
+        Drain(MonoBehaviour.LastRoutine);
+        Check(calls==1 && commits==0 && !synth.IsSpeaking,"Wait advice never plays or commits the phrase");
+        Check(!synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","retry-id"),"Wait decisions cannot flood Jev every tick");
+        Time.unscaledTime+=.61f;
+        synth.TransmissionAdvisor=(state,token)=>System.Threading.Tasks.Task.FromResult(true);
+        Check(synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","speak-id"),"Wait can be reconsidered after 0.6 seconds");
+        Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Current approval commits once");Drain(MonoBehaviour.LastRoutine);
+        Begin();
+        synth.TransmissionAdvisor=(state,token)=>System.Threading.Tasks.Task.FromResult(false);
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","deferral-first");Drain(MonoBehaviour.LastRoutine);
+        Check(commits==0,"Initial wait is respected");
+        Time.unscaledTime+=3.1f;
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","deferral-last");Drain(MonoBehaviour.LastRoutine);
+        Check(commits==1,"Repeated waits cannot starve locally qualified guidance");Drain(MonoBehaviour.LastRoutine);
+        Begin();
+        var pending = new System.Threading.Tasks.TaskCompletionSource<bool>();
+        synth.TransmissionAdvisor=(state,token)=>pending.Task;
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","stale-id");
+        var routine=MonoBehaviour.LastRoutine;routine.MoveNext(); relevant=false;pending.SetResult(true);Drain(routine);
+        Check(commits==0 && !synth.IsSpeaking,"An approval cannot survive changed target evidence");
+        Begin();pending=new System.Threading.Tasks.TaskCompletionSource<bool>();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","cancel-id");
+        routine=MonoBehaviour.LastRoutine;routine.MoveNext();synth.Stop();pending.SetResult(true);Drain(routine);
+        Check(commits==0,"Stopped sessions cannot play late transmission approvals");
+        Begin();pending=new System.Threading.Tasks.TaskCompletionSource<bool>();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","round-end-id");
+        routine=MonoBehaviour.LastRoutine;routine.MoveNext();synth.ClearGuidanceEvidence();pending.SetResult(true);Drain(routine);
+        Check(commits==0,"Clearing trial evidence invalidates pending approvals even without playback");
+        Begin();pending=new System.Threading.Tasks.TaskCompletionSource<bool>();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","timeout-id");
+        Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Provider timeout uses locally valid prepared guidance");Drain(MonoBehaviour.LastRoutine);
+        Begin();
+        synth.TransmissionAdvisor=(state,token)=>System.Threading.Tasks.Task.FromException<bool>(new InvalidOperationException("provider unavailable"));
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","failed-id");
+        Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Failed advice preserves locally valid guidance");Drain(MonoBehaviour.LastRoutine);
+        Begin();
+        synth.TransmissionAdvisor=(state,token)=> { calls++; throw new Exception("Must not make a second request"); };
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"catalog_turn","joint-speak",true,"jev");
+        Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==1,"Joint approval skips the second API call");Drain(MonoBehaviour.LastRoutine);
+        Begin();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"catalog_turn","joint-wait",false,"jev");
+        Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==0,"Joint wait stays silent");
+        Check(!synth.CanRequestGuidance("catalog_turn"),"Joint wait prevents another catalog request during cooldown");
+        Time.unscaledTime+=3.1f;
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"catalog_turn","joint-deferral",false,"jev");
+        Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==1,"Joint waits retain bounded local fallback");Drain(MonoBehaviour.LastRoutine);
+        Begin();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"catalog_turn","joint-stale",true,"jev");
+        routine=MonoBehaviour.LastRoutine;relevant=false;Drain(routine);
+        Check(commits==0,"Joint approval is discarded when evidence changes");
+        Begin();synth.TransmissionAdvisor=null;
+        Check(synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","local-id") && commits==0,
+            "Offline transmission defers commitment until request telemetry can be recorded");
+        Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Offline transmission commits once");Drain(MonoBehaviour.LastRoutine);
+        synth.Stop();Time.unscaledTime+=5;
+    }
+
     static void CheckSmoothInterruptions(VoiceSynthesizer synth, string next)
     {
         string actualNext = DirectionalHintPolicy.AreaEntry(DirectionalHintPolicy.DownPhrase, 0);
@@ -68,6 +141,12 @@ class VoiceIsolationChecks
             synth.InterruptionAdvisor = (state, token) => { requests++; return pending.Task; };
         }
         Begin(); int before = source.StopCalls;
+        var liveState=Newtonsoft.Json.Linq.JObject.Parse(synth.CaptureDecisionContext());
+        Check((bool)liveState["playback"]["is_speaking"] && (string)liveState["playback"]["context"]=="tip" &&
+            (double)liveState["playback"]["elapsed_seconds"]==source.time &&
+            (double)liveState["playback"]["speech_remaining_seconds"]>1 &&
+            !string.IsNullOrEmpty((string)liveState["playback"]["current_phrase"]),
+            "Decision context reports the actual active AudioSource and utterance timing");
         Check(!synth.TryAreaCorrection(next, () => relevant, () => committed++), "Advice runs in parallel without stopping speech");
         for (int i=0;i<5;i++) synth.TryAreaCorrection(next, () => relevant);
         Check(requests == 1 && source.StopCalls == before && source.volume == .4f, "Repeated ticks cannot flood advice or duck while pending");
@@ -138,6 +217,7 @@ class VoiceIsolationChecks
         Directory.CreateDirectory(root);
         try
         {
+            CheckParallelDownloads(root);
             // Exercise real DSP: exact neutral bypass, no onset delay, stereo room tail,
             // determinism and silence. Library tests below check treated RMS/peaks.
             var impulse = new float[4800]; impulse[0] = 0.5f;
@@ -181,6 +261,7 @@ class VoiceIsolationChecks
             Check(externalText != collaborativeText, "perspectives produce distinct formatted text");
 
             var synth = new VoiceSynthesizer();
+            Set(synth,"m_VerifyAudio",new Func<string,byte[],string,Action<VoiceAudioVerification.Result>,IEnumerator>(VerifiedFixture));
             Set(synth, "m_CacheDir", root);
             Set(synth, "m_ApiKey", "fake-key");
             Set(synth, "m_AudioSource", new AudioSource());
@@ -222,6 +303,7 @@ class VoiceIsolationChecks
                 }
             SessionConfig.ResetForNewParticipant();
             File.WriteAllBytes(female, new byte[120]);
+            VoiceAudioVerification.SaveReceipt(female,"test phrase",new byte[120],"test phrase");
             SessionConfig.Voice = VoiceCondition.SelfSimilar;
             foreach (bool pending in new[] { false, true })
             {
@@ -232,6 +314,7 @@ class VoiceIsolationChecks
             }
             SessionConfig.SelfSimilarVoiceId = "participant-clone";
             File.WriteAllBytes(self, new byte[120]);
+            VoiceAudioVerification.SaveReceipt(self,"test phrase",new byte[120],"test phrase");
             run();
             Check(UnityWebRequest.Requests.Count == 0, "pending enrollment cannot play even cached clone");
             SessionConfig.SelfSimilarEnrollmentPending = false;
@@ -465,8 +548,8 @@ class VoiceIsolationChecks
             int foregroundFailures = 0;
             synth.PlaybackFailed += error => foregroundFailures++;
             synth.StartBackgroundLoading(new[] { failedBackground });
+            provider.Audio = null; // Both conditions now start together in one bounded batch.
             update.Invoke(synth, null); Drain(MonoBehaviour.LastRoutine);
-            provider.Audio = null;
             update.Invoke(synth, null); Drain(MonoBehaviour.LastRoutine);
             Check(foregroundFailures == 0 && string.IsNullOrEmpty(synth.LastError) && !synth.IsBusy,
                 "background failure cannot stop the trial or poison accepted audio checks");
@@ -549,7 +632,7 @@ class VoiceIsolationChecks
                 var markEnd = typeof(VoiceSynthesizer).GetMethod("MarkGuidanceEnd", BindingFlags.Instance | BindingFlags.NonPublic);
                 markEnd.Invoke(synth,null);
                 Check(!synth.TryAreaCorrection(lazyPrompt, () => true), "Natural completion starts a pause before another sentence");
-                Time.unscaledTime += .56f;
+                Time.unscaledTime += .26f;
                 Check(synth.TryAreaCorrection(lazyPrompt, () => relevant, () => correctionCommits++, guidanceDecisionId:"abandoned-decision"), "Idle prepared correction is eligible after its gap");
                 var abandonedFade = MonoBehaviour.LastRoutine;
                 relevant = false; Drain(abandonedFade);
@@ -577,18 +660,19 @@ class VoiceIsolationChecks
                 Check(correctionCommits == 1 && returnReasonLogged, "committed correction consumes cooldown once and logs return reason");
                 Check(correctionStartLinked,"Audible correction retains the request decision through fade and Speak reset");
                 Check(!synth.GuidanceReady,"Actual correction completion enforces the next post-playback pause");
-                Time.unscaledTime += .56f;
+                Time.unscaledTime += .26f;
                 Check(synth.GuidanceReady,"Ordinary guidance resumes after its gap");
                 Set(synth,"m_CurrentContext","tip"); Set(synth,"m_CurrentPhrase",DirectionalHintPolicy.LookingPhrase);
                 markEnd.Invoke(synth,null);
-                Time.unscaledTime += .99f;
-                Check(!synth.GuidanceReady,"YEP gives the listener one second before another direction");
+                Time.unscaledTime += .59f;
+                Check(!synth.GuidanceReady,"YEP retains a short pause before another direction");
                 Time.unscaledTime += .02f;
                 Check(synth.GuidanceReady,"Acknowledgment pause ends normally");
                 Set(synth,"m_CurrentContext",null);
                 synth.Telemetry -= correctionTelemetry;
                 Check(provider.Calls == 0 && UnityWebRequest.Requests.Count == 0, "correction needs no network");
                 synth.PlaybackFailed -= failure; synth.Telemetry -= telemetry;
+                CheckTransmission(synth, lazyPrompt);
                 CheckSmoothInterruptions(synth, lazyPrompt);
             }
             var decisionEvents = new System.Collections.Generic.List<string>();
@@ -893,6 +977,14 @@ namespace UnityEngine
     }
     public class GameObject { public T AddComponent<T>() where T : new() => new T(); }
     public class Coroutine { }
+    public class AsyncOperation { public bool isDone = true; }
+    public class WWWForm
+    {
+        public System.Collections.Generic.Dictionary<string,string> Fields = new System.Collections.Generic.Dictionary<string,string>();
+        public byte[] Audio;
+        public void AddField(string key,string value) { Fields[key]=value; }
+        public void AddBinaryData(string key,byte[] bytes,string filename,string type) { Audio=bytes; }
+    }
     public class WaitForSeconds { public static int Count; public WaitForSeconds(float seconds) { Count++; } }
     public class AudioSource { public float spatialBlend, volume, pitch, time; public float VolumeAtStop; public bool playOnAwake; int playPolls; public bool HoldPlayback; public int StopCalls; public bool isPlaying => HoldPlayback || playPolls-- > 0; public AudioClip clip; public void Play() { playPolls = 2; } public void Finish() { playPolls = 0; HoldPlayback = false; } public void Stop() { VolumeAtStop = volume; playPolls = 0; HoldPlayback = false; StopCalls++; } }
     public class AudioClip
@@ -933,30 +1025,47 @@ namespace UnityEngine.Networking
     {
         public static System.Collections.Generic.List<string> Requests = new System.Collections.Generic.List<string>();
         public static System.Collections.Generic.List<string> RequestBodies = new System.Collections.Generic.List<string>();
-        public enum Result { Success }
+        public enum Result { Success, ProtocolError }
+        public static readonly System.Collections.Generic.Queue<long> StatusCodes = new System.Collections.Generic.Queue<long>();
+        public static string ContentType = "audio/mpeg";
+        public static bool HoldRequests;
+        public static int Aborts;
+        public static string VerificationResponse="{}";
+        public static UnityEngine.WWWForm LastForm;
         public Result result; public string error; public long responseCode; public int timeout;
         public UploadHandlerRaw uploadHandler; public DownloadHandlerBuffer downloadHandler = new DownloadHandlerBuffer();
         string url;
+        public UnityEngine.WWWForm Form;
+        public static UnityWebRequest Post(string url,UnityEngine.WWWForm form)
+        { LastForm=form; return new UnityWebRequest(url,"POST") { Form=form,downloadHandler=new DownloadHandlerBuffer {text=VerificationResponse} }; }
         public UnityWebRequest(string url, string method) { this.url = url; }
         public void SetRequestHeader(string k, string v) { }
+        public string GetResponseHeader(string k) => ContentType;
+        public void Abort() { Aborts++; }
         public IEnumerator SendWebRequest() {
             Requests.Add(url);
+            responseCode=StatusCodes.Count>0?StatusCodes.Dequeue():200;
+            result=responseCode>=400?Result.ProtocolError:Result.Success;
             if (uploadHandler != null && uploadHandler.Bytes != null)
                 RequestBodies.Add(System.Text.Encoding.UTF8.GetString(uploadHandler.Bytes));
-            yield return null;
+            if(HoldRequests) yield return new UnityWebRequestAsyncOperation { isDone=false,webRequest=this };
+            else yield return null;
         }
         public void Dispose() { }
     }
+    public class UnityWebRequestAsyncOperation : UnityEngine.AsyncOperation { public UnityWebRequest webRequest; }
     public static class UnityWebRequestMultimedia { public static UnityWebRequest GetAudioClip(string path, AudioType type) => new UnityWebRequest(path, "GET"); }
     public static class DownloadHandlerAudioClip { public static bool Corrupt, AlternatePeak, ForceSkewed, Quiet; static int count; public static AudioClip GetContent(UnityWebRequest request) => Corrupt ? null : new AudioClip(ForceSkewed || (AlternatePeak && count++ % 2 == 0), Quiet); }
 }
+public class TrialReplayRecorder { public void PrepareVoiceClip(UnityEngine.AudioClip clip) { } }
+
 public class ElevenLabsVoiceClient
 {
     public const string Model = "eleven_turbo_v2_5";
     public bool HasKey = true; public byte[] Audio; public int Calls; public string Error = "simulated failure";
     public System.Collections.Generic.List<string> Texts = new System.Collections.Generic.List<string>();
     public void Initialize(string key) { }
-    public IEnumerator Synthesize(string text, string voice, Action<byte[]> ok, Action<string> error)
+    public IEnumerator Synthesize(string text, string voice, Action<byte[]> ok, Action<string> error, int repairAttempt = 0)
     {
         Calls++; Texts.Add(text); yield return null;
         if (Audio == null) error(Error); else ok(Audio);

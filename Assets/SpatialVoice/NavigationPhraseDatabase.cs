@@ -81,7 +81,7 @@ namespace SpatialVoice
         public static int Filter(NavigationPhrase[] phrases, NavigationGeometry geometry,
             NavigationPhrase[] results, int variation = 0, Predicate<NavigationPhrase> eligible = null)
         {
-            if (results == null || results.Length < 4) throw new ArgumentException("Four candidate slots required.");
+            if (results == null || results.Length < 5) throw new ArgumentException("Five candidate slots required.");
             if (phrases == null || phrases.Length == 0) return 0;
             int count = 0, tones = 0, start = (int)((uint)variation % (uint)phrases.Length);
             for (int i = 0; i < phrases.Length && count < 4; i++)
@@ -91,6 +91,15 @@ namespace SpatialVoice
                 if ((tones & mask) != 0 || !phrase.Matches(geometry.Angle, geometry.Distance) ||
                     (eligible != null && !eligible(phrase))) continue;
                 results[count++] = phrase; tones |= mask;
+            }
+            // Preserve tone diversity, then fill remaining slots with distinct valid wording.
+            for (int i = 0; i < phrases.Length && count < 5; i++)
+            {
+                var phrase = phrases[(start + i) % phrases.Length];
+                if (!phrase.Matches(geometry.Angle, geometry.Distance) || (eligible != null && !eligible(phrase))) continue;
+                bool duplicate = false;
+                for (int j = 0; j < count; j++) if (results[j].text == phrase.text) { duplicate = true; break; }
+                if (!duplicate) results[count++] = phrase;
             }
             return count;
         }

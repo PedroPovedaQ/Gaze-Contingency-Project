@@ -25,7 +25,8 @@ public sealed class TrialReplayRecorder : MonoBehaviour
     long m_Sequence;
     int m_TrialNumber;
     string m_TrialId, m_Directory, m_Failure;
-    bool m_Finished;
+    bool m_Finished, m_HeaderWritten;
+    string m_RecordingId;
     public string RecordingDirectory => m_Directory;
 
     void Start() => Resolve();
@@ -56,22 +57,30 @@ public sealed class TrialReplayRecorder : MonoBehaviour
         }
     }
 
+    // Audio can be transferred during Loading. Defer the header/origin/clock until
+    // the first real transition, so preparation does not change trial coordinates.
+    void EnsureStorage()
+    {
+        if (m_Writer != null) return;
+        m_RecordingId = Guid.NewGuid().ToString("N");
+        m_Directory = Path.Combine(Application.persistentDataPath, "GazeReplays", DateTime.UtcNow.ToString("yyyyMMddTHHmmss") + "_" + m_RecordingId);
+        Directory.CreateDirectory(Path.Combine(m_Directory, "audio"));
+        m_Writer = new TrialReplayWriter(Path.Combine(m_Directory, "recording.jsonl"));
+    }
+
     bool EnsureStarted()
     {
         if (m_Failure != null || m_Finished) return false;
-        if (m_Writer != null) return true;
+        if (m_HeaderWritten) return true;
         try
         {
             Resolve();
             m_Started = Time.realtimeSinceStartupAsDouble;
             m_Origin = m_Game.SeatedOrigin;
             m_OriginRotation = Quaternion.Euler(0, m_Game.SeatedForwardYaw, 0);
-            string id = Guid.NewGuid().ToString("N");
-            m_Directory = Path.Combine(Application.persistentDataPath, "GazeReplays", DateTime.UtcNow.ToString("yyyyMMddTHHmmss") + "_" + id);
-            Directory.CreateDirectory(Path.Combine(m_Directory, "audio"));
-            m_Writer = new TrialReplayWriter(Path.Combine(m_Directory, "recording.jsonl"));
+            EnsureStorage();
             var header = Record("header");
-            header.recordingId = id; header.sourceType = Application.isEditor ? "editor_simulation" : "live_headset";
+            header.recordingId = m_RecordingId; header.sourceType = Application.isEditor ? "editor_simulation" : "live_headset";
             header.utc = DateTime.UtcNow.ToString("O"); header.appVersion = Application.version;
             header.buildGuid = Application.buildGUID; header.unityVersion = Application.unityVersion;
             header.interactionPolicy = SessionConfig.InteractionPolicy; header.repeatEventVersion = SessionConfig.RepeatEventVersion;
@@ -82,6 +91,7 @@ public sealed class TrialReplayRecorder : MonoBehaviour
             header.origin = m_Origin; header.originRotation = m_OriginRotation;
             header.gazeRecordingPath = SharedGazeStream.Instance != null ? SharedGazeStream.Instance.RecordingPath : "";
             header.detail = "Unity metres, +Y up, +Z forward; poses relative to fixed recording origin; software audio onset; gaze interaction proxy.";
+            m_HeaderWritten = true;
             Write(header);
             Debug.Log("[TrialReplay] Recording to " + m_Directory);
             return true;
@@ -198,9 +208,9 @@ public sealed class TrialReplayRecorder : MonoBehaviour
     {
         if (EnsureStarted()) { BeginTrial(); var r = Record("transition"); r.detail = color + " " + shape; Write(r); }
     }
-    void SearchStarted(int round) { if (m_Writer != null) Write(Record("search_start")); }
-    void Checkpoint(string name) { if (m_Writer != null) Write(Record(name)); }
-    void ReadinessEvent(string name) { if (m_Writer != null) Write(Record(name)); }
+    void SearchStarted(int round) { if (m_HeaderWritten) Write(Record("search_start")); }
+    void Checkpoint(string name) { if (m_HeaderWritten) Write(Record(name)); }
+    void ReadinessEvent(string name) { if (m_HeaderWritten) Write(Record(name)); }
     void Completed(float elapsed) => StartCoroutine(FinishAfterSuccess());
     System.Collections.IEnumerator FinishAfterSuccess()
     {
@@ -299,22 +309,34 @@ public sealed class TrialReplayRecorder : MonoBehaviour
         r.changes = changes?.ToArray();
     }
 
+    // Called only after the final voice treatment and level matching. No network
+    // acknowledgement is needed: optional replay must never hold up guidance.
+    public void PrepareVoiceClip(AudioClip clip)
+    {
+        if (clip == null || m_Finished || m_Failure != null) return;
+        try { EnsureStorage(); SaveClip(clip); }
+        catch (Exception e) { Fail(e.Message); }
+    }
+
+    string SaveClip(AudioClip clip)
+    {
+        if (m_Clips.TryGetValue(clip.GetInstanceID(), out string relative)) return relative;
+        relative = "audio/clip_" + m_Clips.Count.ToString("D4") + ".wav";
+        var samples = new float[clip.samples * clip.channels];
+        if (!clip.GetData(samples, 0)) throw new IOException("Cannot read replay clip.");
+        if (!m_Writer.Asset(Path.Combine(m_Directory, relative), TrialReplayAudio.Encode(samples, clip.channels, clip.frequency)))
+            throw new IOException(m_Writer.Error);
+        m_Clips.Add(clip.GetInstanceID(), relative);
+        return relative;
+    }
+
     public void RecordEffect(AudioClip clip, string name, float volume)
     {
-        if (m_Writer == null || clip == null) return;
+        if (!m_HeaderWritten || m_Writer == null || clip == null) return;
         var r = Record("audio_playback_start"); r.text = name; r.audioVolume = volume;
         try
         {
-            if (!m_Clips.TryGetValue(clip.GetInstanceID(), out string relative))
-            {
-                relative="audio/clip_"+m_Clips.Count.ToString("D4")+".wav";
-                var samples=new float[clip.samples*clip.channels];
-                if (!clip.GetData(samples,0)) throw new IOException("Cannot read effect clip");
-                if (!m_Writer.Asset(Path.Combine(m_Directory,relative),TrialReplayAudio.Encode(samples,clip.channels,clip.frequency)))
-                    throw new IOException(m_Writer.Error);
-                m_Clips.Add(clip.GetInstanceID(),relative);
-            }
-            r.clip=relative;
+            r.clip = SaveClip(clip);
         }
         catch (Exception e) { r.detail="audio_asset_missing="+e.Message+";"; }
         r.detail += "success_effect;software_one_shot_start;duration=" + clip.length.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -322,7 +344,7 @@ public sealed class TrialReplayRecorder : MonoBehaviour
     }
     void AudioEvent(string kind, string context, string clipId, string detail)
     {
-        if (m_Writer == null) return;
+        if (!m_HeaderWritten || m_Writer == null) return;
         var r = Record(kind); r.detail = context + ";" + detail;
         if (kind == "guidance_decision")
         {
@@ -343,17 +365,7 @@ public sealed class TrialReplayRecorder : MonoBehaviour
         {
             try
             {
-                AudioClip clip = m_Voice.ReplayClip;
-                if (!m_Clips.TryGetValue(clip.GetInstanceID(), out string relative))
-                {
-                    relative = "audio/clip_" + m_Clips.Count.ToString("D4") + ".wav";
-                    var samples = new float[clip.samples * clip.channels];
-                    if (!clip.GetData(samples, 0)) throw new IOException("Cannot read playback clip.");
-                    byte[] bytes = TrialReplayAudio.Encode(samples, clip.channels, clip.frequency);
-                    if (!m_Writer.Asset(Path.Combine(m_Directory, relative), bytes)) throw new IOException(m_Writer.Error);
-                    m_Clips.Add(clip.GetInstanceID(), relative);
-                }
-                r.clip = relative;
+                r.clip = SaveClip(m_Voice.ReplayClip);
             }
             catch (Exception e) { r.detail += ";audio_asset_missing=" + e.Message; }
         }
@@ -363,7 +375,8 @@ public sealed class TrialReplayRecorder : MonoBehaviour
     void Finish(bool complete, string reason)
     {
         if (m_Writer == null) return;
-        var r = Record("end"); r.complete = complete; r.detail = reason; Write(r);
+        if (m_HeaderWritten)
+        { var r = Record("end"); r.complete = complete; r.detail = reason; Write(r); }
         m_Finished = true;
         m_Writer?.Dispose();
         if (m_Writer?.Error != null) m_Failure = m_Writer.Error;
@@ -385,7 +398,7 @@ public sealed class TrialReplayRecorder : MonoBehaviour
     void OnApplicationPause(bool paused)
     {
         if (!paused || m_Writer == null) return;
-        Write(Record("application_paused"));
+        if (m_HeaderWritten) Write(Record("application_paused"));
         if (m_Writer != null && !m_Writer.RequestFlush())
             Fail(m_Writer.Error ?? "Replay writer could not accept the pause flush.");
     }

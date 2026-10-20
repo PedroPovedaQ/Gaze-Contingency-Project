@@ -15,6 +15,8 @@ public sealed partial class TrialReviewApp : MonoBehaviour
     TrialReviewActors m_Actors;
     TrialReviewEnvironment m_Environment;
     TrialReviewGazeCorrection m_Correction;
+    readonly TrialReviewVicinity m_Vicinity=new TrialReviewVicinity();
+    bool m_ShowDetectionRing=true;
     bool m_ShowWalls=true,m_ShowDegrees=true,m_ShowRoom=true;
     bool m_ShowBody = true, m_ShowEyeRay = true;
     readonly List<TrialReplayRecord> m_Samples = new List<TrialReplayRecord>();
@@ -55,6 +57,12 @@ public sealed partial class TrialReviewApp : MonoBehaviour
         if(m_Timeline!=null && timeIndex>=0 && timeIndex+1<args.Length &&
             double.TryParse(args[timeIndex+1],System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out double at) && !double.IsNaN(at)&&!double.IsInfinity(at))Seek(at);
         if (m_Renderer != null) m_CameraMode=m_Renderer.RecordedHead?0:m_Renderer.Overhead?2:1;
+        if (Array.IndexOf(args,"--jev") >= 0 && m_Timeline != null)
+        {
+            m_Tab=3;
+            var firstDecision=m_Tracks.Jev.Decisions.FirstOrDefault(d=>d.TrialId==m_Timeline.State.Trial?.trialId);
+            if(firstDecision!=null)m_SelectedJev=firstDecision.Id;
+        }
         InitializeLive(args);
     }
     public IEnumerator Open(string path)
@@ -78,6 +86,7 @@ public sealed partial class TrialReviewApp : MonoBehaviour
             audio = new TrialReplayAudioPreview(timeline, new TrialReviewAudioOutput());
             m_Audio?.Dispose(); m_Renderer?.Dispose();
             m_Timeline = timeline; m_Renderer = renderer; m_Audio = audio; m_Correction = correction;
+            InitializeRunExport();
             ResetCamera();
             renderer = null; audio = null;
             m_Summary = null; m_ExportPath = ""; m_Hash = hash; m_Path = path;
@@ -97,6 +106,7 @@ public sealed partial class TrialReviewApp : MonoBehaviour
     {
         if (m_LiveOutput != null) PollLive();
         m_Tracks.Refresh(m_Timeline);
+        UpdateRunExport();
         if (!m_Playing || m_Timeline == null || m_Loading) return;
         m_Time = Math.Min(m_Timeline.Duration, m_Time + Time.unscaledDeltaTime * m_Speed);
         m_Sequence = long.MaxValue;
@@ -134,7 +144,10 @@ public sealed partial class TrialReviewApp : MonoBehaviour
     }
     void OnDestroy()
     {
-        StopReceiver(); m_LiveStream?.Dispose(); m_Environment?.Dispose(); m_Actors?.Dispose(); m_Audio?.Dispose(); m_Renderer?.Dispose();
+        if(m_GazeDotTexture!=null)Destroy(m_GazeDotTexture);
+        m_WaitingPyramid?.Dispose();
+        StopRunExport();
+        StopReceiver(); m_LiveStream?.Dispose(); m_Vicinity.Dispose(); m_Environment?.Dispose(); m_Actors?.Dispose(); m_Audio?.Dispose(); m_Renderer?.Dispose();
         foreach(var texture in new[]{m_Panel,m_ButtonTexture,m_SelectedTexture,m_HoverTexture})if(texture!=null)Destroy(texture);
     }
     void DrawDegrees()
@@ -147,7 +160,9 @@ public sealed partial class TrialReviewApp : MonoBehaviour
         {
             var point = m_Renderer.Camera.WorldToViewportPoint(m_Environment.DegreePositions[plane]);
             if (point.z <= m_Renderer.Camera.nearClipPlane || point.x < 0 || point.x > 1 || point.y < 0 || point.y > 1) continue;
-            string label=plane == 0 ? "0° · FORWARD" : $"{plane * 45}°";
+            // Match the study's signed labels without changing saved wall IDs or geometry.
+            float signedAzimuth=Mathf.DeltaAngle(0,plane*45);
+            string label=plane == 0 ? "0° · FORWARD" : plane == 4 ? "±180°" : $"{signedAzimuth:+0;-0;0}°";
             float labelWidth=m_DegreeLabel.CalcSize(new GUIContent(label)).x+14;
             var rect = new Rect(point.x * m_Viewport.width - labelWidth/2, (1 - point.y) * m_Viewport.height - 13, labelWidth, 26);
             Fill(rect,new Color(.04f,.06f,.08f,.78f));
@@ -157,6 +172,7 @@ public sealed partial class TrialReviewApp : MonoBehaviour
     }
     void Browse(bool export)
     {
+        m_ChooseStudyData=false; m_ChooseAttachment=false;
         m_TimelineDrag=false;GUIUtility.hotControl=0;
         m_FollowLive=false; m_ChooseExport=export; m_Browser=true; m_Playing=false;Sync(true);
         RefreshDirectory(Directory.Exists(m_BrowserPath)?m_BrowserPath:Path.GetDirectoryName(m_Path));
@@ -168,7 +184,7 @@ public sealed partial class TrialReviewApp : MonoBehaviour
             if(string.IsNullOrEmpty(path)) path=Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             path=Path.GetFullPath(path.Trim().Trim('"'));
             var directories=Directory.GetDirectories(path).Where(p=>!Path.GetFileName(p).StartsWith(".")).OrderBy(p=>p).ToArray();
-            var files=Directory.GetFiles(path,"*.jsonl").OrderBy(p=>p).ToArray();
+            var files=Directory.GetFiles(path,m_ChooseAttachment?"*":"*.jsonl").OrderBy(p=>p).ToArray();
             m_BrowserPath=path;m_Directories=directories;m_Files=files;m_BrowserError=null;m_BrowseScroll=Vector2.zero;
         }
         catch(Exception e){m_BrowserError=e.Message;}
@@ -176,16 +192,23 @@ public sealed partial class TrialReviewApp : MonoBehaviour
     void Browser(Rect rect)
     {
         Panel(rect);GUILayout.BeginArea(new Rect(rect.x+18,rect.y+16,rect.width-36,rect.height-32));
-        GUILayout.Label(m_ChooseExport?"Choose trial CSV export folder":"Open recorded trial package",m_Title);
+        GUILayout.Label(m_ChooseAttachment?"Attach a file to this dataset":m_ChooseStudyData?"Choose study data folder (trial_summary.json)":m_ChooseExport?"Choose trial CSV export folder":"Open recorded trial package",m_Title);
         GUILayout.BeginHorizontal();m_BrowserPath=GUILayout.TextField(m_BrowserPath??"",m_Field);
         if(Button("Go")) RefreshDirectory(m_BrowserPath);
         if(Button("Up")) RefreshDirectory(Path.GetDirectoryName(m_BrowserPath));GUILayout.EndHorizontal();
         if(!string.IsNullOrEmpty(m_BrowserError))GUILayout.Label(m_BrowserError,m_Label);
         m_BrowseScroll=GUILayout.BeginScrollView(m_BrowseScroll);
         foreach(var path in m_Directories) if(Button("▸ "+Path.GetFileName(path))) {RefreshDirectory(path);break;}
-        if(!m_ChooseExport) foreach(var path in m_Files) if(Button(Path.GetFileName(path))){m_Browser=false;StartCoroutine(Open(path));break;}
+        if(!m_ChooseExport&&!m_ChooseStudyData) foreach(var path in m_Files) if(Button(Path.GetFileName(path)))
+        {
+            m_Browser=false;
+            if(m_ChooseAttachment){CatalogAction(()=>m_Catalog.Attach(m_Dataset,path));m_ChooseAttachment=false;m_DatasetPanel=true;}
+            else StartCoroutine(Open(path));
+            break;
+        }
         GUILayout.EndScrollView();GUILayout.BeginHorizontal();
         if(m_ChooseExport && Button("Use this export folder")){m_ExportPath=m_BrowserPath;m_Browser=false;LoadSummary();}
-        if(Button("Cancel"))m_Browser=false;GUILayout.EndHorizontal();GUILayout.EndArea();
+        if(m_ChooseStudyData && Button("Use this study data folder")){AttachStudyFolder(m_BrowserPath);m_Browser=false;}
+        if(Button("Cancel")){m_Browser=false;if(m_ChooseAttachment){m_ChooseAttachment=false;m_DatasetPanel=true;}}GUILayout.EndHorizontal();GUILayout.EndArea();
     }
 }

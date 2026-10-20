@@ -301,12 +301,23 @@ public static class TrialReplayChecks
         var host = new GameObject("ReplayHeaderFixture"); host.SetActive(false);
         TrialReplayRecorder recorder = null;
         string directory = null;
+        AudioClip prepared = null;
         try
         {
             var game = host.AddComponent<FindObjectGameManager>();
             Set(game, "m_UseRotationalLayout", false);
             recorder = host.AddComponent<TrialReplayRecorder>();
             Set(recorder, "m_Game", game);
+            prepared = AudioClip.Create("prepared fixture", 8000, 1, 8000, false);
+            var pcm = new float[8000]; for (int i=0;i<pcm.Length;i++) pcm[i]=.125f;
+            prepared.SetData(pcm,0);
+            recorder.PrepareVoiceClip(prepared);
+            recorder.PrepareVoiceClip(prepared);
+            directory = recorder.RecordingDirectory;
+            Call(recorder, "AudioEvent", "audio_request", "setup", "fixture", "text=not played");
+            Call(recorder, "OnApplicationPause", true);
+            Assert(new FileInfo(Path.Combine(directory,"recording.jsonl")).Length==0,
+                "Preparation exports audio without starting the study clock or emitting pre-header events");
             // Exercise production header creation, not a hand-authored fixture header.
             Call(recorder, "EnsureStarted");
             directory = recorder.RecordingDirectory;
@@ -315,11 +326,20 @@ public static class TrialReplayChecks
             var recording = TrialReplayFile.Read(Path.Combine(directory, "recording.jsonl"));
             Assert(recording.Header.gazeLinkVersion == SessionConfig.GazeReplayLinkVersion,
                 "Production replay header advertises exact raw-observation linkage");
+            Assert(recording.Records.Count==2 && recording.Header.sequence==0,
+                "Preparation must preserve header-first chronology");
+            Assert(Directory.GetFiles(Path.Combine(directory,"audio"),"*.wav").Length==1 &&
+                Directory.GetFiles(Path.Combine(directory,"audio"),"*.tmp").Length==0,
+                "Repeated preparation exports one complete immutable asset");
+            var savedPcm=TrialReplayAudio.Decode(Path.Combine(directory,"audio/clip_0000.wav"),out int channels,out int rate);
+            Assert(channels==1 && rate==8000 && Math.Abs(savedPcm[0]-.125f)<.0001f,
+                "Prepared asset contains the final waveform");
         }
         finally
         {
             if (recorder != null) Call(recorder, "OnDisable");
             UnityEngine.Object.DestroyImmediate(host);
+            if (prepared!=null) UnityEngine.Object.DestroyImmediate(prepared);
             // Only remove the newly generated fixture recording, never the shared parent.
             if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory)) Directory.Delete(directory, true);
         }
@@ -355,6 +375,7 @@ public static class TrialReplayChecks
             Set(recorder, "m_Started", Time.realtimeSinceStartupAsDouble);
             var writer = new TrialReplayWriter(Path.Combine(directory, "recording.jsonl"));
             Set(recorder, "m_Writer", writer);
+            Set(recorder, "m_HeaderWritten", true);
             writer.Append(new TrialReplayRecord { kind = "header", recordingId = "synthetic-hook", sourceType = "synthetic_demo", sequence = 0 });
             Set(recorder, "m_Sequence", 1L);
             Call(recorder, "ObjectsReady", 0, "Blue", "Cube");

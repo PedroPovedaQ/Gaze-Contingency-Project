@@ -15,6 +15,8 @@ public sealed class TrialReviewActors : IDisposable
     public Transform LeftGrip => m_LeftGrip;
     public Transform RightGrip => m_RightGrip;
     public LineRenderer EyeRay => m_EyeRay;
+    public bool GazeAvailable { get; private set; }
+    public Ray GazeRay { get; private set; }
     public float GazeOriginOffset { get; private set; }
     public float CorrectedHeadOffset { get; private set; }
     public bool CorrectionApplied { get; private set; }
@@ -84,11 +86,14 @@ public sealed class TrialReviewActors : IDisposable
         CorrectedHeadOffset=CorrectionApplied?Vector3.Distance(corrected.origin,sample.headPosition):float.NaN;
         // For a supported recording, missing XR reference must not silently become a cosmetic head ray.
         bool rayAvailable=validGaze&&(recordedRay||correction==null||!correction.Supported||CorrectionApplied);
-        m_EyeRay.enabled=showEyeRay&&rayAvailable&&(state.Visible||charging);
-        if(m_EyeRay.enabled)
+        GazeAvailable=rayAvailable&&(state.Visible||charging);
+        m_EyeRay.enabled=showEyeRay&&GazeAvailable;
+        if(GazeAvailable)
         {
+            m_EyeRay.startWidth=.008f;m_EyeRay.endWidth=.004f;
             var origin=recordedRay?sample.gazeOrigin:CorrectionApplied?corrected.origin:m_Anchor.position;
             var direction=CorrectionApplied?corrected.direction:sample.gazeDirection.normalized;
+            GazeRay=new Ray(origin,direction);
             m_EyeRay.SetPosition(0,origin);
             m_EyeRay.SetPosition(1,origin+direction*3);
         }

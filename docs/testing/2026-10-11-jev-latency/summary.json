@@ -1,0 +1,16 @@
+{
+  "joint": {
+    "decisions": 12,
+    "timeouts_or_errors": 0,
+    "median_ms": 223.7489,
+    "max_ms": 323.4196,
+    "raw_choice_mismatches": 0
+  },
+  "sequential": {
+    "decisions": 12,
+    "timeouts_or_errors": 0,
+    "median_ms": 453.90495,
+    "max_ms": 592.1156,
+    "raw_choice_mismatches": 3
+  }
+}

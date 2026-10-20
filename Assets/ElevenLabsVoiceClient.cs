@@ -51,13 +51,13 @@ public class ElevenLabsVoiceClient : MonoBehaviour
 
     /// <summary>Generate MP3 with the same model as the neutral voices. Reject JSON
     /// status bodies even on HTTP 200 so they never become cached audio.</summary>
-    public IEnumerator Synthesize(string text, string voiceId, Action<byte[]> onAudio, Action<string> onError)
+    public IEnumerator Synthesize(string text, string voiceId, Action<byte[]> onAudio, Action<string> onError, int repairAttempt = 0)
     {
         if (!HasKey) { onError?.Invoke("No ElevenLabs API key."); yield break; }
         if (string.IsNullOrWhiteSpace(voiceId)) { onError?.Invoke("No cloned voice ID."); yield break; }
         using (var request = new UnityWebRequest(SpeechUrl + Uri.EscapeDataString(voiceId), "POST"))
         {
-            var body = JsonUtility.ToJson(new SpeechRequest { text = text, model_id = Model });
+            var body = VoiceSynthesisRequest.Json(text, Model, repairAttempt);
             request.uploadHandler = new UploadHandlerRaw(System.Text.Encoding.UTF8.GetBytes(body));
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
@@ -87,5 +87,4 @@ public class ElevenLabsVoiceClient : MonoBehaviour
     }
 
     [Serializable] struct CloneResponse { public string voice_id; public bool requires_verification; }
-    [Serializable] struct SpeechRequest { public string text; public string model_id; }
 }

@@ -69,6 +69,26 @@ static class GazeTargetHistoryChecks
         Check(DirectionalHintPolicy.Opening(DirectionalHintPolicy.LeftPhrase) == "The object is to the left.", "requested left opening");
         Check(DirectionalHintPolicy.Opening(DirectionalHintPolicy.RightPhrase) == "The object is to the right.", "requested right opening");
         Check(DirectionalHintPolicy.Opening(DirectionalHintPolicy.UpPhrase).Contains("above"), "already aligned yaw never invents left/right");
+        var prepared = new System.Collections.Generic.HashSet<string>(DirectionalHintPolicy.AllPhrases());
+        foreach (float yaw in new[] { -12f, 0f, 12f })
+            foreach (float pitch in new[] { -10f, 0f, 10f })
+                foreach (float height in new[] { .1f, .2f, .3f, .5f, .7f })
+                {
+                    string direction = DirectionalHintPolicy.WithinArea(yaw, pitch);
+                    string cue = DirectionalHintPolicy.Opening(direction, true, pitch < 0 ? -height : height);
+                    Check(prepared.Contains(cue), "Every same-wall opening is already prepared for playback");
+                    if (pitch != 0)
+                    {
+                        Check(cue.Contains(pitch > 0 ? "higher" : "lower"), "Same-wall opening preserves vertical direction");
+                        Check((yaw == 0 || cue.Contains(yaw < 0 ? "and left" : "and right")), "Same-wall opening includes lateral refinement");
+                        Check(cue.Contains("little") == (height <= .2f) && cue.Contains("way") == (height > .5f),
+                            "Opening uses the existing plane-height magnitude bands");
+                    }
+                }
+        Check(DirectionalHintPolicy.Opening(DirectionalHintPolicy.WithinArea(-12,-10),true,-.3f) == "Look lower and left.",
+            "Hidden target below and left receives a diagonal first cue");
+        Check(DirectionalHintPolicy.Opening(DirectionalHintPolicy.WithinArea(0,0),true,0) == "Right there.",
+            "Aligned first cue invents no direction");
         Console.WriteLine("PASS target-bearing history: horizontal/vertical passage, jitter, wrap, gaps, duplicates, cooldown and bounded evidence");
     }
 }

@@ -1,0 +1,242 @@
+[
+  {
+    "pair": 0,
+    "scenario": 0,
+    "path": "joint",
+    "elapsed_ms": 384.12420000000003,
+    "calls": 1,
+    "failure": null,
+    "speak": true,
+    "expected": true
+  },
+  {
+    "pair": 0,
+    "scenario": 0,
+    "path": "sequential",
+    "elapsed_ms": 443.70300000000003,
+    "calls": 2,
+    "failure": null,
+    "speak": true,
+    "expected": true
+  },
+  {
+    "pair": 1,
+    "scenario": 1,
+    "path": "sequential",
+    "elapsed_ms": 380.9477,
+    "calls": 2,
+    "failure": null,
+    "speak": false,
+    "expected": false
+  },
+  {
+    "pair": 1,
+    "scenario": 1,
+    "path": "joint",
+    "elapsed_ms": 227.6151,
+    "calls": 1,
+    "failure": null,
+    "speak": false,
+    "expected": false
+  },
+  {
+    "pair": 2,
+    "scenario": 2,
+    "path": "joint",
+    "elapsed_ms": 219.9419,
+    "calls": 1,
+    "failure": null,
+    "speak": false,
+    "expected": false
+  },
+  {
+    "pair": 2,
+    "scenario": 2,
+    "path": "sequential",
+    "elapsed_ms": 439.3804,
+    "calls": 2,
+    "failure": null,
+    "speak": true,
+    "expected": false
+  },
+  {
+    "pair": 3,
+    "scenario": 3,
+    "path": "sequential",
+    "elapsed_ms": 413.27230000000003,
+    "calls": 2,
+    "failure": null,
+    "speak": false,
+    "expected": false
+  },
+  {
+    "pair": 3,
+    "scenario": 3,
+    "path": "joint",
+    "elapsed_ms": 206.56300000000002,
+    "calls": 1,
+    "failure": null,
+    "speak": false,
+    "expected": false
+  },
+  {
+    "pair": 4,
+    "scenario": 0,
+    "path": "joint",
+    "elapsed_ms": 181.4778,
+    "calls": 1,
+    "failure": null,
+    "speak": true,
+    "expected": true
+  },
+  {
+    "pair": 4,
+    "scenario": 0,
+    "path": "sequential",
+    "elapsed_ms": 530.1892,
+    "calls": 2,
+    "failure": null,
+    "speak": true,
+    "expected": true
+  },
+  {
+    "pair": 5,
+    "scenario": 1,
+    "path": "sequential",
+    "elapsed_ms": 414.9878,
+    "calls": 2,
+    "failure": null,
+    "speak": false,
+    "expected": false
+  },
+  {
+    "pair": 5,
+    "scenario": 1,
+    "path": "joint",
+    "elapsed_ms": 201.2947,
+    "calls": 1,
+    "failure": null,
+    "speak": false,
+    "expected": false
+  },
+  {
+    "pair": 6,
+    "scenario": 2,
+    "path": "joint",
+    "elapsed_ms": 208.22560000000001,
+    "calls": 1,
+    "failure": null,
+    "speak": false,
+    "expected": false
+  },
+  {
+    "pair": 6,
+    "scenario": 2,
+    "path": "sequential",
+    "elapsed_ms": 378.53110000000004,
+    "calls": 2,
+    "failure": null,
+    "speak": true,
+    "expected": false
+  },
+  {
+    "pair": 7,
+    "scenario": 3,
+    "path": "sequential",
+    "elapsed_ms": 460.78180000000003,
+    "calls": 2,
+    "failure": null,
+    "speak": false,
+    "expected": false
+  },
+  {
+    "pair": 7,
+    "scenario": 3,
+    "path": "joint",
+    "elapsed_ms": 248.23610000000002,
+    "calls": 1,
+    "failure": null,
+    "speak": false,
+    "expected": false
+  },
+  {
+    "pair": 8,
+    "scenario": 0,
+    "path": "joint",
+    "elapsed_ms": 182.62220000000002,
+    "calls": 1,
+    "failure": null,
+    "speak": true,
+    "expected": true
+  },
+  {
+    "pair": 8,
+    "scenario": 0,
+    "path": "sequential",
+    "elapsed_ms": 415.5622,
+    "calls": 2,
+    "failure": null,
+    "speak": true,
+    "expected": true
+  },
+  {
+    "pair": 9,
+    "scenario": 1,
+    "path": "sequential",
+    "elapsed_ms": 435.53360000000004,
+    "calls": 2,
+    "failure": null,
+    "speak": false,
+    "expected": false
+  },
+  {
+    "pair": 9,
+    "scenario": 1,
+    "path": "joint",
+    "elapsed_ms": 191.5703,
+    "calls": 1,
+    "failure": null,
+    "speak": false,
+    "expected": false
+  },
+  {
+    "pair": 10,
+    "scenario": 2,
+    "path": "joint",
+    "elapsed_ms": 212.5089,
+    "calls": 1,
+    "failure": null,
+    "speak": false,
+    "expected": false
+  },
+  {
+    "pair": 10,
+    "scenario": 2,
+    "path": "sequential",
+    "elapsed_ms": 382.6823,
+    "calls": 2,
+    "failure": null,
+    "speak": true,
+    "expected": false
+  },
+  {
+    "pair": 11,
+    "scenario": 3,
+    "path": "sequential",
+    "elapsed_ms": 377.86400000000003,
+    "calls": 2,
+    "failure": null,
+    "speak": false,
+    "expected": false
+  },
+  {
+    "pair": 11,
+    "scenario": 3,
+    "path": "joint",
+    "elapsed_ms": 191.12820000000002,
+    "calls": 1,
+    "failure": null,
+    "speak": false,
+    "expected": false
+  }
+]

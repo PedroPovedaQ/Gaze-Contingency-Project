@@ -40,6 +40,11 @@ class ElevenLabsVoiceClientChecks
         Check(request.Url == "https://api.elevenlabs.io/v1/text-to-speech/new-clone", "Clone speech endpoint");
         var body = System.Text.Encoding.UTF8.GetString(request.uploadHandler.Bytes);
         Check(body.Contains("eleven_turbo_v2_5") && body.Contains("I need to look left."), "Same model and unchanged formatted speech");
+        Drain(client.Synthesize("Turn left 165 degrees.", "new-clone", x => audio = x, x => error = x, 2));
+        var repair = Newtonsoft.Json.Linq.JObject.Parse(System.Text.Encoding.UTF8.GetString(UnityWebRequest.Last.uploadHandler.Bytes));
+        Check((string)repair["text"] == "Turn left one hundred sixty five degrees." &&
+            (float)repair["voice_settings"]["stability"] == 1 && !(bool)repair["voice_settings"]["use_speaker_boost"],
+            "Cloned voice uses the same conservative repair settings and number expansion");
         UnityWebRequest.ContentType = "application/json"; speak();
         Check(audio == null && error.Contains("non-audio"), "HTTP 200 JSON never cached as audio");
         UnityWebRequest.ContentType = "audio/mpeg"; UnityWebRequest.Bytes = new byte[2]; speak();

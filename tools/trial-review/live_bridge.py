@@ -232,8 +232,13 @@ class Receiver:
             self.replay_signature = signature
         # Replay first, newest first: live preview is never held behind raw-eye catch-up.
         ordered = [d + '/recording.jsonl' for d in reversed(selected_replays)]
+        # Prepared, normalized WAVs are exported during Loading, before playback.
+        # Copy them ahead of bulk telemetry; playback events later reuse these files.
+        ordered += [p for d in reversed(selected_replays) for p in inventory
+                    if p.startswith(d + '/audio/') and p.endswith('.wav')]
         ordered += [p for p in inventory if p not in ordered]
         copied = 0
+        transfer_started = time.monotonic()
         for name in ordered:
             if not any(name.startswith(d + '/') for d in self.selected): continue
             size, modified = inventory[name]
@@ -244,6 +249,9 @@ class Receiver:
             signature = (size, modified)
             old = self.stable.get(name)
             if old is None or old[0] != signature: self.stable[name] = (signature, now)
+            # Revisit playback events frequently even while a whole library is
+            # arriving. Finish each atomic file, then yield after a bounded batch.
+            if copied and time.monotonic() - transfer_started >= .25: break
         if selected_replays:
             name = selected_replays[-1] + '/recording.jsonl'
             self.latest = str(self.mirror.path(name))

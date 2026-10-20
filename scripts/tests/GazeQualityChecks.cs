@@ -4,13 +4,14 @@ class GazeQualityChecks
     static void Check(bool ok,string name) { if(!ok) throw new Exception(name); }
     static int Main()
     {
+        GazeTrackingFeedbackChecks.Run();
         // Reproduce go-back -> YEP -> look-down: no automatic cue may splice a
         // sentence; the following pause is measured from actual completion.
         Check(!GuidanceSpeechPolicy.CanStart(true,10,-100,false),"A qualified 0.1-second gaze cannot cut an ongoing go-back phrase");
-        Check(!GuidanceSpeechPolicy.CanStart(false,10.54,10,false),"A return cue needs a post-playback pause before YEP");
-        Check(GuidanceSpeechPolicy.CanStart(false,10.56,10,false),"Fresh confirmation becomes eligible after the pause");
-        Check(!GuidanceSpeechPolicy.CanStart(false,12.99,12,true),"After YEP, directions wait a full second");
-        Check(GuidanceSpeechPolicy.CanStart(false,13.01,12,true),"Latest direction is eligible after acknowledgment settles");
+        Check(!GuidanceSpeechPolicy.CanStart(false,10.24,10,false),"A return cue needs a post-playback pause before YEP");
+        Check(GuidanceSpeechPolicy.CanStart(false,10.26,10,false),"Fresh confirmation becomes eligible after the pause");
+        Check(!GuidanceSpeechPolicy.CanStart(false,12.59,12,true),"After YEP, directions retain a short acknowledgment pause");
+        Check(GuidanceSpeechPolicy.CanStart(false,12.61,12,true),"Latest direction is eligible after acknowledgment settles");
         for(int i=0;i<4;i++) Check(GuidanceSpeechPolicy.IsAcknowledgment(DirectionalHintPolicy.Variant(DirectionalHintPolicy.LookingPhrase,i)),"All acknowledgment variants receive the same breathing room");
         Check(GuidanceSpeechPolicy.IsAcknowledgment(DirectionalHintPolicy.PointingPhrase),"Controller acknowledgment is protected by the same pause");
         Check(!GuidanceSpeechPolicy.IsAcknowledgment(DirectionalHintPolicy.ReturnToTarget(DirectionalHintPolicy.DownLeftPhrase)),"Return cue uses ordinary pacing");
@@ -43,7 +44,17 @@ class GazeQualityChecks
         Check(!revisit.Update(true,false,.9), "Blink does not invent a recent target return");
         foreach(var direction in new[]{DirectionalHintPolicy.LeftPhrase,DirectionalHintPolicy.RightPhrase,DirectionalHintPolicy.UpPhrase,DirectionalHintPolicy.DownPhrase,DirectionalHintPolicy.UpLeftPhrase,DirectionalHintPolicy.UpRightPhrase,DirectionalHintPolicy.DownLeftPhrase,DirectionalHintPolicy.DownRightPhrase})
             Check(Array.IndexOf(DirectionalHintPolicy.AllPhrases(),DirectionalHintPolicy.ReturnToTarget(direction))>=0,"Every target-return diagonal is prepared");
-        for(int i=0;i<3;i++) Check(Array.IndexOf(DirectionalHintPolicy.AllPhrases(),DirectionalHintPolicy.Progress(i))>=0,"Progress variants are prepared");
+        foreach (var direction in DirectionalHintPolicy.ProgressDirections)
+            for(int i=0;i<3;i++)
+            {
+                string cue=DirectionalHintPolicy.Progress(direction,i);
+                Check(Array.IndexOf(DirectionalHintPolicy.AllPhrases(),cue)>=0 && DirectionalHintPolicy.IsContinuation(cue),"Directional progress variants are prepared and retain continuation limits");
+            }
+        Check(DirectionalHintPolicy.Progress(DirectionalHintPolicy.LeftPhrase,0)=="Keep going to the left.","Left route is explicit");
+        Check(DirectionalHintPolicy.Progress(DirectionalHintPolicy.RightPhrase,0)=="Keep going to the right.","Right route is explicit");
+        Check(DirectionalHintPolicy.Progress(DirectionalHintPolicy.DownLeftPhrase,0)=="Keep looking down and left.","Diagonal progress retains both axes");
+        Check(Array.IndexOf(DirectionalHintPolicy.AllPhrases(),"Keep going.")<0 &&
+            Array.IndexOf(DirectionalHintPolicy.AllPhrases(),"Keep going that way.")<0,"Directionless progress clips are no longer prepared");
         var reminder = new StudyPromptDelay(5);
         Check(DirectionalHintPolicy.VerticalBand(.2f) == 0 && DirectionalHintPolicy.VerticalBand(-.2f) == 0, "Exactly 20 percent is little, in either direction");
         Check(DirectionalHintPolicy.VerticalBand(.2001f) == 1 && DirectionalHintPolicy.VerticalBand(.5f) == 1, "Over 20 through 50 percent is ordinary");
@@ -111,15 +122,15 @@ class GazeQualityChecks
         Check(DirectionalHintPolicy.FollowUp("Look right.","Look right.",7,7,0,false)=="Look right.","standing still never gets a bit more");
         Check(DirectionalHintPolicy.FollowUp("Look left.","Look right.",7,12,0,false)=="Look left.","reversal needs a named direction");
         Check(DirectionalHintPolicy.FollowUp("Look right.","Look right.",5,9,0,false,true)=="Look right.","continuation cannot loop");
-        Check(DirectionalHintPolicy.FollowUp("Look up.","Look up.",7,12,0,false,false,.6f)=="Keep going.","large vertical remainder is not a bit more");
-        Check(DirectionalHintPolicy.FollowUp("Look right.","Look right.",40,60,0,true)=="Keep going.","progressing same direction gets continuation");
+        Check(DirectionalHintPolicy.FollowUp("Look up.","Look up.",7,12,0,false,false,.6f)=="Keep looking up.","large vertical remainder is not a bit more");
+        Check(DirectionalHintPolicy.FollowUp("Look right.","Look right.",40,60,0,true)=="Keep going to the right.","progressing same direction gets continuation");
         // Reproduce trial 1: every improving observation used to request Keep going again.
         float[] recordedYaw = {163.2f,124.7f,177.9f,162.7f,157f,103.2f,65.4f,31.2f};
         bool continuationUsed=false; int continuationCount=0;
         for(int i=1;i<recordedYaw.Length;i++)
         {
             var phrase=DirectionalHintPolicy.FollowUp("Look right.","Look right.",recordedYaw[i],recordedYaw[i-1],i,true,continuationUsed);
-            if(phrase==DirectionalHintPolicy.KeepGoingPhrase) { continuationCount++; continuationUsed=true; }
+            if(DirectionalHintPolicy.IsContinuation(phrase)) { continuationCount++; continuationUsed=true; }
         }
         Check(continuationCount==1,"recorded first-trial progress must not loop Keep going");
         Check(DirectionalHintPolicy.FollowUp("Look right.","Look right.",65,60,0,true)=="Turn to your right.","moving away retains explicit direction");

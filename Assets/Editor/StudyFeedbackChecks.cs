@@ -17,6 +17,7 @@ public static class StudyFeedbackChecks
         Check(!TrialReadinessGate.TryReminderDirection(origin, Vector3.up, origin + Vector3.forward, out _, out _),
             "Near-vertical gaze cannot invent a horizontal cross direction.");
         CheckVerticalWallDistance();
+        CheckRoundPerformance();
         foreach (string phrase in DirectionalHintPolicy.AllPhrases())
             Check(Array.IndexOf(VoiceAssistantController.StarterPhrases(), phrase) >= 0 &&
                 Array.IndexOf(VoiceAssistantController.PhraseLibrary(), phrase) >= 0,
@@ -64,6 +65,96 @@ public static class StudyFeedbackChecks
             if (target != null) UnityEngine.Object.DestroyImmediate(target);
         }
         Debug.Log("[StudyFeedbackChecks] PASS: gaze-relative cross direction, prepared reminders, 100 animated fragments, no physics/RNG interference and cleanup.");
+    }
+
+    static void CheckRoundPerformance()
+    {
+        var host = new GameObject("RoundPerformanceFixture"); host.SetActive(false);
+        var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        void Set(object owner,string field,object value) => owner.GetType().GetField(field,flags).SetValue(owner,value);
+        object Call(object owner,string method,params object[] args) => owner.GetType().GetMethod(method,flags).Invoke(owner,args);
+        try
+        {
+            var game=host.AddComponent<FindObjectGameManager>();
+            var voice=host.AddComponent<VoiceAssistantController>();
+            Set(voice,"m_GameManager",game);
+            Set(game,"<PresentedRoundIndex>k__BackingField",3);
+            Set(game,"<SearchActive>k__BackingField",true);
+            Call(voice,"BeginRoundPerformance",3);
+            Call(voice,"TrackRoundSpeech","audio_request","tip","","");
+            Call(voice,"TrackRoundSpeech","audio_playback_start","tip","","");
+            Call(voice,"TrackRoundSpeech","audio_playback_start","wrong_selection","","");
+            Call(voice,"TrackRoundSpeech","guidance_repeat_requested","guidance_repeat","","");
+            Call(voice,"HandleWrongCapture","red","blue");
+            Set(game,"<SearchActive>k__BackingField",false);
+            Call(voice,"TrackRoundSpeech","audio_playback_start","tip","","");
+            Set(voice,"m_LastEncouragement","You got it. Round complete.");
+            var facts=(SpatialVoice.RoundPerformance)Call(voice,"CaptureRoundPerformance");
+            Check(facts.trialNumber==4 && facts.previousFeedback=="You got it. Round complete.",
+                "Completion snapshot includes the presented trial number and last feedback");
+            Check(facts.measurementsAvailable && facts.guidanceStarts==1 && facts.repeatRequests==1 && facts.incorrectSelections==1,
+                "Count actual guidance onsets and repeat/wrong-selection events only during active search");
+            Check(Math.Abs(facts.searchSeconds-game.CurrentSearchSeconds)<.001,"Use authoritative pause-aware search clock");
+            // Current objective advances before completion subscribers; presented identity stays fixed.
+            Set(game,"m_CurrentRound",4);
+            Check(((SpatialVoice.RoundPerformance)Call(voice,"CaptureRoundPerformance")).measurementsAvailable,
+                "Capture uses presented trial, not the already-incremented next objective");
+            Set(game,"<PresentedRoundIndex>k__BackingField",4);
+            Check(!((SpatialVoice.RoundPerformance)Call(voice,"CaptureRoundPerformance")).measurementsAvailable,
+                "Old measurements cannot describe a new presented trial");
+            Call(voice,"BeginRoundPerformance",4);
+            Check(((SpatialVoice.RoundPerformance)Call(voice,"CaptureRoundPerformance")).incorrectSelections==0,"New search resets performance");
+            Check(facts.incorrectSelections==1 && facts.guidanceStarts==1,"Completed snapshot remains frozen after next-round reset");
+            // Practice and measured round zero are different identities despite sharing an index.
+            Set(game,"<PresentedRoundIsPractice>k__BackingField",true);
+            Check(!((SpatialVoice.RoundPerformance)Call(voice,"CaptureRoundPerformance")).measurementsAvailable,
+                "Practice/measurement transition invalidates stale facts even with the same round number");
+            Call(voice,"BeginRoundPerformance",4);
+            Set(game,"<SearchActive>k__BackingField",true);
+            Call(voice,"TrackRoundSpeech","audio_playback_start","guidance_repeat","","");
+            Call(voice,"TrackRoundSpeech","audio_playback_end","tip","","");
+            Call(voice,"TrackRoundSpeech","audio_playback_start","congrats","","");
+            var practice=(SpatialVoice.RoundPerformance)Call(voice,"CaptureRoundPerformance");
+            Check(practice.practice && practice.guidanceStarts==1 && practice.plannedAbsoluteTurnDegrees==null,
+                "Actual repeat playback counts once; congratulations/end events do not; practice has no planned study angle");
+            var synth=host.AddComponent<VoiceSynthesizer>();Set(voice,"m_VoiceSynthesizer",synth);
+            string recorded=null;
+            synth.Telemetry+=(kind,context,clip,detail)=> { if(kind=="round_encouragement_decision") recorded=detail; };
+            Call(voice,"RecordEncouragement",practice,SpatialVoice.RoundEncouragement.Phrases[9],"jev_selected");
+            var logged=Newtonsoft.Json.Linq.JObject.Parse(recorded);
+            Check((string)logged["phrase_id"]=="practice" && (int)logged["round_performance"]["guidanceStarts"]==1,
+                "Decision telemetry preserves the phrase and frozen performance for replay/analysis");
+            Call(voice,"RecordEncouragement",practice,null,"local_fallback");
+            Check((string)Newtonsoft.Json.Linq.JObject.Parse(recorded)["status"]=="no_prepared_phrase",
+                "Missing audio is explicitly logged instead of claiming spoken reinforcement");
+            foreach(int count in new[] {0,1,4})
+            {
+                var choices=new System.Collections.Generic.List<SpatialVoice.EncouragementPhrase>();
+                for(int i=0;i<count;i++) choices.Add(SpatialVoice.RoundEncouragement.Phrases[i]);
+                var request=(System.Threading.Tasks.Task<SpatialVoice.EncouragementPhrase>)Call(voice,"RequestRoundEncouragement",
+                    practice,choices,System.Threading.CancellationToken.None);
+                Check(request.IsCompleted && request.Result==null,"Missing client/key bypasses remote advice without delaying progress");
+            }
+            var pending=new System.Threading.CancellationTokenSource();var token=pending.Token;
+            Set(voice,"m_SuccessCancellation",pending);Set(voice,"<SuccessFeedbackBusy>k__BackingField",true);
+            Call(voice,"StopRoundEncouragement","test_stop");
+            Check(token.IsCancellationRequested && !voice.SuccessFeedbackBusy,"Session stop cancels advice and releases transition wait");
+            Check(!((SpatialVoice.RoundPerformance)Call(voice,"CaptureRoundPerformance")).measurementsAvailable,"Stopped session clears facts");
+            Call(voice,"StopRoundEncouragement","repeated_stop");
+            Set(voice,"m_LastEncouragement","Nice work.");
+            Call(voice,"HandleGameStarted");
+            Check(!(bool)voice.GetType().GetField("m_EncouragementSessionStopped",flags).GetValue(voice) &&
+                voice.GetType().GetField("m_LastEncouragement",flags).GetValue(voice)==null,"Restart resets stop and wording history");
+            var disabling=new System.Threading.CancellationTokenSource();var disablingToken=disabling.Token;
+            Set(voice,"m_SuccessCancellation",disabling);Set(voice,"<SuccessFeedbackBusy>k__BackingField",true);
+            Call(voice,"OnDisable");
+            Check(disablingToken.IsCancellationRequested && !voice.SuccessFeedbackBusy,"Component disable cancels pending advice");
+            foreach(var phrase in SpatialVoice.RoundEncouragement.AllTexts())
+                Check(Array.IndexOf(VoiceAssistantController.StarterPhrases(),phrase)>=0 &&
+                    Array.IndexOf(VoiceAssistantController.PhraseLibrary(),phrase)>=0,"Encouragement is prepared for quick and full voice setup");
+            Debug.Log("[StudyFeedbackChecks] PASS: round encouragement facts, immutable snapshots, practice identity, telemetry, missing client, repeated stop, restart, disable and prepared phrases.");
+        }
+        finally { UnityEngine.Object.DestroyImmediate(host); }
     }
 
     static void CheckVerticalWallDistance()

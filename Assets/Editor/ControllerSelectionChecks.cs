@@ -94,6 +94,7 @@ public static class ControllerSelectionChecks
             "Gaze must have no dwell loop.");
 
         CheckRightRayPolicy();
+        CheckSettingsShortcut();
         CheckSettingsLifecycle();
         CheckStationaryMenus();
         CheckMixedRealityToggle();
@@ -235,6 +236,11 @@ public static class ControllerSelectionChecks
         var host = new GameObject("StationaryMenuFixture"); host.SetActive(false);
         var controlsPanel = new GameObject("ControlsFixture", typeof(RectTransform));
         GameObject eyePanel = null, launcher = null, checkpointPanel = null;
+        var settingsContent = new GameObject("SettingsContentFixture", typeof(RectTransform));
+        settingsContent.transform.localScale = Vector3.one * .001f;
+        var menuHost = new GameObject("SettingsHandMenuFixture"); menuHost.SetActive(false);
+        var menu = menuHost.AddComponent<UnityEngine.XR.Interaction.Toolkit.UI.BodyUI.HandMenu>();
+        menu.handMenuUIGameObject = settingsContent;
         GazeDiagnosticView eye = null;
         var flags = BindingFlags.Instance | BindingFlags.NonPublic;
         void Set(object target, string name, object value) => target.GetType().GetField(name,flags).SetValue(target,value);
@@ -252,6 +258,8 @@ public static class ControllerSelectionChecks
             cameraObject.transform.SetPositionAndRotation(new Vector3(1,1.6f,2),Quaternion.Euler(15,30,8));
             var game=host.AddComponent<FindObjectGameManager>();
             var controls=host.AddComponent<StudyRayControls>();
+            ((Dictionary<UnityEngine.XR.Interaction.Toolkit.UI.BodyUI.HandMenu,bool>)Read(controls,"m_Menus"))[menu] = false;
+            ((Dictionary<Transform,Vector3>)Read(controls,"m_SettingsScales"))[settingsContent.transform] = settingsContent.transform.localScale;
             Set(controls,"m_Game",game);Set(controls,"m_Panel",controlsPanel);
             foreach(string field in new[]{"m_SettingsButton","m_PauseButton","m_RepeatButton"})
             {
@@ -270,17 +278,26 @@ public static class ControllerSelectionChecks
             Unmoved(controlsPanel,controlsPose,"Settings launcher");Unmoved(launcher,launcherPose,"Eye-check launcher");
             eye.SetVisible(true);Call(eye,"Update");var eyePose=PoseOf(eyePanel);
             controls.ToggleSettings();var openControlsPose=PoseOf(controlsPanel);
+            var settingsPose = PoseOf(settingsContent);
+            Check(Mathf.Abs(Vector3.Distance(settingsContent.transform.position,cameraObject.transform.position)-.8f)<.001f &&
+                Mathf.Abs(settingsContent.transform.localScale.x-.0013f)<.00001f, "Settings are 0.8m away and enlarged 30 percent");
+            controls.SetSettingsVisible(true);
+            Check(controls.SettingsOpen && Mathf.Abs(settingsContent.transform.localScale.x-.0013f)<.00001f,"Opening twice is idempotent, without cumulative scaling");
             var checkpoint=host.AddComponent<StudyCheckpoint>();checkpoint.Show("Paused");
             checkpointPanel=(GameObject)Read(checkpoint,"m_Panel");var checkpointPose=PoseOf(checkpointPanel);
             cameraObject.transform.SetPositionAndRotation(new Vector3(-1,1.5f,2),Quaternion.Euler(20,-60,15));
             Call(eye,"Update");Call(controls,"LateUpdate");
             Unmoved(eyePanel,eyePose,"Open eye panel");Unmoved(controlsPanel,openControlsPose,"Open settings controls");
+            Unmoved(settingsContent,settingsPose,"Settings content");
             Unmoved(checkpointPanel,checkpointPose,"Continue checkpoint");
             Check(Quaternion.Angle(eyePanel.transform.rotation,Quaternion.Euler(0,100,0))<.01f,"Menus stay upright, ignoring head pitch and roll");
             eye.SetVisible(false);eye.SetVisible(true);
             Check(Vector3.Distance(eyePanel.transform.position,eyePose.position)>.5f,"Reopening places eye panel near the new view");
             controls.ToggleSettings();controls.ToggleSettings();
+            Check(Mathf.Abs(settingsContent.transform.localScale.x-.0013f)<.00001f,"Reopening never compounds settings scale");
             Check(Vector3.Distance(controlsPanel.transform.position,openControlsPose.position)>.5f,"Reopening deliberately repositions settings");
+            controls.SetSettingsVisible(false);
+            Check(!controls.SettingsOpen && !settingsContent.activeSelf,"Dismiss API hides settings");
             Debug.Log("[ControllerSelectionChecks] PASS: eye/settings launchers, open menus and Continue stay world-fixed through head movement; reopen reanchors upright.");
         }
         finally
@@ -289,9 +306,37 @@ public static class ControllerSelectionChecks
                 if(panel!=null)UnityEngine.Object.DestroyImmediate(panel);
             if(eye!=null)Call(eye,"OnDestroy");
             UnityEngine.Object.DestroyImmediate(host);UnityEngine.Object.DestroyImmediate(cameraObject);
+            UnityEngine.Object.DestroyImmediate(menuHost);UnityEngine.Object.DestroyImmediate(settingsContent);
             if(previousCamera!=null)previousCamera.tag="MainCamera";
             dev.SetValue(null,originalDev);
         }
+    }
+
+    static void CheckSettingsShortcut()
+    {
+        var chord = new SettingsShortcut();
+        chord.Step(true,false,false,0);
+        Check(!chord.Step(true,true,true,1),"First A+stick press does not open settings");
+        Check(!chord.Step(true,true,true,1.1),"Holding the stick is not a second click");
+        chord.Step(true,true,false,1.15);
+        Check(chord.Step(true,true,true,1.3),"A held with a second distinct stick click opens settings");
+        Check(!chord.Step(true,true,true,1.31),"Held chord fires once");
+        chord.Step(true,true,false,1.4);
+        Check(!chord.Step(true,true,true,1.5),"Third click starts a new pair");
+        chord.Step(true,false,false,1.6);
+        Check(!chord.Step(true,true,true,1.7),"Releasing A cancels the incomplete chord");
+        chord.Step(true,true,false,1.8);
+        Check(!chord.Step(true,true,true,2.3),"Slow second click restarts rather than opens");
+        chord.Step(false,true,false,2.4);
+        Check(!chord.Step(true,true,true,2.5),"Reconnect while pressed cannot complete a chord");
+        chord.Step(true,true,false,2.6);
+        Check(!chord.Step(true,true,true,2.7),"Reconnect requires two fresh clicks");
+        chord.Step(true,true,false,2.8);
+        Check(chord.Step(true,true,true,2.9),"Fresh chord works after reconnect");
+        chord.Reset(); chord.Step(true,false,false,3);
+        chord.Step(true,false,true,3.1);chord.Step(true,false,false,3.2);
+        Check(!chord.Step(true,false,true,3.3),"Stick double click without A cannot open settings");
+        Debug.Log("[ControllerSelectionChecks] PASS: right settings chord edges, hold, A release, timeout, reconnect and repeat.");
     }
 
     static void CheckSettingsLifecycle()

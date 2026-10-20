@@ -1,5 +1,43 @@
 # Trial Review desktop app
 
+## Condensed whiteboard CSV
+
+**Implemented locally, October 16, 2026.** Automatic run export also produces
+`trials_condensed.csv`, an Excel-compatible UTF-8 CSV with the whiteboard's
+performance/subjective subset. Open it using **Open condensed CSV** under
+**Participant & run files**. It is attached separately under **Dataset → Current
+dataset → Files**. Existing recordings generate it when reopened or when
+**Regenerate CSVs** is selected; earlier exports remain intact. Live mode waits
+for run end and verified transfer, as with the full export.
+
+The 17 columns are source participant ID, trial ID, block index, voice condition,
+absolute wall theta, signed wall theta, actual signed head-to-target yaw,
+target-minus-head height, Euclidean target distance, delivered instruction count,
+active search time, first and final gaze contact time, first right-controller
+contact time, final selection time, NASA-TLX score and subjective performance.
+Angles use degrees, height/distance metres, and times active-search seconds.
+
+This is a projection of `trials.csv`, with the same rows and measurements, not a
+new calculation or motion export. Stable trial/block IDs keep rows joinable.
+Missing values stay blank; recorded zeros stay zero. Consult the full CSV for
+practice, unfinished/not-started outcomes, development exclusions and quality
+flags. Catalog reassignment stays in the full CSV; condensed PID is the source ID.
+Height is relative to the first tracked head pose after onset, not the scheduled
+cross-relative height quota. Gaze contacts are not validated fixations. Repeated
+block-level workload values are not independent trial-level responses.
+
+The whiteboard's separate **Performance** heading has no confirmed instrument
+mapping: `subjective_performance_rating` stays blank rather than substituting
+the TLX performance subscale. `manifest.json` includes the condensed schema,
+column definitions and limitations; the export receipt fingerprints the CSV.
+
+## Jev decisions and hover help
+
+**Implemented locally, October 12, 2026.** Click a marker on the **Jev decisions** track or open the **Jev** inspector tab. It displays the recorded request state, eligible options and metadata, returned probability bars when supplied, request latency, application outcome and explicitly linked software playback onset. The inspector is recorded history and may show outcomes after the current cursor; selecting a request seeks to its original scene. `--jev` opens this inspector at launch.
+
+Green markers indicate speak/playback, gray indicates wait/pending or legacy telemetry, orange indicates fade approval, red indicates timeout/error, and outlined markers indicate stale responses. Hover controls, timeline events and candidate text for explanations. New recordings require the updated headset build for complete traces. Historical runs show legacy events without inventing missing candidates, probabilities or playback associations. A provider response is not proof of playback, and playback is not proof the participant heard it.
+
+
 ## Live Wi-Fi mode
 
 **Implemented locally, October 10, 2026.** The desktop viewer can receive the
@@ -117,7 +155,84 @@ XR packages or Editor instance are changed. Never point it at the study project.
 This is a local development app, not a notarized distribution release. Neither
 Android deployment nor a headset is required to run it.
 
+## Subtitles
+
+Subtitles are enabled by default below the scene, with an independent **Subtitles**
+view toggle. They follow recorded speech start/end/cancellation and pause events,
+including when scrubbing backward, and do not require the WAV file to have arrived.
+Success chimes do not replace speech captions. Waiting for live signal hides captions.
+Text is the recorded authored phrase, not a transcription of headset sound; it cannot
+prove that a generated clip pronounced every word correctly.
+
 ## Open a saved recording
+
+The interface defaults to UCF-inspired black and gold (`#FFC904`). Use **Light mode**
+in the top bar to switch to warm white panels with dark text; **Dark mode** switches
+back. The choice persists between launches. `--theme light` or `--theme dark` can
+override it for a single launch. Themes affect viewer controls and timeline styling,
+not the recorded object colors, gaze measurements or reconstructed scene lighting.
+The scene-overlay controls keep gray backgrounds in both themes: enabled
+options use a filled radio-style circle and bold label; disabled options use an
+outlined circle and normal label. They toggle independently, so multiple can be on.
+Circular indicators use 26-point type, twice the label size.
+
+**Detection ring** shows the target's reconstructed gaze region, cyan outside and
+green when the target wins the closest-angular-center comparison. All objects use
+that same vicinity rule for gaze shine: 1.6x base luminance and a gold rim; right
+controller hover retains its blue rim. The desktop rim uses a lightweight shader,
+not the headset's URP material. Invalid/stale gaze clears gaze feedback, and hiding
+the ring does not disable shine. Equal angular matches within 0.01 degrees produce
+no winner. The overlay follows the displayed corrected/recorded ray.
+
+**Reconstruction limitation:** snapshots do not save collider dimensions, so bounds
+are estimated using the current study collider recipe, saved shapes and transforms.
+Padding uses the latest preceding measured guidance audit in the current trial,
+or the 6-degree default when absent; the footer identifies which. Changes between
+audit samples cannot be recovered exactly. The live angular policy and collider
+recipe are copied from study source during preparation. These researcher overlays
+do not overwrite recorded hits, timings or evidence of what a participant saw.
+
+### Participants, datasets and automatic round/run CSVs
+
+**Implemented locally:** choose **Dataset** beside the session selector (also available
+under **Final data → Edit participant & dataset…**). **Participants** creates or edits
+coded participant IDs and optional display names. **Current dataset** assigns the open
+recording to a participant and gives the run an optional name. Changing an assignment
+requires a reason and records a timestamped history. These are local viewer assignments;
+they do not change headset enrollment or rewrite original recording IDs.
+
+**Saved datasets** reopens cataloged runs. **Attach file…** links one selected file;
+recording-package, linked study-data and generated CSV files are also listed individually.
+Each file has a **Finder** button, and **Open dataset folder** opens the run folder.
+Attachments are local file links, not uploads or copies; moved files are shown as missing.
+The catalog is saved in the app's persistent data folder as `participant-datasets.json`.
+
+Opening a saved recording automatically generates performance/subjective CSVs using
+the bundled study analysis exporter. Live mode waits for the current recording's
+end record and a connected, fully copied and hash-verified archive. A stopped or
+incomplete recording without an end marker must be opened as a saved run. No per-frame
+export runs while the participant is searching.
+
+Under **Final data**, **Open round + run CSVs** opens the generated folder:
+
+- `trials.csv`: one row per scheduled/recorded round across the full study run.
+- `trial_*_performance_subjective.csv`: one round per file, with practice marked.
+- `manifest.json`: original source hashes, methods, availability and warnings.
+
+The destination is `~/Documents/Trial Review Exports/Runs/<name-or-ID>_<version>/`.
+Every row includes `participant_name`, `assigned_participant_id`, `dataset_id` and
+`dataset_name` alongside the unchanged original `participant_id`.
+Renaming, reassigning or changed source files create a new export; unchanged inputs reuse the
+verified export. Previous exports remain intact. Files that have been edited after
+generation are not silently overwritten.
+
+The exporter needs the matching study data folder containing `trial_summary.json`.
+It finds standard wireless archives and adjacent copied run folders automatically;
+otherwise use **Choose study data folder…**, then select the linked run folder.
+**Regenerate CSVs** retries after missing data becomes available. Missing measurements
+or surveys stay unavailable; generating files does not mean a run was completed.
+These summary CSVs do not replace the separate motion/eye data or replay/audio package.
+This feature requires the Mac's `/usr/bin/python3`; calculations run locally.
 
 New recordings with `gazeRayVersion=recorded_used_and_unaligned_ray_v1` preserve the actual used eye ray and the selected source before quick alignment, both in the same recording coordinate frame. **Recorded gaze** uses the saved eye origin/direction without moving it to the avatar's head or applying the alignment again. **Before alignment** shows the separately saved pre-correction ray. The cursor inspector reports source, alignment ID/status, applied flag and yaw/pitch correction; stepping backward restores those recorded values, and invalid/stale gaze stays hidden. The standalone build verification exercises the live quick-alignment engine, recorder mapping, JSON round trip and first/third-person renderer with synthetic data.
 
@@ -128,12 +243,22 @@ These are additive schema-2 fields: older recordings remain readable. P020's exa
    package and select `recording.jsonl`. Loading a large recording is synchronous and may take
    time; recordings are bounded to the shared reader's 1 GiB/two-million-record limit.
 3. Search trials by number, voice, ID, block or angle; filter All / Study / Practice.
-   Select a trial from the left. **Play**, drag the timeline ruler, click a speech/event
-   segment, or use the sample/event stepping buttons. Toggle **Selected trial / Whole session**
-   to change the displayed time range. Track times are relative to that range;
+   Select a trial from the left. **Whole session** is the default: drag the playhead or
+   anywhere on the speech, gaze or event tracks to seek continuously across trials. The
+   reconstruction and inspector follow the cursor, with both study and trial clocks.
+   **Spacebar** toggles play/pause, including after scrubbing; holding it does not repeat.
+   Text fields and modal dialogs retain normal typing. Use sample/event buttons for exact
+   stepping, or toggle **Selected trial / Whole session** to narrow the range.
+   Track tick labels are relative to that range;
    original session timestamps remain in raw data. Playback audio is supported at 1×; seeking,
    stopping, cancellation and overlapping saved effects use the shared audio plan.
-4. **First person** follows recorded tracked head poses. **Third person** supports
+4. **First person** follows recorded tracked head poses. Its primary gaze overlay
+   is an orange dot at the nearest intersection with the finite inferred study-wall
+   panels. Invalid/stale gaze, unknown layouts and rays missing the panels show no
+   dot. It never snaps to an object or target. Third-person views retain the gaze
+   ray; the optional raw/pre-alignment overlay retains a thin diagnostic line.
+   This display projection does not change recorded origins, directions or data.
+   **Third person** supports
    right-drag and wheel zoom; **Reset view** restores the default orbit. Camera controls
    stay visible even before a recording loads. **Overhead** is a second researcher view. Toggle gaze,
    controller and target overlays independently. **Walls** controls the inferred wall outlines;
@@ -143,7 +268,8 @@ These are additive schema-2 fields: older recordings remain readable. P020's exa
    gaze provenance. **Show raw observation** expands the detailed sample including hits.
    Unknown tracking is `-1`; absent legacy fields may appear as schema defaults in
    the decoded object. The source file remains authoritative.
-6. **Final data → Choose CSV export…** loads a directory with `manifest.json` and
+6. **Final data** automatically loads a successfully generated saved-run export.
+   **Choose CSV export…** also loads an existing directory with `manifest.json` and
    `trials.csv`, generated by `analysis/trial_csv.py`. The app verifies source hash,
    recording ID, logical trial identity (including practice), participant, voice,
    run and block. Missing/unmatched rows stay unavailable. Final results and repeated
@@ -286,7 +412,7 @@ recorded-head first person remains the default.
 
 ## Wall and room toggles
 
-**Implemented locally:** **Walls** toggles wire outlines and **Degrees** independently toggles the 0°–315° labels. Either overlay can be shown without the other. Labels use the saved layout orientation (0° is forward), stay readable in all camera views, and apply to both live and saved replay. They are viewer overlays, not evidence that the participant saw the guides. The outlines represent eight-wall
+**Implemented locally:** **Walls** toggles wire outlines and **Degrees** independently toggles signed wall labels: 0° forward, +45°/+90°/+135° to the right, −45°/−90°/−135° to the left, and ±180° at the rear. Either overlay can be shown without the other. Labels use the saved layout orientation (0° is forward), stay readable in all camera views, and apply to both live and saved replay. They are viewer overlays, not evidence that the participant saw the guides. The outlines represent eight-wall
 rotational layouts. Radius is inferred from snapshot object-plane positions; height
 spans the snapshot objects. **Room background** independently toggles a neutral
 floor, one-metre floor grid and four outer room surfaces. Both start enabled.
@@ -296,3 +422,40 @@ visuals were enabled during acquisition. Unknown/non-octagonal layouts receive
 only the generic backdrop, not invented study-wall assignments. Context follows
 the snapshot origin/rotation and is rebuilt on trial changes and backward seeks.
 The recorded object transforms, rays, hits and measurements remain unchanged.
+
+### Live waiting screen
+
+While following live without a fresh headset signal, the viewport shows a shaded
+UCF-gold pyramid rotating once every 30 seconds with a subtle floating motion,
+plus “Waiting for connection.” The animation uses wall-clock time independently
+of trial playback and disappears when fresh live data arrives. An official UCF
+stacked logo sits in the bottom-right corner of the waiting viewport; provenance
+is in `Resources/UcfLogo-source.md`. The prop is active only during its isolated
+camera render and never appears in the reconstructed study scene.
+
+### Live mode switch
+
+The top-right **Live mode** switch is gold/right when following incoming data and
+gray/left while reviewing a saved cursor. Turning it on connects or resumes live
+following. Turning it off pauses playback at the current cursor while the receiver
+continues archiving. Use **Stop receiver** in Wi-Fi settings to stop the transfer.
+Seeking in the timeline also switches live following off.
+
+### Voice clips prepared ahead of playback
+
+**Implemented:** after voice treatment, verification and final level matching,
+the headset exports the prepared library into that session's replay `audio/`
+folder during Loading, one clip per frame. Later background/on-demand clips are
+exported when admitted for playback. Raw provider downloads are not transferred.
+The replay file stays empty until the first real trial transition: preparation
+does not change the recording origin, study clock or trial measurements.
+
+The Wi-Fi receiver copies complete WAVs before bulk telemetry and yields between
+transfer batches to revisit playback events. Start events reference the same
+immutable clip paths; the viewer follows recorded session timestamps, gains,
+fades and cancellations. Cached files alone never start speech. Headset guidance
+does not wait for Wi-Fi or desktop acknowledgement. Late clips join at the current
+cursor while still active; already-ended speech is not replayed out of sequence.
+This is buffered reconstruction of software playback, not acoustic onset
+measurement or a guaranteed zero-latency audio stream. New headset recordings
+require the updated app; older recordings remain compatible.

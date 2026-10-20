@@ -12,7 +12,7 @@ public static class SpatialNavigationChecks
     public static void Run()
     {
         var db = Resources.Load<NavigationPhraseDatabase>("SpatialVoice/NavigationPhrases");
-        Check(db != null && db.phrases.Length == 300, "300-entry ScriptableObject loads"); db.Validate();
+        Check(db != null && db.phrases.Length == 375, "375-entry ScriptableObject loads"); db.Validate();
         var authored = (JArray)JObject.Parse(System.IO.File.ReadAllText("Assets/Resources/SpatialVoice/navigation-phrases.json"))["navigation_phrases"];
         for (int i = 0; i < db.phrases.Length; i++)
             Check(db.phrases[i].id == (string)authored[i]["id"] &&
@@ -22,12 +22,12 @@ public static class SpatialNavigationChecks
         foreach (var row in guidance)
             Check((string)row["semantics"]["intent"] != "unknown" && JToken.DeepEquals(row["semantics"],
                 JToken.FromObject(SpeechPhraseMetadata.Describe((string)row["text"]))), "guidance semantics export matches runtime");
-        var output = new NavigationPhrase[4];
+        var output = new NavigationPhrase[5];
         foreach (float distance in new[] { 0f, .5f, 1f, 2f, 4f, 8f, 12f, 9999f })
             for (int angle = -180; angle <= 180; angle++)
             {
                 int count = NavigationGeometry.Filter(db.phrases, new NavigationGeometry(angle, distance), output);
-                Check(count == 4, "coverage at " + angle + "/" + distance);
+                Check(count == 5, "coverage at " + angle + "/" + distance);
                 for (int i = 0; i < count; i++) Check(output[i].Matches(angle, distance), "candidate respects boundaries");
             }
         Check(NavigationGeometry.Filter(db.phrases, new NavigationGeometry(float.NaN, 2), output) == 0, "NaN rejected");
@@ -56,11 +56,18 @@ public static class SpatialNavigationChecks
             var empty = manager.ChooseAsync(new NavigationGeometry(-45, 3), "Test state", p => false,
                 System.Threading.CancellationToken.None).GetAwaiter().GetResult();
             Check(!empty.HasValue, "no fallback outside eligible library");
+            var combined = manager.ChooseGuidanceAsync(new NavigationGeometry(-45, 3), "Test", null,
+                System.Threading.CancellationToken.None, "{}").GetAwaiter().GetResult();
+            Check(combined != null && combined.Source == "local" && combined.Phrase.Matches(-45, 3),
+                "joint offline fallback keeps prepared local geometry");
+            var noCombined = manager.ChooseGuidanceAsync(new NavigationGeometry(-45, 3), "Test", p => false,
+                System.Threading.CancellationToken.None, "{}").GetAwaiter().GetResult();
+            Check(noCombined == null, "joint request never bypasses preparation eligibility");
             manager.TriggerAsync(null).GetAwaiter().GetResult();
             Check(manager.LastStatus == "stream_preview_disabled_in_study", "preview cannot bypass study playback");
         }
         finally { UnityEngine.Object.DestroyImmediate(preview); }
-        Debug.Log("[SpatialNavigationChecks] PASS: 300 phrases, complete signed grid, distance seams, validity, preparation filter and relative transforms.");
+        Debug.Log("[SpatialNavigationChecks] PASS: 375 phrases, complete signed grid, distance seams, validity, preparation filter and relative transforms.");
     }
 }
 #endif

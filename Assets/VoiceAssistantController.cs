@@ -8,7 +8,7 @@ using UnityEngine.XR.Templates.MR;
 /// Orchestrates the game assistant. Loads API keys at startup (before game can start),
 /// then wires VoiceSynthesizer and HintGenerator for the duration of the game.
 /// </summary>
-public class VoiceAssistantController : MonoBehaviour
+public partial class VoiceAssistantController : MonoBehaviour
 {
     const string k_Tag = "[VoiceAssist]";
     const string k_KeysFile = "api_keys.json";
@@ -35,9 +35,8 @@ public class VoiceAssistantController : MonoBehaviour
     AudioSource m_EffectAudioSource;
     AudioClip m_WrongCaptureCue, m_SuccessCue;
     Coroutine m_SuccessRoutine;
-    int m_SuccessVariant;
     public bool SuccessFeedbackBusy { get; private set; }
-    static readonly string[] k_SuccessPhrases = { "Nice work.", "Well done.", "You got it.", "That's it. Nicely done." };
+    static readonly string[] k_SuccessPhrases = SpatialVoice.RoundEncouragement.AllTexts();
     Coroutine m_OpeningCoroutine;
     System.Action<string,string,string,string> m_OpeningAudioObserver;
     Coroutine m_RoundAnnounceCoroutine;
@@ -92,6 +91,7 @@ public class VoiceAssistantController : MonoBehaviour
         m_SuccessCue = CreateSuccessCue();
 
         m_VoiceSynthesizer = gameObject.AddComponent<VoiceSynthesizer>();
+        m_VoiceSynthesizer.Telemetry += TrackRoundSpeech;
         m_HintGenerator = gameObject.AddComponent<HintGenerator>();
 
         // Subscribe to game events
@@ -101,6 +101,8 @@ public class VoiceAssistantController : MonoBehaviour
         m_GameManager.OnGameCompleted += HandleGameCompleted;
         m_GameManager.OnRoundTransitionStarted += HandleRoundTransitionStarted;
         m_GameManager.OnRoundReady += HandleRoundReady;
+        m_GameManager.OnSearchStarted += BeginRoundPerformance;
+        m_GameManager.OnSessionStopped += StopRoundEncouragement;
         GoalManager.InitialStartPressed += HandleInitialStartPressed;
         GoalManager.TutorialPlayerVisibilityChanged += HandleTutorialPlayerVisibilityChanged;
 
@@ -140,6 +142,8 @@ public class VoiceAssistantController : MonoBehaviour
         m_HintGenerator.Initialize(elevenLabsKey, m_AgentContext, m_VoiceSynthesizer, m_CoverageTracker);
         var navigation = gameObject.AddComponent<SpatialVoice.StudyNavigationVoiceBridge>();
         navigation.Initialize(gatewayKey, elevenLabsKey, m_VoiceSynthesizer);
+        m_EncouragementClient = new SpatialVoice.JevDecisionClient(gatewayKey);
+        m_EncouragementClient.Trace += m_VoiceSynthesizer.RecordJevTrace;
 
 
         // Self-similar voice: enrollment (mic -> clone) + the on-entry mode picker.
@@ -227,6 +231,8 @@ public class VoiceAssistantController : MonoBehaviour
 
     void OnDisable()
     {
+        CancelSuccessFeedback();
+        if (m_VoiceSynthesizer != null) m_VoiceSynthesizer.Telemetry -= TrackRoundSpeech;
         CancelSearchOpening();
         if (m_VoiceSynthesizer != null) m_VoiceSynthesizer.PlaybackFailed -= HandleAudioFailure;
         if (m_VoiceModeSelector != null)
@@ -250,6 +256,8 @@ public class VoiceAssistantController : MonoBehaviour
             m_GameManager.OnGameCompleted -= HandleGameCompleted;
             m_GameManager.OnRoundTransitionStarted -= HandleRoundTransitionStarted;
             m_GameManager.OnRoundReady -= HandleRoundReady;
+            m_GameManager.OnSearchStarted -= BeginRoundPerformance;
+            m_GameManager.OnSessionStopped -= StopRoundEncouragement;
         }
 
         GoalManager.InitialStartPressed -= HandleInitialStartPressed;
@@ -304,6 +312,7 @@ public class VoiceAssistantController : MonoBehaviour
 
     void HandleGameStarted()
     {
+        CancelSuccessFeedback(); m_RoundPerformance = null; m_LastEncouragement = null; m_EncouragementSessionStopped = false;
         m_CoverageTracker?.Reset();
         // First-round goal announcement is now triggered by
         // FindObjectGameManager via OnRoundTransitionStarted, after the
@@ -316,13 +325,23 @@ public class VoiceAssistantController : MonoBehaviour
 
     public void PlaySuccessFeedback()
     {
+        if (SuccessFeedbackBusy || m_EncouragementSessionStopped || !isActiveAndEnabled) return;
         m_HintGenerator?.CancelPending(); m_VoiceSynthesizer?.Stop();
-        if (m_SuccessRoutine != null) StopCoroutine(m_SuccessRoutine);
         m_SuccessRoutine = StartCoroutine(SuccessFeedback());
     }
     IEnumerator SuccessFeedback()
     {
         SuccessFeedbackBusy = true;
+        var facts = CaptureRoundPerformance();
+        var candidates = SpatialVoice.RoundEncouragement.Candidates(facts, m_LastEncouragement,
+            text => m_VoiceSynthesizer != null && m_VoiceSynthesizer.IsPreparedPhrase(text));
+        var voice = SessionConfig.Voice;
+        string voiceId = voice == VoiceCondition.SelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId;
+        int round = m_GameManager != null ? m_GameManager.PresentedRoundIndex : -1;
+        bool practice = m_GameManager != null && m_GameManager.PresentedRoundIsPractice;
+        m_SuccessCancellation = new System.Threading.CancellationTokenSource();
+        double deadline = Time.realtimeSinceStartupAsDouble + SpatialVoice.RoundEncouragement.DeadlineMilliseconds / 1000d;
+        var decision = RequestRoundEncouragement(facts, candidates, m_SuccessCancellation.Token);
         if (m_SuccessCue != null && m_EffectAudioSource != null)
         {
             m_EffectAudioSource.PlayOneShot(m_SuccessCue);
@@ -332,8 +351,25 @@ public class VoiceAssistantController : MonoBehaviour
             GetComponent<TrialDataLogger>()?.RecordSuccessEffect(false, m_SuccessCue.length);
         }
         // The manager waits before changing voice/block. Reinforcement belongs to the completed trial.
-        m_VoiceSynthesizer?.Speak(k_SuccessPhrases[m_SuccessVariant++ % k_SuccessPhrases.Length], "congrats");
+        while (!decision.IsCompleted && Time.realtimeSinceStartupAsDouble < deadline) yield return null;
+        string status = "local_fallback";
+        SpatialVoice.EncouragementPhrase selected = candidates.Count > 0 ? candidates[0] : null;
+        if (decision.IsCompleted && Time.realtimeSinceStartupAsDouble <= deadline)
+        {
+            try { var choice = decision.GetAwaiter().GetResult(); if (choice != null) { selected = choice; status = "jev_selected"; } }
+            catch (System.Exception e) { status = "fallback_" + e.GetType().Name; }
+        }
+        m_SuccessCancellation.Cancel();
+        if (isActiveAndEnabled && m_GameManager != null && m_GameManager.PresentedRoundIndex == round &&
+            m_GameManager.PresentedRoundIsPractice == practice && SessionConfig.Voice == voice &&
+            voiceId == (voice == VoiceCondition.SelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId))
+        {
+            RecordEncouragement(facts, selected, status);
+            if (selected != null && m_VoiceSynthesizer.IsPreparedPhrase(selected.text))
+            { m_LastEncouragement = selected.text; m_VoiceSynthesizer.Speak(selected.text, "congrats", voice, guidanceDecisionId: m_EncouragementDecisionId); }
+        }
         while (m_VoiceSynthesizer != null && m_VoiceSynthesizer.IsBusy) yield return null;
+        m_SuccessCancellation?.Dispose(); m_SuccessCancellation = null;
         SuccessFeedbackBusy = false; m_SuccessRoutine = null;
     }
     static AudioClip CreateSuccessCue()
@@ -358,6 +394,7 @@ public class VoiceAssistantController : MonoBehaviour
 
     void HandleRoundTransitionStarted(int round, string color, string shape)
     {
+        CancelSuccessFeedback();
         // If the intro is still queued or speaking, let it finish and then
         // announce the round so the startup instructions remain audible.
         if (m_IntroPlayingOrQueued)
@@ -490,6 +527,7 @@ public class VoiceAssistantController : MonoBehaviour
 
     void HandleWrongCapture(string capturedName, string wantedName)
     {
+        if (m_RoundPerformance != null && m_GameManager.SearchActive) m_RoundPerformance.incorrectSelections++;
         Debug.Log($"{k_Tag} Wrong capture: {capturedName} instead of {wantedName}");
         if (m_EffectAudioSource != null && m_WrongCaptureCue != null)
             m_EffectAudioSource.PlayOneShot(m_WrongCaptureCue);
@@ -505,6 +543,7 @@ public class VoiceAssistantController : MonoBehaviour
     IEnumerator CompleteAfterSuccess()
     {
         while (SuccessFeedbackBusy) yield return null;
+        if (m_EncouragementSessionStopped || !isActiveAndEnabled) yield break;
         m_HintGenerator?.CancelPending();
         m_VoiceSynthesizer?.Speak(k_CompletionLine, "completion");
     }

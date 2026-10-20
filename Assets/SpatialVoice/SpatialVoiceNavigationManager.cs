@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -31,6 +30,7 @@ namespace SpatialVoice
         public NavigationPhraseDatabase Database => m_Database;
         public string LastStatus { get; private set; }
         public event Action<string> Diagnostic;
+        public event Action<string> DecisionTrace;
         public event Action<NavigationPhrase> PhraseSelected;
 
         /// <summary>Keys are injected at runtime, never serialized into a scene or catalog.
@@ -41,6 +41,7 @@ namespace SpatialVoice
             Cancel();
             m_StreamingAllowed = allowStreaming;
             m_Decisions = new JevDecisionClient(gatewayKey);
+            m_Decisions.Trace += json => DecisionTrace?.Invoke(json);
             m_Speech = new ElevenLabsPcmClient(elevenLabsKey);
             m_VoiceId = voiceId;
             if (database != null) m_Database = database;
@@ -136,11 +137,22 @@ namespace SpatialVoice
         /// <summary>Choice-only entry used by the existing study playback path. Filters first,
         /// asks Jev only about safe wording, falls back locally on missing key/timeout/error.</summary>
         public async Task<NavigationPhrase?> ChooseAsync(NavigationGeometry geometry, string behavior,
-            Predicate<NavigationPhrase> eligible, CancellationToken token)
+            Predicate<NavigationPhrase> eligible, CancellationToken token, string runtimeContext = null)
+        {
+            var result = await SelectAsync(geometry, behavior, eligible, token, runtimeContext, false);
+            return result == null ? (NavigationPhrase?)null : result.Phrase;
+        }
+
+        public Task<GuidanceSelection> ChooseGuidanceAsync(NavigationGeometry geometry, string behavior,
+            Predicate<NavigationPhrase> eligible, CancellationToken token, string runtimeContext) =>
+            SelectAsync(geometry, behavior, eligible, token, runtimeContext, true);
+
+        async Task<GuidanceSelection> SelectAsync(NavigationGeometry geometry, string behavior,
+            Predicate<NavigationPhrase> eligible, CancellationToken token, string runtimeContext, bool decideTransmission)
         {
             if (m_Database == null) return null;
             var latency = System.Diagnostics.Stopwatch.StartNew();
-            var buffer = new NavigationPhrase[4];
+            var buffer = new NavigationPhrase[5];
             int count = NavigationGeometry.Filter(m_Database.phrases, geometry, buffer, m_Variation++, eligible);
             if (count == 0) { Report("no_matching_phrase"); return null; }
             var candidates = new List<NavigationPhrase>(count);
@@ -148,18 +160,31 @@ namespace SpatialVoice
             var chosen = candidates[0];
             foreach (var p in candidates) if (p.tone == m_PreferredTone && p.text != m_LastPhrase) chosen = p;
             string source = "local";
+            string requestId = Guid.NewGuid().ToString("N");
+            bool speak = true;
             if (m_Decisions != null && m_Decisions.Available && count > 1)
             {
-                string state = string.Format(CultureInfo.InvariantCulture,
-                    "Seated hidden-target task. Target relative yaw {0:F1} degrees; horizontal distance {1:F2} meters. Negative left, positive right, zero forward. Preferred tone {2}. Last phrase: {3}. {4}",
-                    geometry.Angle, geometry.Distance, m_PreferredTone, m_LastPhrase ?? "none", behavior);
-                try { chosen = await m_Decisions.ChooseAsync(state, candidates, token); source = "jev"; }
+                string state = SpeechNavigationState.Create(geometry.Angle, geometry.Distance,
+                    m_PreferredTone.ToString(), m_LastPhrase, behavior, runtimeContext);
+                var stateJson = Newtonsoft.Json.Linq.JObject.Parse(state);
+                stateJson["decision_id"] = requestId;
+                state = stateJson.ToString(Newtonsoft.Json.Formatting.None);
+                try {
+                    if (decideTransmission)
+                    {
+                        var decision = await m_Decisions.ChooseGuidanceAsync(state, candidates, token);
+                        chosen = decision.Phrase; speak = decision.Speak;
+                    }
+                    else chosen = await m_Decisions.ChooseAsync(state, candidates, token);
+                    source = "jev";
+                }
                 catch (Exception e) when (!token.IsCancellationRequested)
                 { source = "local_fallback_" + e.GetType().Name; }
             }
             token.ThrowIfCancellationRequested();
-            Report("phrase_selected;source=" + source + ";id=" + chosen.id + ";tone=" + chosen.tone + ";selection_ms=" + latency.ElapsedMilliseconds);
-            return chosen;
+            Report("phrase_selected;source=" + source + ";id=" + chosen.id + ";tone=" + chosen.tone + ";selection_ms=" + latency.ElapsedMilliseconds +
+                ";advice_path=" + (decideTransmission ? "joint_catalog" : "phrase_only") + ";transmit=" + (speak ? "speak" : "wait"));
+            return new GuidanceSelection { Phrase = chosen, Speak = speak, Source = source, RequestId = requestId };
         }
         public void MarkSpoken(NavigationPhrase phrase) { m_LastPhrase = phrase.text; }
     }

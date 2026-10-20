@@ -18,6 +18,7 @@ public sealed class TrialReviewEnvironment : IDisposable
     public Vector3 Center { get; private set; }
     public float Radius { get; private set; }
     public float Floor { get; private set; }
+    float m_WallTop;
     public TrialReviewEnvironment()
     {
         m_Walls=new GameObject("Inferred study walls");m_Walls.transform.SetParent(m_Root.transform);
@@ -49,6 +50,7 @@ public sealed class TrialReviewEnvironment : IDisposable
         var points=trial.objects.Select(o=>inverse*(o.position-Center)).ToArray();
         float bottom=points.Min(p=>p.y)-.2f,top=points.Max(p=>p.y)+.25f;
         Floor=bottom;float height=Mathf.Max(1,top-bottom);
+        m_WallTop=bottom+height;
         var groups=trial.objects.Where(o=>o.planeId>=0&&o.planeId<8).GroupBy(o=>o.planeId).ToArray();
         bool octagon=trial.layout!=null&&trial.layout.StartsWith("rotational_",StringComparison.Ordinal)&&groups.Length==8;
         Radius=Mathf.Max(1,points.Max(p=>new Vector2(p.x,p.z).magnitude));
@@ -95,6 +97,30 @@ public sealed class TrialReviewEnvironment : IDisposable
         }
         // Single-sided room walls are a cutaway when the orbit camera is outside the room.
         foreach(var root in new[]{m_Walls,m_Room})root.transform.SetPositionAndRotation(Center,trial.originRotation);
+    }
+    // Use the same finite panels as the reconstruction, not object colliders or
+    // an arbitrary distance along the gaze. This is a display projection only.
+    public bool TryProjectGaze(Ray ray,out Vector3 point)
+    {
+        point=default;
+        if(WallCount!=8||ray.direction.sqrMagnitude<.000001f)return false;
+        Quaternion inverse=Quaternion.Inverse(m_Trial.originRotation);
+        Vector3 origin=inverse*(ray.origin-Center),direction=inverse*ray.direction.normalized;
+        float nearest=float.PositiveInfinity,half=Radius*Mathf.Tan(Mathf.PI/8);
+        for(int i=0;i<8;i++)
+        {
+            var rotation=Quaternion.Euler(0,i*45,0);
+            Vector3 normal=rotation*Vector3.forward;
+            float denominator=Vector3.Dot(direction,normal);
+            if(Mathf.Abs(denominator)<.000001f)continue;
+            float distance=(Radius-Vector3.Dot(origin,normal))/denominator;
+            if(distance<=0||distance>=nearest)continue;
+            Vector3 hit=origin+direction*distance;
+            float across=Vector3.Dot(hit,rotation*Vector3.right);
+            if(Mathf.Abs(across)>half+.0001f||hit.y<Floor||hit.y>m_WallTop)continue;
+            nearest=distance;point=Center+m_Trial.originRotation*hit;
+        }
+        return !float.IsInfinity(nearest);
     }
     void Panel(GameObject parent,Vector3 center,Quaternion rotation,Vector2 size)
     {

@@ -32,11 +32,61 @@ public static class GazeQualityChecks
             CheckStopAfterCapture();
             CheckDecisionSnapshots();
             CheckOpeningLifecycleAndHistory();
+            CheckSameWallOpening();
             CheckPointingVicinity();
             CheckValidationPanelClearance();
             Debug.Log("[GazeQualityChecks] PASS: coordinates, idempotent diagnostic flip, hidden target, shared wording, shared-stream CSV validity and append safety. Hardware accuracy/rate NOT validated.");
         }
         finally{UnityEngine.Object.DestroyImmediate(go);}
+    }
+    static void CheckSameWallOpening()
+    {
+        if (SharedGazeStream.Instance != null) throw new InvalidOperationException("Stop Play mode before gaze checks.");
+        var host = new GameObject("OpeningFixture"); host.SetActive(false);
+        var source = new GameObject("OpeningEyes");
+        var target = new GameObject("HiddenOpeningTarget"); // No renderer required before reveal.
+        var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        try
+        {
+            var game = host.AddComponent<FindObjectGameManager>();
+            var hints = host.AddComponent<HintGenerator>();
+            typeof(HintGenerator).GetField("m_GameManager",flags).SetValue(hints,game);
+            typeof(FindObjectGameManager).GetField("m_CurrentTarget",flags).SetValue(game,("Cube","Red",Color.red));
+            var info = target.AddComponent<SpawnableObjectInfo>();
+            info.shapeName="Cube"; info.colorName="Red"; info.planeId=0;
+            ((System.Collections.Generic.List<GameObject>)typeof(FindObjectGameManager)
+                .GetField("m_SpawnedObjects",flags).GetValue(game)).Add(target);
+            var stream = source.AddComponent<SharedGazeStream>();
+            typeof(SharedGazeStream).GetProperty("Instance").SetValue(null,stream);
+            var sample = new GazeObservation { valid=true,worldOrigin=new Vector3(0,1.5f,0),worldDirection=Vector3.forward };
+            void Refresh() {
+                sample.inputEventTime=sample.receiptTime=Time.realtimeSinceStartupAsDouble;
+                typeof(SharedGazeStream).GetProperty("Latest").SetValue(stream,sample);
+            }
+            foreach (float x in new[] { -.4f,0,.4f })
+                foreach (float y in new[] { -1f,1f })
+                {
+                    target.transform.position=new Vector3(x,1.5f+y,1.5f); Refresh();
+                    string expected="Look " + (y>0 ? "higher" : "lower") + (x==0 ? "" : x<0 ? " and left" : " and right") + ".";
+                    Check(hints.TryPrepareOpening(out var phrase,out var id) && phrase==expected && !string.IsNullOrEmpty(id),
+                        "Hidden same-wall target gets vertical/diagonal opening with a recorded decision");
+                    Check(typeof(HintGenerator).GetField("m_OpeningTurn",flags).GetValue(hints)==null,
+                        "Within-wall opening does not seed an inter-wall turn");
+                }
+            sample.worldDirection=Vector3.right; Refresh();
+            Check(hints.TryPrepareOpening(out var outside,out _) && outside=="The object is to the left.",
+                "Other-wall opening retains the initial left/right cue");
+            sample.valid=false; Refresh();
+            Check(!hints.TryPrepareOpening(out _,out _),"Invalid gaze cannot invent a pre-trial direction");
+            sample.valid=true; Refresh(); sample.inputEventTime-=1;
+            Check(!hints.TryPrepareOpening(out _,out _),"Stale gaze cannot invent a pre-trial direction");
+            Debug.Log("[GazeQualityChecks] PASS: hidden-target same-wall opening, diagonals, other-wall cue and invalid/stale gaze.");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(host); UnityEngine.Object.DestroyImmediate(source);
+            UnityEngine.Object.DestroyImmediate(target); typeof(SharedGazeStream).GetProperty("Instance").SetValue(null,null);
+        }
     }
     static void CheckPointingVicinity()
     {
@@ -148,6 +198,36 @@ public static class GazeQualityChecks
             Telemetry(sample);Check(!Pointing(),"Controller alone cannot confirm while gaze is elsewhere");
             Check(DirectionalHintPolicy.WithinArea(10,10)==DirectionalHintPolicy.UpRightPhrase &&
                 DirectionalHintPolicy.WithinArea(-10,-10)==DirectionalHintPolicy.DownLeftPhrase,"Arrival and follow-up combine vertical and horizontal corrections within the wall");
+            var voice=host.AddComponent<VoiceSynthesizer>(); Set("m_Voice",voice);
+            var gazeHold=(GazeZoneEntryGate)typeof(HintGenerator).GetField("m_LookingEntry",flags).GetValue(hints);
+            var wallHold=(GazeZoneEntryGate)typeof(HintGenerator).GetField("m_ZoneEntry",flags).GetValue(hints);
+            void Evidence(bool valid,bool inside,bool looking) => typeof(HintGenerator).GetMethod("UpdateSpeechEvidence",flags)
+                .Invoke(hints,new object[]{valid,inside,looking});
+            sample.target=target;sample.tracked=1;sample.triggerHeld=1;Telemetry(sample);
+            Set("m_EvaluatedSample",new GazeObservation {valid=true,worldOrigin=Vector3.zero,worldDirection=Vector3.forward,
+                inputEventTime=Time.realtimeSinceStartupAsDouble,receiptTime=Time.realtimeSinceStartupAsDouble});
+            hold.Reset();gazeHold.Reset();wallHold.Reset();
+            hold.Update(true,true,0);gazeHold.Update(true,true,0);wallHold.Update(true,true,0);
+            Evidence(true,true,Looking());
+            var e=voice.GuidanceEvidence;
+            Check(e.gazeRayHit=="target" && e.controllerRayHit=="target" && e.gazeWithinTargetVicinity &&
+                !e.targetGazeQualified && !e.controllerTargetHoldQualified && !e.wallEntryQualified && e.controllerTriggerHeld==1,
+                "Jev snapshot distinguishes immediate hits from uncompleted holds");
+            hold.Update(true,true,1);gazeHold.Update(true,true,1);wallHold.Update(true,true,1);
+            Evidence(true,true,Looking());
+            Check(e.targetGazeQualified && e.controllerTargetHoldQualified && e.wallEntryQualified,
+                "Jev qualified flags reflect completed gates from the current tick");
+            sample.target=other;Telemetry(sample);occluder.enabled=true;Physics.SyncTransforms();
+            Set("m_EvaluatedSample",new GazeObservation {valid=true,worldOrigin=Vector3.zero,worldDirection=nearby});
+            Evidence(true,true,Looking());
+            Check(e.gazeRayHit=="distractor" && e.controllerRayHit=="distractor" && !e.targetGazeQualified && !e.controllerOnTarget,
+                "Jev knows when either ray intersects a distractor");
+            sample.tracked=0;Telemetry(sample);Evidence(false,false,Looking(false));
+            Check(e.gazeRayHit=="unavailable" && e.controllerRayHit=="unavailable" && e.controllerTriggerHeld==-1 && !e.targetGazeQualified,
+                "Tracking loss records unknown rays and trigger rather than false evidence");
+            hints.CancelPending();
+            Check(!voice.GuidanceEvidence.valid && voice.GuidanceEvidence.phase=="unavailable",
+                "Cancelled trial cannot leak its old guidance evidence");
             Debug.Log("[GazeQualityChecks] PASS: pointing vicinity, target identity, freshness, vertical arrival and development-only radius/ring controls");
         }
         finally

@@ -158,7 +158,7 @@
   {
     "id": "progress",
     "current": "Turn way right.",
-    "proposed": "Keep going.",
+    "proposed": "Keep going to the right.",
     "reason": "turn_progress_milestone",
     "elapsed": 1.0,
     "remaining": 1.6,

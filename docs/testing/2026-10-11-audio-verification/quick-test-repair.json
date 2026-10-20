@@ -1,0 +1,53 @@
+{
+  "rejected_cache": [
+    {
+      "expected": "Next, turn left approximately 165 degrees.",
+      "transcript": "Next, turn left approximately 100 degrees",
+      "file": "tts_43b46031c30381c1689908a3ff095199ce0fb1dac9ae7dd45cce0adbc149a4be.mp3"
+    },
+    {
+      "expected": "Okay, look left.",
+      "transcript": "Okay, look last turns, uh, now I'm into me.",
+      "file": "tts_1e6ef536e2510dfdb481f5fdb25003dc796515d21ae631c1adfef7271b1a8d0d.mp3"
+    }
+  ],
+  "repair_probe": [
+    {
+      "expected": "Next, turn left approximately 165 degrees.",
+      "spoken_text": "Next, turn left approximately one hundred sixty-five degrees.",
+      "transcript": "Next, turn left approximately 165 degrees",
+      "file": "tts_43b46031c30381c1689908a3ff095199ce0fb1dac9ae7dd45cce0adbc149a4be.mp3",
+      "output": "/tmp/gaze-quick-audio-fix/repair-tts_43b46031c30381c1689908a3ff095199ce0fb1dac9ae7dd45cce0adbc149a4be.mp3"
+    },
+    {
+      "expected": "Okay, look left.",
+      "spoken_text": "Okay, look left.",
+      "transcript": "Okay, look left. Uh.",
+      "file": "tts_1e6ef536e2510dfdb481f5fdb25003dc796515d21ae631c1adfef7271b1a8d0d.mp3",
+      "output": "/tmp/gaze-quick-audio-fix/repair-tts_1e6ef536e2510dfdb481f5fdb25003dc796515d21ae631c1adfef7271b1a8d0d.mp3"
+    }
+  ],
+  "final_short_cue": {
+    "expected": "Okay, look left.",
+    "transcript": "Okay, look left.",
+    "output": "/tmp/gaze-quick-audio-fix/okay-final.mp3",
+    "sha256": "cc0e1c59055a7351c4b77d83017b8e29225617624fe3aaaa36d49e87a692124f"
+  },
+  "settings_sequence": [
+    {
+      "attempt": 1,
+      "settings": "original default request"
+    },
+    {
+      "attempt": 2,
+      "stability": 0.85,
+      "speaker_boost": true
+    },
+    {
+      "attempt": 3,
+      "stability": 1.0,
+      "speaker_boost": false
+    }
+  ],
+  "verification": "Production VoiceAudioVerification.Matches and HasReceipt both passed for installed replacements. This is ASR validation, not a human listening guarantee."
+}

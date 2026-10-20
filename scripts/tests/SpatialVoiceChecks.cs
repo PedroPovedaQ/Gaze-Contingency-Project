@@ -14,7 +14,7 @@ namespace SpatialVoice
     public enum NavigationTone { Direct, Technical, Casual, Encouraging }
     public struct NavigationPhrase { public string id, text; public NavigationTone tone; public SpeechPhraseMetadata metadata; }
 }
-class SpatialVoiceChecks
+partial class SpatialVoiceChecks
 {
     static void Check(bool value, string message) { if (!value) throw new Exception(message); }
     static void Throws<T>(Action action) where T : Exception { try { action(); } catch (T) { return; } throw new Exception("Expected " + typeof(T).Name); }
@@ -28,6 +28,9 @@ class SpatialVoiceChecks
             else if (args.Length == 5 && args[0] == "--scenario-suite") RunScenarios(args);
             else if (args.Length == 3 && args[0] == "--audition") Audition(args[1], args[2]).GetAwaiter().GetResult();
             else if (args.Length == 3 && args[0] == "--navigation-suite") NavigationSuite(args[1], args[2]).GetAwaiter().GetResult();
+            else if (args.Length == 2 && args[0] == "--live-encouragement") LiveEncouragement(args[1]).GetAwaiter().GetResult();
+            else if (args.Length == 3 && args[0] == "--benchmark-guidance") BenchmarkGuidance(args[1], args[2]).GetAwaiter().GetResult();
+            else if (args.Length == 2 && args[0] == "--live-transmission") LiveTransmission(args[1]).GetAwaiter().GetResult();
             else if (args.Length == 2 && args[0] == "--live-eleven") LiveEleven(args[1]).GetAwaiter().GetResult();
             else throw new ArgumentException("Unknown test mode or argument count.");
             Console.WriteLine("PASS spatial voice contracts, PCM boundaries, fragmented socket audio, limits and cancellation");
@@ -50,6 +53,83 @@ class SpatialVoiceChecks
             var choice = await client.ChooseAsync("Synthetic seated-navigation test. Target is 45 degrees left and 3m away. Prefer casual wording.",
                 candidates, CancellationToken.None, 5000);
             Console.WriteLine("LIVE Jev/Vercel: candidate=" + choice.id + ";elapsed_ms=" + time.ElapsedMilliseconds);
+        }
+    }
+    // Alternate order to reduce warm-connection/order bias. All inputs are synthetic.
+    static async Task BenchmarkGuidance(string config, string output)
+    {
+        var client = new JevDecisionClient((string)JObject.Parse(System.IO.File.ReadAllText(config))["jev_key"]);
+        var choices = new[] { new NavigationPhrase { id="left", text="Look left.", tone=NavigationTone.Direct },
+            new NavigationPhrase { id="gentle", text="Gently, look left.", tone=NavigationTone.Encouraging },
+            new NavigationPhrase { id="casual", text="Okay, look left.", tone=NavigationTone.Casual },
+            new NavigationPhrase { id="technical", text="Turn left approximately 45 degrees.", tone=NavigationTone.Technical } };
+        var results = new JArray();
+        var warm = System.Diagnostics.Stopwatch.StartNew();
+        try { await client.WarmAsync(CancellationToken.None); Console.WriteLine("WARMUP ms="+warm.ElapsedMilliseconds); }
+        catch(Exception e) { Console.WriteLine("WARMUP fallback="+e.GetType().Name); }
+        for (int i=0; i<12; i++)
+        {
+            bool valid=i%4!=2, speaking=i%4==3, redundant=i%4==1;
+            bool expected=valid && !speaking && !redundant;
+            var runtime=new JObject { ["evidence"]=new SpeechGuidanceEvidence { valid=valid, geometryAvailable=true,
+                yawErrorDegrees=-45, gazeAgeSeconds=.01, phase="search" }.Snapshot(),
+                ["playback"]=new JObject { ["is_speaking"]=speaking, ["is_busy"]=speaking,
+                    ["transmission_decision_pending"]=false, ["current_phrase"]=speaking?"Look right.":null,
+                    ["last_spoken_phrase"]=redundant?"Look left.":"Look right.", ["pending_phrase"]=null },
+                ["seconds_since_speech_ended"]=redundant?.25:5, ["maximum_deferral_seconds"]=3,
+                ["deferred_seconds"]=0, ["locally_qualified"]=valid };
+            string state=SpeechNavigationState.Create(-45,3,"Direct",redundant?"Look left.":"Look right.",
+                "Coarse horizontal guidance; target wall not reached.",runtime.ToString());
+            for(int j=0;j<2;j++)
+            {
+                bool joint=(i+j)%2==0;
+                var timer=System.Diagnostics.Stopwatch.StartNew();
+                string failure=null; bool? speak=null; int calls=0;
+                try {
+                    if(joint) { calls++; speak=(await client.ChooseGuidanceAsync(state,choices,CancellationToken.None)).Speak; }
+                    else {
+                        calls++; var phrase=await client.ChooseAsync(state,choices,CancellationToken.None);
+                        var tx=new JObject { ["runtime"]=runtime, ["proposed_phrase"]=phrase.text,
+                            ["proposed_semantics"]=JObject.FromObject(SpeechPhraseMetadata.Describe(phrase.text)),
+                            ["seconds_since_speech_ended"]=runtime["seconds_since_speech_ended"],
+                            ["locally_qualified"]=valid,["reason"]="catalog_turn" };
+                        calls++; speak=await client.ShouldTransmitAsync(tx.ToString(),CancellationToken.None);
+                    }
+                } catch(Exception e) { failure=e.GetType().Name; }
+                var row=new JObject { ["pair"]=i,["scenario"]=i%4,["path"]=joint?"joint":"sequential",
+                    ["elapsed_ms"]=timer.Elapsed.TotalMilliseconds,["calls"]=calls,["failure"]=failure,
+                    ["speak"]=speak,["expected"]=expected };
+                results.Add(row); System.IO.File.WriteAllText(output,results.ToString());
+                Console.WriteLine(row.ToString(Newtonsoft.Json.Formatting.None));
+            }
+        }
+        foreach (JObject result in results)
+            if ((string)result["path"]=="joint" && result["failure"].Type==JTokenType.Null)
+                Check((bool)result["speak"]==(bool)result["expected"], "Joint decision mismatch in latency benchmark");
+    }
+    static async Task LiveTransmission(string configurationPath)
+    {
+        var client = new JevDecisionClient((string)JObject.Parse(System.IO.File.ReadAllText(configurationPath))["jev_key"]);
+        var cases = new[] {
+            new { id="new_direction", text="Look left.", reason="stable_direction", last="Look right.", age=2d, valid=true, speaking=false, expected=true },
+            new { id="redundant", text="Look left.", reason="stable_direction", last="Look left.", age=.25d, valid=true, speaking=false, expected=false },
+            new { id="invalid_gaze", text="Look left.", reason="stable_direction", last="Look right.", age=2d, valid=false, speaking=false, expected=false },
+            new { id="already_speaking", text="Look left.", reason="stable_direction", last="Look right.", age=0d, valid=true, speaking=true, expected=false }
+        };
+        foreach (var c in cases)
+        {
+            var state=new JObject { ["schema"]="speech-transmission-v1", ["proposed_phrase"]=c.text,
+                ["reason"]=c.reason, ["locally_qualified"]=true, ["seconds_since_speech_ended"]=c.age,
+                ["runtime"]=new JObject { ["evidence"]=new JObject { ["valid"]=c.valid,
+                    ["insideTargetWall"]=false, ["currentDirection"]="left", ["controllerOnTarget"]=false },
+                    ["playback"]=new JObject { ["is_speaking"]=c.speaking, ["is_busy"]=true,
+                        ["pending_phrase"]=c.text, ["last_spoken_phrase"]=c.last } } };
+            var timer=System.Diagnostics.Stopwatch.StartNew();
+            try {
+                bool result=await client.ShouldTransmitAsync(state.ToString(),CancellationToken.None);
+                Console.WriteLine($"LIVE transmission {c.id}: expected={c.expected}; speak={result}; elapsed_ms={timer.ElapsedMilliseconds}");
+                Check(result==c.expected,"Live transmission mismatch: "+c.id);
+            } catch(OperationCanceledException) { Console.WriteLine($"LIVE transmission {c.id}: deadline fallback; elapsed_ms={timer.ElapsedMilliseconds}"); }
         }
     }
     static void RunScenarios(string[] args) => Scenarios(args[1], args[2], args[3], int.Parse(args[4])).GetAwaiter().GetResult();
@@ -112,7 +192,7 @@ class SpatialVoiceChecks
                     tone=(NavigationTone)Enum.Parse(typeof(NavigationTone),(string)p["metadata"]["tone"],true),
                     metadata=p["metadata"].ToObject<SpeechPhraseMetadata>() });
             }
-            Check(candidates.Count==4,"4 authored candidates at bearing");
+            Check(candidates.Count==5,"5 authored candidates at bearing");
             string last="none";
             for(int i=0;i<2;i++)
             {
@@ -174,6 +254,40 @@ class SpatialVoiceChecks
     }
     static async Task Run()
     {
+        await ExtendedEncouragementChecks();
+        var first = new RoundPerformance { measurementsAvailable=true,searchSeconds=12,guidanceStarts=2 };
+        var candidates = RoundEncouragement.Candidates(first,null,_=>true);
+        Check(candidates.Count==4 && candidates.Exists(p=>p.id=="first_selection") && !candidates.Exists(p=>p.id=="recovery"),"First selection claims require no mistakes");
+        var payloadRound=JObject.Parse(RoundEncouragement.Payload(first,candidates));
+        Check((string)payloadRound["state"]["event"]=="round_complete" && (bool)payloadRound["state"]["correct_object_selected"] &&
+            (bool)payloadRound["state"]["search_finished"] && !(bool)payloadRound["state"]["quick_completion_eligible"],
+            "Completion context is explicit; a 12-second trial cannot justify quick praise");
+        Check((int)payloadRound["state"]["round"]["guidanceStarts"]==2 && payloadRound["state"]["round"]["participant_id"]==null,"Round payload carries observed performance without participant identity");
+        Check(RoundEncouragement.Parse("{\"answers\":{\"round_encouragement\":{\"type\":\"choice\",\"choice\":\"You selected the right object. Nice work.\"}}}",candidates).id=="nice","Round exact choice parses");
+        Throws<FormatException>(()=>RoundEncouragement.Parse("{\"answers\":{\"round_encouragement\":{\"type\":\"choice\",\"choice\":\"You were faster.\"}}}",candidates));
+        first.incorrectSelections=2;
+        candidates=RoundEncouragement.Candidates(first,null,_=>true);
+        Check(candidates.Exists(p=>p.id=="recovery") && !candidates.Exists(p=>p.id.StartsWith("first_selection")),"Mistakes disallow first-selection praise");
+        first.measurementsAvailable=false;
+        candidates=RoundEncouragement.Candidates(first,null,_=>true);
+        Check(candidates.TrueForAll(p=>Array.IndexOf(RoundEncouragement.Phrases,p)<4),"Unknown measurements allow only generic praise");
+        Check(RoundEncouragement.Candidates(first,"You selected the right object. Nice work.",t=>t=="You selected the right object. Nice work.").Count==0,"Unprepared or repeated speech never becomes eligible");
+        first.measurementsAvailable=true;first.incorrectSelections=0;first.searchSeconds=40;
+        Check(RoundEncouragement.Candidates(first,null,_=>true).Exists(p=>p.id=="persistence"),"Long search supports persistence without a speed comparison");
+        first.searchSeconds=double.NaN;
+        Check(!RoundEncouragement.Candidates(first,null,_=>true).Exists(p=>p.id=="first_selection"),"Nonfinite measurements cannot justify a performance claim");
+        first.searchSeconds=12;
+        candidates=RoundEncouragement.Candidates(first,null,_=>true);
+        using (var http = new HttpClient(new EncouragementHttp(false)))
+            Check((await new JevDecisionClient("test",http).ChooseEncouragementAsync(first,candidates,CancellationToken.None)).id=="nice",
+                "Round decision uses its own typed HTTP contract");
+        using (var http = new HttpClient(new EncouragementHttp(true)))
+        {
+            bool timeout=false;
+            try { await new JevDecisionClient("test",http).ChooseEncouragementAsync(first,candidates,CancellationToken.None); }
+            catch(OperationCanceledException) { timeout=true; }
+            Check(timeout,"Round encouragement deadline cancels a stalled provider");
+        }
         var choices = new List<NavigationPhrase> {
             new NavigationPhrase { id="left", text="Look left.", tone=NavigationTone.Direct },
             new NavigationPhrase { id="gentle", text="Gently, look left.", tone=NavigationTone.Encouraging } };
@@ -191,6 +305,25 @@ class SpatialVoiceChecks
             "gaze_target_vicinity_hold", 1, 2, new SpeechGuidanceEvidence { valid = true, targetGazeQualified = true }));
         Check((string)structured["current"]["semantics"]["intent"] == "return_to_target" &&
             (bool)structured["evidence"]["targetGazeQualified"] && structured["participant"] == null, "structured semantic and identifier-free evidence");
+        var unknown = new SpeechGuidanceEvidence { yawErrorDegrees=45, verticalPlaneFraction=float.NaN }.Snapshot();
+        Check(unknown["yawErrorDegrees"].Type==JTokenType.Null && unknown["verticalPlaneFraction"].Type==JTokenType.Null &&
+            unknown["gazeAgeSeconds"].Type==JTokenType.Null && (string)unknown["controllerRayHit"]=="unavailable",
+            "Unknown gaze/geometry/controller evidence cannot masquerade as alignment or a miss");
+        var evidence = new SpeechGuidanceEvidence { valid=true, insideTargetWall=true, gazeRayHit="distractor",
+            gazeWithinTargetVicinity=false, controllerEvidenceValid=true, controllerOnTarget=true,
+            controllerRayHit="target", controllerTriggerHeld=1, controllerTargetHoldQualified=false };
+        var runtime = new JObject { ["evidence"]=evidence.Snapshot(), ["playback"]=new JObject {
+            ["is_speaking"]=true, ["current_phrase"]="Look left.", ["elapsed_seconds"]=.7, ["speech_remaining_seconds"]=1.2 } };
+        var state = JObject.Parse(SpeechNavigationState.Create(-45,3,"Casual","Look right.","test",runtime.ToString()));
+        evidence.controllerOnTarget=false;
+        Check((bool)state["runtime"]["evidence"]["controllerOnTarget"] &&
+            !(bool)state["runtime"]["evidence"]["controllerTargetHoldQualified"] &&
+            (string)state["runtime"]["evidence"]["gazeRayHit"]=="distractor" &&
+            (bool)state["runtime"]["playback"]["is_speaking"],
+            "Navigation freezes ray-hit, hold and playback state independently before async use");
+        var statePayload=JObject.Parse(JevDecisionClient.Payload(state.ToString(),choices));
+        Check(JObject.Parse((string)statePayload["state"])["runtime"]["evidence"]["controllerTriggerHeld"].Value<int>()==1,
+            "Structured current-state snapshot survives the real decision request contract");
         Check((string)payload["model"] == "typesafe-ai/jev", "Vercel model identifier");
         var chosen = JevDecisionClient.Parse("{\"answers\":{\"navigation_phrase\":{\"type\":\"choice\",\"choice\":\"Gently, look left.\"}}}", choices);
         Check(chosen.id == "gentle", "exact candidate mapping");
@@ -212,6 +345,41 @@ class SpatialVoiceChecks
         Check(JevDecisionClient.ParseInterruption("{\"answers\":{\"speech_action\":{\"type\":\"choice\",\"choice\":\"fade_out\"}}}"), "typed fade approval");
         Check(!JevDecisionClient.ParseInterruption("{\"answers\":{\"speech_action\":{\"type\":\"choice\",\"choice\":\"finish_phrase\"}}}"), "typed finish advice");
         Throws<FormatException>(() => JevDecisionClient.ParseInterruption("{\"answers\":{\"speech_action\":{\"type\":\"choice\",\"choice\":\"stop_now\"}}}"));
+        Check(JevDecisionClient.ParseTransmission("{\"answers\":{\"transmit\":{\"type\":\"choice\",\"choice\":\"speak\"}}}"), "typed transmission approval");
+        Check(!JevDecisionClient.ParseTransmission("{\"answers\":{\"transmit\":{\"type\":\"choice\",\"choice\":\"wait\"}}}"), "typed transmission wait");
+        Throws<FormatException>(()=>JevDecisionClient.ParseTransmission("{\"answers\":{\"transmit\":{\"type\":\"choice\",\"choice\":\"interrupt\"}}}"));
+        var jointPayload=JObject.Parse(JevDecisionClient.GuidancePayload(state.ToString(),choices));
+        Check(jointPayload["state"].Type==JTokenType.Object && jointPayload["questions"]["transmit"]!=null &&
+            jointPayload["questions"]["navigation_phrase"]!=null,"Joint request retains both typed decisions and structured evidence");
+        string jointAnswer="{\"answers\":{\"navigation_phrase\":{\"type\":\"choice\",\"choice\":\"Look left.\"},\"transmit\":{\"type\":\"choice\",\"choice\":\"wait\"}}}";
+        var jointResult=JevDecisionClient.ParseGuidance(jointAnswer,choices);
+        Check(jointResult.Phrase.text=="Look left." && !jointResult.Speak,"Joint wait retains phrase without authorizing speech");
+        Throws<FormatException>(()=>JevDecisionClient.ParseGuidance(jointAnswer.Replace("Look left.","Invented words"),choices));
+        Throws<FormatException>(()=>JevDecisionClient.ParseGuidance(jointAnswer.Replace("wait","interrupt"),choices));
+        Throws<FormatException>(()=>JevDecisionClient.ParseGuidance("{\"answers\":{\"navigation_phrase\":{\"type\":\"choice\",\"choice\":\"Look left.\"}}}",choices));
+        var five = new List<NavigationPhrase>(choices);
+        for(int i=five.Count;i<5;i++)five.Add(new NavigationPhrase { id="extra"+i,text="Alternative "+i,tone=NavigationTone.Casual });
+        Check(((JObject)JObject.Parse(JevDecisionClient.GuidancePayload(state.ToString(),five))["questions"]["navigation_phrase"]["criteria"]).Count==5,"Five candidates supported");
+        five.Add(new NavigationPhrase { text="Sixth",tone=NavigationTone.Direct });
+        Throws<ArgumentException>(()=>JevDecisionClient.GuidancePayload(state.ToString(),five));
+        var jointTransport = new JointHttp(jointAnswer);
+        using (var http = new HttpClient(jointTransport))
+        {
+            var traced = new JevDecisionClient("secret-test-key",http);
+            var traces = new List<JObject>(); traced.Trace += value => traces.Add(JObject.Parse(value));
+            var decision = await traced.ChooseGuidanceAsync(state.ToString(),choices,CancellationToken.None);
+            Check(traces.Count==2 && (string)traces[0]["request_id"]==decision.RequestId && (string)traces[1]["request_id"]==decision.RequestId,"Request/answer share stable correlation ID");
+            Check(traces[0]["payload"]["questions"]!=null && traces[1]["answers"]!=null && !traces[0].ToString().Contains("secret-test-key"),"Trace keeps candidates and answers, never credentials");
+            Check(jointTransport.Calls==1 && !decision.Speak,"Both decisions use exactly one HTTP request");
+        }
+        using (var http = new HttpClient(new JointHttp(jointAnswer, stall:true)))
+        using (var cancel = new CancellationTokenSource())
+        {
+            cancel.CancelAfter(10); bool canceled=false;
+            try { await new JevDecisionClient("test",http).ChooseGuidanceAsync(state.ToString(),choices,cancel.Token); }
+            catch(OperationCanceledException) { canceled=true; }
+            Check(canceled,"Joint request honors external session cancellation");
+        }
         var pcm = new PcmStreamBuffer(8);
         pcm.Write(new byte[] { 0 }); pcm.Write(new byte[] { 128, 255, 127, 0 }); pcm.Write(new byte[] { 0 }); pcm.Finish();
         var samples = new float[4]; pcm.Read(samples);
@@ -252,6 +420,21 @@ class SpatialVoiceChecks
         }
         await producer; Check(read == 10000, "all concurrent samples drained");
     }
+    sealed class JointHttp : HttpMessageHandler
+    {
+        readonly string answer; readonly bool stall;
+        public int Calls;
+        public JointHttp(string answer, bool stall=false) { this.answer=answer;this.stall=stall; }
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken token)
+        {
+            Calls++;
+            var body=JObject.Parse(await request.Content.ReadAsStringAsync());
+            Check(body["questions"]["transmit"]!=null && body["questions"]["navigation_phrase"]!=null,
+                "Both typed questions reach the same transport");
+            if(stall) await Task.Delay(10000,token);
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content=new StringContent(answer) };
+        }
+    }
     sealed class FakeHttp : HttpMessageHandler
     {
         readonly bool delay;
@@ -263,6 +446,20 @@ class SpatialVoiceChecks
             if (delay) await Task.Delay(10000, token);
             return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(
                 "{\"answers\":{\"navigation_phrase\":{\"type\":\"choice\",\"choice\":\"Look left.\"}}}") };
+        }
+    }
+    sealed class EncouragementHttp : HttpMessageHandler
+    {
+        readonly bool stall;
+        public EncouragementHttp(bool stall) { this.stall=stall; }
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken token)
+        {
+            var body=JObject.Parse(await request.Content.ReadAsStringAsync());
+            Check((string)body["questions"]?["round_encouragement"]?["type"]=="choice" &&
+                (bool)body["state"]["round"]["measurementsAvailable"],"Structured round facts and separate question are transmitted");
+            if(stall) await Task.Delay(10000,token);
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content=new StringContent(
+                "{\"answers\":{\"round_encouragement\":{\"type\":\"choice\",\"choice\":\"You selected the right object. Nice work.\"}}}") };
         }
     }
     sealed class FakeSocket : WebSocket

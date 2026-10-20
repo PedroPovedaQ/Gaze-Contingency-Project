@@ -8,14 +8,41 @@ public partial class VoiceSynthesizer
 {
     [SerializeField] bool m_UseJevInterruptions = true;
     public Func<string, CancellationToken, Task<bool>> InterruptionAdvisor { private get; set; }
-    public SpatialVoice.SpeechGuidanceEvidence GuidanceEvidence { get; } = new SpatialVoice.SpeechGuidanceEvidence();
+    public SpatialVoice.SpeechGuidanceEvidence GuidanceEvidence { get; private set; } = new SpatialVoice.SpeechGuidanceEvidence();
+    public void ClearGuidanceEvidence() { CancelTransmission(); GuidanceEvidence = new SpatialVoice.SpeechGuidanceEvidence(); }
     string m_SpeechStartStage = "unknown";
+    string m_LastSpokenPhrase;
+
+    Newtonsoft.Json.Linq.JObject CapturePlaybackState()
+    {
+        bool speaking = IsSpeaking && m_AudioSource != null && m_AudioSource.clip != null;
+        return new Newtonsoft.Json.Linq.JObject {
+            ["captured_at_seconds"] = Time.realtimeSinceStartupAsDouble,
+            ["is_speaking"] = speaking, ["is_busy"] = IsBusy && m_TransmissionCoroutine == null,
+            ["transmission_decision_pending"] = m_TransmissionCoroutine != null,
+            ["current_phrase"] = speaking ? m_CurrentPhrase : null,
+            ["pending_phrase"] = m_TransmissionPhrase ?? (!speaking && IsBusy ? m_CurrentPhrase : null),
+            ["last_spoken_phrase"] = m_LastSpokenPhrase,
+            ["context"] = m_CurrentContext, ["started_in_stage"] = speaking ? m_SpeechStartStage : null,
+            ["elapsed_seconds"] = speaking ? (double?)m_AudioSource.time : null,
+            ["speech_remaining_seconds"] = speaking ? (double?)Math.Max(0, SpeechRemaining) : null,
+            ["word_boundary_known"] = false,
+            ["fade_in_progress"] = m_InterruptionCoroutine != null,
+            ["semantics"] = Newtonsoft.Json.Linq.JObject.FromObject(SpatialVoice.SpeechPhraseMetadata.Describe(speaking ? m_CurrentPhrase : null))
+        };
+    }
+
+    // Freeze values on Unity's thread before an asynchronous provider call.
+    public string CaptureDecisionContext() => new Newtonsoft.Json.Linq.JObject {
+        ["captured_at_seconds"] = Time.realtimeSinceStartupAsDouble,
+        ["evidence"] = GuidanceEvidence.Snapshot(), ["playback"] = CapturePlaybackState()
+    }.ToString(Newtonsoft.Json.Formatting.None);
     long m_PlaybackGeneration, m_AdviceAttemptGeneration = -1;
     double m_LastSmoothInterruption = -100, m_AdviceStarted;
     bool m_DropCorrection;
     double m_CurrentSpeechSeconds = -1; // Excludes the clone's effect tail, matching the normalization speech window.
     double SpeechRemaining => (m_CurrentSpeechSeconds > 0 ? m_CurrentSpeechSeconds : m_AudioSource.clip.length) - m_AudioSource.time;
-    string m_AdvicePhrase, m_AdviceReason;
+    string m_AdvicePhrase, m_AdviceReason, m_AdviceDecisionId;
     Func<bool> m_AdviceRelevant;
     Task<bool> m_Advice;
     CancellationTokenSource m_AdviceCancellation;
@@ -31,7 +58,7 @@ public partial class VoiceSynthesizer
             m_AudioSource.time, SpeechRemaining,
             Time.realtimeSinceStartupAsDouble, m_LastSmoothInterruption);
 
-    bool ApproveInterruption(string phrase, string reason, Func<bool> stillRelevant)
+    bool ApproveInterruption(string phrase, string reason, Func<bool> stillRelevant, ref string decisionId)
     {
         if (!CanConsiderGuidanceInterruption || !GuidanceSpeechPolicy.IsCorrectionEvent(reason) ||
             GuidanceSpeechPolicy.IsRedundantArrival(reason, m_SpeechStartStage) || phrase == m_CurrentPhrase ||
@@ -45,6 +72,7 @@ public partial class VoiceSynthesizer
             try { approved = m_Advice.GetAwaiter().GetResult(); }
             catch (Exception e) { AdviceTelemetry("finish_on_" + e.GetType().Name); }
             AdviceTelemetry(approved ? "fade_approved" : "finish_phrase");
+            decisionId = m_AdviceDecisionId;
             CancelInterruptionAdvice();
             return approved && CanConsiderGuidanceInterruption && stillRelevant();
         }
@@ -56,7 +84,12 @@ public partial class VoiceSynthesizer
         m_AdviceCancellation = new CancellationTokenSource();
         m_AdviceCancellation.CancelAfter(TimeSpan.FromSeconds(GuidanceSpeechPolicy.AdviceDeadline));
         string state = SpatialVoice.SpeechInterruptionState.Create(m_CurrentPhrase, phrase, reason,
-            m_AudioSource.time, SpeechRemaining, GuidanceEvidence, m_CurrentContext, m_SpeechStartStage);
+            m_AudioSource.time, SpeechRemaining, GuidanceEvidence, m_CurrentContext, m_SpeechStartStage, CapturePlaybackState());
+        var traceState = Newtonsoft.Json.Linq.JObject.Parse(state);
+        traceState["decision_id"] = decisionId;
+        state = traceState.ToString(Newtonsoft.Json.Formatting.None);
+        m_AdviceDecisionId = decisionId;
+        Telemetry?.Invoke("interruption_state", m_CurrentContext ?? "tip", m_ActiveClipKey ?? "", state);
         AdviceTelemetry("requested");
         try { m_Advice = InterruptionAdvisor(state, m_AdviceCancellation.Token); }
         catch (Exception e) { AdviceTelemetry("finish_on_" + e.GetType().Name); CancelInterruptionAdvice(); }
@@ -77,7 +110,7 @@ public partial class VoiceSynthesizer
     }
 
     void AdviceTelemetry(string result) => Telemetry?.Invoke("interruption_advice", m_CurrentContext ?? "tip",
-        m_ActiveClipKey ?? "", "generation=" + m_PlaybackGeneration + ";result=" + result +
+        m_ActiveClipKey ?? "", "decision_id=" + m_AdviceDecisionId + ";generation=" + m_PlaybackGeneration + ";result=" + result +
         ";reason=" + m_AdviceReason + ";proposal=" + m_AdvicePhrase + ";elapsed_ms=" +
         ((Time.realtimeSinceStartupAsDouble - m_AdviceStarted) * 1000).ToString("F0", CultureInfo.InvariantCulture));
 

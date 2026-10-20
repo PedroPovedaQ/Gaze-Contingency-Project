@@ -8,7 +8,7 @@ public class SpawnableObjectInfo : MonoBehaviour
 {
     public string objectId; // Stable within a run, including identical distractors.
     public string shapeName;   // "Sphere", "Cube", "Pyramid", "Cylinder", "Star"
-    public string colorName;   // "Red", "Blue", "Yellow", "Purple"
+    public string colorName;   // "Red", "Blue", "Yellow", "Green"
     public int shelfLevel;     // 0-6: bottom to top shelf row
     public int shelfColumn;    // 0=left bookcase, 1=right bookcase
     public int planeId = -1;   // Rotational beta: 0..7; -1 denotes shelf layout.

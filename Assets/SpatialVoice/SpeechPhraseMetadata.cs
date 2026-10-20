@@ -73,9 +73,15 @@ namespace SpatialVoice
                     intent = "area_arrival", stage = "within_target_wall", requires = new[] { "stable_wall_entry" } };
                 result[DirectionalHintPolicy.Variant(DirectionalHintPolicy.ReturnPhrase, i)] = new SpeechPhraseMetadata {
                     intent = "return_to_target", requires = new[] { "verified_target_departure" } };
-                result[DirectionalHintPolicy.Progress(i)] = new SpeechPhraseMetadata {
-                    intent = "progress_encouragement", requires = new[] { "new_turn_milestone" } };
             }
+            foreach (var direction in DirectionalHintPolicy.ProgressDirections)
+                for (int i = 0; i < 3; i++)
+                {
+                    var progress = Direction(direction, "progress_encouragement");
+                    progress.interruptPolicy = "finish";
+                    progress.requires = new[] { "fresh_valid_gaze", "same_direction", "measured_progress" };
+                    result[DirectionalHintPolicy.Progress(direction, i)] = progress;
+                }
             foreach (var text in new[] { DirectionalHintPolicy.BitMorePhrase, DirectionalHintPolicy.LittleMorePhrase })
                 result[text] = new SpeechPhraseMetadata { intent = "progress_encouragement", magnitude = "small",
                     stage = "within_target_wall", requires = new[] { "recent_explicit_direction", "same_direction", "measured_progress", "small_remaining_error", "continuation_not_already_used" } };
@@ -97,20 +103,52 @@ namespace SpatialVoice
     public sealed class SpeechGuidanceEvidence
     {
         public bool valid, insideTargetWall, targetGazeQualified, controllerOnTarget, geometryAvailable, verticalMeasured;
-        public double gazeAgeSeconds;
+        public bool wallEntryQualified, gazeWithinTargetVicinity, controllerEvidenceValid, controllerTargetHoldQualified;
+        public bool vicinityAmbiguous, targetAcknowledged, targetReturnPending, continuationUsed;
+        public string phase = "unavailable", gazeRayHit = "unavailable", controllerRayHit = "unavailable", previousDirection;
+        public int controllerTriggerHeld = -1, vicinityCandidateCount;
+        public double snapshotTimeSeconds, gazeAgeSeconds = -1, gazeReceiptAgeSeconds = -1, controllerAgeSeconds = -1, lastTargetSeenAgeSeconds = -1;
         public float yawErrorDegrees, pitchErrorDegrees, verticalPlaneFraction;
+        public float vicinityErrorDegrees, vicinityRadiusDegrees;
+        public bool vicinityMeasured;
+
+        public JObject Snapshot()
+        {
+            var result = JObject.FromObject(this);
+            // Missing or invalid observations are unknown, never zero-error evidence.
+            if (!valid || !geometryAvailable) { result["yawErrorDegrees"] = null; result["pitchErrorDegrees"] = null; }
+            if (!valid || !verticalMeasured) result["verticalPlaneFraction"] = null;
+            if (!valid || !vicinityMeasured) { result["vicinityErrorDegrees"] = null; result["vicinityRadiusDegrees"] = null; }
+            foreach (var key in new[] { "gazeAgeSeconds", "gazeReceiptAgeSeconds", "controllerAgeSeconds", "lastTargetSeenAgeSeconds" })
+                if ((double)result[key] < 0 || double.IsNaN((double)result[key]) || double.IsInfinity((double)result[key])) result[key] = null;
+            result["qualification_thresholds_seconds"] = new JObject {
+                ["target_gaze"] = DirectionalHintPolicy.LookingHoldSeconds, ["controller_target"] = 1.0, ["target_wall"] = GuidanceSpeechPolicy.DirectionSettleSeconds };
+            return result;
+        }
+    }
+
+    public static class SpeechNavigationState
+    {
+        public static string Create(float angle, float distance, string tone, string lastPhrase, string behavior, string runtimeContext) =>
+            new JObject { ["schema"] = "speech-navigation-v2", ["task"] = "seated_hidden_target_guidance",
+                ["relative_yaw_degrees"] = angle, ["horizontal_distance_metres"] = distance,
+                ["angle_convention"] = "negative left, positive right, zero forward",
+                ["preferred_tone"] = tone, ["last_catalog_phrase"] = lastPhrase, ["behavior"] = behavior,
+                ["runtime"] = runtimeContext == null ? (JToken)JValue.CreateNull() : JObject.Parse(runtimeContext),
+                ["constraint"] = "Choose only an offered phrase. Unknown input is not evidence of alignment or acquisition. Local eligibility and revalidation remain authoritative."
+            }.ToString(Newtonsoft.Json.Formatting.None);
     }
 
     public static class SpeechInterruptionState
     {
         public static string Create(string current, string proposed, string reason, double elapsed, double remaining,
-            SpeechGuidanceEvidence evidence, string context = "tip", string speechStartStage = "unknown") => new JObject {
-                ["schema"] = "speech-interruption-v2", ["task"] = "seated_hidden_target_guidance",
+            SpeechGuidanceEvidence evidence, string context = "tip", string speechStartStage = "unknown", JObject playback = null) => new JObject {
+                ["schema"] = "speech-interruption-v3", ["task"] = "seated_hidden_target_guidance",
                 ["current"] = Phrase(current, speechStartStage), ["proposed"] = Phrase(proposed),
                 ["relationship"] = new JObject { ["arrival_already_acknowledged_by_current_stage"] = GuidanceSpeechPolicy.IsRedundantArrival(reason, speechStartStage) },
                 ["event"] = new JObject { ["kind"] = reason, ["meaning"] = Meaning(reason) },
-                ["evidence"] = evidence == null ? (JToken)JValue.CreateNull() : JObject.FromObject(evidence),
-                ["playback"] = new JObject { ["context"] = context, ["elapsed_seconds"] = elapsed,
+                ["evidence"] = evidence == null ? (JToken)JValue.CreateNull() : evidence.Snapshot(),
+                ["playback"] = playback ?? new JObject { ["is_speaking"] = true, ["context"] = context, ["elapsed_seconds"] = elapsed,
                     ["speech_remaining_seconds"] = remaining, ["word_boundary_known"] = false },
                 ["local_limits"] = new JObject { ["minimum_elapsed_seconds"] = .65,
                     ["protected_ending_seconds"] = 1.0, ["fade_seconds"] = GuidanceSpeechPolicy.FadeSeconds,

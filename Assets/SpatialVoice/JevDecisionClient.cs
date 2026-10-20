@@ -10,6 +10,14 @@ using Newtonsoft.Json.Linq;
 
 namespace SpatialVoice
 {
+    public sealed class GuidanceSelection
+    {
+        public NavigationPhrase Phrase;
+        public bool Speak;
+        public string Source;
+        public string RequestId;
+    }
+
     /// <summary>Jev chooses wording, never geometry. Uses Vercel's TypeSafe-compatible contract,
     /// not the unverified api.jev.ai endpoint. No credentials or provider bodies in errors.</summary>
     public sealed class JevDecisionClient
@@ -17,13 +25,23 @@ namespace SpatialVoice
         public const string Endpoint = "https://ai-gateway.vercel.sh/typesafe/v1/systemone";
         static readonly HttpClient Client = new HttpClient();
         readonly string m_Key;
+        readonly SynchronizationContext m_Context = SynchronizationContext.Current;
+        // Replay telemetry only; never emit headers, keys or arbitrary provider error bodies.
+        public event Action<string> Trace;
+        void Emit(JObject value)
+        {
+            string json = value.ToString(Formatting.None);
+            void Deliver() { try { Trace?.Invoke(json); } catch { /* Diagnostics cannot break guidance. */ } }
+            if (m_Context != null && SynchronizationContext.Current != m_Context) m_Context.Post(_ => Deliver(), null);
+            else Deliver();
+        }
         readonly HttpClient m_Client;
         public bool Available => !string.IsNullOrWhiteSpace(m_Key);
         public JevDecisionClient(string apiKey, HttpClient client = null) { m_Key = apiKey; m_Client = client ?? Client; }
 
         public static string Payload(string state, IReadOnlyList<NavigationPhrase> choices)
         {
-            if (choices == null || choices.Count < 2 || choices.Count > 4) throw new ArgumentException("Two to four candidates required.");
+            if (choices == null || choices.Count < 2 || choices.Count > 5) throw new ArgumentException("Two to five candidates required.");
             var criteria = new JObject();
             foreach (var p in choices)
             {
@@ -50,7 +68,7 @@ namespace SpatialVoice
         }
 
         public async Task<NavigationPhrase> ChooseAsync(string state, IReadOnlyList<NavigationPhrase> candidates,
-            CancellationToken cancellation, int timeoutMilliseconds = 900)
+            CancellationToken cancellation, int timeoutMilliseconds = GuidanceSpeechPolicy.CatalogChoiceDeadlineMilliseconds)
         {
             return Parse(await RequestAsync(Payload(state, candidates), cancellation, timeoutMilliseconds).ConfigureAwait(false), candidates);
         }
@@ -71,6 +89,78 @@ namespace SpatialVoice
             return ParseInterruption(await RequestAsync(payload, cancellation, 400).ConfigureAwait(false));
         }
 
+        static JObject TransmissionQuestion() => new JObject {
+                    ["type"] = "choice",
+                    ["instructions"] = "Choose speak or wait for an idle navigation assistant. The participant does not know the target. Use seconds_since_speech_ended as elapsed silence, not time since a request. pending_phrase is this proposed cue, not playing audio. A fresh correction after several seconds of silence is useful, even if older advice gave the opposite direction. A 0.6-second cadence is an opportunity, not an obligation. This decision cannot interrupt audio.",
+                    ["criteria"] = new JObject {
+                        ["speak"] = "Valid gaze, idle audio, and an actionable proposed cue. Speak for a new direction or qualified event; also speak when silence exceeds 3 seconds and the user still needs guidance.",
+                        ["wait"] = "Audio actually playing; invalid gaze; or redundant advice spoken within the past 3 seconds with no new direction/event. Also wait for target confirmations without local qualification or advice that contradicts current evidence." }
+                };
+
+        public async Task<bool> ShouldTransmitAsync(string state, CancellationToken cancellation)
+        {
+            var payload = new JObject {
+                ["model"] = "typesafe-ai/jev", ["state"] = JObject.Parse(state),
+                ["questions"] = new JObject { ["transmit"] = TransmissionQuestion() }
+            }.ToString(Formatting.None);
+            return ParseTransmission(await RequestAsync(payload, cancellation, 400).ConfigureAwait(false));
+        }
+
+        // Coarse guidance used to make these two requests in series. Both typed answers
+        // now share one immutable state and one deadline; neither can override Unity gates.
+        public static string GuidancePayload(string state, IReadOnlyList<NavigationPhrase> candidates)
+        {
+            var payload = JObject.Parse(Payload(state, candidates));
+            payload["state"] = JObject.Parse(state);
+            var question = TransmissionQuestion();
+            question["instructions"] = "Decide whether to speak a navigation cue NOW. First check state.runtime.evidence.valid and state.runtime.playback.is_speaking: invalid gaze or currently speaking MUST answer wait. Otherwise consider elapsed silence at state.runtime.seconds_since_speech_ended and the last spoken phrase. Candidates are alternatives for the SAME locally verified direction, not permission to speak. Select navigation_phrase even when waiting. Never interrupt audio.";
+            question["criteria"] = new JObject {
+                ["speak"] = "Gaze valid, playback idle, locally qualified direction; AND either a new direction/event or more than 3 seconds of silence. All preconditions must hold.",
+                ["wait"] = "Gaze invalid, playback speaking/busy, or no locally qualified cue. Also wait for same-direction advice less than 3 seconds after the last spoken instruction. Any failed precondition requires wait regardless of target angle." };
+
+            payload["questions"]["transmit"] = question;
+            return payload.ToString(Formatting.None);
+        }
+
+        public async Task<GuidanceSelection> ChooseGuidanceAsync(string state, IReadOnlyList<NavigationPhrase> candidates,
+            CancellationToken cancellation)
+        {
+            var payload = JObject.Parse(GuidancePayload(state, candidates));
+            string id = (string)payload["state"]?["decision_id"] ?? Guid.NewGuid().ToString("N");
+            payload["state"]["decision_id"] = id;
+            string json = await RequestAsync(payload.ToString(Formatting.None), cancellation,
+                GuidanceSpeechPolicy.CatalogChoiceDeadlineMilliseconds).ConfigureAwait(false);
+            var selection = ParseGuidance(json, candidates);
+            selection.RequestId = id;
+            return selection;
+        }
+
+        public static GuidanceSelection ParseGuidance(string json, IReadOnlyList<NavigationPhrase> candidates) =>
+            new GuidanceSelection { Phrase = Parse(json, candidates), Speak = ParseTransmission(json), Source = "jev" };
+
+        // One synthetic request after voice preparation primes the shared HTTP connection
+        // before a time-critical hint. It cannot authorize playback or delay the trial.
+        public async Task WarmAsync(CancellationToken cancellation)
+        {
+            var payload = new JObject { ["model"] = "typesafe-ai/jev",
+                ["state"] = new JObject { ["task"] = "synthetic_connection_preparation", ["participant_data"] = false },
+                ["questions"] = new JObject { ["ready"] = new JObject { ["type"] = "choice",
+                    ["instructions"] = "This is a synthetic connection check, not navigation. Choose ready.",
+                    ["criteria"] = new JObject { ["ready"] = "Connection preparation only.", ["wait"] = "Unused alternative." } } }
+            }.ToString(Formatting.None);
+            await RequestAsync(payload, cancellation, 1500).ConfigureAwait(false);
+        }
+
+        public static bool ParseTransmission(string json)
+        {
+            var answer = JObject.Parse(json)["answers"]?["transmit"];
+            if ((string)answer?["type"] != "choice") throw new FormatException("Invalid transmission answer type.");
+            string choice = (string)answer?["choice"];
+            if (choice == "speak") return true;
+            if (choice == "wait") return false;
+            throw new FormatException("Transmission choice is outside the candidate set.");
+        }
+
         public static bool ParseInterruption(string json)
         {
             var answer = JObject.Parse(json)["answers"]?["speech_action"];
@@ -81,7 +171,51 @@ namespace SpatialVoice
             throw new FormatException("Interruption choice is outside the candidate set.");
         }
 
+        public async Task<EncouragementPhrase> ChooseEncouragementAsync(RoundPerformance facts,
+            IReadOnlyList<EncouragementPhrase> candidates, CancellationToken cancellation, string decisionId = null)
+        {
+            var payload = JObject.Parse(RoundEncouragement.Payload(facts, candidates));
+            payload["state"]["decision_id"] = decisionId ?? Guid.NewGuid().ToString("N");
+            return RoundEncouragement.Parse(await RequestAsync(payload.ToString(Formatting.None), cancellation,
+                RoundEncouragement.DeadlineMilliseconds).ConfigureAwait(false), candidates);
+        }
+
         async Task<string> RequestAsync(string payload, CancellationToken cancellation, int timeoutMilliseconds)
+        {
+            var request = JObject.Parse(payload);
+            var state = request["state"];
+            string id = state is JObject ? (string)state["decision_id"] : null;
+            id = id ?? Guid.NewGuid().ToString("N");
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+            Emit(new JObject { ["schema"] = "jev-trace-v1", ["request_id"] = id,
+                ["stage"] = "request", ["deadline_ms"] = timeoutMilliseconds, ["payload"] = request });
+            try
+            {
+                string json = await SendAsync(payload, cancellation, timeoutMilliseconds).ConfigureAwait(false);
+                var response = JObject.Parse(json);
+                // Validate before labeling this an accepted provider response.
+                foreach (var question in ((JObject)request["questions"]).Properties())
+                {
+                    var answer = response["answers"]?[question.Name];
+                    string choice = (string)answer?["choice"];
+                    if ((string)answer?["type"] != "choice" || choice == null || question.Value["criteria"]?[choice] == null)
+                        throw new FormatException("Invalid Jev choice response.");
+                }
+                Emit(new JObject { ["schema"] = "jev-trace-v1", ["request_id"] = id,
+                    ["stage"] = "response", ["status"] = "ok", ["elapsed_ms"] = timer.Elapsed.TotalMilliseconds,
+                    ["answers"] = response["answers"], ["usage"] = response["usage"] });
+                return json;
+            }
+            catch (Exception e)
+            {
+                Emit(new JObject { ["schema"] = "jev-trace-v1", ["request_id"] = id, ["stage"] = "response",
+                    ["status"] = cancellation.IsCancellationRequested ? "cancelled" : e is OperationCanceledException ? "timeout" : "error",
+                    ["error_type"] = e.GetType().Name, ["elapsed_ms"] = timer.Elapsed.TotalMilliseconds });
+                throw;
+            }
+        }
+
+        async Task<string> SendAsync(string payload, CancellationToken cancellation, int timeoutMilliseconds)
         {
             if (!Available) throw new InvalidOperationException("Vercel Jev key is not configured.");
             using (var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellation))

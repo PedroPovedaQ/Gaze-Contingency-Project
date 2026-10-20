@@ -45,7 +45,11 @@ public static class TrialReviewBuild
         AssetDatabase.Refresh();
         TrialReviewLiveChecks.Run(source);
         var timeline=TrialReplayFile.Read(source);
+        TrialReviewVicinityChecks.Run(timeline);
+        TrialReviewCatalogChecks.Run(timeline);
+        TrialReviewGazeLineChecks.Run();
         TrialReviewInterfaceChecks.Run(timeline);
+        TrialReviewJevChecks.Run();
         Assert(timeline.Trials.Count==3 && timeline.Meshes.Count==3,"Trial/mesh reconstruction");
         using(var renderer=new TrialReplayRenderer(timeline){RecordedHead=true})
         {
@@ -296,6 +300,15 @@ public static class TrialReviewBuild
             Assert(environment.WallCount==8&&environment.WallsVisible&&environment.RoomVisible,"Eight inferred walls and room");
             Assert(Mathf.Abs(environment.Radius-3)<.001f,"Wall radius comes from snapshot objects");
             float floor=environment.Floor;
+            for(int wall=0;wall<8;wall++)
+            {
+                Vector3 origin=trial.origin+trial.originRotation*new Vector3(0,floor+.5f,0);
+                Vector3 direction=trial.originRotation*(Quaternion.Euler(0,wall*45,0)*Vector3.forward);
+                Assert(environment.TryProjectGaze(new Ray(origin,direction),out var hit)&&
+                    Vector3.Distance(hit,origin+direction*3)<.001f,"Gaze dot intersects each wall at its actual plane distance");
+            }
+            Assert(!environment.TryProjectGaze(new Ray(trial.origin+Vector3.up*100,Vector3.forward),out _),"No dot outside finite wall height");
+            Assert(!environment.TryProjectGaze(new Ray(trial.origin,Vector3.up),out _),"Vertical ray cannot invent wall intersection");
             environment.Prepare(trial,false,true);Assert(!environment.WallsVisible&&environment.RoomVisible,"Independent wall toggle");
             environment.Prepare(trial,true,false);Assert(environment.WallsVisible&&!environment.RoomVisible,"Independent room toggle");
             environment.Prepare(timeline.Trials[1],true,true);environment.Prepare(trial,true,true);
@@ -303,6 +316,10 @@ public static class TrialReviewBuild
             var moved=JsonUtility.FromJson<TrialReplayRecord>(original);moved.origin=new Vector3(10,2,-4);moved.originRotation=Quaternion.Euler(0,75,0);
             foreach(var o in moved.objects)o.position=moved.origin+moved.originRotation*o.position;
             environment.Prepare(moved,true,true);Assert(environment.Center==moved.origin&&Mathf.Abs(environment.Radius-3)<.001f,"Snapshot origin/rotation respected");
+            Vector3 dotOrigin=moved.origin+moved.originRotation*new Vector3(0,environment.Floor+.5f,0);
+            Vector3 dotDirection=moved.originRotation*Vector3.forward;
+            Assert(environment.TryProjectGaze(new Ray(dotOrigin,dotDirection),out var dot)&&
+                Vector3.Distance(dot,dotOrigin+dotDirection*3)<.001f,"Gaze dot respects translated and rotated study frame");
             Assert(environment.DegreePositions.Length==8,"Eight degree labels");
             for(int plane=0;plane<8;plane++)
                 Assert(Vector3.Distance(environment.DegreePositions[plane],moved.origin+moved.originRotation*(Quaternion.Euler(0,plane*45,0)*new Vector3(0,.43f,3)))<.001f,"Degree label follows saved layout rotation");
@@ -312,6 +329,7 @@ public static class TrialReviewBuild
             environment.Prepare(null,true,true);Assert(!environment.RoomVisible,"Null trial safe");
             var unknown=JsonUtility.FromJson<TrialReplayRecord>(original);unknown.layout="unknown";
             environment.Prepare(unknown,true,true);Assert(!environment.WallsVisible&&environment.RoomVisible,"Do not invent octagonal walls for unknown layouts");
+            Assert(!environment.TryProjectGaze(new Ray(Vector3.zero,Vector3.forward),out _),"Unknown layout hides gaze dot");
         }
         Assert(JsonUtility.ToJson(trial)==original,"Environment leaves recorded snapshot unchanged");
         Debug.Log("TRIAL_REVIEW_ENVIRONMENT_PASS toggles, eight walls, layout radius, origin, rotation, trial switch, rewind, unknown layout, no data mutation");
@@ -418,6 +436,9 @@ public static class TrialReviewBuild
                 for(int i=0;i<=960;i++)
                 {
                     double t=i/60.0;
+                    // Explicitly synthetic Jev fixture for inspection; never a real provider result.
+                    if(i==30)write(TrialReviewJevChecks.Fixture("demo-jev-"+trial,tid,false,start+t));
+                    if(i==44)write(TrialReviewJevChecks.Fixture("demo-jev-"+trial,tid,true,start+t));
                     if(i==60)write(new TrialReplayRecord{kind="audio_playback_start",time=start+t,trialId=tid,clip="audio/tone.wav",text="Illustrative synthetic tone"});
                     if(i==90)write(new TrialReplayRecord{kind="audio_cancelled",time=start+t,trialId=tid});
                     if(i==300)write(new TrialReplayRecord{kind="search_paused",time=start+t,trialId=tid});

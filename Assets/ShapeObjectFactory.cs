@@ -34,7 +34,7 @@ public class ShapeObjectFactory : MonoBehaviour
         (new Color(0.9f, 0.15f, 0.15f, 1f), "Red"),
         (new Color(0.15f, 0.35f, 0.9f, 1f), "Blue"),
         (new Color(0.95f, 0.85f, 0.1f, 1f), "Yellow"),
-        (new Color(0.6f, 0.15f, 0.85f, 1f), "Purple"),
+        (new Color(0f, 168f / 255f, 120f / 255f, 1f), "Green"), // Emerald #00A878
     };
 
     const string k_Tag = "[ShapeFactory]";
@@ -198,7 +198,7 @@ public class ShapeObjectFactory : MonoBehaviour
             2 => new Vector3(0.10f, 0.08f, 0.10f), // Pyramid (wider base, shorter height)
             3 => new Vector3(0.08f, 0.04f, 0.08f), // Cylinder
             4 => new Vector3(0.096f, 0.096f, 0.096f), // Star
-            5 => new Vector3(0.035f, 0.035f, 0.035f), // Capsule (pill — rotated on side, uniform scale)
+            5 => Vector3.one * (0.035f * 1.3f), // Capsule: 30% larger on every axis, preserving pill proportions.
             _ => new Vector3(0.08f, 0.08f, 0.08f),
         };
         obj.transform.localScale = scale;

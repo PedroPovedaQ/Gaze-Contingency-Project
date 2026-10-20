@@ -73,6 +73,14 @@ public sealed partial class TrialReviewApp
         m_FollowLive = false; m_Playing = false; Sync(true);
     }
 
+    void SetLiveMode(bool enabled)
+    {
+        if(enabled){m_LivePanel=true;ConnectLive();return;}
+        // Pause following at the current cursor while preserving the background archive transfer.
+        m_FollowLive=false;m_JoinLive=false;m_LiveSignalActive=false;m_Playing=false;
+        m_Audio?.Stop();
+    }
+
     void LeaveLiveView()
     {
         m_ViewLive = m_FollowLive = false;
@@ -133,6 +141,7 @@ public sealed partial class TrialReviewApp
                 m_Audio = new TrialReplayAudioPreview(timeline, new TrialReviewAudioOutput());
                 m_Correction = new TrialReviewGazeCorrection(timeline, null);
                 m_Path = timeline.FilePath; m_Hash = null; m_Summary = null; m_ExportPath = "";
+                InitializeRunExport();
                 m_Samples.Clear(); m_Events.Clear(); m_ViewLive = true;
             }
             for (; m_LiveIndexed < timeline.Records.Count; m_LiveIndexed++)
@@ -143,7 +152,9 @@ public sealed partial class TrialReviewApp
                 if (record.kind == "sample" || record.kind == "selection" && record.schema >= 2) m_Samples.Add(record);
                 if (record.kind != "sample" && record.kind != "header" && record.kind != "trial") m_Events.Add(record);
             }
-            if (now - m_LastAudioRefresh > .2 && (m_LiveAudioDirty || m_AudioRevision != m_LiveStatus?.audioRevision))
+            // Starts/cancellations take effect on the next viewer update. Only
+            // asset-arrival retries are throttled; cached speech need not wait.
+            if (m_LiveAudioDirty || now - m_LastAudioRefresh > .2 && m_AudioRevision != m_LiveStatus?.audioRevision)
             {
                 m_Audio.Refresh(timeline); m_LastAudioRefresh = now; m_AudioRevision = m_LiveStatus?.audioRevision ?? -1; m_LiveAudioDirty = false;
             }
@@ -179,8 +190,9 @@ public sealed partial class TrialReviewApp
         GUILayout.BeginArea(new Rect(22, 73, width - 44, 86));
         GUILayout.BeginHorizontal();
         GUILayout.Label("Headset Wi-Fi IP", m_Label, GUILayout.Width(125));
+        GUI.SetNextControlName("text:wifi-endpoint");
         m_Endpoint = GUILayout.TextField(m_Endpoint, m_Field, GUILayout.Width(185));
-        if (Button(ReceiverRunning ? "Follow live" : "Connect Wi-Fi", GUILayout.Width(125))) ConnectLive();
+        if (Button(ReceiverRunning ? "Resume live" : "Connect Wi-Fi", GUILayout.Width(125))) SetLiveMode(true);
         if (ReceiverRunning && Button("Stop receiver", GUILayout.Width(125))) StopReceiver();
         if (Button("Open saved files", GUILayout.Width(140))) { Directory.CreateDirectory(m_LiveOutput); Application.OpenURL(new Uri(m_LiveOutput).AbsoluteUri); }
         GUILayout.EndHorizontal();

@@ -653,7 +653,9 @@ public class FindObjectGameManager : MonoBehaviour
             label.transform.SetParent(frame.transform, false);
             label.transform.localPosition = new Vector3(0f, 0.43f, 0f);
             var text = label.AddComponent<TextMeshPro>();
-            text.text = plane == 0 ? "0° · FORWARD" : $"{azimuth}°";
+            // Signed labels around seated forward; the rear wall is both -180 and +180.
+            float signedAzimuth = Mathf.DeltaAngle(0f, azimuth);
+            text.text = plane == 0 ? "0° · FORWARD" : plane == 4 ? "±180°" : $"{signedAzimuth:+0;-0;0}°";
             text.fontSize = 1.8f;
             text.alignment = TextAlignmentOptions.Center;
             text.color = Color.white;

@@ -8,5 +8,5 @@ json_dll=$(rg --files Library/PackageCache | rg 'com.unity.nuget.newtonsoft-json
 cp "$json_dll" "$test_dir/"
 "$unity_mono/bin/mono" "$unity_mono/lib/mono/4.5/csc.exe" -nologo -r:System.Net.Http.dll -r:"$unity_mono/lib/mono/4.5/Facades/netstandard.dll" -r:"$json_dll" \
   -out:"$test_dir/checks.exe" Assets/SpatialVoice/JevDecisionClient.cs Assets/SpatialVoice/ElevenLabsPcmClient.cs \
-  Assets/SpatialVoice/PcmStreamBuffer.cs Assets/SpatialVoice/SpeechPhraseMetadata.cs Assets/GuidanceSpeechPolicy.cs Assets/DirectionalHintPolicy.cs scripts/tests/SpatialVoiceChecks.cs
+  Assets/SpatialVoice/PcmStreamBuffer.cs Assets/SpatialVoice/SpeechPhraseMetadata.cs Assets/SpatialVoice/RoundEncouragement.cs Assets/GuidanceSpeechPolicy.cs Assets/DirectionalHintPolicy.cs scripts/tests/SpatialVoiceChecks.cs scripts/tests/RoundEncouragementChecks.cs
 "$unity_mono/bin/mono" "$test_dir/checks.exe" "$@"

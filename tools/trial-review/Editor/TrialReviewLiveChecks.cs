@@ -9,12 +9,26 @@ public static class TrialReviewLiveChecks
     static void Check(bool ok, string why) { if (!ok) throw new Exception("Live replay: " + why); }
     sealed class Audio : TrialReplayAudioPreview.IOutput
     {
-        public int starts, stops;
-        public object Play(float[] samples, int channels, int rate, int offset, string name) { starts++; return new object(); }
+        public int starts, stops, offsetFrames, sampleRate;
+        public object Play(float[] samples, int channels, int rate, int offset, string name)
+        { starts++; offsetFrames=offset; sampleRate=rate; return new object(); }
         public void Stop(object handle) { stops++; }
     }
     public static void Run(string source)
     {
+        var captions=new TrialReviewSubtitles();
+        captions.Observe(new TrialReplayRecord{kind="audio_playback_start",time=1,sequence=1,text="Look left."});
+        captions.Observe(new TrialReplayRecord{kind="audio_playback_start",time=2,sequence=2,text="success_chime",detail="success_effect;software_one_shot_start"});
+        captions.Observe(new TrialReplayRecord{kind="audio_cancelled",time=3,sequence=3});
+        captions.Observe(new TrialReplayRecord{kind="audio_playback_start",time=3,sequence=4,text="Look up."});
+        captions.Observe(new TrialReplayRecord{kind="application_paused",time=4,sequence=5});
+        Check(captions.At(.9,long.MaxValue)==null,"no caption before speech");
+        Check(captions.At(2.5,long.MaxValue)=="Look left.","captions need no WAV and ignore overlapping chimes");
+        Check(captions.At(3,3)==null && captions.At(3,4)=="Look up.","same-time cancellation/replacement respects sequence");
+        Check(captions.At(4,long.MaxValue)==null,"pause clears caption");
+        Check(captions.At(1.5,long.MaxValue)=="Look left.","rewinding restores caption");
+        captions.Clear();Check(captions.At(2,long.MaxValue)==null,"run change clears captions");
+        Debug.Log("TRIAL_REVIEW_SUBTITLES_PASS start, cancellation, overlap, pause, rewind, run reset, no WAV dependency");
         var follow = new TrialReviewLiveFollow();
         follow.Observe(new TrialReplayRecord { kind="sample", time=10, headAvailable=true, headTracked=1 });
         Check(!follow.Ready(true, 100, 0, 0, true), "connected historical recording must wait");
@@ -42,6 +56,32 @@ public static class TrialReviewLiveChecks
         {
             string path = Path.Combine(folder, "recording.jsonl");
             var lines = File.ReadAllLines(source);
+            // Preparation publishes WAVs before the first replay header/start.
+            File.WriteAllText(path, "");
+            Directory.CreateDirectory(Path.Combine(folder, "audio"));
+            string cached = Path.Combine(folder, "audio/tone.wav");
+            File.Copy(Path.Combine(Path.GetDirectoryName(source), "audio/tone.wav"), cached);
+            using (var preparing = new TrialReviewLiveStream(path))
+            {
+                Check(preparing.Poll()==0, "empty preparation stream waits for header");
+                var output = new Audio();
+                using (var audio = new TrialReplayAudioPreview(preparing.Timeline, output))
+                {
+                    audio.Sync(0,true,1);
+                    Check(output.starts==0,"cached clips do not play until an event arrives");
+                    var start = new TrialReplayRecord {kind="audio_playback_start",sequence=1,time=1,clip="audio/tone.wav",text="Look right."};
+                    File.AppendAllText(path,lines[0]+"\n"+JsonUtility.ToJson(start)+"\n");
+                    preparing.Poll(10000,5000); audio.Refresh(preparing.Timeline); audio.Sync(1.2,true,1);
+                    Check(output.starts==1 && Math.Abs((double)output.offsetFrames/output.sampleRate-.2)<.001,
+                        "prepared clip joins at the session cursor, never at an invented onset");
+                    audio.Refresh(preparing.Timeline);audio.Sync(1.3,true,1);
+                    Check(output.starts==1,"cached speech is not restarted by receiver updates");
+                    File.AppendAllText(path,JsonUtility.ToJson(new TrialReplayRecord{kind="audio_cancelled",sequence=2,time=1.4})+"\n");
+                    preparing.Poll(10000,5000);audio.Refresh(preparing.Timeline);audio.Sync(1.5,true,1);
+                    Check(output.stops==1 && audio.ActiveCount==0,"live interruption stops cached speech");
+                }
+            }
+            File.Delete(cached);
             File.WriteAllText(path, lines[0] + "\n", new UTF8Encoding(false));
             using (var live = new TrialReviewLiveStream(path))
             {

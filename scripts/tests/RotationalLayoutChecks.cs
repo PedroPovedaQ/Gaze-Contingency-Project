@@ -29,7 +29,7 @@ class RotationalLayoutChecks
             Check(variants.Count == 4, "large turns have four directional alternatives");
         }
         foreach (var phrase in new[] { "You're in the right area. A little higher.",
-            "You're in the right area. A little lower.", "You're on it!", "Keep going.", DirectionalHintPolicy.LookingPhrase,
+            "You're in the right area. A little lower.", "You're on it!", "Keep going to the right.", DirectionalHintPolicy.LookingPhrase,
             "Right area. A little higher and left." })
             Check(Array.IndexOf(DirectionalHintPolicy.AllPhrases(), phrase) >= 0,
                 "New arrival and pointing cues must be prepared before trials: " + phrase);

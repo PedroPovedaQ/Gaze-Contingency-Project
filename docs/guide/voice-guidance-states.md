@@ -12,7 +12,7 @@ stateDiagram-v2
     ChooseTurn --> Turning: Actual target bearing
     Turning --> ProgressCue: New 45 degree milestone
     ProgressCue --> Turning: Continue same route
-    Turning --> DirectionReminder: No new milestone for 4 seconds
+    Turning --> DirectionReminder: Jev approves stalled-turn reminder
     DirectionReminder --> Turning
     Turning --> Arrival: Target wall stays stable
     Arrival --> [*]: Announce area and refine
@@ -22,7 +22,7 @@ stateDiagram-v2
 
 - Actual object position determines shortest left/right direction, including its lateral offset on the wall. An exact seated-layout 0-to-180 tie chooses right; 180-to-0 chooses left. Near the rear seam, retain the opening/initial route until the remaining angle is below 150 degrees or the target wall is entered. This prevents +/-180 jitter reversing the instruction.
 - At 90 degrees or more remaining, say “Turn way left/right.” Each newly reached 45-degree remaining-error milestone can produce one varied continuation: “Keep going,” “That's it, keep turning,” or “Keep going that way.” Repeated crossings of a consumed milestone do not rearm it. Fast movement coalesces milestones instead of queueing stale cues.
-- Cues wait for available speech and the two-second ordinary interval. A same-direction reminder without progress waits four seconds and names the direction. These gates mean no promise to speak at every wall boundary during a fast turn.
+- Cues wait for available speech and the 0.6-second ordinary interval. Jev then chooses speak or wait from the current gaze, controller, progress and playback state. Without a configured advisor, a same-direction reminder without progress waits three seconds and names the direction. These gates mean no promise to speak at every wall boundary during a fast turn.
 - Stable arrival combines an area acknowledgment and the current refinement in one prepared clip. A recent wall departure gives the actual direction back rather than generic “go back.”
 
 ## Inside the target wall
@@ -56,7 +56,7 @@ Target confirmation still requires the target to be the unique closest candidate
 
 Local rules protect the first 650ms, the last 1,000ms of the recorded speech window (excluding the clone's effect tail), acknowledgments and the trigger reminder; interruptions have a 2.5-second cooldown. Every request needs prepared replacement audio and valid qualified gaze. Only current approval can start a linear fade from the current volume to zero over a nominal **150ms of unscaled real time**, then stop. Unity applies volume per frame, so the stop occurs on the first frame at or after the deadline, not a sample-accurate 150ms guarantee. After fading, recheck the correction; drop it if gaze/target evidence changed. Do not reverse the fade partway through.
 
-The post-sentence gap remains 0.55 seconds, or one second after acknowledgments. Invalid gaze suspends new decisions immediately; after the existing 250ms tracking grace, current guidance fades out locally without consulting Jev. Pause, trial cancellation, setup/opening cancellation and disabling the component retain immediate stop semantics.
+The October 11 post-sentence gap is 0.25 seconds, or 0.6 seconds after acknowledgments. Invalid gaze suspends new decisions immediately; after the existing 250ms tracking grace, current guidance fades out locally without consulting Jev. Pause, trial cancellation, setup/opening cancellation and disabling the component retain immediate stop semantics.
 
 The pilot is controlled by **Use Jev Interruptions** on `VoiceSynthesizer` in the Inspector (enabled by default). Turning it off restores finish-phrase correction scheduling; tracking-loss fade remains. Both voice conditions share the same policy. `interruption_advice` logs decisions/discards and `audio_fade_start` records the 150ms envelope for reconstruction. Existing installed standalone replay viewers need rebuilding to gain the new envelope renderer.
 
@@ -79,7 +79,7 @@ Examples are shortened to “Turn way left,” “Right area. Look lower,” “
 | Awkward transition | Evaluation | Current behavior |
 | --- | --- | --- |
 | Go back — YEP | Cuts off the return instruction | Usually finish; a current Jev approval may fade a misleading long return, then revalidate confirmation |
-| YEP — now look down | Gives contradictory-sounding instructions too rapidly | Finish acknowledgment and wait one second before reevaluating |
+| YEP — now look down | Gives contradictory-sounding instructions too rapidly | Finish acknowledgment and wait 0.6 seconds before reevaluating |
 | Up — down — up during gaze motion | Speaks transient states | Finish one phrase; choose only the latest stable direction |
 | Blink cuts a word | Treats a short data gap as a speech cancellation | Immediately suspend new decisions; allow 0.25 seconds before fading current speech |
 

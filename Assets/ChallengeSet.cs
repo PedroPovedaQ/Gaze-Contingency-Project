@@ -37,13 +37,13 @@ public static class ChallengeSet
             : TotalRounds);
 
     static readonly string[] Shapes = { "Sphere", "Cube", "Pyramid", "Cylinder", "Star", "Capsule" };
-    static readonly string[] ColorNames = { "Red", "Blue", "Yellow", "Purple" };
+    static readonly string[] ColorNames = { "Red", "Blue", "Yellow", "Green" };
     static readonly Color[] ColorValues =
     {
         new Color(0.9f, 0.15f, 0.15f, 1f),
         new Color(0.15f, 0.35f, 0.9f, 1f),
         new Color(0.95f, 0.85f, 0.1f, 1f),
-        new Color(0.6f, 0.15f, 0.85f, 1f),
+        new Color(0f, 168f / 255f, 120f / 255f, 1f), // Emerald #00A878
     };
 
     // One object's identity: for example, "Cube" + "Red" + its display color.
