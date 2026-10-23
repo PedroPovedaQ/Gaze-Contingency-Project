@@ -4,8 +4,10 @@
 \section{Controlled Scenario Matrix}
 Each scenario must save input observations, policy/configuration, eligible actions, provider behavior, playback occupancy, and actual admitted speech. Tests use the same trajectories across policies. The expected behavior below is an acceptance specification, not a claim that a wearer experienced the scenario successfully.
 
+\begingroup
+\thesislongtablecaption{Sequence scenarios and acceptance criteria.}
 \begin{longtable}{@{}p{0.25\linewidth}p{0.66\linewidth}@{}}
-\caption{Sequence scenarios and acceptance criteria.}\\\toprule
+\toprule
 Scenario & Evidence and expected behavior \\\midrule\endfirsthead
 \toprule Scenario & Evidence and expected behavior \\\midrule\endhead
 Large turn & Target opposite starting reference; progress cues remain directionally valid as wall boundaries are crossed.\\
@@ -25,6 +27,7 @@ Provider wait/failure & Deferral remains bounded; fallback respects current elig
 Speech occupied & Higher-priority event follows explicit interruption/admission policy; interrupted text is not recorded as fully heard.\\
 Correct trigger & Trial ends only on correct selection; success feedback uses completed-trial context.\\\bottomrule
 \end{longtable}
+\endgroup
 
 \section{Deterministic Labels}
 A wrong-direction label requires supported geometry showing that the delivered cue moves the user away from the intended target relation under the cue's reference frame. A stale label requires evidence that the relevant state changed before playback. Contradictory ordering requires a delivered sequence inconsistent with valid current evidence, such as an away-direction during a target controller hit. When the trace lacks the needed observation, the label is unknown.

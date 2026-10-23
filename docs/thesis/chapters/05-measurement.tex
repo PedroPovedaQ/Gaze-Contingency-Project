@@ -79,7 +79,7 @@ The first gaze-contact latency uses the first valid recorded target-ray intersec
 
 Vicinity qualification is an interaction rule. In the documented system, a target can be acknowledged after 100 ms of valid qualifying evidence, with overlapping regions resolved to a single closest candidate. The rule trades exact collider intersection for a tolerance intended to make feedback usable, so that tolerance must be logged and piloted. The study-release tolerance remains to be frozen, and the default ring in the synthetic viewer screenshot is not a validated study setting. A very large region can produce premature acknowledgment even when its timing is correct.
 
-Controller pointing is a distinct input observation, but its spoken acknowledgment is not independent of gaze, because the admission rule also requires valid nearby gaze. The documented pointing acknowledgment requires a qualified one-second controller hold with valid gaze in the target vicinity when speech is admitted. Before the hold completes, a valid target hit already suppresses contradictory away-directions; this suppression prevents a direction such as ``go back down'' from being delivered while the controller is already on the target, without falsely saying the hold has qualified. Correct trigger selection is the only event that successfully completes the search; a stop or timeout has a different outcome.
+Controller pointing is a distinct input observation, but its spoken acknowledgment is not independent of gaze: the documented rule requires a qualified one-second controller hold with valid gaze in the target vicinity when speech is admitted. Before the hold completes, a valid target hit already suppresses contradictory away-directions; this suppression prevents a direction such as ``go back down'' from being delivered while the controller is already on the target, without falsely saying the hold has qualified. Correct trigger selection is the only event that successfully completes the search; a stop or timeout has a different outcome.
 
 Figure~\ref{fig:evidence-events} contrasts the three feedback and completion events. The example utterances communicate their meanings and are not asserted to be verbatim clips in every voice library.
 
@@ -133,6 +133,7 @@ Table~\ref{tab:latency-contract} keeps the principal timing variables separate. 
 \caption[Timing variables and evidence boundaries]{Timing contract for planned analysis and engineering evaluation. All cross-clock comparisons require an established mapping; unavailable evidence is not assigned a zero duration.}
 \label{tab:latency-contract}
 \small
+\tagpdfsetup{table/header-rows={1}}
 \begin{tabularx}{\linewidth}{@{}p{0.23\linewidth}p{0.31\linewidth}X@{}}
 \toprule
 Quantity & Endpoints & Interpretation limit \\\midrule

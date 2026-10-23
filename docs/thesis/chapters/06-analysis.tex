@@ -1,10 +1,10 @@
 
 \chapter{PLANNED STATISTICAL ANALYSIS}
 \label{ch:analysis}
-The analysis asks whether the two voice configurations differ in efficiency and experience, while allowing those answers to diverge. Active completion time is the primary outcome, workload and motivation are secondary, and agent experience, reliance, and debrief responses are exploratory. The repeated-measures design connects those outcomes to the same participants under both voices. Guidance diagnostics establish exposure and technical context, so the statistical comparison concerns voice configuration rather than the independent value of Jev or gaze contingency.
+The analysis asks whether the two voice configurations differ in efficiency and experience, while allowing those answers to diverge. Active completion time is the primary outcome, workload and motivation are secondary, and agent experience, reliance, and debrief responses are exploratory. The repeated-measures design connects those outcomes to the same participants under both voices. Guidance diagnostics describe exposure and technical context. Because Jev and gaze contingency are shared by both conditions, the statistical comparison concerns voice configuration rather than their independent value.
 
-\section{Primary contrast}
-The primary estimand will compare active completion time under the self-similar and participant-preferred catalog voices, standardized to the same starting-difficulty distribution. A trial-level mixed-effects analysis of log completion time will account for participant clustering, voice condition, period/order, trial progression and absolute pre-cue starting theta. The analysis will report the voice time ratio and uncertainty using a two-sided contrast.
+\section{Primary Contrast}
+The primary estimand will compare active completion time under the self-similar and neutral voices, standardized to the same starting-difficulty distribution. A trial-level mixed-effects analysis of log completion time will account for participant clustering, voice condition, period/order, trial progression and absolute pre-cue starting theta. The analysis will report the voice time ratio and uncertainty using a two-sided contrast.
 
 Nonlinearity in starting difficulty will be represented by a prespecified low-complexity function of theta, while nominal-angle strata will support balance plots and a categorical sensitivity analysis. Zero-degree trials will remain in the analysis, and completion time will not be divided by angle. Before confirmatory recruitment, simulation will be used to finalize the model's random-effects structure, angle function and smallest meaningful effect. The participant count will be justified under that same model rather than by treating repeated trials as independent participants.
 
@@ -17,19 +17,13 @@ Figure~\ref{fig:analysis-units} illustrates the planned units of observation. Tr
 \label{fig:analysis-units}
 \end{figure}
 
-
-\section{Secondary and exploratory outcomes}
-Condition-specific ratings will be collected retrospectively, only after both blocks, with actual survey timestamps retained; each rating set nevertheless remains referenced to a participant-by-block observation. Because these are not immediate post-block measurements, recall and recency effects will be considered when interpreting condition differences. Individual workload dimensions and complete unweighted workload means will be summarized by participant and block. IMI subscales and the three six-item agent-perception constructs will remain separate scores, and the additional Guo Q20--22 appealing, eerie and familiar ratings will be analyzed individually rather than combined into an eeriness score. Voice similarity will serve as a manipulation check, while custom experience ratings and self-reported guidance use will also be analyzed individually. Multiplicity families and secondary contrasts will be specified before confirmatory analysis.
-
-Instruction count, observed gaze path and other behavior potentially caused by voice condition will not automatically be covariates in the primary model. Voice-by-theta variation, selected catalog voice, acoustic quality and guidance timing will be exploratory or sensitivity analyses with their assumptions reported.
-
-
 Table~\ref{tab:analysis-scope} summarizes the proposed outcome hierarchy. It is an analysis plan rather than a results table; final contrasts, missing-data handling, and multiplicity families require preregistration.
 \begin{table}[htbp]
 \centering
 \caption[Planned outcomes and analysis units]{Outcome hierarchy and observation scope. Engineering metrics diagnose the guidance system and do not replace participant outcomes.}
 \label{tab:analysis-scope}
 \small
+\tagpdfsetup{table/header-rows={1}}
 \begin{tabularx}{\linewidth}{@{}p{0.20\linewidth}p{0.25\linewidth}X@{}}
 \toprule
 Role & Unit & Planned interpretation \\\midrule
@@ -42,21 +36,13 @@ Qualitative experience & Participant response / coded excerpt & Debrief themes w
 \end{tabularx}
 \end{table}
 
-\section{Incomplete and interrupted observations}
-Raw attempts, incorrect selections, pause intervals, timeouts, technical failures and withdrawals will all be retained, and stopped trials will not be coded as successful completion times. Timeout and censoring rules, together with the missing-data estimand, will be specified before collection so that slow trials are not removed solely for being slow. Missing responses will not be replaced with zero; questionnaire scores will instead follow the complete-subscale rule, with item-level missingness reported. Disliking or failing to recognize a cloned voice will not by itself exclude a participant.
-
-\section{Guidance and qualitative evaluation}
-Engineering analysis will distinguish event qualification, decision latency, model deferral, scheduling delay and actual playback, and it will evaluate gaze and controller confirmation separately. Because a cue can be judged only in context, sequence-level review will include what happened before and after it. Automatic checks and ratings produced by an offline language-model evaluator (Appendix~\ref{app:guidance-support}) will remain advisory engineering evidence rather than participant perception scores.
-
-Debrief responses will be coded with a documented thematic process and an audit trail, with independent review of a subset. Perceived performance, voice comfort, reliance and possible own-voice use cases will be interpreted alongside, but not substituted for, measured task performance.
-
 \section{A Candidate Primary Model}
 A candidate model makes the intended estimand explicit while leaving the final specification to preregistration. For participant $i$, period $b$, and trial $j$, let $Y_{ibj}=\log T_{ibj}$ for successfully completed active-search intervals. A starting specification is
 \begin{align}
 Y_{ibj}={}&\beta_0+\beta_V V_{ib}+\beta_B B_b+\beta_O O_i\\
 &+f(|\theta_{0,ibj}|)+g(j)+u_{0i}+u_{Vi}V_{ib}+\epsilon_{ibj}.
 \end{align}
-Here $V$ indicates self-similar rather than preferred voice, $B$ identifies the second period, and $O$ identifies assigned voice order. The functions $f$ and $g$ represent prespecified low-complexity effects of exact starting angle and trial progression. In this candidate specification, $j$ indexes position within a block (1--40); the period term represents the between-block change. The exact pre-cue angle requires the snapshot described in Chapter~\ref{ch:measurement}, which remains an implementation gap. This model cannot be fitted as specified using nominal wall angles relabeled as exact measurements. Participant intercepts and, if supported by the design and model stability, participant voice slopes represent clustering and variation in within-participant contrasts. With only one block per voice, the slope variation can also absorb block-specific session effects; it is not a pure measure of stable individual voice responsiveness. The final random-effects structure is an open decision, informed by the experimental design and simulation rather than selected to obtain significance~\cite{barr2013random}.
+Here $V$ indicates self-similar rather than neutral voice, $B$ identifies the second period, and $O$ identifies assigned voice order. The functions $f$ and $g$ represent prespecified low-complexity effects of exact starting angle and trial progression. In this candidate specification, $j$ indexes position within a block (1--40); the period term represents the between-block change. The exact pre-cue angle requires the snapshot described in Chapter~\ref{ch:measurement}, which remains an implementation gap. This model cannot be fitted as specified using nominal wall angles relabeled as exact measurements. Participant intercepts and, if supported by the design and model stability, participant voice slopes represent clustering and variation in within-participant contrasts. With only one block per voice, the slope variation can also absorb block-specific session effects; it is not a pure measure of stable individual voice responsiveness. The final random-effects structure is an open decision, informed by the experimental design and simulation rather than selected to obtain significance~\cite{barr2013random}.
 
 Under this model, the exponentiated voice coefficient, $\exp(\beta_V)$, is a conditional multiplicative time contrast and will not automatically equal a marginal arithmetic mean ratio. The primary estimand therefore remains the marginal contrast standardized over the prespecified common starting-difficulty distribution; the conditional coefficient will be reported separately as a model parameter rather than substituted for that estimand. Predictions on the original seconds scale require an explicit retransformation procedure and uncertainty estimate. No fitted coefficient is available in this first pass.
 
@@ -69,6 +55,15 @@ The proposed simulation workflow will generate participants with both voice bloc
 
 A retained pilot can inform variance assumptions only under a documented rule about whether those observations enter the confirmatory sample. Reusing pilot outcomes after extensive policy tuning risks treating development data as untouched confirmation. The study will preserve a build and protocol identifier so that a pilot collected under a different guidance policy can be separated from the frozen release.
 
+\section{Secondary Outcomes and Multiplicity}
+Condition-specific ratings will be collected retrospectively, only after both blocks, with actual survey timestamps retained; each rating set nevertheless remains referenced to a participant-by-block observation. Because these are not immediate post-block measurements, recall and recency effects will be considered when interpreting condition differences. Individual workload dimensions and complete unweighted workload means will be summarized by participant and block. IMI subscales and the three six-item agent-perception constructs will remain separate scores, and the additional Guo Q20--22 appealing, eerie and familiar ratings will be analyzed individually rather than combined into an eeriness score. Voice similarity will serve as a manipulation check, while custom experience ratings and self-reported guidance use will also be analyzed individually. Multiplicity families and secondary contrasts will be specified before confirmatory analysis.
+
+The analysis will retain paired observations and account for period where appropriate. The choice between ordinal-item and approximately continuous scale models will be made before confirmatory analysis and justified for each measure. Reporting only the items with favorable differences would distort the battery's intended scope.
+
+Multiplicity families and adjustment rules remain to be finalized. Holm's procedure is available for a prespecified family of confirmatory secondary comparisons~\cite{holm1979simple}; it is not a substitute for deciding which outcomes belong in that family. Exploratory agent-perception and custom-item results will be labeled, with effect estimates and uncertainty rather than an indiscriminate list of significance claims.
+
+Voice similarity is a manipulation check. Failure to recognize the clone is informative about the manipulation and will not automatically remove a participant. Likewise, low liking is an outcome, not a reason to exclude an inconvenient response. Sensitivity analyses may investigate synthesis quality or recognition, but conditioning on post-assignment experience changes the interpretation and must be stated.
+
 \section{Data Screening and Missingness}
 Data screening will first establish structural integrity: unique participant/session/block/trial keys, consistent voice assignments, chronological reveal and selection events, and required geometry provenance. It will then assess observation coverage and protocol deviations. This order avoids excluding a slow trial merely because it looks unusual while overlooking a malformed timestamp or an incorrect condition join.
 
@@ -76,25 +71,24 @@ Tracking loss can affect guidance and measurement simultaneously, though not alw
 
 Stopping, timeout, withdrawal, and technical failure require a prespecified treatment. A complete-case time model estimates completion times among observed successful trials under its assumptions. It may not describe all assigned trials when incomplete outcomes differ by voice. The final plan must define a complementary completion-probability or time-to-event analysis if incompletion is consequential. A timeout threshold has not been frozen in the source protocol and is not invented here.
 
-\section{Secondary Outcomes and Multiplicity}
-Workload dimensions, workload mean, and IMI subscales will be treated as specified outcomes at participant-by-block level. The analysis will retain paired observations and account for period where appropriate. The choice between ordinal-item and approximately continuous scale models will be made before confirmatory analysis and justified for each measure. Reporting only the items with favorable differences would distort the battery's intended scope.
-
-Multiplicity families and adjustment rules remain to be finalized. Holm's procedure is available for a prespecified family of confirmatory secondary comparisons~\cite{holm1979simple}; it is not a substitute for deciding which outcomes belong in that family. Exploratory agent-perception and custom-item results will be labeled, with effect estimates and uncertainty rather than an indiscriminate list of significance claims.
-
-Voice similarity is a manipulation check. Failure to recognize the clone is informative about the manipulation and will not automatically remove a participant. Likewise, low liking is an outcome, not a reason to exclude an inconvenient response. Sensitivity analyses may investigate synthesis quality or recognition, but conditioning on post-assignment experience changes the interpretation and must be stated.
+Raw attempts, incorrect selections, pause intervals, timeouts, technical failures and withdrawals will all be retained, and stopped trials will not be coded as successful completion times. Timeout and censoring rules, together with the missing-data estimand, will be specified before collection so that slow trials are not removed solely for being slow. Missing responses will not be replaced with zero; questionnaire scores will instead follow the complete-subscale rule, with item-level missingness reported. Disliking or failing to recognize a cloned voice will not by itself exclude a participant.
 
 \section{Behavior as Outcome Rather Than Automatic Adjustment}
-Instruction count, gaze path, and controller behavior can be consequences of voice condition. Including them automatically as primary-model covariates could remove part of the effect the study intends to estimate. The primary comparison therefore adjusts for pre-cue difficulty and design variables, while guidance and behavior enter exploratory or sensitivity analyses under explicit causal assumptions.
+Instruction count, gaze path, and controller behavior can be consequences of voice condition. Including them automatically as primary-model covariates could remove part of the effect the study intends to estimate. The primary comparison therefore adjusts for pre-cue difficulty and design variables. Voice-by-theta variation, selected neutral voice, acoustic quality, guidance timing, and search behavior will enter exploratory or sensitivity analyses with their assumptions reported.
 
 For example, slower search can produce more opportunities for guidance, and more guidance can itself affect search time. A correlation between instruction count and duration does not establish that speech caused delay. Timeline analysis can identify concrete scheduling failures, but observational associations among adaptive behaviors require more cautious interpretation.
 
+\section{Guidance Delivery Evaluation}
+Engineering analysis will distinguish event qualification, decision latency, model deferral, scheduling delay and actual playback, and it will evaluate gaze and controller confirmation separately. Because a cue can be judged only in context, sequence-level review will include what happened before and after it. Automatic checks and ratings produced by an offline language-model evaluator (Appendix~\ref{app:guidance-support}) will remain advisory engineering evidence rather than participant perception scores.
+
 \section{Qualitative Analysis and Mixed Evidence}
-The debrief will begin with broad experience questions, followed by balanced probes about voice preference, perceived performance, comfort, and potential uses. The coding process will record the initial codebook, revisions, coding decisions, and review of a subset. Contradictory or minority accounts will be retained rather than forced into one favorable theme.
+The debrief will begin with broad experience questions, followed by balanced probes about voice preference, perceived performance, comfort, and potential uses. The coding process will record the initial codebook, revisions, coding decisions, and independent review of a subset. Contradictory or minority accounts will be retained rather than forced into one favorable theme.
 
 Reported reliance and observed behavior will be considered together without treating either as a perfect measure of the other. A participant may say they relied on the agent while rapidly anticipating several cues, or may remember one frustrating interruption despite mostly timely guidance. Such differences can guide interpretation but do not establish dishonesty or measurement failure. The final report will separate quotations, coder interpretation, and behavioral evidence.
 
+Perceived performance, voice comfort, reliance, and possible own-voice use cases will be interpreted alongside, but not substituted for, measured task performance.
 
 \section{Safety Outcomes and Manipulation Checks}
 Baseline and final Simulator Sickness Questionnaire responses will describe symptom burden and pre-to-post change across the full exposure, with canonical scores calculated only from the intended item anchors and scoring rules. Because there is no between-block administration, these measurements do not provide separate voice-block sickness effects. Safety stops, discomfort reports, and incomplete exposure will be reported alongside symptom change. This draft does not invent a numerical exclusion or stopping cutoff, but the operational stopping procedure must be frozen before participant collection.
 
-The similarity manipulation check will report the paired difference between self-similar and catalog-voice ratings with uncertainty. A group-level decision rule and any practically meaningful difference remain open preregistration decisions. The study will not classify an individual as invalid merely because the clone is not recognized. Because equivalence testing is not currently specified, a nonsignificant voice contrast will not be interpreted as equivalence.
+The similarity manipulation check will report the paired difference between self-similar and neutral-voice ratings with uncertainty. A group-level decision rule and any practically meaningful difference remain open preregistration decisions. The study will not classify an individual as invalid merely because the clone is not recognized. Because equivalence testing is not currently specified, a nonsignificant voice contrast will not be interpreted as equivalence.

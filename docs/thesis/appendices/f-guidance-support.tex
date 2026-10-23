@@ -24,7 +24,8 @@ A state label is useful only when it is accompanied by its evidence. A refining 
 
 \begin{table}[htbp]
 \centering\caption{Guidance responsibilities and evidence boundaries.}
-\small\begin{tabularx}{\linewidth}{@{}p{0.22\linewidth}XX@{}}\toprule
+\small\tagpdfsetup{table/header-rows={1}}
+\begin{tabularx}{\linewidth}{@{}p{0.22\linewidth}XX@{}}\toprule
 Component & Owns & Does not establish \\\midrule
 Observation adapters & Validity, poses, ray hits, source timing & Recognition or fixation \\
 Guidance machine & Stage, eligible action, bounded history & Correct trigger selection or conscious recognition \\
@@ -95,7 +96,8 @@ Table~\ref{tab:policy-pilots} defines the comparison roles discussed during deve
 \begin{table}[htbp]\centering
 \caption[Proposed policy comparison and safeguards]{Engineering comparison roles. All policies retain valid input interpretation and explicit logging; experimental variants do not enter participant sessions on the basis of this table.}
 \label{tab:policy-pilots}
-\small\begin{tabularx}{\linewidth}{@{}p{0.24\linewidth}XX@{}}\toprule
+\small\tagpdfsetup{table/header-rows={1}}
+\begin{tabularx}{\linewidth}{@{}p{0.24\linewidth}XX@{}}\toprule
 Policy role & Decision authority & What the comparison can test \\\midrule
 Constrained Jev with local feedback & Local eligible action; provider chooses wording and speak/wait; qualified local feedback can bypass a new request. & Reference behavior and delivery delay under the shared scheduler. \\
 Jev-led with local overrides & Provider considers meaningful eligible actions using state/history; local geometry, qualification, and final admission remain binding. & Whether broader choices improve sequence appropriateness without unacceptable delay. \\
@@ -130,7 +132,8 @@ Table~\ref{tab:failure-taxonomy} classifies potential faults by where evidence i
 \begin{table}[htbp]\centering
 \caption[Failure categories and diagnostic evidence]{Proposed sequence-review taxonomy. A label requires evidence from the relevant stage, and does not imply a frequency estimate.}
 \label{tab:failure-taxonomy}
-\small\begin{tabularx}{\linewidth}{@{}p{0.24\linewidth}XX@{}}\toprule
+\small\tagpdfsetup{table/header-rows={1}}
+\begin{tabularx}{\linewidth}{@{}p{0.24\linewidth}XX@{}}\toprule
 Category & Diagnostic evidence & Example distinction \\\midrule
 Observation or geometry & Validity, source age, coordinate frame, gaze ray, object transforms & Wrong spatial input versus a correct cue calculated from that input. \\
 State or qualification & Gate timers, transition cause, controller hit, vicinity winner & Immediate pointing evidence versus qualified pointing acknowledgment. \\

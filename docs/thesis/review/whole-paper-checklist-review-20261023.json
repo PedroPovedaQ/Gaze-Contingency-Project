@@ -1,0 +1,148 @@
+{
+  "status": "degraded",
+  "reason": "Whole-paper/checklist review completed sequentially under the project Task mapping; no independent nested CE persona or finish agents were run, so this is not a full multiagent CE gate.",
+  "verdict": "Ready to merge",
+  "scope": {
+    "base": "6d2c000f5b193ed1196fd0cf36845fe84a153c2a",
+    "branch": "codex/thesis-reference-alignment",
+    "head_sha": "6d2c000f5b193ed1196fd0cf36845fe84a153c2a",
+    "pr_url": null,
+    "files_changed": 25
+  },
+  "intent": "Improve the Oct 23 planned-study thesis, preserve self-similar versus participant-chosen neutral voice conditions and absence of participant results, and audit the supplied UCF manuscript checklist.",
+  "intent_confidence": "explicit",
+  "reviewers": [
+    "correctness (sequential lens)",
+    "project-standards/checklist (sequential lens)"
+  ],
+  "findings": [],
+  "actionable_findings": [],
+  "pre_existing_findings": [],
+  "triage_groups": [],
+  "requirements_completeness": {
+    "verified": [
+      "One practice trial uses first assigned block voice; two measured 40-trial blocks; final-only block-referenced questionnaires.",
+      "Current condition terminology distinguishes a participant-chosen neutral catalog voice from self-similar voice.",
+      "Proposal versus implementation and missing-results boundaries retained."
+    ],
+    "human_owned": [
+      "Author degree/major-professor/title-page fields require confirmation.",
+      "No final recruitment target, power decision, participant results or institutional approval supplied; must remain explicitly unresolved.",
+      "Institutional 90-percent-readiness determination is not automated."
+    ]
+  },
+  "learnings": [],
+  "agent_native_gaps": [],
+  "deployment_notes": [],
+  "residual_risks": [
+    "No Acrobat accessibility checker or formal PDF/UA conformance validator was run.",
+    "Valid bookmarks, tags and alt text do not prove correct reading order or full assistive-technology usability.",
+    "This review did not independently rerun all runtime claims or every external citation; historical snapshots intentionally preserved.",
+    "pypdf text extraction emitted duplicate /Group dictionary-key warnings in embedded PDF content; rendering and structural audits completed, but formal PDF conformance remains unverified."
+  ],
+  "testing_gaps": [
+    "Formal accessibility validation, screen-reader reading order and institutional format acceptance remain outstanding."
+  ],
+  "coverage": {
+    "depth": "full",
+    "execution": "Sequential adapted review, not independent full CE spine; no manuscript edits or Git operations by reviewer.",
+    "independent_reviewers": 0,
+    "compound_packs": {
+      "roots": [],
+      "warnings": [],
+      "errors": []
+    }
+  },
+  "resolved_during_review": [
+    {
+      "issue": "12 tabularx tables lacked TH semantics",
+      "resolution": "Parent added scoped table/header-rows={1}; rebuilt PDF now has TH in all17tables."
+    },
+    {
+      "issue": "Custom chapter titles omitted heading tags",
+      "resolution": "Parent wrapped original chapter-heading functions in latex-lab level0 sockets; rebuilt PDF contains22chapter/H1 roles. Installed socket implementation and nesting reviewed."
+    },
+    {
+      "issue": "AppendixD stated62bibliographyentries",
+      "resolution": "Parent changed retained-and-supplemented bibliography text to current65entries."
+    },
+    {
+      "issue": "Longtable captions are tagged as merged column-header cells",
+      "resolution": "Parent moved five longtable captions outside their data grids, retaining standalone Caption semantics and genuine column headers. Independent latest-PDF audit:17Tables allTH, zeroCaption underTable, zero used ColSpan/RowSpan>1.316internal links valid."
+    },
+    {
+      "issue": "External E.1 caption anchor preceded its actual page",
+      "resolution": "Parent starts release-manifest section on a new page before the caption anchor. Rejected generic ten-baseline reservation caused an orphaned B.2 heading and was removed. Exact final PDF checks: B.1=119, B.2=120, C.1=125, D.1=130, E.1=140 for both actual caption and destination."
+    }
+  ],
+  "pdf_checks": {
+    "pages": 163,
+    "figures_with_alt": 14,
+    "figures": 14,
+    "tables": 17,
+    "chapter_roles": 22,
+    "bookmarks_nested": 141,
+    "links": 345,
+    "named_destinations": 538,
+    "language": "en-US",
+    "formal_acrobat_validation": false,
+    "merged_or_split_cells_used": 0,
+    "captions_inside_table": 0,
+    "table_header_cells": 45,
+    "internal_links": 316,
+    "invalid_internal_links": 0,
+    "sha256": "a8eb1b2deeaf12a875dc7368a969bce75cea5e70f0c7967e99eb093e356c12be",
+    "bytes": 2773681,
+    "caption_destinations": [
+      {
+        "label": "B.1",
+        "caption_text_pages": [
+          119
+        ],
+        "destination": "table.appendix.B.1",
+        "destination_page": 119,
+        "matches": true
+      },
+      {
+        "label": "B.2",
+        "caption_text_pages": [
+          120
+        ],
+        "destination": "table.appendix.B.2",
+        "destination_page": 120,
+        "matches": true
+      },
+      {
+        "label": "C.1",
+        "caption_text_pages": [
+          125
+        ],
+        "destination": "table.appendix.C.1",
+        "destination_page": 125,
+        "matches": true
+      },
+      {
+        "label": "D.1",
+        "caption_text_pages": [
+          130
+        ],
+        "destination": "table.appendix.D.1",
+        "destination_page": 130,
+        "matches": true
+      },
+      {
+        "label": "E.1",
+        "caption_text_pages": [
+          140
+        ],
+        "destination": "table.appendix.E.1",
+        "destination_page": 140,
+        "matches": true
+      }
+    ],
+    "all_five_caption_destinations_match_actual_pages": true
+  },
+  "artifact_path": "/tmp/compound-engineering-501/ce-code-review/20261023-thesis-checklist-00618c12",
+  "run_id": "20261023-thesis-checklist-00618c12",
+  "verdict_scope": "Reviewed source changes and exact final PDF verified; not institutional acceptance or formal accessibility certification."
+}

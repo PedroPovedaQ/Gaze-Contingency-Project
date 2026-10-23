@@ -14,7 +14,7 @@ The literature chapter draws on the project's bibliography. All 65 entries are r
 
 ## Research focus
 
-Self-similar synthetic voice versus a participant-preferred catalog voice is the focal empirical comparison. Gaze guidance, Jev, memory and Trial Review are supporting apparatus and validity checks, not additional participant factors or coequal outcome claims. The supplied Yang et al. AR-navigation preprint adds a bounded interface-versus-mechanism comparison; it does not supply evidence about self-similar voice.
+Self-similar synthetic voice versus a participant-selected neutral voice is the focal empirical comparison. Neutral is the condition label; participants choose that voice from a supplied catalog, and the label does not establish affective neutrality. Gaze guidance, Jev, memory and Trial Review are supporting apparatus and validity checks, not additional participant factors or coequal outcome claims. The supplied Yang et al. AR-navigation preprint adds a bounded interface-versus-mechanism comparison; it does not supply evidence about self-similar voice.
 
 The introduction and discussion now carry the practical AR/VR search rationale through to the self-similar voice comparison and its transfer limits. See [motivation and source notes](review/practical-motivation-and-voice-throughline-20261023.md).
 
@@ -52,7 +52,7 @@ The delivered PDF was compiled with LuaHBTeX 1.24.0 / TeX Live 2026. The built-i
 
 Two compatibility changes were made only to the copied `UCF_ETD.cls`: the obsolete `sec-add-grouping` key is used only if present; chapter star/optional-argument dispatch avoids the new latex-lab `secdef` interception, preserving UCF headings and front-matter numbering. Original template files are available in the user's Downloads. TOC depth is limited to subsections. Uppercase chapter entries, indented section levels, dotted leaders, Roman front-matter numbering, Arabic body numbering, and separate lists of figures and tables follow the supplied class and reference presentation. Figure-list entries use concise titles; appendix longtable entries receive the same Table prefix as ordinary tables. Widow/orphan controls are set in `main.tex`.
 
-The PDF is tagged, but successful compilation and its PDF/UA metadata are **not** an accessibility or UCF-format certification. Final heading structure, reading order, alternative text, tables, and institutional requirements still need formal validation.
+The PDF is tagged. The October 23 accessibility pass uses veraPDF 1.30.3 against PDF/UA-2, structural inspection, and sampled visual/reading-order checks; see `review/accessibility-validation-20261023.md` for the exact artifact and limitations. An automated pass is not UCF-format approval or a claim that every assistive-technology workflow has been tested.
 
 ## Review and remaining work
 
@@ -60,4 +60,12 @@ Claude performed separate language and methods reviews. A further verified Opus 
 
 Before submission: confirm author/degree/term/advisor metadata; finish power and analysis preregistration; reconcile consent with actual cloud services; validate hardware, timing, scoring, and the complete study flow; collect and analyze participant data; replace the results framework with observed findings; perform a complete source-to-claim citation audit; finalize AI disclosure and ETD/accessibility review. All pending items remain visible in the text.
 
-The [narrative revision](review/narrative-architecture-20261023.md) connects practical search assistance to the self-similar versus preferred-voice question throughout the abstract and chapters.
+The [narrative revision](review/narrative-architecture-20261023.md) connects practical search assistance to the self-similar versus neutral-voice question throughout the abstract and chapters.
+
+The [Claude narrative review](review/claude-narrative-review-20261023.md) records 18 applied suggestions, structural synthesis, and remaining methods questions, with exact before/after edits.
+
+## Current terminology and checklist review
+
+The condition labels are **neutral voice** and **self-similar voice**. Participants select the neutral voice from the supplied catalog. This label does not imply flat emotional delivery or no individual preference. Historical Overleaf snapshots retain their original wording.
+
+The supplied UCF Manuscript Submission Checklist was included in review. Confirmed table-header, chapter-heading and longtable-caption structure issues were fixed, and the bibliography count was reconciled. See `review/pdf-structure-check-20261023.json`, `review/accessibility-validation-20261023.md`, and `review/verification.md`. The independent full CE review and formal automated PDF/UA validation are recorded separately from institutional acceptance.

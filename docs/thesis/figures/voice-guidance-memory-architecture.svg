@@ -90,7 +90,7 @@
 			<polygon points="1285 415, 1275 411, 1275 419" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(67%,50%,0%); fill-rule: evenodd;"/>
 			<rect x="1285" y="163" width="285" height="137" rx="8" ry="8" style="stroke: rgb(45%,49%,50%); stroke-linecap: butt; stroke-width: 1.6; fill: rgb(97%,97%,97%); fill-rule: evenodd;"/>
 			<text x="1305" y="267" style="font-family: Helvetica; font-weight: bold; font-size: 20px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,534) scale(1,-1)">Prepared voice audio</text>
-			<text x="1305" y="237" style="font-family: Helvetica; font-size: 16px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,474) scale(1,-1)">Preferred or self-similar voice</text>
+			<text x="1305" y="237" style="font-family: Helvetica; font-size: 16px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,474) scale(1,-1)">Neutral or self-similar voice</text>
 			<text x="1305" y="210" style="font-family: Helvetica; font-size: 16px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,420) scale(1,-1)">Actual playback is recorded</text>
 			<polyline points="1427 355, 1427 300" style="stroke: rgb(12%,15%,16%); stroke-linecap: butt; stroke-width: 2; fill: None; fill-rule: evenodd;"/>
 			<polygon points="1427 300, 1423 310, 1431 310" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(12%,15%,16%); fill-rule: evenodd;"/>

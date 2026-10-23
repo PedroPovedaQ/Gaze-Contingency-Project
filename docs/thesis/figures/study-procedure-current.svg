@@ -22,7 +22,7 @@
 			<rect x="250" y="432" width="200" height="140" rx="8" ry="8" style="stroke: rgb(22%,47%,50%); stroke-linecap: butt; stroke-width: 1.6; fill: rgb(91%,95%,95%); fill-rule: evenodd;"/>
 			<text x="264" y="545" style="font-family: Helvetica; font-weight: bold; font-size: 14px;fill: rgb(22%,47%,50%); stroke:none;" transform="translate(0,1090) scale(1,-1)">02</text>
 			<text x="264" y="513" style="font-family: Helvetica; font-weight: bold; font-size: 17px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,1026) scale(1,-1)">Voice setup</text>
-			<text x="264" y="484" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,968) scale(1,-1)">Preferred catalog voice</text>
+			<text x="264" y="484" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,968) scale(1,-1)">Neutral voice</text>
 			<text x="264" y="460" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,920) scale(1,-1)">Natural-voice recording</text>
 			<polyline points="450 502, 472 502" style="stroke: rgb(12%,15%,16%); stroke-linecap: butt; stroke-width: 2; fill: None; fill-rule: evenodd;"/>
 			<polygon points="472 502, 462 498, 462 506" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(12%,15%,16%); fill-rule: evenodd;"/>
@@ -59,7 +59,7 @@
 			<text x="1389" y="513" style="font-family: Helvetica; font-weight: bold; font-size: 17px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,1026) scale(1,-1)">Final measures</text>
 			<text x="1389" y="484" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,968) scale(1,-1)">Ratings for both blocks</text>
 			<text x="1389" y="460" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,920) scale(1,-1)">Post-SSQ + debrief</text>
-			<text x="456.86600000000004" y="392" style="font-family: Helvetica; font-weight: bold; font-size: 18px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,784) scale(1,-1)">Counterbalanced voice order: preferred -&gt; self-similar  |  self-similar -&gt; preferred</text>
+			<text x="456.86600000000004" y="392" style="font-family: Helvetica; font-weight: bold; font-size: 18px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,784) scale(1,-1)">Counterbalanced voice order: neutral -&gt; self-similar  |  self-similar -&gt; neutral</text>
 			<text x="461.5215" y="363" style="font-family: Helvetica; font-size: 17px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,726) scale(1,-1)">80 measured trials + 1 practice trial; identical guidance policy and right-controller selection</text>
 			<text x="25" y="310" style="font-family: Helvetica; font-weight: bold; font-size: 24px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,620) scale(1,-1)">(b) Within each trial</text>
 			<rect x="25" y="142" width="350" height="133" rx="8" ry="8" style="stroke: rgb(22%,47%,50%); stroke-linecap: butt; stroke-width: 1.6; fill: rgb(97%,98%,98%); fill-rule: evenodd;"/>

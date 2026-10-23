@@ -55,12 +55,16 @@ The following is explanatory pseudocode for responsibility boundaries, not a rep
 
 Phase and action are separate outputs. The inspected working implementation includes a \texttt{PointingTarget} phase that applies while a current target hit awaits the required hold or gaze evidence; this phase is intended to keep a pending controller hold distinct from a qualified one. The state overview in Chapter~\ref{ch:system} shows common state families rather than an exhaustive edge list for every development revision, so release evidence must retain the precise enum and action version.
 
+% Keep this section and its long caption away from a page boundary.
+\clearpage
 \section{Release Manifest and Reproduction Checklist}
 Table~\ref{tab:release-manifest} specifies what a reproducible study record needs. It is a required manifest schema, not a claim that every value is already frozen. Values that cannot be obtained, such as an immutable hosted-model revision, must be marked unavailable and discussed as replication limits.
 
 \begingroup\small\singlespacing
+\begingroup
+\thesislongtablecaption[Release manifest for reproducing decisions]{Proposed release-manifest fields. The record contains configuration and permitted identifiers, never API credentials. Participant-derived identifiers require restricted handling.}\label{tab:release-manifest}
 \begin{longtable}{@{}p{0.26\linewidth}p{0.65\linewidth}@{}}
-\caption[Release manifest for reproducing decisions]{Proposed release-manifest fields. The record contains configuration and permitted identifiers, never API credentials. Participant-derived identifiers require restricted handling.}\label{tab:release-manifest}\\\toprule
+\toprule
 Record group & Information to retain \\\midrule\endfirsthead
 \toprule Record group & Information to retain \\\midrule\endhead
 Build and apparatus & Source revision, clean/dirty status, application build hash, Unity/package versions, headset model/firmware, enabled launch mode.\\
@@ -71,6 +75,7 @@ Phrase and voice assets & Library and semantic-schema versions, candidate IDs/te
 Study and instruments & Order assignment, schedule seed/version, practice assignment, exact versus nominal geometry fields, instrument/item/scoring versions, final reference mapping.\\
 Evaluation & Session/episode split, policy versions, fixed candidate-set definitions, repetitions, rubric/judge version, human-review procedure, inclusion/exclusion log.\\\bottomrule
 \end{longtable}
+\endgroup
 \endgroup
 
 A reproduction report should distinguish three achievements, none of which implies the others. Rebuilding the software verifies that the source and dependencies can produce an application; replaying recorded observations verifies a particular decision and timing interpretation under a stated simulator; and a new wearer session tests the delivered interaction on actual hardware. In particular, fast simulated scheduling is not measured acoustic latency, and an offline alternative cannot show the participant's unobserved response to it.

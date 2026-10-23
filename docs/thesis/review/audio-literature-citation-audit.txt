@@ -1,6 +1,6 @@
 TeX files: 17
 Bibliography files: 1
-Citation commands: 52
+Citation commands: 59
 Unique citation keys used: 44
 Bibliography entries: 65
 Missing keys (0): -

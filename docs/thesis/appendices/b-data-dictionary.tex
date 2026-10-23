@@ -4,23 +4,28 @@
 \section{Record Identity and Provenance}
 The following dictionary specifies semantic requirements. Names shown here are descriptive contract labels and must be mapped to the versioned exporter schema before collection. They do not assert that every field already exists in the current build.
 
+\begingroup
+\thesislongtablecaption{Required record identity and scope.}
 \begin{longtable}{@{}p{0.26\linewidth}p{0.65\linewidth}@{}}
-\caption{Required record identity and scope.}\\\toprule
+\toprule
 Field family & Meaning \\\midrule\endfirsthead
 \toprule Field family & Meaning \\\midrule\endhead
 Participant ID & Coded study identifier; not a name or voice-provider credential.\\
 Session and run & Unique attempt/session context, including development versus study mode.\\
 Block and trial & Referenced measured block, within-block trial, global trial index, and separate practice flag.\\
-Voice condition & Preferred catalog or self-similar; actual voice ID, provider, synthesis model and configuration.\\
-Assigned order & Preferred-first or self-similar-first, with practice following first assigned voice.\\
+Voice condition & Neutral or self-similar; actual voice ID, provider, synthesis model and configuration.\\
+Assigned order & Neutral-first or self-similar-first, with practice following first assigned voice.\\
 Build and policy & Application revision, configuration, state-machine policy, phrase semantics, and library version.\\
 Schedule & Seed, schedule version, nominal wall assignment, realized geometry, and attempt status.\\
 Survey scope & Administration phase and timestamp distinct from referenced participant/block/voice.\\\bottomrule
 \end{longtable}
+\endgroup
 
 \section{Geometry and Timing Fields}
+\begingroup
+\thesislongtablecaption{Geometry and event contract.}
 \begin{longtable}{@{}p{0.28\linewidth}p{0.18\linewidth}p{0.43\linewidth}@{}}
-\caption{Geometry and event contract.}\\\toprule
+\toprule
 Quantity & Unit/reference & Required interpretation \\\midrule\endfirsthead
 \toprule Quantity & Unit/reference & Required interpretation \\\midrule\endhead
 Nominal angle & Degrees; wall schedule & Allocation category; not exact target bearing.\\
@@ -37,6 +42,7 @@ Correct selection & Session and active clocks & Trigger selection of target; sep
 Pause intervals & Session clock & Start, end, reason; union used for active time.\\
 Instruction onset & Session clock & Actual software playback start, phrase and event category.\\\bottomrule
 \end{longtable}
+\endgroup
 
 \section{Raw Observation Requirements}
 Gaze records should retain available source time or sequence, application time, validity, source identity, origin, direction, and sample age. Per-eye data must be labeled as such when available; combined gaze must not be described as independent left and right observations. A head-direction fallback must not silently replace eye gaze in an eye-derived outcome.

@@ -1,3 +1,37 @@
+## 2026-10-23 — Complete thesis accessibility and independent review
+
+- Completed independent full CE manuscript review against the supplied submission checklist; no actionable manuscript findings remained. Ran a separate follow-up review for PDF export repairs, with independent adversarial fallback after the Claude route failed before content transmission.
+- Fixed five missing explicit CID font maps in three diagrams, duplicate imported transparency-group dictionaries, and low-contrast gold diagram labels. Documented figure-export dependencies. Preserved neutral/self-similar condition labels, pending participant results, and historical source snapshots.
+- Rebuilt the 163-page thesis and passed veraPDF 1.30.3 PDF/UA-2: 1,728 rules and 431,298 checks passed, zero failures and no parser warnings. Verified all fonts embedded, 14 figure alternatives, 17 tables with headers, chapter structure and caption links. Performed sampled visual/reading-order checks; formal automated validation is not institutional approval or an exhaustive assistive-technology usability test.
+- Saved validation and review receipts, refreshed PDF/editable-source delivery, and prepared the requested thesis-only local commit. Author metadata, actual results, final study validation, and institutional approval remain open; Qualtrics and live Overleaf remain unchanged.
+
+## 2026-10-23 — Neutral-voice terminology and manuscript checklist
+
+- Renamed the comparison condition to neutral voice throughout active thesis text, tables, captions, questionnaire options, and three editable diagrams. Catalog now describes the supplied selection pool; participant choice remains part of the design. Added an explicit definition so neutral does not imply affective neutrality or verified absence of perceived similarity.
+- Preserved retrieved Overleaf snapshots and historical review records. Added the supplied UCF Manuscript Submission Checklist to the full-paper review context. Fixed table-header and chapter-heading tags, externalized longtable captions to remove merged header cells, and corrected the bibliography count. Rebuilt and checked PDF structure, caption destinations, citation keys and representative layouts. Final accessibility and institutional review remain outstanding.
+
+## 2026-10-23 — Introduction follows the guidance-to-voice argument
+
+- Reorganized Chapter 1 motivation from VR/out-of-view guidance to practical object search, auditory/verbal assistance, Guo et al.'s Doppelgänger findings, and the rationale for self-similar versus participant-preferred catalog voice.
+- Added a dedicated auditory-guidance subsection and explicit transfer limits (AR versus desktop/VR; speech versus tones; embodied collaborator versus a voice without a visible body). Kept the study questions and shared guidance controls intact; aligned the problem statement with this argument.
+- Saved exact motivation before/after in `docs/thesis/review/introduction-guidance-flow-20261023.json`. LuaLaTeX/BibTeX rebuild passed without undefined references or overfull boxes; refreshed delivered PDF, introduction source and source bundle.
+
+## 2026-10-23 — Doppelgänger rationale in the abstract
+
+- Added the approved Guo et al. (2024) connection between voice identity, likability/believability, and eeriness to the thesis abstract. The paper motivates the spatial-guide comparison without implying it established a search-speed benefit.
+- Preserved the participant-selected catalog comparator, proposed-study tense, and other manuscript edits. Exact change saved in `docs/thesis/review/abstract-doppelganger-20261023.json`.
+
+## 2026-10-23 — Guidance-first abstract
+
+- Revised only the thesis abstract to open with the longstanding VR attention-guidance problem, out-of-view objects, and source-bounded evidence for auditory/verbal AR search assistance. Added existing Grogorick, HiveFive and See or Hear citations.
+- Kept self-similar versus participant-selected catalog voice as the empirical comparison, with shared gaze guidance as apparatus. Retained proposed-study tense and explicit absence of participant results.
+- Exact before/after preserved in `docs/thesis/review/abstract-guidance-first-20261023.json`; earlier Claude chapter edits preserved. LuaLaTeX/BibTeX rebuild passed: 159 pages, one-page abstract, no undefined citations or overfull boxes; delivered PDF refreshed. Built-in compiler remains incompatible with this template’s DocumentMetadata.
+
+## 2026-10-23 — Apply Claude Opus narrative review
+
+- Ran a dedicated Claude Opus 5.5 reviewer against the abstract, all nine chapters, and literature/narrative notes; recorded actual model provenance. Applied 18 exact-edit suggestions (two with documented synthesis), plus structural cleanup of analysis sections, count definitions, and contextual references.
+- Preserved the candidate model, protocol parameters, instruments, figures, and pending-results status. Statistical and study-readiness decisions remain explicitly unresolved. Rebuilt the 159-page PDF; citation checks and changed-page/reference visual checks passed. Refreshed delivery; no commit, live Overleaf changes, or Qualtrics changes. Full changes in `docs/thesis/review/claude-narrative-review-20261023.md`.
+
 ## 2026-10-23 — Apply the self-similar assistance story throughout the thesis
 
 - Revised abstract, all nine chapter openings/transitions, the introduction problem statement, and discussion/conclusion to connect useful object search with self-similar versus participant-preferred guidance. Kept technical architecture as supporting apparatus and mixed outcomes interpretable.

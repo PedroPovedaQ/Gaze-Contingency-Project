@@ -1,0 +1,101 @@
+{"report":{"buildInformation":{"releaseDetails":[{
+  "id" : "core",
+  "version" : "1.30.3",
+  "buildDate" : 1791381720000
+},{
+  "id" : "validation-model",
+  "version" : "1.30.3",
+  "buildDate" : 1791395040000
+},{
+  "id" : "apps",
+  "version" : "1.30.3",
+  "buildDate" : 1791395520000
+}]},"jobs":[{"itemDetails":{
+  "name" : "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/docs/thesis/follow-my-voice-thesis-first-pass.pdf",
+  "size" : 2773681
+},"validationResult":[ {
+  "details" : {
+    "passedRules" : 1727,
+    "failedRules" : 1,
+    "passedChecks" : 431293,
+    "failedChecks" : 5,
+    "tags" : [ "font" ],
+    "ruleSummaries" : [ {
+      "ruleStatus" : "FAILED",
+      "specification" : "ISO 14289-2:2024",
+      "clause" : "8.4.5.3.2",
+      "testNumber" : 1,
+      "status" : "failed",
+      "failedChecks" : 5,
+      "tags" : [ "font" ],
+      "description" : "All embedded Type 2 CIDFonts in the CIDFont dictionary shall contain a CIDToGIDMap entry that shall be a stream mapping from CIDs to glyph indices or the name Identity, as described in ISO 32000-2:2020, Table 115",
+      "object" : "PDCIDFont",
+      "test" : "Subtype != \"CIDFontType2\" || CIDToGIDMap != null || containsFontFile == false",
+      "checks" : [ {
+        "status" : "failed",
+        "context" : "root/document[0]/pages[67](3409 0 obj PDPage)/contentStream[0](3410 0 obj PDSemanticContentStream)/operators[9]/xObject[0]/contentStream[0](3310 0 obj PDSemanticContentStream)/operators[147]/font[0](LTOOVO+Helvetica-Bold)/DescendantFonts[0](LTOOVO+Helvetica-Bold)",
+        "errorMessage" : "A Type 2 CIDFont dictionary has missing or invalid CIDToGIDMap entry",
+        "errorArguments" : [ ]
+      }, {
+        "status" : "failed",
+        "context" : "root/document[0]/pages[67](3409 0 obj PDPage)/contentStream[0](3410 0 obj PDSemanticContentStream)/operators[9]/xObject[0]/contentStream[0](3310 0 obj PDSemanticContentStream)/operators[206]/font[0](BXUFBR+Helvetica)/DescendantFonts[0](BXUFBR+Helvetica)",
+        "errorMessage" : "A Type 2 CIDFont dictionary has missing or invalid CIDToGIDMap entry",
+        "errorArguments" : [ ]
+      }, {
+        "status" : "failed",
+        "context" : "root/document[0]/pages[68](3443 0 obj PDPage)/contentStream[0](3446 0 obj PDSemanticContentStream)/operators[9]/xObject[0]/contentStream[0](3319 0 obj PDSemanticContentStream)/operators[122]/font[0](CZMLQS+Helvetica-Bold)/DescendantFonts[0](CZMLQS+Helvetica-Bold)",
+        "errorMessage" : "A Type 2 CIDFont dictionary has missing or invalid CIDToGIDMap entry",
+        "errorArguments" : [ ]
+      }, {
+        "status" : "failed",
+        "context" : "root/document[0]/pages[68](3443 0 obj PDPage)/contentStream[0](3446 0 obj PDSemanticContentStream)/operators[9]/xObject[0]/contentStream[0](3319 0 obj PDSemanticContentStream)/operators[188]/font[0](WJWIET+Helvetica)/DescendantFonts[0](WJWIET+Helvetica)",
+        "errorMessage" : "A Type 2 CIDFont dictionary has missing or invalid CIDToGIDMap entry",
+        "errorArguments" : [ ]
+      }, {
+        "status" : "failed",
+        "context" : "root/document[0]/pages[73](3721 0 obj PDPage)/contentStream[0](3725 0 obj PDSemanticContentStream)/operators[49]/xObject[0]/contentStream[0](3629 0 obj PDSemanticContentStream)/operators[160]/font[0](ESRXKS+Helvetica-Bold)/DescendantFonts[0](ESRXKS+Helvetica-Bold)",
+        "errorMessage" : "A Type 2 CIDFont dictionary has missing or invalid CIDToGIDMap entry",
+        "errorArguments" : [ ]
+      } ]
+    } ]
+  },
+  "jobEndStatus" : "normal",
+  "profileName" : "PDF/UA-2 + Tagged PDF validation profile",
+  "statement" : "PDF file is not compliant with Validation Profile requirements.",
+  "compliant" : false
+} ],"processingTime":{
+  "start" : 1792772382156,
+  "finish" : 1792772397362,
+  "difference" : 15206,
+  "duration" : "00:00:15.206"
+}}],"batchSummary":{
+  "duration" : {
+    "start" : 1792772381424,
+    "finish" : 1792772397549,
+    "difference" : 16125,
+    "duration" : "00:00:16.125"
+  },
+  "totalJobs" : 1,
+  "outOfMemory" : 0,
+  "veraExceptions" : 0,
+  "failedEncryptedJobs" : 0,
+  "failedParsingJobs" : 0,
+  "validationSummary" : {
+    "compliantPdfaCount" : 0,
+    "failedJobCount" : 0,
+    "totalJobCount" : 1,
+    "nonCompliantPdfaCount" : 1,
+    "successfulJobCount" : 1
+  },
+  "featuresSummary" : {
+    "failedJobCount" : 0,
+    "totalJobCount" : 0,
+    "successfulJobCount" : 0
+  },
+  "repairSummary" : {
+    "failedJobCount" : 0,
+    "totalJobCount" : 0,
+    "successfulJobCount" : 0
+  },
+  "multiJob" : false
+}}}

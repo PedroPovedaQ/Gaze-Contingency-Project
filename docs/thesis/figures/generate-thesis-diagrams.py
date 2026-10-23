@@ -1,9 +1,10 @@
 from pathlib import Path
 from html import escape
 import math,cairosvg
+import subprocess,sys
 P=Path(__file__).resolve().parent.parent
 F=P/'figures'
-G='#c89416'; B='#245b78'; T='#173c48'; grey='#617078'; light='#eef3f5'; gold='#fff0c7'
+G='#8a630a'; B='#245b78'; T='#173c48'; grey='#617078'; light='#eef3f5'; gold='#fff0c7'
 class Drawing:
  def __init__(self,h=600):
   self.h=h; self.s=['<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="%s" viewBox="0 0 1000 %s"><defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#617078"/></marker></defs><rect width="1000" height="100%%" fill="white"/>'%(h,h)]
@@ -20,9 +21,10 @@ class Drawing:
  def title(self,t,sub):self.text(35,35,t,26,True);self.text(35,66,sub,18,color=grey)
  def save(self,name):
   s=''.join(self.s)+'</svg>'; (F/f'{name}.svg').write_text(s);cairosvg.svg2pdf(bytestring=s.encode(),write_to=str(F/f'{name}.pdf'))
+  subprocess.run([sys.executable,str(F/'normalize-pdf-font-maps.py'),str(F/f'{name}.pdf')],check=True)
 
 d=Drawing(480);d.title('Voice identity within a shared search task','Proposed within-participant comparison; arrows describe the design, not observed effects.')
-d.box(35,105,420,125,'Preferred catalog voice',['Participant chooses from the catalog.','Assigned to one measured block.'])
+d.box(35,105,420,125,'Neutral voice',['Participant chooses from the catalog.','Assigned to one measured block.'])
 d.box(545,105,420,125,'Self-similar voice',['Synthesized from the standard passage.','Assigned to the other measured block.'],gold)
 for x in [245,755]:d.line(x,230,x,270)
 d.box(170,270,660,95,'Shared task and guidance mechanism',['Hidden target · gaze-contingent cues · right-trigger selection'])
