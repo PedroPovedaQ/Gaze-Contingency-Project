@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.24.0 (TeX Live 2026)  (format=lualatex 2026.10.1)  23 OCT 2026 10:00
+This is LuaHBTeX, Version 1.24.0 (TeX Live 2026)  (format=lualatex 2026.10.1)  23 OCT 2026 10:15
  restricted system commands enabled.
 **main.tex
 (./main.tex
@@ -993,7 +993,7 @@ CHAPTER 1:
 
 
 ] [2] [3] [4] [5]
-Floatstructure:724
+Floatstructure:734
 
 Underfull \hbox (badness 5008) in paragraph at lines 58--58
 []|\TU/TeXGyreTermes(0)/m/n/10.95 Does self-similar voice change ac-tive
@@ -1004,46 +1004,46 @@ Underfull \hbox (badness 6078) in paragraph at lines 58--58
 []|\TU/TeXGyreTermes(0)/m/n/10.95 Do self-similar and pre-ferred cat-a-log
  []
 
-[6] [7]
-Floatstructure:798
-<figures/comparison-framework.pdf, id=1722, 752.8125pt x 361.35pt>
+[6]
+Floatstructure:808
+<figures/comparison-framework.pdf, id=1739, 752.8125pt x 361.35pt>
 File: figures/comparison-framework.pdf Graphic file (type pdf)
 <use figures/comparison-framework.pdf>
 Package luatex.def Info: figures/comparison-framework.pdf  used on input line 74.
 (luatex.def)             Requested size: 469.75499pt x 225.49031pt.
-[8<./figures/comparison-framework.pdf>]) (./chapters/02-literature.tex [9]
+[7] [8<./figures/comparison-framework.pdf>]) (./chapters/02-literature.tex [9]
 CHAPTER 2:
 [10
 
 ] [11] [12] [13] [14] [15] [16] [17] [18] [19] [20]
-Floatstructure:1020
+Floatstructure:1034
 
-Underfull \hbox (badness 2080) in paragraph at lines 104--104
+Underfull \hbox (badness 2080) in paragraph at lines 108--108
 []|\TU/TeXGyreTermes(0)/m/n/10.95 Au-di-tory and staged gaze
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 104--104
+Underfull \hbox (badness 10000) in paragraph at lines 108--108
 []|\TU/TeXGyreTermes(0)/m/n/10.95 Sup-ports in-ves-ti-gat-ing gaze-
  []
 
 
-Underfull \hbox (badness 1221) in paragraph at lines 104--104
+Underfull \hbox (badness 1221) in paragraph at lines 108--108
 []|\TU/TeXGyreTermes(0)/m/n/10.95 AR search and task feed-
  []
 
 
-Underfull \hbox (badness 1127) in paragraph at lines 104--104
+Underfull \hbox (badness 1127) in paragraph at lines 108--108
 \TU/TeXGyreTermes(0)/m/n/10.95 nip-u-la-tion dif-fer from this hidden-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 104--104
+Underfull \hbox (badness 10000) in paragraph at lines 108--108
 []|\TU/TeXGyreTermes(0)/m/n/10.95 Context-aware XR
  []
 
 
-Underfull \hbox (badness 1142) in paragraph at lines 104--104
+Underfull \hbox (badness 1142) in paragraph at lines 108--108
 []|\TU/TeXGyreTermes(0)/m/n/10.95 Does not es-tab-lish an in-de-pen-dent
  []
 
@@ -1052,34 +1052,34 @@ CHAPTER 3:
 [23
 
 ]
-Floatstructure:1135
-<figures/image.png, id=2389, 1273.75874pt x 1244.65pt>
+Floatstructure:1149
+<figures/image.png, id=2415, 1273.75874pt x 1244.65pt>
 File: figures/image.png Graphic file (type png)
 <use figures/image.png>
 Package luatex.def Info: figures/image.png  used on input line 17.
 (luatex.def)             Requested size: 328.82706pt x 321.30336pt.
 [24] [25<./figures/image.png>] [26]
-Floatstructure:1154
-<figures/voice-guidance-memory-architecture.pdf, id=2430, 1204.5pt x 489.32813pt>
+Floatstructure:1170
+<figures/voice-guidance-memory-architecture.pdf, id=2458, 1204.5pt x 489.32813pt>
 File: figures/voice-guidance-memory-architecture.pdf Graphic file (type pdf)
 <use figures/voice-guidance-memory-architecture.pdf>
-Package luatex.def Info: figures/voice-guidance-memory-architecture.pdf  used on input line 33.
+Package luatex.def Info: figures/voice-guidance-memory-architecture.pdf  used on input line 35.
 (luatex.def)             Requested size: 469.75499pt x 190.83719pt.
-[27<./figures/voice-guidance-memory-architecture.pdf>]
-Floatstructure:1166
-<figures/trial-review-synthetic-demo.png, id=2462, 3432.825pt x 2117.9125pt>
+[27]
+Floatstructure:1182
+<figures/trial-review-synthetic-demo.png, id=2480, 3432.825pt x 2117.9125pt>
 File: figures/trial-review-synthetic-demo.png Graphic file (type png)
 <use figures/trial-review-synthetic-demo.png>
-Package luatex.def Info: figures/trial-review-synthetic-demo.png  used on input line 43.
+Package luatex.def Info: figures/trial-review-synthetic-demo.png  used on input line 45.
 (luatex.def)             Requested size: 469.75499pt x 289.81618pt.
-) (./chapters/04-method.tex [28] [29<./figures/trial-review-synthetic-demo.png>]
+[28<./figures/voice-guidance-memory-architecture.pdf>]) (./chapters/04-method.tex [29<./figures/trial-review-synthetic-demo.png>]
 CHAPTER 4:
 [30
 
 ] [31]
-Floatstructure:1204
-Floatstructure:1254
-<figures/study-procedure-current.pdf, id=2583, 1204.5pt x 489.32813pt>
+Floatstructure:1220
+Floatstructure:1270
+<figures/study-procedure-current.pdf, id=2612, 1204.5pt x 489.32813pt>
 File: figures/study-procedure-current.pdf Graphic file (type pdf)
 <use figures/study-procedure-current.pdf>
 Package luatex.def Info: figures/study-procedure-current.pdf  used on input line 37.
@@ -1087,7 +1087,7 @@ Package luatex.def Info: figures/study-procedure-current.pdf  used on input line
 [32] [33<./figures/study-procedure-current.pdf>] [34
 
 ] [35] [36] [37] [38]
-Floatstructure:1408
+Floatstructure:1424
 
 Underfull \hbox (badness 3396) in paragraph at lines 94--94
 []|\TU/TeXGyreTermes(0)/m/n/10.95 Sep-a-rate in-ter-est/en-joy-ment (7), ef-fort/im-por-tance (5), pres-
@@ -1099,16 +1099,16 @@ Underfull \hbox (badness 2393) in paragraph at lines 94--94
  []
 
 [39] [40] [41]
-Floatstructure:1503
-<figures/survey-scopes.pdf, id=2956, 752.8125pt x 421.575pt>
+Floatstructure:1519
+<figures/survey-scopes.pdf, id=2986, 752.8125pt x 421.575pt>
 File: figures/survey-scopes.pdf Graphic file (type pdf)
 <use figures/survey-scopes.pdf>
 Package luatex.def Info: figures/survey-scopes.pdf  used on input line 119.
 (luatex.def)             Requested size: 469.75499pt x 263.07202pt.
 ) (./chapters/05-measurement.tex [42] [43<./figures/survey-scopes.pdf>]
 CHAPTER 5:
-Floatstructure:1530
-<figures/data-provenance.pdf, id=3012, 752.8125pt x 444.15938pt>
+Floatstructure:1546
+<figures/data-provenance.pdf, id=3041, 752.8125pt x 444.15938pt>
 File: figures/data-provenance.pdf Graphic file (type pdf)
 <use figures/data-provenance.pdf>
 Package luatex.def Info: figures/data-provenance.pdf  used on input line 14.
@@ -1116,33 +1116,33 @@ Package luatex.def Info: figures/data-provenance.pdf  used on input line 14.
 [44
 
 ] [45<./figures/data-provenance.pdf>] [46]
-Floatstructure:1724
-<figures/starting-geometry.pdf, id=3262, 752.8125pt x 489.32813pt>
+Floatstructure:1740
+<figures/starting-geometry.pdf, id=3292, 752.8125pt x 489.32813pt>
 File: figures/starting-geometry.pdf Graphic file (type pdf)
 <use figures/starting-geometry.pdf>
 Package luatex.def Info: figures/starting-geometry.pdf  used on input line 48.
 (luatex.def)             Requested size: 469.75499pt x 305.35146pt.
-Floatstructure:1731
-<figures/height-reference.pdf, id=3271, 752.8125pt x 414.04688pt>
+Floatstructure:1747
+<figures/height-reference.pdf, id=3301, 752.8125pt x 414.04688pt>
 File: figures/height-reference.pdf Graphic file (type pdf)
 <use figures/height-reference.pdf>
 Package luatex.def Info: figures/height-reference.pdf  used on input line 56.
 (luatex.def)             Requested size: 469.75499pt x 258.37431pt.
 [47] [48<./figures/starting-geometry.pdf>] [49<./figures/height-reference.pdf>]
-Floatstructure:1822
-<figures/evidence-events.pdf, id=3443, 752.8125pt x 451.6875pt>
+Floatstructure:1838
+<figures/evidence-events.pdf, id=3473, 752.8125pt x 451.6875pt>
 File: figures/evidence-events.pdf Graphic file (type pdf)
 <use figures/evidence-events.pdf>
 Package luatex.def Info: figures/evidence-events.pdf  used on input line 88.
 (luatex.def)             Requested size: 469.75499pt x 281.86288pt.
 [50] [51<./figures/evidence-events.pdf>] [52] [53]
-Floatstructure:1919
-<figures/latency-definition.pdf, id=3579, 752.8125pt x 391.4625pt>
+Floatstructure:1935
+<figures/latency-definition.pdf, id=3609, 752.8125pt x 391.4625pt>
 File: figures/latency-definition.pdf Graphic file (type pdf)
 <use figures/latency-definition.pdf>
 Package luatex.def Info: figures/latency-definition.pdf  used on input line 123.
 (luatex.def)             Requested size: 469.75499pt x 244.28116pt.
-Floatstructure:1929
+Floatstructure:1945
 
 Underfull \hbox (badness 3029) in paragraph at lines 145--145
 []|\TU/TeXGyreTermes(0)/m/n/10.95 Re-veal to cor-rect trig-ger, less
@@ -1160,8 +1160,8 @@ Underfull \hbox (badness 1014) in paragraph at lines 145--145
 
 [54<./figures/latency-definition.pdf>]) (./chapters/06-analysis.tex [55] [56]
 CHAPTER 6:
-Floatstructure:2028
-<figures/analysis-units.pdf, id=3731, 752.8125pt x 429.10312pt>
+Floatstructure:2044
+<figures/analysis-units.pdf, id=3761, 752.8125pt x 429.10312pt>
 File: figures/analysis-units.pdf Graphic file (type pdf)
 <use figures/analysis-units.pdf>
 Package luatex.def Info: figures/analysis-units.pdf  used on input line 15.
@@ -1169,7 +1169,7 @@ Package luatex.def Info: figures/analysis-units.pdf  used on input line 15.
 [57
 
 ] [58<./figures/analysis-units.pdf>]
-Floatstructure:2044
+Floatstructure:2060
 
 Underfull \hbox (badness 10000) in paragraph at lines 42--42
 []|\TU/TeXGyreTermes(0)/m/n/10.95 Sec-ondary ex-pe-ri-
@@ -1212,7 +1212,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 42--42
 
 [59] [60] [61] [62] [63] [64]) (./chapters/07-evaluation.tex [65] [66]
 CHAPTER 7:
-Floatstructure:2341
+Floatstructure:2357
 
 Underfull \hbox (badness 10000) in paragraph at lines 21--21
 []|\TU/TeXGyreTermes(0)/m/n/10.95 Con-sented, started, com-pleted,
@@ -1231,7 +1231,7 @@ Underfull \hbox (badness 3601) in paragraph at lines 21--21
 [67
 
 ] [68]
-Floatstructure:2443
+Floatstructure:2459
 
 Underfull \hbox (badness 2050) in paragraph at lines 46--46
 []|\TU/TeXGyreTermes(0)/m/n/10.95 De-clared scales and ret-ro-spec-tive
@@ -1255,7 +1255,7 @@ CHAPTER 8:
 CHAPTER 9:
 [79
 
-]) [80] (./appendices/a-instruments.tex [81]
+] [80]) (./appendices/a-instruments.tex [81]
 APPENDIX A:
 [82
 
@@ -1344,23 +1344,23 @@ APPENDIX F:
 [121
 
 ]
-Floatstructure:4136
-<figures/bounded-memory.pdf, id=6535, 752.8125pt x 421.575pt>
+Floatstructure:4152
+<figures/bounded-memory.pdf, id=6565, 752.8125pt x 421.575pt>
 File: figures/bounded-memory.pdf Graphic file (type pdf)
 <use figures/bounded-memory.pdf>
 Package luatex.def Info: figures/bounded-memory.pdf  used on input line 14.
 (luatex.def)             Requested size: 469.75499pt x 263.07202pt.
 [122<./figures/bounded-memory.pdf>]
-Floatstructure:4149
+Floatstructure:4165
 [123]
-Floatstructure:4232
-<figures/guidance-states.pdf, id=6659, 752.8125pt x 519.44063pt>
+Floatstructure:4248
+<figures/guidance-states.pdf, id=6689, 752.8125pt x 519.44063pt>
 File: figures/guidance-states.pdf Graphic file (type pdf)
 <use figures/guidance-states.pdf>
 Package luatex.def Info: figures/guidance-states.pdf  used on input line 44.
 (luatex.def)             Requested size: 469.75499pt x 324.14233pt.
 [124] [125<./figures/guidance-states.pdf>] [126] [127] [128] [129]
-Floatstructure:4291
+Floatstructure:4307
 
 Underfull \hbox (badness 1874) in paragraph at lines 103--103
 []|\TU/TeXGyreTermes(0)/m/n/10.95 Jev-led with lo-cal over-
@@ -1372,7 +1372,7 @@ Underfull \hbox (badness 4846) in paragraph at lines 103--103
  []
 
 [130] [131] [132]
-Floatstructure:4367
+Floatstructure:4383
 
 Underfull \hbox (badness 2057) in paragraph at lines 141--141
 []|\TU/TeXGyreTermes(0)/m/n/10.95 Gate timers, tran-si-tion cause, con-
@@ -1409,8 +1409,8 @@ L3 programming layer <2026-09-09>
 
 
 Package tagpdf Info: Finalizing the tagging structure:
-(tagpdf)             Writing out ~4735 structure objects
-(tagpdf)             with ~3558 'MC' leaf nodes.
+(tagpdf)             Writing out ~4751 structure objects
+(tagpdf)             with ~3581 'MC' leaf nodes.
 (tagpdf)             Be patient if there are lots of objects!
 
 Package tagpdf Info: writing ParentTree
@@ -1423,19 +1423,19 @@ Package tagpdf Info: writing Root
 )
 
 Here is how much of LuaTeX's memory you used:
- 34922 strings out of 475604
+ 34954 strings out of 475604
  125084,2848258 words of node,token memory allocated
  711 words of node memory still in use:
    7 hlist, 2 vlist, 2 rule, 2 glue, 4 kern, 2 glyph, 61 attribute, 67 glue_spec, 19 attribute_list, 1 write nodes
-   avail lists: 1:2,2:5335,3:543,4:26,5:537,6:86,7:6487,8:67,9:730,10:24,11:553
- 56174 multiletter control sequences out of 65536+600000
- 73 fonts using 21077079 bytes
+   avail lists: 1:2,2:5335,3:543,4:26,5:537,6:86,7:6487,8:67,9:730,10:24,11:589
+ 56206 multiletter control sequences out of 65536+600000
+ 73 fonts using 21077159 bytes
  148i,10n,105p,1213b,684s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/fonts/opentype/public/lm/lmmono10-regular.otf></Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/fonts/opentype/public/lm/lmmonolt10-bold.otf></Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/fonts/opentype/public/tex-gyre-math/texgyretermes-math.otf></Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/fonts/opentype/public/tex-gyre-math/texgyretermes-math.otf></Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/fonts/opentype/public/tex-gyre/texgyretermes-italic.otf></Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/fonts/opentype/public/lm/lmmono12-regular.otf></Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/fonts/opentype/public/tex-gyre/texgyretermes-bold.otf></Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/fonts/opentype/public/tex-gyre/texgyretermes-regular.otf>
-Output written on main.pdf (159 pages, 2764036 bytes).
+Output written on main.pdf (159 pages, 2766180 bytes).
 
-PDF statistics: 7996 PDF objects out of 8907 (max. 8388607)
- 7638 compressed objects within 77 object streams
+PDF statistics: 8026 PDF objects out of 8907 (max. 8388607)
+ 7668 compressed objects within 77 object streams
  536 named destinations out of 1000 (max. 1048576)
- 27247 words of extra memory for PDF output out of 30516 (max. 100000000)
+ 27357 words of extra memory for PDF output out of 30516 (max. 100000000)
 

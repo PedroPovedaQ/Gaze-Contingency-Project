@@ -4,36 +4,36 @@ BEDCPG+TeXGyreTermes-Regular         CID Type 0C       Identity-H       yes yes 
 APRYLU+TeXGyreTermes-Bold            CID Type 0C       Identity-H       yes yes yes     85  0
 FJPKXQ+LMMono12-Regular              CID Type 0C       Identity-H       yes yes yes    124  0
 IPSBHK+TeXGyreTermes-Italic          CID Type 0C       Identity-H       yes yes yes    125  0
-ZQWVCW+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   1739  0
-WYOTSX+Helvetica                     TrueType          WinAnsi          yes yes yes   1740  0
-VBXBWA+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   2447  0
-ABQMDK+Helvetica                     TrueType          WinAnsi          yes yes yes   2448  0
-FWDHKJ+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   2599  0
-IZTTXZ+Helvetica                     TrueType          WinAnsi          yes yes yes   2600  0
-NWSAZI+TeXGyreTermesMath-Regular     CID Type 0C       Identity-H       yes yes yes   2694  0
-TBNDMR+TeXGyreTermesMath-Regular     CID Type 0C       Identity-H       yes yes yes   2695  0
-MGOFOK+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   2981  0
-LEMEDL+Helvetica                     TrueType          WinAnsi          yes yes yes   2982  0
-CDVCNM+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   3147  0
-RMTXGX+Helvetica                     TrueType          WinAnsi          yes yes yes   3148  0
-GYRRLB+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   3364  0
-KHZHQJ+Helvetica                     TrueType          WinAnsi          yes yes yes   3365  0
-LTOOVO+Helvetica-Bold                CID TrueType      Identity-H       yes yes yes   3366  0
-BXUFBR+Helvetica                     CID TrueType      Identity-H       yes yes yes   3367  0
-HRQBZI+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   3402  0
-GZWWSX+Helvetica                     TrueType          WinAnsi          yes yes yes   3403  0
-CZMLQS+Helvetica-Bold                CID TrueType      Identity-H       yes yes yes   3404  0
-WJWIET+Helvetica                     CID TrueType      Identity-H       yes yes yes   3405  0
-KRMINE+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   3497  0
-ONFVTX+Helvetica                     TrueType          WinAnsi          yes yes yes   3498  0
-XXGUGD+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   3680  0
-OOMGFK+Helvetica                     TrueType          WinAnsi          yes yes yes   3681  0
-ESRXKS+Helvetica-Bold                CID TrueType      Identity-H       yes yes yes   3682  0
-NMHTPZ+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   3755  0
-AQSYDM+Helvetica                     TrueType          WinAnsi          yes yes yes   3756  0
-FMYIMM+LMMonoLt10-Bold               CID Type 0C       Identity-H       yes yes yes   4675  0
-MJPUOR+LMMono10-Regular              CID Type 0C       Identity-H       yes yes yes   6358  0
-AKAVVQ+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   6552  0
-YHGQFI+Helvetica                     TrueType          WinAnsi          yes yes yes   6553  0
-YFVCIB+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   6690  0
-NOEUYV+Helvetica                     TrueType          WinAnsi          yes yes yes   6691  0
+ZQWVCW+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   1763  0
+WYOTSX+Helvetica                     TrueType          WinAnsi          yes yes yes   1764  0
+VBXBWA+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   2495  0
+ABQMDK+Helvetica                     TrueType          WinAnsi          yes yes yes   2496  0
+FWDHKJ+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   2628  0
+IZTTXZ+Helvetica                     TrueType          WinAnsi          yes yes yes   2629  0
+NWSAZI+TeXGyreTermesMath-Regular     CID Type 0C       Identity-H       yes yes yes   2724  0
+TBNDMR+TeXGyreTermesMath-Regular     CID Type 0C       Identity-H       yes yes yes   2725  0
+MGOFOK+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   3010  0
+LEMEDL+Helvetica                     TrueType          WinAnsi          yes yes yes   3011  0
+CDVCNM+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   3177  0
+RMTXGX+Helvetica                     TrueType          WinAnsi          yes yes yes   3178  0
+GYRRLB+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   3395  0
+KHZHQJ+Helvetica                     TrueType          WinAnsi          yes yes yes   3396  0
+LTOOVO+Helvetica-Bold                CID TrueType      Identity-H       yes yes yes   3397  0
+BXUFBR+Helvetica                     CID TrueType      Identity-H       yes yes yes   3398  0
+HRQBZI+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   3432  0
+GZWWSX+Helvetica                     TrueType          WinAnsi          yes yes yes   3433  0
+CZMLQS+Helvetica-Bold                CID TrueType      Identity-H       yes yes yes   3434  0
+WJWIET+Helvetica                     CID TrueType      Identity-H       yes yes yes   3435  0
+KRMINE+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   3527  0
+ONFVTX+Helvetica                     TrueType          WinAnsi          yes yes yes   3528  0
+XXGUGD+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   3710  0
+OOMGFK+Helvetica                     TrueType          WinAnsi          yes yes yes   3711  0
+ESRXKS+Helvetica-Bold                CID TrueType      Identity-H       yes yes yes   3712  0
+NMHTPZ+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   3785  0
+AQSYDM+Helvetica                     TrueType          WinAnsi          yes yes yes   3786  0
+FMYIMM+LMMonoLt10-Bold               CID Type 0C       Identity-H       yes yes yes   4705  0
+MJPUOR+LMMono10-Regular              CID Type 0C       Identity-H       yes yes yes   6388  0
+AKAVVQ+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   6583  0
+YHGQFI+Helvetica                     TrueType          WinAnsi          yes yes yes   6584  0
+YFVCIB+Helvetica-Bold                TrueType          WinAnsi          yes yes yes   6720  0
+NOEUYV+Helvetica                     TrueType          WinAnsi          yes yes yes   6721  0

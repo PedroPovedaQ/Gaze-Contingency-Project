@@ -4,7 +4,7 @@
 - No unresolved references/citations, LaTeX warnings, or overfull boxes in the final log. All listed fonts embedded. Non-fatal underfull-box/PDF-structure diagnostics do not constitute formal accessibility validation.
 - Nine chapters, six appendices, 14 numbered figures, 16 numbered tables. Existing figure assets, labels, and citation groups retained; one contextual preprint and one bounded visual-guidance citation added.
 - Visually checked abstract, contents hierarchy, platform opening and results-framework opening (PDF pages 4, 7, 8, 36 and 80). TOC, LOF and LOT regenerated after technical material moved to Appendix F.
-- Approximately 30,411 words by the same whole-PDF extraction method as the reference comparison; counts include references, front matter, and extracted figure text.
+- Approximately 30,593 words by the same whole-PDF extraction method as the reference comparison; counts include references, front matter, and extracted figure text.
 - Original questionnaire/data/scenario/readiness/decision-contract appendices match the prior checkpoint byte-for-byte. One practice, two 40-trial blocks, practice in the first assigned voice, final-only questionnaire administration and the pending-results status are preserved.
 - The preceding Opus 5.5 review is historical provenance. This subsequent author-requested structural revision was synthesized in the main thread; it was not represented as a new Opus review.
 - The Yang et al. supplied preprint is used only to distinguish an interface comparison from supporting navigation architecture. No numerical findings or claimed self-similar voice effects were transferred.
@@ -32,6 +32,15 @@
 - Citation audit: 44 used keys / 65 retained entries, zero missing/duplicate keys; 21 intentionally retained uncited entries and 12 existing DOI-render-hint warnings. No new source entries required for this pass.
 - All 28 protected method, measurement, analysis, appendix, and historical-snapshot files match their pre-pass hashes. Participant results remain pending; Qualtrics remains on hold.
 - The requested checkpoint includes the prior voice-focus restructuring, supporting Appendix F, RippleVision bibliography synchronization, full-text synthesis, and current introduction/discussion edits. No runtime files or live Overleaf edits are included. PDF and editable source delivery refreshed.
+
+## Narrative applied across the thesis — October 23, 2026
+
+- Applied the narrative blueprint to the abstract and all nine chapters: practical guided search, the self-similar versus preferred-voice question, the controlled comparison, and conditional design implications. Replaced early implementation-heavy problem framing with the unresolved voice question; linked discussion to RQ1–RQ3.
+- Final LuaLaTeX/BibTeX build: 159 pages, approximately 30,593 extracted words, 14 figures and 16 tables. No undefined references/citations, LaTeX warnings, overfull boxes, or extracted `??`; all fonts embedded.
+- Compared text extraction against checkpoint b377dbd; rendered and inspected all 41 changed PDF pages plus the seven bibliography pages. Contents and figure/table lists regenerated. No clipping or collisions found.
+- Citation audit: 52 citation commands, 44 used keys / 65 retained entries, zero missing/duplicate keys. Existing 21 uncited entries and 12 DOI-render-hint notices remain documented; bibliography unchanged.
+- All 54 protected appendix, figure, bibliography, and historical-snapshot files match pre-pass hashes. Method, measurement, and analysis changes are confined to introductory framing; substantive sections match b377dbd exactly. Study counts, questionnaires, statistical definitions, and pending-results status remain unchanged.
+- Updated editable source and PDF delivery. This is a local thesis checkpoint; no runtime, live Overleaf, or Qualtrics changes and no push.
 
 ## Remaining limitations
 

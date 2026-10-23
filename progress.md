@@ -1,3 +1,13 @@
+## 2026-10-23 — Apply the self-similar assistance story throughout the thesis
+
+- Revised abstract, all nine chapter openings/transitions, the introduction problem statement, and discussion/conclusion to connect useful object search with self-similar versus participant-preferred guidance. Kept technical architecture as supporting apparatus and mixed outcomes interpretable.
+- Preserved all protocol parameters, statistical specifications, instruments, figure assets, bibliography, and pending participant-results status. Updated narrative-plan provenance; rebuilt the 159-page PDF, verified citations, and inspected the 41 changed pages plus references. Refreshed PDF/source package for the requested local commit. Qualtrics and live Overleaf remain unchanged.
+
+## 2026-10-23 — Compare research narrative structures
+
+- Reviewed introduction-to-discussion structure in Kao, Guo, Binetti, and Zhang using full texts. Saved a sourced narrative blueprint in `docs/thesis/review/narrative-architecture-20261023.md`.
+- Proposed bringing the self-similar versus preferred-voice question onto the first page and reducing early implementation detail; preserved mixed-outcome possibilities and study boundaries. This is an editorial proposal, not a manuscript or protocol change. Compiled thesis remains at checkpoint `b377dbd`; Qualtrics remains on hold.
+
 ## 2026-10-23 — Carry the voice rationale through the introduction and discussion
 
 - Reworked the introduction around practical AR/VR search motivations from Binetti, Zhang, HiveFive, and Two-Step Gaze Guidance; distinguished application examples from demonstrated deployment outcomes.
