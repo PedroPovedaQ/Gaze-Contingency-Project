@@ -13,7 +13,10 @@ public sealed partial class TrialReviewApp
         GUILayout.Space(12);GUILayout.Label("GUIDANCE STATE",m_Heading);GUILayout.Space(8);
         var state=m_GuidanceState.Current;
         if(state==null){GUILayout.Label(m_GuidanceState.Availability,m_MutedLabel);return;}
+        Metric("Policy",string.IsNullOrEmpty(state.guidancePolicy)?"Not recorded":state.guidancePolicy);
         Metric("Stage",state.phase);Metric("Allowed action",state.allowedAction);
+        Metric("New guidance",state.version=="guidance-state-v2" ?
+            (state.newGuidanceAllowed?"Allowed by state":"Blocked by state"):"Not recorded");
         Metric("Transition",$"{state.previousPhase} → {state.phase}");
         Metric("Reason",state.transitionReason);Metric("Revision",state.revision.ToString());
         Metric("Gaze hit",TrialReviewGuidanceState.Hit(state.gazeHitObjectId,state.gazeValid));

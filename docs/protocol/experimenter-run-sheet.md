@@ -1,164 +1,480 @@
-# Gaze Contingency Search Study
+# Experimenter run sheet
 
-Experimenter Run Sheet
+**Protocol proposal — October 20, 2026. Qualtrics on hold.** One practice trial; two 40-trial blocks; condition-specific questionnaires collected only in the final survey. See [current timing and reconciliation](2026-10-20-final-survey-decision.md). The authoritative formatted source is the corresponding file in docs/protocol/overleaf. Generated legacy forms are superseded drafts.
 
-Version: 0.1 | September 16 2026 
+<div class="tcolorbox">
 
-> **Protocol proposal — annotated meeting source, reviewed September 22.** This supplied run sheet was already saved on `v2`; its wording and notes below are preserved. The newer meeting prompt supersedes generic-voice and gaze-dwell instructions with **preferred versus self-similar voice and controller ray/trigger selection**. See the [reconciliation and open decisions](../meeting-reconciliation-2026-09-22.md). This is not a frozen operator script. #27 owns a revised script and synchronized PDF/Word editions; existing exports predate these requirements.
+**EXPERIMENTER RUN SHEET**
 
-Researcher only: Two counterbalanced voice blocks, generic and self-similar. Both use gaze-contingent warmer/colder guidance. Planned trial start is the same fixed front direction. Say “first block” and “second block”; do not suggest that either voice should improve performance.
+**Follow My Voice**
 
-Session record: Participant ID ______  Run ______  Date ______  Researcher ______  Build ______  Voice order ______  Neutral profile ______  Survey version ______
+Experimenter protocol / October 20, 2026
 
-## Before participant arrives
+</div>
 
-- Sanitize and test the Head Mounted Display (HMD) and controllers.
+#### SAY / ASK
 
-- Open Unity and Qualtrics.
+Participant-facing speech is set in dark upright type.
 
-- Enter coded ID and assigned condition.
+#### ACTION / RESEARCHER
 
-- Prepare consent, baseline survey, both block surveys, final interview and session/event record. Use one defined TLX collection route; see the beta note in Section 7.
+Experimenter-only instructions are italic and muted gold-brown. Do not
+read them aloud.
 
-## 1 Welcome and consent
+|                        |                    |
+|:-----------------------|:-------------------|
+| **Participant ID**     | **Run**            |
+| **Date**               | **Researcher**     |
+| **Build**              | **Voice order**    |
+| **Preferred voice ID** | **Survey version** |
 
-Say: “Thank you for coming. You will stay seated and turn to find virtual objects by their color and shape. A voice assistant will provide hints. You may pause, take a break or stop at any time without penalty.”
+#### CURRENT DESIGN / RESEARCHER ONLY
 
-Say: “We will ask you to record a short voice sample to create a synthetic version of your voice. We also record eye-gaze and task data under a study code. Please read the consent form for what is collected, where it is processed and how it is handled.”
-## QUESTION
-Do we want to make them aware of the voice cloning?
+Two counterbalanced voice blocks: participant-preferred catalog voice
+and self-similar synthetic voice. Each block will contain 40 measured
+trials (80 total); one practice trial will be separate. Use the saved
+assigned order. Each trial will be one hidden-target search. Both
+conditions will use the same gaze-contingent guidance policy and
+right-controller selection. Say “first block” and “second block” without
+suggesting either voice will improve performance.
 
+# Before participant arrives
 
-ACTION: Obtain consent.
+- Sanitize and test the HTC Vive Focus Vision and right controller.
+  Check the rotating chair and clear the seated movement area.
 
-## 2 Initial Qualtrics
+- Open the frozen study build and the versioned questionnaires. Confirm
+  the build ID, audio-library version, recording destination and
+  available storage.
 
-Say: “Please complete the background and current-comfort questions before we begin. Use only the study code already entered. Do not add your name or contact details. You may skip optional questions.”
+- Enter coded participant/run IDs and saved voice-block order. Verify
+  one practice trial and 40 measured trials per block. Confirm
+  researcher visual aids and passthrough are set consistently across
+  conditions.
 
+- Prepare consent, baseline survey, both block surveys, final interview
+  and session/event record. Use one defined TLX collection route and
+  avoid duplicate administration.
 
-## 3 Fit and calibrate the headset
+# 1 Welcome and consent
 
-Say: “Remain seated in this chair. You may turn the chair, your body and your head to look around, but do not stand or walk. Tell me immediately if you feel dizzy, nauseated, strained, uncomfortable or unsteady.”
+#### SAY
 
-ACTION: Fit equipment and verify tracking, perform automated eye callibration protocol.
-## NOTE
-Callibration step where the user looks at a dot in space, and we can use that as a callibration offset to boost accuracy.
+“Thank you for coming. Today you will be performing a search task in
+mixed reality. In this task, you will stay seated and turn to find
+virtual objects. A voice assistant will know the target and will guide
+you toward it without naming its color or shape. You will be performing
+this task for a number of trials over two task blocks, each using a
+different assistant voice. You may pause, take a break or stop at any
+time without penalty.”
 
-Ask: “Can you see clearly? Does the equipment feel comfortable? Do you feel well enough to continue?”
+#### SAY
 
-## 4. Pre-Block Activity
+“We will ask you to record a short voice sample to create a synthetic
+version of your voice. We will also record eye-gaze and task data under
+a study code. Please read the consent form for what will be collected,
+where it will be processed and how it will be handled.”
 
-Say: “First, I will explain the task. Your task is simply to locate objects that are around you. The objects that you'll need to find are specified by an agent. For example, the agent might say: "Locate the blue sphere". Once you find the object, hold your gaze on it for a few seconds to select it -- this completes the round. You will then continue this for other objects the agent specifies.
+#### ACTION
 
-Say: “Next, read the displayed passage so the agent understands the way you speak". 
-## QUESTION
-Can we cover this in the consent step?
+Obtain consent.
 
-Say: “We will now connect a short sample of your voice, after the tone please read the script.” Then “Processing voice.” When ready: “Voice setup is ready. Let’s check the audio.”
+# 2 Initial Qualtrics and Voice Setup
 
-## UPDATES
-- Preferred accent
-- Gender perception 
-- Match Gender in preferred voice (to avoid cross-gender effect)
-- Ask for 100 point rating on each voice (including self-similar)
-- ("The agent's voice is similar to mine.", The agent's accent is similar to mine.) (1-7), Likert Scale
-- Log time to first gaze
-- Log time to first controller raycast/object intersect
-- Log overall trial time (includes final selection trigger) 
-- After action review tool (Participant Trial Replay) (Controller + Eye Gaze), is trigger held down (1/0) (60 HZ) + object position
-- Total Gross Rotation + Head Movement (Y + X axis + Z), yaw/pitch/ per round'
-- Drewes Gaze vs locomotion paper
-- [10] J. Drewes, S. Feder, and W. Einh¨auser. Gaze during locomotion in virtual reality and the real world. Frontiers in Neuroscience, 15:656913, 2021. doi: 10.3389/fnins.2021.656913 3, 6
-D. C. Niehorster, M. Nystr¨om, R. S. Hessels, J. S. Benjamins, R. Andersson, and I. T. C. Hooge. The fundamentals of eye tracking, part 7: 8Online Submission ID: 2013 Determining data quality. Behavior Research Methods, 58:183, 2026. doi: 10.3758/s13428-026-03039-4 3, 7
-- use colors and italics to actions to perform without speaking
-- update start of protocol, include mention of self-similar voice clone use in the experiment
-## 5. Familiarization
+#### SAY
 
-ACTION: At the 360 search start checkpoint, seat the participant at the intended center facing the chosen room-front reference. Release the trigger, then press Trigger / Enter to center and begin. Record the reference; do not recenter to wherever the participant happens to face later.
+“Please complete the background and current-comfort questions before we
+begin. Use only the study code already entered. Do not add your name or
+contact details. You may skip optional questions. We will also ask what
+kind of assistant voice you would prefer. There are no right or wrong
+preferences.”
 
-Say: “Objects will appear around you, you can turn in your chair in all 360 degrees. Find the object with the announced color and shape. Turn while staying seated, then hold your gaze on the matching object until it is selected. You do not need to count rounds.”
+#### ACTION
 
-## NOTE (USE IMAGE HERE 360 user figure)
-Say: “The next rounds are practice, and are meant to simply get you familiar with the task.”
+Confirm the coded participant and run IDs. Include the baseline
+demographics and current-comfort items, followed by the separate
+questions below. Keep skipped responses distinct from “no preference.”
 
-ACTION: Allow the user to complete the object selection practice rounds.
+#### SURVEY ITEM / AGENT GENDER PREFERENCE
 
-Ask: “Do you have any questions about the controls or task?”
+“What gender presentation would you prefer for the agent’s voice?”
 
-Say: “When you are ready, we will begin the first task block.”
+#### ACTION / CANDIDATE PREPARATION
 
-## 6 First task block
-**INTERNAL SETTINGS**:
-Practice | Real | 30 rounds
+Use the frozen candidate catalog and common preview text. Have the
+participant preview voices, choose one and confirm the selection. Save
+requested gender presentation separately from actual voice ID; record
+unavailable requests and “no preference” distinctly. Do not infer or
+match the agent’s gender from participant gender. Record the configured
+catalog and presentation order.
 
-Researcher settings: Confirm the saved first voice and planned trial schedule. Keep object layout, selection method, guidance policy and the finalized prompt wording constant across voices. 
+#### VOICE RATINGS
 
-Say: “We will now begin the first task block. Find each target as quickly and accurately as you comfortably can. Stay seated and use the same gaze selection you practiced. Tell me if you need to pause.”
+During setup, rate each auditioned voice, including the self-similar
+voice, from 0 (Do not like at all) to 100 (Like extremely). Record voice
+ID and audition order. At the final survey, collect liking again
+separately for each voice block and the 1–7 voice-similarity item with
+Strongly disagree / Strongly agree endpoints. Keep setup and final
+retrospective responses separate.
 
-ACTION: Start block; monitor safety.
+#### SAY
 
-At completion say: “That task block is complete. Please stop and lower your hands comfortably.”
+“We will now record the short voice sample described in the consent
+form. After the tone, please read the displayed passage in your usual
+speaking voice.”
 
-Say: “These questions ask about your workload, your experience of the activity and the agent. There are no right answers. Please answer based on the block you just finished.”
+#### ASK / AUDIO CHECK
 
-ACTION: Administer Survey Block #1.
+“Can you hear the voice clearly and at a comfortable volume?”
 
-Say: “You may take a short break of up to 5 minutes. Tell me when you are ready to continue.”
+# 3 Fit and calibrate the headset
 
-Before continuing ask: “Do you feel comfortable and well enough to continue?”
+#### SAY
 
-## Second Task Block
-INTERNAL SETTINGS
-| Assigned condition | 30 valid attempts
+“Remain seated in this chair. You may turn the chair, your body and your
+head to look around, but do not stand or walk. Tell me immediately if
+you feel dizzy, nauseated, strained, uncomfortable or unsteady.”
 
+#### ACTION
 
-READ ONLY THE ASSIGNED CONDITION SCRIPT:
+Fit the headset, verify both eyes’ tracking and freshness/validity
+feedback, and perform the headset’s calibration. Then use independent
+validation targets across low/middle/high positions, wall boundaries and
+relevant distances. Record the validation result. Revalidate after
+headset adjustment and between blocks.
 
-Say: “We will now begin the second task block. The task and selection method are the same. Find each target as quickly and accurately as you comfortably can, and tell me if you need to pause.”
+#### OPEN DECISION / RELEASE GATE
 
-ACTION: Start block; monitor safety.
+Freeze numerical validation/drift criteria, retry limits and a
+tracking-failure procedure using headset/task pilots before confirmatory
+collection. Head direction must not silently replace missing eye gaze.
+Ray intersections are not validated fixations, and polling at 120 Hz
+does not establish distinct 120 Hz observations.
 
-At completion say: “The search task is complete. Please stop turning. We will finish the questions about this block, then I will help you remove the headset.”
+#### ASK
 
-Say: “These questions ask about your workload, your experience of the activity and the agent. There are no right answers. Please answer based on the block you just finished.”
+“Can you see clearly? Does the equipment feel comfortable? Do you feel
+well enough to continue?”
 
-ACTION: Administer Survey Block #2.
-## 9 Final Qualtrics
+# 4. Pre-Block Activity
 
-Say: “Please complete the final questionnaire. It asks about your experiences with the two voices. It is fine to have no preference. We are interested in what you experienced, including anything distracting, uncomfortable or unhelpful.”
+#### SAY
 
-Say: “Some follow-up questions may appear depending on your answers and the timing condition you experienced. Answer based on your own experience and tell me when you have submitted it.”
+“First, I will explain the task. In each trial, the agent will know
+which object you need to find. It will guide you toward the object
+without telling you its color or shape in advance. You will use the
+agent’s directions to reach the correct area and then make smaller
+adjustments up, down or to either side.”
 
-Exploratory follow-up: After open responses, ask “Did either voice feel like your own thoughts, like another person helping, or neither?” Record this as an exploratory report, not proof of an internal-dialogue mechanism.
+#### SAY
 
-ACTION: Administer Post-Study Survey Block
+“You will point the right controller at your choice to highlight it,
+then press the right trigger to select it. Looking alone will not select
+an object. Selecting the correct object will complete the trial. If you
+select an incorrect object, you will continue searching for the same
+target.”
 
-## 10 Debrief and finish
+#### SAY
 
-Say: “Thank you. This study compares generic and self-similar voices during gaze-guided object search. Both voices provide gaze-contingent assistance. We are examining task performance and how participants experience the activity and assistant.”
+“Before each search, you will look at the readiness cross until it
+charges. You will hear the first direction before the objects appear.
+When they appear, the timed search will begin. You will not need to
+select a room surface.”
 
-Say: “Your data are stored under a coded participant ID. Please avoid discussing the timing condition or study details with people who may participate later, because knowing them in advance could affect their behavior.”
+#### SAY
 
-Ask: “Do you have any questions about the study or your experience?”
+“If you would like a rest, let me know. We will normally take it between
+trials, before the next search begins. You can also ask us to pause or
+stop immediately at any time.”
 
-Say: “Thank you for participating. We are finished.”
+#### BREAKS AND TIMING
 
+Requested rest breaks normally occur after a trial ends and before the
+next search begins. Do not start the next search until the participant
+is ready. Breaks and questionnaires are outside active-search time. If a
+participant needs to pause during a trial, pause immediately and record
+the interruption and its duration separately. Verify that the frozen
+build excludes paused time from active search; if it cannot, mark that
+trial interrupted and retain the raw timing for the prespecified
+analysis. Retain the interrupted-trial record; do not silently replace
+it or count break time as search time.
 
-## Immediate stop or pause criteria
+# 5. Familiarization
 
-PAUSE OR STOP: Participant request, dizziness, nausea, headache, eye strain, fatigue, pain, distress, unsafe movement or equipment failure. Help the participant remain seated and remove the headset when needed.
+#### ACTION
 
-ACTION: Pause through the verified researcher control; the beta supports P on a connected keyboard and Trigger / Enter at its resume checkpoint. App focus loss can pause or technically stop a session. Log time, trial, reason and outcome. Resume only when the participant wants to continue and tracking/audio/alignment are valid; otherwise stop and preserve partial data.
+Seat the participant at the intended center and capture the designated
+room-front reference using the right-controller start control. Do not
+use keyboard shortcuts in participant instructions. Keep the same room
+reference across the session. The readiness cross for later trials will
+follow the saved schedule’s starting reference, currently the previous
+target wall; it will not require a fixed front direction on every trial.
+Verify this in the frozen build.
 
-## Final researcher check
+#### SAY
 
-- Confirm both block surveys and final interview/symptom records, or record why incomplete. Match participant, run, block and voice identifiers.
+“Objects will appear all around you. You will use the chair to turn
+while staying seated and follow the agent’s directions. You will point
+with your right controller and press its trigger when you choose an
+object.”
 
-- Verify EyeData (Trial #, Participant ID), MotionData and TrialData (Most important)(Participant ID, Voice Type, Trial #/Block#/Distance to object, Rotation Theta, Gross Rotation (X/Y/Z), Gross Movement (X/Y/Z)) for all three blocks. Time to first gaze, Time to final gaze,time to first controller raycast intersection, final time to correct zone, final controller selection/overall completion time. # of zones visited, # of incorrect selections, # of main goal repeats requested, # of hints per round, include nasa-tlx survey and others etc include in the trial data file, repeat values if not measured on a per trial basis but instead measured on a block basis
-- UPDATE: Think of more columns for trial Data
-- Demographics Survey questions: what do you perceive your own accent to be?
-- Secure data and sanitize equipment.
+<div class="center">
 
-## Appendix Current recording passage
+Seated rotation schematic: see the formatted run sheet.
 
-“Locate the red sphere. Look toward the upper shelf. Move your gaze slowly to the right. Check the blue cube near the center. Compare each object’s color and shape. Scan the lower row from left to right. Look beside the purple cylinder. Focus on the target and hold your gaze steady. Select the matching object. Take a short pause. Get ready for the next round.”
+Schematic, not to scale. Illustrates seated rotation only.
+
+</div>
+
+#### SAY
+
+“The next trial will be a practice trial to help you become familiar
+with the task.”
+
+#### ACTION
+
+Complete one practice trial before measured collection. Verify
+understanding of the cross, guidance and right-trigger selection. Record
+the practice voice and any extra explanation or repeated practice. The
+practice will use the first voice in the saved order: preferred catalog
+voice for Order A, self-similar voice for Order B. Apply the same predefined proficiency rule to every
+participant; freeze that rule before collection.
+
+#### ASK
+
+“Do you have any questions about the controls or task?”
+
+#### SAY
+
+“When you are ready, we will begin the first task block.”
+
+# 6 First task block
+
+#### PLANNED SCHEDULE
+
+40 measured trials in this voice block; the practice trial is separate.
+Verify the configured count before participant use.
+
+#### RESEARCHER SETTINGS
+
+Confirm the saved first voice and planned trial schedule. Keep object
+layout, selection method, guidance policy and the finalized prompt
+wording constant across voices.
+
+#### SAY
+
+“We will now begin the first task block. Find each target as quickly and
+accurately as you comfortably can. Stay seated and use the same
+right-controller ray and trigger selection you practiced. Tell me if you
+need to pause.”
+
+#### ACTION
+
+Start block; monitor safety.
+
+#### AT COMPLETION SAY
+
+“That task block is complete. Please stop and lower your hands
+comfortably.”
+
+#### SAY
+
+“You may take a break now. Please tell me when you feel ready to
+continue.”
+
+#### ACTION
+
+Record break duration and current comfort. Recheck headset fit and
+independently validate tracking before the next block; recalibrate if
+required by the frozen acceptance rules.
+
+#### BEFORE CONTINUING ASK
+
+“Do you feel comfortable and well enough to continue?”
+
+# 7 Second task block
+
+#### PLANNED SCHEDULE
+
+40 measured trials using the other assigned voice. Retain incomplete or
+interrupted trials with their outcomes; do not add replacement trials
+merely to reach 40 valid attempts.
+
+#### SAY
+
+“We will now begin the second task block. This block will use the other
+assistant voice. The task and selection method will remain the same.
+Find each target as quickly and accurately as you comfortably can, and
+tell me if you need to pause.”
+
+#### ACTION
+
+Start block; monitor safety.
+
+#### AT COMPLETION SAY
+
+“The search task is complete. Please stop turning. I will help you
+remove the headset, then you will complete the final questionnaires
+about both blocks.”
+
+# 8 Final questionnaire
+
+#### SAY
+
+“Please complete the final questionnaires. You will answer one set about
+the first block and another about the second block. Each set will
+identify which voice you used. Please answer about the indicated block,
+rather than combining both experiences.”
+
+#### SAY
+
+“Some follow-up questions may appear depending on your answers about the
+two voices. Answer based on your own experience and tell me when you
+have submitted it.”
+
+#### EXPLORATORY FOLLOW-UP
+
+After open responses, ask “Did either voice feel like your own thoughts,
+like another person helping, or neither?” Record this as an exploratory
+report, not proof of an internal-dialogue mechanism.
+
+#### ACTION
+
+After headset removal, administer the post-exposure SSQ and safety check
+first. Then administer the two condition-specific sets in block order:
+six workload ratings, 24 IMI items, 21 selected Guo items and 14 custom
+numeric ratings per set, plus technical checks and optional text. Use
+identical item wording and order. Preserve the referenced block/voice ID
+separately from the actual final-survey timestamp. Finish with
+comparative preference and open debrief questions. Use the balanced
+follow-up guide only after open responses, avoiding duplicate questions.
+
+# 9 Debrief and finish
+
+#### SAY
+
+“Thank you. This study compares participant-preferred and self-similar
+voices during gaze-guided object search. Both voices provide
+gaze-contingent assistance. We are examining task performance and how
+participants experience the activity and assistant.”
+
+#### SAY
+
+“Your data are associated with a coded participant ID. Your voice may
+still be recognizable; it will be handled as described in the consent
+form. Please avoid discussing the voice conditions or study details with
+people who may participate later, because knowing them in advance could
+affect their behavior.”
+
+#### ASK
+
+“Do you have any questions about the study or your experience?”
+
+#### SAY
+
+“Thank you for participating. We are finished.”
+
+# Immediate stop or pause criteria
+
+#### PAUSE OR STOP
+
+Participant request, dizziness, nausea, headache, eye strain, fatigue,
+pain, distress, unsafe movement or equipment failure. Help the
+participant remain seated and remove the headset when needed.
+
+# Final researcher check
+
+- Confirm trial counts and practice labels; retain
+  incomplete/interrupted trials and reasons. Match participant, run,
+  block, trial, voice and build identifiers.
+
+- Confirm the per-trial performance/subjective CSV and separate
+  time-series motion/gaze/event/replay data. Check raw timestamps,
+  validity, target/object positions and survey joins; distinguish
+  missing values from zero.
+
+- Preserve object-reveal, first target-gaze intersection, qualified gaze
+  confirmation, first target-controller intersection, controller
+  confirmation, selection attempts and correct-trigger timestamps as
+  distinct events. Do not label one as another.
+
+- Record completion time, starting theta, signed height delta, target
+  distance, instruction count, incorrect selections and interruption
+  duration. Repeat block-level survey values on trial rows only with
+  scope/block labels; they are not independent trial responses.
+
+- Confirm both condition-specific sets of the final questionnaire and
+  the interview/comfort records, or why incomplete. Secure exports and
+  voice assets according to the approved retention plan; sanitize
+  equipment.
+
+#### AUDIO AND READINESS CONFIGURATION
+
+Archive the output device, volume/spatialization settings, microphone,
+recording passage, synthesis model and audio-library version. Freeze the
+cross charging duration and validity region, object collider/vicinity
+definitions and incorrect-selection feedback; apply the same settings
+across voice conditions.
+
+# Difficulty and timing record / researcher only
+
+#### CONFIRMED OUTCOME
+
+Active trial completion time will be the primary outcome, accounting for
+horizontal theta toward the target from the starting reference. Record
+the opening cue separately: it will precede object reveal and the
+active-search timer. Completion will be the correct right-trigger
+selection.
+
+#### OPENING-CUE CHECK
+
+Log cue onset/end, object reveal and head pose at cue onset and reveal.
+Participants may turn before the timer starts. Proposed sensitivity
+outcome: cue-onset-to-correct-selection time, alongside the primary
+active-search time. Starting theta alone will not account for movement
+during the cue.
+
+#### THETA
+
+Keep nominal wall-angle category, exact starting target bearing, and
+actual head rotation distinct. The schedule will allocate eight trials
+at each absolute nominal angle (0, 45, 90, 135 and 180 degrees) per
+block in a randomized order. Save signs, positions, reference
+definition, seed and realized schedule. Calculate pre-cue theta from the
+horizontal origin-to-cross and origin-to-target vectors. Retain the sign
+and absolute angle; do not divide completion time by degrees.
+
+#### CONFIRMED HEIGHT REFERENCE
+
+Signed height delta will be target-center world Y minus
+readiness-cross-center world Y, in metres. Positive means above the
+cross; negative means below. Save both positions. The intended quota is
+20 above and 20 below per block; verify implementation and freeze
+feasible ranges/deadband before claiming the quota is met.
+
+#### BEFORE CONFIRMATORY RECRUITMENT
+
+Complete the theta-adjusted power analysis and recruitment plan; set
+tracking acceptance, practice proficiency, timeout, interruption and
+missing-data rules; verify the vertical schedule and acoustic checks;
+reconcile consent with actual service processing and retention.
+
+# Appendix: Self-similar voice recording passage
+
+#### ACTION
+
+Use the recording passage displayed by the frozen build and archive its
+version. The text below is the retained passage from the source run
+sheet; verify it matches the release before use. Its color/shape
+examples are recording material, not target instructions during measured
+trials. Read in a usual, natural voice without deliberately adding a
+whisper or inner-thought style.
+
+#### CURRENT RECORDING PASSAGE
+
+“Locate the red sphere. Look toward the upper shelf. Move your gaze
+slowly to the right. Check the blue cube near the center. Compare each
+object’s color and shape. Scan the lower row from left to right. Look
+beside the purple cylinder. Point the controller ray at the target and
+check its highlight. Press the trigger to select the matching object.
+Take a short pause. Get ready for the next trial.”

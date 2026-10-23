@@ -23,8 +23,13 @@ partial class SpatialVoiceChecks
         try
         {
             Run().GetAwaiter().GetResult();
+            CheckSpeechMemory();
+            CheckActionMenu();
+            CheckActionTransport().GetAwaiter().GetResult();
             if (args.Length == 0) { }
+            else if (args.Length == 3 && args[0] == "--benchmark-actions") BenchmarkActions(args[1],args[2]).GetAwaiter().GetResult();
             else if (args.Length == 2 && args[0] == "--live") Live(args[1]).GetAwaiter().GetResult();
+            else if (args.Length == 2 && args[0] == "--export-memory-probes") ExportMemoryProbes(args[1]);
             else if (args.Length == 5 && args[0] == "--scenario-suite") RunScenarios(args);
             else if (args.Length == 3 && args[0] == "--audition") Audition(args[1], args[2]).GetAwaiter().GetResult();
             else if (args.Length == 3 && args[0] == "--navigation-suite") NavigationSuite(args[1], args[2]).GetAwaiter().GetResult();

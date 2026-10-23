@@ -22,6 +22,18 @@ class TLXTests(unittest.TestCase):
             with self.subTest(changes=changes):
                 self.assertIsNone(score_tlx(self.response(**changes))["nasa_tlx_score"])
 
+    def test_current_ten_point_form_preserves_raw_mean_and_explicit_conversion(self):
+        response = self.response(scale_max=10, mental=1, physical=2, temporal=3,
+                                 performance=4, effort=5, frustration=6)
+        scored = score_tlx(response)
+        self.assertEqual(scored["nasa_tlx_score"], 3.5)
+        self.assertEqual(scored["nasa_tlx_score_0_100"], 35)
+        self.assertEqual(scored["nasa_tlx_scale_max"], 10)
+        self.assertEqual(response["performance"], 4)
+        self.assertIn("0_10", scored["nasa_tlx_scoring_method"])
+        response["mental"] = 11
+        self.assertIsNone(score_tlx(response)["nasa_tlx_score"])
+
     def test_zero_is_a_valid_score(self):
         self.assertEqual(score_tlx(self.response(mental=0, physical=0, temporal=0, performance=0, effort=0, frustration=0))["nasa_tlx_score"], 0)
 

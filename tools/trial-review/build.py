@@ -14,6 +14,7 @@ def main():
     parser.add_argument('--project', type=Path, help='Isolated generated project; defaults to a new temporary directory')
     parser.add_argument('--unity', type=Path, default=Path('/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/MacOS/Unity'))
     parser.add_argument('--verify-recording', type=Path, help='Optional copied real recording to test before building')
+    parser.add_argument('--verify-audio-recording', type=Path, help='Run deterministic batched-transport audio coverage on a saved recording')
     parser.add_argument('--verify-export', type=Path, help='Optional matching CSV export to verify')
     args = parser.parse_args()
     output = args.output.resolve()
@@ -27,6 +28,8 @@ def main():
     env['TRIAL_REVIEW_OUTPUT'] = str(output)
     if args.verify_recording:
         env['TRIAL_REVIEW_VERIFY_RECORDING'] = str(args.verify_recording.resolve())
+    if args.verify_audio_recording:
+        env['TRIAL_REVIEW_AUDIO_RECORDING'] = str(args.verify_audio_recording.resolve())
     if args.verify_export:
         env['TRIAL_REVIEW_VERIFY_EXPORT'] = str(args.verify_export.resolve())
     log = project / 'build.log'

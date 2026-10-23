@@ -1,16 +1,11 @@
-# Overleaf run sheet
+# Current protocol and survey documents
 
-**Protocol proposal / annotated review edition, September 22, 2026.** This is a formatted edition of the [annotated source](../experimenter-run-sheet.md). It preserves the source's spoken lines, actions and meeting notes; it does not resolve the methodological conflicts documented in the [reconciliation](../../meeting-reconciliation-2026-09-22.md).
+**Protocol proposal — October 20, 2026. Qualtrics on hold.** Sources were reconciled from the live [Overleaf project](https://www.overleaf.com/project/6a84bc097073254fbca6985b), preserving collaborator prose. See [decision and implementation gaps](../2026-10-20-final-survey-decision.md).
 
-- [Overleaf project](https://www.overleaf.com/project/6a84bc097073254fbca6985b): open `experimenter-run-sheet.tex` and recompile it as a standalone document. The manuscript remains a separate file.
-- [Editable standalone LaTeX](experimenter-run-sheet.tex): all styling and the seated 360-degree TikZ diagram are embedded; no external fonts, figures or bibliography are needed.
-- [Rendered review PDF](../../../output/pdf/experimenter-run-sheet.pdf): eight pages, with dark spoken text, italic muted-gold actions, highlighted meeting notes, session fields and page numbers.
+- `experimenter-run-sheet.tex`: one practice trial in the first assigned voice, two 40-trial blocks, rest between blocks, final-only condition-specific questionnaires.
+- `survey-questions-by-block.tex`: participant items; “block” means the referenced block, not administration timing. Final survey has two retrospective sets, 65 numeric responses per set.
+- `survey-instruments.tex`: scoring, raw ranges, source attribution and missingness.
+- `study-protocol.tex`, `section-04-experiment.tex`, `section-05-planned-analysis.tex`, `section-06-contributions-limitations.tex`, `rough_draft.tex`: current method, analysis and interpretation.
+- `study-procedure-current.svg` / `.pdf`: vector procedure figure with one practice and final-only questionnaires.
 
-Regenerate from the Markdown source:
-
-```sh
-python3 scripts/format-overleaf-run-sheet.py
-tectonic docs/protocol/overleaf/experimenter-run-sheet.tex --outdir output/pdf
-```
-
-Overleaf's eight-page output was verified after recompiling from scratch, which removed the manuscript's stale bibliography-cache errors. The local verification used Tectonic because `pdflatex` was unavailable. Local text coverage and every rendered page were checked; no overfull boxes were reported. The source's generic/dwell wording remains visible with a clear cover note describing the newer preferred-voice/controller requirements. #27 still owns the reconciled operator protocol and synchronized final editions.
+Section 3 and its aggregate copies use `references.bib` with plain BibTeX; the printable `bib.tex` wrapper uses BibLaTeX/Biber. The library contains 62 unique entries. Each TeX file is standalone. Documents using the procedure figure require the neighboring PDF when compiled. The old Markdown formatter and older themed/Word/PDF editions are historical; do not run them over these reconciled sources. The runtime practice/survey gates now follow this sequence locally; wearer acceptance remains pending. See the alignment report for remaining geometry and analysis gaps. No Qualtrics synchronization or approval/deployment claim is implied.

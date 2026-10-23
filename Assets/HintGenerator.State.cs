@@ -105,6 +105,7 @@ public partial class HintGenerator
             CurrentStateSnapshot = m_State.Snapshot(Time.realtimeSinceStartupAsDouble, captured.observationSequence,
                 captured.gazeValid, captured.controllerValid, captured.gazeHitObjectId,
                 captured.vicinityWinnerObjectId, captured.controllerHitObjectId, captured.targetObjectId);
+            CurrentStateSnapshot.guidancePolicy = SessionConfig.GuidancePolicy;
             if (m_Voice != null) m_Voice.GuidanceEvidence.guidanceState = CurrentStateSnapshot;
         }
     }
@@ -118,11 +119,12 @@ public partial class HintGenerator
             valid, searching && m_ControllerEvidenceValid, m_GazeHitObjectId,
             m_ClosestVicinityObject?.GetComponent<SpawnableObjectInfo>()?.objectId,
             controllerHit?.GetComponent<SpawnableObjectInfo>()?.objectId, m_EvaluatedTarget?.objectId);
+        CurrentStateSnapshot.guidancePolicy = SessionConfig.GuidancePolicy;
         if (m_PublishedRevision != m_State.Revision)
         {
             m_PublishedRevision = m_State.Revision;
             m_Voice?.CancelPendingGuidance(); m_Navigation?.Cancel();
-            m_Voice?.RecordGuidanceState(JsonUtility.ToJson(CurrentStateSnapshot));
+            m_Voice?.RecordGuidanceState(CurrentStateSnapshot);
         }
         if (m_Voice != null)
         {

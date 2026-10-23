@@ -24,7 +24,7 @@ public sealed class StudyRayControls : MonoBehaviour
     Button m_SettingsButton, m_PauseButton, m_RepeatButton;
     TextMeshProUGUI m_SettingsLabel;
     GameObject m_VicinityControls;
-    TextMeshProUGUI m_RingLabel, m_RadiusLabel;
+    TextMeshProUGUI m_RingLabel, m_RadiusLabel, m_ActionPolicyLabel;
     readonly Dictionary<NearFarInteractor, (bool near, bool far, bool ui)> m_Rays = new();
     readonly Dictionary<XRRayInteractor, bool> m_LegacyRays = new();
     readonly Dictionary<XRPokeInteractor, bool> m_Pokes = new();
@@ -74,6 +74,9 @@ public sealed class StudyRayControls : MonoBehaviour
         m_RadiusLabel.rectTransform.sizeDelta = new Vector2(320,65);
         m_RadiusLabel.rectTransform.anchoredPosition = new Vector2(0,-295);
         StudyPromptCard.StyleText(m_RadiusLabel, 22);
+        m_ActionPolicyLabel = RayMenuFeedback.CreateButton(m_VicinityControls.transform, "DEV guidance: baseline",
+            new Vector2(0,-365), new Vector2(320,64),
+            () => GetComponent<HintGenerator>()?.ToggleDevelopmentGuidancePolicy()).GetComponentInChildren<TextMeshProUGUI>();
         m_VicinityControls.SetActive(false);
         m_DismissPanel = new GameObject("Dismiss settings", typeof(RectTransform), typeof(Canvas), typeof(TrackedDeviceGraphicRaycaster));
         m_DismissPanel.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
@@ -178,9 +181,10 @@ public sealed class StudyRayControls : MonoBehaviour
         m_PauseButton.interactable = !m_SettingsOpen && !m_Game.ResearcherPaused &&
             (m_Game.SearchActive || m_Game.Readiness?.Active == true);
         m_RepeatButton.interactable = !m_SettingsOpen && m_Game.SearchActive;
-        m_VicinityControls.SetActive(m_SettingsOpen && SessionConfig.NeutralQuickTest);
+        m_VicinityControls.SetActive(m_SettingsOpen && SessionConfig.DevelopmentQuickTest);
         if (m_VicinityControls.activeSelf)
         {
+            m_ActionPolicyLabel.text = "DEV guidance: " + (SessionConfig.JevLedGuidance ? "Jev-led" : "baseline");
             var vicinity = GetComponent<HintGenerator>()?.Vicinity;
             m_RingLabel.text = "DEV target ring: " + (vicinity != null && vicinity.RingVisible ? "On" : "Off");
             m_RadiusLabel.text = $"Gaze radius: object + {(vicinity != null ? vicinity.PaddingDegrees : GazeTargetVicinity.DefaultPaddingDegrees):0}°";

@@ -10,12 +10,45 @@ public static class TrialReviewLiveChecks
     sealed class Audio : TrialReplayAudioPreview.IOutput
     {
         public int starts, stops, offsetFrames, sampleRate;
+        public readonly System.Collections.Generic.Dictionary<string,int> offsets=new System.Collections.Generic.Dictionary<string,int>();
         public object Play(float[] samples, int channels, int rate, int offset, string name)
-        { starts++; offsetFrames=offset; sampleRate=rate; return new object(); }
+        { starts++; offsetFrames=offset; sampleRate=rate; if(!offsets.ContainsKey(name))offsets[name]=offset; return new object(); }
         public void Stop(object handle) { stops++; }
     }
+    static void CheckRecordedSpeechTransport()
+    {
+        string path=Environment.GetEnvironmentVariable("TRIAL_REVIEW_AUDIO_RECORDING");
+        if(string.IsNullOrEmpty(path))return;
+        var timeline=TrialReplayFile.Read(path);
+        var before=new Audio();var after=new Audio();var clock=new TrialReviewLiveAudioClock();
+        double a=0,b=0,wall=0,step=1.0/60;
+        using(var oldAudio=new TrialReplayAudioPreview(timeline,before))
+        using(var newAudio=new TrialReplayAudioPreview(timeline,after))
+        {
+            // Deterministic 1.5-second delivery batches on real recorded speech timings.
+            // Audio output is an instrumented sink, not a headset/acoustic measurement.
+            while(wall<timeline.Duration+60 && b<timeline.Duration)
+            {
+                wall+=step;
+                double received=Math.Min(timeline.Duration,Math.Floor(wall/1.5)*1.5);
+                if(received<=0)continue;
+                a=Math.Max(TrialReviewLiveFollow.Cursor(a,0,received,false),Math.Min(received,a+step));
+                oldAudio.Sync(a,true,1);
+                double requested=Math.Max(TrialReviewLiveFollow.Cursor(b,0,received,false),Math.Min(received,b+step));
+                b=clock.Advance(b,requested,step,wall,timeline,newAudio.Plan);newAudio.Sync(b,true,1);
+            }
+            var expected=newAudio.Plan.Segments.Where(s=>s.End>s.Start.time).Select(s=>"Replay "+s.Start.sequence).Distinct().ToArray();
+            int oldHeard=expected.Count(before.offsets.ContainsKey),newHeard=expected.Count(after.offsets.ContainsKey);
+            int oldWhole=expected.Count(id=>before.offsets.ContainsKey(id)&&before.offsets[id]==0);
+            int newWhole=expected.Count(id=>after.offsets.ContainsKey(id)&&after.offsets[id]==0);
+            Debug.Log($"TRIAL_REVIEW_RECORDED_AUDIO_COMPARE expected={expected.Length}; before_started={oldHeard}; after_started={newHeard}; before_from_start={oldWhole}; after_from_start={newWhole}; delivery_batch_seconds=1.5; synthetic_transport=true");
+            Check(newHeard==expected.Length && newWhole==expected.Length,"all available real-recording phrases survive batched delivery from their beginning");
+        }
+    }
+
     public static void Run(string source)
     {
+        CheckRecordedSpeechTransport();
         var captions=new TrialReviewSubtitles();
         captions.Observe(new TrialReplayRecord{kind="audio_playback_start",time=1,sequence=1,text="Look left."});
         captions.Observe(new TrialReplayRecord{kind="audio_playback_start",time=2,sequence=2,text="success_chime",detail="success_effect;software_one_shot_start"});
@@ -35,6 +68,10 @@ public static class TrialReviewLiveChecks
         Check(!TrialReviewHeadsetState.Fresh(loading,false,100,99),"disconnect invalidates loading");
         Check(!TrialReviewHeadsetState.Fresh(null,true,100,99),"legacy headset missing telemetry remains unknown");
         var follow = new TrialReviewLiveFollow();
+        Check(TrialReviewLiveFollow.AudioEnabled(false,true,true),"short buffer underrun preserves live audio");
+        Check(!TrialReviewLiveFollow.AudioEnabled(false,true,false),"stale/disconnected/paused live stream stops audio");
+        Check(!TrialReviewLiveFollow.AudioEnabled(false,false,true),"paused archive does not inherit live audio permission");
+        Check(TrialReviewLiveFollow.AudioEnabled(true,false,false),"ordinary recorded playback remains audible");
         follow.Observe(new TrialReplayRecord { kind="sample", time=10, headAvailable=true, headTracked=1 });
         Check(!follow.Ready(true, 100, 0, 0, true), "connected historical recording must wait");
         Check(follow.Ready(true, 100, 99.9, 0, true), "fresh tracked source follows");
@@ -56,6 +93,7 @@ public static class TrialReviewLiveChecks
         Check(follow.Ready(true, 100, 99.9, 0, true), "new tracked sample resumes");
         follow.Observe(new TrialReplayRecord { kind="end", time=12.1 });
         Check(!follow.Ready(true, 100, 99.9, 0, true), "completed run waits");
+        Check(follow.CanDrain(12) && !follow.CanDrain(12.1),"buffered final speech drains only up to recorded end, never beyond");
         Check(Math.Abs(TrialReviewLiveFollow.Cursor(2, 0, 10, true)-9.8)<.0001, "join stays only 200 ms behind received edge");
         Check(TrialReviewLiveFollow.Cursor(9.95, 0, 10, false)==9.95, "normal follow never rewinds near edge");
         Check(Math.Abs(TrialReviewLiveFollow.Cursor(2, 0, 10, false)-9.8)<.0001, "lag catches up instead of accumulating seconds");
@@ -85,6 +123,9 @@ public static class TrialReviewLiveChecks
                         "prepared clip joins at the session cursor, never at an invented onset");
                     audio.Refresh(preparing.Timeline);audio.Sync(1.3,true,1);
                     Check(output.starts==1,"cached speech is not restarted by receiver updates");
+                    audio.Sync(1.3,TrialReviewLiveFollow.AudioEnabled(false,true,true),1);
+                    audio.Sync(1.3,TrialReviewLiveFollow.AudioEnabled(false,true,true),1);
+                    Check(output.starts==1 && output.stops==0,"buffer-edge waits do not chop or restart the live sentence");
                     File.AppendAllText(path,JsonUtility.ToJson(new TrialReplayRecord{kind="audio_cancelled",sequence=2,time=1.4})+"\n");
                     preparing.Poll(10000,5000);audio.Refresh(preparing.Timeline);audio.Sync(1.5,true,1);
                     Check(output.stops==1 && audio.ActiveCount==0,"live interruption stops cached speech");
@@ -137,6 +178,61 @@ public static class TrialReviewLiveChecks
                     }
                 }
             }
+            // A received chunk spans an entire short utterance. Catch-up must visit its
+            // start and play it at normal speed rather than silently leap over it.
+            var complete = TrialReplayFile.Read(source);
+            var clock = new TrialReviewLiveAudioClock();
+            var speechOutput = new Audio();
+            using (var audio = new TrialReplayAudioPreview(complete, speechOutput))
+            {
+                double jumped = TrialReviewLiveFollow.Cursor(.9, 0, 2, false);
+                double next = clock.Advance(.9, jumped, .016, 100, complete, audio.Plan);
+                audio.Sync(next, true, 1);
+                Check(speechOutput.starts == 1 && speechOutput.offsetFrames == 0,
+                    "catch-up must not skip an entire recorded spoken phrase");
+                double during = clock.Advance(next, 1.8, .016, 100.016, complete, audio.Plan);
+                audio.Sync(during, true, 1);
+                Check(Math.Abs(during-1.016)<.00001 && speechOutput.starts==1,
+                    "catch-up cannot cut or restart the phrase after its first frame");
+                Check(clock.Advance(1.5,1.8,.016,100.5,complete,audio.Plan)==1.8,
+                    "recorded cancellation releases the speech clock");
+            }
+            // Restore the live fixture with a temporarily unavailable asset; the scene
+            // and caption cursor waits at the start even if the network is already ahead.
+            string wav=Path.Combine(folder,"audio/tone.wav");
+            byte[] retained=File.ReadAllBytes(wav); File.Delete(wav);
+            using (var late = new TrialReviewLiveStream(path))
+            {
+                late.Poll(10000,5000);
+                var lateClock=new TrialReviewLiveAudioClock(); var lateOutput=new Audio();
+                using(var audio=new TrialReplayAudioPreview(late.Timeline,lateOutput))
+                {
+                    Check(lateClock.Advance(1,2,.016,200,late.Timeline,audio.Plan)==1 && lateClock.WaitingForAudio,"late WAV holds scene/caption at speech start");
+                    Check(lateClock.Advance(1,2,.016,201,late.Timeline,audio.Plan)==1,"late WAV is not silently skipped");
+                    File.WriteAllBytes(wav,retained); audio.Refresh(late.Timeline);
+                    double at=lateClock.Advance(1,2,.016,202,late.Timeline,audio.Plan);audio.Sync(at,true,1);
+                    Check(at==1 && lateOutput.starts==1 && lateOutput.offsetFrames==0 && !lateClock.WaitingForAudio,"asset arriving after original interval plays from beginning at buffered cursor");
+                }
+                File.Delete(wav);
+                var absentClock=new TrialReviewLiveAudioClock();var absentPlan=new TrialReplayAudioPlan(late.Timeline);
+                absentClock.Advance(1,2,.016,300,late.Timeline,absentPlan);
+                Check(absentClock.Advance(1,2,.016,306,late.Timeline,absentPlan)>1 && absentClock.UnavailableCount==1,"permanently missing audio times out with a counted gap");
+                absentClock.Advance(1,2,.016,307,late.Timeline,absentPlan);
+                Check(absentClock.UnavailableCount==1,"missing audio counted once, not each tick");
+                File.WriteAllBytes(wav,retained);
+            }
+            string snapshot=TrialReviewDetachedWindow.Snapshot(complete,Path.Combine(folder,"snapshots"));
+            var detached=TrialReplayFile.Read(snapshot);
+            Check(detached.Records.Count==complete.Records.Count && detached.Header.recordingId==complete.Header.recordingId,"review snapshot preserves parsed identity and complete records");
+            Check(File.ReadAllText(snapshot)==File.ReadAllText(source),"snapshot preserves raw records rather than reserializing research data");
+            Check(File.Exists(Path.Combine(Path.GetDirectoryName(snapshot),"audio/tone.wav")),"snapshot owns its copied played audio");
+            complete.Seek(1); detached.Seek(21);
+            Check(complete.State.Trial.trialId!=detached.State.Trial.trialId,"review cursor is independent of live timeline");
+            string growing=Path.Combine(folder,"growing.jsonl");File.Copy(source,growing);
+            var frozenPrefix=TrialReplayFile.Read(growing);
+            File.AppendAllText(growing,"{partial");
+            string frozen=TrialReviewDetachedWindow.Snapshot(frozenPrefix,Path.Combine(folder,"snapshots"));
+            Check(File.ReadAllText(frozen)==File.ReadAllText(source),"snapshot never copies the unparsed growing tail");
             File.WriteAllText(path, lines[0] + "\n" + lines[0] + "\n");
             bool rejected = false;
             using (var live = new TrialReviewLiveStream(path))
@@ -146,7 +242,7 @@ public static class TrialReviewLiveChecks
             using (var live = new TrialReviewLiveStream(path))
                 try { live.Poll(10000, 5000); } catch (Exception) { rejected = true; }
             Check(rejected, "corrupt complete record rejected");
-            Debug.Log("TRIAL_REVIEW_LIVE_PASS partial tails, no duplicates, exact records, new meshes/trials, rewind, late WAV, uninterrupted speech, cancellation, malformed input");
+            Debug.Log("TRIAL_REVIEW_LIVE_PASS speech catch-up fences, delayed/missing WAVs, snapshot isolation, partial tails, no duplicates, exact records, new meshes/trials, rewind, late WAV, uninterrupted speech, cancellation, malformed input");
         }
         finally { Directory.Delete(folder, true); }
     }

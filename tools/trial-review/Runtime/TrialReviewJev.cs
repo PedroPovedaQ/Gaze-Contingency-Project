@@ -23,7 +23,7 @@ public sealed class TrialReviewJev
                 if (Discarded) return "Discarded · state changed";
                 if (Status != "ok") return Status;
                 var answers = Response?["answers"] as JObject;
-                return (string)answers?["transmit"]?["choice"] ?? (string)answers?["speech_action"]?["choice"] ?? "phrase selected";
+                return (string)answers?["navigation_action"]?["choice"] ?? (string)answers?["transmit"]?["choice"] ?? (string)answers?["speech_action"]?["choice"] ?? "phrase selected";
             }
         }
     }

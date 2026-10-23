@@ -102,10 +102,24 @@ public class VoiceModeSelector : MonoBehaviour
         if (m_Phase != Phase.WaitingToStart || !m_StartArmed || !Application.isFocused || m_Synth == null) return;
         m_StartArmed = false;
         SessionConfig.ConfigureNeutralQuickTest();
-        StartCoroutine(PrepareNeutralQuickTest());
+        StartCoroutine(PrepareQuickTest());
     }
 
-    IEnumerator PrepareNeutralQuickTest()
+    public void StartCloneQuickTest()
+    {
+        if (m_Phase != Phase.WaitingToStart || !m_StartArmed || !Application.isFocused || m_Synth == null) return;
+        string clone = SessionConfig.SavedDevelopmentClone();
+        if (string.IsNullOrWhiteSpace(clone))
+        {
+            SetText("<b>No saved cloned voice</b>\nSelect Quick test — new cloned voice to record a fresh sample and start.");
+            return;
+        }
+        m_StartArmed = false;
+        SessionConfig.ConfigureCloneQuickTest(clone);
+        StartCoroutine(PrepareQuickTest());
+    }
+
+    IEnumerator PrepareQuickTest()
     {
         m_Phase = Phase.PreparingQuickTest;
         m_FinishRecordingButton.gameObject.SetActive(false);
@@ -115,7 +129,7 @@ public class VoiceModeSelector : MonoBehaviour
         // Fully prepare this one voice before starting. No on-demand network wait during trials.
         yield return m_Synth.PrepareLibraries(VoiceAssistantController.PhraseLibrary(),
             _ => ShowLoading(m_Synth.PreparationProgress),
-            ok => ready = ok, neutralOnly: true);
+            ok => ready = ok, onlyVoice: SessionConfig.CloneQuickTest ? VoiceCondition.SelfSimilar : VoiceCondition.Generic);
         if (!ready)
         {
             m_Phase = Phase.QuickTestFailed;
@@ -126,13 +140,23 @@ public class VoiceModeSelector : MonoBehaviour
             RefreshChoices();
             yield break;
         }
-        Finish("Neutral quick test ready.");
+        Finish(SessionConfig.CloneQuickTest ? "Cloned voice quick test ready." : "Neutral quick test ready.");
+    }
+
+    public void StartNewCloneQuickTest()
+    {
+        if (m_Phase != Phase.WaitingToStart || !m_StartArmed || !Application.isFocused || m_Synth == null) return;
+        m_StartArmed = false;
+        SessionConfig.ConfigureNewCloneQuickTest();
+        m_PerspectiveChosen = true;
+        m_Phase = Phase.Choosing;
+        SelectSelfSimilar();
     }
 
     public void RetryNeutralQuickTest()
     {
         if (m_Phase == Phase.QuickTestFailed && m_Synth != null && !m_Synth.ProviderPolicyBlocked)
-            StartCoroutine(PrepareNeutralQuickTest());
+            StartCoroutine(PrepareQuickTest());
     }
 
     void BuildPanel()
@@ -291,6 +315,7 @@ public class VoiceModeSelector : MonoBehaviour
                 else if (Time.realtimeSinceStartup - m_StartReleasedAt >= 0.75f) m_StartArmed = true;
             }
             m_FinishRecordingButton.gameObject.SetActive(true);
+            m_FinishRecordingButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 60);
             m_FinishRecordingButton.interactable = m_StartArmed;
             m_ActionLabel.text = "Start setup";
             RefreshChoices();
@@ -301,6 +326,7 @@ public class VoiceModeSelector : MonoBehaviour
 
         if (m_FinishRecordingButton != null)
         {
+            m_FinishRecordingButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -190);
             bool recording = m_Phase == Phase.Enrolling && m_Enrollment != null &&
                 m_Enrollment.Current == VoiceEnrollment.State.Recording;
             m_FinishRecordingButton.gameObject.SetActive(recording);
@@ -331,14 +357,21 @@ public class VoiceModeSelector : MonoBehaviour
         bool cards = m_Phase == Phase.ChoosingNeutralVoice;
         m_Text.rectTransform.sizeDelta = new Vector2(660, cards ? 100 : m_Phase == Phase.Enrolling ? 350 : 220);
         m_Text.rectTransform.anchoredPosition = new Vector2(0, cards ? 180 : m_Phase == Phase.Enrolling ? 40 : 100);
+        if (m_Phase == Phase.WaitingToStart)
+        {
+            m_Text.rectTransform.sizeDelta = new Vector2(660, 120);
+            m_Text.rectTransform.anchoredPosition = new Vector2(0, 165);
+        }
         switch (m_Phase)
         {
             case Phase.WaitingToStart:
-                Choice("Quick test — neutral voice", StartNeutralQuickTest, 0, -100, 540);
+                Choice("Quick test — neutral voice", StartNeutralQuickTest, 0, -15, 580);
+                Choice("Quick test — last cloned voice", StartCloneQuickTest, 0, -90, 580);
+                Choice("Quick test — new cloned voice", StartNewCloneQuickTest, 0, -165, 580);
                 break;
             case Phase.QuickTestFailed:
                 if (m_Synth != null && !m_Synth.ProviderPolicyBlocked)
-                    Choice("Retry neutral audio", RetryNeutralQuickTest, 0, -90, 440);
+                    Choice(SessionConfig.CloneQuickTest ? "Retry cloned audio" : "Retry neutral audio", RetryNeutralQuickTest, 0, -90, 440);
                 Choice("Cancel session", CancelSetup, 0, -185, 300);
                 break;
             case Phase.ChoosingNeutral:
@@ -523,7 +556,7 @@ public class VoiceModeSelector : MonoBehaviour
     {
         if (!m_PerspectiveChosen || m_Phase == Phase.WaitingToStart || m_Phase == Phase.Done || m_Phase == Phase.Enrolling || m_Phase == Phase.Preparing) return;
         SessionConfig.LockPerspective();
-        if (!SessionConfig.VoiceBlocksEnabled)
+        if (!SessionConfig.VoiceBlocksEnabled && !SessionConfig.NewCloneQuickTest)
         {
             try { SessionConfig.ConfigureVoiceBlocks(); }
             catch (System.Exception e) { ShowEnrollmentFailure(e.Message); return; }
@@ -569,7 +602,9 @@ public class VoiceModeSelector : MonoBehaviour
             onDone: _ =>
             {
                 SessionConfig.SelfSimilarEnrollmentPending = false;
-                StartCoroutine(PrepareVoices());
+                // Fresh-clone quick tests prepare only their newly enrolled voice, then
+                // enter the existing development trial path (no study block assignment).
+                StartCoroutine(SessionConfig.NewCloneQuickTest ? PrepareQuickTest() : PrepareVoices());
             },
             onError: err =>
             {
@@ -688,7 +723,7 @@ public class VoiceModeSelector : MonoBehaviour
         SelectionCompleted?.Invoke();
         SetText(message + "\n\nStay seated. The center-and-begin step is next.");
         // Leave the confirmation up briefly, then remove the panel.
-        if (m_CanvasGO != null) Destroy(m_CanvasGO, SessionConfig.NeutralQuickTest ? 0f : 3.0f);
+        if (m_CanvasGO != null) Destroy(m_CanvasGO, SessionConfig.DevelopmentQuickTest ? 0f : 3.0f);
         enabled = false;
     }
 

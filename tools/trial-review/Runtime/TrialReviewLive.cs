@@ -18,9 +18,10 @@ public sealed partial class TrialReviewApp
     LiveStatus m_LiveStatus;
     TrialReviewLiveStream m_LiveStream;
     TrialReviewLiveFollow m_LiveFollow = new TrialReviewLiveFollow();
+    TrialReviewLiveAudioClock m_LiveAudioClock = new TrialReviewLiveAudioClock();
     double m_LastStatusRead, m_LastAudioRefresh;
     int m_LiveIndexed, m_AudioRevision = -1;
-    bool m_JoinLive, m_LiveAudioDirty, m_LiveSignalActive;
+    bool m_JoinLive, m_LiveAudioDirty, m_LiveSignalActive, m_DrainingLive;
     bool HeadsetPreparing => m_FollowLive && TrialReviewHeadsetState.Fresh(m_LiveStatus?.headsetState, ReceiverConnected, UtcSeconds, m_LiveStatus?.headsetStateObservedUtc ?? 0) && m_LiveStatus.headsetState.phase == "preparing";
     bool WaitingForHeadset => m_FollowLive && (!m_LiveSignalActive || HeadsetPreparing);
     string LiveWaitingReason => HeadsetPreparing ? "Preparing experiment" : m_LiveFollow.WaitingReason(ReceiverConnected, UtcSeconds,
@@ -38,12 +39,13 @@ public sealed partial class TrialReviewApp
         if (output >= 0 && output + 1 < args.Length) m_LiveOutput = Path.GetFullPath(args[output + 1]);
         int endpoint = Array.IndexOf(args, "--endpoint");
         if (endpoint >= 0 && endpoint + 1 < args.Length) m_Endpoint = args[endpoint + 1];
-        if (Array.IndexOf(args, "--live") >= 0) { m_LivePanel = true; ConnectLive(); }
+        if (!m_DetachedReview && Array.IndexOf(args, "--live") >= 0) { m_LivePanel = true; ConnectLive(); }
     }
 
     static string Argument(string value) => "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
     void ConnectLive()
     {
+        if(m_DetachedReview) { m_Error="Live recording stays in the main window."; return; }
         try
         {
             if (ReceiverRunning)
@@ -121,7 +123,7 @@ public sealed partial class TrialReviewApp
             {
                 m_LiveStream?.Dispose();
                 m_LiveStream = new TrialReviewLiveStream(m_LiveStatus.recording);
-                m_LiveFollow = new TrialReviewLiveFollow(); m_LiveSignalActive = false;
+                m_LiveFollow = new TrialReviewLiveFollow(); m_LiveAudioClock = new TrialReviewLiveAudioClock(); m_LiveSignalActive = false;
                 m_LiveIndexed = 0; m_JoinLive = true; m_ViewLive = false;
                 m_Playing = false; m_Audio?.Stop(); m_Error = null;
             }
@@ -166,22 +168,27 @@ public sealed partial class TrialReviewApp
             if (!m_FollowLive) return;
             bool active = !HeadsetPreparing && m_LiveFollow.Ready(ReceiverConnected, UtcSeconds,
                 m_LiveStatus?.replayUpdatedUtc ?? 0, m_LiveStatus?.replayPendingBytes ?? 0, m_LiveStream.CaughtUp, m_LiveSignalActive);
+            m_DrainingLive = !m_JoinLive && !HeadsetPreparing && ReceiverConnected && m_LiveFollow.CanDrain(m_Time);
+            active |= m_DrainingLive;
             if (!active)
             {
-                m_LiveSignalActive = false; m_JoinLive = true;
+                m_LiveSignalActive = false;
                 m_Playing = false; m_Audio?.Stop(); return;
             }
             double next = TrialReviewLiveFollow.Cursor(m_Time, timeline.Trials[0].time, timeline.Duration, m_JoinLive);
-            m_LiveSignalActive = true; m_Speed = 1;
-            if (m_JoinLive || next != m_Time)
+            bool joining = m_JoinLive;
+            if (joining) m_LiveAudioClock.Resume();
+            if (!joining)
             {
-                m_Time = next; m_Sequence = long.MaxValue; m_JoinLive = false;
-                m_Renderer.Prepare(timeline, m_Time); Sync(true);
+                next = Math.Max(next, Math.Min(timeline.Duration, m_Time + Time.unscaledDeltaTime));
+                next = m_LiveAudioClock.Advance(m_Time, next, Time.unscaledDeltaTime, now, timeline, m_Audio.Plan);
             }
-            // Freeze explicitly on transport loss. Never extrapolate gaze/head across a dropout.
-            bool buffered = timeline.Duration - m_Time > .000001;
-            m_Playing = ReceiverConnected && buffered;
-            if (!m_Playing) Sync(false);
+            m_LiveSignalActive = true; m_Speed = 1;
+            m_Time = next; m_Sequence = long.MaxValue; m_JoinLive = false;
+            m_Renderer.Prepare(timeline, m_Time);
+            m_Playing = ReceiverConnected && timeline.Duration - m_Time > .000001;
+            Sync(joining); // Catch-up no longer force-restarts an active phrase.
+
         }
         catch (Exception e)
         {
@@ -199,13 +206,23 @@ public sealed partial class TrialReviewApp
         m_Endpoint = GUILayout.TextField(m_Endpoint, m_Field, GUILayout.Width(185));
         if (Button(ReceiverRunning ? "Resume live" : "Connect Wi-Fi", GUILayout.Width(125))) SetLiveMode(true);
         if (ReceiverRunning && Button("Stop receiver", GUILayout.Width(125))) StopReceiver();
+        if (Button("Review window", GUILayout.Width(130))) OpenReviewWindow();
         if (Button("Open saved files", GUILayout.Width(140))) { Directory.CreateDirectory(m_LiveOutput); Application.OpenURL(new Uri(m_LiveOutput).AbsoluteUri); }
+        GUILayout.FlexibleSpace();
+        GUILayout.Label("Viewer audio",m_Label,GUILayout.Width(95));
+        if(Button(m_Muted?"Unmute voice":"Mute voice",GUILayout.Width(110)))SetViewerAudio(m_Volume,!m_Muted);
+        float volume=GUILayout.HorizontalSlider(m_Volume,0,1,GUILayout.Width(110));
+        GUILayout.Label($"{m_Volume*100:0}%",m_Label,GUILayout.Width(48));
+        if(volume!=m_Volume)SetViewerAudio(volume,m_Muted);
         GUILayout.EndHorizontal();
         string state = m_LiveStatus == null ? ReceiverRunning ? "Connecting…" : "Connect by USB once or enter the headset IP. Transfers use Wi-Fi." :
             $"{(ReceiverConnected ? "WI-FI CONNECTED" : "NOT RECEIVING")} · {m_LiveStatus.receivedBytes / 1000000:F1} MB saved · {m_LiveStatus.verifiedFiles}/{m_LiveStatus.files} files hash-verified · {m_LiveStatus.pendingBytes / 1000000:F1} MB catching up";
         GUILayout.Label(state, m_Heading);
         string view = m_FollowLive ? WaitingForHeadset ? LiveWaitingReason :
             $"Following · {Math.Max(0, m_Timeline.Duration - m_Time):F1}s behind received data" : "Reviewing history; receiver continues saving while connected";
+        if (m_FollowLive && m_DrainingLive) view = "Playing buffered recording · " + view;
+        if (m_FollowLive && m_LiveAudioClock.WaitingForAudio) view = "Buffering recorded speech audio · " + view;
+        if (m_LiveAudioClock.UnavailableCount > 0) view += $" · {m_LiveAudioClock.UnavailableCount} audio asset(s) unavailable after 5 s";
         GUILayout.Label(m_LiveStatus?.state == "error" ? m_LiveStatus.message : view + " · Headset keeps the original recording", m_MutedLabel);
         GUILayout.EndArea();
     }

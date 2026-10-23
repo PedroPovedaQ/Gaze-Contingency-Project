@@ -40,12 +40,19 @@ public sealed partial class TrialReviewApp : MonoBehaviour
         Application.runInBackground = true;
         Application.targetFrameRate = 60;
         gameObject.AddComponent<AudioListener>();
+        m_Volume = Mathf.Clamp01(PlayerPrefs.GetFloat("ViewerVoiceVolume", .8f));
+        m_Muted = PlayerPrefs.GetInt("ViewerVoiceMuted", 0) != 0;
+        AudioListener.volume = m_Muted ? 0 : m_Volume;
         m_Actors = new TrialReviewActors();
         m_Environment = new TrialReviewEnvironment();
         var args = Environment.GetCommandLineArgs();
+        m_DetachedReview = Array.IndexOf(args,"--review-window") >= 0;
+        if(m_DetachedReview) { m_Muted=true; AudioListener.volume=0; }
+        int browseRoot=Array.IndexOf(args,"--browse-root");
+        if(browseRoot>=0 && browseRoot+1<args.Length)m_BrowserPath=args[browseRoot+1];
         int index = Array.IndexOf(args, "--recording");
         m_Path = index >= 0 && index + 1 < args.Length ? args[index + 1] : Path.Combine(Application.streamingAssetsPath, "Demo/recording.jsonl");
-        if (Array.IndexOf(args, "--live") < 0) yield return Open(m_Path);
+        if (Array.IndexOf(args, "--live") < 0 && (!m_DetachedReview || index>=0)) yield return Open(m_Path);
         else m_Path = "";
         int summaryIndex = Array.IndexOf(args, "--summary");
         if (m_Timeline != null && summaryIndex >= 0 && summaryIndex + 1 < args.Length)
@@ -65,6 +72,13 @@ public sealed partial class TrialReviewApp : MonoBehaviour
         }
         if(Array.IndexOf(args,"--evaluation")>=0)m_Tab=4;
         InitializeLive(args);
+        if(m_DetachedReview && index<0)Browse(false);
+        if(!m_DetachedReview && Array.IndexOf(args,"--detach-review")>=0)
+        {
+            double deadline=Time.realtimeSinceStartupAsDouble+10;
+            while(m_Timeline==null && m_FollowLive && Time.realtimeSinceStartupAsDouble<deadline)yield return null;
+            OpenReviewWindow();
+        }
     }
     public IEnumerator Open(string path)
     {
@@ -109,7 +123,7 @@ public sealed partial class TrialReviewApp : MonoBehaviour
         m_Tracks.Refresh(m_Timeline);
         UpdateRunExport();
         UpdateEvaluation();
-        if (!m_Playing || m_Timeline == null || m_Loading) return;
+        if (m_FollowLive || !m_Playing || m_Timeline == null || m_Loading) return;
         m_Time = Math.Min(m_Timeline.Duration, m_Time + Time.unscaledDeltaTime * m_Speed);
         m_Sequence = long.MaxValue;
         m_Renderer.Prepare(m_Timeline, m_Time);
@@ -122,7 +136,8 @@ public sealed partial class TrialReviewApp : MonoBehaviour
         m_Time = Math.Max(0, Math.Min(m_Timeline.Duration, time)); m_Sequence = sequence;
         m_Renderer.Prepare(m_Timeline, m_Time, maxSequence: sequence); Sync(true);
     }
-    void Sync(bool force) => m_Audio?.Sync(m_Time, m_Playing && !m_Muted, m_Speed, m_Sequence, force);
+    void Sync(bool force) => m_Audio?.Sync(m_Time,
+        TrialReviewLiveFollow.AudioEnabled(m_Playing, m_FollowLive, m_LiveSignalActive), m_Speed, m_Sequence, force);
     void Step(int direction)
     {
         m_Playing = false;

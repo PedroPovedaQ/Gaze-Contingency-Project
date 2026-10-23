@@ -4398,6 +4398,45 @@
         ],
         "canBeSupersededBy": []
       }
+    },
+    {
+      "text": "Look at the cross and hold your gaze to begin the next round.",
+      "semantics": {
+        "intent": "readiness_reminder",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "between_trials",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Look for the cross and keep looking at it to start the next round.",
+      "semantics": {
+        "intent": "readiness_reminder",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "between_trials",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
+    },
+    {
+      "text": "Ready for the next round? Look at the cross until it fills.",
+      "semantics": {
+        "intent": "readiness_reminder",
+        "horizontal": "none",
+        "vertical": "none",
+        "magnitude": "unspecified",
+        "stage": "between_trials",
+        "interruptPolicy": "finish",
+        "requires": [],
+        "canBeSupersededBy": []
+      }
     }
   ]
 }

@@ -106,11 +106,11 @@ def evaluate_choices(payload, response, ids):
             checks.append(check("direction_sign_consistency", status, ids,
                                 "Candidate metadata vs recorded request yaw only; not headset accuracy, "
                                 "magnitude wording, subsequent motion, or perceptual correctness."))
-        if name == "transmit":
+        if name in ("transmit", "navigation_action"):
             known = all(isinstance(v, bool) for v in
                         (gaze.get("valid"), playback.get("is_speaking"), playback.get("is_busy")))
             status = "unknown"
-            if membership == "pass" and selected == "speak" and known:
+            if membership == "pass" and (selected == "speak" or (name == "navigation_action" and selected != "wait")) and known:
                 status = "pass" if (gaze["valid"] and not playback["is_speaking"]
                                     and not playback["is_busy"]) else "fail"
             checks.append(check("speak_prerequisites", status, ids,
@@ -123,7 +123,7 @@ def central_state_status(payload):
     """Recognize the actual versioned state, not legacy booleans as an invented phase."""
     def contains(value):
         if isinstance(value, dict):
-            recorded = (value.get("version") == "guidance-state-v1"
+            recorded = (value.get("version") in ("guidance-state-v1", "guidance-state-v2")
                         and isinstance(value.get("phase"), str) and bool(value["phase"].strip()))
             return recorded or any(contains(v) for v in value.values())
         if isinstance(value, list):
@@ -150,7 +150,7 @@ def event_type(state):
 def qualification(state, kind):
     snapshot = state_snapshot(state)
     expected = "ConfirmGaze" if kind == "gaze_confirmation" else "ConfirmPointing"
-    if (snapshot.get("version") == "guidance-state-v1" and snapshot.get("phase")
+    if (snapshot.get("version") in ("guidance-state-v1", "guidance-state-v2") and snapshot.get("phase")
             and snapshot.get("allowedAction") == expected):
         if snapshot.get("gazeValid") is True and (
                 kind == "gaze_confirmation" or snapshot.get("controllerValid") is True):
@@ -226,7 +226,7 @@ def add_sequence_context(decisions, replay):
         if kind == "sample":
             last_sample = record["time"]
             snapshot = record.get("guidanceState") or {}
-            if snapshot.get("version") == "guidance-state-v1" and snapshot.get("phase"):
+            if snapshot.get("version") in ("guidance-state-v1", "guidance-state-v2") and snapshot.get("phase"):
                 target = snapshot.get("targetObjectId")
                 for key in list(set(active) | set(observed_qualification)):
                     controller = key == "controller_confirmation"
@@ -399,6 +399,11 @@ def evaluate_recording(recording_path, output_directory):
         state = state if isinstance(state, dict) else {}
         selected = next((answers[n].get("choice") for n in ("navigation_phrase", "round_encouragement")
                          if isinstance(answers.get(n), dict)), None)
+        action = answers.get("navigation_action", {}).get("choice")
+        if action and action != "wait":
+            action_criteria = payload.get("questions", {}).get("navigation_action", {}).get("criteria", {})
+            entry = action_criteria.get(action, {})
+            selected = entry.get("text") if isinstance(entry, dict) else None
         phrase = selected or state.get("proposed_phrase") or (
             (local[0].get("guidanceDecision") or {}).get("phrase") if local else None)
         row = dict(decision_id=key, case_id=case_id, sourceTrialId=request.get("sourceTrialId"),

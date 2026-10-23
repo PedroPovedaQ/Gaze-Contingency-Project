@@ -20,7 +20,7 @@ namespace SpatialVoice
 
     /// <summary>Jev chooses wording, never geometry. Uses Vercel's TypeSafe-compatible contract,
     /// not the unverified api.jev.ai endpoint. No credentials or provider bodies in errors.</summary>
-    public sealed class JevDecisionClient : INavigationDecisionProvider
+    public sealed partial class JevDecisionClient : INavigationDecisionProvider
     {
         public const string Endpoint = "https://ai-gateway.vercel.sh/typesafe/v1/systemone";
         static readonly HttpClient Client = new HttpClient();
@@ -110,6 +110,10 @@ namespace SpatialVoice
         // Coarse guidance used to make these two requests in series. Both typed answers
         // now share one immutable state and one deadline; neither can override Unity gates.
         public static string GuidancePayload(string state, IReadOnlyList<NavigationPhrase> candidates)
+            => GuidancePayload(state, candidates, true);
+
+        // Uncompacted form exists only for paired contract/transport measurements.
+        internal static string GuidancePayload(string state, IReadOnlyList<NavigationPhrase> candidates, bool compact)
         {
             var payload = JObject.Parse(Payload(state, candidates));
             payload["state"] = JObject.Parse(state);
@@ -120,7 +124,38 @@ namespace SpatialVoice
                 ["wait"] = "Gaze invalid, playback speaking/busy, or no locally qualified cue. Also wait for same-direction advice less than 3 seconds after the last spoken instruction. Any failed precondition requires wait regardless of target angle." };
 
             payload["questions"]["transmit"] = question;
+            if (compact) CompactCandidateSemantics(payload);
             return payload.ToString(Formatting.None);
+        }
+
+        // Factor only exactly identical semantic fields. Each choice retains its
+        // differences; no validity/geometry evidence is dropped or rounded.
+        static void CompactCandidateSemantics(JObject payload)
+        {
+            var criteria = (JObject)payload["questions"]["navigation_phrase"]["criteria"];
+            var semantics = new List<JObject>();
+            foreach (var choice in criteria.Properties()) semantics.Add((JObject)choice.Value["semantics"]);
+            var shared = new JObject();
+            foreach (var field in semantics[0].Properties())
+            {
+                bool same = true;
+                for (int i = 1; i < semantics.Count; i++)
+                    if (!JToken.DeepEquals(field.Value, semantics[i][field.Name])) { same = false; break; }
+                if (same) shared[field.Name] = field.Value.DeepClone();
+            }
+            if (shared.Count == 0) return;
+            foreach (var item in semantics)
+                foreach (var field in shared.Properties()) item.Remove(field.Name);
+            payload["state"]["candidate_semantics_defaults"] = shared;
+            payload["questions"]["navigation_phrase"]["instructions"] +=
+                " Each candidate inherits state.candidate_semantics_defaults, overridden by its semantics." +
+                " runtime.playback.recent_history contains actual software playback and observed transitions, not proposed speech." +
+                " Interrupted speech may not have been heard fully. Current evidence overrides history.";
+            payload["questions"]["transmit"]["instructions"] +=
+                " playback.is_busy=true also requires wait, even when is_speaking=false." +
+                " A pending phrase is not spoken history, but busy playback is not available for a new cue.";
+            payload["questions"]["transmit"]["instructions"] +=
+                " If state.runtime.evidence.guidanceState.newGuidanceAllowed is explicitly false, answer wait; Unity owns this gate.";
         }
 
         public async Task<GuidanceSelection> ChooseGuidanceAsync(string state, IReadOnlyList<NavigationPhrase> candidates,

@@ -153,20 +153,11 @@ In the `results/` folder:
 
 ## NASA-TLX Workflow
 
-NASA-TLX is a paper questionnaire collected manually after each block.
-After each session:
+**Current protocol proposal (October 20):** collect two separately labelled retrospective TLX sets in the final survey after both blocks, with raw ratings 0–10. Preserve the referenced block, actual voice/condition, participant/run, `administration_phase=final`, `reference_scope=participant_by_block`, administration timestamp and instrument version. Qualtrics is on hold.
 
-1. Have the participant rate the 6 subscales (0-100 each):
-   mental demand, physical, temporal, performance, effort, frustration
-2. Add a row to a file named **`nasa_tlx.csv`** in your `GazeData/` folder
-3. Use this column order: `participant_id, condition, mental, physical,
-   temporal, performance, effort, frustration`
-4. See `nasa_tlx_template.csv` in the analysis folder for an example
+**Implemented scoring:** `tlx_scoring.py` accepts explicit `scale_min=0`, `scale_max=10` or legacy `100`, plus `performance_direction` (higher is better/worse). All six dimensions must be valid and complete. Raw values remain intact; `nasa_tlx_score` is the native-scale unweighted mean and `nasa_tlx_score_0_100` is a separately labelled conversion for cross-scale plots. Missing/invalid metadata produces an unscored result, not a guessed scale. Performance is aligned to higher workload before averaging. The example `nasa_tlx_template.csv` is legacy; do not infer its scale for current responses.
 
-The analysis pipeline auto-detects this file. If present, it generates
-`nasa_tlx.png` (raw workload box plot) and `nasa_tlx_subscales.png`
-(6-subscale grouped bar chart), and it copies the loaded questionnaire
-data into `results/nasa_tlx_scores.csv`.
+The loader auto-detects `nasa_tlx.csv` and saves the loaded/scored records to `results/nasa_tlx_scores.csv`. Workload plots explicitly label rescaling to 0–100. Trial export repeats the referenced block’s responses for convenience, preserving their block scope; repeated rows are not independent survey observations. See `test_tlx_scoring.py`, `test_tlx_plots.py` and `test_trial_csv.py` for native-scale, missingness and retrospective-join cases.
 
 ## File Structure
 

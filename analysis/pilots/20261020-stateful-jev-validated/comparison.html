@@ -1,0 +1,127 @@
+<!doctype html><meta charset="utf-8"><title>Jev sequence pilot</title><style>body{background:#171717;color:#eee;font:16px/1.6 system-ui;max-width:1100px;margin:40px auto;padding:20px}h1{color:#ffc904}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}a{color:#ffc904}</style><h1>Jev sequence pilot</h1><pre># Jev sequence experiment — October 20, 2026
+
+**Measured:** Mac-to-Vercel HTTP. **Simulated:** playback, audio duration, pauses, fades and movement. The production C# state machine and short speech memory execute in the runner. No participant runtime or headset build changed.
+
+## Paired policy comparison
+
+| Policy | Requests | HTTP median / p95 (ms) | Confirmation median / max (simulated ms) | Unconfirmed episodes |
+|---|---:|---:|---:|---:|
+| restricted | 25 | 240 / 450 | 0 / 600 | 0 / 16 |
+| eligible_actions | 26 | 230 / 328 | 0 / 600 | 0 / 16 |
+| all_jev | 70 | 245 / 375 | 800 / 1400 | 4 / 17 |
+| jev_overrides | 25 | 235 / 314 | 0 / 600 | 0 / 16 |
+
+146 real requests, zero transport/schema failures; five responses exceeded the 450 ms experimental deadline. A zero simulated delay means playback began in the same 50 ms tick, not zero real latency. Episode counts depend on earlier action consumption; denominators are not a matched participant outcome.
+
+The six flagged all-Jev playback events were valid against the request-time evidence. The observations changed before playback. Two became opposing directions, one directed away during target gaze, two confirmations no longer had qualified current gaze, and one pointing cue arrived after selection. These are stale delivery/final-check issues, not six demonstrated bad Jev choices. Useful partial cues, milestone encouragement and reacquisition are not graded wrong for differing from an exact phrase.
+
+## Follow-up: early repetition gate
+
+Skip a request when the same ordinary direction is still blocked by the existing three-second repetition interval. Fresh events and direction changes remain eligible. Two trajectories × two repetitions, alternating order.
+- Early gate False: 31 real requests; 14 simulated starts; 13 responses rejected late for repetition; 0 flagged starts.
+- Early gate True: 10 real requests; 14 simulated starts; 0 responses rejected late for repetition; 0 flagged starts.
+
+This reduced calls by about 68% (31 to 10), without reducing the number of simulated starts. It is a small experimental result, not proven wearer benefit or a deployment decision.
+
+## Follow-up: all-Jev with event-triggered wake and cancellation
+
+Every spoken action still comes from Jev. The revised scheduler cancels pending advice and allows an immediate request when the production state/action/direction changes. Six trajectories, one repeat, alternating order.
+- Event wake False: 48 requests; simulated confirmation median 800 ms, max 1300 ms; 3 unconfirmed episodes; 6 flagged starts.
+- Event wake True: 67 requests; simulated confirmation median 400 ms, max 1050 ms; 1 unconfirmed episodes; 0 flagged starts.
+
+Event wake reduced the simulated median from 800 to 400 ms and flagged starts from six to zero, while raising requests from 48 to 67 (about 40%). This runner polls at 600 ms; the current production HintIntervalSeconds is 100 ms. The measured improvement therefore does not establish a similar gain in the current app.
+
+The remaining unconfirmed gaze episode was speech_then_confirm: gaze qualified at 0.75 s while a direction clip continued until 1.50 s; controller entry at 1.60 s cancelled the pending decision, the replacement exceeded the 450 ms deadline, and qualified pointing at 2.60 s superseded the gaze acknowledgment. Pointing was spoken at 2.95 s. This is one unconfirmed gaze episode, not multiple failures. The longest delivered event-wake confirmation (1.05 s) comprised 0.80 s of existing speech and 0.25 s waiting for Jev.
+
+## What happened to the two-second delays?
+
+The initial comparison did not reproduce a delivered confirmation above 1.4 s. Protected policies topped out at 0.6 s, mostly waiting for the simulated existing phrase to finish plus the 100 ms acknowledgment gap. This does not establish that the headset issue is fixed: clip duration is assumed (1.0 s, or 1.8 s for reminders), there is no real AudioSource or acoustic measurement, and unconfirmed episodes must not be excluded from interpretation.
+
+## Advisory Astra review
+
+Use these runs to identify scheduling and playback-validation issues for further testing, without ranking policies or recommending deployment. Preserve the distinction between request-time choice validity and playback-time relevance. The roughly 2-second concern is not reproduced as an observed confirmation delay here: delivered confirmations reached at most 1.4 seconds in all_jev and 0.6 seconds in each protected policy. It remains unresolved for real headset playback, and missing confirmations must not disappear from the assessment simply because they have no measured delay.
+
+This is an advisory assessment of fixed trajectories, not participant experience. The actual C# state machine qualifies events; audio starts, 1.0/1.8-second durations, fades and scheduling are simulated. Only Mac HTTP times are measured: policy medians are approximately 0.23–0.25 seconds, with maxima of 0.35–0.65 seconds. These do not establish headset end-to-end latency. Zero simulated delay means the same 50 ms tick. Remaining delay mechanisms include existing speech, polling/scheduler waits, deadline handling and stale pending responses; local priority does not eliminate waiting for audio. Missing evidence includes headset qualification-to-audible-onset measurements, actual audio durations and buffering, repeated trials and latency tails, participant responses and perceived pacing, and the exact production phrase/pacing runtime. Requests occur only while audio is idle, so these runs do not validate Jev interruption judgments during ongoing speech. Speech histories follow each policy&#x27;s simulated starts; trajectories cannot demonstrate behavioral benefit. Episode denominators depend on prior consumption, so 16 versus 17 qualified episodes is not a matched outcome comparison. Restricted is a reference action menu; full menus contain about 30 actions, not 500 authored phrases.
+
+## Remaining limitations and decision
+
+- Keep the experimental action policies out of participant builds. The restricted arm is a reference action policy, not the exact Unity phrase and scheduling pipeline.
+- Follow-ups change simulated scheduling; they do not validate every production cancellation path. Port any selected change behind a development flag, then re-run the production voice/isolation tests and collect a headset run.
+- Requests in this runner begin only while audio is idle. Existing speech may delay confirmation, but live Jev interruption judgments are not benchmarked here.
+- Model history follows its own simulated speech, but movements are fixed across policies; there is no simulated participant adapting to the advice.
+- Catalog has roughly 30 action entries, not 500 authored phrases. No result supports a full 500-phrase deployment.
+- Need wearer evidence for audible onset, naturalness, voice-condition equivalence, and real network tails.
+
+## Representative timelines
+
+### turn_wall_vertical — all_jev
+
+| Simulated time | Event |
+|---:|---|
+| 0.90 s | simulated_start: Turn right.;  |
+| 2.15 s | simulated_start: Keep going right.;  |
+| 3.40 s | simulated_start: Keep going right.;  |
+| 4.70 s | simulated_start: Turn right.; opposing_horizontal |
+| 5.95 s | simulated_start: Look down and left.;  |
+| 7.25 s | simulated_start: Look down.; direction_while_looking_at_target |
+| 8.55 s | simulated_start: Yep, that&#x27;s it!;  |
+| 9.80 s | simulated_start: You&#x27;re on it!;  |
+
+### turn_wall_vertical — jev_overrides
+
+| Simulated time | Event |
+|---:|---|
+| 0.50 s | simulated_start: Turn right.;  |
+| 1.75 s | simulated_start: Keep going right.;  |
+| 3.00 s | simulated_start: Keep going right.;  |
+| 4.75 s | simulated_start: Look down and left.;  |
+| 6.05 s | blocked_stale_or_invalid: refine_down_left;  |
+| 6.65 s | simulated_start: Look down.;  |
+| 7.75 s | simulated_start: Yep, that&#x27;s it!;  |
+| 9.00 s | simulated_start: You&#x27;re on it!;  |
+
+### overshoot_reacquire — all_jev
+
+| Simulated time | Event |
+|---:|---|
+| 0.80 s | simulated_start: Look up and right.;  |
+| 2.05 s | simulated_start: Yep, that&#x27;s it!; unqualified_gaze_confirmation |
+| 3.35 s | simulated_start: Look down and left.;  |
+| 4.70 s | simulated_start: Yep, that&#x27;s it!;  |
+| 6.55 s | simulated_start: You&#x27;re on it!;  |
+| 7.90 s | simulated_start: Correct selection. Nicely done.;  |
+
+### overshoot_reacquire — jev_overrides
+
+| Simulated time | Event |
+|---:|---|
+| 0.25 s | simulated_start: Look up and right.;  |
+| 1.35 s | simulated_start: Yep, that&#x27;s it!;  |
+| 2.60 s | simulated_start: Go back down and left.;  |
+| 3.70 s | simulated_start: Yep, that&#x27;s it!;  |
+| 6.00 s | simulated_start: You&#x27;re on it!;  |
+| 7.25 s | simulated_start: Correct selection. Nicely done.;  |
+
+### rapid_reverse — all_jev
+
+| Simulated time | Event |
+|---:|---|
+| 0.90 s | simulated_start: Turn left.; opposing_horizontal |
+| 2.15 s | simulated_start: Turn left.;  |
+| 4.05 s | simulated_start: Look up.;  |
+| 5.95 s | simulated_start: Yep, that&#x27;s it!;  |
+
+### rapid_reverse — jev_overrides
+
+| Simulated time | Event |
+|---:|---|
+| 0.50 s | blocked_stale_or_invalid: orient_right; opposing_horizontal |
+| 1.20 s | blocked_stale_or_invalid: orient_right; invalid_evidence |
+| 2.00 s | simulated_start: Turn left.;  |
+| 3.25 s | simulated_start: Look up.;  |
+| 5.15 s | simulated_start: Yep, that&#x27;s it!;  |
+
+## Reproduction
+
+Run `python3 -m unittest discover -s analysis -p test_jev_sequence_pilot.py` for runner checks. Live entry points are `analysis/jev_sequence_pilot.py`, `analysis/jev_repeat_gate_pilot.py`, and `analysis/jev_event_wake_pilot.py`; each requires an ignored key file and a new output directory. Never put keys in reports. Raw request bodies and returned choices are saved in each pilot folder. The validated main report replays the exact saved responses and requires identical parsed payloads; it makes no extra model requests.
+</pre>

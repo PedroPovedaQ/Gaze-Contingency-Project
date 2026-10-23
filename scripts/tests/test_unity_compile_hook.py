@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -24,14 +25,18 @@ class UnityCompileHookTests(unittest.TestCase):
             script = root / 'scripts' / SCRIPT.name
             shutil.copy2(SCRIPT, script)
             fake = root / 'fake-unity'
-            fake.write_text(
-                '#!' + sys.executable + '\n'
+            child = root / 'fake-unity.py'
+            child.write_text(
                 'import json, os, pathlib, sys\n'
                 'pathlib.Path(os.environ["HOOK_TEST_CAPTURE"]).write_text(json.dumps({k: os.environ[k] for k in '
                 + repr(GIT_VARS) + ' if k in os.environ}))\n'
                 'pathlib.Path(sys.argv[sys.argv.index("-logFile") + 1]).write_text("Compilation completed.\\n")\n'
                 'sys.exit(int(os.environ["HOOK_TEST_EXIT"]))\n'
             )
+            # A shebang cannot represent an interpreter path containing spaces.
+            # Use a shell wrapper so the shared worktree Python environment works too.
+            fake.write_text('#!/bin/sh\nexec ' + shlex.quote(sys.executable) +
+                            ' ' + shlex.quote(str(child)) + ' "$@"\n')
             fake.chmod(0o755)
             capture = root / 'child-git-env.json'
             env = dict(os.environ)

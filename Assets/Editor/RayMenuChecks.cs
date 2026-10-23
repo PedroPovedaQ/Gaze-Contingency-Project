@@ -126,6 +126,12 @@ public static class RayMenuChecks
             Check(finished == 1, "Finish action is reachable through a visible button");
             ui.ShowBlockSurvey(1);
             Capture((GameObject)Read(ui,"m_CanvasGO"), "/tmp/gaze-prompt-survey.png");
+            ui.ShowCompletion(80, 123, externalSurvey: true);
+            Check(!(bool)Read(ui, "m_ShowingNasaTlxSurvey") &&
+                !((GameObject)Read(ui, "m_NasaTlxSurveyRoot")).activeSelf,
+                "Study completion hides the legacy in-headset workload form");
+            Check(((TMPro.TextMeshProUGUI)Read(ui, "m_CompletionText")).text.Contains("final questionnaires"),
+                "Study completion hands off to final external questionnaires");
             ui.ShowThankYouMessage();
             Capture((GameObject)Read(ui,"m_CanvasGO"), "/tmp/gaze-prompt-thank-you.png");
             Debug.Log("[RayMenuChecks] PASS: hover audition without selection; no steady-hover/second-ray restarts; reentry retry; persistent exclusive border; Back becomes Confirm; no-audio gate; twelve voice cards and portraits; XRI raycasters; survey and finish. Previews: /tmp/gaze-ray-menu-{male,female}-six.png");

@@ -75,8 +75,10 @@ public partial class VoiceSynthesizer : MonoBehaviour
     }
 
     public IEnumerator PrepareLibraries(string[] phrases, Action<string> progress, Action<bool> done,
-        string[] onDemandPhrases = null, bool neutralOnly = false)
+        string[] onDemandPhrases = null, bool neutralOnly = false, VoiceCondition? onlyVoice = null)
     {
+        if (neutralOnly && onlyVoice.HasValue && onlyVoice.Value != VoiceCondition.Generic)
+            throw new ArgumentException("Conflicting single-voice preparation options.");
         SessionConfig.LockPerspective();
         Stop();
         int preparationGeneration = m_PreparationGeneration;
@@ -96,7 +98,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         m_OnDemandPhrases = onDemandPhrases == null ? null : new HashSet<string>(onDemandPhrases);
         m_MatchedRms = 0;
         m_Preparing = true;
-        m_LibraryVoices = neutralOnly ? new[] { VoiceCondition.Generic }
+        m_LibraryVoices = onlyVoice.HasValue ? new[] { onlyVoice.Value } : neutralOnly ? new[] { VoiceCondition.Generic }
             : new[] { VoiceCondition.Generic, VoiceCondition.SelfSimilar };
         m_Audit.Clear();
         foreach (var clip in m_PreparedClips.Values) Destroy(clip);
@@ -370,7 +372,8 @@ public partial class VoiceSynthesizer : MonoBehaviour
         m_CurrentContext = context;
         m_CurrentPhrase = text;
         m_GuidanceDecisionId = guidanceDecisionId;
-        GuidanceScheduler.QueuePlayback(guidanceRelevant, guidanceCommitted);
+        GuidanceScheduler.QueuePlayback(guidanceRelevant == null ? null :
+            (Func<bool>)(() => StateAllowsNewGuidance && guidanceRelevant()), guidanceCommitted);
         m_SpeakCoroutine = StartCoroutine(SpeakCoroutine(text, requestedVoice: requestedVoice));
     }
 
@@ -521,6 +524,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
             m_SpeakCoroutine = null;
         }
 
+        m_DecisionMemory.Ended(Time.realtimeSinceStartupAsDouble, interrupted: true);
         if (m_AudioSource != null && m_AudioSource.isPlaying)
         { MarkGuidanceEnd(); m_AudioSource.Stop(); }
         if (m_AudioSource != null) m_AudioSource.volume = 0.7f;
@@ -738,11 +742,13 @@ public partial class VoiceSynthesizer : MonoBehaviour
             m_ActiveClipKey = null;
             yield break;
         }
-        m_LastSpokenPhrase = m_CurrentPhrase;
+        m_LastSpokenPhrase = m_PreparingText;
         m_AudioSource.Play();
+        m_DecisionMemory.Started(m_PreparingText, m_CurrentContext, Time.realtimeSinceStartupAsDouble, GuidanceEvidence.guidanceState);
         AudioTelemetry("audio_playback_start", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};effect_profile={InnerThoughtVoice.Profile(wantSelfSimilar)};text={m_PreparingText}");
         onGuidanceStarted?.Invoke();
         while (m_AudioSource.isPlaying) yield return null;
+        m_DecisionMemory.Ended(Time.realtimeSinceStartupAsDouble, interrupted: false);
         MarkGuidanceEnd();
         AudioTelemetry("audio_playback_end", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};text={m_PreparingText}");
         m_ActiveClipKey = null;

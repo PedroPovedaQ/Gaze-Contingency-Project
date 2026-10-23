@@ -16,7 +16,9 @@ public sealed class TrialReviewAudioOutput : TrialReplayAudioPreview.IOutput, ID
             var source = go.AddComponent<AudioSource>();
             source.playOnAwake = false; source.spatialBlend = 0; source.clip = clip;
             source.timeSamples = offsetFrames; source.Play();
-            m_Sources.Add(source); return source;
+            m_Sources.Add(source);
+            Debug.Log($"[TrialReviewAudio] start {name}; offset_frames={offsetFrames}; frames={samples.Length/channels}; rate={rate}");
+            return source;
         }
         catch { UnityEngine.Object.Destroy(go); UnityEngine.Object.Destroy(clip); throw; }
     }

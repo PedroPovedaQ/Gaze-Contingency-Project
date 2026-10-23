@@ -1,5 +1,26 @@
 # Study measures register
 
+**Protocol proposal — October 20, 2026.** The [final-survey decision](protocol/2026-10-20-final-survey-decision.md) and current [questions](protocol/overleaf/survey-questions-by-block.tex) / [scoring guide](protocol/overleaf/survey-instruments.tex) supersede the older planning below. Qualtrics remains on hold.
+
+| Measure | Selected form | Administration and scope |
+|---|---|---|
+| NASA-TLX | Six 0–10 ratings; individual dimensions plus complete unweighted mean; performance Perfect → Failure | Final survey, separately referring to each block |
+| IMI | 24 items: 7 interest/enjoyment, 5 effort/importance, 5 pressure/tension, 7 value/usefulness; separate complete subscale means | Final survey, separately referring to each block |
+| Guo agent perception | 21 items: Q1–6, Q13–18, Q20–22, Q37–42; Q20–22 scored individually | Final survey, separately referring to each block |
+| Custom experience | Twelve 1–7 items, liking 0–100, guidance-use percentage 0–100; no composite | Final survey, separately referring to each block |
+| SSQ | 16 symptoms, 0–3 | Before exposure and immediately after headset removal |
+| Voice auditions | Preferred gender, liking every auditioned voice including clone, catalog choice, audio check | Setup; distinct from final liking |
+| Comparative preference and debrief | Open-first experience questions; later specific own-voice/uncanniness/inner-dialogue probes | End of session |
+
+There are 65 condition-specific numeric ratings per referenced block, 130 in the final survey across both sets, plus technical questions, optional text, SSQ and comparison. Record actual administration time/phase separately from referenced block/voice. Repeated trial-row values remain participant-by-block observations. Four accent questions are removed. Baseline demographics include handedness. Preferred/perceived gender and voice similarity remain. Guo's appealing/eerie/familiar ratings are separate from custom familiarity/uncanniness; there is no combined eeriness index. Retrospective recall and final-survey burden require pilot checks.
+
+Primary performance is active reveal-to-correct-trigger completion time adjusted for exact absolute pre-cue cross-to-target theta; preserve signed theta. Planned vertical quotas use readiness-cross height. Do not relabel legacy nominal/post-onset measurements as these variables. See the decision document for runtime/export gaps and the live protocol for operational definitions.
+
+## Historical planning inventory — superseded where conflicting
+
+The material below preserves earlier measure IDs and proposals, including obsolete survey timing, accent items and full Guo banks. It is not the current participant form.
+
+
 **Protocol proposal — September 30:** [Latest meeting record](meeting-reconciliation-2026-09-30.md) reaffirms one performance/subjective CSV per trial plus separate motion/reconstruction data, shared voice wording and delivered-audio provenance. Preserve block-survey scope when repeating values in trial rows; do not treat repeats as independent responses.
 
 **Current decision / protocol proposal — September 28:** [Meeting reconciliation](meeting-reconciliation-2026-09-28.md) adds one performance/subjective CSV per logical trial and separate reconstruction streams. Include signed target height delta/reference, planned versus realized angles and distances, independent timing/count/movement metrics, and survey provenance. Block scores repeated in trial files remain block measurements. Proposed willingness, reliance, independence-motivation and percentage-of-guidance-use items are study-created drafts, not a validated composite; wording/scales and the incomplete semantic-differential note require review under #26. The selected schedule is 40 trials per voice, with 20 positive/20 negative height deltas per block; height reference remains open. Confirmed follow-up: target identity/location are hidden from participants, guidance first reaches the wall then directs up/down, and only the right controller is required. Preserve researcher-only target identity and right-controller provenance; left-controller absence is expected, not missing required data. This supersedes conflicting earlier planning below without claiming new logger or survey implementation.

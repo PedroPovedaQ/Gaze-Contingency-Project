@@ -1,0 +1,7 @@
+{
+  "Assets/GuidanceStateMachine.cs": "4d15785088872e6c8b124a40c37fd051b834296bb746253ea56b49245b8ddbfd",
+  "Assets/GuidanceStateSnapshot.cs": "425eac3f80b4444dbe36150912bfd7003b8b9fa150ce8387ccbc23fe84463672",
+  "Assets/SpatialVoice/SpeechDecisionMemory.cs": "2ebc2584140290584a4c887fb1e7925eeca7982fa900b4780ca45f20d34a5aef",
+  "scripts/tests/GuidanceSequenceBridge.cs": "916c1f2f6389b631ffac9ed0ceb9e0c44715f226969112711dfc206f711a802d",
+  "analysis/jev_sequence_pilot.py": "c027ddf7100413c4a6d7b91f607051437a0b1e3480167a46cd21fe894803760d"
+}

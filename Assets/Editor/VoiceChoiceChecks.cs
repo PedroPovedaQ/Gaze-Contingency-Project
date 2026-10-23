@@ -40,6 +40,24 @@ public static class VoiceChoiceChecks
             var canvas = (GameObject)Field("m_CanvasGO").GetValue(selector);
             Check(Array.Exists(canvas.GetComponentsInChildren<TMPro.TextMeshProUGUI>(),
                 label => label.text == "Quick test — neutral voice"), "Start panel exposes the neutral quick-test ray button.");
+            Check(Array.Exists(canvas.GetComponentsInChildren<TMPro.TextMeshProUGUI>(),
+                label => label.text == "Quick test — last cloned voice"), "Start panel exposes explicit last-clone shortcut.");
+            Check(Array.Exists(canvas.GetComponentsInChildren<TMPro.TextMeshProUGUI>(),
+                label => label.text == "Quick test — new cloned voice"), "Start panel exposes fresh recording shortcut.");
+            selector.StartNewCloneQuickTest();
+            Check(Phase(selector) == "WaitingToStart" && !selector.IsComplete,
+                "Fresh-clone shortcut also requires arming and an audio system.");
+            var buttons = canvas.GetComponentsInChildren<UnityEngine.UI.Button>();
+            foreach (var button in buttons)
+            {
+                var rect = button.GetComponent<RectTransform>();
+                Check(rect.anchoredPosition.y - rect.sizeDelta.y / 2 >= -240 &&
+                    rect.anchoredPosition.y + rect.sizeDelta.y / 2 <= 240,
+                    "Every quick-test button fits inside the startup panel.");
+            }
+            selector.StartCloneQuickTest();
+            Check(Phase(selector) == "WaitingToStart" && !selector.IsComplete,
+                "Clone shortcut also requires arming and an audio system.");
             selector.StartNeutralQuickTest();
             Check(Phase(selector) == "WaitingToStart" && !selector.IsComplete,
                 "Shortcut cannot start without released-controller arming and an audio system.");

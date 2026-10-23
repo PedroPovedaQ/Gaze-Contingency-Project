@@ -119,7 +119,7 @@ public sealed partial class TrialReviewApp
             case "Whole session": case "Selected trial": return "Switch timeline range between the complete recording and the current trial.";
             case "‹ Sample": case "Sample ›": return "Step to the previous or next recorded sample; no motion is invented between missing observations.";
             case "‹ Event": case "Event ›": return "Jump to the previous or next recorded event.";
-            case "Mute": case "Unmute": return "Control replay audio only. The headset recording is unchanged.";
+            case "Mute": case "Unmute": case "Mute voice": case "Unmute voice": return "Control this viewer's voice/effect audio only. Volume and mute are saved. Headset audio and recordings are unchanged.";
             case "Play": case "Pause": return "Play or pause this reconstruction. Space also toggles playback; saved audio plays at 1×.";
             case "First person": return "View through the recorded head pose.";
             case "Third person": return "Orbit around the reconstructed participant.";

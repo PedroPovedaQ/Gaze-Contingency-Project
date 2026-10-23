@@ -177,6 +177,7 @@ public sealed class GuidanceStateMachine
         phase = Phase.ToString(), previousPhase = PreviousPhase.ToString(), transitionReason = TransitionReason,
         allowedAction = Action.ToString(), revision = Revision, enteredAtSeconds = EnteredAt, capturedAtSeconds = now,
         observationSequence = sequence, gazeValid = gazeValid, controllerValid = controllerValid,
+        newGuidanceAllowed = gazeValid && Action != GuidanceAction.None,
         gazeHitObjectId = gazeValid ? gazeHit : null, vicinityWinnerObjectId = gazeValid ? winner : null,
         controllerHitObjectId = controllerValid ? controllerHit : null, targetObjectId = target
     };

@@ -9,7 +9,8 @@ public partial class VoiceSynthesizer
     [SerializeField] bool m_UseJevInterruptions = true;
     public Func<string, CancellationToken, Task<bool>> InterruptionAdvisor { private get; set; }
     public SpatialVoice.SpeechGuidanceEvidence GuidanceEvidence { get; private set; } = new SpatialVoice.SpeechGuidanceEvidence();
-    public void ClearGuidanceEvidence() { CancelPendingGuidance(); m_LastDirectionKey = null; GuidanceEvidence = new SpatialVoice.SpeechGuidanceEvidence(); }
+    public void ClearGuidanceEvidence() { CancelPendingGuidance(); m_LastDirectionKey = null; m_LastSpokenPhrase = null;
+        m_DecisionMemory.Clear(); GuidanceEvidence = new SpatialVoice.SpeechGuidanceEvidence(); }
     // Phase transitions invalidate requests, not a sentence already playing.
     public void CancelPendingGuidance()
     {
@@ -35,7 +36,12 @@ public partial class VoiceSynthesizer
         if (m_InterruptionCoroutine == null)
             m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(null, null, null, "controller_target_search_suppressed", null));
     }
-    public void RecordGuidanceState(string json) => Telemetry?.Invoke("guidance_state", "tip", "", json);
+    public void RecordGuidanceState(GuidanceStateSnapshot state)
+    {
+        m_DecisionMemory.Observe(state);
+        Telemetry?.Invoke("guidance_state", "tip", "", JsonUtility.ToJson(state));
+    }
+    readonly SpatialVoice.SpeechDecisionMemory m_DecisionMemory = new SpatialVoice.SpeechDecisionMemory();
     string m_SpeechStartStage = "unknown";
     string m_LastSpokenPhrase;
 
@@ -49,6 +55,7 @@ public partial class VoiceSynthesizer
             ["current_phrase"] = speaking ? m_CurrentPhrase : null,
             ["pending_phrase"] = m_TransmissionPhrase ?? (!speaking && IsBusy ? m_CurrentPhrase : null),
             ["last_spoken_phrase"] = m_LastSpokenPhrase,
+            ["recent_history"] = m_DecisionMemory.Snapshot(Time.realtimeSinceStartupAsDouble),
             ["context"] = m_CurrentContext, ["started_in_stage"] = speaking ? m_SpeechStartStage : null,
             ["elapsed_seconds"] = speaking ? (double?)m_AudioSource.time : null,
             ["speech_remaining_seconds"] = speaking ? (double?)Math.Max(0, SpeechRemaining) : null,
@@ -61,6 +68,7 @@ public partial class VoiceSynthesizer
     // Freeze values on Unity's thread before an asynchronous provider call.
     public string CaptureDecisionContext() => new Newtonsoft.Json.Linq.JObject {
         ["captured_at_seconds"] = Time.realtimeSinceStartupAsDouble,
+        ["guidance_policy"] = SessionConfig.GuidancePolicy,
         ["evidence"] = GuidanceEvidence.Snapshot(), ["playback"] = CapturePlaybackState()
     }.ToString(Newtonsoft.Json.Formatting.None);
     long m_PlaybackGeneration, m_AdviceAttemptGeneration = -1;

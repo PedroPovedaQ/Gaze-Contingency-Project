@@ -1,0 +1,27 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype,amsmath,booktabs,tabularx,longtable,graphicx}
+\usepackage[margin=0.8in,headheight=15pt]{geometry}
+\usepackage{xcolor,fancyhdr,enumitem,xurl}
+\usepackage[hidelinks]{hyperref}
+\definecolor{Gold}{HTML}{987100}
+\setlength{\parindent}{0pt}\setlength{\parskip}{6pt}
+\setlist{nosep,leftmargin=*}\emergencystretch=3em
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small Follow My Voice}\fancyfoot[R]{\thepage}
+\newcommand{\qid}[1]{\par\smallskip\textbf{\texttt{#1}}\par}
+\begin{document}
+\setcounter{section}{1}
+\section{Related Work}
+\subsection{Self-similar voices and agent perception}
+\href{https://doi.org/10.1145/3651288}{Guo et al. (2024), Collaborating with my Doppelg\"anger}, examined self-similar appearance and voice during a jigsaw-puzzle co-solving task. Its embodied-collaborator setting motivates examining agent perception, but it differs from a voice-only assistant guiding an unnamed visual target. Its Appendix A, Table A1 provides the selected co-presence, perceived intelligence, appealing/eerie/familiar impressions and anthropomorphism items, with attribution to their originating measures. Wording will be adapted from ``virtual character'' to ``voice agent.''
+
+\subsection{Structure of an XR experiment}
+\href{https://doi.org/10.1109/VR59515.2025.00071}{Tamboli et al. (IEEE VR 2025), May The Force be With You}, evaluated interaction techniques with counterbalanced within-participant blocks, practice, performance measures, block questionnaires and a final interview. These procedural elements provide a useful organizational precedent. Their apparatus, interaction manipulation, sample size and thresholds will not be transferred as validation for the present task. \href{https://encoderesearchlab.org/wp-content/uploads/2025/09/tamboli-ieeevr.pdf}{Author-hosted full text}.
+
+\subsection{Workload and motivational experience}
+Workload will follow the six NASA-TLX dimensions, using a documented 0--10 response adaptation. Motivation and activity experience will use four IMI subscales. The \href{https://selfdeterminationtheory.org/intrinsic-motivation-inventory/}{official IMI guidance} distinguishes interest/enjoyment as the direct intrinsic-motivation measure from effort, pressure and perceived value. These measures complement behavioral completion time rather than substituting for it.
+
+\subsection{Context-dependent assistance}
+The agent will use current gaze/controller evidence and bounded interaction history to select contextually appropriate directions. Turn progress, return cues and previous speech provide operational context. The study will hold this policy constant across voices; it will not independently estimate a memory effect. Memory use will therefore be described as a system property, with logged evidence and explicit limits, rather than as a demonstrated source of engagement.
+\end{document}

@@ -80,7 +80,19 @@ public sealed partial class TrialReviewApp
         m_DegreeLabel=new GUIStyle(m_Heading){fontSize=13,alignment=TextAnchor.MiddleCenter,wordWrap=false};
         m_DegreeLabel.normal.textColor=m_Accent; // Scene labels always sit on a dark backing.
         GUI.skin.settings.cursorColor=text;GUI.skin.settings.selectionColor=new Color(.70f,.55f,.10f,.65f);
-        AudioListener.volume=m_Volume;
+        AudioListener.volume=m_Muted?0:m_Volume;
+    }
+    void SetViewerAudio(float volume, bool muted)
+    {
+        m_Volume=Mathf.Clamp01(volume);m_Muted=muted;
+        AudioListener.volume=m_Muted?0:m_Volume;
+        if(!m_DetachedReview)
+        {
+            PlayerPrefs.SetFloat("ViewerVoiceVolume",m_Volume);
+            PlayerPrefs.SetInt("ViewerVoiceMuted",m_Muted?1:0);
+            PlayerPrefs.Save();
+        }
+        // Do not seek/restart a sentence when muting or changing gain.
     }
     void ToggleTheme()
     {
@@ -189,13 +201,17 @@ public sealed partial class TrialReviewApp
         if(!string.IsNullOrEmpty(DatasetName))name=DatasetName;
         if(Action(new Rect(222,14,192,36),name))OpenDatasetPanel(2);
         if(Action(new Rect(420,14,94,36),"Dataset"))OpenDatasetPanel();
-        string status=m_FollowLive?(WaitingForHeadset?"Waiting for signal":"Following live"):m_ViewLive?"Reviewing archive":"Saved replay";
+        string status=m_FollowLive?(WaitingForHeadset?"Waiting for signal":m_DrainingLive?"Buffered replay":"Following live"):m_ViewLive?"Reviewing archive":"Saved replay";
         GUI.Label(new Rect(526,20,165,24),status,m_Heading);
         if(Action(new Rect(width-666,14,118,36),m_LightTheme?"Dark mode":"Light mode"))ToggleTheme();
         if(Action(new Rect(width-540,14,124,36),"Open run…"))Browse(false);
         if(Action(new Rect(width-408,14,76,36),"Demo"))StartCoroutine(Open(Path.Combine(Application.streamingAssetsPath,"Demo/recording.jsonl")));
-        if(Action(new Rect(width-324,14,144,36),"Wi-Fi settings",m_LivePanel))m_LivePanel=!m_LivePanel;
-        LiveModeSwitch(new Rect(width-172,14,152,36));
+        if(m_DetachedReview)GUI.Label(new Rect(width-324,20,310,30),"Detached review · live stays in main window",m_MutedLabel);
+        else
+        {
+            if(Action(new Rect(width-324,14,144,36),"Wi-Fi settings",m_LivePanel))m_LivePanel=!m_LivePanel;
+            LiveModeSwitch(new Rect(width-172,14,152,36));
+        }
     }
     void LiveModeSwitch(Rect rect)
     {
@@ -435,9 +451,12 @@ public sealed partial class TrialReviewApp
         GUI.Label(new Rect(x+236,y+7,230,25),$"Study {Clock(m_Time)}  ·  Trial {Clock(m_Time-(m_Timeline?.State.Trial?.time??0))}",m_Label);
         if(Action(new Rect(x+457,y,74,38),$"{m_Speed:0.##}×"))
         {float[] speeds={.25f,.5f,1,2};m_Speed=speeds[(Array.IndexOf(speeds,m_Speed)+1)%speeds.Length];m_FollowLive=false;Sync(true);}
-        if(Action(new Rect(x+541,y,70,38),m_Muted?"Unmute":"Mute",m_Muted)){m_Muted=!m_Muted;Sync(true);}
-        float volume=GUI.HorizontalSlider(new Rect(x+623,y+14,95,20),m_Volume,0,1);
-        if(volume!=m_Volume){m_Volume=volume;AudioListener.volume=volume;}
+        GUI.enabled=enabled; // Audio controls also work before the first live trial.
+        if(Action(new Rect(x+541,y,70,38),m_Muted?"Unmute":"Mute",m_Muted))SetViewerAudio(m_Volume,!m_Muted);
+        float volume=GUI.HorizontalSlider(new Rect(x+623,y+6,95,20),m_Volume,0,1);
+        GUI.Label(new Rect(x+623,y+23,100,18),$"Voice {m_Volume*100:0}%",m_Small);
+        if(volume!=m_Volume)SetViewerAudio(volume,m_Muted);
+        GUI.enabled=enabled&&m_Timeline!=null;
         if(Action(new Rect(x+734,y,85,38),"‹ Sample"))Step(-1);
         if(Action(new Rect(x+825,y,85,38),"Sample ›"))Step(1);
         if(Action(new Rect(rect.xMax-350,y,130,38),m_RunTimeline?"Whole session":"Selected trial",m_RunTimeline))m_RunTimeline=!m_RunTimeline;

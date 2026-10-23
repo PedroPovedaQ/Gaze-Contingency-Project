@@ -665,6 +665,20 @@ class TrialCSVTests(unittest.TestCase):
                 self.read(include_motion=True)
         self.assertFalse((self.root / "export").exists())
 
+    def test_final_retrospective_tlx_keeps_block_scope_and_raw_ten_point_scale(self):
+        source = self.survey("final_tlx.csv", [dict(participant_id="P001", run_number=1,
+            block=0, voice_condition="selfsimilar", response_id="final-block1", instrument_version="tlx-0-10-20261020",
+            administration_phase="final", reference_scope="participant_by_block", administered_at="2026-10-20T20:00:00Z",
+            scale_min=0, scale_max=10, performance_direction="high_is_poor",
+            mental=1, physical=2, temporal=3, performance=4, effort=5, frustration=6)])
+        (self.run / "nasa_tlx.csv").symlink_to(source)
+        rows, _ = self.read()
+        self.assertEqual(rows[0]["nasa_tlx_mental"], "1")
+        self.assertEqual(float(rows[0]["nasa_tlx_score"]), 3.5)
+        self.assertEqual(float(rows[0]["nasa_tlx_score_0_100"]), 35)
+        self.assertEqual(rows[0]["survey__final_tlx__block__administration_phase"], "final")
+        self.assertEqual(rows[0]["survey__final_tlx__block__reference_scope"], "participant_by_block")
+
     def test_unchanged_symlinked_native_survey_is_accepted(self):
         source = self.survey("linked_tlx.csv", [dict(participant_id="P001", run_number=1,
             block=0, voice_condition="selfsimilar", response_id="R1", instrument_version="raw-v1", mental=40)])

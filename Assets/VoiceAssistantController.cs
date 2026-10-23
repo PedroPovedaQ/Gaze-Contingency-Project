@@ -165,7 +165,7 @@ public partial class VoiceAssistantController : MonoBehaviour
         if (m_IntroRequested) PlayIntroIfPossible();
     }
 
-    const string k_CompletionLine = "Excellent! You located all the objects. Please complete the NASA T L X questionnaire now.";
+    const string k_CompletionLine = "The search task is complete. Please wait for the researcher to guide you through the next steps.";
     public const string AudioCheckLine = VoicePromptText.AudioLevelCheck;
     public static string RoundPhrase(int round, string color, string shape, bool isPractice = false) =>
         (isPractice ? "This is a practice round. It does not count toward the study. " : "") +
@@ -180,7 +180,7 @@ public partial class VoiceAssistantController : MonoBehaviour
             phrases.Add(RoundPhrase(round.roundIndex, round.target.color, round.target.shape));
             phrases.Add(VoicePromptText.WrongSelectionPhrase(round.target.color, round.target.shape));
         }
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < ChallengeSet.PracticeTrialCount; i++)
         {
             var practice = ChallengeSet.PracticeRound(i);
             phrases.Add(RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape, true));
@@ -203,7 +203,7 @@ public partial class VoiceAssistantController : MonoBehaviour
     public static string[] BackgroundPhrases()
     {
         var ordered = new System.Collections.Generic.List<string>();
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < ChallengeSet.PracticeTrialCount; i++)
         {
             var practice = ChallengeSet.PracticeRound(i);
             ordered.Add(RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape, true));
@@ -284,7 +284,7 @@ public partial class VoiceAssistantController : MonoBehaviour
 
     void PlayIntroIfPossible()
     {
-        if (SessionConfig.NeutralQuickTest)
+        if (SessionConfig.DevelopmentQuickTest)
         {
             m_IntroPlayed = true;
             m_IntroRequested = false;

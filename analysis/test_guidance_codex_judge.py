@@ -58,6 +58,20 @@ class Runner:
 
 
 class JudgeTests(unittest.TestCase):
+    def test_memory_sanitization_keeps_outcomes_but_not_identity(self):
+        from guidance_codex_judge import _state
+        raw = {"runtime": {"playback": {"recent_history": {
+            "scope": "since_guidance_reset", "speech": [
+                {"text": "Look left.", "age_seconds": 2, "outcome": "interrupted", "participant": "PRIVATE"}] * 8,
+            "transitions": [{"phase": "Refining", "age_seconds": 1, "targetObjectId": "PRIVATE"}]}},
+            "api_key": "PRIVATE"}, "candidate_semantics_defaults": {"horizontal": "left"}}
+        clean = _state(raw)
+        history = clean["runtime"]["playback"]["recent_history"]
+        self.assertEqual(len(history["speech"]), 4)
+        self.assertEqual(history["speech"][0]["outcome"], "interrupted")
+        self.assertEqual(clean["candidate_semantics_defaults"]["horizontal"], "left")
+        self.assertNotIn("PRIVATE", json.dumps(clean))
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)

@@ -5,10 +5,15 @@ public sealed class TrialReviewLiveFollow
 {
     public const double BufferSeconds = .2;
     public const double SignalTimeoutSeconds = 2;
+    // A short transport-buffer underrun freezes the scene cursor, not a WAV
+    // already playing. Real disconnect/pause/staleness clears liveSignalActive.
+    public static bool AudioEnabled(bool playing, bool following, bool liveSignalActive) =>
+        playing || following && liveSignalActive;
     double m_LastTime, m_SampleTime;
     bool m_TrackedSample, m_Paused;
     string m_PauseReason;
     bool m_HasSample;
+    public bool CanDrain(double cursor) => m_Paused && cursor < m_LastTime;
 
     public void Observe(TrialReplayRecord record)
     {

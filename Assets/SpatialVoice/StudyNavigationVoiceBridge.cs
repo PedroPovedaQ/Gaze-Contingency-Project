@@ -8,7 +8,7 @@ namespace SpatialVoice
     /// <summary>Lets the catalog/Jev choose coarse turn wording while keeping the study's
     /// normalized, identity-scoped audio and replay telemetry. Streaming is a separate preview
     /// entry point until its loudness and device latency are validated.</summary>
-    public sealed class StudyNavigationVoiceBridge : MonoBehaviour
+    public sealed partial class StudyNavigationVoiceBridge : MonoBehaviour
     {
         SpatialVoiceNavigationManager m_Navigation;
         VoiceSynthesizer m_Voice;

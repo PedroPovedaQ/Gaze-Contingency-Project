@@ -137,6 +137,48 @@ public static class SessionConfig
     public static bool VoiceBlocksEnabled { get; private set; }
     /// <summary>Explicit, session-only development shortcut; never a study voice condition.</summary>
     public static bool NeutralQuickTest { get; private set; }
+    public static bool CloneQuickTest { get; private set; }
+    public static bool NewCloneQuickTest { get; private set; }
+    public static bool DevelopmentQuickTest => NeutralQuickTest || CloneQuickTest;
+    static bool s_JevLedGuidance;
+    public static bool JevLedGuidance => DevelopmentQuickTest && s_JevLedGuidance;
+    public static string GuidancePolicy => JevLedGuidance ? "jev_actions_overrides_v1" : "baseline_local_priority_v1";
+    public static bool TrySetJevLedGuidance(bool enabled)
+    {
+        if (!DevelopmentQuickTest) return false;
+        s_JevLedGuidance = enabled;
+        return true;
+    }
+    public static string SessionMode => NewCloneQuickTest ? "new_clone_quick_test" : CloneQuickTest ? "clone_quick_test" : NeutralQuickTest ? "neutral_quick_test" : "study";
+    public static string QuickTestTitle => CloneQuickTest ? "CLONED VOICE QUICK TEST" : "NEUTRAL QUICK TEST";
+
+    // Explicit development shortcut only. Normal participant setup never reads this.
+    static string DevelopmentClonePath => Path.Combine(RootPath, "development-last-clone.txt");
+    public static void RememberDevelopmentClone(string voiceId)
+    {
+        if (string.IsNullOrWhiteSpace(voiceId)) return;
+        Directory.CreateDirectory(RootPath);
+        File.WriteAllText(DevelopmentClonePath, voiceId.Trim());
+    }
+    public static string SavedDevelopmentClone()
+    {
+        if (!string.IsNullOrWhiteSpace(SelfSimilarVoiceId)) return SelfSimilarVoiceId;
+        try { return File.Exists(DevelopmentClonePath) ? File.ReadAllText(DevelopmentClonePath).Trim() : ""; }
+        catch (System.IO.IOException) { return ""; }
+        catch (System.UnauthorizedAccessException) { return ""; }
+    }
+
+    public static void ConfigureCloneQuickTest(string voiceId)
+    {
+        if (string.IsNullOrWhiteSpace(voiceId)) throw new System.ArgumentException("A saved clone is required.");
+        ResetForNewParticipant();
+        CloneQuickTest = true;
+        ParticipantId = "DEV_CLONE";
+        SelfSimilarVoiceId = voiceId;
+        Voice = VoiceCondition.SelfSimilar;
+        TrySetPerspective(VoicePerspective.External);
+        Directory.CreateDirectory(ParticipantPath);
+    }
 
     public static void ConfigureNeutralQuickTest()
     {
@@ -145,6 +187,20 @@ public static class SessionConfig
         ParticipantId = "DEV_NEUTRAL";
         SelectNeutralVoice(NeutralVoiceProfile.Male, 0); // Eric, an existing catalog voice/cache.
         Voice = VoiceCondition.Generic;
+        TrySetPerspective(VoicePerspective.External);
+        Directory.CreateDirectory(ParticipantPath);
+    }
+
+    /// <summary>Record a fresh development clone; never load a saved voice into this session.</summary>
+    public static void ConfigureNewCloneQuickTest()
+    {
+        ResetForNewParticipant();
+        CloneQuickTest = true;
+        NewCloneQuickTest = true;
+        ParticipantId = "DEV_CLONE";
+        SelectNeutralVoice(NeutralVoiceProfile.Male, 0); // Recording instructions only.
+        Voice = VoiceCondition.SelfSimilar;
+        SelfSimilarEnrollmentPending = true;
         TrySetPerspective(VoicePerspective.External);
         Directory.CreateDirectory(ParticipantPath);
     }
@@ -225,6 +281,7 @@ public static class SessionConfig
 
     public static VoiceCondition VoiceForRound(int round)
     {
+        if (CloneQuickTest) return VoiceCondition.SelfSimilar;
         if (NeutralQuickTest) return VoiceCondition.Generic;
         bool firstBlock = round < ChallengeSet.RoundsPerBlock;
         return firstBlock == NeutralFirst ? VoiceCondition.Generic : VoiceCondition.SelfSimilar;
@@ -261,7 +318,7 @@ public static class SessionConfig
         // Record the voice condition in the folder name so runs are self-describing.
         string voiceTag = VoiceBlocksEnabled ? "blocks-" + VoiceOrder : VoiceTag;
         ConditionLabel = $"{ConditionLabel}_voice-{voiceTag}";
-        if (NeutralQuickTest) ConditionLabel = "dev_quick_test_" + ConditionLabel;
+        if (DevelopmentQuickTest) ConditionLabel = "dev_quick_test_" + ConditionLabel;
 
         // Reset any stale run state that also resets the session should clear the
         // cloned voice id (handled by ResetForNewParticipant).
@@ -279,7 +336,7 @@ public static class SessionConfig
         CurrentRunFolder = Path.Combine(participantDir, folderName);
         Directory.CreateDirectory(CurrentRunFolder);
         File.WriteAllText(Path.Combine(CurrentRunFolder, "session-mode-v1.txt"),
-            NeutralQuickTest ? "mode=neutral_quick_test\nstudy_data=false\n" : "mode=study\n");
+            "mode=" + SessionMode + "\n" + (DevelopmentQuickTest ? "study_data=false\n" : ""));
         using (var catalog = new StreamWriter(Path.Combine(CurrentRunFolder, "neutral-catalog-v1.json")))
             WriteNeutralCatalog(catalog);
 
@@ -314,9 +371,12 @@ public static class SessionConfig
     /// </summary>
     public static void ResetForNewParticipant()
     {
+        s_JevLedGuidance = false;
         Debug.Log($"{k_Tag} Resetting session state for a new participant");
         VoiceBlocksEnabled = false;
         NeutralQuickTest = false;
+        CloneQuickTest = false;
+        NewCloneQuickTest = false;
         CurrentBlock = 0;
         ParticipantId = "";
         RunNumber = 0;

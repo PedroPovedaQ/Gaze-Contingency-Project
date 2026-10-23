@@ -399,7 +399,7 @@ public class FindObjectUI : MonoBehaviour
             m_ObjectiveText.text = m_RoundStatusText;
     }
 
-    public void ShowCompletion(int total, float elapsedSeconds)
+    public void ShowCompletion(int total, float elapsedSeconds, bool externalSurvey = false)
     {
         HideStartPrompt();
         MoveCanvasInFrontOfUser();
@@ -425,10 +425,17 @@ public class FindObjectUI : MonoBehaviour
             m_CompletionText.text =
                 $"<b>{total} trials complete</b>\n" +
                 $"Time: {timeStr}\n" +
-                "Rate the workload below, then select Submit NASA-TLX.";
+                (externalSurvey
+                    ? "Please wait for the researcher to help remove the headset.\nNext: comfort check and final questionnaires."
+                    : "Rate the workload below, then select Submit NASA-TLX.");
         }
         SetResetButtonVisible(false);
-        InitializeNasaTlxSurvey();
+        if (externalSurvey)
+        {
+            m_ShowingNasaTlxSurvey = false;
+            if (m_NasaTlxSurveyRoot != null) m_NasaTlxSurveyRoot.SetActive(false);
+        }
+        else InitializeNasaTlxSurvey();
         m_ShowingPostSurveyStats = false;
     }
 

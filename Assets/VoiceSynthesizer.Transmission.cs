@@ -17,8 +17,15 @@ public partial class VoiceSynthesizer
     double m_WaitUntil;
     double m_DeferredSince = -1;
 
-    public bool CanRequestGuidance(string reason, string phrase = null) => GuidanceReadyFor(phrase) &&
+    // Legacy/non-study callers have no machine snapshot and retain their existing
+    // explicit relevant callback. Study guidance always publishes this gate.
+    bool StateAllowsNewGuidance => GuidanceEvidence.guidanceState == null || GuidanceEvidence.guidanceState.newGuidanceAllowed;
+    public bool CanRequestGuidance(string reason, string phrase = null) => StateAllowsNewGuidance && GuidanceReadyFor(phrase) &&
         !(reason == m_WaitReason && Time.realtimeSinceStartupAsDouble < m_WaitUntil);
+
+    // Prune locally blocked repeats before spending a model request. Rechecked at playback.
+    public bool CanOfferGuidancePhrase(string phrase, string reason) =>
+        IsPreparedPhrase(phrase) && DirectionRepeatAllowed(phrase, reason);
 
     // Automatic guidance only. Setup, explicit repeat requests and success feedback
     // keep their own lifecycle. An accepted request is not yet an audible commitment.
@@ -52,7 +59,7 @@ public partial class VoiceSynthesizer
         var voice = SessionConfig.Voice;
         string identity = voice == VoiceCondition.SelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId;
         bool Current() => epoch == m_TransmissionEpoch && generation == m_PlaybackGeneration && voice == SessionConfig.Voice && identity == (voice == VoiceCondition.SelfSimilar ?
-            SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId) && LibraryReady && relevant();
+            SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId) && LibraryReady && StateAllowsNewGuidance && relevant();
         yield return null; // Publish the handle before a synchronous response can complete.
         if (!Current()) { m_TransmissionCoroutine = null; m_TransmissionPhrase = null; yield break; }
         var cancellation = GuidanceScheduler.Begin(GuidanceRequestKind.Transmission);

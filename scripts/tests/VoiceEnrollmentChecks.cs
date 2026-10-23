@@ -28,7 +28,7 @@ namespace UnityEngine
         public static void End(string device) { Active = false; }
     }
 }
-public static class SessionConfig { public static string ParticipantId = "P001", SelfSimilarVoiceId; }
+public static class SessionConfig { public static string ParticipantId = "P001", SelfSimilarVoiceId; public static void RememberDevelopmentClone(string id) { } }
 public static class WavUtility
 {
     public static int EncodedFrames;

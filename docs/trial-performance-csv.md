@@ -127,7 +127,10 @@ All raw response fields and original timestamps are retained under `survey__<ins
 ### NASA-TLX scoring and examples
 
 **Implemented locally:** `nasa_tlx_score` is the unweighted Raw TLX mean of all six
-dimensions, on a 0–100 scale, under `raw_tlx_six_dimension_mean_0_100_v1`.
+dimensions on the declared native scale, under `raw_tlx_six_dimension_mean_0_10_v2`
+or `raw_tlx_six_dimension_mean_0_100_v2`. The October 20 protocol uses raw 0–10.
+`nasa_tlx_score_0_100` provides an explicitly labelled conversion; source ratings
+and scale endpoints are preserved.
 It is not the original weighted TLX. [Cao et al. (2009)](https://doi.org/10.3758/BRM.41.1.113)
 describe software supporting both weighted and unweighted scores. A concrete
 example is [Burian et al. (2013), NASA/FAA, Table 12](https://www.faa.gov/sites/faa.gov/files/data_research/research/med_humanfacs/oamtechreports/201317.pdf),
@@ -135,22 +138,16 @@ which reports average RTLX and aligns performance direction with the other
 dimensions. [NASA's official overview](https://www.nasa.gov/human-systems-integration-division/nasa-task-load-index-tlx/)
 describes the original weighted method.
 
-The source `nasa_tlx.csv` must explicitly include `scale_min=0`, `scale_max=100` and
+The source `nasa_tlx.csv` must explicitly include `scale_min=0`, `scale_max=10` (current) or `100` (legacy) and
 `performance_direction=high_is_poor` or `high_is_good`. With `high_is_good`, scoring
-uses `100-performance`; raw response values are unchanged. The other five
+uses `scale_max-performance`; raw response values are unchanged. The other five
 dimensions must run from low demand/effort/frustration to high. All six values must
-be present and finite in [0,100]. No missing value is imputed, no partial mean is
-reported, and no scale rescaling or weights are invented. Scoring method/status
+be present and finite within the declared scale. No missing value is imputed, no partial mean is
+reported, and no scale endpoints or weights are inferred. Scoring method/status
 accompany every result. The legacy loader and plot now also use the validated
-0–100 mean rather than a 0–600 sum; unknown metadata result in an unscored row.
+native mean rather than a sum; plots use the explicitly normalized 0–100 field. Unknown metadata results in an unscored row.
 
-**Open before new participant collection:** the current headset survey labels
-Performance without endpoint anchors, and its CSV has no scale-direction metadata.
-Add clear endpoint labels and versioned metadata in the runtime survey before
-expecting automatic scoring. Do not retroactively guess how participants understood
-historical performance sliders. Qualtrics/external exports may supply metadata only
-when supported by the administered questionnaire. A block's TLX score repeats into
-its trial rows but remains one block-level response.
+**Implemented study route:** no in-headset block survey is administered. The researcher collects both retrospective block sets in the final survey, recording `administration_phase=final`, `reference_scope=participant_by_block`, actual timestamp and instrument version. Qualtrics remains on hold. The development quick-test workload form is legacy and outside participant study data; never guess how participants understood historical performance sliders. External metadata must describe the administered instrument. A block's TLX score repeats into its trial rows but remains one block-level response.
 
 Before collection, `survey_status` is `pending_or_not_collected`. A block response repeats into its block's trial rows but remains **one block-level observation**. Re-export to a new directory after surveys arrive: trial identities are stable, rows are rebuilt rather than appended and earlier/raw exports remain untouched. `available` means at least one response joined, not that every expected questionnaire was completed.
 
@@ -159,7 +156,7 @@ Before collection, `survey_status` is `pending_or_not_collected`. A block respon
 - Freeze the first-gaze persistence/noise rule if the primary outcome requires more than first recorded ray contact (#7/#14).
 - Validate the implemented zone-visit filter on headset boundary jitter, pitch changes, tracking loss and replay gaps (#8/#21). Completion timing is final selection, per the October 8 decision.
 - The vertical reference is now cross/plane midpoint. Enforcing a balanced above/below schedule remains separate work (#10); head-relative height is still descriptive geometry.
-- Add explicit NASA-TLX endpoint anchors and scale metadata to the runtime survey before participant collection.
+- Validate final external survey exports against the documented 0–10 anchors, reverse keys, block reference and administration metadata before collection. IMI/Guo automatic subscale scoring remains outstanding.
 - Integrate device-side per-trial writing if required; this implementation is an offline export, not automatic on-headset persistence.
 - Validate fresh full-session data and finalized survey exports on the headset/analysis workflow (#17/#28). P020 is an incomplete older task, not acceptance evidence for 40+40 hidden-target trials.
 

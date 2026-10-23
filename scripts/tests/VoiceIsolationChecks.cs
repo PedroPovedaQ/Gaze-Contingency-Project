@@ -115,14 +115,25 @@ partial class VoiceIsolationChecks
         synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","phase-transition-id");
         routine=MonoBehaviour.LastRoutine;routine.MoveNext();synth.CancelPendingGuidance();pending.SetResult(true);Drain(routine);
         Check(commits==0 && !synth.IsSpeaking,"Phase transition cancels a pending Jev answer without an explicit Stop");
+        Begin(); pending=new System.Threading.Tasks.TaskCompletionSource<bool>();
+        var audioGate=new GuidanceStateSnapshot { phase="Refining",newGuidanceAllowed=true };
+        synth.GuidanceEvidence.guidanceState=audioGate;
+        synth.TryGuidanceTransmission(phrase,()=>true,()=>commits++,"test","audio-gate-id");
+        routine=MonoBehaviour.LastRoutine; routine.MoveNext();
+        audioGate.newGuidanceAllowed=false; pending.SetResult(true); Drain(routine);
+        Check(commits==0 && !synth.IsSpeaking,"Closing state audio gate discards late approval even if relevance callback stays true");
+        synth.GuidanceEvidence.guidanceState=null;
         var recordedState = new GuidanceStateSnapshot { phase="Refining", previousPhase="Turning", revision=5,
-            allowedAction="Arrival", gazeValid=true, gazeHitObjectId="distractor", vicinityWinnerObjectId="target", controllerHitObjectId="other" };
+            allowedAction="Arrival", newGuidanceAllowed=true, gazeValid=true, gazeHitObjectId="distractor", vicinityWinnerObjectId="target", controllerHitObjectId="other" };
         synth.GuidanceEvidence.guidanceState=recordedState;
         var context=Newtonsoft.Json.Linq.JObject.Parse(synth.CaptureDecisionContext());
         Check((string)context["evidence"]["guidanceState"]["phase"]=="Refining" &&
             (long)context["evidence"]["guidanceState"]["revision"]==5 &&
             (string)context["evidence"]["guidanceState"]["gazeHitObjectId"]=="distractor",
             "Jev receives the same named state, revision and object IDs as recorded replay");
+        recordedState.newGuidanceAllowed=false;
+        Check(!synth.CanRequestGuidance("test",phrase), "Central closed audio gate prevents new guidance");
+        recordedState.newGuidanceAllowed=true;
         var audio=(AudioSource)typeof(VoiceSynthesizer).GetField("m_AudioSource",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(synth);
         audio.HoldPlayback=true; int stopped=audio.StopCalls;
         synth.CancelPendingGuidance();
@@ -557,10 +568,18 @@ partial class VoiceIsolationChecks
                   SessionConfig.NeutralName(NeutralVoiceProfile.Female, 5) == "Laura", "new choices append without remapping existing last indices");
             SessionConfig.ConfigureVoiceBlocks();
             Check(SessionConfig.NeutralFirst, "odd participant neutral first");
+            Check(ChallengeSet.PracticeTrialCount == 1 &&
+                SessionConfig.VoiceForRound(ChallengeSet.PracticeRound(0).roundIndex) == VoiceCondition.Generic,
+                "Order A single practice uses preferred catalog voice");
             Check(SessionConfig.VoiceForRound(39) == VoiceCondition.Generic && SessionConfig.VoiceForRound(40) == VoiceCondition.SelfSimilar, "block boundary after forty trials");
             File.WriteAllText(Path.Combine(SessionConfig.ParticipantPath, "voice-order-v1.txt"), "selfsimilar_then_neutral");
             SessionConfig.ConfigureVoiceBlocks();
             Check(!SessionConfig.NeutralFirst, "persisted assignment wins on restart");
+            Check(SessionConfig.VoiceForRound(ChallengeSet.PracticeRound(0).roundIndex) == VoiceCondition.SelfSimilar,
+                "Order B single practice uses cloned voice");
+            bool rejectedSecondPractice = false;
+            try { ChallengeSet.PracticeRound(1); } catch (System.ArgumentOutOfRangeException) { rejectedSecondPractice = true; }
+            Check(rejectedSecondPractice, "second practice cannot silently select the second block voice");
             SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Male, 1);
             SessionConfig.ConfigureVoiceBlocks(replaceNeutralSelection: true);
             Check(SessionConfig.NeutralVoiceName == "Roger" && !SessionConfig.NeutralFirst,
@@ -801,6 +820,9 @@ partial class VoiceIsolationChecks
                 Check(string.IsNullOrEmpty(synth.LastError) && failures == 0 && starts == 1,
                     "valid later clip with limited headroom must play instead of aborting trial");
                 Check(limited == 1, "limited normalization is recorded in telemetry");
+                var recent = Newtonsoft.Json.Linq.JObject.Parse(synth.CaptureDecisionContext())["playback"]["recent_history"]["speech"];
+                Check(recent.HasValues && (string)recent.Last["text"]==VoicePromptText.FormatForVoice(lazyPrompt, SessionConfig.Voice) &&
+                    (string)recent.Last["outcome"]=="completed", "Decision memory records actual completed playback");
                 var audit = (IList)typeof(VoiceSynthesizer).GetField("m_Audit", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth);
                 var last = audit[audit.Count - 1]; var auditType = last.GetType();
                 float gain = (float)auditType.GetField("gain").GetValue(last);
@@ -1007,7 +1029,7 @@ partial class VoiceIsolationChecks
                 {
                     int targetIndex = Array.FindIndex(trial.objects, o => o.shape == trial.target.shape && o.color == trial.target.color);
                     Check(targetIndex == trial.targetPlane * 21 + trial.targetSlot, "actual target obeys schedule");
-                    Check(trial.startPlane == (trial.roundIndex == 0 ? ChallengeSet.PracticeRound(1).targetPlane : schedule[trial.roundIndex - 1].targetPlane),
+                    Check(trial.startPlane == (trial.roundIndex == 0 ? ChallengeSet.PracticeRound(0).targetPlane : schedule[trial.roundIndex - 1].targetPlane),
                         "start wall follows actual previous target, including practice and block boundary");
                     Check(seeds.Add(trial.layoutSeed), "each trial has its own layout seed");
                     (trial.blockIndex == 0 ? firstCounts : secondCounts)[trial.AbsoluteTheta / 45]++;
@@ -1095,7 +1117,7 @@ partial class VoiceIsolationChecks
                 Check(trial.objects.Length == 168 && targetCount == 1 && colorOnly == 39 && shapeOnly == 39,
                     "168-object trials preserve one target and scaled conjunction distractors");
             }
-            for (int practice = 0; practice < 2; practice++)
+            for (int practice = 0; practice < ChallengeSet.PracticeTrialCount; practice++)
             {
                 var round = ChallengeSet.PracticeRound(practice); int targets = 0;
                 foreach (var obj in round.objects) if (obj.shape == round.target.shape && obj.color == round.target.color) targets++;
@@ -1144,12 +1166,58 @@ partial class VoiceIsolationChecks
             foreach (var audit in (IEnumerable)typeof(VoiceSynthesizer).GetField("m_Audit", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth))
                 Check((string)audit.GetType().GetField("voice_condition").GetValue(audit) != "selfsimilar", "quick-test manifest has no clone clips");
             Check(SessionConfig.VoiceForRound(40) == VoiceCondition.Generic, "quick test never changes to the cloned voice");
+            SessionConfig.RememberDevelopmentClone("dev-clone-fixture");
+            SessionConfig.ConfigureCloneQuickTest(SessionConfig.SavedDevelopmentClone());
+            Check(SessionConfig.CloneQuickTest && SessionConfig.DevelopmentQuickTest && !SessionConfig.NeutralQuickTest &&
+                SessionConfig.ParticipantId == "DEV_CLONE" && ChallengeSet.RoundCount == 40 &&
+                SessionConfig.SelfSimilarVoiceId == "dev-clone-fixture" && !SessionConfig.VoiceBlocksEnabled &&
+                SessionConfig.VoiceForRound(0) == VoiceCondition.SelfSimilar &&
+                SessionConfig.VoiceForRound(40) == VoiceCondition.SelfSimilar,
+                "Clone shortcut uses only explicitly saved clone and a separate development block");
+            string cloneRun=SessionConfig.BeginRun();
+            Check(File.ReadAllText(Path.Combine(cloneRun,"session-mode-v1.txt")).Contains("mode=clone_quick_test\nstudy_data=false"),
+                "Clone quick run is never labeled study data");
+            provider.Calls=0; UnityWebRequest.Requests.Clear();
+            Drain(synth.PrepareLibraries(new[] { "Clone quick guidance." }, null, ok=>prepared=ok, onlyVoice: VoiceCondition.SelfSimilar));
+            Check(prepared && synth.LibraryReady && provider.Calls>0 && SessionConfig.Voice==VoiceCondition.SelfSimilar,
+                "Clone-only preparation completes through the clone provider");
+            foreach(var audit in (IEnumerable)typeof(VoiceSynthesizer).GetField("m_Audit",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(synth))
+                Check((string)audit.GetType().GetField("voice_condition").GetValue(audit)=="selfsimilar",
+                    "Clone-only manifest never includes neutral clips");
+            bool rejectedEmpty=false;
+            try { SessionConfig.ConfigureCloneQuickTest(""); } catch(ArgumentException) { rejectedEmpty=true; }
+            Check(rejectedEmpty && SessionConfig.CloneQuickTest, "Missing clone rejected without resetting active session");
+            SessionConfig.ConfigureNewCloneQuickTest();
+            Check(SessionConfig.NewCloneQuickTest && SessionConfig.CloneQuickTest && SessionConfig.DevelopmentQuickTest &&
+                !SessionConfig.NeutralQuickTest && !SessionConfig.VoiceBlocksEnabled &&
+                SessionConfig.SelfSimilarVoiceId == "" && SessionConfig.SelfSimilarEnrollmentPending &&
+                SessionConfig.ParticipantId == "DEV_CLONE" && ChallengeSet.RoundCount == 40,
+                "Fresh-clone quick test clears old voice and waits for new enrollment without a study assignment");
+            provider.Calls = 0; prepared = true;
+            Drain(synth.PrepareLibraries(new[] { "Fresh clone guidance." }, null, ok=>prepared=ok, onlyVoice: VoiceCondition.SelfSimilar));
+            Check(!prepared && !synth.LibraryReady && provider.Calls == 0,
+                "Fresh-clone quick test cannot prepare stale saved audio before enrollment");
+            Check(SessionConfig.TrySetJevLedGuidance(true) && SessionConfig.JevLedGuidance,
+                "Action policy can be enabled explicitly in clone development mode");
+            SessionConfig.SelfSimilarVoiceId = "newly-recorded-dev-clone";
+            SessionConfig.SelfSimilarEnrollmentPending = false;
+            Drain(synth.PrepareLibraries(new[] { "Fresh clone guidance." }, null, ok=>prepared=ok, onlyVoice: VoiceCondition.SelfSimilar));
+            Check(prepared && synth.LibraryReady && provider.Calls > 0 &&
+                SessionConfig.VoiceForRound(0) == VoiceCondition.SelfSimilar &&
+                SessionConfig.VoiceForRound(39) == VoiceCondition.SelfSimilar,
+                "Successful fresh enrollment prepares clone-only audio throughout quick-test block");
+            string newCloneRun = SessionConfig.BeginRun();
+            Check(File.ReadAllText(Path.Combine(newCloneRun, "session-mode-v1.txt")).Contains("mode=new_clone_quick_test\nstudy_data=false"),
+                "Fresh-clone quick-test recording is identified separately and excluded from study data");
             SessionConfig.ResetForNewParticipant();
-            Check(!SessionConfig.NeutralQuickTest && ChallengeSet.RoundCount == 80 && SessionConfig.ParticipantId == "",
+            Check(!SessionConfig.DevelopmentQuickTest && !SessionConfig.NewCloneQuickTest && SessionConfig.SelfSimilarVoiceId=="" &&
+                ChallengeSet.RoundCount == 80 && SessionConfig.ParticipantId == "",
                 "new participant restores the full study schedule and disables shortcut");
+            Check(!SessionConfig.JevLedGuidance && !SessionConfig.TrySetJevLedGuidance(true),
+                "New participant reset clears development policy and study cannot enable it");
             SessionConfig.ParticipantId = "DEV_NEUTRAL"; // Same seed: mode must still invalidate cached geometry.
             var studyPlan = ChallengeSet.Rounds;
-            Check(studyPlan[0].startPlane == ChallengeSet.PracticeRound(1).targetPlane,
+            Check(studyPlan[0].startPlane == ChallengeSet.PracticeRound(0).targetPlane,
                 "study still starts from the last practice target");
             for (int i = 0; i < quickPlan.Length; i++)
             {

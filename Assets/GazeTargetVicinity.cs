@@ -4,7 +4,7 @@ using System.Collections.Generic;
 /// <summary>
 /// Circular angular region enclosing the target collider, plus an adjustable margin.
 /// This is a guidance tolerance, not a fixation measure or a larger selection collider.
-/// Its optional ring and adjustments are restricted to DEV_NEUTRAL sessions.
+/// Its optional ring and adjustments are restricted to development quick-test sessions.
 /// </summary>
 public sealed class GazeTargetVicinity : MonoBehaviour
 {
@@ -13,17 +13,17 @@ public sealed class GazeTargetVicinity : MonoBehaviour
     bool m_ShowRing;
     LineRenderer m_Ring;
     Material m_Material;
-    public float PaddingDegrees => SessionConfig.NeutralQuickTest ? m_PaddingDegrees : DefaultPaddingDegrees;
-    public bool RingVisible => SessionConfig.NeutralQuickTest && m_ShowRing;
+    public float PaddingDegrees => SessionConfig.DevelopmentQuickTest ? m_PaddingDegrees : DefaultPaddingDegrees;
+    public bool RingVisible => SessionConfig.DevelopmentQuickTest && m_ShowRing;
 
     public void SetPadding(float degrees)
     {
-        if (SessionConfig.NeutralQuickTest && float.IsFinite(degrees))
+        if (SessionConfig.DevelopmentQuickTest && float.IsFinite(degrees))
             m_PaddingDegrees = Mathf.Clamp(degrees, 0f, 20f);
     }
     public void SetRingVisible(bool visible)
     {
-        m_ShowRing = SessionConfig.NeutralQuickTest && visible;
+        m_ShowRing = SessionConfig.DevelopmentQuickTest && visible;
         if (!m_ShowRing) Hide();
     }
 

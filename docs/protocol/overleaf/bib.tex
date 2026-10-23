@@ -1,0 +1,24 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{xurl}
+\usepackage[hidelinks]{hyperref}
+\usepackage[backend=biber,style=numeric,sorting=nyt,giveninits=true,maxbibnames=99,doi=true,url=true,isbn=false]{biblatex}
+\addbibresource{references.bib}
+% The supplied entries repeat DOI links in note fields; print each DOI once.
+\AtEveryBibitem{\iffieldundef{doi}{}{\clearfield{note}}}
+\renewbibmacro*{finentry}{\iffieldundef{annotation}{}{\setunit{\addperiod\space}\printfield{annotation}}\finentry}
+\setlength{\bibitemsep}{0.7\baselineskip}
+\setlength{\emergencystretch}{3em}
+\title{Follow My Voice\\[0.3em]\large Bibliography}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\vspace{-2em}
+\nocite{*}
+\printbibliography[heading=none]
+\end{document}

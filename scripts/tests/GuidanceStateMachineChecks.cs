@@ -11,9 +11,12 @@ class GuidanceStateMachineChecks
         var m = new GuidanceStateMachine();
         m.SetLifecycle(GuidancePhase.Opening, "readiness", 0);
         Check(m.Action == GuidanceAction.None && m.Phase == GuidancePhase.Opening, "Opening is not active search");
+        Check(!m.Snapshot(0,0,true,true).newGuidanceAllowed, "Opening closes automatic guidance gate");
         m.BeginSearch(1); m.Step(Input(1)); m.Step(Input(1.3));
         long ticket = m.Revision;
         Check(m.Allows(ticket, GuidanceAction.Direction), "Current direction ticket eligible");
+        Check(m.Snapshot(1.3,1,true,true).newGuidanceAllowed, "Eligible action opens automatic guidance gate");
+        Check(!m.Snapshot(1.3,1,false,true).newGuidanceAllowed, "Invalid gaze closes gate even with old action");
         m.Step(Input(1.4));
         Check(m.Allows(ticket, GuidanceAction.Direction), "A new sample in the same phase does not invalidate a request");
         m.Step(Input(1.5, true)); m.Step(Input(1.8, true));

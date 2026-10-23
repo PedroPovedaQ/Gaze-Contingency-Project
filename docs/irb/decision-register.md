@@ -1,5 +1,6 @@
 # IRB Protocol Decision Register
 
+**Protocol proposal / October 20 update:** one practice trial; final-only condition-specific questionnaires after both 40-trial blocks; between-block rest/comfort/tracking checks remain. Qualtrics is on hold. See `docs/protocol/2026-10-20-final-survey-decision.md`. Earlier runtime descriptions below do not establish implementation of these new decisions.
 ## 2026-10-01 — Current implementation and preliminary sensitivity evidence
 
 **Implemented locally, hardware acceptance pending:** the current source implements two 40-trial voice blocks, hidden target identity, shared imperative guidance, horizontal-then-vertical directions and right-controller selection. This supersedes historical statements below that the current runtime still uses ten trials or announces the target. See [current procedure](../experiment-procedure.md).

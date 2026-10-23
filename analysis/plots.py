@@ -263,24 +263,24 @@ def plot_last_fixation_duration(last_fix_df: pd.DataFrame, out_dir: Path):
 
 def plot_nasa_tlx(tlx_df: pd.DataFrame, out_dir: Path):
     """Box plot: NASA-TLX raw workload score by condition."""
-    if tlx_df.empty or "raw_tlx" not in tlx_df.columns:
+    if tlx_df.empty or "nasa_tlx_score_0_100" not in tlx_df.columns:
         print("  skipping nasa_tlx: no data (need analysis/nasa_tlx.csv)")
         return
     if "nasa_tlx_scoring_status" not in tlx_df:
         print("  skipping nasa_tlx: scoring provenance is missing")
         return
-    tlx_df = tlx_df[tlx_df["raw_tlx"].notna() &
+    tlx_df = tlx_df[tlx_df["nasa_tlx_score_0_100"].notna() &
                     (tlx_df["nasa_tlx_scoring_status"] == "scored_all_six_dimensions")].copy()
     if tlx_df.empty:
         print("  skipping nasa_tlx: no responses with confirmed scoring metadata")
         return
     tlx_order = _conditions_in_plot_order(tlx_df)
     fig, ax = plt.subplots(figsize=(6, 5))
-    _safe_condition_boxplot(ax, tlx_df, "raw_tlx", order=tlx_order)
-    sns.stripplot(data=tlx_df, x="condition", y="raw_tlx",
+    _safe_condition_boxplot(ax, tlx_df, "nasa_tlx_score_0_100", order=tlx_order)
+    sns.stripplot(data=tlx_df, x="condition", y="nasa_tlx_score_0_100",
                   order=tlx_order, color="black", alpha=0.5, size=6, ax=ax)
     ax.set_xlabel("Condition")
-    ax.set_ylabel("Raw NASA-TLX mean (0-100)")
+    ax.set_ylabel("NASA-TLX mean (explicitly rescaled to 0–100)")
     ax.set_title("Perceived Workload")
     _save(fig, out_dir, "nasa_tlx")
 
@@ -295,7 +295,8 @@ def aligned_tlx_subscales(tlx_df: pd.DataFrame) -> pd.DataFrame:
         row = dict(source)
         row.update({key: float(source[key]) for key in DIMENSIONS})
         if source["performance_direction"] == "high_is_good":
-            row["performance"] = 100-row["performance"]
+            row["performance"] = float(source["scale_max"])-row["performance"]
+        row.update({key: row[key] * 100 / float(source["scale_max"]) for key in DIMENSIONS})
         rows.append(row)
     return pd.DataFrame(rows)
 
@@ -318,7 +319,7 @@ def plot_nasa_tlx_subscales(tlx_df: pd.DataFrame, out_dir: Path):
     sns.barplot(data=melted, x="subscale", y="score", hue="condition",
                 hue_order=tlx_order, palette=_palette_for_conditions(tlx_order), ax=ax)
     ax.set_xlabel("NASA-TLX Subscale")
-    ax.set_ylabel("Mean Score (0-100; higher = more demand / poorer performance)")
+    ax.set_ylabel("Mean (rescaled 0–100; higher = more demand / poorer performance)")
     ax.set_title("NASA-TLX Subscale Breakdown")
     _save(fig, out_dir, "nasa_tlx_subscales")
 

@@ -144,7 +144,13 @@ public static class GazeQualityChecks
                 typeof(ControllerRaySelector).GetProperty("TelemetryFrame").SetValue(controller,Time.frameCount-frames);
                 typeof(ControllerRaySelector).GetProperty("TelemetryTime").SetValue(controller,Time.realtimeSinceStartupAsDouble-age);
             }
-            bool Pointing(bool valid=true) => (bool)typeof(HintGenerator).GetMethod("EvaluatePointing",flags).Invoke(hints,new object[]{valid});
+            bool Pointing(bool valid=true)
+            {
+                // This fixture injects a new observation/geometry directly, bypassing
+                // Evaluate, which normally clears the per-observation vicinity cache.
+                Set("m_VicinityMeasured", false);
+                return (bool)typeof(HintGenerator).GetMethod("EvaluatePointing",flags).Invoke(hints,new object[]{valid});
+            }
             Telemetry(sample); Check(Pointing(),"Right ray on actual target plus nearby gaze qualifies");
             Check(!Pointing(false),"Invalid gaze never qualifies even with exact controller hit");
             Check((bool)typeof(HintGenerator).GetField("m_ControllerOnTarget",flags).GetValue(hints),
@@ -187,7 +193,8 @@ public static class GazeQualityChecks
             } finally { objects.Remove(third); UnityEngine.Object.DestroyImmediate(third); }
             occluder.enabled=false; Telemetry(sample);
             Set("m_EvaluatedSample",new GazeObservation {valid=true,worldOrigin=Vector3.zero,worldDirection=nearby});
-            var hold=(GazeZoneEntryGate)typeof(HintGenerator).GetField("m_PointingEntry",flags).GetValue(hints);
+            var machine=(GuidanceStateMachine)typeof(HintGenerator).GetField("m_State",flags).GetValue(hints);
+            var hold=(GazeZoneEntryGate)typeof(GuidanceStateMachine).GetField("m_Pointing",flags).GetValue(machine);
             hold.Update(true,true,0);
             Check(!hold.Update(true,true,.99) && hold.Update(true,true,1.0),"Runtime pointing gate requires 1 second");
             sample.target=other;Telemetry(sample);Check(!Pointing(),"Pointing at a distractor never confirms the target");
@@ -199,8 +206,8 @@ public static class GazeQualityChecks
             Check(DirectionalHintPolicy.WithinArea(10,10)==DirectionalHintPolicy.UpRightPhrase &&
                 DirectionalHintPolicy.WithinArea(-10,-10)==DirectionalHintPolicy.DownLeftPhrase,"Arrival and follow-up combine vertical and horizontal corrections within the wall");
             var voice=host.AddComponent<VoiceSynthesizer>(); Set("m_Voice",voice);
-            var gazeHold=(GazeZoneEntryGate)typeof(HintGenerator).GetField("m_LookingEntry",flags).GetValue(hints);
-            var wallHold=(GazeZoneEntryGate)typeof(HintGenerator).GetField("m_ZoneEntry",flags).GetValue(hints);
+            var gazeHold=(GazeZoneEntryGate)typeof(GuidanceStateMachine).GetField("m_Looking",flags).GetValue(machine);
+            var wallHold=(GazeZoneEntryGate)typeof(GuidanceStateMachine).GetField("m_Wall",flags).GetValue(machine);
             void Evidence(bool valid,bool inside,bool looking) => typeof(HintGenerator).GetMethod("UpdateSpeechEvidence",flags)
                 .Invoke(hints,new object[]{valid,inside,looking});
             sample.target=target;sample.tracked=1;sample.triggerHeld=1;Telemetry(sample);
@@ -226,7 +233,7 @@ public static class GazeQualityChecks
             Check(e.gazeRayHit=="unavailable" && e.controllerRayHit=="unavailable" && e.controllerTriggerHeld==-1 && !e.targetGazeQualified,
                 "Tracking loss records unknown rays and trigger rather than false evidence");
             hints.CancelPending();
-            Check(!voice.GuidanceEvidence.valid && voice.GuidanceEvidence.phase=="unavailable",
+            Check(!voice.GuidanceEvidence.valid && voice.GuidanceEvidence.phase==GuidancePhase.Inactive.ToString(),
                 "Cancelled trial cannot leak its old guidance evidence");
             Debug.Log("[GazeQualityChecks] PASS: pointing vicinity, target identity, freshness, vertical arrival and development-only radius/ring controls");
         }
@@ -328,19 +335,20 @@ public static class GazeQualityChecks
             Check(!(bool)continuation.GetValue(hint),"New trial resets continuation history");
             typeof(HintGenerator).GetField("m_OpeningTurn",flags).SetValue(hint,DirectionalHintPolicy.LeftPhrase);
             hint.OnNewObjective();
-            var turn=(GuidanceTurnState)typeof(HintGenerator).GetField("m_Turn",flags).GetValue(hint);
+            var state=(GuidanceStateMachine)typeof(HintGenerator).GetField("m_State",flags).GetValue(hint);
+            var turn=state.Turn;
             Check(turn.Resolve(179,false)==DirectionalHintPolicy.LeftPhrase,"Runtime preserves opening route across rear seam");
             turn.MarkSpoken(DirectionalHintPolicy.LeftPhrase,180);
             Check(turn.ProgressDue(DirectionalHintPolicy.LeftPhrase,135),"Runtime turn state recognizes a new milestone");
             turn.MarkSpoken(DirectionalHintPolicy.LeftPhrase,135);
             Check(!turn.ProgressDue(DirectionalHintPolicy.LeftPhrase,135),"Runtime does not replay consumed milestone");
-            var revisit=(GazeReturnCueGate)typeof(HintGenerator).GetField("m_TargetRevisit",flags).GetValue(hint);
+            var revisit=(GazeReturnCueGate)typeof(GuidanceStateMachine).GetField("m_Revisit",flags).GetValue(state);
             revisit.Update(true,true,0); revisit.Update(true,true,.11); revisit.Update(true,false,.2);
             Check(revisit.Update(true,false,.46),"Runtime retains a qualified recent target departure");
             hint.CancelPending();
             Check(!revisit.IsPending(.5) && turn.Resolve(179,false)==DirectionalHintPolicy.RightPhrase,"Cancellation clears target memory and opening route");
             hint.OnNewObjective();
-            var lookingGate=(GazeZoneEntryGate)typeof(HintGenerator).GetField("m_LookingEntry",flags).GetValue(hint);
+            var lookingGate=(GazeZoneEntryGate)typeof(GuidanceStateMachine).GetField("m_Looking",flags).GetValue(state);
             lookingGate.Update(true,true,0);
             Check(!lookingGate.Update(true,true,.099) && lookingGate.Update(true,true,.1),"Runtime gaze gate uses exactly one tenth of a second");
             lookingGate.MarkSpoken(.1); lookingGate.Update(true,false,1); lookingGate.Update(true,false,1.16);

@@ -93,6 +93,22 @@ class GuidanceEvaluationTests(unittest.TestCase):
         self.assertNotIn("response_status", benchmark["input"])
         self.assertEqual(report["summary"]["geometry_checks"], {"pass": 1, "fail": 0, "unknown": 0})
 
+    def test_action_choice_resolves_text_but_does_not_invent_playback(self):
+        rows = fixture()
+        request = self.payload(rows[1])
+        request["payload"]["questions"] = {"navigation_action": {"type": "choice", "criteria": {
+            "encourage": {"text": "Keep going left."}, "wait": {"text": None}}}}
+        self.replace_payload(rows[1], request)
+        response = self.payload(rows[2])
+        response["answers"] = {"navigation_action": {"choice": "encourage"}}
+        self.replace_payload(rows[2], response)
+        del rows[3]  # A proposed action is not evidence of audible speech.
+        result = self.evaluate(rows)["decisions"][0]
+        self.assertEqual(result["phrase"], "Keep going left.")
+        self.assertIsNone(result["played_phrase"])
+        self.assertEqual(result["playback_status"], "not_observed")
+        self.assertEqual(result["checks"][0]["status"], "pass")
+
     def test_missing_state_is_not_a_correct_geometry_score(self):
         rows = fixture()
         trace = self.payload(rows[1])
@@ -200,6 +216,14 @@ class GuidanceEvaluationTests(unittest.TestCase):
         self.replace_payload(rows[1], trace)
         report = self.evaluate(rows)
         self.assertEqual(report["decisions"][0]["guidance_state_status"], "recorded")
+
+    def test_v2_audio_gate_state_is_recognized(self):
+        from guidance_eval import central_state_status, qualification
+        state = {"runtime": {"evidence": {"guidanceState": {
+            "version": "guidance-state-v2", "phase": "Acquired", "allowedAction": "ConfirmGaze",
+            "newGuidanceAllowed": True, "gazeValid": True}}}}
+        self.assertEqual(central_state_status({"state": state}), "recorded")
+        self.assertEqual(qualification(state, "gaze_confirmation"), "qualified")
 
     def test_local_decision_reads_nested_recorded_state(self):
         rows = fixture()

@@ -14,7 +14,7 @@ public static class GuidanceSpeechPolicy
         reason == "gaze_target_plane" || reason == "stable_wall_entry" ||
         reason == "sustained_target_selection_reminder" || reason == "recent_target_departure" ||
         reason == "target_bearing_overshoot" || reason == "gaze_overshoot_return";
-    public static bool IsOrdinaryDirection(string reason) => reason == "stable_direction" || reason == "catalog_turn";
+    public static bool IsOrdinaryDirection(string reason) => reason == "stable_direction" || reason == "catalog_turn" || reason == "jev_action";
 
     public const double InterruptionCooldown = 2.5;
     // Protect short phrases and their endings. Jev cannot override these local bounds.

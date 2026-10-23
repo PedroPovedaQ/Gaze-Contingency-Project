@@ -18,7 +18,7 @@ import subprocess
 import tempfile
 
 MODEL = "gpt-6-astra"
-RUBRIC_VERSION = "guidance-review-v4-playback-state"
+RUBRIC_VERSION = "guidance-review-v5-helpfulness-memory"
 RESULT_SCHEMA = "guidance-codex-judge-v1"
 DIMENSIONS = ("direction", "state_appropriateness", "timing", "repetition", "interruption")
 VERDICTS = ("correct", "incorrect", "unknown")
@@ -43,9 +43,11 @@ arrival_already_acknowledged_by_current_stage kind meaning is_busy fade_in_progr
 transmission_decision_pending measurementsAvailable practice searchSeconds incorrectSelections
 guidanceStarts repeatRequests plannedAbsoluteTurnDegrees trialNumber blockNumber trialInBlock
 previousFeedback outcome correct_object_selected selection_method search_finished next_action
-quick_completion_eligible quick_completion_limit_seconds supported_by behavior captured_at_seconds snapshotTimeSeconds""".split())
+quick_completion_eligible quick_completion_limit_seconds supported_by behavior captured_at_seconds snapshotTimeSeconds
+scope window_seconds age_seconds ended_age_seconds action newGuidanceAllowed""".split())
 NESTED_FIELDS = {"runtime", "evidence", "playback", "guidanceState", "qualification_thresholds_seconds",
-                 "current", "proposed", "semantics", "relationship", "event", "local_limits", "round", "proposed_semantics"}
+                 "current", "proposed", "semantics", "relationship", "event", "local_limits", "round", "proposed_semantics",
+                 "recent_history", "candidate_semantics_defaults"}
 LIST_FIELDS = {"requires", "canBeSupersededBy"}
 QUESTION_NAMES = {"navigation_phrase", "transmit", "speech_action", "encouragement_phrase", "round_complete_phrase", "round_encouragement"}
 RUBRIC = """Review recorded navigation decisions for a seated, hidden-target VR task.
@@ -59,6 +61,14 @@ Each verdict is correct, incorrect, or unknown, with a concise rationale citing 
 evidence_ids. Correct/incorrect require evidence, not speculation. Use unknown when
 missing facts prevent a supported verdict. Do not invent target positions or timelines.
 'correct' means supported as appropriate in the available evidence, not globally optimal.
+Do not mark a hint incorrect simply because it differs from an expected action or preferred
+phrase. Useful partial directions, early practical reminders and alternative wording can
+help. Reserve incorrect for supported counterproductive, misleading or otherwise unhelpful
+behavior; explain the evidence of the problem. Distinguish unnecessary speech from a false
+claim. If helpfulness cannot be established, use unknown rather than incorrect.
+Candidate semantics inherit candidate_semantics_defaults with candidate-specific overrides.
+runtime.playback.recent_history is bounded software playback and transition memory.
+Interrupted speech is not proof the full phrase was heard. History never overrides fresh state.
 Direction: chosen/proposed spatial language agrees with valid measured direction.
 State appropriateness: action fits current local stage, qualification and controller state.
 recent_states and recent_actions show observed transitions, not continuous sensor truth.
@@ -149,6 +159,8 @@ def _state(value, depth=0):
             result[key] = _scalar(item) if key == "event" and isinstance(item, str) else _state(item, depth + 1)
         elif key in LIST_FIELDS and isinstance(item, list):
             result[key] = [_text(x) for x in item[:20] if _text(x) is not None]
+        elif key in {"speech", "transitions"} and isinstance(item, list):
+            result[key] = [_state(x, depth + 1) for x in item[-4:] if isinstance(x, dict)]
     return result
 
 

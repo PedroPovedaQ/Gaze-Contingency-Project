@@ -117,6 +117,10 @@ public class VoiceEnrollment : MonoBehaviour
         if (!string.IsNullOrEmpty(voiceId))
         {
             SessionConfig.SelfSimilarVoiceId = voiceId;
+            // Only an explicitly chosen development shortcut may reuse this ID.
+            // Failure to save the shortcut must not invalidate successful enrollment.
+            try { SessionConfig.RememberDevelopmentClone(voiceId); }
+            catch (Exception) { Debug.LogWarning($"{k_Tag} Development voice shortcut could not be saved."); }
             Set(State.Done);
             Debug.Log($"{k_Tag} Enrollment complete. voiceId={voiceId}");
             onDone?.Invoke(voiceId);

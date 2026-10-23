@@ -1,0 +1,3 @@
+Built-in image_gen edit of v3.
+
+Make a single tiny text edit to the supplied study procedure infographic. In the pale teal Practice card near the top center-left, replace the subtitle '2 trials · one per voice' (currently drawn with a dash) with exactly '1 trial'. Keep the heading 'Practice'. Center '1 trial' neatly where the former subtitle was. Preserve EVERYTHING else unchanged: all other text, shapes, colors, layout, 40-trial blocks, counterbalanced voice orders, black headsets, illustration and rays, bottom gold box with angles, and white background. No additional changes.

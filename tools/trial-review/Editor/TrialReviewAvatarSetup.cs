@@ -33,8 +33,10 @@ public static class TrialReviewAvatarSetup
         {
             var human=UnityEngine.Object.Instantiate(model,root.transform);
             foreach(var animator in human.GetComponentsInChildren<Animator>())UnityEngine.Object.DestroyImmediate(animator);
-            var skin=Material("AvatarSkin",Color.white,AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/ThirdParty/KenneyProtagonists/skaterMaleA.png"));
-            foreach(var renderer in human.GetComponentsInChildren<Renderer>()){renderer.sharedMaterial=skin;if(renderer is SkinnedMeshRenderer skinned)skinned.updateWhenOffscreen=true;}
+            // A plain mannequin represents pose without suggesting the participant's face,
+            // skin tone or clothing. Keep the existing rig and tracked-equipment anchors.
+            var bodyMaterial=Material("AvatarNeutral",new Color(.62f,.64f,.66f));
+            foreach(var renderer in human.GetComponentsInChildren<Renderer>()){renderer.sharedMaterials=renderer.sharedMaterials.Select(_=>bodyMaterial).ToArray();if(renderer is SkinnedMeshRenderer skinned)skinned.updateWhenOffscreen=true;}
             // Static seated illustration: bone directions, not recorded body kinematics.
             foreach(string side in new[]{"Left","Right"})
             {

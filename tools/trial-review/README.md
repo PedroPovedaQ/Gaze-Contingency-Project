@@ -58,20 +58,24 @@ passthrough screen video or a new sensor acquisition path.
    the headset. **Follow live** follows the newest run with a 200 ms viewer buffer;
    actual delay also includes headset flushes, transfer and parsing time. The receiver
    waits 100 ms between transfer passes. Full-file hash verification waits until
-   replay growth stops so it does not block live transfer. Initial catch-up/reconnect
-   joins the buffered edge instead of playing through the backlog.
+   replay growth stops so it does not block live transfer. Initial join and explicit **Resume live** join the buffered edge. Transient
+   signal recovery retains the cursor. Catch-up can skip silence, but cannot skip
+   a received audio interval: scene, subtitles and WAV playback share the same clock.
    **Waiting for headset signal** replaces the scene while no fresh tracked samples
    are arriving, including paused/closed runs, tracking loss and disconnection.
    A connected ADB transport alone does not count as a live headset. After two seconds
-   without observed source-file growth the view waits; an explicit pause marker waits
-   immediately. Normal fresh chunk parsing does not interrupt an already following view.
+   without observed source-file growth the view waits. When a pause/end arrives with
+   buffered data, the viewer finishes that received prefix as **Buffered replay**
+   before waiting; it does not present it as fresh headset activity. Normal fresh chunk parsing does not interrupt an already following view.
    An initially offline headset is retried automatically at the configured address.
    Repeated **Follow live** clicks do not rewind an already-following view.
 4. Select first person, third person or overhead as usual. Scrubbing, selecting a
    trial, pausing or changing playback speed leaves follow mode while archiving
    continues. **Follow live** returns to the latest run. Saved WAV playback at
    1× follows the recorded events, including interruptions. Late/missing assets
-   are reported; missing speech is never synthesized.
+   are reported; missing speech is never synthesized. Live playback waits up to
+   five seconds at a missing audio start, then reports one unavailable segment.
+   An asset arriving during that wait starts at offset zero with its recorded scene.
 5. **Open saved files** opens `~/Documents/Trial Review Live/` by default.
    `data/GazeReplays/<run>/recording.jsonl` and `audio/` form the replay package;
    `data/EyeMeasurements/`, `data/GazeData/` and `data/PreparationLogs/` retain
@@ -119,7 +123,16 @@ open '/path/Trial Review.app' --args --live --endpoint 192.168.1.208:5555
 ```
 
 Launch arguments apply when starting the app. If it is already open, use its
-**Open run…** or **Follow live** controls instead of starting a second instance.
+**Open run…** or **Follow live** controls to change that window. To review alongside
+live, use **Wi-Fi settings → Review window**. This creates an independent window,
+initially muted, with a frozen copy of the currently parsed recording and available
+played WAVs. **Open run…** in that window opens other saved runs. Its seeking,
+playback, mute and closing do not stop the main live receiver. The copy retains
+original recording identity and incomplete-recording status; final CSV exports and
+raw-eye files remain in the original run. Snapshots live under `review-snapshots/`
+in the archive directory. `--detach-review` opens the same window on launch;
+`--review-window --recording /path/recording.jsonl` opens a review-only instance
+without a receiver. The main live window must stay open to keep receiving.
 The IP above is an example and can change. `--live-output '/path/to/archive'`
 selects another destination. To run just the receiver without the viewer:
 
@@ -525,3 +538,27 @@ animate; head translation does not drag the entire human and chair around. The
 third-person/overhead orbit center is fixed too. Controller poses, gaze rays,
 object positions, first-person head pose and exported measurements remain recorded
 data; the seated model is an illustration, not full-body tracking.
+# Live viewer audio controls (October 20, 2026)
+
+The Wi-Fi toolbar includes **Mute voice** and a **0–100% volume slider**. The transport bar also shows the current percentage. These affect only audio in Trial Review (including recorded effects), not the headset, saved WAVs or recorded levels. Both settings persist between launches and remain usable before the first trial. Changing volume or mute does not restart speech.
+
+While following live data, a brief scene-buffer underrun no longer stops an already playing WAV. Tracking/transport loss, explicit pause and stale-source handling still stop playback. Delayed audio assets or cursor catch-up can still omit a line that has already ended before it arrives; saved replay remains the complete evidence path. This is reconstructed software playback, not a live headset audio stream or acoustic timing measurement.
+
+## Live speech coverage validation (October 20, 2026)
+
+**Implemented:** speech-aware catch-up, a five-second late-WAV wait, explicit
+unavailable-segment counts, and independent detached review windows. Output logs
+include the source playback sequence and starting frame offset. Intentional
+joining/resuming at the live edge can omit earlier history; this is not a replay
+of everything spoken before connection.
+
+Run `build.py --verify-audio-recording /path/recording.jsonl` with the usual build
+arguments to compare the previous catch-up clock with the speech-aware clock.
+On recording `20261020T220003_e3346253c3754cbe8f94240b6ac1b989`, a deterministic
+1.5-second delivery-batch simulation started 24/30 available audio segments with
+the earlier clock versus 30/30 with the new clock. Zero versus 30 started at frame
+zero. These are simulated transport/software-output observations, not headset or
+acoustic measurements, and do not identify which phrases the wearer previously
+reported missing. Separate checks cover late WAV arrival, bounded missing assets,
+cancellation, partial live tails and snapshot isolation. A new wearer run remains
+the end-to-end check for actual Wi-Fi delivery and listening.

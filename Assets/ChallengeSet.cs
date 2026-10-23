@@ -15,11 +15,12 @@ public static class ChallengeSet
     // Two voice blocks; guidance remains gaze-contingent throughout.
     public const int RoundsPerBlock = 40;
     public const int BlockCount = 2;
+    public const int PracticeTrialCount = 1;
     public const int TotalRounds = RoundsPerBlock * BlockCount; // 80
     public const int ObjectsPerRound = 168;
-    public static string ScheduleVersion => SessionConfig.NeutralQuickTest
+    public static string ScheduleVersion => SessionConfig.DevelopmentQuickTest
         ? "previous-wall-angle-v5-stratified-40-trials-quick-origin0-v1"
-        : "previous-wall-angle-v5-stratified-40-trials";
+        : "previous-wall-angle-v6-stratified-40-trials-one-practice";
     public const string TargetIdentityPolicy = "matched-counts-shuffled-24-plus-16-v1";
     public const string HeightAssignmentPolicy = "unbalanced-floor-scatter-pending-reference-v1";
     const int k_AngleCategories = 5;
@@ -31,7 +32,7 @@ public static class ChallengeSet
 
     // How many measured trials the game will actually run. Clamp keeps a debug
     // request inside 1–80; it does not change the full plan generated below.
-    public static int RoundCount => System.Math.Min(SessionConfig.NeutralQuickTest ? RoundsPerBlock : TotalRounds,
+    public static int RoundCount => System.Math.Min(SessionConfig.DevelopmentQuickTest ? RoundsPerBlock : TotalRounds,
         DebugRoundCountOverride > 0
             ? Mathf.Clamp(DebugRoundCountOverride, 1, TotalRounds)
             : TotalRounds);
@@ -114,7 +115,7 @@ public static class ChallengeSet
         {
             SessionConfig.EnsureParticipantId();
             if (s_Rounds == null || s_Participant != SessionConfig.ParticipantId ||
-                s_NeutralQuickTest != SessionConfig.NeutralQuickTest) Generate();
+                s_NeutralQuickTest != SessionConfig.DevelopmentQuickTest) Generate();
             return s_Rounds;
         }
     }
@@ -159,15 +160,16 @@ public static class ChallengeSet
     }
 
     /// <summary>
-    /// Build one of the two practice trials (practiceIndex 0 or 1).
-    /// Use repeatable practice-only seeds, a red sphere first and a blue cube second.
+    /// Build the single practice trial (practiceIndex 0) using a practice-only seed.
+    /// Route its voice through measured round 0, so it follows the assigned first block.
     /// Practice does not consume any of the eighty measured trials or angle quotas.
     /// </summary>
     public static RoundDef PracticeRound(int practiceIndex)
     {
-        // Separate layouts, excluded from experimental round counts and seed sequence.
-        var rng = new System.Random(900 + practiceIndex);
-        var target = MakeObj(practiceIndex == 0 ? 0 : 1, practiceIndex == 0 ? 0 : 1);
+        if (practiceIndex != 0) throw new System.ArgumentOutOfRangeException(nameof(practiceIndex));
+        // Practice is excluded from measured round counts and seed sequence.
+        var rng = new System.Random(900);
+        var target = MakeObj(0, 0);
         var objects = new ObjectDef[ObjectsPerRound];
         for (int i = 0; i < objects.Length; i++)
         {
@@ -181,11 +183,10 @@ public static class ChallengeSet
         // Replace one randomly chosen distractor, giving practice exactly one target.
         int targetIndex = rng.Next(objects.Length);
         objects[targetIndex] = target;
-        // Indices 0 and 40 select the two voice blocks for practice. They are routing
-        // indices, not claims that these practice attempts are measured trials.
-        return new RoundDef { roundIndex = practiceIndex == 0 ? 0 : RoundsPerBlock,
-            blockIndex = practiceIndex, target = target, objects = objects,
-            startPlane = practiceIndex == 0 ? 0 : PracticeRound(0).targetPlane,
+        // Round 0 selects the assigned first voice; IsPractice keeps this unmeasured.
+        return new RoundDef { roundIndex = 0,
+            blockIndex = 0, target = target, objects = objects,
+            startPlane = 0,
             targetPlane = targetIndex / k_ObjectsPerPlane, targetSlot = targetIndex % k_ObjectsPerPlane };
     }
 
@@ -199,7 +200,7 @@ public static class ChallengeSet
     static void Generate()
     {
         s_Participant = SessionConfig.ParticipantId;
-        s_NeutralQuickTest = SessionConfig.NeutralQuickTest;
+        s_NeutralQuickTest = SessionConfig.DevelopmentQuickTest;
         var rng = new System.Random(ScheduleSeed);
 
         // 1. Make forty angle assignments. These numbers are units of 45°, not degrees:
@@ -268,7 +269,7 @@ public static class ChallengeSet
         // Study trials continue from the final practice target. Quick test skips
         // practice, so anchor it to the centered forward wall instead. Subsequent
         // targets still use the same signed steps, preserving the theta balance.
-        int startPlane = SessionConfig.NeutralQuickTest ? 0 : PracticeRound(1).targetPlane;
+        int startPlane = SessionConfig.DevelopmentQuickTest ? 0 : PracticeRound(0).targetPlane;
 
         for (int r = 0; r < TotalRounds; r++)
         {

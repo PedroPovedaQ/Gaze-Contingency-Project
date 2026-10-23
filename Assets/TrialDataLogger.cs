@@ -526,7 +526,7 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine(FormattableString.Invariant($"  \"session_id\": \"{m_SessionId}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"timestamp\": \"{System.DateTime.Now:O}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"challenge_set\": \"{ChallengeSet.ScheduleVersion}\","));
-        sb.AppendLine($"  \"session_mode\": \"{(SessionConfig.NeutralQuickTest ? "neutral_quick_test" : "study")}\",");
+        sb.AppendLine($"  \"session_mode\": \"{SessionConfig.SessionMode}\",");
         sb.AppendLine(FormattableString.Invariant($"  \"schedule_seed\": {ChallengeSet.ScheduleSeed},"));
         sb.AppendLine($"  \"target_identity_policy\": \"{ChallengeSet.TargetIdentityPolicy}\",");
         sb.AppendLine($"  \"height_assignment_policy\": \"{ChallengeSet.HeightAssignmentPolicy}\",");

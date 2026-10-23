@@ -1,0 +1,61 @@
+{
+  "schema": "production-payload-pilot-v1",
+  "summary": {
+    "baseline": {
+      "requests": 16,
+      "successful": 16,
+      "bytes": {
+        "n": 16,
+        "median": 5453.5,
+        "p95": 5463,
+        "max": 5463
+      },
+      "http_seconds": {
+        "n": 16,
+        "median": 0.1506104585059802,
+        "p95": 0.31399970799975563,
+        "max": 0.31399970799975563
+      },
+      "beyond_runtime_450ms": 0,
+      "contract_matches": 14
+    },
+    "compact": {
+      "requests": 16,
+      "successful": 16,
+      "bytes": {
+        "n": 16,
+        "median": 4814.0,
+        "p95": 4822,
+        "max": 4822
+      },
+      "http_seconds": {
+        "n": 16,
+        "median": 0.15516537500661798,
+        "p95": 0.2100375829904806,
+        "max": 0.2100375829904806
+      },
+      "beyond_runtime_450ms": 0,
+      "contract_matches": 16
+    },
+    "compact_memory": {
+      "requests": 16,
+      "successful": 16,
+      "bytes": {
+        "n": 16,
+        "median": 5182.0,
+        "p95": 5189,
+        "max": 5189
+      },
+      "http_seconds": {
+        "n": 16,
+        "median": 0.14387631250428967,
+        "p95": 0.23594129100092687,
+        "max": 0.23594129100092687
+      },
+      "beyond_runtime_450ms": 0,
+      "contract_matches": 16
+    }
+  },
+  "basis": "Synthetic C# production payloads. Real Mac HTTP, no Unity playback or wearer behavior.",
+  "limits": "48 requests maximum at default settings; 3s probe timeout, 450ms runtime threshold reported separately."
+}

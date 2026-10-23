@@ -321,7 +321,7 @@ def load_nasa_tlx(data_dir: Path) -> pd.DataFrame:
     Columns: participant_id, condition, mental, physical, temporal,
              performance, effort, frustration
 
-    Raw TLX = mean of all six dimensions (0-100), only with explicit scale
+    Raw TLX = mean of all six dimensions on the declared 0–10 or 0–100 scale, only with explicit scale
     metadata and performance direction. Historical raw dimensions are retained.
     """
     frames = []

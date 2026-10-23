@@ -1,0 +1,111 @@
+{
+  "model": "gpt-6-astra",
+  "advisory": true,
+  "result": {
+    "recommendation": "Next, run a repeated offline sequence-replay experiment comparing current and broader eligible-action Jev with full-menu Jev plus local overrides, retaining all_jev as an ablation. The supplied evidence does not establish an advantage for full-menu Jev with overrides over eligible-action Jev. Prioritize response-time and playback-time state revalidation, recovery after rejected advice, bounded reminders during prolonged silence, and correction scheduling. Use the actual Unity payload and scheduler, log proposals, blocks, replacements, queue cancellations and playback onset separately, and distinguish frozen-history evaluation from a separate stateful replay that incorporates delivered speech. This is a recommendation for another engineering experiment, not deployment.",
+    "scoring_caveats": "These are offline scripted results, not human-perceived correctness, real headset timing or a wearer experiment. Current and broader are Python reference policies, not exact Unity execution. Each frame and repeat is independently evaluated against its supplied history; earlier hypothetical outputs cannot establish repetition, acknowledgment or participant response. The 104-probe summaries include more than the 72 displayed scripted evaluations per arm, so aggregate latency and block counts cannot all be assigned to displayed cases. Rubric-clean counts (67 current, 68 broader, 58 all_jev, 59 jev_overrides) are not correctness rates: flags mix omissions, uncertainty and counterproductive advice, and clean outputs can still become stale. Waiting during progress can be reasonable despite missed_action_opportunity; prolonged silence without progress warrants closer scrutiny. Early aim or trigger reminders are not false confirmations, and useful left-only guidance need not be wrong because a diagonal is available. Added rightward guidance at zero yaw remains uncertain here. Local-only means zero network time, not zero playback latency: short_speech_protection_1 still schedules acknowledgment after the remaining speech. All correction_interrupt outputs are after_current, so none demonstrates an actual interruption; their approximately 0.2\u20130.5-second responses do not establish when guidance would play. Staleness is a separate temporal concern, especially when direction reverses or tracking becomes invalid, and a stale wait is not equivalent to a stale spoken direction. Two repeats provide limited evidence of reliability or ranking.",
+    "policies": [
+      {
+        "policy": "current",
+        "assessment": "A strong reference baseline with useful direction changes across entry, overshoot and recovery. It supplies rightward orientation, then down-left/down refinement, and return-specific corrections; waiting at large_turn_entry_1 may reasonably avoid talking over ongoing progress. Gaze dwell, controller dwell and successful selection remain distinct: it confirms gaze before controller acquisition, reminds after sustained gaze, confirms sustained pointing, and reserves success for the trigger-selection event. It waits through ambiguity, invalid tracking and pause, then resumes useful refinement. Controller exit recovery varies between silence and a useful correction across repeats. It avoids immediate repetition at 0.2 and 1.2 seconds but also remains silent after 4.2 seconds without progress, leaving a recovery opportunity unresolved. Short speech is protected; the first correction is queued despite 1.5 seconds of contradictory rightward speech remaining, and the recent-interruption frame produces silence. Whether that tradeoff is helpful remains unknown. Rapid-change directions are appropriate at request time but stale at response, requiring revalidation. No clearly counterproductive request-time spoken direction is shown.",
+        "evidence_case_ids": [
+          "large_turn_entry_1",
+          "large_turn_entry_3",
+          "overshoot_return_1",
+          "overshoot_return_2",
+          "gaze_then_point_1",
+          "gaze_then_point_3",
+          "gaze_then_point_4",
+          "controller_entry_hold_exit_2",
+          "controller_entry_hold_exit_3",
+          "overlap_blink_pause_recovery_3",
+          "short_speech_protection_1",
+          "correction_interrupt_0",
+          "correction_interrupt_1",
+          "repeat_silence_0",
+          "repeat_silence_1",
+          "repeat_silence_2",
+          "selection_not_pointing_0",
+          "selection_not_pointing_1",
+          "rapid_direction_change_0",
+          "rapid_direction_change_1"
+        ]
+      },
+      {
+        "policy": "broader",
+        "assessment": "Comparable to current, with a small rubric advantage that does not establish superiority. Across entry, overshoot and recovery it generally gives useful directions; refinement rather than 'go back' is a legitimate alternative. It shares the local gaze/controller/success distinctions, dwell protection and waits during ambiguity, invalid tracking and pause. Entry guidance at large_turn_entry_1 and controller-exit recovery vary between useful direction and silence across repeats. It queues useful down-left guidance in both correction frames; the recent-interruption state does not make a queued instruction an actual excessive interruption. The queue could still delay correction while contradictory speech continues. It protects short speech, suppresses early repetition, but shares the prolonged-silence omission and stale rapid-change directions. The extra eligible choices show no clear harmful direction here, but neither the one-clean-evaluation advantage nor aggregate network timings demonstrates a meaningful overall improvement.",
+        "evidence_case_ids": [
+          "large_turn_entry_1",
+          "overshoot_return_1",
+          "overshoot_return_2",
+          "gaze_then_point_4",
+          "controller_entry_hold_exit_2",
+          "overlap_blink_pause_recovery_0",
+          "overlap_blink_pause_recovery_1",
+          "overlap_blink_pause_recovery_2",
+          "overlap_blink_pause_recovery_3",
+          "short_speech_protection_0",
+          "correction_interrupt_0",
+          "correction_interrupt_1",
+          "repeat_silence_2",
+          "repeat_silence_3",
+          "selection_not_pointing_1",
+          "rapid_direction_change_0",
+          "rapid_direction_change_1",
+          "rapid_direction_change_3"
+        ]
+      },
+      {
+        "policy": "all_jev",
+        "assessment": "Less dependable guidance coverage across the sequences, with one clearly incorrect direction: large_turn_entry_2 repeat 1 says left at positive 45-degree yaw while the supplied progression still calls for rightward movement. Both repeats wait at initial large-turn entry; later progress-related waits are less clearly unhelpful, but the overall pattern provides weak orientation support. Once inside, down-left/down refinements are useful. Left-only guidance during overshoot and recovery can help even though it omits the vertical component. Gaze confirmation, controller confirmation and success are appropriately distinguished in the observed outputs; the earlier aim reminder and trigger reminder after sustained pointing are useful possible alternatives, not false confirmations. The controller-exit aim reminder has unknown helpfulness because gaze has also been lost. It waits through ambiguity, invalid tracking and pause, but incurs network time for those decisions and confirmations. Short speech is protected; correction advice is queued, with silence in the recent-interruption frame. It shares the prolonged-silence gap, inconsistently resumes guidance on renewed progress, and stays silent at rapid-change recovery. Stale directional responses remain a concern; the stale initial-gaze wait is a different, less direct risk.",
+        "evidence_case_ids": [
+          "large_turn_entry_0",
+          "large_turn_entry_2",
+          "large_turn_entry_3",
+          "large_turn_entry_4",
+          "overshoot_return_2",
+          "gaze_then_point_0",
+          "gaze_then_point_2",
+          "gaze_then_point_4",
+          "controller_entry_hold_exit_2",
+          "overlap_blink_pause_recovery_3",
+          "short_speech_protection_0",
+          "correction_interrupt_0",
+          "correction_interrupt_1",
+          "repeat_silence_2",
+          "repeat_silence_3",
+          "selection_not_pointing_0",
+          "selection_not_pointing_1",
+          "rapid_direction_change_1",
+          "rapid_direction_change_3"
+        ]
+      },
+      {
+        "policy": "jev_overrides",
+        "assessment": "Local overrides improve the architecture relative to unrestricted all_jev by handling dwell, acknowledgments, invalid/ambiguous/paused states and success without network requests. They do not establish an improvement over current or broader eligible-action Jev, which already provide these local protections and generally offer more complete directional guidance. Entry remains silent initially, with mixed behavior later; fine entry refinement is useful. Overshoot and recovery left-only instructions are plausible partial guidance, while controller-exit aim-reminder helpfulness remains unknown. The extra rightward component in short_speech_protection_0 repeat 0 is unsupported by zero yaw, but its net helpfulness remains unknown rather than automatically incorrect. Speech is protected and corrections are queued, with variable advice after a recent interruption. Prolonged silence and rapid-change recovery omissions persist, and rapid directional responses can still become stale. The aggregate 13 final blocks versus four in each eligible-action arm show more filtering, not more helpful guidance: rejected bad advice is a prevented error, but rejection can leave silence. The displayed final choices do not expose which proposals were blocked, so the absence of all_jev's wrong-left output cannot be causally attributed to an override. Fewer recorded stale responses and restored guidance at repeat_silence_3 are encouraging observations, not proof of overall superiority.",
+        "evidence_case_ids": [
+          "large_turn_entry_0",
+          "large_turn_entry_2",
+          "large_turn_entry_3",
+          "overshoot_return_2",
+          "gaze_then_point_0",
+          "gaze_then_point_1",
+          "gaze_then_point_4",
+          "controller_entry_hold_exit_2",
+          "overlap_blink_pause_recovery_0",
+          "overlap_blink_pause_recovery_1",
+          "overlap_blink_pause_recovery_2",
+          "overlap_blink_pause_recovery_3",
+          "short_speech_protection_0",
+          "short_speech_protection_1",
+          "correction_interrupt_1",
+          "repeat_silence_2",
+          "repeat_silence_3",
+          "selection_not_pointing_1",
+          "rapid_direction_change_1",
+          "rapid_direction_change_3"
+        ]
+      }
+    ]
+  }
+}

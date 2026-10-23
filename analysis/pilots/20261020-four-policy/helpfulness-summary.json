@@ -1,0 +1,104 @@
+{
+  "schema": "guidance-four-policy-pilot-v1",
+  "rating_version": "helpfulness-evidence-v2",
+  "summary": {
+    "current": {
+      "probes": 104,
+      "network_requests": 70,
+      "local_only": 34,
+      "http_seconds": {
+        "n": 70,
+        "median": 0.232593,
+        "p95": 0.37213,
+        "max": 0.53249
+      },
+      "failures": 0,
+      "over_450ms": 1,
+      "scripted_scored": 72,
+      "scripted_clean": 67,
+      "flags": {
+        "missed_action_opportunity": 5
+      },
+      "stale_at_response": 4,
+      "stale_checks_known": 72,
+      "final_blocks": 4
+    },
+    "broader": {
+      "probes": 104,
+      "network_requests": 70,
+      "local_only": 34,
+      "http_seconds": {
+        "n": 70,
+        "median": 0.2289025,
+        "p95": 0.419039,
+        "max": 1.537365
+      },
+      "failures": 0,
+      "over_450ms": 2,
+      "scripted_scored": 72,
+      "scripted_clean": 68,
+      "flags": {
+        "missed_action_opportunity": 4
+      },
+      "stale_at_response": 4,
+      "stale_checks_known": 72,
+      "final_blocks": 4
+    },
+    "all_jev": {
+      "probes": 104,
+      "network_requests": 104,
+      "local_only": 0,
+      "http_seconds": {
+        "n": 104,
+        "median": 0.233672,
+        "p95": 0.371877,
+        "max": 0.499908
+      },
+      "failures": 0,
+      "over_450ms": 1,
+      "scripted_scored": 72,
+      "scripted_clean": 58,
+      "flags": {
+        "counterproductive_direction": 1,
+        "missed_action_opportunity": 11,
+        "reminder_helpfulness_unknown": 2
+      },
+      "stale_at_response": 5,
+      "stale_checks_known": 72,
+      "final_blocks": 0
+    },
+    "jev_overrides": {
+      "probes": 104,
+      "network_requests": 70,
+      "local_only": 34,
+      "http_seconds": {
+        "n": 70,
+        "median": 0.2383855,
+        "p95": 0.359339,
+        "max": 0.54435
+      },
+      "failures": 0,
+      "over_450ms": 1,
+      "scripted_scored": 72,
+      "scripted_clean": 59,
+      "flags": {
+        "direction_helpfulness_unknown": 1,
+        "missed_action_opportunity": 10,
+        "reminder_helpfulness_unknown": 2
+      },
+      "stale_at_response": 3,
+      "stale_checks_known": 72,
+      "final_blocks": 13
+    }
+  },
+  "basis": "Real Mac-to-Vercel requests; frozen histories and stepwise scripted states. No audio playback or wearer behavior.",
+  "limitations": [
+    "Python reference adapters, not production Unity state-machine execution.",
+    "No causal participant simulation; all policies receive the same original history, not their hypothetical previous speech.",
+    "Scripted correctness is an engineering rubric, not human-perceived quality; recorded unknown qualification probes are unscored.",
+    "All-Jev choices are retained including wrong/late answers; protected policies record blocks separately, not as correct Jev answers.",
+    "Current arm uses representative fixed action plus wait and common delivery question; not a bit-for-bit production Jev payload.",
+    "No retry loop, acoustic timing, headset latency, real silence durations, or final software playback measurements.",
+    "Reference-policy mismatch is not a wrong hint. Unknown, omissions and unnecessary speech are separate evidence flags; no human helpfulness score."
+  ]
+}

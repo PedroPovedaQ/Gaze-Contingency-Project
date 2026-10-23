@@ -75,7 +75,7 @@ public partial class HintGenerator
 
     void PreviewPausedVicinity()
     {
-        if (!SessionConfig.NeutralQuickTest || m_GameManager == null || !m_GameManager.ResearcherPaused ||
+        if (!SessionConfig.DevelopmentQuickTest || m_GameManager == null || !m_GameManager.ResearcherPaused ||
             m_Vicinity == null || !m_Vicinity.RingVisible)
         { m_Vicinity?.Hide(); return; }
         // Development-only visual feedback while adjusting settings; no gate/history/speech update.

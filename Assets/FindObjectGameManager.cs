@@ -51,7 +51,6 @@ public class FindObjectGameManager : MonoBehaviour
     [SerializeField] float m_TrialTimeoutSeconds = 0f; // Disabled until the study protocol sets a ceiling.
     bool m_TechnicallyStopped;
     StudyCheckpoint m_Checkpoint;
-    bool m_AwaitingBlockSurvey;
     TrialReadinessGate m_Readiness;
     int m_LastCompletedPlane;
     bool m_PausedDuringReadiness;
@@ -111,7 +110,7 @@ public class FindObjectGameManager : MonoBehaviour
         m_Readiness?.Cancel();
         if (m_StartAfterIntroCoroutine != null) { StopCoroutine(m_StartAfterIntroCoroutine); m_StartAfterIntroCoroutine = null; }
         m_UI.PauseTimer();
-        m_AwaitingBlockSurvey = false; m_UI.HideBlockSurvey();
+        m_UI.HideBlockSurvey();
         m_ControllerSelector?.ResetSelection();
         GetComponent<VoiceSynthesizer>()?.Stop();
         GetComponent<HintGenerator>()?.CancelPending();
@@ -406,13 +405,13 @@ public class FindObjectGameManager : MonoBehaviour
             voice = GetComponent<VoiceAssistantController>();
         } while (selector == null || !selector.IsComplete || voice == null || !voice.IsReady);
         // Let the setup confirmation disappear before showing the independent start gate.
-        if (!SessionConfig.NeutralQuickTest) yield return new WaitForSeconds(3.1f);
+        if (!SessionConfig.DevelopmentQuickTest) yield return new WaitForSeconds(3.1f);
         if (m_TechnicallyStopped || m_CenterAccepted) yield break;
         m_UI.HideStartPrompt();
         if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
         while (!m_CenterAccepted && !m_TechnicallyStopped)
         {
-            m_Checkpoint.Show((SessionConfig.NeutralQuickTest ? "<b>NEUTRAL QUICK TEST · DEVELOPMENT ONLY</b>\n" : "<b>360° SEARCH BETA</b>\n") +
+            m_Checkpoint.Show((SessionConfig.DevelopmentQuickTest ? "<b>" + SessionConfig.QuickTestTitle + " · DEVELOPMENT ONLY</b>\n" : "<b>360° SEARCH BETA</b>\n") +
                 "Sit at the center and face your chosen forward direction.\nEight planes will surround you, 21 objects on each.\nStay seated and turn to search.",
                 "Center and begin");
             while (m_Checkpoint.Waiting && !m_TechnicallyStopped) yield return null;
@@ -605,7 +604,7 @@ public class FindObjectGameManager : MonoBehaviour
             m_ShelvesBuilt = true;
         }
 
-        IsPractice = !SessionConfig.NeutralQuickTest; m_PracticeIndex = 0;
+        IsPractice = !SessionConfig.DevelopmentQuickTest; m_PracticeIndex = 0;
         if (IsPractice) SetPracticeObjective();
         else OnGameStarted?.Invoke(); // Start the normal loggers before the first test trial.
         StartCoroutine(BeginFirstRoundTransition());
@@ -683,7 +682,7 @@ public class FindObjectGameManager : MonoBehaviour
         m_SpawnedObjects.Clear();
         m_UI.HideObjectiveDuringTransition();
         if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
-        m_Checkpoint.Show("Practice complete in both voices.\nConfirm task understanding before beginning the two study blocks.");
+        m_Checkpoint.Show("Practice complete.\nConfirm task understanding before beginning the two study blocks.");
         while (m_Checkpoint.Waiting && !m_TechnicallyStopped) yield return null;
         if (m_TechnicallyStopped) yield break;
         IsPractice = false; m_CurrentRound = 0; BuildObjectiveList();
@@ -854,7 +853,7 @@ public class FindObjectGameManager : MonoBehaviour
                 m_ControllerSelector?.ResetSelection();
                 GetComponent<VoiceAssistantController>()?.PlaySuccessFeedback();
                 m_PracticeIndex++;
-                if (m_PracticeIndex < 2) { SetPracticeObjective(); StartCoroutine(TransitionToNextRound()); }
+                if (m_PracticeIndex < ChallengeSet.PracticeTrialCount) { SetPracticeObjective(); StartCoroutine(TransitionToNextRound()); }
                 else StartCoroutine(FinishPractice());
                 return;
             }
@@ -868,8 +867,9 @@ public class FindObjectGameManager : MonoBehaviour
                 ClearPlayfieldForPostRunSurvey();
                 float elapsed = m_UI.StopTimer();
                 m_LastCompletedElapsed = elapsed;
-                m_UI.ShowCompletion(k_TotalRounds, elapsed);
-                if (SessionConfig.VoiceBlocksEnabled) m_UI.SetSurveyBlockLabel(2);
+                // Study questionnaires are administered externally after both blocks.
+                // Preserve the legacy in-headset workload form only for development runs.
+                m_UI.ShowCompletion(k_TotalRounds, elapsed, externalSurvey: !SessionConfig.DevelopmentQuickTest);
                 OnGameCompleted?.Invoke(elapsed);
             }
             else
@@ -911,15 +911,10 @@ public class FindObjectGameManager : MonoBehaviour
             GetComponent<VoiceSynthesizer>()?.Stop();
             GetComponent<HintGenerator>()?.CancelPending();
             OnCheckpoint?.Invoke("block_end");
-            m_AwaitingBlockSurvey = true;
-            m_UI.ShowBlockSurvey(1);
-            while (m_AwaitingBlockSurvey && !m_TechnicallyStopped) yield return null;
-            if (m_TechnicallyStopped) yield break;
-            m_UI.HideBlockSurvey();
             if (m_UseRotationalLayout) m_UI.PositionForRotationalSearch();
             else m_UI.PositionStaticLeft(m_SpawnCenter, ShelfSpawner.ObjectFacingRotation);
             if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
-            m_Checkpoint.Show("Block 1 complete.\nQuestionnaire saved. Take a break.\nConfirm when ready for the second voice.");
+            m_Checkpoint.Show("Block 1 complete.\nTake a break. Check comfort and eye tracking.\nConfirm when ready for the second voice.");
             while (m_Checkpoint.Waiting && !m_TechnicallyStopped) yield return null;
             if (m_TechnicallyStopped) yield break;
             SessionConfig.ApplyRoundVoice(m_CurrentRound);
@@ -968,7 +963,7 @@ public class FindObjectGameManager : MonoBehaviour
     {
         m_UI.ShowObjective(m_CurrentTarget.colorValue,
             $"{m_CurrentTarget.color} {m_CurrentTarget.shape}",
-            IsPractice ? m_PracticeIndex : m_CurrentRound, IsPractice ? 2 : k_TotalRounds, IsPractice);
+            IsPractice ? m_PracticeIndex : m_CurrentRound, IsPractice ? ChallengeSet.PracticeTrialCount : k_TotalRounds, IsPractice);
         m_UI.ShowRoundAudioWait(true);
     }
 
@@ -992,14 +987,8 @@ public class FindObjectGameManager : MonoBehaviour
     void HandleNasaTlxSubmitted(FindObjectUI.NasaTlxResult tlx)
     {
         if (m_TechnicallyStopped) return;
-        if (m_AwaitingBlockSurvey)
-        {
-            if (m_TrialLogger == null) m_TrialLogger = GetComponent<TrialDataLogger>();
-            m_TrialLogger?.RecordNasaTlx(tlx.mental, tlx.physical, tlx.temporal,
-                tlx.performance, tlx.effort, tlx.frustration, 0);
-            m_AwaitingBlockSurvey = false;
-            return;
-        }
+        // Study survey responses arrive through the external, versioned final survey.
+        if (!SessionConfig.DevelopmentQuickTest) return;
         if (m_State != GameState.Completed || m_UI == null) return;
         if (m_NasaTlxSubmittedForRun) return;
         if (m_TrialLogger == null) m_TrialLogger = GetComponent<TrialDataLogger>();
