@@ -1,3 +1,8 @@
+## 2026-10-23 — Neutral Trial Review avatar
+
+- Replaced the replay avatar's skater texture with a uniform gray mannequin material, retaining the existing rig, seated pose, headset and controller anchors. This remains an illustrative body, not a reconstruction of participant appearance.
+- Isolated desktop build and its existing verification checks passed; rendered preview inspected. Output: `Trial Review Neutral Avatar.app` in the side conversation's October 23 artifact folder. The currently running viewer and headset build were left undisturbed.
+
 ## 2026-10-23 — Recovered runtime and protocol checkpoint for main sync
 
 - Included recovered Unity, Trial Review, protocol, and offline Jev pilot work alongside the thesis, as requested. Kept Jev-led action policy restricted to development quick tests; Qualtrics remains on hold.
