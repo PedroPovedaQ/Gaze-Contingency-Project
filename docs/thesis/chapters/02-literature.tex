@@ -64,6 +64,25 @@ NASA-TLX supplies six workload dimensions~\cite{hart1988nasatlx}. The project's 
 
 Agent perception measures are drawn through Guo et al., with attribution to their originating measures~\cite{guo2024doppelganger,biocca2001networked,moussawi2019perception}. Co-presence, perceived intelligence, and anthropomorphism concern participant attributions. A high rating does not establish sentience or decision correctness. Conversely, deterministic validity checks do not establish that a participant found the agent natural. The design needs both kinds of evidence while keeping their meanings separate.
 
+
+\section{Comparison of the Closest Research Strands}
+Table~\ref{tab:related-work-map} compares the selected work by what it contributes to this design and what it leaves unresolved. It is a focused synthesis of the preceding review, not a systematic-review inventory or a ranking of systems. The literature does not supply one interchangeable baseline: spatial guidance, voice resemblance, context management, and measurement quality answer different questions.
+
+\begin{table}[htbp]\centering
+\caption[Related research and boundaries of transfer]{Selected research strands and their role in Follow My Voice. These are methodological connections, not evidence that the present implementation reproduces the cited effects.}
+\label{tab:related-work-map}
+\small\begin{tabularx}{\linewidth}{@{}p{0.26\linewidth}XX@{}}\toprule
+Research strand & Relevance to this project & Boundary of transfer \\\midrule
+Auditory and staged gaze guidance~\cite{losing2014guiding,kwok2022twostep} & Supports investigating gaze-dependent, coarse-to-fine assistance. & Does not validate this headset, phrase policy, or gate durations. \\
+AR search and task feedback~\cite{zhang2023seehear} & Separates in-task cues from post-task feedback. & Known-target task and feedback manipulation differ from this hidden-target voice comparison. \\
+Self-similar voice~\cite{kao2021selfsimilar,guo2024doppelganger} & Motivates the voice manipulation and both favorable and adverse experience measures. & Educational or embodied collaboration tasks do not establish a search-speed benefit here. \\
+Context-aware XR agents~\cite{bovo2025embardiment} & Motivates explicit recent context for state-dependent assistance. & Does not establish an independent benefit of this bounded memory. \\
+Eye-tracking reporting and validation~\cite{dunn2024reporting,niehorster2026dataquality,adhanom2020gazemetrics} & Informs source timing, validity, spatial validation, and gap reporting. & Reporting guidance and other-device results are not Focus Vision accuracy measurements. \\\bottomrule
+\end{tabularx}
+\end{table}
+
+The resulting contribution is a particular combination of task and comparison. The agent knows an initially unnamed target, the participant receives adaptive spatial speech, and explicit right-trigger selection remains separate from gaze. The empirical manipulation changes the voice configuration while retaining that assistance mechanism. This combination defines the scope of RQ1--RQ3; it does not imply that voice familiarity, memory, and gaze contingency have been independently manipulated.
+
 \section{Synthesis and Research Gap}
 The selected literature supports a study at the intersection of spatial assistance and voice identity. Gaze-contingent guidance provides a mechanism for adapting directions to search. Self-similar voice work motivates a personalized voice comparison. Eye-tracking and questionnaire methods establish requirements for measuring that comparison without overstating what the signals mean.
 

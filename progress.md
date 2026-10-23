@@ -1,3 +1,10 @@
+## 2026-10-23 — Align thesis structure with Truong reference
+
+- Added stable research-question IDs and evidence mapping, a comparative literature table, explicit development/held-out evaluation separation, controlled policy comparisons, a failure taxonomy, worked diagnostic examples, and question-specific conclusion status.
+- Added a fifth appendix for the inspected Jev contract, bounded memory fields, admission requirements, and reproduction manifest. Hashed three October 23 working-source files and distinguished that inspection from the October 20 deployment audit.
+- Applied Claude's review, then rebuilt and visually checked the added material: 145 pages, approximately 27,006 words, 14 figures, 16 tables. Final references resolve and fonts are embedded; formal ETD/PDF accessibility checks remain pending.
+- Participant outcomes and personal acknowledgments were not invented. Live Overleaf, Qualtrics, and runtime files remain untouched. Updated local PDF/source delivery and prepared the requested local checkpoint. The author identifies this as the October 23 format-review draft with participant results pending; official UCF guidance requires a near-final document, so format-review acceptance remains unconfirmed.
+
 ## 2026-10-23 — Publish thesis first pass
 
 - Added the editable UCF-template thesis, compiled 124-page PDF, 14 figures, 11 tables, bibliography, preserved Overleaf source snapshot, and Claude review/verification records under `docs/thesis/`.

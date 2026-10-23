@@ -31,6 +31,32 @@ The candidate-policy comparison may include small, medium, and full eligible phr
 
 Replaying an observed trajectory is a counterfactual engineering test. The original participant did not hear the alternative sequence, so the replay cannot demonstrate that the alternative would have reduced their search time. Scripted trajectories provide reproducible edge cases but are not measured human behavior. Both are useful for identifying faults before a wearer pilot.
 
+
+\subsection{Development Cases and an Untouched Evaluation Set}
+\textbf{Protocol proposal.} The engineering evaluation will maintain three explicitly labeled sources of cases. Scripted fixtures will exercise known transitions and fault conditions. A development corpus will contain recorded sequences used to identify faults and tune policy. A separate evaluation corpus will be held out from those tuning decisions. At this stage, no frozen split, sample count, or completed held-out score is claimed.
+
+The split must occur at a level that prevents closely related observations from appearing on both sides. Adjacent requests from the same confirmation episode cannot be separated into development and evaluation as if they were independent cases. Where feasible, whole sessions, and participants when repeated sessions exist, will be assigned together. The release record will enumerate included sessions, duplicate checks, exclusions, and the moment at which the policy was frozen. It will identify each corpus as scripted, developer, pilot, or participant data. Participant-derived sequences will be replayed through hosted providers only where consent and data-handling terms permit. Previously inspected development runs cannot later be described as untouched evaluation data.
+
+For a model-assisted judge, a human-reviewed calibration subset will define how the rubric is applied. Reviewers will see the same recorded evidence and mark unsupported conclusions as unknown. Disagreements will be retained, discussed, and used to clarify the rubric before evaluating the held-out set. A model judge's agreement with this subset is not a measure of participant perception. Repeatedly tuning the judge against the evaluation set would invalidate its held-out role just as repeated policy tuning would. The proposed review will mask policy labels and voice-condition identifiers where they are not required to interpret the evidence, while recording any residual clues that prevent effective blinding. Human--human and judge--human agreement statistics will be specified with the rubric before evaluation; unknown cases will retain their own reported count rather than silently disappear from denominators.
+
+\subsection{Controlled Policy Comparisons}
+Table~\ref{tab:policy-pilots} defines the comparison roles discussed during development. The table is a prospective evaluation design, not a report of measured winners. Candidate-set size and decision autonomy are separate manipulations: widening eligible wording while holding the action policy fixed does not test the same question as allowing the provider to choose a different action family.
+
+\begin{table}[htbp]\centering
+\caption[Proposed policy comparison and safeguards]{Engineering comparison roles. All policies retain valid input interpretation and explicit logging; experimental variants do not enter participant sessions on the basis of this table.}
+\label{tab:policy-pilots}
+\small\begin{tabularx}{\linewidth}{@{}p{0.24\linewidth}XX@{}}\toprule
+Policy role & Decision authority & What the comparison can test \\\midrule
+Constrained Jev with local feedback & Local eligible action; provider chooses wording and speak/wait; qualified local feedback can bypass a new request. & Reference behavior and delivery delay under the shared scheduler. \\
+Jev-led with local overrides & Provider considers meaningful eligible actions using state/history; local geometry, qualification, and final admission remain binding. & Whether broader choices improve sequence appropriateness without unacceptable delay. \\
+Provider-led replay probe & Provider receives broad state and action choices; overrides are recorded as shadow checks rather than used to declare the model correct. & Unsupported choices and response timing offline. This is not an approved participant policy. \\\bottomrule
+\end{tabularx}
+\end{table}
+
+The ordinary inspected request contract accepts two to five candidate phrases. A full-eligible-set experiment therefore requires an explicitly versioned test adapter when more than five candidates are eligible; this draft does not claim that the inspected request wrapper supports an arbitrary catalog size. Each pilot will log its actual candidate count, serialized payload size, request path, and model identifier. Small, medium, and full sets will be defined before execution rather than assigned favorable labels after observing results.
+
+Paired execution will hold input timestamps, target geometry, validity, audio availability, and scoring rules constant. Model repetitions and execution order should be prespecified to expose stochastic variation and service-time effects. Independent request calls do not eliminate order-related network or server-load variation. Results will distinguish per-call transport measurements from whole-sequence behavior and will not substitute an average request latency for confirmation delivery time.
+
 \section{Metrics and Episode Definitions}
 For each policy, the report will summarize qualification-to-software-playback latency with median, 95th percentile, maximum, and count beyond a stated engineering threshold. The threshold must be declared before comparison and distinguished from a perceptual or clinical criterion. Episodes, rather than repeated requests within an episode, will be the denominator for delayed confirmations.
 
@@ -46,6 +72,35 @@ The intended correction is to suppress contradictory away-directions as soon as 
 A separate reference-frame problem arises when an object appears higher than a highlighted neighbor but the instruction says to look lower. The instruction may be calculated relative to the current eye ray, which could lie above both. The phrase can then be geometrically consistent yet confusing because the highlight suggests a different reference object. Diagnosis requires the recorded gaze ray, object positions, highlighted candidate, and playback time. It must not rely only on the review camera's screen-space layout.
 
 These examples are diagnostic categories drawn from the development history. This chapter does not report their incidence or claim they have all been eliminated in a frozen participant build. The acceptance matrix in Appendix~\ref{app:scenarios} defines evidence required to make those claims.
+
+
+\subsection{A Proposed Failure Taxonomy}
+Table~\ref{tab:failure-taxonomy} classifies potential faults by where evidence is lost or acted on incorrectly. These categories organize review; they are not observed error rates. More than one category may contribute to an episode. When the trace does not establish a causal stage, the result remains unresolved rather than being assigned to Jev by default.
+
+\begin{table}[htbp]\centering
+\caption[Failure categories and diagnostic evidence]{Proposed sequence-review taxonomy. A label requires evidence from the relevant stage, and does not imply a frequency estimate.}
+\label{tab:failure-taxonomy}
+\small\begin{tabularx}{\linewidth}{@{}p{0.24\linewidth}XX@{}}\toprule
+Category & Diagnostic evidence & Example distinction \\\midrule
+Observation or geometry & Validity, source age, coordinate frame, gaze ray, object transforms & Wrong spatial input versus a correct cue calculated from that input. \\
+State or qualification & Gate timers, transition cause, controller hit, vicinity winner & Immediate pointing evidence versus qualified pointing acknowledgment. \\
+Decision or context & Exact request snapshot, candidates, history, response & Unsupported choice versus an admissible alternative wording. \\
+Scheduling or delivery & Cancellation, queue, final check, clip readiness, playback start/end & A valid old proposal that becomes stale before it speaks. \\
+Interaction or reference & Visible highlight, task state, phrasing, recent speech & A geometric direction that is confusing relative to the highlighted neighbor. \\
+Recording or scoring & Clock mapping, missing events, join version, episode identity & Missing evidence or duplicate counting versus a demonstrated runtime fault. \\\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Worked Sequence Diagnosis}
+The following cases are constructed examples, not participant observations. Their purpose is to show what evidence would justify a finding. Let $t_q$ be the first supported qualification and $t_p$ the actual software playback start, as defined in Chapter~\ref{ch:measurement}.
+
+\begin{enumerate}
+\item \textbf{A direction becomes stale during a controller hold.} A downward cue is eligible at request time. Before its response arrives, the tracked controller ray hits the target. The hold is not yet qualified, so a pointing acknowledgment would be premature. Under the intended policy, the search direction is suppressed and the hold gate preserved. If the old direction actually plays, the finding concerns admission or scheduling; if it was merely proposed and rejected, it is not a delivered wrong hint.
+\item \textbf{Gaze qualifies while the controller remains elsewhere.} Valid winning-vicinity evidence satisfies the gaze gate at $t_q$. A looking acknowledgment is appropriate; a pointing acknowledgment is not. For a policy that routes this acknowledgment through the provider, repeated model waits followed by playback at $t_p$ form one delayed gaze-confirmation episode. Under the reference local-feedback path, a comparable delay would instead require investigation of scheduling, audio readiness, or delivery. Attribution requires the wait and scheduler records. It cannot be inferred from the final spoken text alone.
+\item \textbf{The eyes and a nearby highlight imply different reference points.} The gaze ray is above both a target and a highlighted distractor, but the target is higher than that distractor. A lower cue may be consistent with the gaze ray while appearing wrong relative to the highlight. This warrants a reference-frame or wording concern, not an automatic wrong-sign label. The review must inspect the state at playback rather than only a screenshot after movement.
+\end{enumerate}
+
+For each reported real example, the completed thesis will provide the case-selection rule, a short surrounding timeline, the proposed versus played wording, the governing evidence, and the reason for the label. A few selected examples can explain a mechanism; they cannot establish its prevalence. Frequency claims require the defined evaluation denominator, including unknown and unreviewable episodes.
 
 \section{Participant Results to Be Added}
 The completed empirical chapter will first report participant flow, exclusions, incomplete sessions, and data coverage by condition and order. It will then describe realized starting geometry and the similarity manipulation check before presenting the primary voice contrast. This order allows readers to assess whether the intended comparison was delivered and measured.
@@ -65,6 +120,12 @@ Guidance quality & Sequence-level playback and evidence & Evaluation design spec
 Debrief themes & Recorded responses and coding audit & Not available \\\bottomrule
 \end{tabularx}
 \end{table}
+
+
+\subsection{Results Organized by Research Question}
+The completed results chapter will report the voice-similarity manipulation check before the outcome contrasts. RQ1 will use the marginal time contrast standardized over a common starting-difficulty distribution, as defined in Chapter~\ref{ch:analysis}; this is not a standardized effect-size label. Its uncertainty, eligible participant/trial counts, and model diagnostics will accompany the estimate, using the analysis plan finalized before confirmatory recruitment. RQ2 will report the paired workload and separate IMI outcomes with multiplicity families to be finalized in the analysis plan. RQ3 will report exploratory agent-perception and custom ratings alongside debrief themes and valid search measures. A missing or inconclusive contrast will be identified as such rather than omitted.
+
+EQ1 will be reported separately through sequence coverage, qualification-to-playback delay, provider reliability, and categorized faults. A clean engineering test does not answer a voice-effect research question. Conversely, a voice-condition difference does not by itself show that the guidance mechanism was correct. This separation follows the evidence map in Table~\ref{tab:rq-map} and prevents a successful build or a favorable judge rating from becoming an empirical conclusion.
 
 \section{Interpreting Two-Second Delays}
 A two-second delay can contain several different intervals: waiting for qualification, waiting for a model response, an explicit model decision to wait, queued speech, audio readiness, and playback scheduling. Removing a provider wait does not establish that all delays disappear. Conversely, a one-second controller hold is an intentional qualification period, not necessarily a one-second processing fault.

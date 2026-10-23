@@ -40,3 +40,12 @@ Claude reviewed Chapters 3–6 with the new figures and tables. Applied: explici
 Open decisions retained: release vicinity tolerance, final block-to-voice survey reminder, provider payload condition visibility and model/settings freeze, exact pre-cue snapshot, height balancing, and independent validation of any offset correction. No voice-blinding or participant benefit is asserted. The worked sequence and figures remain illustrative.
 
 The review's request to infer cross placement was checked against the schedule/audit rather than assumed from the drawing. The existing architecture/procedure fallback is only a missing-asset build guard; all delivered figure files are present and used.
+
+
+## Reference-alignment review — October 23
+
+Claude reviewed the new research-question map, related-work synthesis, evaluation design, and decision-contract appendix. Applied: scope the three-file inspection separately from release-wide admission checks; explicitly leave provider condition-blinding and tone parity unverified; broaden RQ3 to match the method; move the similarity check ahead of outcome interpretation without making it an exclusion gate; identify the policy assumed by constructed delay cases; restrict participant-derived identifiers; connect hosted replay to consent; and propose masked rubric calibration with agreement reporting. Also clarified pending multiplicity families, the analysis-versus-results destinations, wrapper limits, and working-source status.
+
+Review suggestions not adopted literally: standardization in Chapter 6 means marginalization over a common difficulty distribution, not a standardized effect size; the new text preserves that estimand. The October 20 audit exists and is summarized in Chapter 7, so it was explicitly cross-referenced rather than replaced by the narrower October 23 inspection. Implemented does not mean deployed. Appendix title-only pages are intentional in the supplied UCF style and match the reference. The screenshot provenance does not contain a verified source commit, so no such identifier was invented. The constructed response fields match the inspected parser. Older CLAUDE.md counts are not treated as authoritative over the latest protocol and alignment audit.
+
+Remaining requirements are author/committee decisions, frozen-release validation, final analysis and consent, a complete citation audit, and real participant evidence. This review and simulated examples do not supply them.

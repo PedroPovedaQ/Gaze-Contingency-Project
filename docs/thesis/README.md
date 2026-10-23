@@ -1,10 +1,14 @@
 # Follow My Voice — thesis first pass
 
-Advisor-review draft prepared October 22, 2026. The editable document is `main.tex`; the compiled deliverable is `follow-my-voice-thesis-first-pass.pdf`.
+Advisor-review draft revised October 23, 2026. The editable document is `main.tex`; the compiled deliverable is `follow-my-voice-thesis-first-pass.pdf`.
+
+## October 23 milestone
+
+The author identifies this as the October 23 format-review draft; solid participant results are not yet available. The results framework, proposed analyses, and engineering evidence must not be represented as completed empirical findings. UCF's current guidance requires a near-final draft with most actual content present for format review; acceptance of this draft has not been established. Confirm its suitability with the advisor and thesis office, and complete the current Webcourse formatting/accessibility checks before submission. Official guidance: https://graduate.ucf.edu/thesis-and-dissertation/ (checked October 23, 2026).
 
 ## What this draft contains
 
-Nine chapters: introduction, literature, system, proposed methodology, measurement/data provenance, planned analysis, engineering verification/results framework, discussion, and conclusion. Four appendices preserve questionnaire wording, data/scoring definitions, sequence-test scenarios, and study-readiness decisions. Fourteen numbered figures match the reference thesis’s figure count: three reused project figures, ten new editable vector diagrams, and one actual Trial Review screenshot of its explicitly synthetic demonstration. No figure presents invented participant results. Eleven numbered tables cover allocation, system ownership, questionnaire scoring, timing, analysis scope, evidence status, data definitions, sequence checks, and remaining decisions.
+Nine chapters: introduction, literature, system, proposed methodology, measurement/data provenance, planned analysis, engineering verification/results framework, discussion, and conclusion. Five appendices preserve questionnaire wording, data/scoring definitions, sequence-test scenarios, study-readiness decisions, and the code-inspected decision contract. Fourteen numbered figures match the reference thesis’s figure count: three reused project figures, ten new editable vector diagrams, and one actual Trial Review screenshot of its explicitly synthetic demonstration. No figure presents invented participant results. Sixteen numbered tables cover research-question traceability, related work, allocation, system ownership, questionnaire scoring, timing, analysis scope, policy comparisons, failure categories, evidence status, data definitions, sequence checks, remaining decisions, and reproduction requirements.
 
 The literature chapter draws on the project's bibliography. All 62 entries are retained in `references.bib`; the printed reference list includes only cited entries. Quantitative participant findings, a final sample size, a power result, and a claim of superior voice performance have not been invented. Engineering audit results are attributed to the October 20 record rather than presented as tests run while writing this draft.
 
@@ -14,6 +18,7 @@ The literature chapter draws on the project's bibliography. All 62 entries are r
 - Retrieved revision: `f9f49e450c7b64b34c319a557114f1fa4393f003`.
 - `source-snapshot/` preserves the retrieved files unchanged. The live Overleaf working tree and manuscript were not overwritten.
 - The latest full protocol handoff, the subsequent practice-voice clarification, and the October 20 implementation alignment audit informed status reconciliation.
+- The October 23 working-file inspection is separately identified in Appendix E and `review/implementation-contract-inspection.json`; it does not establish deployment or supersede the release audit.
 - Formatting base: the user's `Template_for_University_of_Central_Florida_ETD___LauLaTex_Modernization` download.
 - Presentation reference: Hoang Bao Truong, *Using Inferences from Natural Language Narratives to Improve Video Question Answering*, UCF, 2026, https://stars.library.ucf.edu/gradstudies_etd_2026/199/ . Its prose and results were not used as evidence for this experiment.
 
@@ -41,6 +46,6 @@ The PDF is tagged, but successful compilation and its PDF/UA metadata are **not*
 
 ## Review and remaining work
 
-Claude performed separate language and methods reviews. `review/review-resolution.md` records applied changes, rejected false positives, and open design decisions. The raw review reports are included. The reviews are assistance, not author or committee approval.
+Claude performed separate language and methods reviews. `review/review-resolution.md` records applied changes, rejected false positives, and open design decisions. The raw review reports are included. `review/truong-gap-audit.md` records the reference-comparison additions and elements that remain author-dependent or require empirical evidence. The reviews are assistance, not author or committee approval.
 
 Before submission: confirm author/degree/term/advisor metadata; finish power and analysis preregistration; reconcile consent with actual cloud services; validate hardware, timing, scoring, and the complete study flow; collect and analyze participant data; replace the results framework with observed findings; perform a complete source-to-claim citation audit; finalize AI disclosure and ETD/accessibility review. All pending items remain visible in the text.

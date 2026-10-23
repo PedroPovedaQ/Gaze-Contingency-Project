@@ -27,6 +27,24 @@ Exploratory questions concern agent perception, reliance, and the relationship b
 
 An additional engineering objective is to make the assistance process inspectable. Can recorded state and speech history explain why a cue was eligible, why it played or was suppressed, and how long it waited? Can evaluation distinguish a genuinely unhelpful instruction from an acceptable alternative wording? These questions concern system validity and readiness. They support the empirical study but do not replace it.
 
+
+\subsection{Research-Question Traceability}
+The questions are assigned stable identifiers so that the completed results and conclusion can answer the same questions introduced here. RQ1 is the primary empirical contrast; RQ2 concerns secondary experience measures; RQ3 is exploratory. EQ1 identifies an engineering question rather than a fourth participant research question. Table~\ref{tab:rq-map} connects each question to its evidence and analysis. The identifiers organize the existing plan and do not add a new experimental factor or a directional hypothesis.
+
+\begin{table}[htbp]\centering
+\caption[Research questions and evidence requirements]{Research-question traceability for the proposed study. No empirical answer is available in this first pass.}
+\label{tab:rq-map}
+\small\begin{tabularx}{\linewidth}{@{}p{0.12\linewidth}p{0.39\linewidth}X@{}}\toprule
+Question & Intended contrast & Evidence and reporting destination \\\midrule
+RQ1 & Does voice condition change active completion time? & Trial timing and starting geometry; analysis in Chapter~\ref{ch:analysis}, results in Chapter~\ref{ch:evaluation}. \\
+RQ2 & Does voice condition change workload or motivation? & Paired block-referenced workload and separate IMI subscales; final retrospective administration. \\
+RQ3 & How do voices differ in agent perception, voice experience, reliance, and search behavior? & Custom ratings, agent constructs, debrief, and valid search measures; exploratory voice-by-angle comparison. \\
+EQ1 & Can the recorded sequence explain eligibility, delivery, and unhelpful guidance? & State, request, and actual playback records; engineering evaluation in Chapter~\ref{ch:evaluation}. \\\bottomrule
+\end{tabularx}
+\end{table}
+
+The voice-similarity manipulation check will be reported before the outcome contrasts to aid interpretation across questions. It is not an individual exclusion gate. RQ3 includes appealing, eerie, and familiar voice experiences and the exploratory variation of the voice contrast with starting angle.
+
 \section{Scope of the Comparison}
 The independent variable is voice condition: participant-preferred catalog voice versus self-similar synthetic voice. Both conditions use gaze contingency, the same semantic phrase library, the same local geometry rules, and the same controller-selection mechanics. Consequently, the study will not isolate the benefit of gaze contingency, short-term memory, the cloud decision agent, or synthetic speech in general. Those are shared system properties.
 
@@ -52,4 +70,4 @@ The methodological contribution is an operational study design. It specifies two
 The empirical contribution remains pending. This draft does not report a recruited sample, condition means, significance tests, or participant quotations. Its engineering chapter records what the existing alignment audit supports and defines how later evidence will be reported. A completed thesis will need to replace the pending results sections with the frozen study's actual outcomes and revise the abstract and conclusion accordingly.
 
 \section{Organization of the Thesis}
-Chapter~\ref{ch:literature} relates the design to visual-search guidance, voice identity, context-aware agents, and measurement. Chapter~\ref{ch:system} describes the headset application and the division of responsibility between Unity and Jev. Chapter~\ref{ch:methodology} specifies the proposed study. Chapter~\ref{ch:measurement} defines geometry, timing, and data provenance, and Chapter~\ref{ch:analysis} explains how those observations will support the research questions. Chapter~\ref{ch:evaluation} separates engineering verification from future participant results. The discussion and conclusion identify the claims the design can support and the work still required. Appendices preserve the current instrument wording, data contract, sequence tests, and study-readiness decisions.
+Chapter~\ref{ch:literature} relates the design to visual-search guidance, voice identity, context-aware agents, and measurement. Chapter~\ref{ch:system} describes the headset application and the division of responsibility between Unity and Jev. Chapter~\ref{ch:methodology} specifies the proposed study. Chapter~\ref{ch:measurement} defines geometry, timing, and data provenance, and Chapter~\ref{ch:analysis} explains how those observations will support the research questions. Chapter~\ref{ch:evaluation} separates engineering verification from future participant results. The discussion and conclusion identify the claims the design can support and the work still required. Appendices preserve the current instrument wording, data contract, sequence tests, study-readiness decisions, and the inspected decision contract.
