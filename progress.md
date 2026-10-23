@@ -1,3 +1,9 @@
+## 2026-10-23 — Publish thesis first pass
+
+- Added the editable UCF-template thesis, compiled 124-page PDF, 14 figures, 11 tables, bibliography, preserved Overleaf source snapshot, and Claude review/verification records under `docs/thesis/`.
+- Matched the reference contents style; distinguished synthetic demonstration figures, implementation snapshots, proposed measures, and missing participant results.
+- Documentation-only checkpoint: no runtime deployment or live Overleaf/Qualtrics update. The draft references the recovered implementation audit, not a claim that all runtime changes are merged here.
+
 ## 2026-09-28
 
 - Prepared all current Unity interaction/guidance, protocol/meeting/survey, per-trial CSV and timeline-video changes for the requested v3 then main integration. Both remote target histories are ancestors of the current work, so fast-forward integration is available without discarding commits. Participant recordings, credentials, generated analysis outputs and Unity performance-test build metadata remain local/ignored.

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="1600" height="650" preserveAspectRatio="xMinYMin meet" viewBox="0 0 1600 650" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="1600" height="650"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-650)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="0" y="0" width="1600" height="650" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 1.6; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="25" y="615" style="font-family: Helvetica; font-weight: bold; font-size: 24px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,1230) scale(1,-1)">(a) Study procedure</text>
+			<rect x="25" y="432" width="200" height="140" rx="8" ry="8" style="stroke: rgb(22%,47%,50%); stroke-linecap: butt; stroke-width: 1.6; fill: rgb(91%,95%,95%); fill-rule: evenodd;"/>
+			<text x="39" y="545" style="font-family: Helvetica; font-weight: bold; font-size: 14px;fill: rgb(22%,47%,50%); stroke:none;" transform="translate(0,1090) scale(1,-1)">01</text>
+			<text x="39" y="513" style="font-family: Helvetica; font-weight: bold; font-size: 17px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,1026) scale(1,-1)">Consent + baseline</text>
+			<text x="39" y="484" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,968) scale(1,-1)">Background and experience</text>
+			<text x="39" y="460" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,920) scale(1,-1)">Pre-exposure symptoms</text>
+			<polyline points="225 502, 247 502" style="stroke: rgb(12%,15%,16%); stroke-linecap: butt; stroke-width: 2; fill: None; fill-rule: evenodd;"/>
+			<polygon points="247 502, 237 498, 237 506" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(12%,15%,16%); fill-rule: evenodd;"/>
+			<rect x="250" y="432" width="200" height="140" rx="8" ry="8" style="stroke: rgb(22%,47%,50%); stroke-linecap: butt; stroke-width: 1.6; fill: rgb(91%,95%,95%); fill-rule: evenodd;"/>
+			<text x="264" y="545" style="font-family: Helvetica; font-weight: bold; font-size: 14px;fill: rgb(22%,47%,50%); stroke:none;" transform="translate(0,1090) scale(1,-1)">02</text>
+			<text x="264" y="513" style="font-family: Helvetica; font-weight: bold; font-size: 17px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,1026) scale(1,-1)">Voice setup</text>
+			<text x="264" y="484" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,968) scale(1,-1)">Preferred catalog voice</text>
+			<text x="264" y="460" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,920) scale(1,-1)">Natural-voice recording</text>
+			<polyline points="450 502, 472 502" style="stroke: rgb(12%,15%,16%); stroke-linecap: butt; stroke-width: 2; fill: None; fill-rule: evenodd;"/>
+			<polygon points="472 502, 462 498, 462 506" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(12%,15%,16%); fill-rule: evenodd;"/>
+			<rect x="475" y="432" width="200" height="140" rx="8" ry="8" style="stroke: rgb(22%,47%,50%); stroke-linecap: butt; stroke-width: 1.6; fill: rgb(91%,95%,95%); fill-rule: evenodd;"/>
+			<text x="489" y="545" style="font-family: Helvetica; font-weight: bold; font-size: 14px;fill: rgb(22%,47%,50%); stroke:none;" transform="translate(0,1090) scale(1,-1)">03</text>
+			<text x="489" y="513" style="font-family: Helvetica; font-weight: bold; font-size: 17px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,1026) scale(1,-1)">Calibration + practice</text>
+			<text x="489" y="484" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,968) scale(1,-1)">Independent validation</text>
+			<text x="489" y="460" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,920) scale(1,-1)">1 practice trial</text>
+			<polyline points="675 502, 697 502" style="stroke: rgb(12%,15%,16%); stroke-linecap: butt; stroke-width: 2; fill: None; fill-rule: evenodd;"/>
+			<polygon points="697 502, 687 498, 687 506" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(12%,15%,16%); fill-rule: evenodd;"/>
+			<rect x="700" y="432" width="200" height="140" rx="8" ry="8" style="stroke: rgb(67%,50%,0%); stroke-linecap: butt; stroke-width: 1.6; fill: rgb(100%,96%,83%); fill-rule: evenodd;"/>
+			<text x="714" y="545" style="font-family: Helvetica; font-weight: bold; font-size: 14px;fill: rgb(67%,50%,0%); stroke:none;" transform="translate(0,1090) scale(1,-1)">04</text>
+			<text x="714" y="513" style="font-family: Helvetica; font-weight: bold; font-size: 17px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,1026) scale(1,-1)">Block 1</text>
+			<text x="714" y="484" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,968) scale(1,-1)">40 measured trials</text>
+			<text x="714" y="460" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,920) scale(1,-1)">Assigned first voice</text>
+			<polyline points="900 502, 922 502" style="stroke: rgb(12%,15%,16%); stroke-linecap: butt; stroke-width: 2; fill: None; fill-rule: evenodd;"/>
+			<polygon points="922 502, 912 498, 912 506" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(12%,15%,16%); fill-rule: evenodd;"/>
+			<rect x="925" y="432" width="200" height="140" rx="8" ry="8" style="stroke: rgb(22%,47%,50%); stroke-linecap: butt; stroke-width: 1.6; fill: rgb(91%,95%,95%); fill-rule: evenodd;"/>
+			<text x="939" y="545" style="font-family: Helvetica; font-weight: bold; font-size: 14px;fill: rgb(22%,47%,50%); stroke:none;" transform="translate(0,1090) scale(1,-1)">05</text>
+			<text x="939" y="513" style="font-family: Helvetica; font-weight: bold; font-size: 17px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,1026) scale(1,-1)">Break</text>
+			<text x="939" y="484" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,968) scale(1,-1)">Rest and comfort check</text>
+			<text x="939" y="460" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,920) scale(1,-1)">Tracking recheck</text>
+			<polyline points="1125 502, 1147 502" style="stroke: rgb(12%,15%,16%); stroke-linecap: butt; stroke-width: 2; fill: None; fill-rule: evenodd;"/>
+			<polygon points="1147 502, 1137 498, 1137 506" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(12%,15%,16%); fill-rule: evenodd;"/>
+			<rect x="1150" y="432" width="200" height="140" rx="8" ry="8" style="stroke: rgb(67%,50%,0%); stroke-linecap: butt; stroke-width: 1.6; fill: rgb(100%,96%,83%); fill-rule: evenodd;"/>
+			<text x="1164" y="545" style="font-family: Helvetica; font-weight: bold; font-size: 14px;fill: rgb(67%,50%,0%); stroke:none;" transform="translate(0,1090) scale(1,-1)">06</text>
+			<text x="1164" y="513" style="font-family: Helvetica; font-weight: bold; font-size: 17px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,1026) scale(1,-1)">Block 2</text>
+			<text x="1164" y="484" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,968) scale(1,-1)">40 measured trials</text>
+			<text x="1164" y="460" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,920) scale(1,-1)">Other assigned voice</text>
+			<polyline points="1350 502, 1372 502" style="stroke: rgb(12%,15%,16%); stroke-linecap: butt; stroke-width: 2; fill: None; fill-rule: evenodd;"/>
+			<polygon points="1372 502, 1362 498, 1362 506" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(12%,15%,16%); fill-rule: evenodd;"/>
+			<rect x="1375" y="432" width="200" height="140" rx="8" ry="8" style="stroke: rgb(22%,47%,50%); stroke-linecap: butt; stroke-width: 1.6; fill: rgb(91%,95%,95%); fill-rule: evenodd;"/>
+			<text x="1389" y="545" style="font-family: Helvetica; font-weight: bold; font-size: 14px;fill: rgb(22%,47%,50%); stroke:none;" transform="translate(0,1090) scale(1,-1)">07</text>
+			<text x="1389" y="513" style="font-family: Helvetica; font-weight: bold; font-size: 17px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,1026) scale(1,-1)">Final measures</text>
+			<text x="1389" y="484" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,968) scale(1,-1)">Ratings for both blocks</text>
+			<text x="1389" y="460" style="font-family: Helvetica; font-size: 14px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,920) scale(1,-1)">Post-SSQ + debrief</text>
+			<text x="456.86600000000004" y="392" style="font-family: Helvetica; font-weight: bold; font-size: 18px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,784) scale(1,-1)">Counterbalanced voice order: preferred -&gt; self-similar  |  self-similar -&gt; preferred</text>
+			<text x="461.5215" y="363" style="font-family: Helvetica; font-size: 17px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,726) scale(1,-1)">80 measured trials + 1 practice trial; identical guidance policy and right-controller selection</text>
+			<text x="25" y="310" style="font-family: Helvetica; font-weight: bold; font-size: 24px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,620) scale(1,-1)">(b) Within each trial</text>
+			<rect x="25" y="142" width="350" height="133" rx="8" ry="8" style="stroke: rgb(22%,47%,50%); stroke-linecap: butt; stroke-width: 1.6; fill: rgb(97%,98%,98%); fill-rule: evenodd;"/>
+			<text x="43" y="240" style="font-family: Helvetica; font-weight: bold; font-size: 20px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,480) scale(1,-1)">Readiness cross</text>
+			<text x="43" y="203" style="font-family: Helvetica; font-size: 16px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,406) scale(1,-1)">Valid gaze establishes readiness</text>
+			<text x="43" y="177" style="font-family: Helvetica; font-size: 16px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,354) scale(1,-1)">Target identity remains hidden</text>
+			<polyline points="375 211, 420 211" style="stroke: rgb(12%,15%,16%); stroke-linecap: butt; stroke-width: 2; fill: None; fill-rule: evenodd;"/>
+			<polygon points="420 211, 410 207, 410 215" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(12%,15%,16%); fill-rule: evenodd;"/>
+			<rect x="425" y="142" width="350" height="133" rx="8" ry="8" style="stroke: rgb(22%,47%,50%); stroke-linecap: butt; stroke-width: 1.6; fill: rgb(97%,98%,98%); fill-rule: evenodd;"/>
+			<text x="443" y="240" style="font-family: Helvetica; font-weight: bold; font-size: 20px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,480) scale(1,-1)">Directional opening cue</text>
+			<text x="443" y="203" style="font-family: Helvetica; font-size: 16px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,406) scale(1,-1)">Objects remain hidden</text>
+			<text x="443" y="177" style="font-family: Helvetica; font-size: 16px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,354) scale(1,-1)">Cue plays before search timing</text>
+			<polyline points="775 211, 820 211" style="stroke: rgb(12%,15%,16%); stroke-linecap: butt; stroke-width: 2; fill: None; fill-rule: evenodd;"/>
+			<polygon points="820 211, 810 207, 810 215" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(12%,15%,16%); fill-rule: evenodd;"/>
+			<rect x="825" y="142" width="350" height="133" rx="8" ry="8" style="stroke: rgb(67%,50%,0%); stroke-linecap: butt; stroke-width: 1.6; fill: rgb(100%,96%,83%); fill-rule: evenodd;"/>
+			<text x="843" y="240" style="font-family: Helvetica; font-weight: bold; font-size: 20px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,480) scale(1,-1)">Reveal + guided search</text>
+			<text x="843" y="203" style="font-family: Helvetica; font-size: 16px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,406) scale(1,-1)">Objects appear; timer starts</text>
+			<text x="843" y="177" style="font-family: Helvetica; font-size: 16px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,354) scale(1,-1)">Turn, refine, acquire target</text>
+			<polyline points="1175 211, 1220 211" style="stroke: rgb(12%,15%,16%); stroke-linecap: butt; stroke-width: 2; fill: None; fill-rule: evenodd;"/>
+			<polygon points="1220 211, 1210 207, 1210 215" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(12%,15%,16%); fill-rule: evenodd;"/>
+			<rect x="1225" y="142" width="350" height="133" rx="8" ry="8" style="stroke: rgb(22%,47%,50%); stroke-linecap: butt; stroke-width: 1.6; fill: rgb(97%,98%,98%); fill-rule: evenodd;"/>
+			<text x="1243" y="240" style="font-family: Helvetica; font-weight: bold; font-size: 20px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,480) scale(1,-1)">Correct trigger selection</text>
+			<text x="1243" y="203" style="font-family: Helvetica; font-size: 16px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,406) scale(1,-1)">Right ray + fresh trigger press</text>
+			<text x="1243" y="177" style="font-family: Helvetica; font-size: 16px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,354) scale(1,-1)">Timer stops; success feedback</text>
+			<rect x="25" y="24" width="1550" height="75" rx="5" ry="5" style="stroke: rgb(65%,68%,69%); stroke-linecap: butt; stroke-width: 1.6; fill: rgb(95%,96%,96%); fill-rule: evenodd;"/>
+			<text x="420.9595" y="70" style="font-family: Helvetica; font-weight: bold; font-size: 19px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,140) scale(1,-1)">Primary outcome: active search-completion time, adjusted for pre-cue starting theta</text>
+			<text x="418.736" y="42" style="font-family: Helvetica; font-size: 16px;fill: rgb(12%,15%,16%); stroke:none;" transform="translate(0,84) scale(1,-1)">Height delta = target Y - readiness-cross Y. Questionnaires and breaks remain outside active-search timing.</text>
+		</g>
+	</g>
+</svg>

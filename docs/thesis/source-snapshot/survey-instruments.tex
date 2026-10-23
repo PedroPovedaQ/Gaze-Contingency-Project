@@ -1,0 +1,58 @@
+% Protocol decision 2026-10-20: final-only condition-specific questionnaires; Qualtrics synchronization on hold.
+\documentclass[11pt,letterpaper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype,amsmath,booktabs,tabularx,longtable,graphicx}
+\usepackage[margin=0.8in,headheight=15pt]{geometry}
+\usepackage{xcolor,fancyhdr,enumitem,xurl}
+\usepackage[hidelinks]{hyperref}
+\definecolor{Gold}{HTML}{987100}
+\setlength{\parindent}{0pt}\setlength{\parskip}{6pt}
+\setlist{nosep,leftmargin=*}\emergencystretch=3em
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small Follow My Voice}\fancyfoot[R]{\thepage}
+\newcommand{\qid}[1]{\par\smallskip\textbf{\texttt{#1}}\par}
+\begin{document}
+{\LARGE\bfseries Measures and Scoring}\par
+\section{Battery and timing}
+After both 40-trial voice blocks, participants will complete the final survey with two separately labelled retrospective sets, one referring to each voice block. Each set will contain six workload ratings, 24 Intrinsic Motivation Inventory (IMI) items, 21 agent-perception items and 14 study-specific numeric ratings. This yields 65 numeric responses per referenced block (130 across both sets), plus technical checks and optional text, all administered at the end. Baseline and final Simulator Sickness Questionnaire (SSQ) administrations contribute 16 symptoms each. Voice setup adds a liking rating for every auditioned voice, including the self-similar voice.
+
+\section{Workload}
+The six NASA-TLX dimensions will be measured in the final survey once for each referenced voice block with discrete 0--10 ratings. Demand, effort and frustration will range from Very low to Very high. Performance will range from Perfect to Failure, so higher values consistently indicate worse workload/performance experience. Individual dimensions and an unweighted mean will be retained. The mean will be computed only when all six ratings are present. No pairwise weighting will be used. This 0--10 response format is a local adaptation of NASA-TLX; it will be reported as such rather than treated as an unchanged original form.
+\href{https://doi.org/10.1016/S0166-4115(08)62386-9}{Hart and Staveland (1988), Development of NASA-TLX}.
+
+\section{Motivation and activity experience}
+Four IMI subscales will be administered in the final survey separately for each referenced block: interest/enjoyment (7 items), effort/importance (5), pressure/tension (5), and value/usefulness (7). Responses will range from 1 = Not at all true to 7 = Very true, with 4 = Somewhat true. Interest/enjoyment is the direct measure of intrinsic motivation; the other subscales describe distinct experiences.
+
+Within-subscale item positions will be reverse-scored with $8-r$: interest/enjoyment 3 and 4; effort/importance 2 and 5; pressure/tension 1 and 3; value/usefulness none. Each complete subscale will be averaged separately. No overall IMI score will be calculated. Incomplete subscale scores will remain missing, with raw responses and the number answered retained.
+
+``Activity'' will refer to the completed search block. Value/usefulness fill-ins will refer to practicing visual search and search performance. Pressure item 5 will read ``I felt pressured while doing this activity.'' These task-specific adaptations will be documented; reverse-key annotations will not be shown to participants.
+\href{https://selfdeterminationtheory.org/intrinsic-motivation-inventory/}{Official IMI guidance and instrument materials}.
+
+\section{Agent perception}
+The battery will use the co-presence (Q1--6), perceived intelligence (Q13--18), the three items in the source's ``Eerie'' group (Q20--22), and perceived anthropomorphism (Q37--42) items reproduced by \href{https://doi.org/10.1145/3651288}{Guo et al. (2024), Collaborating with my Doppelg\"anger}, Appendix A, Table A1. \href{https://web.ics.purdue.edu/~cmousas/papers/jour24-PACMCGIT-SelfSimiarAppearanceVoice.pdf}{Author-hosted full text}.
+
+Guo attributes co-presence to Biocca, Harms and Gregg (2001), perceived intelligence and anthropomorphism to Moussawi and Koufaris (2019), and the ``Eerie'' group to Zibrek et al. (2018). The source evaluates an embodied virtual collaborator. The present questionnaire will replace ``virtual character'' with ``voice agent'' and use it/its/itself pronouns. This transfer does not establish validation for a disembodied voice agent.
+
+Responses will range from 1 = Very strongly disagree to 7 = Very strongly agree. Source IDs will be preserved in exports as GUO2024\_Q1--Q6, Q13--Q18, Q20--Q22 and Q37--Q42. The co-presence, intelligence and anthropomorphism items are positively keyed. The analysis will use a mean for each complete six-item construct, retain raw responses, and report missingness and reliability separately by construct. This complete-case rule and aggregation are study analysis choices. No combined 21-item score will be calculated. Q20 (appealing), Q21 (eerie) and Q22 (familiar) will be analyzed individually in their original response direction: higher values indicate more of the named impression. They will not be averaged into an eeriness score or reverse-coded into a common total. These source items will remain separate from the custom voice-familiarity and uncanniness ratings.
+
+Co-presence concerns a perceived social other; intelligence concerns attributed capability; anthropomorphism concerns humanlike qualities. These do not measure actual intelligence, feelings or sentience. Pilot comprehension will specifically cover Q15's autonomous-planning wording.
+
+\section{Study-specific questions}
+Each condition-specific set in the final survey will contain twelve separate 1--7 agreement items: voice similarity, responsiveness, helpfulness, distraction, familiarity, trust, comfort, uncanniness, reliance, naturalness, willingness to follow, and motivation to act without guidance. No composite score will be formed. Voice similarity will be a manipulation check.
+
+Voice liking will range from 0 = Do not like at all to 100 = Like extremely. Guidance use will range from 0 = None of the time to 100 = All of the time, with a separate Unable to estimate option. This percentage measures retrospective perceived use, not behavioral compliance. Candidate liking will be collected during setup; condition-specific liking collected at the end will measure experience after use. They will remain separate variables.
+
+Demographic gender identity, preferred voice-gender presentation and perceived voice gender will remain distinct. Missing, unsure, unavailable preference and no preference will not be collapsed into the same code.
+
+\section{Symptoms and safety}
+The 16 SSQ symptoms will be rated 0 = None, 1 = Slight, 2 = Moderate or 3 = Severe before headset exposure and after removing the headset. Symptom changes and individual responses will be retained. Canonical total or subscale scores will be reported only using the published membership and weights, verified against the scoring implementation. Between-block comfort checks and immediate responses to symptoms will not depend on aggregate SSQ scores.
+\href{https://doi.org/10.1207/s15327108ijap0303_3}{Kennedy et al. (1993), Simulator Sickness Questionnaire}.
+
+\section{Administration and data rules}
+At the final survey, administer the retrospective sets in Block 1 then Block 2 order, naming the referenced voice condition. Question wording and within-set order will be identical across voice conditions. Researchers will use one workload collection route and avoid duplicate administration. Ratings will remain optional; incomplete responses will be preserved without zero imputation. Reverse keys and scoring notes will not appear in participant prompts.
+
+Each retrospective condition-specific response will be joined by participant, session, referenced block, actual voice ID/condition, condition order, instrument version and actual administration timestamp. Store administration phase as final separately from reference scope as participant-by-block. Baseline and final SSQ retain participant-by-session scope; setup ratings retain audition scope. Block-level responses may be repeated on trial summary rows for convenience, but analyses will retain the participant-by-block unit. Printed response labels and numeric export recodes must agree. Technical fault reports will be preserved even when an interruption was intended by the system.
+
+Open debrief questions will precede specific own-voice, eeriness and inner-dialogue probes. Participant interpretations will remain distinct from behavioral evidence. The full questionnaire burden will be timed during pilot sessions.
+
+\end{document}

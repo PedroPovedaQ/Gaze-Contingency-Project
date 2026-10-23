@@ -1,0 +1,263 @@
+\chapter{QUESTIONNAIRE WORDING AND ADMINISTRATION}\label{app:instruments}
+\newpage
+This appendix preserves the current Overleaf instrument wording. Administration remains proposed, with Qualtrics synchronization on hold. The two retrospective block references do not imply questionnaires between blocks. Source attribution and scoring rules are described in the methodology chapter.
+
+
+
+\section{Administration}
+Two counterbalanced voice blocks will contain 40 measured trials each, with one separate practice trial. The final survey will administer two separately labelled retrospective questionnaire sets, one referring to each voice block, using identical item wording and order. No questionnaires will be administered between blocks. The break and immediate comfort/tracking checks will remain. Surveys and rest breaks will occur outside active-search timing.
+
+\begin{tabularx}{\linewidth}{@{}p{0.27\linewidth}X@{}}\toprule
+Stage & Measures \\\midrule
+Before headset exposure & Demographics, experience and baseline SSQ \\
+Voice setup & Agent-gender preference, audition ratings and voice choice \\
+Between voice blocks & Rest break, immediate comfort and tracking checks; no questionnaire \\
+Final survey after both blocks & Post-exposure SSQ; two condition-specific sets (6 workload, 24 IMI, 21 agent-perception and 14 voice/assistance ratings each), technical checks, optional comments, voice comparison and debrief \\\bottomrule
+\end{tabularx}
+Each condition-specific set in the final survey contains 65 numeric responses (130 across both sets) before technical checks and optional text. Setup will include a separate liking rating for each auditioned voice, including the self-similar voice. Baseline and final SSQ together contain 32 symptom ratings.
+
+\section{Baseline}
+\qid{BASE\_STUDY\_CODE}
+Study code (assigned by the researcher):
+\textit{Response:} Coded identifier; no name or contact details.
+\qid{BASE\_AGE}
+Age range:
+\textit{Response:} 18--24; 25--34; 35--44; 45--54; 55--64; 65+; Prefer not to answer.
+\qid{BASE\_GENDER}
+Gender identity (select all that apply):
+\textit{Response:} Woman; Man; Nonbinary; Another identity (optional description); Prefer not to answer.
+\qid{BASE\_HANDEDNESS}
+Which hand do you usually use for everyday tasks?
+\textit{Response:} Right; Left; Both equally; Prefer not to answer.
+\qid{BASE\_CORRECTION}
+Do you use glasses or contact lenses?
+\textit{Response:} Neither; Glasses; Contact lenses; Both; Prefer not to answer.
+\qid{BASE\_MR}
+How often have you used virtual- or mixed-reality headsets?
+\textit{Response:} Never; Once or twice; Several times; Monthly; Weekly or more.
+\qid{BASE\_EYE}
+Have you used eye-tracking technology before?
+\textit{Response:} No; Yes; Unsure.
+\qid{BASE\_VOICE}
+Have you used a synthetic or cloned version of your own voice before?
+\textit{Response:} No; Yes; Unsure.
+\qid{BASE\_AI\_FAMILIARITY}
+How familiar are you with AI voice assistants?
+\textit{Response:} 1 = Not at all familiar; 2--6; 7 = Extremely familiar.
+\subsection{Current symptoms}
+\qid{BASE\_SSQ}
+Rate each symptom now, before headset use.
+\textit{Response:} One severity rating per symptom.
+\begin{enumerate}
+\item General discomfort
+\item Fatigue
+\item Headache
+\item Eyestrain
+\item Difficulty focusing
+\item Increased salivation
+\item Sweating
+\item Nausea
+\item Difficulty concentrating
+\item Fullness of head
+\item Blurred vision
+\item Dizziness with eyes open
+\item Dizziness with eyes closed
+\item Vertigo
+\item Stomach awareness
+\item Burping
+\end{enumerate}
+\textit{Response:} 0 = None; 1 = Slight; 2 = Moderate; 3 = Severe.
+\section{Voice setup}
+\qid{SETUP\_AGENT\_GENDER}
+What gender presentation would you prefer for the agent's voice?
+\textit{Response:} Masculine; Feminine; Another presentation (optional description); No preference; Prefer not to answer.
+\qid{SETUP\_CANDIDATE\_LIKING}
+How much do you like this voice?
+\textit{Response:} 0--100, with 0 = Do not like at all and 100 = Like extremely; Unable to rate. Repeat for every auditioned candidate and the self-similar voice.
+\qid{SETUP\_CHOSEN\_VOICE}
+Which of these voices would you prefer to use for the task?
+\textit{Response:} Select from the voices actually offered. Ties in liking ratings will be resolved by this explicit choice.
+\qid{SETUP\_AUDIO\_CHECK}
+Can you hear the voice clearly and at a comfortable volume?
+\textit{Response:} Yes; No. Resolve volume or audibility problems before continuing.
+Record the offered catalog/version, voice IDs, audition order, selected voice and any unavailable preference. Demographic gender, preferred agent presentation and perceived voice gender are distinct variables. No preference will be inferred from demographic gender.
+\clearpage\section{Final survey: condition-specific questionnaire sets}
+Complete this set twice during the final survey, first for Block 1 and then for Block 2. Display the referenced block number and actual voice condition before each set. Please answer only about that indicated block. There are no right or wrong answers. You may leave an item unanswered if you cannot answer it.
+The researcher will associate the response with participant, session and block IDs, actual voice condition/ID, condition order, survey version and actual administration timestamp. Record administration phase as final and reference scope as participant-by-block; the BLOCK item IDs describe the referent, not collection timing.
+\subsection{Workload}
+Rate each aspect of the indicated block.
+\begin{enumerate}
+\item Mental Demand -- How mentally demanding was this block?
+\item Physical Demand -- How physically demanding was this block?
+\item Temporal Demand -- How hurried or rushed did you feel during this block?
+\item Performance -- How unsuccessful were you in accomplishing the task?
+\item Effort -- How hard did you have to work to achieve your level of performance?
+\item Frustration -- How insecure, discouraged, irritated, stressed, or annoyed did you feel?
+\end{enumerate}
+\textit{Response:} Integer ratings from 0 to 10. For demand, effort and frustration: 0 = Very low; 10 = Very high. For performance: 0 = Perfect; 10 = Failure. Intermediate values are numbered without additional anchors.
+\subsection{Activity experience: IMI}
+Rate each statement about the search activity in the indicated block. Use 1 = Not at all true, 4 = Somewhat true, and 7 = Very true; the other numbered points are available.
+\subsubsection*{Interest/enjoyment}\label{imi1}
+\begin{enumerate}
+\item I enjoyed doing this activity very much.
+\item This activity was fun to do.
+\item I thought this was a boring activity.
+\item This activity did not hold my attention at all.
+\item I would describe this activity as very interesting.
+\item I thought this activity was quite enjoyable.
+\item While I was doing this activity, I was thinking about how much I enjoyed it.
+\end{enumerate}
+\subsubsection*{Effort/importance}\label{imi2}
+\begin{enumerate}
+\item I put a lot of effort into this.
+\item I didn't try very hard to do well at this activity.
+\item I tried very hard on this activity.
+\item It was important to me to do well at this task.
+\item I didn't put much energy into this.
+\end{enumerate}
+\subsubsection*{Pressure/tension}\label{imi3}
+\begin{enumerate}
+\item I did not feel nervous at all while doing this.
+\item I felt very tense while doing this activity.
+\item I was very relaxed in doing this.
+\item I was anxious while working on this task.
+\item I felt pressured while doing this activity.
+\end{enumerate}
+\subsubsection*{Value/usefulness}\label{imi4}
+\begin{enumerate}
+\item I believe this activity could be of some value to me.
+\item I think that doing this activity is useful for practicing visual search.
+\item I think this is important to do because it can improve my search performance.
+\item I would be willing to do this again because it has some value to me.
+\item I think doing this activity could help me to search for targets.
+\item I believe doing this activity could be beneficial to me.
+\item I think this is an important activity.
+\end{enumerate}
+\subsection{Agent perception}
+Rate the voice agent you experienced in the indicated block. Use 1 = Very strongly disagree and 7 = Very strongly agree; intermediate points are numbered 2--6.
+\subsubsection*{Co-presence}
+\begin{enumerate}
+\item[Q1.] I noticed the voice agent.
+\item[Q2.] The voice agent noticed me.
+\item[Q3.] The voice agent's presence was obvious to me.
+\item[Q4.] My presence was obvious to the voice agent.
+\item[Q5.] The voice agent caught my attention.
+\item[Q6.] I caught the voice agent's attention.
+\end{enumerate}
+\subsubsection*{Perceived intelligence}
+\begin{enumerate}
+\item[Q13.] The voice agent was able to operate without my intervention.
+\item[Q14.] The voice agent was aware of the virtual environment.
+\item[Q15.] The voice agent was able to set and pursue tasks by itself in anticipation of future needs.
+\item[Q16.] The voice agent was able to complete tasks quickly.
+\item[Q17.] The voice agent was able to find and process the necessary information for completing the task.
+\item[Q18.] The voice agent was able to adapt/adjust its behavior based on prior events.
+\end{enumerate}
+\subsubsection*{Appealing, eerie and familiar impressions}
+\begin{enumerate}
+\item[Q20.] I found the voice agent appealing.
+\item[Q21.] I found the voice agent eerie.
+\item[Q22.] I found the voice agent familiar.
+\end{enumerate}
+\subsubsection*{Perceived anthropomorphism}
+\begin{enumerate}
+\item[Q37.] The voice agent is able to speak like a human.
+\item[Q38.] The voice agent can be happy.
+\item[Q39.] The voice agent can be friendly.
+\item[Q40.] The voice agent can be respectful.
+\item[Q41.] The voice agent can be funny.
+\item[Q42.] The voice agent can be caring.
+\end{enumerate}
+\subsection{Voice and assistance experience}
+Rate each statement about this block. Use 1 = Strongly disagree and 7 = Strongly agree; intermediate points are numbered 2--6.
+\begin{enumerate}
+\item The agent's voice is similar to mine.
+\item The hints seemed responsive to what I was looking at.
+\item The hints were helpful.
+\item The hints were distracting.
+\item The speaking voice felt familiar.
+\item I trusted the spoken guidance.
+\item I felt comfortable hearing this voice.
+\item The voice felt uncanny or unsettling.
+\item I relied on the spoken hints when deciding where to search next.
+\item The agent's voice sounded natural.
+\item I was willing to follow the agent's instructions.
+\item I was motivated to complete the task without the agent's guidance.
+\end{enumerate}
+\qid{BLOCK\_VOICE\_LIKING}
+How much did you like the voice in this block?
+\textit{Response:} 0--100; 0 = Do not like at all, 100 = Like extremely; Unable to rate.
+\qid{BLOCK\_GUIDANCE\_USE\_PCT}
+During this block, what percentage of the time did you use the agent's guidance to decide where to search?
+\textit{Response:} 0--100\%; 0 = None of the time, 100 = All of the time; Unable to estimate.
+\qid{BLOCK\_PERCEIVED\_GENDER}
+How would you describe the gender presentation of the agent's voice?
+\textit{Response:} Optional free text; Unsure.
+\subsection{Technical and comfort checks}
+\qid{BLOCK\_HEARD}
+Did you hear all prompts clearly?
+\textit{Response:} Yes; No; Unsure.
+\qid{BLOCK\_FAULT}
+Did any prompt unexpectedly repeat, cut off, arrive late, or use the wrong voice?
+\textit{Response:} No; Yes; Unsure. If Yes, optional description.
+\qid{BLOCK\_BREAK}
+Did you take an unplanned break or experience an interruption?
+\textit{Response:} No; Yes. If Yes, optional description.
+\qid{BLOCK\_COMMENT}
+Is there anything else you would like to share about this block?
+\textit{Response:} Optional free text.
+\section{Final survey: symptoms, comparison and debrief}
+\subsection{Post-exposure symptoms and comfort}
+Administer these current-symptom items immediately after headset removal, before the retrospective condition-specific sets. Rate each symptom now.
+\begin{enumerate}
+\item General discomfort
+\item Fatigue
+\item Headache
+\item Eyestrain
+\item Difficulty focusing
+\item Increased salivation
+\item Sweating
+\item Nausea
+\item Difficulty concentrating
+\item Fullness of head
+\item Blurred vision
+\item Dizziness with eyes open
+\item Dizziness with eyes closed
+\item Vertigo
+\item Stomach awareness
+\item Burping
+\end{enumerate}
+\textit{Response:} 0 = None; 1 = Slight; 2 = Moderate; 3 = Severe.
+\qid{POST\_STOP}
+Did you stop or pause because of symptoms?
+\textit{Response:} No; Yes.
+\qid{POST\_READY}
+Do you feel ready to leave the lab?
+\textit{Response:} Yes; No. A No response requires researcher follow-up.
+\subsection{Voice comparison and debrief}
+\qid{POST\_VOICE\_PREF}
+Which voice did you prefer?
+\textit{Response:} The catalog voice I selected; The synthetic version of my own voice; No preference; Unsure.
+\begin{enumerate}
+\item Why did you choose that response?
+\item How did you approach the task, and how did the guidance affect your strategy?
+\item What differences, if any, did you notice between the two voices?
+\item Which moments were helpful, confusing, delayed or distracting?
+\item Did either voice seem to affect your performance? What makes you say that?
+\item What was it like hearing the synthetic version of your own voice? What did you like or dislike about it?
+\item Did anything feel comfortable, unfamiliar or eerie? What contributed to that feeling, if anything?
+\item In what situations, if any, would you prefer a voice like your own? When would you prefer another voice or no voice?
+\item Did either voice feel like your own thoughts, like another person helping, or neither?
+\item Do you have any concerns about how your synthetic voice was created or could be used?
+\item What would you change about the guidance, voices or task?
+\end{enumerate}
+Responses are optional. Ask the broad experience questions before the specific eeriness and inner-dialogue probes. Use follow-ups when needed rather than repeating a question already answered. Record perceived performance separately from logged performance.
+
+
+
+\section{Retained Voice-Recording Passage}
+The English passage below is retained verbatim from the current run sheet. Its match to the release build, recording duration, and audio acceptance procedure must be verified and versioned before participant use. Its object names are recording material and do not reveal the targets of measured trials. Participants will read in their usual speaking voice without a requested whisper or inner-thought performance.
+
+\begin{quote}
+Locate the red sphere. Look toward the upper shelf. Move your gaze slowly to the right. Check the blue cube near the center. Compare each object's color and shape. Scan the lower row from left to right. Look beside the purple cylinder. Point the controller ray at the target and check its highlight. Press the trigger to select the matching object. Take a short pause. Get ready for the next trial.
+\end{quote}

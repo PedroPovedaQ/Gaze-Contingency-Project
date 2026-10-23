@@ -1,0 +1,61 @@
+\chapter{DISCUSSION AND LIMITATIONS}
+\section{What the Study Can Explain}
+The proposed study can compare two voice experiences within the same adaptive search system. Because the catalog voice is chosen by the participant, the comparison asks whether self-similar synthesis differs from a preferred alternative. It does not ask whether personalization is better than an arbitrary default voice. This choice strengthens the practical relevance of the comparison while narrowing the causal claim.
+
+The system also makes the assistance process observable. A slower trial can be examined alongside starting geometry, tracking availability, controller behavior, and delivered speech. That evidence can distinguish a long search with timely guidance from one affected by stale cues or a silent interval. It cannot by itself determine why a participant trusted or ignored an instruction. The subjective and qualitative measures address aspects of experience that the event stream does not directly observe.
+
+\section{Possible Outcome Patterns}
+If self-similar voice produces faster active completion with acceptable uncertainty, the interpretation will still depend on the manipulation check and guidance quality. A difference accompanied by systematic intelligibility problems in the catalog condition would not isolate resemblance cleanly. If both conditions have comparable delivery quality and participants recognize the clone, the result would more directly support a voice-condition effect in this task.
+
+If the preferred catalog voice produces faster completion, that would be consistent with the possibility that a selected external voice is easier to follow, but the study would not establish the mechanism without further evidence. Liking, naturalness, and reliance ratings may help describe the experience. They should not be treated as proven mediators solely because they correlate with performance.
+
+If completion times are similar, uncertainty matters. A wide interval would leave practically important differences unresolved. A narrow interval near the null could constrain the size of a plausible effect under the tested conditions. A nonsignificant test alone will not establish equivalence. Equivalence testing is not part of the current analysis specification. Adding it would require a meaningful bound and procedure defined before inspecting the result.
+
+Experience and performance may diverge. Participants may prefer their cloned voice while searching no faster, or may find it eerie while completing efficiently. Such outcomes would be substantively useful because they distinguish usability, affect, and speed. The battery is designed to retain these differences rather than force a single ranking.
+
+\section{Voice Identity and Acoustic Confounds}
+Voice condition includes more than a nominal label. The self-similar voice depends on recording quality and synthesis, while the preferred voice comes from a heterogeneous catalog. Both may differ in pitch, prosody, speaking rate, pronunciation, and clip duration. The same words and provider do not guarantee matched acoustics. The study will document these properties and pilot comfortable intelligibility rather than claim exact equivalence.
+
+Participant choice is intentional heterogeneity. Requiring every participant to use the same catalog voice would answer a different question. The analysis should retain chosen voice identifiers and describe the distribution, while avoiding an overfitted model with unsupported estimates for sparsely chosen voices. An exploratory association between a catalog voice and performance may reflect who selected it as well as its acoustic properties.
+
+No extra pitch, panning, or inner-thought treatment is part of the current self-similar manipulation. Earlier attempts to make cloned speech sound like an internal monologue are development history. Reintroducing such an effect in only one condition would change the manipulation and require a revised rationale and analysis.
+
+\section{Adaptive Guidance as a Shared Mechanism}
+A shared policy does not produce identical spoken sequences. Participants turn, pause, look, and point differently. The policy consequently supplies different directions and can emit different numbers of hints. This behavior dependence is part of the design, not automatically a failure of experimental control.
+
+Nevertheless, policy drift would threaten the comparison. Changing phrases, timers, or provider behavior midway through collection could alter assistance quality. The study release must pin the application build, configuration, phrase semantics, voice preparation settings, and decision-provider version where possible. Any unavoidable service change must be documented and considered in the analysis.
+
+The central state machine improves auditability by giving one local owner to guidance evidence and transitions. It does not guarantee perfect guidance. Calibration error can produce an incorrect observation; an unclear reference frame can produce an unhelpful phrase; a stale response can escape an incomplete check. A defensible report describes the safeguards and measured failures rather than implying that architectural separation proves correctness.
+
+\section{Practice, Learning, and Order}
+One practice trial reduces setup burden but provides limited exposure to a complex interaction. A participant must learn to hold gaze on the readiness cross, follow speech, use the chair comfortably, aim the right controller, and trigger selection. The practice-proficiency rule remains to be established through pilots. A fixed single trial does not prove that every participant has acquired these skills equally.
+
+Practice uses the first assigned voice. This aligns initial exposure with the first block, but also couples practice familiarity with period. Counterbalancing helps distribute this across voice conditions. It does not prevent fatigue, learning, novelty, or asymmetric carryover. These limitations will be reported with period and order effects and any relevant sensitivity analysis.
+
+\section{Retrospective Questionnaires and Burden}
+The final-only survey avoids interrupting the two-block search sequence with a long questionnaire. It also asks participants to recall Block 1 after completing Block 2. Ratings may therefore reflect recency, contrast, or imperfect recall. The two sets will explicitly identify the referenced block and voice, but that labeling does not guarantee accurate recollection.
+
+The condition-specific battery contains 130 numeric responses across both blocks, in addition to symptoms, setup ratings, comparison questions, and debrief. Completion time, missingness, and comprehension require pilot measurement. A participant who is tired or symptomatic should first receive the immediate post-exposure safety check. The survey's breadth is a current design decision, not evidence that every item is necessary or equally interpretable.
+
+Adapting an embodied-agent measure to a voice agent can alter its meaning. Co-presence or anthropomorphism items may be understood differently without a visible character. The thesis will retain attribution and wording changes, report the adaptation, and avoid asserting new psychometric validation from a small experimental sample. Custom reliance and naturalness items remain individual exploratory measures.
+
+\section{Gaze Quality and Feedback Coupling}
+Gaze serves both as an input to assistance and as a recorded behavioral signal. Poor tracking can therefore change the participant's experience while also reducing measurement coverage. This coupling complicates interpretation: lower gaze availability is not merely a missing column if it also suspends guidance. Coverage and technical events must be considered alongside performance without automatically treating them as pre-existing participant traits.
+
+A highlighted vicinity candidate can help indicate what the system currently attends to, but it can also suggest a reference object that differs from the mathematical gaze ray. The known lower-versus-higher confusion illustrates this problem. A cue should be evaluated in its visible interaction context, not solely against the sign of a geometric delta. Development-only rings and diagnostic markers must not silently enter the participant condition.
+
+The proposed validity-aware stream and independent calibration checks address these risks, but headset-specific spatial performance and distinct acquisition rate remain empirical questions. The report must not borrow a Vive Pro Eye validation result and label it Focus Vision performance. Nor should it infer cognition from a convenient interaction threshold.
+
+\section{Privacy, Consent, and Reproducibility}
+A coded participant identifier does not make a voice recording anonymous. Natural and synthesized speech can remain recognizable. The consent and data-management documents must describe recording, synthesis, cloud processing, storage, access, and deletion using the services actually employed. Older local-only descriptions are inconsistent with current ElevenLabs voice preparation and Jev decisions and require reconciliation before participant use.
+
+The thesis will report the relevant processing stages without including credentials or identifiable recordings. A reproducibility package can provide code, versioned schemas, example synthetic records, and de-identified summaries where authorized. Distribution of cloned voices or raw participant audio requires a separate basis and must not be assumed from consent to participate.
+
+Cloud dependencies also affect replication. A future researcher may not obtain the same voice model or identical decision behavior. Preserving prepared-library metadata and actual playback records helps describe the original exposure, while a constrained phrase interface makes alternative providers testable. It does not eliminate the need to report provider changes.
+
+\section{Future Work}
+A future study could isolate memory, guidance policy, or degree of model autonomy as independent factors. Such a study would require a new experimental design rather than reinterpret the current voice contrast. Provider comparisons could begin with paired replay and then use wearer pilots to test whether observed scheduling improvements translate to a better interaction.
+
+Other extensions include a visible agent body, a known-target search condition, free-walking navigation, a larger range of voice choices, and accessibility-oriented selection alternatives. Each changes the task or population. The present seated right-controller design supplies a controlled starting point, not a universal model of mixed-reality assistance.
+
+Finally, validated eye-event and pupil analyses could enrich the behavioral account if acquisition, calibration, lighting, and event classification support them. They should be added because they answer a defined question with valid measurements, not because the headset exposes a convenient data field.

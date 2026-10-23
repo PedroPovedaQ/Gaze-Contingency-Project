@@ -1,0 +1,55 @@
+\chapter{INTRODUCTION}
+\label{ch:introduction}
+\section{Motivation and Background}
+A spoken direction in mixed reality has both spatial content and a speaker. ``Look to your right'' describes an action, but the voice that delivers it can also sound familiar, reassuring, distracting, or unfamiliar. An assistance system must make the instruction useful at the moment it is heard. It must also account for the fact that the same words may be experienced differently when spoken by a preferred synthetic voice or by a synthetic voice resembling the listener.
+
+Follow My Voice studies this relationship in a surrounding object-search task. A seated participant wears a mixed-reality headset and views colored geometric objects distributed across eight vertical planes. The application knows which object is the target, while the participant is not given its color or shape at the start. The participant instead follows spoken directions, looks for the target, aims a right-controller ray, and presses the trigger to select it. This division makes assistance central to the task without making gaze itself a selection command.
+
+Prior work has investigated gaze-contingent auditory feedback for visual search, multistage gaze guidance, and cues for objects beyond the field of view~\cite{losing2014guiding,kwok2022twostep,binetti2021outofview}. Separately, self-similar voices have been studied in educational games and collaboration with virtual characters~\cite{kao2021selfsimilar,guo2024doppelganger}. These lines of work motivate a question about their intersection: when the assistance mechanism is shared, does the identity of the voice change the efficiency or experience of being guided toward an initially unnamed target?
+
+The present comparison uses two personalized voices. In one condition, the participant selects a preferred voice from a catalog. In the other, the voice is synthesized from a recording of the participant. A preferred catalog voice is an active comparison, not an intentionally poor or impersonal baseline. The design therefore asks whether self-similar synthesis offers something different from an alternative the participant has already chosen to hear.
+
+This distinction matters for interpretation. If a self-similar voice receives higher similarity ratings, that establishes a manipulation check, not a performance benefit. If participants prefer it but do not search faster, the preference remains an experience result. If they search faster without preferring it, behavior and liking have diverged. The thesis will treat these possibilities as separate outcomes rather than combine them into a single claim that one agent is better.
+
+\section{Problem Statement}
+The research problem has an empirical component and an engineering component. The empirical component is to compare voice conditions without changing the guidance policy, target-selection mechanism, or intended difficulty distribution. The engineering component is to ensure that adaptive speech remains appropriate while the participant's gaze and controller move. A direction that was correct when requested can become obsolete before playback. A controller may already point at the target while an older downward correction is still waiting to speak. These failures can influence both search time and perceived responsiveness, thereby contaminating a voice comparison.
+
+Gaze measurements also require careful interpretation. A ray intersecting an object is an observation made by the interaction system. It does not establish that the participant fixated, recognized, or understood the object. A nearby-gaze region is a deliberate tolerance used by the interface. It may improve usability, but it is not a substitute for measuring spatial accuracy. Similarly, a headset's nominal output rate does not demonstrate that the application receives distinct gaze observations at that rate~\cite{dunn2024reporting,niehorster2026dataquality}.
+
+The thesis addresses these problems by separating observed evidence, guidance state, model decisions, and delivered speech. The same distinctions carry into the analysis. An instruction selected by a model is not counted as spoken until playback starts. A qualified gaze acknowledgment is not a controller acknowledgment. A controller acknowledgment is not a successful trial until the trigger selection is correct. This separation is necessary both to implement responsive guidance and to explain what the participant actually experienced.
+
+\section{Research Objectives and Questions}
+The primary objective is to evaluate a voice-condition contrast within a shared gaze-contingent assistance system. The primary research question is: will active search-completion time differ between self-similar and preferred catalog voices after accounting for absolute starting angle and repeated observations within participants? The contrast is two-sided because the current design does not justify assuming a performance advantage for self-similarity.
+
+Secondary questions concern perceived workload and activity experience. Will the two voices differ on the six workload dimensions and their complete unweighted mean? Will they differ on interest/enjoyment, effort/importance, pressure/tension, or value/usefulness? These outcomes concern different constructs. The analysis will preserve those distinctions rather than pool them into a broad satisfaction score.
+
+Exploratory questions concern agent perception, reliance, and the relationship between task difficulty and voice experience. Participants may describe a voice as more responsive or humanlike, may rely on guidance more often, or may experience a cloned voice as familiar or eerie. Such reports will be treated as judgments about an interaction. They will not be evidence that the system possesses intelligence, emotions, awareness, or an inner voice.
+
+An additional engineering objective is to make the assistance process inspectable. Can recorded state and speech history explain why a cue was eligible, why it played or was suppressed, and how long it waited? Can evaluation distinguish a genuinely unhelpful instruction from an acceptable alternative wording? These questions concern system validity and readiness. They support the empirical study but do not replace it.
+
+\section{Scope of the Comparison}
+The independent variable is voice condition: participant-preferred catalog voice versus self-similar synthetic voice. Both conditions use gaze contingency, the same semantic phrase library, the same local geometry rules, and the same controller-selection mechanics. Consequently, the study will not isolate the benefit of gaze contingency, short-term memory, the cloud decision agent, or synthetic speech in general. Those are shared system properties.
+
+The task is deliberately narrower than unrestricted navigation. Participants remain seated and rotate their head and chair to search surrounding planes. Guidance such as ``turn left'' concerns orientation within this setup; it does not ask them to walk toward a target. Objects are virtual, the physical room is visible through passthrough, and the target is initially unnamed. Conclusions will therefore be bounded to guided search under these conditions.
+
+The use of one practice trial in the first assigned voice is a current protocol decision. It introduces an exposure asymmetry: whichever voice appears first also appears during practice. Counterbalancing distributes that asymmetry across voices, but does not remove learning or carryover. The analysis must retain period and assigned order, and the report must describe the practice assignment explicitly.
+
+Figure~\ref{fig:comparison-framework} separates the voice manipulation from the shared task. A difference between conditions would require evidence from the planned study; the diagram specifies the comparison rather than predicting its direction.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth,alt={Two voice conditions feed a shared hidden-target search task and a paired outcome comparison.}]{figures/comparison-framework.pdf}
+\caption[Voice comparison within the shared search task]{Proposed comparison of preferred and self-similar voices within a shared task and guidance mechanism. The schematic identifies the intended manipulation and outcome families; it does not depict observed effects.}
+\label{fig:comparison-framework}
+\end{figure}
+
+
+\section{Contributions of This First Pass}
+The implemented contribution is an instrumented mixed-reality guidance platform. It combines local spatial eligibility, a central guidance state machine, bounded history, constrained cloud decisions, prepared speech, and synchronized review. The resulting architecture exposes the relationship between what the system observed and what it delivered.
+
+The methodological contribution is an operational study design. It specifies two counterbalanced voice blocks, a hidden-target task, independent right-trigger selection, trial geometry, event boundaries, retrospective questionnaires, and a planned repeated-measures analysis. The measurement definitions are intended to prevent several common substitutions: nominal wall angle for exact starting angle, hover for fixation, proposals for playback, or duplicated block ratings for independent trial observations.
+
+The empirical contribution remains pending. This draft does not report a recruited sample, condition means, significance tests, or participant quotations. Its engineering chapter records what the existing alignment audit supports and defines how later evidence will be reported. A completed thesis will need to replace the pending results sections with the frozen study's actual outcomes and revise the abstract and conclusion accordingly.
+
+\section{Organization of the Thesis}
+Chapter~\ref{ch:literature} relates the design to visual-search guidance, voice identity, context-aware agents, and measurement. Chapter~\ref{ch:system} describes the headset application and the division of responsibility between Unity and Jev. Chapter~\ref{ch:methodology} specifies the proposed study. Chapter~\ref{ch:measurement} defines geometry, timing, and data provenance, and Chapter~\ref{ch:analysis} explains how those observations will support the research questions. Chapter~\ref{ch:evaluation} separates engineering verification from future participant results. The discussion and conclusion identify the claims the design can support and the work still required. Appendices preserve the current instrument wording, data contract, sequence tests, and study-readiness decisions.

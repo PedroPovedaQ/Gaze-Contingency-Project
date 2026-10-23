@@ -1,0 +1,184 @@
+This is LuaHBTeX, Version 1.24.0 (TeX Live 2026) 
+ restricted system commands enabled.
+(./main.tex
+LaTeX2e <2026-06-01>
+L3 programming layer <2026-09-09>
+ (./UCF_ETD_accessibility.tex (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/documentmetadata-support.ltx (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/pdfmanagement/pdfmanagement-init.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/tagpdf/tagpdf-base.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/pdfmanagement/pdfmanagement.ltx))) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/l3kernel/l3backend-luatex.def) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/pdfmanagement/l3backend-testphase-luatex.def) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-latest.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/tagpdf/tagpdf.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/tagpdf/tagpdf-luatex.def) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/tagpdf/tagpdf-mc-code-lua.sty)) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-names.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-new-or-2.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-footnotes.ltx)) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-block.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-enumitem.sty)) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-context.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-kernel-changes.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-sec.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-sec-template.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-toc.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-minipage.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-graphic.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-float.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-bib.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-text.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-marginpar.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-title.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-table.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/tools/array.sty)) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-math.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-math.ltx) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-mathpkg.ltx) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-mathintent.ltx)) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-firstaid.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-testphase-tikz.sty)) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/pdfmanagement/pdfmanagement-firstaid.sty)) (./UCF_ETD.cls
+Document Class: UCF_ETD 2007/10/19 v1.4h Standard LaTeX document class
+(/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/setspace/setspace.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/etoolbox/etoolbox.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/generic/iftex/iftex.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/graphics/graphicx.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/graphics/keyval.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/graphics/graphics.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/graphics/trig.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/graphics-cfg/graphics.cfg) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/graphics-def/luatex.def))) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/hyperref/hyperref.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/kvsetkeys/kvsetkeys.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/generic/kvdefinekeys/kvdefinekeys.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/generic/pdfescape/pdfescape.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/generic/infwarerr/infwarerr.sty))) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/hycolor/hycolor.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/hyperref/nameref.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/refcount/refcount.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/generic/gettitlestring/gettitlestring.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/kvoptions/kvoptions.sty))) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/generic/stringenc/stringenc.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/hyperref/pd1enc.def) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/generic/intcalc/intcalc.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/hyperref/puenc.def) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/url/url.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/generic/bitset/bitset.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/generic/bigintcalc/bigintcalc.sty))) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/pdfmanagement/hgeneric-testphase.def (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/pdfmanagement/hyperref-colorschemes.def) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/bookmark/bookmark.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/bookmark/bkm-luatex.def))) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/base/bk12.clo) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/fontspec/fontspec.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/fontspec/fontspec-luatex.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/base/fontenc.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/fontspec/fontspec.cfg))) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/unicode-math/unicode-math.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/l3kernel/expl3.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/unicode-math/unicode-math-luatex.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/l3packages/xparse/xparse.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/l3packages/l3keys2e/l3keys2e.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/base/fix-cm.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/base/ts1enc.def)) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/amsmath/amsmath.sty
+For additional information on amsmath, use the `?' option.
+(/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/amsmath/amstext.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/amsmath/amsgen.sty)) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/amsmath/amsbsy.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/amsmath/amsopn.sty)) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-amsmath.ltx) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/lualatex/lualatex-math/lualatex-math.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/unicode-math/unicode-math-table.tex))) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latex-lab/latex-lab-unicode-math.ltx)) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/booktabs/booktabs.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/tools/longtable.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/tools/tabularx.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/xurl/xurl.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/generic/knuth-lib/null.tex) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/lualatex/luamml/luamml.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/lualatex/luamml/luamml-patches-kernel.sty) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/lualatex/luamml/luamml-patches-amsmath.sty)) (./main.aux) (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty (/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg))
+
+Package tagpdf Info: luamml has been enabled and will create a MathML file.
+
+[1{/Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2] [3] [4] [5] (./main.toc [6] [7] [8] [9] [10] [11]) [12] (./main.lof) [13] (./main.lot) [14] (./chapters/01-introduction.tex
+CHAPTER 1:
+[1] [2] [3]
+Floatstructure:600
+[4] [5<./figures/comparison-framework.pdf>]) (./chapters/02-literature.tex [6]
+CHAPTER 2:
+[7] [8] [9] [10] [11] [12] [13]) (./chapters/03-system.tex [14]
+CHAPTER 3:
+[15]
+Floatstructure:801
+[16<./figures/image.png>] [17]
+Floatstructure:823
+[18]
+Floatstructure:836
+[19<./figures/bounded-memory.pdf>] [20<./figures/voice-guidance-memory-architecture.pdf>]
+Floatstructure:854
+[21]
+Floatstructure:867
+[22<./figures/trial-review-synthetic-demo.png>]
+Floatstructure:950
+[23] [24<./figures/guidance-states.pdf>]) (./chapters/04-method.tex [25]
+CHAPTER 4:
+[26]
+Floatstructure:988
+Floatstructure:1038
+[27] [28<./figures/study-procedure-current.pdf>] [29] [30] [31] [32] [33]
+Floatstructure:1192
+
+Underfull \hbox (badness 3396) in paragraph at lines 89--89
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Sep-a-rate in-ter-est/en-joy-ment (7), ef-fort/im-por-tance (5), pres-
+
+Underfull \hbox (badness 2393) in paragraph at lines 89--89
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Cus-tom voice and as-sis-
+[34] [35] [36]
+Floatstructure:1284
+[37<./figures/survey-scopes.pdf>]) (./chapters/05-measurement.tex [38]
+CHAPTER 5:
+Floatstructure:1308
+[39] [40<./figures/data-provenance.pdf>]
+Floatstructure:1502
+Floatstructure:1509
+[41] [42<./figures/starting-geometry.pdf>] [43<./figures/height-reference.pdf>] [44]
+Floatstructure:1596
+[45<./figures/evidence-events.pdf>] [46] [47]
+Floatstructure:1693
+Floatstructure:1703
+
+Underfull \hbox (badness 3029) in paragraph at lines 141--141
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Re-veal to cor-rect trig-ger, less
+
+Underfull \hbox (badness 2376) in paragraph at lines 141--141
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 In-ter-sec-tion, not fix-a-tion or vicin-ity ac-
+
+Underfull \hbox (badness 1014) in paragraph at lines 141--141
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Qual-i-fied ev-i-dence to match-ing
+[48<./figures/latency-definition.pdf>] [49]) (./chapters/06-analysis.tex [50]
+CHAPTER 6:
+Floatstructure:1800
+[51]
+Floatstructure:1816
+
+Underfull \hbox (badness 10000) in paragraph at lines 40--40
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Sec-ondary ex-pe-ri-
+
+Underfull \hbox (badness 2512) in paragraph at lines 40--40
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Par-tic-i-pant by ref-er-enced
+
+Underfull \hbox (badness 7814) in paragraph at lines 40--40
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Ex-ploratory per-cep-
+
+Underfull \hbox (badness 2512) in paragraph at lines 40--40
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Par-tic-i-pant by ref-er-enced
+
+Underfull \hbox (badness 1810) in paragraph at lines 40--40
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Par-tic-i-pant over full ses-
+
+Underfull \hbox (badness 1019) in paragraph at lines 40--40
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Qual-i-fied event episode /
+
+Underfull \hbox (badness 10000) in paragraph at lines 40--40
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Qual-i-ta-tive ex-pe-ri-
+
+Underfull \hbox (badness 10000) in paragraph at lines 40--40
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Par-tic-i-pant re-sponse /
+[52<./figures/analysis-units.pdf>] [53] [54] [55] [56] [57] [58]) (./chapters/07-evaluation.tex [59]
+CHAPTER 7:
+Floatstructure:2111
+
+Underfull \hbox (badness 2050) in paragraph at lines 19--19
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 De-clared scales and ret-ro-spec-tive
+
+Underfull \hbox (badness 6110) in paragraph at lines 19--19
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Ap-pli-ca-tion built, in-stalled, and
+
+Underfull \hbox (badness 10000) in paragraph at lines 19--19
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Cross-relative def-i-ni-tion doc-u-
+[60] [61] [62] [63]
+Floatstructure:2238
+
+Underfull \hbox (badness 10000) in paragraph at lines 66--66
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Con-sented, started, com-pleted,
+
+Underfull \hbox (badness 1107) in paragraph at lines 66--66
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Ad-justed time con-trast and un-cer-
+
+Underfull \hbox (badness 3601) in paragraph at lines 66--66
+[]|\TU/TeXGyreTermes(0)/m/n/10.95 Sequence-level play-back and ev-i-
+[64]) (./chapters/08-discussion.tex [65]
+CHAPTER 8:
+[66] [67] [68] [69] [70] [71]) (./chapters/09-conclusion.tex [72]
+CHAPTER 9:
+) (./appendices/a-instruments.tex [73]
+APPENDIX A:
+[74]
+Underfull \hbox (badness 7012) in paragraph at lines 16--16
+[]|\TU/TeXGyreTermes(0)/m/n/12 Fi-nal sur-vey af-ter both
+[75] [76] [77] [78] [79] [80] [81] [82] [83] [84] [85] [86] [87] [88]) (./appendices/b-data-dictionary.tex [89]
+APPENDIX B:
+[90]
+Underfull \hbox (badness 10000) in paragraph at lines 16--17
+[]|\TU/TeXGyreTermes(0)/m/n/12 Ap-pli-ca-tion re-vi-sion, con-fig-u-ra-tion, state-machine pol-icy,
+
+Underfull \hbox (badness 10000) in paragraph at lines 26--26
+[]|\TU/TeXGyreTermes(0)/m/n/12 De-grees; wall
+
+Underfull \hbox (badness 10000) in paragraph at lines 28--28
+[]|\TU/TeXGyreTermes(0)/m/n/12 Me-tres; cross
+
+Underfull \hbox (badness 10000) in paragraph at lines 29--29
+[]|\TU/TeXGyreTermes(0)/m/n/12 Me-tres; first
+
+Underfull \hbox (badness 4792) in paragraph at lines 31--32
+[]|\TU/TeXGyreTermes(0)/m/n/12 First valid tar-get col-lider in-ter-sec-tion;
+
+Underfull \hbox (badness 3590) in paragraph at lines 36--36
+[]|\TU/TeXGyreTermes(0)/m/n/12 Ses-sion and ac-
+[91] [92] [93]) (./appendices/c-scenarios.tex [94] [95]
+APPENDIX C:
+[96]
+Underfull \hbox (badness 1189) in paragraph at lines 26--26
+[]|\TU/TeXGyreTermes(0)/m/n/12 Trial ends only on cor-rect se-lec-tion; suc-cess feed-back uses
+[97] [98]) (./appendices/d-readiness.tex [99] [100]
+APPENDIX D:
+[101]
+Underfull \hbox (badness 1688) in paragraph at lines 14--15
+[]|\TU/TeXGyreTermes(0)/m/n/12 In-de-pen-dent spa-tial val-i-da-tion, unique-source tim-ing, drift
+[102] [103]) [104] (./main.bbl [105] [106] [107]
+Underfull \hbox (badness 1163) in paragraph at lines 120--124
+\TU/TeXGyreTermes(0)/m/it/12 CHI Con-fer-ence on Hu-man Fac-tors in Com-put-ing Sys-tems\TU/TeXGyreTermes(0)/m/n/12 , pages 1--13, 2020.  []doi:
+[108] [109]) [110]<<latex-list-css.html>><<latex-align-css.html>> (./main.aux)
+
+Package tagpdf Info: Finalizing the tagging structure:
+(tagpdf)             Writing out ~3913 structure objects
+(tagpdf)             with ~2904 'MC' leaf nodes.
+(tagpdf)             Be patient if there are lots of objects!
+
+Package tagpdf Info: writing ParentTree
+Package tagpdf Info: writing IDTree
+Package tagpdf Info: writing RoleMap
+Package tagpdf Info: writing ClassMap
+Package tagpdf Info: writing NameSpaces
+Package tagpdf Info: writing StructElems
+Package tagpdf Info: writing Root
+)
+(see the transcript file for additional information)
+ 707 words of node memory still in use:
+   7 hlist, 2 vlist, 2 rule, 2 glue, 4 kern, 2 glyph, 59 attribute, 67 glue_spec, 19 attribute_list, 1 write nodes
+   avail lists: 1:2,2:5337,3:644,4:26,5:551,6:86,7:6601,8:67,9:730,10:24,11:541
+</Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/fonts/opentype/public/lm/lmmonolt10-bold.otf></Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/fonts/opentype/public/tex-gyre-math/texgyretermes-math.otf></Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/fonts/opentype/public/tex-gyre-math/texgyretermes-math.otf></Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/fonts/opentype/public/tex-gyre/texgyretermes-italic.otf></Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/fonts/opentype/public/lm/lmmono12-regular.otf></Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/fonts/opentype/public/tex-gyre/texgyretermes-bold.otf></Users/pedro.poveda/.cache/ucf-thesis-tex/TinyTeX/texmf-dist/fonts/opentype/public/tex-gyre/texgyretermes-regular.otf>
+Output written on main.pdf (124 pages, 2641208 bytes).
+Transcript written on main.log.

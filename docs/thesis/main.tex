@@ -1,0 +1,71 @@
+% !TeX program = lualatex
+\input{UCF_ETD_accessibility}
+\documentclass{UCF_ETD}
+\usepackage{amsmath,booktabs,array,longtable,tabularx,xurl,enumitem}
+\setlist{itemsep=3pt,topsep=5pt}
+% Keep appendix longtable entries consistent with UCF float entries in the LOT.
+\ExplSyntaxOn
+\makeatletter
+\patchcmd{\LT@c@ption}{\@nameuse{the\LTcaptype}}{\@nameuse{fnum@\LTcaptype}: }{}{\PackageWarning{Thesis}{Longtable list prefix patch did not apply}}
+\makeatother
+\ExplSyntaxOff
+\graphicspath{{figures/}}
+\emergencystretch=2em
+\setcounter{tocdepth}{2}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\raggedbottom
+\newcommand{\qid}[1]{\par\smallskip\textbf{\texttt{#1}}\par}
+\newcommand{\draftnote}[1]{\par\noindent\textbf{Draft status.} #1\par}
+\title{FOLLOW MY VOICE: SELF-SIMILAR AND PREFERRED VOICES FOR GAZE-CONTINGENT OBJECT SEARCH IN MIXED REALITY}
+\author{PEDRO POVEDA QUEVEDO}
+% Previous degree and major professor omitted pending author confirmation.
+\thesisname{thesis}
+\degreename{Master of Science}
+\departmentsname{Computer Science}
+\collegename{Engineering and Computer Science}
+\termname{Fall}
+\termyear{2026}
+\begin{document}
+\frontmatter
+\maketitle
+\copyrightpage{~Pedro Poveda Quevedo}
+\begin{aidisclosure}
+This first-pass manuscript was prepared with assistance from OpenAI Codex for source organization, drafting, implementation-to-protocol reconciliation, and LaTeX production. Claude performed separate language and methods reviews; their findings and the changes made in response are recorded with the source project. The author must review the manuscript, verify its citations and claims, and approve the final disclosure before submission. This working disclosure does not assert that author validation or committee approval has already occurred.
+\end{aidisclosure}
+\begin{abstract}
+Spoken guidance can help mixed-reality users locate objects outside their current field of view. Voice identity may also affect how users experience that assistance. Follow My Voice compares a participant-preferred catalog voice with a synthetic version of the participant's own voice. Target identity is withheld while gaze-contingent directions guide search across eight surrounding vertical planes. A right-controller ray and trigger provide explicit selection.
+
+The system separates local spatial reasoning from constrained language-model decisions. A central guidance state machine combines valid gaze, controller intersections, and recent history. Jev selects eligible phrasing and speaking opportunities; local playback checks reject stale cues. Prepared ElevenLabs audio supplies both conditions. Synchronized records distinguish gaze contact, spoken acknowledgment, controller pointing, and successful selection.
+
+The proposed within-participant study comprises one practice trial in the first assigned voice and two counterbalanced blocks of 40 measured trials. Analysis will compare active completion time while accounting for starting geometry and participant clustering. Workload, motivation, and agent experience will be assessed retrospectively after both blocks. This first pass documents the system, measurement definitions, planned analyses, and remaining validation requirements. Confirmatory participant outcomes are not yet available. The contribution at this stage is an auditable experimental platform and a design for studying personalized voice within a shared guidance mechanism.
+\end{abstract}
+\chapter*{PREFACE}
+This is an advisor-review draft dated October 22, 2026. It expands the project's current Overleaf manuscript and bibliography into a thesis using the supplied UCF ETD LuaLaTeX template. It is not a completed empirical report. Present-tense system descriptions refer to the documented implementation snapshot; future-tense methods describe the proposed study. Engineering checks, planned measurements, and participant outcomes are kept separate.
+
+The source snapshot is Overleaf revision \texttt{f9f49e4}. The runtime alignment audit dated October 20 is the accompanying implementation record. Later software changes require a new reconciliation before submission. Exact pre-cue geometry, balanced vertical allocation, final sample size, and pilot acceptance rules remain explicit readiness requirements. Qualtrics synchronization remains on hold. The author name, degree details, graduation term, previous degree, advisor, acknowledgments, and final AI disclosure require author confirmation; unverified prior degrees and advisor names have not been inserted.
+
+The structural reference is Hoang Bao Truong's 2026 UCF thesis, \emph{Using Inferences from Natural Language Narratives to Improve Video Question Answering}. Its chapter hierarchy, front matter, detailed methods, diagnostic discussion, and appendices inform presentation only. Its prose, experiments, and findings are not evidence for this study.
+\tableofcontents
+\listoffigures
+\listoftables
+\mainmatter
+\input{chapters/01-introduction}
+\input{chapters/02-literature}
+\input{chapters/03-system}
+\input{chapters/04-method}
+\input{chapters/05-measurement}
+\input{chapters/06-analysis}
+\input{chapters/07-evaluation}
+\input{chapters/08-discussion}
+\input{chapters/09-conclusion}
+\appendix
+\input{appendices/a-instruments}
+\input{appendices/b-data-dictionary}
+\input{appendices/c-scenarios}
+\input{appendices/d-readiness}
+\backmatter
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}

@@ -1,5 +1,11 @@
 # Gaze Contingency Project
 
+## Thesis first pass — October 23, 2026
+
+[Read the thesis PDF](docs/thesis/follow-my-voice-thesis-first-pass.pdf) · [Editable LaTeX source and build instructions](docs/thesis/README.md) · [Review and verification](docs/thesis/review/verification.md)
+
+The advisor-review draft contains 124 pages, 14 figures, and 11 tables, grounded in Overleaf revision `f9f49e4` and the October 20 implementation audit. Participant results and final study validation remain pending. Its documented implementation snapshot includes recovered-branch work that is not implied to be deployed by this documentation commit. Qualtrics remains on hold.
+
 ## Experimenter protocol
 
 **Current planning checkpoint (September 22):** [Meeting reconciliation, verified progress and next steps](docs/meeting-reconciliation-2026-09-22.md) · [GitHub project](https://github.com/users/PedroPovedaQ/projects/2). The requested comparison is preferred versus self-similar voice, with controller selection and passive gaze measurement. These changes remain implementation work.

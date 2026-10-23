@@ -1,0 +1,149 @@
+\chapter{MEASUREMENT AND DATA PROVENANCE}
+\label{ch:measurement}
+\section{From Interaction Events to Research Variables}
+The recorded data serve two purposes: reconstructing what happened in a trial and estimating the study outcomes. Reconstruction requires observations and events at their original temporal resolution. Statistical analysis usually requires a more compact table. The project therefore keeps trial summaries separate from gaze, head/controller motion, object layouts, and event streams. The summary is a derived representation, not a replacement for the underlying evidence.
+
+Every derived value needs an identifiable source and a definition. A number called ``time to gaze'' is ambiguous unless it specifies the clock origin, the contact rule, validity handling, and the treatment of missing observations. The same is true of an angle: wall assignment, gaze error, starting geometry, and accumulated rotation can all be expressed in degrees, but describe different quantities. The data contract preserves these meanings in separate fields.
+
+Figure~\ref{fig:data-provenance} shows why a compact trial CSV must retain links to the underlying observations. Statistical scope and reconstruction detail impose different requirements on the exported data.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth,alt={Raw observations and events feed versioned processing, trial summaries, Trial Review, and analysis tables.}]{figures/data-provenance.pdf}
+\caption[Raw records, derived summaries, and analytical scope]{Recording and processing relationships. Source streams support reconstruction; derived summaries support analysis. Processing and scoring require versioned definitions. Repeating block-level ratings in trial rows does not create new independent observations.}
+\label{fig:data-provenance}
+\end{figure}
+
+
+\section{Coordinate Frames and Starting Geometry}
+Let $\mathbf{o}$ denote the saved trial reference origin, $\mathbf{c}$ the readiness-cross center, and $\mathbf{p}$ the target center. All three positions must be expressed in the same world coordinate frame. Let $\Pi(\mathbf{v})=(v_x,0,v_z)$ project a vector onto the horizontal plane. Define
+\begin{equation}
+\mathbf{a}=\Pi(\mathbf{c}-\mathbf{o}),\qquad
+\mathbf{b}=\Pi(\mathbf{p}-\mathbf{o}).
+\end{equation}
+For nondegenerate vectors, the exact pre-cue starting angle is
+\begin{equation}
+\theta_0=\operatorname{atan2}\!\left(\hat{\mathbf{y}}\cdot(\mathbf{a}\times\mathbf{b}),\,\mathbf{a}\cdot\mathbf{b}\right)\frac{180}{\pi}.
+\end{equation}
+The sign convention will be verified against Unity's world-up signed-angle convention with known left and right targets. Its absolute value, $|\theta_0|$, describes horizontal demand from the saved cross reference. Exactly backward targets require a documented tie convention, because $-180$ and $+180$ identify the same horizontal bearing. The absolute magnitude remains 180 degrees in either case.
+
+This calculation is a required addition to the frozen study data contract. The October 20, 2026 implementation alignment audit (source register in Appendix~\ref{app:readiness}) found that existing signed and absolute theta fields represented nominal wall geometry relative to the previous target wall. They must not be renamed or silently interpreted as exact pre-cue measurements. A new snapshot must save origin, cross, target, timestamp, frame, and coordinate-frame identifier before the opening cue. If a horizontal vector is degenerate, the angle is unavailable; substituting zero would falsely describe an easy starting configuration.
+
+Nominal categories remain useful for allocation. Each block contains eight scheduled trials in each absolute category, $0,45,90,135,180$ degrees. An object can be positioned away from the center of its assigned wall, so its exact bearing need not equal the nominal category. Balance in categories therefore does not prove exact geometric matching between voice blocks. Both assigned and realized geometry will be inspected.
+
+The signed height difference is
+\begin{equation}
+\Delta h=p_y-c_y.
+\end{equation}
+Positive values identify targets above the cross center and negative values identify targets below it. This reference is not interchangeable with seated eye height. The planned 20-above/20-below allocation must be checked against realized positions and a prespecified near-zero rule. At the source snapshot, floor-to-height scattering did not enforce that balance.
+
+The three-dimensional distance measure uses a different observation: the first valid tracked head position $\mathbf{h}_k$ after reveal. Its value is $d=\|\mathbf{p}-\mathbf{h}_k\|_2$, in metres. The timestamp of $\mathbf{h}_k$ must accompany the distance. This post-reveal measurement describes geometry at an observed head pose; it cannot recover an unrecorded pre-cue snapshot.
+
+Figures~\ref{fig:starting-geometry} and~\ref{fig:height-reference} illustrate the proposed geometric contract. Neither diagram represents a recorded layout. Their purpose is to show why nominal wall assignment, exact cross-relative bearing, cross-relative height, and live gaze error require separate names and saved references.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth,alt={Overhead octagonal layout with origin, cross reference, nominal wall center, and an offset target showing distinct bearings.}]{figures/starting-geometry.pdf}
+\caption[Nominal wall assignment and exact starting angle]{Conceptual overhead geometry. The target can be offset from its wall center, so an allocation category need not equal the realized starting bearing. The exact pre-cue snapshot remains an implementation requirement at the aligned checkpoint.}
+\label{fig:starting-geometry}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth,alt={Side elevation of cross and target with positive signed height difference and a distinction between allocation and live refinement.}]{figures/height-reference.pdf}
+\caption[Cross-relative height and live gaze refinement]{Conceptual side elevation for the proposed signed height difference. The target shown above the cross has positive height delta. The planned above/below quota and near-zero rule remain unresolved implementation and protocol checks; live vertical guidance uses current gaze geometry.}
+\label{fig:height-reference}
+\end{figure}
+
+
+\section{Trial Clocks and Pause Intervals}
+Let $t_r$ be object reveal, $t_s$ correct selection, and $\mathcal{P}$ the union of valid pause intervals. Active completion time is
+\begin{equation}
+T_{\mathrm{active}}=(t_s-t_r)-\mu\!\left([t_r,t_s]\cap\mathcal{P}\right),
+\end{equation}
+where $\mu$ denotes elapsed duration. Using the union prevents overlapping pause reasons from being subtracted twice. For example, an application-focus pause can overlap a researcher-requested pause. The resulting active interval should remain stopped until all relevant pause reasons are resolved.
+
+Readiness and opening speech precede reveal and are excluded from active search. This is an intentional outcome boundary, not missing task time. The system will retain a broader opening-cue-to-selection interval so that analyses can describe the time spent receiving the initial instruction. Prepared clips can have different durations across voices, making that additional record useful even when active completion remains the primary outcome.
+
+A stopped or timed-out trial has an observed duration and an outcome reason, but does not have a successful completion time. The analysis must not copy its stop timestamp into a success field. Similarly, a late-arriving file in the viewer is a transfer delay, not necessarily a delay in the headset event. Source timestamps and receive timestamps have distinct roles.
+
+\section{Gaze Contact, Vicinity, Pointing, and Selection}
+Four event families are central to interpretation. A valid eye ray can intersect the target collider. A gaze direction can satisfy the larger target-vicinity rule. The right-controller ray can intersect the target. Finally, a trigger press can select the target. These events can occur at different times and need not occur in that order in every recorded sample sequence.
+
+The first gaze-contact latency uses the first valid recorded target-ray intersection after reveal. The last gaze-contact time uses the last such intersection before trial end. Neither is a fixation duration. If no contact is observed because of a blink, acquisition gap, or a path that only enters the broader vicinity, the contact field remains missing. The presence of a spoken acknowledgment does not justify filling in an unobserved ray contact.
+
+Vicinity qualification is an interaction rule. In the documented system, a target can be acknowledged after 100 ms of valid qualifying evidence, with overlapping regions resolved to a single closest candidate. The rule trades exact collider intersection for a tolerance intended to make feedback usable. That tolerance must be logged and piloted. The study-release tolerance remains to be frozen; the synthetic viewer screenshot's default ring is not a validated study setting. A very large region can create premature acknowledgment even if its timing is correct.
+
+Controller pointing is a distinct input observation. Its spoken acknowledgment is not independent of gaze because the admission rule also requires valid nearby gaze. The documented pointing acknowledgment requires a qualified one-second controller hold with valid gaze in the target vicinity when speech is admitted. A valid target hit suppresses contradictory away-directions before the hold completes. This suppression prevents a direction such as ``go back down'' from being delivered while the controller is already on the target, without falsely saying the hold has qualified. Correct trigger selection is the only event that successfully completes the search; a stop or timeout has a different outcome.
+
+Figure~\ref{fig:evidence-events} contrasts the three feedback and completion events. The example utterances communicate their meanings and are not asserted to be verbatim clips in every voice library.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth,alt={Three separate rows show qualified gaze, qualified controller pointing, and correct trigger selection as distinct events.}]{figures/evidence-events.pdf}
+\caption[Gaze acknowledgment, pointing acknowledgment, and completion]{Implemented interaction distinctions. Gaze acknowledgment uses a 100-ms qualifying vicinity gate; pointing acknowledgment uses a one-second controller hold with required valid nearby gaze. A correct trigger selection completes the trial independently of whether either acknowledgment was spoken. These are interaction gates, not validated fixation measures.}
+\label{fig:evidence-events}
+\end{figure}
+
+
+\section{Acquisition Rate, Validity, and Gaps}
+A render loop can query an eye-tracking API frequently without receiving a new hardware observation each time. The effective acquisition rate must therefore be estimated from distinct source observations. If $n$ unique observations span source times $t_1$ through $t_n$, a basic rate summary is $(n-1)/(t_n-t_1)$. The distribution of successive intervals, repeated timestamps, invalid observations, and long gaps must accompany that average. A mean alone can conceal bursty delivery.
+
+Application timestamps describe when data were handled. Source timestamps describe when the tracking observation was produced, if the API exposes them reliably. Clock-domain mapping must be established before computing age or latency across these clocks. If unique source timing is unavailable, the report will state that limitation rather than infer 120-Hz binocular delivery from polling or headset specifications.
+
+Spatial validation will compare gaze direction with known independent targets. Angular error will be computed from normalized gaze and expected target directions, with invalid observations excluded from the error distribution but retained in availability summaries. Precision and bias should be considered separately. A stable offset and a noisy signal can produce different guidance failures even if their average angular error is similar. The validation procedure must also describe target exposure, head pose, corrective lenses, and headset adjustments.
+
+\section{Motion, Coverage, and Instructions}
+Gross translation will sum Euclidean differences between adjacent valid head positions. Gross rotation will sum shortest quaternion angular differences. Invalid intervals, excessive gaps, and pauses break the accumulation. Gross movement is a total, not a rate. If a separate movement-rate outcome is derived, its denominator will be observed covered time rather than the entire nominal session. Otherwise, two runs with different data loss could produce misleadingly different motion totals.
+
+Fixed-axis components derived from rotation vectors are not Euler yaw, pitch, and roll. Their labels will retain the actual calculation. Head motion also does not directly measure swivel-chair rotation, because the head can move relative to the torso and chair. A seated avatar drawn at the scene center in Trial Review is a visualization convention, not evidence that measured head translation was zero.
+
+Instruction counts will use actual software playback starts. A requested cue, a rejected model answer, and a prefetched clip are not delivered instructions. Opening cues, search guidance, acknowledgments, reminders, and success speech will have separate categories. The planned total of delivered active-search assistance includes directional guidance, gaze/pointing acknowledgments, and selection reminders; each category will also be reported separately. Opening and success speech remain outside that total. Interrupted speech counts as started speech while retaining its completion status; it should not be treated as if the participant heard every word.
+
+\section{Sequence-Level Latency}
+For a qualified event, let $t_q$ denote the earliest supported qualification time and $t_p$ the actual software playback start of the corresponding acknowledgment. The primary engineering delay is
+\begin{equation}
+L_{\mathrm{software}}=t_p-t_q.
+\end{equation}
+This is not acoustic latency at the participant's ear. Audio-device buffering and the physical sound path require a separate measurement. Gaze and controller qualification times must also use their own definitions; comparing a controller acknowledgment against first gaze contact would inflate or misattribute its delay.
+
+Repeated requests about one continuously qualified event form a single episode. A sequence can contain several Jev waits without creating several independent missed confirmations. An episode ends with playback, disqualification, trial termination, or a defined reset. Evaluation will report how those endpoints were assigned and mark incomplete evidence as unknown.
+
+Where logs support attribution, waiting will be divided into model response, explicit model deferral, scheduling, existing speech, and audio readiness. These intervals may overlap. They should not be added mechanically unless represented as a nonoverlapping partition of the critical path. The full event timeline remains the authority when aggregate attribution is ambiguous.
+
+Figure~\ref{fig:latency-definition} separates intentional evidence qualification from subsequent delivery delay. A model response can be timely while playback is delayed elsewhere, and overlapping waits must not be double-counted.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth,alt={Timeline distinguishes first valid evidence, qualification, admission, final recheck, and software playback; intervals are illustrative.}]{figures/latency-definition.pdf}
+\caption[Qualification-to-playback latency and its boundaries]{Conceptual event timeline, not a measured trace. Software delivery delay begins at supported qualification and ends at actual software playback start. The preceding qualification gate and the unmeasured acoustic path are separate quantities. Qualified local feedback can avoid a new cloud request.}
+\label{fig:latency-definition}
+\end{figure}
+
+
+
+Table~\ref{tab:latency-contract} keeps the principal timing variables separate. In particular, the onset of an audio clip is a software event; neither a candidate phrase nor a successful provider response proves that the participant heard it.
+\begin{table}[htbp]
+\centering
+\caption[Timing variables and evidence boundaries]{Timing contract for planned analysis and engineering evaluation. All cross-clock comparisons require an established mapping; unavailable evidence is not assigned a zero duration.}
+\label{tab:latency-contract}
+\small
+\begin{tabularx}{\linewidth}{@{}p{0.23\linewidth}p{0.31\linewidth}X@{}}
+\toprule
+Quantity & Endpoints & Interpretation limit \\\midrule
+Active completion & Reveal to correct trigger, less union of pauses & Excludes readiness and opening cue; unfinished trials remain unfinished. \\
+First gaze contact & Reveal to first valid target-ray hit on active clock & Intersection, not fixation or vicinity acknowledgment. \\
+First pointing contact & Reveal to first tracked right-ray hit on active clock & Not the one-second hold or trigger selection. \\
+Jev response latency & Request dispatch to response receipt & A response can be deferred, canceled, or stale. \\
+Confirmation delivery & Qualified evidence to matching actual software playback & Separate gaze and pointing episodes; not acoustic latency. \\
+Live transfer lag & Source event to viewer receipt, if clocks are mapped & Describes transport, not headset decision delay. \\\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Questionnaire Joins and Versioning}
+Final questionnaire administration is separate from the block to which a response refers. A response collected after both blocks will retain final-administration timing and a Block 1 or Block 2 reference. The actual voice identifier must be joined through the saved order, not inferred from block number. Practice is excluded from measured block outcomes even though it uses the first voice.
+
+A convenience export may repeat a block-level workload score on every trial row. That does not create 40 independent workload observations. The analytical dataset will identify participant-by-block scope and collapse duplicate joins when estimating questionnaire effects. Raw responses, score direction, scale bounds, item identifiers, instrument version, and missingness will remain available.
+
+The current NASA-TLX adaptation uses 0--10 ratings, whereas older development exports used 0--100. Automatic scoring must require explicit range metadata. A separately named normalized score can support comparison, but raw values must remain unchanged. Unknown legacy performance anchors cannot be repaired by guessing their direction. Complete-subscale rules for IMI and agent-perception measures will likewise be implemented and tested before confirmatory analysis.

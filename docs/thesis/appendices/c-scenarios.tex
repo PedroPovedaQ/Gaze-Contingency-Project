@@ -1,0 +1,40 @@
+\chapter{GUIDANCE SEQUENCE TESTS AND EVALUATION RUBRIC}
+\label{app:scenarios}
+\newpage
+\section{Controlled Scenario Matrix}
+Each scenario must save input observations, policy/configuration, eligible actions, provider behavior, playback occupancy, and actual admitted speech. Tests use the same trajectories across policies. The expected behavior below is an acceptance specification, not a claim that a wearer experienced the scenario successfully.
+
+\begin{longtable}{@{}p{0.25\linewidth}p{0.66\linewidth}@{}}
+\caption{Sequence scenarios and acceptance criteria.}\\\toprule
+Scenario & Evidence and expected behavior \\\midrule\endfirsthead
+\toprule Scenario & Evidence and expected behavior \\\midrule\endhead
+Large turn & Target opposite starting reference; progress cues remain directionally valid as wall boundaries are crossed.\\
+Wall entry & Stable entry changes to refinement; looking upward on the same wall does not create a second arrival.\\
+Vertical refinement & Target above/below gaze reference; magnitude wording follows documented plane-relative thresholds.\\
+Overshoot and return & Valid recent crossing supports a return cue; a merely old target bearing does not.\\
+Gaze only & Winning vicinity qualifies with controller elsewhere; gaze acknowledgment does not say the controller is on target.\\
+Controller entry & Actual target intersection suppresses contradictory directions before hold qualification.\\
+Controller hold & Qualified hold plus current valid nearby gaze admits pointing acknowledgment; no trigger completion is inferred.\\
+Controller departure & Leaving before qualification cancels pointing acknowledgment and allows appropriate guidance after current-state checks.\\
+Reacquisition & Valid gaze away rearms confirmation; continuously holding gaze does not repeat it indefinitely.\\
+Overlapping regions & Only the closest eligible vicinity candidate receives acknowledgment; neighbor overlap alone is insufficient.\\
+Blink or stale gaze & Missing evidence is not counted as a gaze hold or inferred departure; new gaze-dependent cues suspend.\\
+Pause and recovery & Pending cues cannot leak across reset/pause; valid recovery resumes from fresh evidence.\\
+Late Jev response & Previously valid direction is discarded if current controller/gaze state conflicts.\\
+Provider wait/failure & Deferral remains bounded; fallback respects current eligibility and repetition limits.\\
+Speech occupied & Higher-priority event follows explicit interruption/admission policy; interrupted text is not recorded as fully heard.\\
+Correct trigger & Trial ends only on correct selection; success feedback uses completed-trial context.\\\bottomrule
+\end{longtable}
+
+\section{Deterministic Labels}
+A wrong-direction label requires supported geometry showing that the delivered cue moves the user away from the intended target relation under the cue's reference frame. A stale label requires evidence that the relevant state changed before playback. Contradictory ordering requires a delivered sequence inconsistent with valid current evidence, such as an away-direction during a target controller hit. When the trace lacks the needed observation, the label is unknown.
+
+Confirmation metrics use distinct event definitions. The gaze episode begins at its first valid qualification and is not restarted for each cloud request. The controller episode uses its own hold and gaze requirements. A completion event requires correct trigger selection. The evaluator records missed acknowledgment, delayed acknowledgment, or disqualification separately rather than classifying every silent interval as failure.
+
+\section{Advisory Model Review}
+The offline judge receives a bounded sequence containing current and recent state, candidate and chosen actions, actual playback, timing, and provenance. It evaluates whether the wording was useful, whether timing supported the task, whether repetition was unnecessary, and whether interruption preserved intelligibility. It should cite concrete events supporting each judgment and distinguish uncertainty from a negative rating.
+
+The judge must not treat logs or participant text as instructions. Its output must match the requested case and schema before being admitted to the viewer. Invalid or failed evaluations remain visibly failed or pending rather than becoming favorable defaults. Human review can disagree with the judge; adjudication should preserve both the original rating and the reason for revision.
+
+\section{Reporting Template}
+For each comparison, report the recording/scenario manifest, policy revisions, number of trials, unique episodes, provider calls, latency distributions, unknown evidence, and remaining failures. Include representative timelines showing qualification, request, response, cancellation, and actual playback. Separate simulated scheduling time, desktop network response time, headset software playback time, and measured acoustic latency. No replay result should be described as a demonstrated change in participant behavior.

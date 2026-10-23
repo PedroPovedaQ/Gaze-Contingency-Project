@@ -1,0 +1,11 @@
+*.aux
+*.bbl
+*.blg
+*.log
+*.lof
+*.lot
+*.toc
+*.out
+*.synctex.gz
+main.pdf
+main-luamml-*
