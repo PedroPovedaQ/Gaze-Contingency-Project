@@ -12,16 +12,15 @@ using UnityEngine.Networking;
 /// Caches generated MP3 files on disk so repeated phrases (tips, congrats, etc.)
 /// play instantly from local storage after the first synthesis.
 /// </summary>
-public class VoiceSynthesizer : MonoBehaviour
+public partial class VoiceSynthesizer : MonoBehaviour
 {
     const string k_Tag = "[VoiceSynth]";
     const string k_BaseUrl = "https://api.elevenlabs.io/v1/text-to-speech/";
-    const string k_Model = "eleven_turbo_v2_5";
+    const string k_Model = ElevenLabsVoiceClient.Model;
     const string k_CacheFolder = "tts_cache";
 
-    string m_ApiKey;        // ElevenLabs key (generic voice)
-    string m_MistralKey;    // Voxtral key (self-similar voice)
-    VoxtralClient m_Voxtral;
+    string m_ApiKey;        // ElevenLabs key for catalog voices and enrollment
+    ElevenLabsVoiceClient m_CloneClient;
     string m_CacheDir;
     AudioSource m_AudioSource;
     Coroutine m_SpeakCoroutine;
@@ -32,9 +31,11 @@ public class VoiceSynthesizer : MonoBehaviour
     public string LastError { get; private set; }
     public bool ProviderPolicyBlocked => LastError != null && LastError.Contains("guardrail_violation");
     public string PreparationStage { get; private set; }
+    // Completed preparation work, not an estimate of elapsed/remaining time.
+    public float PreparationProgress { get; private set; }
     public bool LibraryReady { get; private set; }
     bool m_Preparing;
-    bool m_GeneratedAudio;
+    VoiceCondition[] m_LibraryVoices = { VoiceCondition.Generic, VoiceCondition.SelfSimilar };
     HashSet<string> m_OnDemandPhrases;
     float m_MatchedRms;
     Coroutine m_BackgroundCoroutine;
@@ -45,12 +46,14 @@ public class VoiceSynthesizer : MonoBehaviour
     readonly Dictionary<string, AudioClip> m_PreparedClips = new Dictionary<string, AudioClip>();
     readonly List<ClipAudit> m_Audit = new List<ClipAudit>();
     string m_ActiveClipKey;
+    string m_GuidanceDecisionId, m_PendingCorrectionDecisionId;
     public event Action<string, string, string, string> Telemetry;
     public event Action<string> PlaybackFailed;
 
     [Serializable] class ClipAudit
     {
-        public string clip_id, voice_id, provider, model, text, content_version, perspective, perspective_version, effect_profile;
+        public string clip_id, voice_id, voice_condition, provider, model, text, content_version, perspective, perspective_version, effect_profile;
+        public string verification_version, source_audio_sha256;
         public float duration_seconds, rms, peak, gain, achieved_rms, requested_rms;
         public int speech_samples; // leading interleaved samples holding the words; RMS is measured here
         public bool level_limited;
@@ -66,59 +69,83 @@ public class VoiceSynthesizer : MonoBehaviour
     void Fail(string reason)
     {
         if (!m_BackgroundLoading) LastError = reason;
-        Telemetry?.Invoke("audio_failure", m_CurrentContext ?? "", m_ActiveClipKey ?? "", reason);
+        AudioTelemetry("audio_failure", m_CurrentContext ?? "", m_ActiveClipKey ?? "", reason);
         Debug.LogWarning($"{k_Tag} {reason}");
         if (!m_Preparing && !m_BackgroundLoading && m_CurrentContext != "voice_choice") PlaybackFailed?.Invoke(reason);
     }
 
     public IEnumerator PrepareLibraries(string[] phrases, Action<string> progress, Action<bool> done,
-        string[] onDemandPhrases = null)
+        string[] onDemandPhrases = null, bool neutralOnly = false, VoiceCondition? onlyVoice = null)
     {
+        if (neutralOnly && onlyVoice.HasValue && onlyVoice.Value != VoiceCondition.Generic)
+            throw new ArgumentException("Conflicting single-voice preparation options.");
         SessionConfig.LockPerspective();
         Stop();
+        int preparationGeneration = m_PreparationGeneration;
         m_BackgroundQueue.Clear();
         m_BackgroundEnabled = false;
         LibraryReady = false;
+        PreparationProgress = 0;
+        void Report(string stage, float fraction)
+        {
+            if (preparationGeneration != m_PreparationGeneration) return;
+            PreparationStage = stage;
+            PreparationProgress = Math.Max(PreparationProgress, Math.Min(.99f, fraction));
+            progress?.Invoke(stage);
+        }
+        Report("Loading voice audio", 0);
+        if (preparationGeneration != m_PreparationGeneration) yield break;
         m_OnDemandPhrases = onDemandPhrases == null ? null : new HashSet<string>(onDemandPhrases);
         m_MatchedRms = 0;
         m_Preparing = true;
+        m_LibraryVoices = onlyVoice.HasValue ? new[] { onlyVoice.Value } : neutralOnly ? new[] { VoiceCondition.Generic }
+            : new[] { VoiceCondition.Generic, VoiceCondition.SelfSimilar };
         m_Audit.Clear();
         foreach (var clip in m_PreparedClips.Values) Destroy(clip);
         m_PreparedClips.Clear();
-        var originalVoice = SessionConfig.Voice;
+        LastError = null;
+        var lines = new List<KeyValuePair<VoiceCondition, string>>();
+        foreach (var voice in m_LibraryVoices)
+            foreach (var phrase in phrases) lines.Add(new KeyValuePair<VoiceCondition, string>(voice, phrase));
+        var downloads = DownloadJobs(lines);
+        yield return DownloadLines(downloads, completed =>
+            Report($"Downloading voice lines: {completed}/{downloads.Count}", .45f * completed / Math.Max(1, downloads.Count)));
+        if (preparationGeneration != m_PreparationGeneration) yield break;
         bool success = true;
-        foreach (var voice in new[] { VoiceCondition.Generic, VoiceCondition.SelfSimilar })
+        int preparedLines = 0;
+        foreach (var job in downloads)
+            if (job.error != null) { Fail(job.error); success = false; break; }
+        foreach (var voice in m_LibraryVoices)
         {
-            SessionConfig.Voice = voice;
+            if (!success) break;
             for (int i = 0; i < phrases.Length; i++)
             {
-                PreparationStage = $"Preparing {(voice == VoiceCondition.Generic ? "neutral" : "self-similar")} voice: {i + 1}/{phrases.Length}";
-                progress?.Invoke(PreparationStage);
+                Report($"Preparing {(voice == VoiceCondition.Generic ? "neutral" : "self-similar")} voice: {i + 1}/{phrases.Length}",
+                    .45f + .45f * preparedLines / Math.Max(1, lines.Count));
                 m_PreparingText = VoicePromptText.FormatForVoice(phrases[i], voice);
                 for (int attempt = 0; attempt < 3; attempt++)
                 {
-                    yield return SpeakCoroutine(phrases[i]);
+                    yield return SpeakCoroutine(phrases[i], requestedVoice: voice);
+                    if (preparationGeneration != m_PreparationGeneration) yield break;
                     if (string.IsNullOrEmpty(LastError) || LastError.Contains("unavailable") || ProviderPolicyBlocked) break;
                     if (attempt < 2) yield return new WaitForSeconds(1 << attempt);
+                    if (preparationGeneration != m_PreparationGeneration) yield break;
                 }
                 if (!string.IsNullOrEmpty(LastError)) { success = false; break; }
-                // Local cache reads need no provider pacing delay.
-                if (m_GeneratedAudio) yield return new WaitForSeconds(0.1f);
+                Report(PreparationStage, .45f + .45f * ++preparedLines / Math.Max(1, lines.Count));
             }
             if (!success) break;
         }
         if (success)
         {
-            PreparationStage = "Matching audio levels";
-            progress?.Invoke(PreparationStage);
+            Report("Matching audio levels", .90f);
             success = MatchLibraryLevels();
         }
-        SessionConfig.Voice = originalVoice;
         m_Preparing = false;
         LibraryReady = success;
         if (success)
         {
-            PreparationStage = "Saving voice manifest";
+            Report("Saving voice manifest", .92f);
             LibraryReady = SaveManifest();
         }
         if (!LibraryReady)
@@ -130,6 +157,29 @@ public class VoiceSynthesizer : MonoBehaviour
                     $"{DateTime.UtcNow:O} | {PreparationStage} | {LastError}\n");
             }
             catch (Exception) { Debug.LogWarning($"{k_Tag} Could not persist preparation error."); }
+        }
+        // Publish the exact matched waveforms while Loading is still visible.
+        // One clip per frame avoids a whole-library serialization spike. Transfer
+        // acknowledgements never gate the participant's study.
+        if (LibraryReady)
+        {
+            var replay = GetComponent<TrialReplayRecorder>();
+            if (replay != null)
+            {
+                int exported = 0;
+                foreach (var prepared in m_PreparedClips.Values)
+                {
+                    replay.PrepareVoiceClip(prepared);
+                    Report("Finishing audio setup", .94f + .05f * ++exported / Math.Max(1, m_PreparedClips.Count));
+                    yield return null;
+                    if (preparationGeneration != m_PreparationGeneration) yield break;
+                }
+            }
+            PreparationProgress = 1;
+            PreparationStage = "Audio ready";
+            progress?.Invoke(PreparationStage);
+            yield return null;
+            if (preparationGeneration != m_PreparationGeneration) yield break;
         }
         done?.Invoke(LibraryReady);
     }
@@ -165,7 +215,7 @@ public class VoiceSynthesizer : MonoBehaviour
         {
             string json = JsonUtility.ToJson(new LibraryAudit { clips = m_Audit,
                 matched_rms = m_MatchedRms,
-                perspective = "neutral_external_self_first_person", perspective_version = VoicePromptText.Version,
+                perspective = "shared_participant_directed_imperative", perspective_version = VoicePromptText.Version,
                 preparation_mode = m_OnDemandPhrases == null ? "full_library" :
                     m_BackgroundEnabled ? "starter_then_background" : "starter_then_on_demand" }, true);
             File.WriteAllText(Path.Combine(SessionConfig.ParticipantPath, "voice-library-manifest.json"), json);
@@ -176,10 +226,57 @@ public class VoiceSynthesizer : MonoBehaviour
         catch (Exception e) { Fail("Could not save voice manifest: " + e.Message); return false; }
     }
 
+    /// <summary>Catalog selection may only choose already-normalized, voice-scoped audio.
+    /// A cache file alone is not enough: the current library must have admitted the clip.</summary>
+    public bool IsPreparedPhrase(string phrase)
+    {
+        if (!LibraryReady || string.IsNullOrEmpty(m_CacheDir)) return false;
+        bool clone = SessionConfig.Voice == VoiceCondition.SelfSimilar;
+        string id = clone ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId;
+        if (string.IsNullOrEmpty(id) || (clone && SessionConfig.SelfSimilarEnrollmentPending)) return false;
+        string path = GetCachePath(VoicePromptText.FormatForVoice(phrase, SessionConfig.Voice),
+            clone ? $"el-clone-{id}" : $"el-{id}");
+        return m_PreparedClips.ContainsKey(path);
+    }
+
     public bool IsSpeaking => m_AudioSource != null && m_AudioSource.isPlaying;
     // Read-only observer access to the exact normalized clip used by playback.
     public AudioClip ReplayClip => m_AudioSource != null ? m_AudioSource.clip : null;
-    public bool IsBusy => m_InterruptionCoroutine != null || m_SpeakCoroutine != null || IsSpeaking;
+    public bool IsBusy => m_TransmissionCoroutine != null || m_InterruptionCoroutine != null || m_SpeakCoroutine != null || IsSpeaking;
+    double m_LastGuidanceEnd = -100;
+    double? m_LastSpeechEnd;
+    string m_LastDirectionKey;
+    double m_LastDirectionEnd = -100;
+    static string DirectionKey(string phrase)
+    {
+        var meaning = SpatialVoice.SpeechPhraseMetadata.Describe(phrase);
+        if (meaning.horizontal == "none" && meaning.vertical == "none") return null;
+        return meaning.horizontal + ":" + meaning.vertical + ":" + meaning.magnitude;
+    }
+    bool DirectionRepeatAllowed(string phrase, string reason) =>
+        !GuidanceSpeechPolicy.IsOrdinaryDirection(reason) || DirectionKey(phrase) == null ||
+        DirectionKey(phrase) != m_LastDirectionKey ||
+        Time.realtimeSinceStartupAsDouble - m_LastDirectionEnd >= GuidanceSpeechPolicy.DuplicateDirectionGap;
+    Newtonsoft.Json.Linq.JToken SpeechSilence(double now) => m_LastSpeechEnd.HasValue
+        ? new Newtonsoft.Json.Linq.JValue(Math.Max(0, now - m_LastSpeechEnd.Value))
+        : Newtonsoft.Json.Linq.JValue.CreateNull();
+    bool m_LastGuidanceWasAcknowledgment;
+    string m_CurrentPhrase;
+    public bool GuidanceReady => GuidanceSpeechPolicy.CanStart(IsBusy,
+        Time.realtimeSinceStartupAsDouble, m_LastGuidanceEnd, m_LastGuidanceWasAcknowledgment);
+    bool GuidanceReadyFor(string phrase) => GuidanceSpeechPolicy.CanStart(IsBusy,
+        Time.realtimeSinceStartupAsDouble, m_LastGuidanceEnd,
+        m_LastGuidanceWasAcknowledgment || GuidanceSpeechPolicy.IsAcknowledgment(phrase));
+
+    void MarkGuidanceEnd()
+    {
+        m_LastSpeechEnd = Time.realtimeSinceStartupAsDouble;
+        if (m_CurrentContext != "tip" && m_CurrentContext != "guidance_repeat" && m_CurrentContext != "guidance_opening") return;
+        m_LastGuidanceEnd = Time.realtimeSinceStartupAsDouble;
+        m_LastDirectionKey = DirectionKey(m_CurrentPhrase);
+        m_LastDirectionEnd = m_LastGuidanceEnd;
+        m_LastGuidanceWasAcknowledgment = GuidanceSpeechPolicy.IsAcknowledgment(m_CurrentPhrase);
+    }
 
     public void StartBackgroundLoading(string[] phrases)
     {
@@ -189,12 +286,13 @@ public class VoiceSynthesizer : MonoBehaviour
         // Interleave voices so upcoming prompts are ready in either condition.
         foreach (string phrase in phrases)
             if (m_OnDemandPhrases.Contains(phrase))
-                foreach (var voice in new[] { VoiceCondition.Generic, VoiceCondition.SelfSimilar })
+                foreach (var voice in m_LibraryVoices)
                     m_BackgroundQueue.Enqueue(new KeyValuePair<VoiceCondition, string>(voice, phrase));
     }
 
     void Update()
     {
+        ValidateInterruptionAdvice();
         if (!LibraryReady || m_Preparing || m_SetupAnnouncement || IsBusy ||
             m_BackgroundLoading || m_BackgroundQueue.Count == 0) return;
         m_BackgroundCoroutine = StartCoroutine(LoadNextBackgroundClip());
@@ -203,29 +301,44 @@ public class VoiceSynthesizer : MonoBehaviour
     IEnumerator LoadNextBackgroundClip()
     {
         m_BackgroundLoading = true;
+        int generation = m_PreparationGeneration;
         yield return null;
-        var next = m_BackgroundQueue.Peek();
+        var pending = m_BackgroundQueue.ToArray();
+        var lines = new List<KeyValuePair<VoiceCondition, string>>();
+        for (int i = 0; i < Math.Min(VoiceDownloadBatch.Concurrency, pending.Length); i++) lines.Add(pending[i]);
+        var downloads = DownloadJobs(lines);
+        yield return DownloadLines(downloads);
+        if (generation != m_PreparationGeneration) yield break;
         m_CurrentContext = "prefetch";
-        yield return SpeakCoroutine(next.Value, false, next.Key, true);
+        foreach (var job in downloads)
+            if (job.error != null) Fail(job.error);
+        foreach (var next in lines)
+        {
+            // Admit downloaded clips sequentially, preserving per-voice DSP, audit and matched levels.
+            string id = next.Key == VoiceCondition.SelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId;
+            string path = GetCachePath(VoicePromptText.FormatForVoice(next.Value, next.Key),
+                next.Key == VoiceCondition.SelfSimilar ? $"el-clone-{id}" : $"el-{id}");
+            if (File.Exists(path)) yield return SpeakCoroutine(next.Value, false, next.Key, true);
+            if (generation != m_PreparationGeneration) yield break;
+            m_BackgroundQueue.Dequeue();
+        }
         // Background failures leave the clip available for a foreground retry.
         // They must not interrupt a running trial or poison a successful audio check.
         m_ActiveClipKey = null;
-        m_BackgroundQueue.Dequeue();
         m_BackgroundLoading = false;
         m_BackgroundCoroutine = null;
     }
 
-    /// <summary>Shared Voxtral client (voice enrollment reuses this instance).</summary>
-    public VoxtralClient Voxtral => m_Voxtral;
+    /// <summary>Shared ElevenLabs client (voice enrollment reuses this instance).</summary>
+    public ElevenLabsVoiceClient CloneClient => m_CloneClient;
 
-    public void Initialize(string elevenLabsKey, string mistralKey = null)
+    public void Initialize(string elevenLabsKey)
     {
         m_ApiKey = elevenLabsKey;
-        m_MistralKey = mistralKey;
 
-        m_Voxtral = GetComponent<VoxtralClient>();
-        if (m_Voxtral == null) m_Voxtral = gameObject.AddComponent<VoxtralClient>();
-        m_Voxtral.Initialize(mistralKey);
+        m_CloneClient = GetComponent<ElevenLabsVoiceClient>();
+        if (m_CloneClient == null) m_CloneClient = gameObject.AddComponent<ElevenLabsVoiceClient>();
+        m_CloneClient.Initialize(elevenLabsKey);
 
         m_AudioSource = gameObject.AddComponent<AudioSource>();
         m_AudioSource.spatialBlend = 0f;
@@ -249,12 +362,18 @@ public class VoiceSynthesizer : MonoBehaviour
 
     void OnDisable() => Stop();
 
-    public void Speak(string text, string context = null, VoiceCondition? requestedVoice = null)
+    public GuidanceRequestScheduler GuidanceScheduler { get; } = new GuidanceRequestScheduler();
+
+    public void Speak(string text, string context = null, VoiceCondition? requestedVoice = null,
+        string guidanceDecisionId = null, Func<bool> guidanceRelevant = null, Action guidanceCommitted = null)
     {
-        // Per-voice key checks happen inside the coroutine (self-similar uses
-        // Voxtral, generic uses ElevenLabs), so we don't hard-block here.
+        // Identity and key checks happen inside the coroutine so prepared audio works offline.
         Stop();
         m_CurrentContext = context;
+        m_CurrentPhrase = text;
+        m_GuidanceDecisionId = guidanceDecisionId;
+        GuidanceScheduler.QueuePlayback(guidanceRelevant == null ? null :
+            (Func<bool>)(() => StateAllowsNewGuidance && guidanceRelevant()), guidanceCommitted);
         m_SpeakCoroutine = StartCoroutine(SpeakCoroutine(text, requestedVoice: requestedVoice));
     }
 
@@ -264,6 +383,7 @@ public class VoiceSynthesizer : MonoBehaviour
         Stop();
         m_BackgroundQueue.Clear(); m_BackgroundEnabled = false;
         LibraryReady = false; m_OnDemandPhrases = null; m_MatchedRms = 0; LastError = null;
+        PreparationProgress = 0;
         m_Audit.Clear();
         foreach (var clip in m_PreparedClips.Values) Destroy(clip);
         m_PreparedClips.Clear();
@@ -286,48 +406,111 @@ public class VoiceSynthesizer : MonoBehaviour
         completed?.Invoke(string.IsNullOrEmpty(LastError));
     }
 
-    public bool TryAreaCorrection(string phrase, Func<bool> stillRelevant, Action onCommitted = null,
-        string reason = "gaze_target_plane")
+    public void RecordGuidanceRepeatRequest(bool available, string decisionId = null)
     {
+        string identity = decisionId == null ? "" : "decision_id=" + decisionId + ";";
+        Telemetry?.Invoke("guidance_repeat_requested", "guidance_repeat", "", identity);
+        if (!available) Telemetry?.Invoke("guidance_repeat_unavailable", "guidance_repeat", "", identity + "no_current_valid_gaze_guidance");
+    }
+
+    // Decisions are recorded separately from speech requests and audible starts.
+    // Keep serialized snapshots out of the audio cache identity and spoken text.
+    public void RecordGuidanceDecision(string json) => Telemetry?.Invoke("guidance_decision", "guidance", "", json);
+    public void RecordJevTrace(string json) { if (this != null) Telemetry?.Invoke("jev_trace", "jev", "", json); }
+    public void RecordNavigationStatus(string json) => Telemetry?.Invoke("navigation_status", "guidance", "", json);
+    public void RecordRoundEncouragement(string json) => Telemetry?.Invoke("round_encouragement_decision", "congrats", "", json);
+
+    void AudioTelemetry(string kind, string context, string clip, string detail)
+    {
+        if (!string.IsNullOrEmpty(m_GuidanceDecisionId) && (context == "tip" || context == "guidance_repeat" || context == "guidance_opening" || context == "readiness_reminder"))
+            detail = "decision_id=" + m_GuidanceDecisionId + ";" + detail;
+        Telemetry?.Invoke(kind, context, clip, detail);
+    }
+
+    public bool TryAreaCorrection(string phrase, Func<bool> stillRelevant, Action onCommitted = null,
+        string reason = "gaze_target_plane", string guidanceDecisionId = null)
+    {
+        // Only a bounded, current Jev approval may replace unfinished guidance.
+        // Missing/late/failed advice preserves the normal finish-phrase policy.
         if (!LibraryReady || m_InterruptionCoroutine != null || m_SetupAnnouncement ||
-            (m_CurrentContext != null && m_CurrentContext != "tip" && m_CurrentContext != "prefetch")) return false;
+            (m_CurrentContext != null && m_CurrentContext != "tip" && m_CurrentContext != "guidance_repeat" && m_CurrentContext != "prefetch")) return false;
         bool self = SessionConfig.Voice == VoiceCondition.SelfSimilar;
         string voiceId = self ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId;
         if (self && SessionConfig.SelfSimilarEnrollmentPending) return false;
         string path = GetCachePath(VoicePromptText.FormatForVoice(phrase, SessionConfig.Voice),
-            (self ? "vx-" : "el-") + voiceId);
+            (self ? "el-clone-" : "el-") + voiceId);
         if (!m_PreparedClips.ContainsKey(path) || !stillRelevant()) return false;
-        m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(phrase, stillRelevant, onCommitted, reason));
+        bool ready = GuidanceReadyFor(phrase);
+        if (ready && TransmissionAdvisor != null)
+            return TryGuidanceTransmission(phrase, stillRelevant, onCommitted, reason, guidanceDecisionId);
+        if (!ready && !ApproveInterruption(phrase, reason, stillRelevant, ref guidanceDecisionId)) return false;
+        m_DropCorrection = false;
+        m_PendingCorrectionDecisionId = guidanceDecisionId;
+        m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(phrase, stillRelevant, onCommitted, reason, guidanceDecisionId));
         return true;
     }
 
-    IEnumerator FadeToAreaCorrection(string phrase, Func<bool> stillRelevant, Action onCommitted, string reason)
+    IEnumerator FadeToAreaCorrection(string phrase, Func<bool> stillRelevant, Action onCommitted, string reason, string decisionId)
     {
-        yield return null;
+        yield return null; // Store the cancellable handle before executing any completion path.
+        bool correction = phrase != null;
+        if (correction && (!stillRelevant() || m_DropCorrection))
+        { m_InterruptionCoroutine = null; AbandonCorrection("stale_before_fade"); yield break; }
         float volume = m_AudioSource.volume;
-        float start = Time.unscaledTime;
-        while (IsSpeaking && Time.unscaledTime - start < 0.04f)
+        bool faded = IsSpeaking;
+        double start = Time.realtimeSinceStartupAsDouble;
+        if (faded)
         {
-            if (!stillRelevant()) { m_AudioSource.volume = volume; m_InterruptionCoroutine = null; yield break; }
-            m_AudioSource.volume = volume * (1f - (Time.unscaledTime - start) / 0.04f);
-            yield return null;
+            AudioTelemetry("audio_fade_start", m_CurrentContext ?? "", m_ActiveClipKey ?? "",
+                "fade_seconds=0.150;reason=" + reason);
+            // Once a fade starts, complete it rather than audibly pumping the gain back up.
+            // The replacement is independently revalidated after the old audio has stopped.
+            while (Time.realtimeSinceStartupAsDouble - start < GuidanceSpeechPolicy.FadeSeconds)
+            {
+                float t = (float)((Time.realtimeSinceStartupAsDouble - start) / GuidanceSpeechPolicy.FadeSeconds);
+                m_AudioSource.volume = Mathf.Lerp(volume, 0f, t);
+                yield return null;
+            }
+            m_AudioSource.volume = 0f; // Stop must observe silence, never the restored gain.
+            m_LastSmoothInterruption = Time.realtimeSinceStartupAsDouble;
         }
-        m_AudioSource.volume = volume;
+        bool commit = correction && !m_DropCorrection && stillRelevant();
+        string oldClip = m_ActiveClipKey ?? "";
         m_InterruptionCoroutine = null;
-        if (!stillRelevant()) yield break;
-        Telemetry?.Invoke("audio_area_correction", "tip", m_ActiveClipKey ?? "", reason + ";fade_seconds=0.04");
-        Speak(phrase, "tip");
-        onCommitted?.Invoke();
+        if (commit) m_PendingCorrectionDecisionId = null;
+        else AbandonCorrection("stale_after_fade");
+        Stop();
+        m_AudioSource.volume = volume;
+        if (!commit) yield break;
+        Telemetry?.Invoke("audio_area_correction", "tip", oldClip,
+            (decisionId == null ? "" : "decision_id=" + decisionId + ";") + reason +
+            (faded ? ";fade_seconds=0.150" : ";fade_seconds=0"));
+        Speak(phrase, "tip", guidanceDecisionId: decisionId, guidanceRelevant: stillRelevant, guidanceCommitted: onCommitted);
+    }
+
+    void AbandonCorrection(string reason)
+    {
+        if (m_PendingCorrectionDecisionId != null)
+            Telemetry?.Invoke("guidance_decision_aborted", "tip", "",
+                "decision_id=" + m_PendingCorrectionDecisionId + ";reason=" + reason);
+        m_PendingCorrectionDecisionId = null;
     }
 
     public void Stop()
     {
+        m_PreparationGeneration++;
+        m_DownloadBatch?.Dispose(); m_DownloadBatch = null;
+        m_Preparing = false;
+        CancelInterruptionAdvice();
+        CancelTransmission();
+        m_PlaybackGeneration++;
+        m_CurrentSpeechSeconds = -1;
         if (m_InterruptionCoroutine != null)
         {
             StopCoroutine(m_InterruptionCoroutine);
             m_InterruptionCoroutine = null;
         }
-        if (m_AudioSource != null) m_AudioSource.volume = 0.7f;
+        AbandonCorrection("cancelled_before_commit");
         if (m_BackgroundCoroutine != null)
         {
             StopCoroutine(m_BackgroundCoroutine);
@@ -341,22 +524,29 @@ public class VoiceSynthesizer : MonoBehaviour
             m_SpeakCoroutine = null;
         }
 
+        m_DecisionMemory.Ended(Time.realtimeSinceStartupAsDouble, interrupted: true);
         if (m_AudioSource != null && m_AudioSource.isPlaying)
-            m_AudioSource.Stop();
+        { MarkGuidanceEnd(); m_AudioSource.Stop(); }
+        if (m_AudioSource != null) m_AudioSource.volume = 0.7f;
 
-        if (m_ActiveClipKey != null) Telemetry?.Invoke("audio_cancelled", m_CurrentContext ?? "", m_ActiveClipKey, "");
+        if (m_ActiveClipKey != null) AudioTelemetry("audio_cancelled", m_CurrentContext ?? "", m_ActiveClipKey, "");
         m_ActiveClipKey = null;
         m_CurrentContext = null;
+        m_CurrentPhrase = null;
+        m_GuidanceDecisionId = null;
+        GuidanceScheduler.CancelPlayback();
     }
 
-    public void InterruptIfAbout(string context)
+    public void InterruptIfAbout(string context, bool immediate = false)
     {
-        if (!string.IsNullOrEmpty(m_CurrentContext) &&
-            m_CurrentContext.Equals(context, StringComparison.OrdinalIgnoreCase))
-        {
-            Debug.Log($"{k_Tag} Interrupting speech about '{context}'");
-            Stop();
-        }
+        if (string.IsNullOrEmpty(m_CurrentContext) || !m_CurrentContext.Equals(context, StringComparison.OrdinalIgnoreCase)) return;
+        if (immediate || (context != "tip" && context != "guidance_repeat") || !IsSpeaking) { Stop(); return; }
+        // Sustained gaze loss uses the same fade, without waiting on a remote decision.
+        // Repeated invalid ticks never restart it, and cannot preserve a queued correction.
+        m_DropCorrection = true;
+        CancelInterruptionAdvice();
+        if (m_InterruptionCoroutine == null)
+            m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(null, null, null, "gaze_unavailable", null));
     }
 
     public IEnumerator SpeakRecordingIntroduction() => SpeakSetupAnnouncement(
@@ -383,17 +573,21 @@ public class VoiceSynthesizer : MonoBehaviour
     IEnumerator SpeakCoroutine(string text, bool setupAnnouncement = false,
         VoiceCondition? requestedVoice = null, bool silent = false, string requestedVoiceId = null)
     {
+        int generation = m_PreparationGeneration;
+        long playbackGeneration = m_PlaybackGeneration;
         // Defer once so Speak has stored the coroutine handle before any early exit.
         yield return null;
+        if (generation != m_PreparationGeneration || playbackGeneration != m_PlaybackGeneration) yield break;
         if (!silent) LastError = null;
-        m_GeneratedAudio = false;
         bool allowOnDemand = LibraryReady && m_OnDemandPhrases != null && m_OnDemandPhrases.Contains(text);
         bool wantSelfSimilar = (requestedVoice ?? SessionConfig.Voice) == VoiceCondition.SelfSimilar;
         var actualPerspective = VoicePromptText.PerspectiveForVoice(requestedVoice ?? SessionConfig.Voice);
         if (!setupAnnouncement) text = VoicePromptText.Format(text, actualPerspective);
+        if (VoiceAudioIntegrity.HasForbiddenFiller(text))
+        { Fail("Script contains a prohibited filler."); m_SpeakCoroutine = null; yield break; }
         m_PreparingText = text;
         string voiceId = requestedVoiceId ?? (wantSelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId);
-        string voiceScope = wantSelfSimilar ? $"vx-{voiceId}" : $"el-{voiceId}";
+        string voiceScope = wantSelfSimilar ? $"el-clone-{voiceId}" : $"el-{voiceId}";
 
         // Voice availability never changes the assigned condition or cache namespace.
         if (wantSelfSimilar && (SessionConfig.SelfSimilarEnrollmentPending || string.IsNullOrEmpty(voiceId)))
@@ -407,12 +601,13 @@ public class VoiceSynthesizer : MonoBehaviour
         // 1) Cache for the intended voice.
         string cachePath = GetCachePath(text, voiceScope);
         m_ActiveClipKey = Path.GetFileNameWithoutExtension(cachePath);
-        Telemetry?.Invoke("audio_request", m_CurrentContext ?? "", m_ActiveClipKey, voiceScope);
+        AudioTelemetry("audio_request", m_CurrentContext ?? "", m_ActiveClipKey, voiceScope);
         if (LibraryReady && !m_Preparing && !setupAnnouncement &&
             (m_PreparedClips.ContainsKey(cachePath) || !allowOnDemand))
         {
             if (!m_PreparedClips.ContainsKey(cachePath)) Fail("Clip absent from prepared library.");
             else yield return PlayFromFile(cachePath, wantSelfSimilar, voiceId, silent);
+            if (generation != m_PreparationGeneration) yield break;
             m_SpeakCoroutine = null; m_CurrentContext = null;
             yield break;
         }
@@ -422,98 +617,19 @@ public class VoiceSynthesizer : MonoBehaviour
             m_SpeakCoroutine = null; m_CurrentContext = null;
             yield break;
         }
-        if (File.Exists(cachePath))
+        // One admission path for setup previews, foreground speech and prepared/background libraries.
+        var job = new DownloadJob { text = text, voiceId = voiceId, path = cachePath, clone = wantSelfSimilar };
+        yield return DownloadLine(job);
+        if (generation != m_PreparationGeneration) yield break;
+        if (job.error != null || !VoiceAudioVerification.HasReceipt(cachePath, text))
         {
-            Debug.Log($"{k_Tag} Cache hit ({(wantSelfSimilar ? "self" : "generic")}): \"{Truncate(text, 40)}\"");
-            yield return PlayFromFile(cachePath, wantSelfSimilar, voiceId, silent);
-            m_SpeakCoroutine = null;
-            m_CurrentContext = null;
-            yield break;
-        }
-
-        byte[] audioData = null;
-
-        // 2) Synthesize the intended voice (Voxtral for self-similar).
-        if (wantSelfSimilar)
-        {
-            Debug.Log($"{k_Tag} Voxtral TTS: \"{Truncate(text, 40)}\"");
-            if (m_Voxtral == null || !m_Voxtral.HasKey)
-            {
-                Fail("Self-similar provider unavailable.");
-                m_SpeakCoroutine = null;
-                m_CurrentContext = null;
-                yield break;
-            }
-            string vxErr = null;
-            yield return m_Voxtral.Synthesize(text, voiceId,
-                b => audioData = b, e => vxErr = e);
-            if (audioData == null)
-            {
-                Fail($"Self-similar synthesis failed: {vxErr}");
-                m_SpeakCoroutine = null;
-                m_CurrentContext = null;
-                yield break;
-            }
-        }
-
-        // Neutral synthesis is reachable only for an explicitly neutral run.
-        else
-        {
-            if (string.IsNullOrEmpty(m_ApiKey))
-            {
-                Fail("Neutral voice provider unavailable.");
-                m_SpeakCoroutine = null;
-                m_CurrentContext = null;
-                yield break;
-            }
-
-            Debug.Log($"{k_Tag} ElevenLabs TTS: \"{Truncate(text, 40)}\"");
-            string url = $"{k_BaseUrl}{voiceId}";
-            string jsonBody = JsonUtility.ToJson(new TtsRequest { text = text, model_id = k_Model });
-
-            using var request = new UnityWebRequest(url, "POST");
-            request.uploadHandler = new UploadHandlerRaw(System.Text.Encoding.UTF8.GetBytes(jsonBody));
-            request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
-            request.SetRequestHeader("xi-api-key", m_ApiKey);
-            request.timeout = 15;
-
-            yield return request.SendWebRequest();
-
-            if (request.result != UnityWebRequest.Result.Success)
-            {
-                string body = request.downloadHandler?.text ?? "";
-                Fail($"Neutral synthesis failed: HTTP {request.responseCode}");
-                m_SpeakCoroutine = null;
-                m_CurrentContext = null;
-                yield break;
-            }
-            audioData = request.downloadHandler.data;
-        }
-
-        if (audioData == null || audioData.Length < 100)
-        {
-            Fail("Synthesis returned empty or truncated audio.");
-            m_SpeakCoroutine = null;
-            m_CurrentContext = null;
-            yield break;
-        }
-
-        // Save to cache (path matches whichever voice actually produced the audio).
-        try
-        {
-            File.WriteAllBytes(cachePath, audioData);
-            m_GeneratedAudio = true;
-            Debug.Log($"{k_Tag} Cached: \"{Truncate(text, 40)}\" ({audioData.Length} bytes)");
-        }
-        catch (Exception e)
-        {
-            Fail("Could not save audio: " + e.Message);
+            Fail(job.error ?? "Audio has no valid verification receipt.");
             m_SpeakCoroutine = null; m_CurrentContext = null;
             yield break;
         }
 
         yield return PlayFromFile(cachePath, wantSelfSimilar, voiceId, silent);
+        if (generation != m_PreparationGeneration) yield break;
 
         m_SpeakCoroutine = null;
         m_CurrentContext = null;
@@ -528,13 +644,17 @@ public class VoiceSynthesizer : MonoBehaviour
 
     IEnumerator PlayFromFile(string filePath, bool wantSelfSimilar, string voiceId, bool silent)
     {
+        int generation = m_PreparationGeneration;
         var actualPerspective = wantSelfSimilar ? VoicePerspective.FirstPerson : VoicePerspective.External;
         AudioClip clip;
         if (!m_PreparedClips.TryGetValue(filePath, out clip))
         {
+            if (!VoiceAudioVerification.HasReceipt(filePath, m_PreparingText))
+            { Fail("Unverified audio cannot enter the playable library."); yield break; }
             using (var request = UnityWebRequestMultimedia.GetAudioClip("file://" + filePath, AudioType.MPEG))
             {
                 yield return request.SendWebRequest();
+                if (generation != m_PreparationGeneration) yield break;
                 if (request.result != UnityWebRequest.Result.Success)
                 {
                     Fail("Could not decode cached audio.");
@@ -584,29 +704,53 @@ public class VoiceSynthesizer : MonoBehaviour
             m_PreparedClips[filePath] = clip;
             m_Audit.Add(new ClipAudit { clip_id = Path.GetFileNameWithoutExtension(filePath),
                 voice_id = voiceId,
-                provider = wantSelfSimilar ? "mistral" : "elevenlabs",
-                model = wantSelfSimilar ? "voxtral-mini-tts-2603" : k_Model,
+                provider = "elevenlabs",
+                voice_condition = wantSelfSimilar ? "selfsimilar" : "neutral",
+                model = k_Model,
                 text = m_PreparingText, content_version = ContentVersion,
                 perspective = m_SetupAnnouncement ? "setup" : actualPerspective.ToString(),
                 perspective_version = VoicePromptText.Version,
                 effect_profile = InnerThoughtVoice.Profile(wantSelfSimilar),
+                verification_version = VoiceAudioVerification.Version,
+                source_audio_sha256 = VoiceAudioVerification.Hash(File.ReadAllBytes(filePath)),
                 duration_seconds = clip.length, rms = rms, peak = peak, gain = gain, achieved_rms = rms * gain,
                 requested_rms = requestedRms, speech_samples = treated.SpeechSamples, level_limited = levelLimited });
             if (levelLimited && LibraryReady)
-                Telemetry?.Invoke("audio_level_limited", m_CurrentContext ?? "", m_ActiveClipKey ?? "",
+                AudioTelemetry("audio_level_limited", m_CurrentContext ?? "", m_ActiveClipKey ?? "",
                     FormattableString.Invariant($"requested_rms={requestedRms:F6};achieved_rms={rms * gain:F6};gain={gain:F6};difference_db={20 * Math.Log10(rms * gain / requestedRms):F3}"));
         }
         // Persist before playback, including clips added after the run began.
         if (LibraryReady && !m_Preparing && !SaveManifest()) yield break;
-        Telemetry?.Invoke("audio_ready", m_CurrentContext ?? "", Path.GetFileNameWithoutExtension(filePath), $"duration={clip.length:F4}");
+        if (LibraryReady && !m_Preparing)
+            GetComponent<TrialReplayRecorder>()?.PrepareVoiceClip(clip);
+        AudioTelemetry("audio_ready", m_CurrentContext ?? "", Path.GetFileNameWithoutExtension(filePath), $"duration={clip.length:F4}");
         if (m_Preparing || silent) yield break;
+        m_CurrentSpeechSeconds = -1;
+        foreach (var audit in m_Audit)
+            if (audit.clip_id == m_ActiveClipKey && audit.speech_samples > 0)
+            { m_CurrentSpeechSeconds = (double)audit.speech_samples / (clip.channels * clip.frequency); break; }
         m_AudioSource.clip = clip;
         m_AudioSource.volume = 0.7f;
         m_AudioSource.pitch = 1f;
+        m_SpeechStartStage = GuidanceEvidence.valid ? (GuidanceEvidence.insideTargetWall ? "within_target_wall" : "outside_target_wall") : "unknown";
+        // The queued coroutine yielded after admission. Revalidate at the actual
+        // audio start; a departed gaze or changed phase must not consume its gate.
+        if (!GuidanceScheduler.TryTakePlayback(out var onGuidanceStarted))
+        {
+            AudioTelemetry("guidance_decision_aborted", m_CurrentContext ?? "tip", m_ActiveClipKey ?? "", "reason=stale_before_playback");
+            GuidanceScheduler.CancelPlayback();
+            m_ActiveClipKey = null;
+            yield break;
+        }
+        m_LastSpokenPhrase = m_PreparingText;
         m_AudioSource.Play();
-        Telemetry?.Invoke("audio_playback_start", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};effect_profile={InnerThoughtVoice.Profile(wantSelfSimilar)};text={m_PreparingText}");
+        m_DecisionMemory.Started(m_PreparingText, m_CurrentContext, Time.realtimeSinceStartupAsDouble, GuidanceEvidence.guidanceState);
+        AudioTelemetry("audio_playback_start", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};effect_profile={InnerThoughtVoice.Profile(wantSelfSimilar)};text={m_PreparingText}");
+        onGuidanceStarted?.Invoke();
         while (m_AudioSource.isPlaying) yield return null;
-        Telemetry?.Invoke("audio_playback_end", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};text={m_PreparingText}");
+        m_DecisionMemory.Ended(Time.realtimeSinceStartupAsDouble, interrupted: false);
+        MarkGuidanceEnd();
+        AudioTelemetry("audio_playback_end", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};text={m_PreparingText}");
         m_ActiveClipKey = null;
     }
 
@@ -624,58 +768,10 @@ public class VoiceSynthesizer : MonoBehaviour
 
     IEnumerator PreCacheCoroutine(string[] phrases)
     {
-        string neutralVoiceId = SessionConfig.NeutralVoiceId;
-        int cached = 0;
-        int skipped = 0;
-
-        foreach (string sourcePhrase in phrases)
-        {
-            string phrase = VoicePromptText.FormatForVoice(sourcePhrase, VoiceCondition.Generic);
-            string path = GetCachePath(phrase, $"el-{neutralVoiceId}"); // pre-cache targets the generic voice
-            if (File.Exists(path))
-            {
-                skipped++;
-                continue;
-            }
-
-            // Throttle: one request at a time, small delay between
-            string url = $"{k_BaseUrl}{neutralVoiceId}";
-            string jsonBody = JsonUtility.ToJson(new TtsRequest
-            {
-                text = phrase,
-                model_id = k_Model
-            });
-
-            using var request = new UnityWebRequest(url, "POST");
-            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
-            request.SetRequestHeader("xi-api-key", m_ApiKey);
-            request.timeout = 15;
-
-            yield return request.SendWebRequest();
-
-            if (request.result == UnityWebRequest.Result.Success &&
-                request.downloadHandler.data != null &&
-                request.downloadHandler.data.Length >= 100)
-            {
-                try
-                {
-                    File.WriteAllBytes(path, request.downloadHandler.data);
-                    cached++;
-                }
-                catch (Exception e)
-                {
-                    Debug.LogWarning($"{k_Tag} PreCache write failed: {e.Message}");
-                }
-            }
-
-            // Small yield to avoid blocking
-            yield return null;
-        }
-
-        Debug.Log($"{k_Tag} PreCache complete: {cached} new, {skipped} already cached, {phrases.Length} total");
+        var lines = new List<KeyValuePair<VoiceCondition, string>>();
+        foreach (var phrase in phrases) lines.Add(new KeyValuePair<VoiceCondition, string>(VoiceCondition.Generic, phrase));
+        var jobs = DownloadJobs(lines);
+        yield return DownloadLines(jobs);
     }
 
     /// <summary>
@@ -686,7 +782,7 @@ public class VoiceSynthesizer : MonoBehaviour
     {
         // Scope the key by voice so generic vs self-similar (and different clones)
         // never collide on identical hint text; include script mode/version even for shared lines.
-        string model = scope.StartsWith("vx-") ? "voxtral-mini-tts-2603" : k_Model;
+        string model = k_Model;
         string keyed = ContentVersion + "|" + VoicePromptText.Version + "|" +
             SessionConfig.Perspective + "|" + model + "|" + scope + "|" + text;
         using (var sha = SHA256.Create())
@@ -701,10 +797,4 @@ public class VoiceSynthesizer : MonoBehaviour
         return s.Length <= maxLen ? s : s.Substring(0, maxLen) + "...";
     }
 
-    [Serializable]
-    struct TtsRequest
-    {
-        public string text;
-        public string model_id;
-    }
 }

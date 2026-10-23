@@ -19,11 +19,19 @@ from pathlib import Path
 from typing import Any
 
 from mega_csv import csv_rows, replay_rows
+from motion_csv import write_motion_package
+from trial_zones import ZoneVisits
+from tlx_scoring import score_tlx
 
-SCHEMA = "trial-performance-subjective-v1"
+SCHEMA = "trial-performance-subjective-v2"
 CONTACT_METHOD = "first_explicitly_tracked_ray_intersection_snapshot_v1"
+MOTION_METHOD = "tracked_frame_and_selection_intervals_v2"
 BASE_FIELDS = [
     "export_schema",
+    "session_mode",
+    "data_purpose",
+    "exclude_from_study_analysis",
+    "analysis_exclusion_reason",
     "participant_id",
     "run_number",
     "session_id",
@@ -45,12 +53,17 @@ BASE_FIELDS = [
     "completion_source",
     "incorrect_selection_count",
     "instruction_count",
+    "hint_count",
     "interrupted_instruction_count",
     "instruction_count_status",
     "instruction_count_source",
     "repeat_request_count",
     "delivered_repeat_count",
     "repeat_count_status",
+    "repeat_count_source",
+    "repeat_event_version",
+    "interaction_policy",
+    "neutral_catalog_version",
     "gaze_total_samples",
     "gaze_valid_samples",
     "gaze_unknown_tracking_samples",
@@ -62,9 +75,16 @@ BASE_FIELDS = [
     "controller_contact_status",
     "contact_method",
     "final_gaze_method",
-    "time_to_final_correct_zone_seconds",
+    "completion_timing_definition",
     "zones_visited_count",
+    "unique_zones_visited_count",
+    "zone_transition_count",
+    "zone_revisit_count",
+    "zone_observation_gap_count",
     "zone_measurement_status",
+    "zone_measurement_method",
+    "zone_stability_seconds",
+    "zone_max_gap_seconds",
     "gross_head_translation_m",
     "gross_head_translation_x_m",
     "gross_head_translation_y_m",
@@ -73,6 +93,8 @@ BASE_FIELDS = [
     "gross_head_rotation_x_deg",
     "gross_head_rotation_y_deg",
     "gross_head_rotation_z_deg",
+    "head_motion_method",
+    "head_motion_observation_count",
     "head_motion_interval_count",
     "head_motion_covered_seconds",
     "head_motion_gap_count",
@@ -99,7 +121,11 @@ BASE_FIELDS = [
     "geometry_reference_search_seconds",
     "scheduled_height_delta_m",
     "scheduled_height_reference",
+    "scheduled_height_reference_y_m",
+    "scheduled_height_status",
     "schedule_version",
+    "target_identity_policy",
+    "height_assignment_policy",
     "schedule_seed",
     "layout_seed",
     "angle_pair",
@@ -120,6 +146,12 @@ BASE_FIELDS = [
     "nasa_tlx_effort",
     "nasa_tlx_frustration",
     "nasa_tlx_score",
+    "nasa_tlx_score_0_100",
+    "nasa_tlx_scale_min",
+    "nasa_tlx_scale_max",
+    "nasa_tlx_scoring_method",
+    "nasa_tlx_scoring_status",
+    "nasa_tlx_performance_direction",
     "quality_flags",
     "source_summary",
     "source_trial_json",
@@ -202,6 +234,24 @@ def encode(value: Any) -> str:
     return str(value)
 
 
+def data_labels(summary: dict, run: Path, practice: bool = False) -> dict:
+    """Label explicit non-study runs; an unknown legacy mode is not certification."""
+    mode = summary.get("session_mode") or "not_recorded"
+    participant = str(summary.get("participant_id", ""))
+    if mode == "synthetic_demo" or participant.startswith("SYNTHETIC_"):
+        purpose, excluded, reason = "synthetic", True, "synthetic_demo"
+    elif mode == "neutral_quick_test" or participant == "DEV_NEUTRAL" or "dev_quick_test_" in run.name:
+        purpose, excluded, reason = "development", True, "neutral_quick_test"
+    elif mode == "study":
+        purpose, excluded, reason = "study_declared", False, ""
+    else:
+        purpose, excluded, reason = "unknown", None, "session_mode_not_recognized_or_recorded"
+    if practice:
+        excluded, reason = True, "practice"
+    return dict(session_mode=mode, data_purpose=purpose,
+                exclude_from_study_analysis=excluded, analysis_exclusion_reason=reason)
+
+
 @dataclass
 class Trial:
     row: dict
@@ -219,20 +269,29 @@ class Trial:
     valid_controller: int = 0
     instructions: int = 0
     interrupted: int = 0
+    repeat_requests: int = 0
+    delivered_repeats: int = 0
+    repeat_logging: bool = False
     active_instruction: str | None = None
     wrong: int = 0
     intervals: int = 0
+    motion_observations: int = 0
     gaps: int = 0
     covered: float = 0
     movement: float = 0
     rotation: float = 0
     move_axes: list = field(default_factory=lambda: [0.0, 0.0, 0.0])
     rot_axes: list = field(default_factory=lambda: [0.0, 0.0, 0.0])
+    zones: ZoneVisits = field(default_factory=ZoneVisits)
+    planned_target_y: float | None = None
 
     def consume(self, r: dict, max_gap: float) -> None:
         kind = r["kind"]
         elapsed = nonnegative(r.get("searchSeconds"))
+        if not self.started:
+            self.zones.capture_cross(r)
         if kind == "trial":
+            self.zones.layout = r.get("layout")
             targets = [o for o in r.get("objects", []) if o.get("target") is True]
             if len(targets) > 1:
                 raise ValueError(f"Multiple replay targets: {self.row['trial_id']}")
@@ -257,6 +316,8 @@ class Trial:
             )
             for source, dest in [
                 ("scheduleVersion", "schedule_version"),
+                ("targetIdentityPolicy", "target_identity_policy"),
+                ("heightAssignmentPolicy", "height_assignment_policy"),
                 ("scheduleSeed", "schedule_seed"),
                 ("layoutSeed", "layout_seed"),
                 ("startPlane", "start_plane"),
@@ -276,6 +337,7 @@ class Trial:
                 pos = vector(self.target.get("position"))
                 if pos:
                     self.row.update(zip(("target_x", "target_y", "target_z"), pos))
+                    self.planned_target_y = pos[1]
             return
         # Object movement must affect the next geometry sample; never regenerate
         # positions from a seed or mix world CSV coordinates with replay poses.
@@ -287,10 +349,21 @@ class Trial:
             if self.started:
                 raise ValueError(f"Duplicate search onset: {self.row['trial_id']}")
             self.started = True
+            if (self.zones.layout == "rotational_scatter_v4" and
+                    self.zones.cross_y is not None and self.planned_target_y is not None):
+                self.row.update(
+                    scheduled_height_delta_m=self.planned_target_y-self.zones.cross_y,
+                    scheduled_height_reference="recorded_readiness_cross_y_v1",
+                    scheduled_height_reference_y_m=self.zones.cross_y,
+                    scheduled_height_status="observed_trial_layout_relative_to_cross",
+                )
             if self.row.get("outcome") in (None, "not_started"):
                 self.row["outcome"] = "incomplete"
             return
+        if kind == "application_paused":
+            self.zones.gap()
         if kind == "search_paused":
+            self.zones.gap()
             self.paused = True
             self.previous_head = None
             self.previous_sample = None
@@ -300,6 +373,8 @@ class Trial:
             self.previous_sample = None
         if not self.started or self.ended or self.paused:
             return
+        if kind in ("sample", "selection"):
+            self.zones.observe(r)
         if elapsed is None:
             self.flags.add("missing_active_search_clock")
             return
@@ -328,7 +403,11 @@ class Trial:
             else:
                 self.wrong += 1
         context = (r.get("detail") or "").split(";", 1)[0]
+        if kind == "guidance_repeat_requested":
+            self.repeat_requests += 1
         if kind == "audio_playback_start":
+            if context == "guidance_repeat":
+                self.delivered_repeats += 1
             # The current recorder calls guidance 'tip'. New policy names must be
             # explicitly added/versioned, never guessed from spoken text.
             self.active_instruction = (
@@ -343,20 +422,28 @@ class Trial:
             if self.active_instruction and kind != "audio_playback_end":
                 self.interrupted += 1
             self.active_instruction = None
-        if kind != "sample":
+        if kind not in ("sample", "selection"):
+            return
+        # Older selection records may contain no head observation at all. New
+        # trigger snapshots do: retain their valid final movement, or their gap.
+        if kind == "selection" and "headAvailable" not in r:
             return
         if r.get("searchActive") is not True:
             self.previous_head = None
             self.previous_sample = None
             return
-        self.samples += 1
+        self.motion_observations += 1
         self.row["search_exposure_seconds"] = max(
             elapsed, nonnegative(self.row.get("search_exposure_seconds")) or 0
         )
-        gaze_valid, controller_valid = self.contacts(r, elapsed)
-        self.valid_gaze += int(gaze_valid)
-        self.valid_controller += int(controller_valid)
-        self.unknown_gaze += int(r.get("gazeTracked", -1) == -1)
+        if kind == "sample":
+            # Contact/validity denominators remain rendered-frame samples;
+            # selection contacts were handled above and are separately sourced.
+            self.samples += 1
+            gaze_valid, controller_valid = self.contacts(r, elapsed)
+            self.valid_gaze += int(gaze_valid)
+            self.valid_controller += int(controller_valid)
+            self.unknown_gaze += int(r.get("gazeTracked", -1) == -1)
         pos, q = vector(r.get("headPosition")), quaternion(r.get("headRotation"))
         valid_head = (
             r.get("headAvailable") is True and r.get("headTracked") == 1 and pos and q
@@ -368,7 +455,7 @@ class Trial:
             self.gaps += 1
         self.previous_sample = r["time"]
         if valid_head:
-            self.geometry(pos, q, elapsed)
+            self.geometry(pos, q, elapsed, kind)
             if self.previous_head is not None:
                 t, old_pos, old_q = self.previous_head
                 delta_time = r["time"] - t
@@ -408,7 +495,7 @@ class Trial:
             self.row.setdefault("first_controller_contact_source", r["kind"])
         return gaze_valid, controller_valid
 
-    def geometry(self, head: tuple, q: tuple, elapsed: float) -> None:
+    def geometry(self, head: tuple, q: tuple, elapsed: float, source: str = "sample") -> None:
         if self.row.get("geometry_reference") or not self.target:
             return
         target = vector(self.target.get("position"))
@@ -432,18 +519,26 @@ class Trial:
             )
             if bearing is not None and head_yaw is not None
             else None,
-            geometry_reference="first_tracked_head_sample_after_search_start",
+            geometry_reference=f"first_tracked_head_{source}_after_search_start",
             geometry_reference_search_seconds=elapsed,
         )
 
     def finish(self) -> dict:
         row = self.row
+        row['head_motion_method'] = MOTION_METHOD
         if not row.get("replay_file"):
             self.flags.add("no_matching_replay")
         if self.started:
+            if self.repeat_logging:
+                if row.get("repeat_request_count") is None:
+                    row.update(repeat_request_count=self.repeat_requests, delivered_repeat_count=self.delivered_repeats,
+                               repeat_count_status="observed_requests_and_playback_starts", repeat_count_source="replay")
+                elif (row["repeat_request_count"], row["delivered_repeat_count"]) != (self.repeat_requests, self.delivered_repeats):
+                    self.flags.add("repeat_count_cross_source_mismatch")
             if row.get("instruction_count") is None:
                 row.update(
                     instruction_count=self.instructions,
+                    hint_count=self.instructions-self.delivered_repeats,
                     interrupted_instruction_count=self.interrupted,
                     instruction_count_status="observed_playback_starts",
                     instruction_count_source="replay",
@@ -451,6 +546,7 @@ class Trial:
             elif row["instruction_count"] != self.instructions:
                 self.flags.add("instruction_count_cross_source_mismatch")
             row.update(
+                head_motion_observation_count=self.motion_observations,
                 gaze_total_samples=self.samples,
                 gaze_valid_samples=self.valid_gaze,
                 gaze_unknown_tracking_samples=self.unknown_gaze,
@@ -501,10 +597,17 @@ class Trial:
             contact_method=CONTACT_METHOD,
             final_gaze_method="last_observed_tracked_target_intersection_not_fixation",
             head_rotation_method="shortest_quaternion_increment_fixed_frame_rotation_vector_axes_v1",
-            zone_measurement_status="not_exported_pending_zone_definition",
-            repeat_count_status="not_recorded_as_distinct_request_delivery_events",
-            subjective_scoring_status="raw_responses_only",
+            completion_timing_definition="final_correct_controller_selection"
+            if row.get("selection_method") in ("controller_ray_trigger", "controller_ray_trigger_press_v1")
+            else "legacy_gaze_dwell_completion" if "dwell" in (row.get("selection_method") or "").lower()
+            else "recorded_completion_method_not_documented",
+            repeat_count_status=row.get("repeat_count_status", "not_recorded_as_distinct_request_delivery_events"),
+            subjective_scoring_status="raw_responses_and_explicit_tlx_mean"
+            if row.get("nasa_tlx_scoring_status") == "scored_all_six_dimensions" else "raw_responses_only",
         )
+        row.update(self.zones.fields())
+        row.setdefault("scheduled_height_status", "missing_recorded_cross_or_target_layout")
+        row.setdefault("nasa_tlx_scoring_status", "no_nasa_tlx_response")
         row["quality_flags"] = ";".join(sorted(self.flags))
         return row
 
@@ -526,6 +629,7 @@ def read_summary(run: Path) -> tuple[dict, dict[str, Trial]]:
             block = index // int(summary["rounds_per_block"])
         row = {
             "export_schema": SCHEMA,
+            **data_labels(summary, run),
             "participant_id": participant,
             "run_number": run_number,
             "session_id": session,
@@ -540,9 +644,14 @@ def read_summary(run: Path) -> tuple[dict, dict[str, Trial]]:
             "source_summary": str(run / "trial_summary.json"),
             "source_trial_json": json.dumps(source, ensure_ascii=False, sort_keys=True),
             "schedule_version": summary.get("challenge_set"),
+            "target_identity_policy": summary.get("target_identity_policy"),
+            "height_assignment_policy": summary.get("height_assignment_policy"),
             "schedule_seed": summary.get("schedule_seed"),
             "theta_reference": summary.get("theta_reference"),
             "selection_method": summary.get("selection_method"),
+            "interaction_policy": summary.get("interaction_policy"),
+            "neutral_catalog_version": summary.get("neutral_catalog_version"),
+            "repeat_event_version": summary.get("repeat_event_version"),
         }
         for key in (
             "start_plane",
@@ -651,6 +760,8 @@ def add_source_records(
                 "ended": False,
                 "count": 0,
                 "interrupted": 0,
+                "repeat_requests": 0,
+                "delivered_repeats": 0,
                 "active": None,
                 "voices": set(),
             },
@@ -677,7 +788,11 @@ def add_source_records(
             st["voices"].add(clips[detail["clip_id"]])
         if not st["started"] or st["paused"] or st["ended"]:
             continue
+        if kind == "guidance_repeat_requested":
+            st["repeat_requests"] += 1
         if kind == "audio_playback_start":
+            if context == "guidance_repeat":
+                st["delivered_repeats"] += 1
             st["active"] = (
                 context if context in ("tip", "guidance", "guidance_repeat") else None
             )
@@ -693,8 +808,12 @@ def add_source_records(
     for tid, st in state.items():
         t = trials[tid]
         if st["started"]:
+            if summary.get("repeat_event_version") == "guidance-repeat-v1":
+                t.row.update(repeat_request_count=st["repeat_requests"], delivered_repeat_count=st["delivered_repeats"],
+                             repeat_count_status="observed_requests_and_playback_starts", repeat_count_source="trial_events_csv")
             t.row.update(
                 instruction_count=st["count"],
+                hint_count=st["count"]-st["delivered_repeats"],
                 interrupted_instruction_count=st["interrupted"],
                 instruction_count_status="observed_playback_starts",
                 instruction_count_source="trial_events_csv",
@@ -761,6 +880,7 @@ def add_replays(
                     trials[tid] = Trial(
                         {
                             "export_schema": SCHEMA,
+                            **data_labels(summary, run, practice=True),
                             "participant_id": expected[0],
                             "run_number": None,
                             "session_id": None,
@@ -784,6 +904,14 @@ def add_replays(
                 if tid not in trials:
                     raise ValueError(f"Replay trial absent from summary: {tid}")
             t = trials[tid]
+            t.repeat_logging = header.get("repeatEventVersion") == "guidance-repeat-v1"
+            if t.repeat_logging:
+                t.row["repeat_event_version"] = header["repeatEventVersion"]
+                t.row["interaction_policy"] = header.get("interactionPolicy") or t.row.get("interaction_policy")
+            if header.get("neutralCatalogVersion"):
+                if t.row.get("neutral_catalog_version") not in (None, header["neutralCatalogVersion"]):
+                    raise ValueError(f"Conflicting voice catalog versions: {tid}")
+                t.row["neutral_catalog_version"] = header["neutralCatalogVersion"]
             if t.row.get("replay_file") not in (None, str(path)):
                 raise ValueError(f"Multiple replay sources for trial: {tid}")
             t.row.update(
@@ -814,7 +942,7 @@ def join_surveys(
     inputs: set[Path],
     warnings: list[str],
 ) -> None:
-    native = run / "nasa_tlx.csv"
+    native = (run / "nasa_tlx.csv").resolve()
     paths = ([native] if native.exists() else []) + paths
     names = set()
     seen = set()
@@ -900,6 +1028,7 @@ def join_surveys(
                         "frustration",
                     ):
                         t.row["nasa_tlx_" + item] = r.get(item)
+                    t.row.update(score_tlx(r))
     for t in trials.values():
         t.row.setdefault(
             "survey_status",
@@ -923,12 +1052,23 @@ def export(
     replays: Path | None = None,
     survey_paths: list[Path] | None = None,
     max_gap_seconds: float = 0.1,
+    include_motion: bool = False,
 ) -> dict:
     run, output = run.resolve(), output.resolve()
     if output.exists():
         raise FileExistsError(f"Choose a new export directory: {output}")
     if not math.isfinite(max_gap_seconds) or max_gap_seconds <= 0:
         raise ValueError("max_gap_seconds must be finite and positive")
+    # Snapshot before parsing: a change during the first pass must not become
+    # the accepted baseline for a later motion pass or the provenance manifest.
+    candidates = {run / name for name in (
+        "trial_summary.json", "trial_schedule.csv", "object_manifest.csv",
+        "trial_events.csv", "voice-library-manifest.json", "nasa_tlx.csv")}
+    candidates.update(path.resolve() for path in survey_paths or [])
+    if replays is not None:
+        candidates.update(path.resolve() for path in (
+            [replays] if replays.is_file() else replays.rglob("recording.jsonl")))
+    initial_fingerprints = {path.resolve(): fingerprint(path.resolve()) for path in candidates if path.is_file()}
     summary, trials = read_summary(run)
     inputs = {run / "trial_summary.json"}
     warnings = []
@@ -944,6 +1084,9 @@ def export(
     add_source_records(run, summary, trials, inputs)
     add_replays(run, replays, summary, trials, inputs, warnings, max_gap_seconds)
     join_surveys(run, summary, trials, survey_paths or [], inputs, warnings)
+    inputs = {path.resolve() for path in inputs}
+    if not inputs.issubset(initial_fingerprints):
+        raise ValueError("Source files changed during export; use copied, stopped recordings")
     rows = [t.finish() for t in trials.values()]
     fields = (
         BASE_FIELDS + sorted(set().union(*(r.keys() for r in rows)) - set(BASE_FIELDS))
@@ -952,17 +1095,18 @@ def export(
     )
     manifest = {
         "schema": SCHEMA,
+        **data_labels(summary, run),
         "participant_id": str(summary["participant_id"]),
         "run_number": summary["run_number"],
         "trial_count": len(rows),
         "max_motion_gap_seconds": max_gap_seconds,
         "warnings": sorted(set(warnings)),
-        "inputs": [fingerprint(p) for p in sorted(inputs)],
+        "inputs": [initial_fingerprints[p] for p in sorted(inputs)],
         "trials": [],
         "contact_policy": CONTACT_METHOD
         + "; interaction proxy, no persistence threshold, not validated fixation",
         "motion_policy": "observed adjacent tracked samples only; no bridging pauses, invalid tracking or gaps; no interpolation",
-        "geometry_policy": "first tracked post-onset head pose to recorded target; vertical quota reference remains unspecified",
+        "geometry_policy": "first tracked post-onset head pose to recorded target; planned height uses recorded cross Y at readiness, not head Y",
         "survey_policy": "raw responses repeated with scope/provenance; do not count block answers as independent trial observations",
         "missing_policy": "blank means unavailable/not observed; see status columns; zero requires observed evidence",
         "reconstruction_policy": "retain source JSONL/audio/scene/gaze files; these summaries do not replace them",
@@ -993,6 +1137,10 @@ def export(
                 {"trial_id": tid, "file": name, "is_practice": row["is_practice"]}
             )
         write(staged / "trials.csv", rows)
+        if include_motion:
+            manifest["motion"] = write_motion_package(staged, rows, manifest["trials"])
+        if manifest["inputs"] != [fingerprint(p) for p in sorted(inputs)]:
+            raise ValueError("Source files changed during export; use copied, stopped recordings")
         (staged / "manifest.json").write_text(
             json.dumps(manifest, indent=2, ensure_ascii=False) + "\n"
         )
@@ -1009,9 +1157,11 @@ def main() -> None:
     parser.add_argument("--replays", type=Path)
     parser.add_argument("--survey", type=Path, action="append", default=[])
     parser.add_argument("--max-motion-gap-seconds", type=float, default=0.1)
+    parser.add_argument("--motion", action="store_true", help="Also export separate raw motion CSVs from matched replays")
     args = parser.parse_args()
     report = export(
-        args.run, args.output, args.replays, args.survey, args.max_motion_gap_seconds
+        args.run, args.output, args.replays, args.survey, args.max_motion_gap_seconds,
+        include_motion=args.motion,
     )
     print(f"Exported {report['trial_count']} trials to {args.output}")
     for warning in report["warnings"]:

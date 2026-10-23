@@ -49,29 +49,37 @@ def replay_rows(path: Path, warnings: list[str]) -> Iterator[tuple[int, Row]]:
     previous_time = -1.0
     schema = None
     ended = False
+    def reject_constant(value):
+        raise ValueError(f"Non-finite replay measurement {value}: {path}")
     with path.open(encoding="utf-8") as stream:
         for number, line in enumerate(stream, 1):
             try:
-                record = json.loads(line)
+                record = json.loads(line, parse_constant=reject_constant)
             except json.JSONDecodeError:
                 if not line.rstrip().endswith("}") and not stream.read(1):
                     warnings.append(f"Truncated final replay fragment: {path}:{number}")
                     break
                 raise ValueError(f"Corrupt replay record: {path}:{number}") from None
-            if not isinstance(record, dict) or record.get("schema") not in (1, 2):
+            if not isinstance(record, dict) or type(record.get("schema")) is not int or record["schema"] not in (1, 2):
                 raise ValueError(f"Unsupported replay schema: {path}:{number}")
             if number == 1:
                 schema = record["schema"]
                 if record.get("kind") != "header":
                     raise ValueError(f"Replay has no header: {path}")
             sequence, time = record.get("sequence", -1), record.get("time", -1)
-            if (record["schema"] != schema or sequence <= previous_sequence or
-                    not isinstance(time, (int, float)) or not 0 <= time < float("inf") or
+            if (record["schema"] != schema or type(sequence) is not int or sequence <= previous_sequence or
+                    type(time) not in (int, float) or not 0 <= time < float("inf") or
                     time < previous_time or ended):
                 raise ValueError(f"Invalid replay ordering: {path}:{number}")
+            for field in ('complete', 'correct', 'practice', 'headAvailable', 'searchActive', 'visible'):
+                if field in record and type(record[field]) is not bool:
+                    raise ValueError(f"Invalid replay boolean {field}: {path}:{number}")
+            for field in ('headTracked', 'gazeTracked'):
+                if field in record and (type(record[field]) is not int or record[field] not in (-1, 0, 1)):
+                    raise ValueError(f"Invalid replay tracking flag {field}: {path}:{number}")
             previous_sequence, previous_time = sequence, time
             ended = record.get("kind") == "end"
-            if ended and not record.get("complete"):
+            if ended and record.get("complete") is not True:
                 warnings.append(f"Replay marked incomplete: {path}")
             yield number, record
     if not ended:

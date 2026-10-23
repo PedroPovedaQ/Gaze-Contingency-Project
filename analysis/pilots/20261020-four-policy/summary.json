@@ -1,0 +1,198 @@
+{
+  "schema": "guidance-four-policy-pilot-v1",
+  "checkpoint": "4cbc1c8",
+  "summary": {
+    "current": {
+      "probes": 104,
+      "network_requests": 70,
+      "local_only": 34,
+      "http_seconds": {
+        "n": 70,
+        "median": 0.232593,
+        "p95": 0.37213,
+        "max": 0.53249
+      },
+      "failures": 0,
+      "over_450ms": 1,
+      "scripted_scored": 72,
+      "scripted_clean": 67,
+      "flags": {
+        "missed_action_opportunity": 5
+      },
+      "stale_at_response": 4,
+      "stale_checks_known": 72,
+      "final_blocks": 4,
+      "model_scripted_clean": 35,
+      "model_scripted_scored": 40,
+      "matched_network_seconds": {
+        "n": 70,
+        "median": 0.232593,
+        "p95": 0.37213,
+        "max": 0.53249
+      },
+      "paired_delta_vs_current_seconds": {
+        "n": 70,
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "stale_nonwait_responses": 4,
+      "encourage_choices": 0,
+      "scripted_omission_episodes": 5,
+      "confirmation_probe_decision_seconds": {
+        "n": 10,
+        "median": 0.0,
+        "p95": 0,
+        "max": 0
+      }
+    },
+    "broader": {
+      "probes": 104,
+      "network_requests": 70,
+      "local_only": 34,
+      "http_seconds": {
+        "n": 70,
+        "median": 0.2289025,
+        "p95": 0.419039,
+        "max": 1.537365
+      },
+      "failures": 0,
+      "over_450ms": 2,
+      "scripted_scored": 72,
+      "scripted_clean": 68,
+      "flags": {
+        "missed_action_opportunity": 4
+      },
+      "stale_at_response": 4,
+      "stale_checks_known": 72,
+      "final_blocks": 4,
+      "model_scripted_clean": 36,
+      "model_scripted_scored": 40,
+      "matched_network_seconds": {
+        "n": 70,
+        "median": 0.2289025,
+        "p95": 0.419039,
+        "max": 1.537365
+      },
+      "paired_delta_vs_current_seconds": {
+        "n": 70,
+        "median": -0.0005425000000000152,
+        "p95": 0.154693,
+        "max": 1.325735
+      },
+      "stale_nonwait_responses": 4,
+      "encourage_choices": 0,
+      "scripted_omission_episodes": 4,
+      "confirmation_probe_decision_seconds": {
+        "n": 10,
+        "median": 0.0,
+        "p95": 0,
+        "max": 0
+      }
+    },
+    "all_jev": {
+      "probes": 104,
+      "network_requests": 104,
+      "local_only": 0,
+      "http_seconds": {
+        "n": 104,
+        "median": 0.233672,
+        "p95": 0.371877,
+        "max": 0.499908
+      },
+      "failures": 0,
+      "over_450ms": 1,
+      "scripted_scored": 72,
+      "scripted_clean": 49,
+      "flags": {
+        "action_rubric_mismatch": 12,
+        "missed_action_opportunity": 11,
+        "unqualified_or_wrong_confirmation": 6,
+        "wrong_direction_or_axis": 1
+      },
+      "stale_at_response": 5,
+      "stale_checks_known": 72,
+      "final_blocks": 0,
+      "model_scripted_clean": 49,
+      "model_scripted_scored": 72,
+      "matched_network_seconds": {
+        "n": 70,
+        "median": 0.2324835,
+        "p95": 0.371877,
+        "max": 0.436917
+      },
+      "paired_delta_vs_current_seconds": {
+        "n": 70,
+        "median": -0.005945500000000006,
+        "p95": 0.13575900000000002,
+        "max": 0.213738
+      },
+      "stale_nonwait_responses": 3,
+      "encourage_choices": 0,
+      "scripted_omission_episodes": 7,
+      "confirmation_probe_decision_seconds": {
+        "n": 10,
+        "median": 0.227798,
+        "p95": 0.314954,
+        "max": 0.314954
+      }
+    },
+    "jev_overrides": {
+      "probes": 104,
+      "network_requests": 70,
+      "local_only": 34,
+      "http_seconds": {
+        "n": 70,
+        "median": 0.2383855,
+        "p95": 0.359339,
+        "max": 0.54435
+      },
+      "failures": 0,
+      "over_450ms": 1,
+      "scripted_scored": 72,
+      "scripted_clean": 54,
+      "flags": {
+        "action_rubric_mismatch": 8,
+        "missed_action_opportunity": 10,
+        "unqualified_or_wrong_confirmation": 2,
+        "wrong_direction_or_axis": 1
+      },
+      "stale_at_response": 3,
+      "stale_checks_known": 72,
+      "final_blocks": 13,
+      "model_scripted_clean": 22,
+      "model_scripted_scored": 40,
+      "matched_network_seconds": {
+        "n": 70,
+        "median": 0.2383855,
+        "p95": 0.359339,
+        "max": 0.54435
+      },
+      "paired_delta_vs_current_seconds": {
+        "n": 70,
+        "median": 0.006343000000000001,
+        "p95": 0.106427,
+        "max": 0.21805000000000002
+      },
+      "stale_nonwait_responses": 3,
+      "encourage_choices": 0,
+      "scripted_omission_episodes": 7,
+      "confirmation_probe_decision_seconds": {
+        "n": 10,
+        "median": 0.0,
+        "p95": 0,
+        "max": 0
+      }
+    }
+  },
+  "basis": "Real Mac-to-Vercel requests; frozen histories and stepwise scripted states. No audio playback or wearer behavior.",
+  "limitations": [
+    "Python reference adapters, not production Unity state-machine execution.",
+    "No causal participant simulation; all policies receive the same original history, not their hypothetical previous speech.",
+    "Scripted correctness is an engineering rubric, not human-perceived quality; recorded unknown qualification probes are unscored.",
+    "All-Jev choices are retained including wrong/late answers; protected policies record blocks separately, not as correct Jev answers.",
+    "Current arm uses representative fixed action plus wait and common delivery question; not a bit-for-bit production Jev payload.",
+    "No retry loop, acoustic timing, headset latency, real silence durations, or final software playback measurements."
+  ],
+  "scoring_note": "Derived report excludes waits from blocked-speech counts; raw responses unchanged. Rubric failures include non-dangerous wording mismatches and premature reminders. No perceived-quality score."
+}

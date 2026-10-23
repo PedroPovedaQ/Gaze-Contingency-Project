@@ -1,534 +1,164 @@
-using System.Collections.Generic;
+using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using UnityEngine;
-using UnityEngine.XR;
-using UnityEngine.XR.OpenXR;
-using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.XR.Interaction.Toolkit.Interactors.Visuals;
-using VIVE.OpenXR.FacialTracking;
-using XRCommonUsages = UnityEngine.XR.CommonUsages;
-using XRInputDevice = UnityEngine.XR.InputDevice;
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
-using ISXRHMD = UnityEngine.InputSystem.XR.XRHMD;
-#endif
 
 /// <summary>
-/// Logs comprehensive per-frame eye tracking and gaze data to CSV.
-/// Captures: gaze origin/direction/rotation, per-eye positions and openness,
-/// fixation point, hovered object info, legacy zero dwell column, current objective,
-/// target match status, and blink detection.
+/// Compatibility per-frame CSV, sourced exclusively from SharedGazeStream.
+/// Raw input deliveries and gaps are retained separately in EyeMeasurements JSONL.
+/// Object intersections are interaction proxies, never validated fixations or blinks.
 /// </summary>
 public class GazeDataLogger : MonoBehaviour
 {
     const string k_Tag = "[GazeLog]";
     const int k_FlushInterval = 300;
+    internal const string Header = "timestamp,frame,gaze_origin_x,gaze_origin_y,gaze_origin_z," +
+        "gaze_dir_x,gaze_dir_y,gaze_dir_z,gaze_rot_x,gaze_rot_y,gaze_rot_z,gaze_rot_w," +
+        "left_eye_x,left_eye_y,left_eye_z,right_eye_x,right_eye_y,right_eye_z,left_eye_open,right_eye_open," +
+        "fixation_x,fixation_y,fixation_z,hovered_object,hovered_shape,hovered_color,hovered_shelf_level," +
+        "is_target,dwell_progress,objective_shape,objective_color,objective_index,game_state,ray_visible," +
+        "blink,blink_count,participant_id,run_number,trial_id,voice_condition,search_active,hovered_object_id,is_practice," +
+        "gaze_valid,invalid_reason,observation_sequence,input_event_time,receipt_time,delivery_age_seconds," +
+        "new_input_update,eye_measurement_file,eye_event_measurement,left_eye_valid,right_eye_valid," +
+        "left_openness_valid,right_openness_valid,htc_query_receipt_time";
 
-    // Blink detection thresholds. We detect blinks from a smoothed bilateral closure
-    // signal so brief tracking noise or one-eye squints do not count as true blinks.
-    const float k_BlinkClosedThreshold = 0.55f;
-    const float k_BlinkReopenThreshold = 0.30f;
-    const float k_BlinkMinEyeClosureThreshold = 0.40f;
-    const float k_BlinkPeakMinEyeClosureThreshold = 0.50f;
-    const float k_BlinkMaxInterEyeAsymmetry = 0.45f;
-    const float k_BlinkMaxDuration = 0.45f;
-    const float k_BlinkMinDuration = 0.05f;
-    const float k_BlinkSmoothingTime = 0.03f;
-    const float k_BlinkMissingSignalResetDelay = 0.10f;
-    const float k_EyeDeviceSearchRetryInterval = 2f;
-    XRBaseInputInteractor m_Interactor;
     StreamWriter m_Writer;
-    int m_FrameCount;
-
-    // Cached references
     FindObjectGameManager m_GameManager;
-    XRInputDevice m_EyeDevice;
-    bool m_EyeDeviceSearched;
-    float m_NextEyeDeviceSearchTime;
-#if ENABLE_INPUT_SYSTEM
-    ISXRHMD m_InputSystemHmd;
-    AxisControl m_LeftEyeOpenControl;
-    AxisControl m_RightEyeOpenControl;
-    float m_NextInputSystemEyeSearchTime;
-#endif
-    ViveFacialTracking m_ViveFacialTracking;
-    float m_NextViveFacialTrackingSearchTime;
-    bool m_LoggedViveFacialTrackingReady;
-    bool m_HasEyeOpennessSignal;
+    XRInteractorLineVisual m_Line;
+    string m_LogFolder, m_LogParticipant;
+    readonly string m_PreparationId = Guid.NewGuid().ToString("N");
+    int m_FramesSinceFlush;
+    long m_LastWrittenSequence = -1;
+    public string RecordingError { get; private set; }
 
-    // Hover state
-    string m_HoveredObject = "";
-    string m_HoveredObjectId = "";
-    Transform m_HoveredTransform;
-    string m_LogFolder = "";
-    string m_LogParticipant = "";
-    readonly string m_PreparationId = System.Guid.NewGuid().ToString("N");
-    string m_HoveredShape = "";
-    string m_HoveredColor = "";
-    int m_HoveredShelfLevel = -1;
-
-    // Blink detection state
-    bool m_EyesClosed;
-    float m_EyesClosedStart;
-    float m_LeftClosedFiltered;
-    float m_RightClosedFiltered;
-    float m_BlinkPeakAverageClosure;
-    float m_BlinkPeakMinEyeClosure;
-    float m_BlinkPeakAsymmetry;
-    float m_LastBlinkSignalTime;
-    bool m_HasBlinkFilterState;
-    int m_BlinkCount;
-    bool m_BlinkThisFrame;
-
-    /// <summary>Total blinks detected since logging started.</summary>
-    public int BlinkCount => m_BlinkCount;
-    public bool HasBlinkSignal => m_HasEyeOpennessSignal;
+    // Retained for old callers. A signal is not a validated event detector.
+    public int BlinkCount => -1;
+    public bool HasBlinkSignal => false;
 
     void OnEnable()
     {
-        m_Interactor = GetComponent<XRBaseInputInteractor>();
-        if (m_Interactor != null)
-        {
-            m_Interactor.hoverEntered.AddListener(OnHoverEntered);
-            m_Interactor.hoverExited.AddListener(OnHoverExited);
-        }
-
+        m_Line = GetComponent<XRInteractorLineVisual>();
         OpenLog();
     }
 
     void OpenLog()
     {
-        m_Writer?.Dispose();
+        CloseLog();
+        RecordingError = null;
         m_LogFolder = SessionConfig.CurrentRunFolder;
         m_LogParticipant = SessionConfig.ParticipantId;
-        var path = SessionConfig.GetFilePath("gaze_log.csv");
-        if (string.IsNullOrEmpty(m_LogFolder))
+        m_FramesSinceFlush = 0;
+        try
         {
-            string parent = string.IsNullOrEmpty(m_LogParticipant)
-                ? Path.Combine(Application.persistentDataPath, "PreparationLogs") : SessionConfig.ParticipantPath;
-            path = Path.Combine(parent, "preparation_" + m_PreparationId, "gaze_log.csv");
+            string path;
+            if (string.IsNullOrEmpty(m_LogFolder))
+            {
+                string parent = string.IsNullOrEmpty(m_LogParticipant)
+                    ? Path.Combine(Application.persistentDataPath, "PreparationLogs") : SessionConfig.ParticipantPath;
+                path = Path.Combine(parent, "preparation_" + m_PreparationId, "gaze_log.csv");
+            }
+            else path = SessionConfig.GetFilePath("gaze_log.csv");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-        }
-
-        m_Writer = new StreamWriter(path, false, Encoding.UTF8);
-        m_Writer.WriteLine(string.Join(",",
-            "timestamp", "frame",
-            "gaze_origin_x", "gaze_origin_y", "gaze_origin_z",
-            "gaze_dir_x", "gaze_dir_y", "gaze_dir_z",
-            "gaze_rot_x", "gaze_rot_y", "gaze_rot_z", "gaze_rot_w",
-            "left_eye_x", "left_eye_y", "left_eye_z",
-            "right_eye_x", "right_eye_y", "right_eye_z",
-            "left_eye_open", "right_eye_open",
-            "fixation_x", "fixation_y", "fixation_z",
-            "hovered_object", "hovered_shape", "hovered_color", "hovered_shelf_level",
-            "is_target", "dwell_progress",
-            "objective_shape", "objective_color", "objective_index",
-            "game_state", "ray_visible",
-            "blink", "blink_count", "participant_id", "run_number", "trial_id", "voice_condition", "search_active", "hovered_object_id", "is_practice"
-        ));
-        m_Writer.Flush();
-
-        Debug.Log($"{k_Tag} Logging to {path}");
-    }
-
-    void OnDisable()
-    {
-        if (m_Interactor != null)
-        {
-            m_Interactor.hoverEntered.RemoveListener(OnHoverEntered);
-            m_Interactor.hoverExited.RemoveListener(OnHoverExited);
-        }
-
-        if (m_Writer != null)
-        {
+            bool hasRows = File.Exists(path) && new FileInfo(path).Length > 0;
+            if (hasRows)
+            {
+                using var reader = new StreamReader(path);
+                if (reader.ReadLine() != Header)
+                    throw new IOException("Existing gaze CSV has a different schema; start a new run. Existing data preserved.");
+            }
+            // Re-enabling the component must not truncate an earlier recording.
+            m_Writer = new StreamWriter(path, true, new UTF8Encoding(false));
+            if (!hasRows) m_Writer.WriteLine(Header);
             m_Writer.Flush();
-            m_Writer.Close();
-            m_Writer = null;
+            Debug.Log($"{k_Tag} Logging to {path}");
         }
+        catch (Exception e) { Fail(e); }
     }
 
-    void OnHoverEntered(HoverEnterEventArgs args)
+    void OnDisable() => CloseLog();
+    void OnApplicationPause(bool paused)
     {
-        m_HoveredTransform = args.interactableObject.transform;
-        m_HoveredObject = m_HoveredTransform.name;
-        var info = args.interactableObject.transform.GetComponent<SpawnableObjectInfo>();
-        if (info != null)
-        {
-            m_HoveredObjectId = info.objectId;
-            m_HoveredShape = info.shapeName;
-            m_HoveredColor = info.colorName;
-            m_HoveredShelfLevel = info.shelfLevel;
-        }
-        else
-        {
-            m_HoveredShape = "";
-            m_HoveredColor = "";
-            m_HoveredShelfLevel = -1;
-        }
+        if (!paused || m_Writer == null) return;
+        try { m_Writer.Flush(); } catch (Exception e) { Fail(e); }
     }
-
-    void OnHoverExited(HoverExitEventArgs args)
+    void CloseLog()
     {
-        if (m_HoveredTransform == args.interactableObject.transform)
-        {
-            m_HoveredTransform = null; m_HoveredObjectId = "";
-            m_HoveredObject = "";
-            m_HoveredShape = "";
-            m_HoveredColor = "";
-            m_HoveredShelfLevel = -1;
-        }
+        var writer = m_Writer;
+        m_Writer = null;
+        if (writer == null) return;
+        try { writer.Dispose(); }
+        catch (Exception e) { RecordingError = e.Message; Debug.LogError($"{k_Tag} {e.Message}"); }
+    }
+    void Fail(Exception e)
+    {
+        RecordingError = e.Message;
+        Debug.LogError($"{k_Tag} CSV recording stopped: {e.Message}");
+        CloseLog();
     }
 
     void Update()
     {
-        if (m_LogFolder != SessionConfig.CurrentRunFolder || m_LogParticipant != SessionConfig.ParticipantId) { OpenLog(); m_BlinkCount = 0; }
+        if (m_LogFolder != SessionConfig.CurrentRunFolder || m_LogParticipant != SessionConfig.ParticipantId) OpenLog();
         if (m_Writer == null) return;
-
-        // Lazy-resolve references
-        if (m_GameManager == null)
-            m_GameManager = FindObjectOfType<FindObjectGameManager>();
-
-        // Don't log during round transitions (fixation cross period)
-        if (m_GameManager != null &&
-            m_GameManager.CurrentState == FindObjectGameManager.GameState.Transitioning)
-            return;
-
-        // Try to find eye tracking device
-        if ((!m_EyeDeviceSearched || !m_EyeDevice.isValid) && Time.time >= m_NextEyeDeviceSearchTime)
+        if (m_GameManager == null) m_GameManager = FindFirstObjectByType<FindObjectGameManager>();
+        var stream = SharedGazeStream.Instance;
+        var sample = stream != null ? stream.Latest : null;
+        if (sample == null || sample.sequence == m_LastWrittenSequence) return;
+        m_LastWrittenSequence = sample.sequence;
+        bool valid = stream.TryGetValid(out _);
+        SpawnableObjectInfo hit = null;
+        if (valid) stream.TryHit(out hit);
+        bool playing = m_GameManager != null && m_GameManager.CurrentState == FindObjectGameManager.GameState.Playing;
+        string shape = playing ? m_GameManager.CurrentTarget.shape : "";
+        string color = playing ? m_GameManager.CurrentTarget.color : "";
+        var rotation = Quaternion.LookRotation(valid ? sample.worldDirection : Vector3.forward);
+        bool nativeFresh = valid && GazeQualityPolicy.IsFresh(true, sample.htcQueryReceiptTime,
+            Time.realtimeSinceStartupAsDouble, sample.maxDeliveryAgeSeconds);
+        bool leftValid = nativeFresh && sample.htcGazeAvailable && sample.leftValid;
+        bool rightValid = nativeFresh && sample.htcGazeAvailable && sample.rightValid;
+        bool leftOpenValid = nativeFresh && sample.opennessAvailable && sample.leftOpennessValid;
+        bool rightOpenValid = nativeFresh && sample.opennessAvailable && sample.rightOpennessValid;
+        var cells = new[] {
+            F(Time.timeAsDouble), Time.frameCount.ToString(CultureInfo.InvariantCulture),
+            F(sample.worldOrigin.x,valid), F(sample.worldOrigin.y,valid), F(sample.worldOrigin.z,valid),
+            F(sample.worldDirection.x,valid), F(sample.worldDirection.y,valid), F(sample.worldDirection.z,valid),
+            F(rotation.x,valid), F(rotation.y,valid), F(rotation.z,valid), F(rotation.w,valid),
+            F(sample.leftWorldOrigin.x,leftValid), F(sample.leftWorldOrigin.y,leftValid), F(sample.leftWorldOrigin.z,leftValid),
+            F(sample.rightWorldOrigin.x,rightValid), F(sample.rightWorldOrigin.y,rightValid), F(sample.rightWorldOrigin.z,rightValid),
+            F(sample.leftOpenness,leftOpenValid), F(sample.rightOpenness,rightOpenValid),
+            "", "", "", // No validated fixation point or vendor binocular intersection.
+            hit != null ? hit.name : "", hit != null ? hit.shapeName : "", hit != null ? hit.colorName : "",
+            hit != null ? hit.shelfLevel.ToString(CultureInfo.InvariantCulture) : "",
+            B(hit != null && playing && hit.shapeName == shape && hit.colorName == color), "0",
+            shape, color, sample.round >= 0 ? sample.round.ToString(CultureInfo.InvariantCulture) : "",
+            m_GameManager != null ? m_GameManager.CurrentState.ToString().ToLowerInvariant() : "idle",
+            B(m_Line != null && m_Line.enabled), "", "", // Blink detection is deferred to validated analysis.
+            sample.participant ?? "", sample.run.ToString(CultureInfo.InvariantCulture),
+            sample.sourceTrialId ?? "", sample.voice ?? "", B(m_GameManager != null && m_GameManager.SearchActive),
+            hit != null ? hit.objectId : "", B(sample.practice),
+            B(valid), valid ? "" : sample.invalidReason == "" ? "stale_at_csv_read" : sample.invalidReason,
+            sample.sequence.ToString(CultureInfo.InvariantCulture), F(sample.inputEventTime,sample.deviceAvailable),
+            F(sample.receiptTime), F(sample.ageSeconds,sample.deviceAvailable), B(sample.newInputUpdate),
+            stream.RecordingPath ?? "", "ray_intersection_proxy_not_validated_fixation", B(leftValid), B(rightValid),
+            B(leftOpenValid), B(rightOpenValid), F(sample.htcQueryReceiptTime,sample.htcQueryReceiptTime > 0)
+        };
+        for (int i = 0; i < cells.Length; i++) cells[i] = Escape(cells[i]);
+        try
         {
-            var devices = new List<XRInputDevice>();
-            InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.EyeTracking, devices);
-            if (devices.Count > 0)
-            {
-                m_EyeDevice = devices[0];
-                Debug.Log($"{k_Tag} Eye tracking device connected: {m_EyeDevice.name}");
-            }
-            else if (!m_EyeDeviceSearched)
-            {
-                Debug.LogWarning($"{k_Tag} Eye tracking device not ready yet; will retry");
-            }
-
-            m_EyeDeviceSearched = true;
-            m_NextEyeDeviceSearchTime = Time.time + k_EyeDeviceSearchRetryInterval;
+            m_Writer.WriteLine(string.Join(",", cells));
+            if (++m_FramesSinceFlush >= k_FlushInterval) { m_Writer.Flush(); m_FramesSinceFlush = 0; }
         }
-
-#if ENABLE_INPUT_SYSTEM
-        if ((m_InputSystemHmd == null || !m_InputSystemHmd.added) && Time.time >= m_NextInputSystemEyeSearchTime)
-        {
-            m_InputSystemHmd = InputSystem.GetDevice<ISXRHMD>();
-            if (m_InputSystemHmd != null)
-            {
-                m_LeftEyeOpenControl = m_InputSystemHmd.TryGetChildControl<AxisControl>("leftEyeOpenAmount");
-                m_RightEyeOpenControl = m_InputSystemHmd.TryGetChildControl<AxisControl>("rightEyeOpenAmount");
-
-                if (m_LeftEyeOpenControl != null && m_RightEyeOpenControl != null)
-                    Debug.Log($"{k_Tag} Input System eye-open controls connected: {m_InputSystemHmd.displayName}");
-            }
-
-            m_NextInputSystemEyeSearchTime = Time.time + k_EyeDeviceSearchRetryInterval;
-        }
-#endif
-        if (m_ViveFacialTracking == null && Time.time >= m_NextViveFacialTrackingSearchTime)
-        {
-            m_ViveFacialTracking = OpenXRSettings.Instance != null
-                ? OpenXRSettings.Instance.GetFeature<ViveFacialTracking>()
-                : null;
-            if (m_ViveFacialTracking != null && !m_LoggedViveFacialTrackingReady)
-            {
-                Debug.Log($"{k_Tag} Vive facial tracking feature connected");
-                m_LoggedViveFacialTrackingReady = true;
-            }
-
-            m_NextViveFacialTrackingSearchTime = Time.time + k_EyeDeviceSearchRetryInterval;
-        }
-
-        // Gaze interactor transform
-        var t = transform;
-        var origin = t.position;
-        var dir = t.forward;
-        var rot = t.rotation;
-
-        // Per-eye data (default NaN if unavailable)
-        float lx = float.NaN, ly = float.NaN, lz = float.NaN;
-        float rx = float.NaN, ry = float.NaN, rz = float.NaN;
-        float leftOpen = float.NaN, rightOpen = float.NaN;
-        float fx = float.NaN, fy = float.NaN, fz = float.NaN;
-
-        if (m_EyeDevice.isValid)
-        {
-            if (m_EyeDevice.TryGetFeatureValue(XRCommonUsages.eyesData, out Eyes eyes))
-            {
-                if (eyes.TryGetLeftEyePosition(out Vector3 leftPos))
-                { lx = leftPos.x; ly = leftPos.y; lz = leftPos.z; }
-                if (eyes.TryGetRightEyePosition(out Vector3 rightPos))
-                { rx = rightPos.x; ry = rightPos.y; rz = rightPos.z; }
-                if (eyes.TryGetLeftEyeOpenAmount(out float lo))
-                    leftOpen = lo;
-                if (eyes.TryGetRightEyeOpenAmount(out float ro))
-                    rightOpen = ro;
-                if (eyes.TryGetFixationPoint(out Vector3 fixPt))
-                { fx = fixPt.x; fy = fixPt.y; fz = fixPt.z; }
-            }
-        }
-
-#if ENABLE_INPUT_SYSTEM
-        if ((float.IsNaN(leftOpen) || float.IsNaN(rightOpen)) &&
-            m_InputSystemHmd != null && m_InputSystemHmd.added &&
-            m_LeftEyeOpenControl != null && m_RightEyeOpenControl != null)
-        {
-            leftOpen = m_LeftEyeOpenControl.ReadValue();
-            rightOpen = m_RightEyeOpenControl.ReadValue();
-        }
-#endif
-        bool hasViveBlinkMetrics = TryReadViveEyeMetrics(
-            out float viveLeftOpen, out float viveRightOpen,
-            out float viveLeftClosed, out float viveRightClosed);
-
-        if (float.IsNaN(leftOpen) || float.IsNaN(rightOpen))
-        {
-            if (hasViveBlinkMetrics)
-            {
-                leftOpen = viveLeftOpen;
-                rightOpen = viveRightOpen;
-            }
-        }
-
-        // Blink detection
-        m_BlinkThisFrame = false;
-        if (TryGetBlinkClosureSample(
-            leftOpen, rightOpen,
-            hasViveBlinkMetrics, viveLeftClosed, viveRightClosed,
-            out float leftClosed, out float rightClosed))
-        {
-            m_HasEyeOpennessSignal = true;
-            m_LastBlinkSignalTime = Time.time;
-            UpdateBlinkDetection(leftClosed, rightClosed);
-        }
-        else if (Time.time - m_LastBlinkSignalTime > k_BlinkMissingSignalResetDelay)
-        {
-            ResetBlinkDetectionState();
-        }
-
-        // Objective and target state
-        string objShape = "", objColor = "";
-        int objIndex = -1;
-        bool isTarget = false;
-        string gameState = "idle";
-
-        if (m_GameManager != null)
-        {
-            gameState = m_GameManager.CurrentState.ToString().ToLower();
-            if (m_GameManager.CurrentState == FindObjectGameManager.GameState.Playing)
-            {
-                var objectives = m_GameManager.Objectives;
-                int idx = m_GameManager.CurrentObjectiveIndex;
-                if (idx < objectives.Count)
-                {
-                    objShape = objectives[idx].shape;
-                    objColor = objectives[idx].color;
-                    objIndex = idx;
-                    isTarget = !string.IsNullOrEmpty(m_HoveredShape) &&
-                               m_HoveredShape == objShape &&
-                               m_HoveredColor == objColor;
-                }
-            }
-        }
-
-        // Dwell progress
-        float dwellProgress = 0f; // Legacy CSV column: gaze dwell selection has been removed.
-
-        // Ray visibility
-        var lineVisual = GetComponent<XRInteractorLineVisual>();
-        bool rayVisible = lineVisual != null && lineVisual.enabled;
-
-        m_Writer.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
-            "{0:F4},{1}," +
-            "{2:F5},{3:F5},{4:F5}," +
-            "{5:F5},{6:F5},{7:F5}," +
-            "{8:F5},{9:F5},{10:F5},{11:F5}," +
-            "{12},{13},{14}," +
-            "{15},{16},{17}," +
-            "{18},{19}," +
-            "{20},{21},{22}," +
-            "{23},{24},{25},{26}," +
-            "{27},{28:F4}," +
-            "{29},{30},{31}," +
-            "{32},{33}," +
-            "{34},{35},{36},{37},{38},{39},{40},{41},{42}",
-            Time.time, Time.frameCount,
-            origin.x, origin.y, origin.z,
-            dir.x, dir.y, dir.z,
-            rot.x, rot.y, rot.z, rot.w,
-            F(lx), F(ly), F(lz),
-            F(rx), F(ry), F(rz),
-            F(leftOpen), F(rightOpen),
-            F(fx), F(fy), F(fz),
-            m_HoveredObject, m_HoveredShape, m_HoveredColor, m_HoveredShelfLevel,
-            isTarget ? 1 : 0, dwellProgress,
-            objShape, objColor, objIndex,
-            gameState, rayVisible ? 1 : 0,
-            m_BlinkThisFrame ? 1 : 0, m_BlinkCount,
-            SessionConfig.ParticipantId, SessionConfig.RunNumber,
-            m_GameManager == null ? "" : $"{SessionConfig.ParticipantId}_run{SessionConfig.RunNumber:D3}_r{m_GameManager.CurrentObjectiveIndex:D2}",
-            SessionConfig.VoiceTag, m_GameManager != null && m_GameManager.SearchActive ? 1 : 0, m_HoveredObjectId, m_GameManager != null && m_GameManager.IsPractice ? 1 : 0
-        ));
-
-        m_FrameCount++;
-        if (m_FrameCount >= k_FlushInterval)
-        {
-            m_Writer.Flush();
-            m_FrameCount = 0;
-        }
+        catch (Exception e) { Fail(e); }
     }
 
-    static string F(float v) => float.IsNaN(v) ? "" : v.ToString("F5", System.Globalization.CultureInfo.InvariantCulture);
-
-    void UpdateBlinkDetection(float leftClosed, float rightClosed)
+    static string B(bool value) => value ? "1" : "0";
+    static string F(double value, bool valid = true) => valid && !double.IsNaN(value) && !double.IsInfinity(value)
+        ? value.ToString("F6", CultureInfo.InvariantCulture) : "";
+    static string Escape(string value)
     {
-        float dt = Mathf.Clamp(Time.unscaledDeltaTime, 0.001f, 0.1f);
-        float alpha = 1f - Mathf.Exp(-dt / k_BlinkSmoothingTime);
-
-        if (!m_HasBlinkFilterState)
-        {
-            m_LeftClosedFiltered = leftClosed;
-            m_RightClosedFiltered = rightClosed;
-            m_HasBlinkFilterState = true;
-        }
-        else
-        {
-            m_LeftClosedFiltered = Mathf.Lerp(m_LeftClosedFiltered, leftClosed, alpha);
-            m_RightClosedFiltered = Mathf.Lerp(m_RightClosedFiltered, rightClosed, alpha);
-        }
-
-        float averageClosure = (m_LeftClosedFiltered + m_RightClosedFiltered) * 0.5f;
-        float minEyeClosure = Mathf.Min(m_LeftClosedFiltered, m_RightClosedFiltered);
-        float asymmetry = Mathf.Abs(m_LeftClosedFiltered - m_RightClosedFiltered);
-        bool bothClosed = averageClosure >= k_BlinkClosedThreshold &&
-                          minEyeClosure >= k_BlinkMinEyeClosureThreshold &&
-                          asymmetry <= k_BlinkMaxInterEyeAsymmetry;
-        bool bothReopened = averageClosure <= k_BlinkReopenThreshold;
-
-        if (bothClosed && !m_EyesClosed)
-        {
-            m_EyesClosed = true;
-            m_EyesClosedStart = Time.time;
-            m_BlinkPeakAverageClosure = averageClosure;
-            m_BlinkPeakMinEyeClosure = minEyeClosure;
-            m_BlinkPeakAsymmetry = asymmetry;
-            return;
-        }
-
-        if (!m_EyesClosed)
-            return;
-
-        m_BlinkPeakAverageClosure = Mathf.Max(m_BlinkPeakAverageClosure, averageClosure);
-        m_BlinkPeakMinEyeClosure = Mathf.Max(m_BlinkPeakMinEyeClosure, minEyeClosure);
-        m_BlinkPeakAsymmetry = Mathf.Max(m_BlinkPeakAsymmetry, asymmetry);
-
-        if (!bothReopened)
-            return;
-
-        float closedDuration = Time.time - m_EyesClosedStart;
-        bool validBlink =
-            closedDuration >= k_BlinkMinDuration &&
-            closedDuration <= k_BlinkMaxDuration &&
-            m_BlinkPeakAverageClosure >= k_BlinkClosedThreshold &&
-            m_BlinkPeakMinEyeClosure >= k_BlinkPeakMinEyeClosureThreshold &&
-            m_BlinkPeakAsymmetry <= k_BlinkMaxInterEyeAsymmetry;
-
-        if (validBlink)
-        {
-            m_BlinkCount++;
-            m_BlinkThisFrame = true;
-        }
-
-        m_EyesClosed = false;
-        m_BlinkPeakAverageClosure = 0f;
-        m_BlinkPeakMinEyeClosure = 0f;
-        m_BlinkPeakAsymmetry = 0f;
-    }
-
-    void ResetBlinkDetectionState()
-    {
-        m_EyesClosed = false;
-        m_HasBlinkFilterState = false;
-        m_BlinkPeakAverageClosure = 0f;
-        m_BlinkPeakMinEyeClosure = 0f;
-        m_BlinkPeakAsymmetry = 0f;
-        m_LeftClosedFiltered = 0f;
-        m_RightClosedFiltered = 0f;
-    }
-
-    bool TryGetBlinkClosureSample(
-        float leftOpen, float rightOpen,
-        bool hasViveBlinkMetrics, float viveLeftClosed, float viveRightClosed,
-        out float leftClosed, out float rightClosed)
-    {
-        leftClosed = float.NaN;
-        rightClosed = float.NaN;
-
-        if (hasViveBlinkMetrics)
-        {
-            leftClosed = viveLeftClosed;
-            rightClosed = viveRightClosed;
-            return true;
-        }
-
-        if (float.IsNaN(leftOpen) || float.IsNaN(rightOpen))
-            return false;
-
-        leftClosed = Mathf.Clamp01(1f - leftOpen);
-        rightClosed = Mathf.Clamp01(1f - rightOpen);
-        return true;
-    }
-
-    bool TryReadViveEyeMetrics(
-        out float leftOpen, out float rightOpen,
-        out float leftClosed, out float rightClosed)
-    {
-        leftOpen = float.NaN;
-        rightOpen = float.NaN;
-        leftClosed = float.NaN;
-        rightClosed = float.NaN;
-
-        if (m_ViveFacialTracking == null)
-            return false;
-
-        if (!m_ViveFacialTracking.GetFacialExpressions(
-            XrFacialTrackingTypeHTC.XR_FACIAL_TRACKING_TYPE_EYE_DEFAULT_HTC,
-            out float[] expressions))
-        {
-            return false;
-        }
-
-        int leftBlinkIndex = (int)XrEyeExpressionHTC.XR_EYE_EXPRESSION_LEFT_BLINK_HTC;
-        int leftSqueezeIndex = (int)XrEyeExpressionHTC.XR_EYE_EXPRESSION_LEFT_SQUEEZE_HTC;
-        int rightBlinkIndex = (int)XrEyeExpressionHTC.XR_EYE_EXPRESSION_RIGHT_BLINK_HTC;
-        int rightSqueezeIndex = (int)XrEyeExpressionHTC.XR_EYE_EXPRESSION_RIGHT_SQUEEZE_HTC;
-        int leftWideIndex = (int)XrEyeExpressionHTC.XR_EYE_EXPRESSION_LEFT_WIDE_HTC;
-        int rightWideIndex = (int)XrEyeExpressionHTC.XR_EYE_EXPRESSION_RIGHT_WIDE_HTC;
-
-        if (expressions == null ||
-            expressions.Length <= Mathf.Max(
-                Mathf.Max(leftSqueezeIndex, rightSqueezeIndex),
-                Mathf.Max(leftWideIndex, rightWideIndex)))
-        {
-            return false;
-        }
-
-        leftClosed = Mathf.Clamp01(Mathf.Max(expressions[leftBlinkIndex], expressions[leftSqueezeIndex]));
-        rightClosed = Mathf.Clamp01(Mathf.Max(expressions[rightBlinkIndex], expressions[rightSqueezeIndex]));
-        float leftWide = Mathf.Clamp01(expressions[leftWideIndex]);
-        float rightWide = Mathf.Clamp01(expressions[rightWideIndex]);
-
-        // Use a conservative openness estimate for logging; the blink detector itself
-        // works on the closure channels above because they are the most reliable
-        // VIVE-provided blink signal.
-        leftOpen = Mathf.Clamp01(Mathf.Max(1f - leftClosed, leftWide * 0.5f));
-        rightOpen = Mathf.Clamp01(Mathf.Max(1f - rightClosed, rightWide * 0.5f));
-        return true;
+        value = value ?? "";
+        return value.IndexOfAny(new[] { ',', '"', '\r', '\n' }) >= 0 ? "\"" + value.Replace("\"", "\"\"") + "\"" : value;
     }
 }

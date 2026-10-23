@@ -3,9 +3,10 @@ import json
 import math
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
-from trial_csv import export
+from trial_csv import export, read_summary
 
 
 def vector(x=0, y=0, z=0):
@@ -210,6 +211,63 @@ class TrialCSVTests(unittest.TestCase):
         self.assertAlmostEqual(float(a["gross_head_rotation_y_deg"]), 2)
         self.assertEqual(a["head_motion_interval_count"], "1")
 
+    def test_selection_pose_retains_final_motion_without_inflating_frame_counts(self):
+        selection = dict(self.sample(2.15, .15, 1.4, -177), kind='selection', correct=True,
+                         objectId='target', selectingHand='right')
+        self.records = self.records[:5] + [selection, self.sample(2.2, .2, 99, 0),
+                                          dict(kind='end', time=3, complete=True)]
+        self.save()
+        row = self.read()[0][0]
+        self.assertAlmostEqual(float(row['gross_head_translation_m']), 1.4)
+        self.assertAlmostEqual(float(row['gross_head_rotation_deg']), 4)
+        self.assertEqual(row['head_motion_interval_count'], '2')
+        self.assertAlmostEqual(float(row['head_motion_covered_seconds']), .15)
+        self.assertEqual(row['head_motion_observation_count'], '3')
+        self.assertEqual(row['head_motion_method'], 'tracked_frame_and_selection_intervals_v2')
+        self.assertEqual(row['gaze_total_samples'], '2')
+
+    def test_selection_motion_keeps_invalid_gaps_and_legacy_absence_separate(self):
+        baseline = self.records[:5]
+        for case in ('invalid', 'missing', 'late'):
+            with self.subTest(case=case):
+                selection = dict(self.sample(2.15, .15, 99, 0), kind='selection', correct=True,
+                                 objectId='target', selectingHand='right')
+                if case == 'invalid': selection['headTracked'] = 0
+                if case == 'missing': selection.pop('headAvailable')
+                if case == 'late': selection.update(time=2.5, searchSeconds=.5)
+                self.records = baseline + [selection, dict(kind='end', time=3, complete=True)]
+                self.save()
+                row = self.read('export-'+case)[0][0]
+                self.assertAlmostEqual(float(row['gross_head_translation_m']), 1)
+                self.assertEqual(row['head_motion_interval_count'], '1')
+                self.assertEqual(row['head_motion_observation_count'], '2' if case == 'missing' else '3')
+
+    def test_first_tracked_selection_geometry_is_explicit_and_not_zero_motion(self):
+        selection = dict(self.sample(2.05, .05, 0, 0), kind='selection', correct=True,
+                         objectId='target', selectingHand='right')
+        self.records = self.records[:3] + [selection, dict(kind='end', time=3, complete=True)]
+        self.save()
+        row = self.read()[0][0]
+        self.assertEqual(row['geometry_reference'], 'first_tracked_head_selection_after_search_start')
+        self.assertAlmostEqual(float(row['target_distance_m']), math.sqrt(10))
+        self.assertEqual(row['gross_head_translation_m'], '')
+        self.assertEqual(row['gaze_total_samples'], '0')
+
+    def test_wrong_selection_retains_excursion_and_invalid_selection_breaks_motion(self):
+        original = list(self.records)
+        wrong = dict(self.sample(2.05, .05, 2, 180), kind='selection', correct=False,
+                     objectId='other', selectingHand='right')
+        self.records = original[:4] + [wrong] + original[4:]
+        self.save()
+        row = self.read('wrong-pose')[0][0]
+        self.assertAlmostEqual(float(row['gross_head_translation_m']), 3)
+        self.assertEqual(row['head_motion_interval_count'], '2')
+        wrong['headTracked'] = 0
+        self.save()
+        row = self.read('invalid-wrong-pose')[0][0]
+        self.assertEqual(row['gross_head_translation_m'], '')
+        self.assertEqual(row['head_motion_interval_count'], '0')
+
     def test_unknown_tracking_does_not_become_valid_gaze(self):
         self.records[4]["gazeTracked"] = -1
         self.records[4]["rightController"]["tracked"] = -1
@@ -373,6 +431,57 @@ class TrialCSVTests(unittest.TestCase):
             self.read()
         self.assertFalse((self.root / "export").exists())
 
+    def test_repeat_requests_are_separate_from_delivered_repeats(self):
+        self.records[0]["repeatEventVersion"] = "guidance-repeat-v1"
+        self.records[5].update(kind="guidance_repeat_requested", detail="guidance_repeat;")
+        self.records[6]["detail"] = "guidance_repeat;text=Look up"
+        self.records[7]["detail"] = "guidance_repeat;"
+        self.records.insert(8, dict(kind="guidance_repeat_requested", time=2.3,
+                                    searchSeconds=.3, detail="guidance_repeat;"))
+        self.save()
+        row = self.read()[0][0]
+        self.assertEqual(row["repeat_request_count"], "2")
+        self.assertEqual(row["delivered_repeat_count"], "1")
+        self.assertEqual(row["instruction_count"], "1")
+        self.assertEqual(row["repeat_count_source"], "replay")
+        self.assertEqual(row["hint_count"], "0")
+
+    def test_catalog_version_preserved_and_conflicting_sources_rejected(self):
+        version = "elevenlabs-six-per-gender-v1"
+        self.records[0]["neutralCatalogVersion"] = version
+        self.summary["neutral_catalog_version"] = version
+        self.save()
+        self.assertEqual(self.read()[0][0]["neutral_catalog_version"], version)
+        self.records[0]["neutralCatalogVersion"] = "different-catalog"
+        self.save()
+        with self.assertRaisesRegex(ValueError, "Conflicting voice catalog"):
+            self.read(output="conflicting")
+
+    def test_repeat_zero_requires_versioned_logging(self):
+        legacy = self.read()[0][0]
+        self.assertEqual(legacy["repeat_request_count"], "")
+        self.records[0]["repeatEventVersion"] = "guidance-repeat-v1"
+        self.save()
+        modern = self.read(output="modern")[0][0]
+        self.assertEqual(modern["repeat_request_count"], "0")
+        self.assertEqual(modern["delivered_repeat_count"], "0")
+
+    def test_csv_repeat_counts_without_replay(self):
+        self.summary["repeat_event_version"] = "guidance-repeat-v1"
+        self.save()
+        records = [("search_start", ""), ("guidance_repeat_requested", "context=guidance_repeat;"),
+                   ("guidance_repeat_requested", "context=guidance_repeat;"),
+                   ("audio_request", "context=guidance_repeat;"),
+                   ("audio_playback_start", "context=guidance_repeat;"), ("capture_correct", "")]
+        rows = [dict(participant_id="P001", run_number=1, trial_id=self.tid, voice_condition="selfsimilar",
+                     event_type=kind, detail=detail) for kind, detail in records]
+        source = self.survey("trial_events.csv", rows)
+        (self.run / source.name).write_bytes(source.read_bytes())
+        row = self.read()[0][0]
+        self.assertEqual(row["repeat_request_count"], "2")
+        self.assertEqual(row["delivered_repeat_count"], "1")
+        self.assertEqual(row["repeat_count_source"], "trial_events_csv")
+
     def test_two_recordings_for_one_trial_rejected(self):
         p = self.root / "replays" / "another"
         p.mkdir()
@@ -498,6 +607,104 @@ class TrialCSVTests(unittest.TestCase):
         self.save()
         with self.assertRaisesRegex(ValueError, "clock regressed"):
             self.read()
+
+
+    def test_data_purpose_labels_do_not_certify_legacy_data(self):
+        rows, report = self.read()
+        self.assertEqual(rows[0]["data_purpose"], "unknown")
+        self.assertEqual(rows[0]["exclude_from_study_analysis"], "")
+        self.summary["session_mode"] = "neutral_quick_test"
+        self.save()
+        rows, report = self.read("dev")
+        self.assertEqual(rows[0]["exclude_from_study_analysis"], "1")
+        self.assertEqual(report["data_purpose"], "development")
+        self.summary["session_mode"] = "synthetic_demo"
+        self.save()
+        rows, report = self.read("synthetic")
+        self.assertTrue(report["exclude_from_study_analysis"])
+        self.assertEqual(rows[0]["data_purpose"], "synthetic")
+
+    def test_motion_preserves_all_pose_records_and_raw_values(self):
+        self.records[9]["gazeTracked"] = 0
+        self.save()
+        rows, report = self.read(include_motion=True)
+        with (self.root / "export/motion.csv").open(newline="") as stream:
+            motion = list(csv.DictReader(stream))
+        expected = [r for r in self.records if r["kind"] in ("sample", "selection")]
+        self.assertEqual(len(motion), len(expected))
+        self.assertEqual(report["motion"]["row_count"], len(expected))
+        for actual, source in zip(motion, expected):
+            raw = json.loads(actual["source_record_json"])
+            for key, value in source.items():
+                self.assertEqual(raw[key], value)
+            self.assertEqual(actual["trial_id"], self.tid)
+        paused = next(r for r in motion if r["replay_time_seconds"] == "4")
+        self.assertEqual(paused["replay__searchActive"], "0")
+        self.assertEqual(paused["replay__headPosition__x"], "99")
+        self.assertEqual(paused["replay__gazeTracked"], "0")
+        self.assertEqual(motion[-1]["replay__headPosition__x"], "")
+        with (self.root / "export" / report["trials"][0]["motion_file"]).open(newline="") as stream:
+            self.assertEqual(list(csv.DictReader(stream)), motion)
+        self.assertEqual(report["trials"][1]["motion_status"], "no_matched_replay")
+
+    def test_motion_is_optional_and_missing_replays_are_explicit(self):
+        self.read()
+        self.assertFalse((self.root / "export/motion.csv").exists())
+        report = export(self.run, self.root / "no-replay", include_motion=True)
+        self.assertEqual(report["motion"]["row_count"], 0)
+        self.assertTrue(all(e["motion_status"] == "no_matched_replay" for e in report["trials"]))
+
+    def test_change_during_initial_read_rejects_package(self):
+        def mutate_after_read(run):
+            result = read_summary(run)
+            self.summary["session_mode"] = "synthetic_demo"
+            self.save()
+            return result
+        with patch("trial_csv.read_summary", side_effect=mutate_after_read):
+            with self.assertRaisesRegex(ValueError, "Source files changed"):
+                self.read(include_motion=True)
+        self.assertFalse((self.root / "export").exists())
+
+    def test_final_retrospective_tlx_keeps_block_scope_and_raw_ten_point_scale(self):
+        source = self.survey("final_tlx.csv", [dict(participant_id="P001", run_number=1,
+            block=0, voice_condition="selfsimilar", response_id="final-block1", instrument_version="tlx-0-10-20261020",
+            administration_phase="final", reference_scope="participant_by_block", administered_at="2026-10-20T20:00:00Z",
+            scale_min=0, scale_max=10, performance_direction="high_is_poor",
+            mental=1, physical=2, temporal=3, performance=4, effort=5, frustration=6)])
+        (self.run / "nasa_tlx.csv").symlink_to(source)
+        rows, _ = self.read()
+        self.assertEqual(rows[0]["nasa_tlx_mental"], "1")
+        self.assertEqual(float(rows[0]["nasa_tlx_score"]), 3.5)
+        self.assertEqual(float(rows[0]["nasa_tlx_score_0_100"]), 35)
+        self.assertEqual(rows[0]["survey__final_tlx__block__administration_phase"], "final")
+        self.assertEqual(rows[0]["survey__final_tlx__block__reference_scope"], "participant_by_block")
+
+    def test_unchanged_symlinked_native_survey_is_accepted(self):
+        source = self.survey("linked_tlx.csv", [dict(participant_id="P001", run_number=1,
+            block=0, voice_condition="selfsimilar", response_id="R1", instrument_version="raw-v1", mental=40)])
+        (self.run / "nasa_tlx.csv").symlink_to(source)
+        rows, report = self.read(include_motion=True)
+        self.assertEqual(rows[0]["nasa_tlx_mental"], "40")
+        self.assertIn(str(source.resolve()), [p["path"] for p in report["inputs"]])
+
+    def test_height_is_trial_target_minus_recorded_cross_not_head(self):
+        self.records[1]["layout"] = "rotational_scatter_v4"
+        self.records[1]["selectionMethod"] = "controller_ray_trigger_press_v1"
+        self.records.insert(2, dict(kind="readiness_completed", time=1.5,
+            readinessPosition=vector(0, .4, 1.5), readinessWall=0))
+        self.save()
+        rows, _ = self.read()
+        self.assertEqual(rows[0]["scheduled_height_delta_m"], "1.6")
+        self.assertEqual(rows[0]["scheduled_height_reference_y_m"], "0.4")
+        self.assertEqual(rows[0]["target_minus_head_height_m"], "1")
+        self.assertEqual(rows[0]["completion_timing_definition"], "final_correct_controller_selection")
+        self.assertNotIn("time_to_final_correct_zone_seconds", rows[0])
+
+    def test_legacy_completion_is_not_relabelled_controller_selection(self):
+        self.records[1]["selectionMethod"] = "gaze_dwell"
+        self.save()
+        rows, _ = self.read()
+        self.assertEqual(rows[0]["completion_timing_definition"], "legacy_gaze_dwell_completion")
 
 
 if __name__ == "__main__":

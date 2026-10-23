@@ -1,3 +1,7 @@
+> **October 20, 2026:** This generated IRB packet is a historical draft. Current protocol/questionnaire sources and the final-only survey decision are in `docs/protocol/overleaf` and `docs/protocol/2026-10-20-final-survey-decision.md`. Do not use old rendered forms for collection. Qualtrics remains on hold; no submission/approval update is claimed.
+
+**October 20 alignment warning:** the current working protocol uses two 40-trial voice blocks, one practice in the first assigned voice and final retrospective questionnaires. Historical source/consent files here still contain four-condition counts, old practice rules and local/offline processing promises. They are not current participant materials. See `../protocol/2026-10-20-alignment-audit.md`; service processing/retention and formal packet reconciliation remain required. Qualtrics stays on hold.
+
 # Gaze Contingency IRB packet
 
 [Study hub — protocol, surveys and references](../STUDY-HUB.md)

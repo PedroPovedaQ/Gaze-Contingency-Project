@@ -46,6 +46,7 @@ public class RayMenuFeedback : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (!Application.isFocused || !m_Control.IsInteractable() || !m_Pointers.Add(data.pointerId)) return;
         // XRI tells us which ray generated the UI hit; don't vibrate both controllers.
         if (data is TrackedDeviceEventData tracked && tracked.interactor is XRBaseInputInteractor ray &&
+            ray.handedness == InteractorHandedness.Right &&
             ray.GetComponentInParent<ControllerInputActionManager>() != null)
             ray.SendHapticImpulse(0.2f, 0.04f);
     }
@@ -61,14 +62,14 @@ public class RayMenuFeedback : MonoBehaviour, IPointerEnterHandler, IPointerExit
         var rect = go.GetComponent<RectTransform>();
         rect.sizeDelta = size; rect.anchoredPosition = position;
         var image = go.GetComponent<Image>();
-        image.color = new Color(0.16f, 0.35f, 0.48f, 1f);
+        StudyPromptCard.StyleButton(image);
         var button = go.GetComponent<Button>(); button.targetGraphic = image;
         button.onClick.AddListener(action); Attach(button);
         var text = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
         text.transform.SetParent(go.transform, false);
         var tmp = text.GetComponent<TextMeshProUGUI>();
         tmp.rectTransform.sizeDelta = new Vector2(size.x - 20, 54);
-        tmp.text = label; tmp.fontSize = 25; tmp.alignment = TextAlignmentOptions.Center;
+        tmp.text = label; StudyPromptCard.StyleText(tmp, 25);
         tmp.enableAutoSizing = true; tmp.fontSizeMin = 19; tmp.fontSizeMax = 25;
         tmp.raycastTarget = false;
         return button;

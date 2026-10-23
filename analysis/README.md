@@ -1,6 +1,16 @@
 # Analysis Workflow
 
+**Reusable browser timeline (#37):** `python3 analysis/replay_timeline.py /path/to/recording.jsonl --output /path/to/new-data.json --html /path/to/new-page.html` imports a saved replay directly. Optional `--trial-export` links the exact performance/subjective export. The page supports all saved samples, source IDs, pause/visibility/gap states, recorded object changes, sample/event stepping, cursor JSON export and locally attached run video. See [workflow and remaining 3D/hardware/performance limits](../docs/timeline-video.md).
+
+**Current data quality (September 30):** `analysis/eye_quality.py` exports raw eye rows plus spatial/delivery-rate quality reports. Invalid measurements remain blank; interrupted final JSON rows can be recovered with an incomplete warning, while middle corruption is rejected. Candidate eye events remain unvalidated. Per-trial `instruction_count` counts actual deliveries including requested repeats; `hint_count` excludes delivered repeats; repeat requests and deliveries are separate. A versioned repeat logger can establish zero; historical absence stays unknown. Schedule/identity/height-policy versions travel with trial rows so 40+40 horizontal balance is not mistaken for implemented vertical balance.
+
 **Per-trial performance/subjective files (#20):** use `python3 analysis/trial_csv.py <run-directory> --replays <GazeReplays-directory> --output <new-directory>`. It writes one summary CSV per trial, a combined trial table and provenance manifest, keeping raw replay data separate. Add external questionnaires with repeated `--survey` arguments. See [field definitions, survey joins and remaining measurement gaps](../docs/trial-performance-csv.md). This is a post-session computer export; the older analysis/scoring guidance below may describe legacy protocols.
+
+Add `--motion` for combined and per-trial motion CSV companions. For a reproducible
+invented example with a full trial-column dictionary, run
+`python3 analysis/demo_trial_sheets.py --output analysis/results/synthetic-demo`.
+All demo rows are labeled synthetic and excluded from study analysis. Export
+labels do not automatically filter the legacy analysis loaders.
 
 **Combined CSV:** use `python3 analysis/mega_csv.py <run-directory> --replays <GazeReplays-directory> --output <mega.csv>` to export gaze, motion, events, objects, existing trial metrics and survey context into one wide file. See [row types, joins and missing-data rules](../docs/mega-csv.md). Original recordings remain separate.
 
@@ -11,7 +21,62 @@
 
 Generates plots and statistics from the experiment data collected by Unity.
 
-## One-Command Runner (Recommended)
+## Exact replay/raw-eye link audit
+
+**Implemented locally (October 1, 2026):** audit one measured run against explicitly supplied replay and raw-eye recordings. This supplements the session validator, per-trial export and guidance audit; it does not replace them.
+
+```sh
+python3 analysis/recording_links.py /path/to/run \
+  --eye /path/to/EyeMeasurements/recording-a/gaze_observations.jsonl \
+  --eye /path/to/EyeMeasurements/recording-b/gaze_observations.jsonl \
+  --replay /path/to/GazeReplays/recording/recording.jsonl \
+  --out /path/to/new-link-report
+```
+
+Use one `--eye` for each raw recording belonging to the run; add more only when logging reopened. `--replay` can also repeat. The tool never follows a stored device path automatically or guesses a nearby observation. New replays advertise `gaze-observation-link-v1`; each sample/selection carries both the raw recording ID and sequence. A header path alone cannot establish this link.
+
+- `recording_links.json`: input paths, SHA-256 hashes, byte counts, raw clean-close receipts, trial counts, findings and limits. Inputs are rehashed after parsing to detect changes during the audit.
+- `trials.csv`: per-trial raw search rows, replay records, exact linked/unavailable observations, correct selections and source files.
+- `assets.csv`: referenced replay audio files, playback-reference counts, byte/frame counts, channels, sample rate and duration. Reused clips are inspected once and every referring event sequence is retained.
+- `issues.csv`: contradictory participant/run/block/voice/trial links, object/target mismatch, missing exact observations, source/timestamp mismatch or invalid coordinate transforms.
+- `incomplete.csv`: missing/unfinished recordings, absent started-trial streams or legacy/unknown linkage contracts.
+
+Exit **0** means the supplied package is consistent with these checks; **1** means an integrity/structural error; **2** means evidence is incomplete. Existing output directories are refused. Invalid gaze rows remain linkable without interpreting their zero pose placeholders as measurements. A non-search transition may explicitly refer to the preceding trial's observation; active search and selection may not. Practice is excluded from measured-trial counts.
+
+The `recording-links-v2` report also checks saved PCM16 WAV headers, declared/actual lengths, rates and channel alignment. Missing files or playback without saved audio are incomplete evidence; malformed files and unsafe references are integrity issues. Absolute/traversal paths and symlinked assets are rejected before reading them. Referenced regular files within the size limit are hashed before parsing and rechecked after the audit. This does not repair or regenerate clips. No audio references means no audio evidence, not proof of a successful silent run.
+
+Coordinate checks use the saved origin quaternion/translation to compare replay-local valid rays with raw world rays. They do not establish that the raw hardware conversion is correct. PCM format consistency does not establish the right voice, naturalness, audibility or acoustic timing. This report does not validate video, surveys, physiological eye events, native 120 Hz or task-wide spatial accuracy. Historical replays remain readable, but cannot gain missing raw-observation provenance retrospectively.
+
+## Voice-study power/sensitivity planning
+
+**Protocol proposal; synthetic assumptions only:** `python3 analysis/voice_sensitivity.py --config analysis/power/voice_sensitivity.json --out /path/to/new-report` generates a paired-test sensitivity benchmark and a trial-level simulation analyzed as order-adjusted participant log-time differences. It compares 10 versus the selected 40 trials per voice across participant counts, voice-response variability, serial correlation and missingness. Null rejection, bias, retained N and Monte Carlo uncertainty are explicit; the informative-loss scenario is a failure-mode stress test. Separate binomial recruitment scenarios distinguish an expected retained count from a stated completion probability.
+
+See [methods, assumptions, outputs and decisions still needed](../docs/voice-power-sensitivity.md). Saved synthetic results are in `analysis/power/results-20261001/`. This does not select an outcome, sample size or exclusion rule, and does not turn repeated block surveys into independent trial outcomes. The current complete-run descriptive exporter remains unchanged. Final mixed-model/censoring choices and power justification require the actual-task pilot and researcher decisions in #16.
+
+## Combined recording audit before analysis
+
+**Implemented; recording consistency only:** after copying a closed run and its explicitly matching eye/replay files, run:
+
+Use the [three-directory Vive transfer procedure](../docs/recording-transfer.md); the older descriptive runner's `--pull` retrieves only `GazeData`.
+
+```sh
+python3 analysis/audit_recording.py /copied/GazeData/P001/run_001 \
+  --eye /copied/EyeMeasurements/recording/gaze_observations.jsonl \
+  --replay /copied/GazeReplays/recording/recording.jsonl \
+  --out /reports/P001-run001-audit
+```
+
+Repeat `--eye` and `--replay` for all matching files, including eye-recording restarts. Choose a new output directory outside the supplied recording directories. Nothing is pulled, uploaded or rewritten. Use the analysis Python environment described below; `--no-plots` generates tables without matplotlib figures. Use `--allow-incomplete` to inspect an interrupted run; its aggregate result remains incomplete even if its retained records agree.
+
+The command runs the existing session, exact recording-link/audio-asset, guidance and per-eye-file quality checks. It keeps each command, stdout/stderr log and report even when another check fails, hashes the known source files/sidecars before and after, and writes `audit_report.json` after each step. A report left at `running` is interrupted, never a pass. Inspect the individual findings; no guessed filename joins are performed.
+
+Exit 0 / `consistent` means the selected recording checks agree. Exit 1 means a check failed, found an inconsistency or observed source changes. Exit 2 / `evidence_incomplete` means missing completion/provenance evidence or an intentionally partial session. The declared nominal/short-run counts are retained separately; a successful short debug session is not a full-study check. The report never certifies native 120 Hz, spatial accuracy, validated eye events, survey completeness, voice naturalness or video/acoustic synchronization. P020's historical recording lacks current raw links and cannot retrospectively pass this current-contract audit.
+
+Raw eye JSON flags must be actual booleans, not text such as `"false"`; numeric timestamps/sequences cannot be booleans. Malformed declared values are rejected rather than coerced into valid gaze. A clean-close claim also requires a nonnegative integer `acceptedRows` matching the retained file. Missing counts remain incomplete, and invalidly typed counts/flags are errors. These rules do not invent fields absent from older recordings.
+
+The shared replay reader likewise rejects non-finite JSON measurements, malformed sequence/time/schema values, non-boolean declared completion/selection/visibility flags and noninteger gaze/head tracking states. A missing or false footer-completion flag stays incomplete. Malformed declared types fail before link/CSV/timeline derivation; absent historical fields retain each consumer's existing missing-evidence handling. The historical P020 prefix still loads unchanged with both truncated-tail and missing-footer warnings.
+
+## Descriptive analysis runner
 
 From the project root:
 
@@ -88,20 +153,11 @@ In the `results/` folder:
 
 ## NASA-TLX Workflow
 
-NASA-TLX is a paper questionnaire collected manually after each block.
-After each session:
+**Current protocol proposal (October 20):** collect two separately labelled retrospective TLX sets in the final survey after both blocks, with raw ratings 0–10. Preserve the referenced block, actual voice/condition, participant/run, `administration_phase=final`, `reference_scope=participant_by_block`, administration timestamp and instrument version. Qualtrics is on hold.
 
-1. Have the participant rate the 6 subscales (0-100 each):
-   mental demand, physical, temporal, performance, effort, frustration
-2. Add a row to a file named **`nasa_tlx.csv`** in your `GazeData/` folder
-3. Use this column order: `participant_id, condition, mental, physical,
-   temporal, performance, effort, frustration`
-4. See `nasa_tlx_template.csv` in the analysis folder for an example
+**Implemented scoring:** `tlx_scoring.py` accepts explicit `scale_min=0`, `scale_max=10` or legacy `100`, plus `performance_direction` (higher is better/worse). All six dimensions must be valid and complete. Raw values remain intact; `nasa_tlx_score` is the native-scale unweighted mean and `nasa_tlx_score_0_100` is a separately labelled conversion for cross-scale plots. Missing/invalid metadata produces an unscored result, not a guessed scale. Performance is aligned to higher workload before averaging. The example `nasa_tlx_template.csv` is legacy; do not infer its scale for current responses.
 
-The analysis pipeline auto-detects this file. If present, it generates
-`nasa_tlx.png` (raw workload box plot) and `nasa_tlx_subscales.png`
-(6-subscale grouped bar chart), and it copies the loaded questionnaire
-data into `results/nasa_tlx_scores.csv`.
+The loader auto-detects `nasa_tlx.csv` and saves the loaded/scored records to `results/nasa_tlx_scores.csv`. Workload plots explicitly label rescaling to 0–100. Trial export repeats the referenced block’s responses for convenience, preserving their block scope; repeated rows are not independent survey observations. See `test_tlx_scoring.py`, `test_tlx_plots.py` and `test_trial_csv.py` for native-scale, missingness and retrospective-join cases.
 
 ## File Structure
 
@@ -175,4 +231,53 @@ Per-round (in summary JSON `objectives[]`):
 
 New neutral runs use `gaze_aware_voice-neutral-male` / `gaze_aware_voice-neutral-female`; the self-similar label is unchanged. `run_condition` retains this assignment. Historical `voice-generic` remains readable. Male/female are neutral voice profiles, not additional guidance conditions.
 
-For schema-2 two-block sessions, `voice_condition`, `voice_order`, `trial_id`, `outcome`, search-onset and capture timestamps are retained per trial. `voice_block_metrics.csv` reports completed trials by block; `voice_pair_differences.csv` pairs only complete 14-trial runs within the same participant/run. Historical awareness plots/tests remain legacy outputs. Run `python3 scripts/verify-study-session.py /absolute/path/to/run` from the repository root to check exported timing/voice/object consistency. NASA-TLX block rows preserve the actual voice label; a historical run-wide two-voice score is `overall`.
+For schema-2 two-block sessions, `voice_condition`, `voice_order`, `trial_id`, `outcome`, search-onset and capture timestamps are retained per trial. `voice_block_metrics.csv` reports completed trials by block; `voice_pair_differences.csv` pairs only complete two-block runs within the same participant/run, using saved nominal and per-block trial counts (80 trials in the current 40+40 design; historical 14-trial runs remain supported). Debug/shortened runs, duplicate or missing trials, inconsistent voice order/assignment and invalid search durations are explicitly excluded. Restarts never supply a replacement block. Historical awareness plots/tests remain legacy outputs. Run `python3 scripts/verify-study-session.py /absolute/path/to/run` from the repository root to check exported timing/voice/object consistency. NASA-TLX block rows preserve the actual voice label; a historical run-wide two-voice score is `overall`.
+
+## October 1 quality report additions — implemented, validation pending
+
+`eye-quality-v2-phase-aware` adds `trial_eye_quality.csv`, keyed by recording, participant, run and trial. It summarizes **search-only** observed rows, distinct input updates, valid-update fraction, bounded valid duration, gap duration, delivery rate, device changes and invalid reasons. Pauses, practice, participant/trial changes and absent trial-end samples are not joined or extrapolated. These windows are not authoritative trial duration. Unknown vendor calibration identity and researcher exclusion decisions remain blank with explicit status fields. Input delivery rate is still not native sensor rate.
+
+`spatial_validation.csv` now distinguishes mean-direction offset, signed mean yaw/pitch bias, median/p90 sample error, invalid-update fraction, valid-time coverage, RMS sample-to-sample fluctuation and angular spread. Bias is measured minus expected; positive yaw is right and positive pitch is up. Yaw uses a circular mean. Angular SD is explicitly the pooled radial angular spread about each contiguous segment's mean, `sqrt(sum(angle(sample, segment_mean)^2)/(N-S))`; `S` counts usable segments and each has at least two observations. Invalid rows/heartbeats, device changes and gaps break precision segments. Head movement can still contribute to world-ray spread; these are not validated fixation measures.
+
+Tests cover a high-loss trial beside a good trial, pause/practice separation, remaining freshness, changed devices/participants, fixed spatial bias versus jitter, and invalid heartbeats. No automatic study exclusion or correction threshold was introduced.
+
+## Guidance provenance audit
+
+**Implemented locally, October 1.** Run this after pulling both the continuous raw eye file and matching replay packages:
+
+```sh
+python3 analysis/guidance_audit.py \
+  --eye /path/to/EyeMeasurements/recording/gaze_observations.jsonl \
+  --replay /path/to/GazeReplays/trial/recording.jsonl \
+  --out /path/to/new-guidance-audit
+```
+
+Repeat `--eye` and `--replay` for additional files. The destination must be new; original recordings and existing reports are never overwritten. Outputs are `guidance_audit.json`, `guidance_decisions.csv`, and `guidance_issues.csv`. A consistency issue exits with code 1 while preserving the report. Structural input errors also fail; inspect the error rather than treating a missing report as a pass.
+
+The audit requires exact `(eyeRecordingId, observationSequence)` joins. It checks participant/trial context, saved timestamps/age, invalid or stale gaze marked usable, correction revalidation, audio decision IDs, spoken phrase consistency, and audio lifecycle contradictions. Requested, abandoned, cancelled-before-playback, played, and ended states remain distinct. Unavailable/suspended decisions may legitimately have no observation. Legacy files without `guidance-decision-v1` are explicitly unsupported; an empty new recording reports `no_decisions` rather than a successful cue test.
+
+`software_request_to_playback_seconds` subtracts the **replay-relative decision-record time** from the first software playback-start time. It does not subtract absolute eye receipt time from relative replay time. Raw delivery age is audited separately against the decision's absolute Unity realtime. The area-correction commitment callback may be recorded immediately after its audio request; that order alone is not an error. The report retains original requested and committed snapshots in the raw replay.
+
+`consistent` means no observed consistency violation, not complete data or correct gaze guidance. The JSON separately reports raw-eye clean-close evidence, replay completion and truncated-prefix warnings. This tool cannot establish acoustic onset, native 120 Hz acquisition, physiological fixation, the correct wall/vertical direction, or that the participant heard the sound. Ten regression tests cover clock origins, exact joins, staleness/invalidity, trial mismatch, revalidation, cancellation, missing IDs, old data, phrase mismatch and the actual CLI/readback/overwrite/failure paths.
+
+## Delivery timing and signal-availability exports
+
+**Implemented locally, October 1.** `eye_quality.py` now also writes:
+
+- `phase_delivery_quality.csv`: counts and interval statistics grouped by participant/run, phase, practice status and device. Re-entering a phase starts a new interval segment. Invalid delivered updates still count as deliveries; repeated heartbeats do not. Equal gaze coordinates are never used to deduplicate observations.
+- `delivery_intervals.csv`: every accepted positive input-delivery interval used by the timing report, with its phase/device/context and closing application sequence.
+- `signal_capabilities.csv`: combined gaze and independently flagged left/right gaze, pupil and openness availability. HTC counts use distinct host-query timestamps because copied fields are not new queries. `no_timed_query_observed` and `not_observed_or_unavailable` are not proof of unsupported hardware.
+- `clock_frame_dictionary.csv` and `timing_report.json`: clock/frame meanings, captured device/build metadata where present, clean-close status and explicit unknown native capture identity, sample count and loss.
+- `delivery_timing.png` and `.svg`: input-delivery interval histogram and saved delivery age over host time. The 8.33 ms line is only a 120 Hz reference, never evidence of native acquisition. Rows without usable delivery timestamps are omitted from the age plot; their unknown counts remain in the tables.
+
+`delivery_interval_hz` is the reciprocal of the mean positive interval between successive flagged updates in a continuous context. `recorded_row_interval_hz` uses positive adjacent saved-row intervals; it is not a sensor rate or a count of every API poll. Duplicate/nonincreasing update flags, unknown delivery times, heartbeats and distinct render-frame IDs are separate counters. Native drop counts stay blank; missing application row sequences are reported separately and cannot reveal unexposed sensor loss.
+
+Plots use the existing analysis environment's matplotlib dependency. Pass `--no-plots` for tables/JSON only. Nine timing/capability regressions include 120 saved rows/s with 60 input deliveries/s, phase/device/identity breaks, duplicated update flags, absent timing and copied HTC signals. The CLI test also verifies its generated SVG and tables. The inspected plot in `/tmp/gaze-timing-fixture-path` is a labeled synthetic fixture, not a headset measurement.
+
+**October 1 descriptive voice-report repair:** the summary loader retains `rounds_per_block`, `total_rounds`, `nominal_total_rounds` and `debug_round_override`. Complete pairing requires every nominal trial index and unique trial ID, two correctly assigned voice blocks, complete session/trial outcomes and finite nonnegative search durations. Block summaries still describe available completed trials; incomplete blocks are not paired. This is a consistency/descriptive report, not confirmation of statistical power or a replacement for a repeated-measures analysis plan.
+
+## Session integrity validation — October 1
+
+`verify-study-session.py` now rejects a completed session with unfinished or contradictory trial outcomes, duplicate/missing trial identities or indices, invalid voice order/block counts, duplicate clip identities, non-finite/negative timing and impossible pause sequences. Readiness pauses are outside active search; capture during a search pause fails. Saved onset/capture times, when present, must agree with events. Explicit incomplete mode permits interruption but still checks recorded timing and playback identity; it cannot excuse a false completion claim.
+
+Regression fixtures include complete current 80-trial/168-object packages in both voice orders, historical 14-trial data, legitimate readiness/search pauses and malformed-input CLI exit behavior. These checks do not establish native eye rate, acoustic onset, completeness of separate raw-eye/replay files or hardware durability.

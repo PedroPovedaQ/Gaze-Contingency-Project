@@ -14,6 +14,84 @@ Planned but unstarted, interrupted and practice trials remain separate, explicit
 
 ## What the columns mean
 
+### October 8 measurement decisions (implemented locally, export schema v2)
+
+- **Completion:** use `time_to_final_selection_seconds` for the final correct
+  controller selection. The unused `time_to_final_correct_zone_seconds` placeholder
+  is removed. There is no separate final gaze-zone arrival outcome.
+- **Zones:** `unique_zones_visited_count` and its compatibility alias
+  `zones_visited_count` count distinct horizontal walls; `zone_transition_count`
+  counts confirmed changes and `zone_revisit_count` counts changes back to a
+  previously seen wall. Only active-search, explicitly tracked gaze contributes.
+  The current policy requires 0.15 seconds of continuous distinct observations
+  within the same wall and breaks continuity across gaps over 0.1 seconds, invalid
+  gaze, pauses or source changes. Exact corners and nearly vertical gaze are gaps.
+  These are exported jitter-filter settings, **not validated fixation thresholds**.
+  Counts are observed lower bounds: no transitions or revisits are inferred across
+  gaps, though reacquired walls can contribute to the unique set. Missing geometry
+  or no stable valid wall observation leaves counts blank with a status.
+- **Height:** `scheduled_height_delta_m` is the target's trial-layout Y minus the
+  recorded readiness-cross Y, which Unity sets to the object-height range midpoint.
+  Positive is above the midpoint, negative below. The cross reference is exported
+  separately in replay coordinates. This requires supported rotational layout and
+  a valid recorded readiness event; it is never reconstructed from current defaults
+  or from the min/max of randomly scattered objects. Actual head-relative height
+  remains a separate field. This change does not impose half-above/half-below quotas.
+- **Incomplete pauses:** no new pause-duration calculation is added, as requested.
+  Existing completed-trial pause duration and raw pause events remain unchanged.
+
+Zone geometry uses the same eight-wall horizontal ray/plane construction as
+`RotationalSearchLayout.IsInHorizontalSector`, including the recorded gaze origin
+instead of just its direction. In `rotational_scatter_v4` replay space, the cross
+also supplies wall radius and orientation validation. Looking up/down within the
+same horizontal wall does not add visits. Native sample identities are used to
+reject duplicate observations when present; older recordings use recorded frames.
+
+### October 8: separate motion files and demo sheets (implemented locally)
+
+Add `--motion` to create `motion.csv` plus one `_motion.csv` companion per trial
+with recorded sample/selection rows. The manifest links each companion to its
+performance/subjective file and records row counts. Trials without replay data
+have `motion_status=no_matched_replay`, not measured-zero movement. This option
+does not change the existing summary metrics.
+
+The motion export preserves invalid, inactive, paused and post-selection samples,
+tracking flags, controller trigger values and nested source fields under
+`replay__...`. It does not interpolate, resample or discard tracking loss. Each row
+retains source line/sequence and the original record JSON. Positions are in the
+replay's fixed-origin coordinates; rotations are quaternions. `replay_time_seconds`
+is local to `recording_id`, whereas `active_search_seconds` excludes pauses. Never
+join different recordings on time alone. Selection rows may share a timestamp with
+a frame sample and are not independent sensor observations.
+
+Keep original JSONL, scene, audio and video: object snapshots and non-pose events
+are not standalone rows in the motion CSV. This file alone is not a scene replay
+or a native 120 Hz eye-acquisition stream. Input fingerprints are rechecked before
+publishing the package; export only copied, stopped recordings.
+
+`session_mode`, `data_purpose`, `exclude_from_study_analysis` and
+`analysis_exclusion_reason` now appear in trial and motion rows and the manifest.
+Known neutral quick-test and synthetic runs are explicitly excluded; practice is
+always excluded. Legacy/unknown session modes leave the exclusion flag blank and
+require review. `study_declared` with flag `0` means the source declared study mode,
+not that protocol compliance, data quality or participant eligibility was validated.
+These are export labels: downstream analysis must apply them. Existing analysis
+loaders are not changed by this export work.
+
+Generate the repeatable, invented example package in a new directory:
+
+```bash
+python3 analysis/demo_trial_sheets.py --output analysis/results/synthetic-demo
+```
+
+It includes clean completion, a wrong selection followed by completion, and a
+paused/interrupted incomplete trial, plus synthetic block survey responses. All
+rows are labeled synthetic and excluded from study analysis. It is three example
+trials, not the real 40-trial schedule, a power-analysis dataset, or headset
+validation. Block responses repeat with the same response ID. Incomplete trials
+have no final-selection time; currently completed-trial wall/pause totals remain
+unavailable for incomplete trials, whose pause events remain in the raw replay.
+
 | Group | Implementation and limits |
 |---|---|
 | Identity | Participant/run/session/trial, zero-based block/trial index, practice flag, original voice label/order, actual voice ID when available, selection method, schedule/seed/layout/pair and build/replay provenance. Historical neutral voices are not relabeled as preferred. |
@@ -29,6 +107,8 @@ Planned but unstarted, interrupted and practice trials remain separate, explicit
 
 The original objective record is preserved in `source_trial_json`. Its legacy fixation/saccade labels are source provenance, not newly validated measures. Planned schedule columns are retained as `source_schedule__...`. Raw scene, gaze, motion and audio sources remain necessary for reconstruction.
 
+**October 1 motion method:** `head_motion_method=tracked_frame_and_selection_intervals_v2` includes explicitly tracked head poses saved at correct and incorrect trigger selections, including the final observed movement before capture. `head_motion_observation_count` counts considered frame/selection poses; gaze-validity sample counts still use only rendered-frame samples. Invalid poses, pauses and excessive time gaps break the path; later post-capture poses are excluded. Older selection records without head-observation fields add nothing. A selection can supply the first observed geometry reference when no tracked frame exists; `geometry_reference` explicitly identifies that case. One pose supplies geometry, not a measured zero-length path. Preserve method versions when comparing exports; previous exports are not rewritten.
+
 ## Subjective values and later enrichment
 
 The run's `nasa_tlx.csv` is imported automatically when present. Additional wide-format questionnaires use repeatable arguments:
@@ -42,15 +122,41 @@ python3 analysis/trial_csv.py /path/to/run_001_... \
 
 Each survey row requires `participant_id` and `run_number`. Use `block` (zero-based) for block scope or `trial_id` for trial scope; neither means session scope. Provide `voice_condition`, `response_id` and `instrument_version` where recorded. A trial ID plus block must agree. Explicit mismatched voices, duplicate response scopes and unmatched trial/block references fail export rather than selecting an arbitrary answer. Rows for another participant/run are not broadcast. Survey filenames must have distinct alphanumeric/underscore/hyphen stems.
 
-All raw response fields and original timestamps are retained under `survey__<instrument>__<scope>__...`, with source path/row, scope, response ID and instrument version. Missing response IDs get an explicitly source-row-derived identifier; absent versions say `not_recorded` and raise a quality flag. NASA-TLX dimensions are also exposed as named convenience columns; **no composite scoring or scale conversion is invented**. Import a versioned externally scored value if needed. Draft reliance items are not summed into a validated scale.
+All raw response fields and original timestamps are retained under `survey__<instrument>__<scope>__...`, with source path/row, scope, response ID and instrument version. Missing response IDs get an explicitly source-row-derived identifier; absent versions say `not_recorded` and raise a quality flag. NASA-TLX dimensions are also exposed as named convenience columns; scoring follows the explicit contract below. Draft reliance items are not summed into a validated scale.
+
+### NASA-TLX scoring and examples
+
+**Implemented locally:** `nasa_tlx_score` is the unweighted Raw TLX mean of all six
+dimensions on the declared native scale, under `raw_tlx_six_dimension_mean_0_10_v2`
+or `raw_tlx_six_dimension_mean_0_100_v2`. The October 20 protocol uses raw 0–10.
+`nasa_tlx_score_0_100` provides an explicitly labelled conversion; source ratings
+and scale endpoints are preserved.
+It is not the original weighted TLX. [Cao et al. (2009)](https://doi.org/10.3758/BRM.41.1.113)
+describe software supporting both weighted and unweighted scores. A concrete
+example is [Burian et al. (2013), NASA/FAA, Table 12](https://www.faa.gov/sites/faa.gov/files/data_research/research/med_humanfacs/oamtechreports/201317.pdf),
+which reports average RTLX and aligns performance direction with the other
+dimensions. [NASA's official overview](https://www.nasa.gov/human-systems-integration-division/nasa-task-load-index-tlx/)
+describes the original weighted method.
+
+The source `nasa_tlx.csv` must explicitly include `scale_min=0`, `scale_max=10` (current) or `100` (legacy) and
+`performance_direction=high_is_poor` or `high_is_good`. With `high_is_good`, scoring
+uses `scale_max-performance`; raw response values are unchanged. The other five
+dimensions must run from low demand/effort/frustration to high. All six values must
+be present and finite within the declared scale. No missing value is imputed, no partial mean is
+reported, and no scale endpoints or weights are inferred. Scoring method/status
+accompany every result. The legacy loader and plot now also use the validated
+native mean rather than a sum; plots use the explicitly normalized 0–100 field. Unknown metadata results in an unscored row.
+
+**Implemented study route:** no in-headset block survey is administered. The researcher collects both retrospective block sets in the final survey, recording `administration_phase=final`, `reference_scope=participant_by_block`, actual timestamp and instrument version. Qualtrics remains on hold. The development quick-test workload form is legacy and outside participant study data; never guess how participants understood historical performance sliders. External metadata must describe the administered instrument. A block's TLX score repeats into its trial rows but remains one block-level response.
 
 Before collection, `survey_status` is `pending_or_not_collected`. A block response repeats into its block's trial rows but remains **one block-level observation**. Re-export to a new directory after surveys arrive: trial identities are stable, rows are rebuilt rather than appended and earlier/raw exports remain untouched. `available` means at least one response joined, not that every expected questionnaire was completed.
 
 ## Remaining #20 work
 
 - Freeze the first-gaze persistence/noise rule if the primary outcome requires more than first recorded ray contact (#7/#14).
-- Define and record final correct-zone arrival, unique-zone/revisit metrics and distinct guidance-repeat requests/deliveries (#8/#21). Their columns currently remain blank with explicit status.
-- Freeze the planned vertical quota reference; `target_minus_head_height_m` is descriptive geometry, not the selected above/below quota variable (#10).
+- Validate the implemented zone-visit filter on headset boundary jitter, pitch changes, tracking loss and replay gaps (#8/#21). Completion timing is final selection, per the October 8 decision.
+- The vertical reference is now cross/plane midpoint. Enforcing a balanced above/below schedule remains separate work (#10); head-relative height is still descriptive geometry.
+- Validate final external survey exports against the documented 0–10 anchors, reverse keys, block reference and administration metadata before collection. IMI/Guo automatic subscale scoring remains outstanding.
 - Integrate device-side per-trial writing if required; this implementation is an offline export, not automatic on-headset persistence.
 - Validate fresh full-session data and finalized survey exports on the headset/analysis workflow (#17/#28). P020 is an incomplete older task, not acceptance evidence for 40+40 hidden-target trials.
 
@@ -61,3 +167,9 @@ python3 -m unittest discover -s analysis -p 'test_*csv.py' -v
 ```
 
 Coverage includes one-row trial files, raw/combined equivalence, tracked contacts, selection snapshots, active clocks, quaternion wraparound, pause/gap handling, playback-versus-prefetch counting, CSV/replay isolation, wrong-run/voice/duplicate survey rejection, practice separation, truncation/corruption, deterministic re-export and overwrite refusal.
+
+## September 30 provenance additions (implemented locally)
+
+`repeat_request_count` records requests, including requests made without usable gaze; delivered repeat count records actual audio starts. `instruction_count` includes delivered repeats, whereas `hint_count` excludes them. `repeat_event_version` establishes whether zero is known; historical absence stays blank. CSV and replay are alternative evidence sources, not additive counts. `interaction_policy` records right-controller-only input.
+
+`target_identity_policy` and `height_assignment_policy` accompany `schedule_version`. The 80-trial version balances absolute wall angles and identity counts between voices; it explicitly does not yet impose signed-height quotas. Raw files and old versions remain unchanged.

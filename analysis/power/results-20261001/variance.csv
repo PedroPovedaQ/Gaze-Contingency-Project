@@ -1,0 +1,11 @@
+scenario,trials_per_voice,complete_pair_contrast_sd,limit_sd_at_infinite_trials,assumption
+independent,10,0.3492849839314596,0.223606797749979,complete balanced geometry; stationary within-block residuals; independent blocks; fixed period adjusted
+independent,40,0.260768096208106,0.223606797749979,complete balanced geometry; stationary within-block residuals; independent blocks; fixed period adjusted
+serial,10,0.487060699502639,0.223606797749979,complete balanced geometry; stationary within-block residuals; independent blocks; fixed period adjusted
+serial,40,0.3196873472629182,0.223606797749979,complete balanced geometry; stationary within-block residuals; independent blocks; fixed period adjusted
+heterogeneous,10,0.5976856406172061,0.41231056256176607,complete balanced geometry; stationary within-block residuals; independent blocks; fixed period adjusted
+heterogeneous,40,0.4713809499757088,0.41231056256176607,complete balanced geometry; stationary within-block residuals; independent blocks; fixed period adjusted
+random_loss,10,0.487060699502639,0.223606797749979,complete balanced geometry; stationary within-block residuals; independent blocks; fixed period adjusted
+random_loss,40,0.3196873472629182,0.223606797749979,complete balanced geometry; stationary within-block residuals; independent blocks; fixed period adjusted
+informative_loss_stress,10,0.487060699502639,0.223606797749979,complete balanced geometry; stationary within-block residuals; independent blocks; fixed period adjusted
+informative_loss_stress,40,0.3196873472629182,0.223606797749979,complete balanced geometry; stationary within-block residuals; independent blocks; fixed period adjusted

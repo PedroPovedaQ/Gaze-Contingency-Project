@@ -1,0 +1,33 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype,amsmath,booktabs,tabularx,longtable,graphicx}
+\usepackage[margin=0.8in,headheight=15pt]{geometry}
+\usepackage{xcolor,fancyhdr,enumitem,xurl}
+\usepackage[hidelinks]{hyperref}
+\definecolor{Gold}{HTML}{987100}
+\setlength{\parindent}{0pt}\setlength{\parskip}{6pt}
+\setlist{nosep,leftmargin=*}\emergencystretch=3em
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small Follow My Voice}\fancyfoot[R]{\thepage}
+\newcommand{\qid}[1]{\par\smallskip\textbf{\texttt{#1}}\par}
+\begin{document}
+\setcounter{section}{4}
+\section{Planned Analysis}
+\subsection{Primary contrast}
+The primary estimand will compare active completion time under the self-similar and participant-preferred catalog voices, standardized to the same starting-difficulty distribution. A trial-level mixed-effects analysis of log completion time will account for participant clustering, voice condition, period/order, trial progression and absolute pre-cue starting theta. Report the voice time ratio and uncertainty using a two-sided contrast.
+
+A prespecified low-complexity function of theta will allow nonlinearity; nominal-angle strata will support balance plots and a categorical sensitivity analysis. Zero-degree trials will remain in the analysis, and completion time will not be divided by angle. The model's random-effects structure, angle function and smallest meaningful effect will be finalized with simulation before confirmatory recruitment. Participant count will be justified under that same model; repeated trials will not be treated as independent participants.
+
+\subsection{Secondary and exploratory outcomes}
+Retrospective condition-specific ratings will be collected only after both blocks, with actual survey timestamps retained. Reference scope remains participant-by-block. Recall and recency effects will be considered when interpreting condition differences; these are not immediate post-block measurements. Individual workload dimensions and complete unweighted workload means will be summarized by participant and block. IMI subscales and the three six-item agent-perception constructs will remain separate scores. The additional Guo Q20--22 appealing, eerie and familiar ratings will be analyzed individually, without a combined eeriness score. Voice similarity will be a manipulation check. Custom experience ratings and self-reported guidance use will be analyzed individually. Multiplicity families and secondary contrasts will be specified before confirmatory analysis.
+
+Instruction count, observed gaze path and other behavior potentially caused by voice condition will not automatically be covariates in the primary model. Voice-by-theta variation, selected catalog voice, acoustic quality and guidance timing will be exploratory or sensitivity analyses with their assumptions reported.
+
+\subsection{Incomplete and interrupted observations}
+Raw attempts, incorrect selections, pause intervals, timeouts, technical failures and withdrawals will be retained. Stopped trials will not be coded as successful completion times. Timeout/censoring rules and the missing-data estimand will be specified before collection; slow trials will not be removed solely for being slow. Missing responses will not be replaced with zero. Questionnaire scores will follow the complete-subscale rule, with item-level missingness reported. Disliking or failing to recognize a cloned voice will not by itself exclude a participant.
+
+\subsection{Guidance and qualitative evaluation}
+Engineering analysis will distinguish event qualification, decision latency, model deferral, scheduling delay and actual playback. Gaze and controller confirmation will be evaluated separately. Sequence-level review will include what happened before and after a cue. Automatic checks and model-judge ratings will remain advisory engineering evidence, not participant perception scores.
+
+Debrief responses will be coded with a documented thematic process and an audit trail, with independent review of a subset. Perceived performance, voice comfort, reliance and possible own-voice use cases will be interpreted alongside, but not substituted for, measured task performance.
+\end{document}

@@ -1,0 +1,130 @@
+[
+  {
+    "angle": -170,
+    "iteration": 0,
+    "phrase": "Turn left toward the back now.",
+    "tone": "Direct",
+    "repeated": false,
+    "ms": 448
+  },
+  {
+    "angle": -170,
+    "iteration": 1,
+    "phrase": "Let's turn left toward the back.",
+    "tone": "Casual",
+    "repeated": false,
+    "ms": 202
+  },
+  {
+    "angle": -100,
+    "iteration": 0,
+    "phrase": "Turn farther left now.",
+    "tone": "Direct",
+    "repeated": false,
+    "ms": 200
+  },
+  {
+    "angle": -100,
+    "iteration": 1,
+    "phrase": "Let's turn farther left.",
+    "tone": "Casual",
+    "repeated": false,
+    "ms": 197
+  },
+  {
+    "angle": -45,
+    "iteration": 0,
+    "phrase": "Look left now.",
+    "tone": "Direct",
+    "repeated": false,
+    "ms": 293
+  },
+  {
+    "angle": -45,
+    "iteration": 1,
+    "phrase": "Let's look left.",
+    "tone": "Casual",
+    "repeated": false,
+    "ms": 191
+  },
+  {
+    "angle": -10,
+    "iteration": 0,
+    "phrase": "Look just left of center now.",
+    "tone": "Direct",
+    "repeated": false,
+    "ms": 229
+  },
+  {
+    "angle": -10,
+    "iteration": 1,
+    "phrase": "Let's look just left of center.",
+    "tone": "Casual",
+    "repeated": false,
+    "ms": 201
+  },
+  {
+    "angle": 10,
+    "iteration": 0,
+    "phrase": "Look just right of center now.",
+    "tone": "Direct",
+    "repeated": false,
+    "ms": 292
+  },
+  {
+    "angle": 10,
+    "iteration": 1,
+    "phrase": "Let's look just right of center.",
+    "tone": "Casual",
+    "repeated": false,
+    "ms": 219
+  },
+  {
+    "angle": 45,
+    "iteration": 0,
+    "phrase": "Look right now.",
+    "tone": "Direct",
+    "repeated": false,
+    "ms": 201
+  },
+  {
+    "angle": 45,
+    "iteration": 1,
+    "phrase": "Let's look right.",
+    "tone": "Casual",
+    "repeated": false,
+    "ms": 190
+  },
+  {
+    "angle": 100,
+    "iteration": 0,
+    "phrase": "Turn farther right now.",
+    "tone": "Direct",
+    "repeated": false,
+    "ms": 219
+  },
+  {
+    "angle": 100,
+    "iteration": 1,
+    "phrase": "Let's turn farther right.",
+    "tone": "Casual",
+    "repeated": false,
+    "ms": 214
+  },
+  {
+    "angle": 170,
+    "iteration": 0,
+    "phrase": "Turn right toward the back now.",
+    "tone": "Direct",
+    "repeated": false,
+    "ms": 179
+  },
+  {
+    "angle": 170,
+    "iteration": 1,
+    "phrase": "Let's turn right toward the back.",
+    "tone": "Casual",
+    "repeated": false,
+    "ms": 215
+  }
+]

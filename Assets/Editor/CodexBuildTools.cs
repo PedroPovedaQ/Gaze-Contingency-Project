@@ -1,13 +1,14 @@
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
 public static class CodexBuildTools
 {
     const string k_MenuPath = "Tools/Codex/Build And Run Android";
-    const string k_OutputDir = "Temp/CodexBuilds";
+    const string k_OutputDir = "Builds/CodexAndroid";
     const string k_OutputApk = "codex_build.apk";
 
     [MenuItem(k_MenuPath, false, 3000)]
@@ -19,17 +20,27 @@ public static class CodexBuildTools
     // Callable from batchmode: -executeMethod CodexBuildTools.BuildAndRunAndroid
     public static void BuildAndRunAndroid()
     {
-        BuildAndRunAndroid(BuildOptions.None);
+        BuildAndroid(BuildOptions.None, true);
+    }
+
+    // Offline packaging check when no headset is attached. No install or launch.
+    [MenuItem("Tools/Codex/Build Android APK", false, 3002)]
+    public static void BuildAndroid()
+    {
+        BuildAndroid(BuildOptions.None, false);
     }
 
     [MenuItem("Tools/Codex/Clean Build And Run Android", false, 3001)]
     public static void CleanBuildAndRunAndroid()
     {
-        BuildAndRunAndroid(BuildOptions.CleanBuildCache);
+        BuildAndroid(BuildOptions.CleanBuildCache, true);
     }
 
-    static void BuildAndRunAndroid(BuildOptions additionalOptions)
+    static void BuildAndroid(BuildOptions additionalOptions, bool launchOnDevice)
     {
+        // Fail early and retain this exact headset across the build, even if other devices appear.
+        string deviceSerial = launchOnDevice ? RunHeadsetAdb("").Trim() : null;
+
         var enabledScenes = EditorBuildSettings.scenes
             .Where(s => s.enabled)
             .Select(s => s.path)
@@ -37,8 +48,7 @@ public static class CodexBuildTools
 
         if (enabledScenes.Length == 0)
         {
-            Debug.LogError("[CodexBuild] No enabled scenes in Build Settings.");
-            return;
+            throw new BuildFailedException("[CodexBuild] No enabled scenes in Build Settings.");
         }
 
         if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
@@ -48,33 +58,73 @@ public static class CodexBuildTools
                 BuildTarget.Android);
             if (!switched)
             {
-                Debug.LogError("[CodexBuild] Failed to switch active build target to Android.");
-                return;
+                throw new BuildFailedException("[CodexBuild] Failed to switch active build target to Android.");
             }
         }
 
         Directory.CreateDirectory(k_OutputDir);
         string apkPath = Path.Combine(k_OutputDir, k_OutputApk);
 
+        // OpenXR's composition-layer validator reads the selected group, even
+        // when BuildPlayer targets Android. Keep it aligned with this build so
+        // a selected desktop profile cannot incorrectly validate desktop settings.
+        EditorUserBuildSettings.selectedBuildTargetGroup = BuildTargetGroup.Android;
+
         var options = new BuildPlayerOptions
         {
             scenes = enabledScenes,
             target = BuildTarget.Android,
+            targetGroup = BuildTargetGroup.Android,
             locationPathName = apkPath,
-            options = BuildOptions.AutoRunPlayer | additionalOptions
+            // Explicit ADB deployment avoids Unity's remembered USB/default-device selection.
+            options = additionalOptions
         };
 
-        Debug.Log($"[CodexBuild] Building Android player to {apkPath} and launching on device...");
+        Debug.Log($"[CodexBuild] Building Android player to {apkPath}; launch on device: {launchOnDevice}.");
         BuildReport report = BuildPipeline.BuildPlayer(options);
         BuildSummary summary = report.summary;
 
         if (summary.result == BuildResult.Succeeded)
         {
             Debug.Log($"[CodexBuild] Build succeeded in {summary.totalTime.TotalSeconds:F1}s, size {summary.totalSize / (1024f * 1024f):F1} MB");
+            if (launchOnDevice)
+                RunHeadsetAdb("--serial " + Quote(deviceSerial) + " --apk " + Quote(Path.GetFullPath(apkPath)) + " --package " +
+                    Quote(PlayerSettings.GetApplicationIdentifier(NamedBuildTarget.Android)));
         }
         else
         {
-            Debug.LogError($"[CodexBuild] Build failed with result: {summary.result}");
+            throw new BuildFailedException($"[CodexBuild] Build failed with result: {summary.result}; errors: {summary.totalErrors}");
+        }
+    }
+
+    static string Quote(string value) => "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+
+    static string RunHeadsetAdb(string arguments)
+    {
+        var start = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = "python3",
+            Arguments = Quote(Path.GetFullPath("scripts/headset-adb.py")) + " " + arguments,
+            WorkingDirectory = Directory.GetCurrentDirectory(),
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+        using (var process = System.Diagnostics.Process.Start(start))
+        {
+            var output = process.StandardOutput.ReadToEndAsync();
+            var error = process.StandardError.ReadToEndAsync();
+            if (!process.WaitForExit(330000))
+            {
+                process.Kill();
+                throw new BuildFailedException("[CodexBuild] Wireless deployment timed out; APK retained.");
+            }
+            if (process.ExitCode != 0)
+                throw new BuildFailedException("[CodexBuild] " + error.GetAwaiter().GetResult());
+            string result = output.GetAwaiter().GetResult();
+            Debug.Log("[CodexBuild] " + result);
+            return result;
         }
     }
 }

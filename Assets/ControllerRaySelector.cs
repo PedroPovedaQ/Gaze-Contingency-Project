@@ -15,6 +15,7 @@ public class ControllerRaySelector : MonoBehaviour
 {
     static readonly int k_EdgeColor = Shader.PropertyToID("_EdgeHighlightColor");
     static readonly int k_Falloff = Shader.PropertyToID("_EdgeHighlightFalloff");
+    static readonly int k_BaseColor = Shader.PropertyToID("_BaseColor");
     static readonly XRSelectFilterDelegate k_NoGrab = new XRSelectFilterDelegate((_, __) => false);
     readonly List<NearFarInteractor> m_Rays = new();
     readonly Dictionary<NearFarInteractor, int> m_OriginalMasks = new();
@@ -24,8 +25,11 @@ public class ControllerRaySelector : MonoBehaviour
     [SerializeField, Range(0f, 1f)] float m_HoverHapticAmplitude = 0.2f;
     [SerializeField, Min(0f)] float m_HoverHapticDuration = 0.04f;
     MaterialPropertyBlock m_Block;
+    Renderer m_GazeShineRenderer;
+    Color m_PreShineColor;
+    GazeTargetVicinity m_Vicinity;
     FindObjectGameManager m_Game;
-    bool m_LeftArmed, m_RightArmed;
+    bool m_RightArmed;
     int m_LastCaptureFrame = -1;
 
     public bool ThroughWallSearch { get; set; }
@@ -45,6 +49,7 @@ public class ControllerRaySelector : MonoBehaviour
     public TelemetrySample LeftTelemetry { get; private set; }
     public TelemetrySample RightTelemetry { get; private set; }
     public int TelemetryFrame { get; private set; } = -1;
+    public double TelemetryTime { get; private set; }
     public string SelectingHand { get; private set; }
 
     TelemetrySample ReadTelemetry(InteractorHandedness hand, bool search)
@@ -103,6 +108,15 @@ public class ControllerRaySelector : MonoBehaviour
         ResetSelection();
     }
 
+    void FixedUpdate()
+    {
+        // Apply before the physics step, so XRI queries and rendered geometry
+        // share the collider pose even with Physics.autoSyncTransforms disabled.
+        bool rotating = m_Game != null && m_Game.SearchActive && GazeTargetVicinity.ControllerCurrent(RightTelemetry,
+            TelemetryFrame, TelemetryTime, Time.frameCount, Time.realtimeSinceStartupAsDouble);
+        RotateHoveredObject(RightTelemetry.target, rotating, Time.fixedDeltaTime);
+    }
+
     void Update()
     {
         // Set masks before the next XRI cast; restore normal room/UI behavior outside search.
@@ -111,7 +125,7 @@ public class ControllerRaySelector : MonoBehaviour
         {
             if (ray == null || !m_OriginalMasks.TryGetValue(ray, out int mask)) continue;
             SetMask(ray, search && ThroughWallSearch ? 1 << 8 : mask);
-            ray.enableNearCasting = !search && m_OriginalNearCasting[ray];
+            ray.enableNearCasting = false; // Study interactions use the right far ray, including setup.
         }
     }
 
@@ -122,21 +136,21 @@ public class ControllerRaySelector : MonoBehaviour
 
     void LateUpdate()
     {
+        ClearGazeShine();
         ClearHighlights();
         bool search = m_Game != null && m_Game.SearchActive;
-        bool leftPress = ReadPress(XRNode.LeftHand, search, ref m_LeftArmed);
         bool rightPress = ReadPress(XRNode.RightHand, search, ref m_RightArmed);
         // Sample both hands before a capture callback can reset or destroy the trial.
         LeftTelemetry = ReadTelemetry(InteractorHandedness.Left, search);
         RightTelemetry = ReadTelemetry(InteractorHandedness.Right, search);
         TelemetryFrame = Time.frameCount;
+        TelemetryTime = Time.realtimeSinceStartupAsDouble;
         if (!search) { m_LastRayTargets.Clear(); return; }
         foreach (var ray in m_Rays)
         {
-            if (ray == null) continue;
+            if (ray == null || ray.handedness != InteractorHandedness.Right) continue;
             if (!ray.isActiveAndEnabled) { m_LastRayTargets.Remove(ray); continue; }
-            bool left = ray.handedness == InteractorHandedness.Left;
-            var device = InputDevices.GetDeviceAtXRNode(left ? XRNode.LeftHand : XRNode.RightHand);
+            var device = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
             if (!device.TryGetFeatureValue(CommonUsages.isTracked, out bool tracked) || !tracked)
             {
                 m_LastRayTargets.Remove(ray);
@@ -146,20 +160,73 @@ public class ControllerRaySelector : MonoBehaviour
             m_LastRayTargets.TryGetValue(ray, out var previousTarget);
             m_LastRayTargets[ray] = target;
             if (target == null) continue;
-            // One pulse on entry or switching objects, independently for each controller.
+            // One pulse on entry or switching objects on the study's right controller.
             if (target != previousTarget && m_HoverHapticAmplitude > 0f && m_HoverHapticDuration > 0f)
                 ray.SendHapticImpulse(m_HoverHapticAmplitude, m_HoverHapticDuration);
             Highlight(target);
-            if ((left ? leftPress : rightPress) && m_LastCaptureFrame != Time.frameCount)
+            if (rightPress && m_LastCaptureFrame != Time.frameCount)
             {
                 m_LastCaptureFrame = Time.frameCount;
-                SelectingHand = left ? "left" : "right";
+                SelectingHand = "right";
                 try { OnObjectCaptured?.Invoke(target); }
                 finally { SelectingHand = null; }
                 // Capture callbacks may destroy objects or pause/end the trial.
                 return;
             }
         }
+        ApplyGazeShine();
+    }
+
+    // Rotate the real object, so collider orientation and recorded replay poses
+    // agree. Position/scale and stimulus identity stay fixed. Stop in place on exit.
+    static void RotateHoveredObject(GameObject target, bool eligible, float seconds)
+    {
+        if (!eligible || target == null || !target.activeInHierarchy || !float.IsFinite(seconds) || seconds <= 0 ||
+            !target.TryGetComponent<Renderer>(out var renderer) || !renderer.enabled ||
+            !target.TryGetComponent<Collider>(out var collider) || !collider.enabled) return;
+        target.transform.Rotate(Vector3.up, 60f * Mathf.Min(seconds, .1f), Space.World);
+    }
+
+    void ApplyGazeShine()
+    {
+        if (SharedGazeStream.Instance == null || !SharedGazeStream.Instance.TryGetValid(out var gaze)) return;
+        if (m_Vicinity == null) m_Vicinity = GetComponent<GazeTargetVicinity>();
+        var winner = GazeTargetVicinity.ClosestObject(gaze.worldOrigin, gaze.worldDirection,
+            m_Game.SpawnedObjects, m_Vicinity != null ? m_Vicinity.PaddingDegrees : GazeTargetVicinity.DefaultPaddingDegrees,
+            out _, out _, out _);
+        Shine(winner);
+    }
+
+    void Shine(GameObject target)
+    {
+        if (target == null || !target.TryGetComponent<Renderer>(out var renderer) || !renderer.enabled ||
+            renderer.sharedMaterial == null || !renderer.sharedMaterial.HasProperty(k_BaseColor)) return;
+        m_Block ??= new MaterialPropertyBlock();
+        renderer.GetPropertyBlock(m_Block);
+        m_PreShineColor = m_Block.HasColor(k_BaseColor) ? m_Block.GetColor(k_BaseColor) : renderer.sharedMaterial.GetColor(k_BaseColor);
+        // Lift luminance, preserving the object's hue and alpha. The shader's
+        // emissive rim makes gaze visible without replacing its stimulus color.
+        Color shine = m_PreShineColor * 1.6f; shine.a = m_PreShineColor.a;
+        m_Block.SetColor(k_BaseColor, shine);
+        // Keep the familiar blue rim when the right controller also points here.
+        if (m_Highlighted.Add(renderer))
+        {
+            m_Block.SetColor(k_EdgeColor, new Color(1f, .79f, .016f, 1f));
+            m_Block.SetFloat(k_Falloff, 1.5f);
+        }
+        renderer.SetPropertyBlock(m_Block);
+        m_GazeShineRenderer = renderer;
+    }
+
+    void ClearGazeShine()
+    {
+        if (m_GazeShineRenderer != null)
+        {
+            m_GazeShineRenderer.GetPropertyBlock(m_Block);
+            m_Block.SetColor(k_BaseColor, m_PreShineColor);
+            m_GazeShineRenderer.SetPropertyBlock(m_Block);
+        }
+        m_GazeShineRenderer = null;
     }
 
     static bool ReadPress(XRNode node, bool search, ref bool armed)
@@ -218,9 +285,9 @@ public class ControllerRaySelector : MonoBehaviour
 
     public void ResetSelection()
     {
-        m_LeftArmed = m_RightArmed = false;
+        m_RightArmed = false;
         m_LastRayTargets.Clear();
-        ClearHighlights();
+        ClearGazeShine(); ClearHighlights();
     }
 
     void OnDisable()

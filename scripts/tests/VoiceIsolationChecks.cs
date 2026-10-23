@@ -6,7 +6,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.Networking;
 
-class VoiceIsolationChecks
+partial class VoiceIsolationChecks
 {
     static void Check(bool condition, string name) { if (!condition) throw new Exception(name); }
     static void Drain(IEnumerator routine)
@@ -28,7 +28,7 @@ class VoiceIsolationChecks
             if ((string)audit.GetType().GetField("clip_id").GetValue(audit) == Path.GetFileNameWithoutExtension(path))
             {
                 speech = (int)audit.GetType().GetField("speech_samples").GetValue(audit);
-                bool clone = (string)audit.GetType().GetField("provider").GetValue(audit) == "mistral";
+                bool clone = (string)audit.GetType().GetField("voice_condition").GetValue(audit) == "selfsimilar";
                 int fullLength = clip.samples * clip.channels;
                 int expectedWindow = clone ? fullLength - (int)Math.Round(clip.frequency * 0.4f) * clip.channels : fullLength;
                 Check(speech == expectedWindow, "neutral manifest covers full clip; clone manifest excludes exactly the room tail");
@@ -42,12 +42,382 @@ class VoiceIsolationChecks
         }
         return Math.Sqrt(power / speech);
     }
+    static void CheckGuidanceScheduler()
+    {
+        var scheduler=new GuidanceRequestScheduler();
+        var catalog=scheduler.Begin(GuidanceRequestKind.Catalog); var catalogToken=catalog.Token;
+        var transmit=scheduler.Begin(GuidanceRequestKind.Transmission); var transmitToken=transmit.Token;
+        var interrupt=scheduler.Begin(GuidanceRequestKind.Interruption); var interruptToken=interrupt.Token;
+        int commits=0; bool relevant=true;
+        scheduler.QueuePlayback(()=>relevant,()=>commits++);scheduler.CancelAll();
+        Check(catalogToken.IsCancellationRequested&&transmitToken.IsCancellationRequested&&interruptToken.IsCancellationRequested,
+            "One scheduler cancels catalog, transmission and interruption scopes on transition");
+        Check(!scheduler.PlaybackQueued&&commits==0,"Cancelling queued playback never consumes the guidance gate");
+        var older=scheduler.Begin(GuidanceRequestKind.Catalog);var newer=scheduler.Begin(GuidanceRequestKind.Catalog);var newerToken=newer.Token;
+        scheduler.Complete(GuidanceRequestKind.Catalog,older);
+        Check(!newerToken.IsCancellationRequested,"A late completion cannot cancel a newer request scope");
+        scheduler.QueuePlayback(()=>relevant,()=>commits++);relevant=false;
+        Check(!scheduler.TryTakePlayback(out var commit)&&commit==null&&commits==0,"Final queued relevance rejects stale geometry without consumption");
+        relevant=true;scheduler.QueuePlayback(()=>relevant,()=>commits++);
+        Check(scheduler.TryTakePlayback(out commit)&&commits==0,"Admission yields a commit callback but does not invoke it");
+        commit();scheduler.TryTakePlayback(out commit);
+        Check(commits==1&&commit==null,"Actual playback can consume a cue only once");
+        scheduler.CancelAll();
+    }
+    static void CheckTransmission(VoiceSynthesizer synth, string phrase)
+    {
+        CheckGuidanceScheduler();
+        bool relevant = true; int commits = 0, calls = 0;
+        void Begin() { synth.Stop(); Time.unscaledTime += 5; relevant = true; commits = calls = 0; }
+        Begin();
+        synth.TransmissionAdvisor = (state, token) => {
+            calls++;
+            var json=Newtonsoft.Json.Linq.JObject.Parse(state);
+            Check((string)json["proposed_phrase"]==phrase && json["runtime"]["playback"]!=null && json["runtime"]["evidence"]!=null &&
+                (string)json["runtime"]["playback"]["pending_phrase"]==phrase &&
+                !(bool)json["runtime"]["playback"]["is_busy"] && (bool)json["runtime"]["playback"]["transmission_decision_pending"],
+                "Transmission receives proposed wording and current playback/gaze/controller evidence");
+            return System.Threading.Tasks.Task.FromResult(false);
+        };
+        Check(synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","wait-id"),"Transmission can queue a prepared cue");
+        Check(synth.IsBusy && !synth.GuidanceReady,"A pending decision blocks duplicate ordinary requests");
+        Drain(MonoBehaviour.LastRoutine);
+        Check(calls==1 && commits==0 && !synth.IsSpeaking,"Wait advice never plays or commits the phrase");
+        Check(!synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","retry-id"),"Wait decisions cannot flood Jev every tick");
+        Time.unscaledTime+=.09f;
+        Check(!synth.CanRequestGuidance("test"),"Jev wait remains throttled before 100 milliseconds");
+        Time.unscaledTime+=.02f;
+        synth.TransmissionAdvisor=(state,token)=>System.Threading.Tasks.Task.FromResult(true);
+        Check(synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","speak-id"),"Wait can be reconsidered after 0.1 seconds");
+        Drain(MonoBehaviour.LastRoutine);Check(commits==0,"Approval alone does not consume a guidance gate");Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Current approval commits once");
+        Begin();
+        synth.TransmissionAdvisor=(state,token)=>System.Threading.Tasks.Task.FromResult(false);
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","deferral-first");Drain(MonoBehaviour.LastRoutine);
+        Check(commits==0,"Initial wait is respected");
+        Time.unscaledTime+=1.1f;
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","deferral-last");Drain(MonoBehaviour.LastRoutine);
+        Check(commits==0,"Approval alone does not consume a guidance gate");Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Repeated waits cannot starve locally qualified guidance");
+        Begin();
+        var pending = new System.Threading.Tasks.TaskCompletionSource<bool>();
+        synth.TransmissionAdvisor=(state,token)=>pending.Task;
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","stale-id");
+        var routine=MonoBehaviour.LastRoutine;routine.MoveNext(); relevant=false;pending.SetResult(true);Drain(routine);
+        Check(commits==0 && !synth.IsSpeaking,"An approval cannot survive changed target evidence");
+        Begin();pending=new System.Threading.Tasks.TaskCompletionSource<bool>();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","cancel-id");
+        routine=MonoBehaviour.LastRoutine;routine.MoveNext();synth.Stop();pending.SetResult(true);Drain(routine);
+        Check(commits==0,"Stopped sessions cannot play late transmission approvals");
+        Begin();pending=new System.Threading.Tasks.TaskCompletionSource<bool>();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","round-end-id");
+        routine=MonoBehaviour.LastRoutine;routine.MoveNext();synth.ClearGuidanceEvidence();pending.SetResult(true);Drain(routine);
+        Check(commits==0,"Clearing trial evidence invalidates pending approvals even without playback");
+        Begin();pending=new System.Threading.Tasks.TaskCompletionSource<bool>();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","phase-transition-id");
+        routine=MonoBehaviour.LastRoutine;routine.MoveNext();synth.CancelPendingGuidance();pending.SetResult(true);Drain(routine);
+        Check(commits==0 && !synth.IsSpeaking,"Phase transition cancels a pending Jev answer without an explicit Stop");
+        Begin(); pending=new System.Threading.Tasks.TaskCompletionSource<bool>();
+        var audioGate=new GuidanceStateSnapshot { phase="Refining",newGuidanceAllowed=true };
+        synth.GuidanceEvidence.guidanceState=audioGate;
+        synth.TryGuidanceTransmission(phrase,()=>true,()=>commits++,"test","audio-gate-id");
+        routine=MonoBehaviour.LastRoutine; routine.MoveNext();
+        audioGate.newGuidanceAllowed=false; pending.SetResult(true); Drain(routine);
+        Check(commits==0 && !synth.IsSpeaking,"Closing state audio gate discards late approval even if relevance callback stays true");
+        synth.GuidanceEvidence.guidanceState=null;
+        var recordedState = new GuidanceStateSnapshot { phase="Refining", previousPhase="Turning", revision=5,
+            allowedAction="Arrival", newGuidanceAllowed=true, gazeValid=true, gazeHitObjectId="distractor", vicinityWinnerObjectId="target", controllerHitObjectId="other" };
+        synth.GuidanceEvidence.guidanceState=recordedState;
+        var context=Newtonsoft.Json.Linq.JObject.Parse(synth.CaptureDecisionContext());
+        Check((string)context["evidence"]["guidanceState"]["phase"]=="Refining" &&
+            (long)context["evidence"]["guidanceState"]["revision"]==5 &&
+            (string)context["evidence"]["guidanceState"]["gazeHitObjectId"]=="distractor",
+            "Jev receives the same named state, revision and object IDs as recorded replay");
+        recordedState.newGuidanceAllowed=false;
+        Check(!synth.CanRequestGuidance("test",phrase), "Central closed audio gate prevents new guidance");
+        recordedState.newGuidanceAllowed=true;
+        var audio=(AudioSource)typeof(VoiceSynthesizer).GetField("m_AudioSource",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(synth);
+        audio.HoldPlayback=true; int stopped=audio.StopCalls;
+        synth.CancelPendingGuidance();
+        Check(audio.HoldPlayback && audio.StopCalls==stopped,"Ordinary phase transition never cuts an already playing phrase");
+        audio.HoldPlayback=false;
+        Begin(); synth.TransmissionAdvisor=(state,token)=>System.Threading.Tasks.Task.FromResult(true);
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","queued-phase-id");
+        Drain(MonoBehaviour.LastRoutine);
+        Check(commits==0,"Accepted decision remains unconsumed before the deferred audio starts");
+        var queuedSpeech=MonoBehaviour.LastRoutine;
+        synth.CancelPendingGuidance(); Drain(queuedSpeech);
+        Check(commits==0&&!synth.IsSpeaking,"Phase change cancels queued speech, not just pending remote requests");
+        Begin();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","queued-stale-geometry-id");
+        Drain(MonoBehaviour.LastRoutine); relevant=false; Drain(MonoBehaviour.LastRoutine);
+        Check(commits==0&&!synth.IsSpeaking,"Changed geometry between admission and audio onset discards speech without consuming a gate");
+        Begin();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","queued-fresh-id");
+        Drain(MonoBehaviour.LastRoutine); Drain(MonoBehaviour.LastRoutine);
+        Check(commits==1,"Current queued guidance consumes exactly once at playback");
+        Begin();pending=new System.Threading.Tasks.TaskCompletionSource<bool>();
+        synth.TransmissionAdvisor=(state,token)=>pending.Task;
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","timeout-id");
+        Drain(MonoBehaviour.LastRoutine);Check(commits==0,"Approval alone does not consume a guidance gate");Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Provider timeout uses locally valid prepared guidance");
+        Begin();
+        synth.TransmissionAdvisor=(state,token)=>System.Threading.Tasks.Task.FromException<bool>(new InvalidOperationException("provider unavailable"));
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","failed-id");
+        Drain(MonoBehaviour.LastRoutine);Check(commits==0,"Approval alone does not consume a guidance gate");Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Failed advice preserves locally valid guidance");
+        Begin();
+        synth.TransmissionAdvisor=(state,token)=> { calls++; throw new Exception("Must not make a second request"); };
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"catalog_turn","joint-speak",true,"jev");
+        Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==0,"Joint approval waits for playback before consumption");Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==1,"Joint approval skips the second API call");
+        Begin();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"catalog_turn","joint-wait",false,"jev");
+        Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==0,"Joint wait stays silent");
+        Check(!synth.CanRequestGuidance("catalog_turn"),"Joint wait prevents another catalog request during cooldown");
+        Time.unscaledTime+=1.1f;
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"catalog_turn","joint-deferral",false,"jev");
+        Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==0,"Joint approval waits for playback before consumption");Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==1,"Joint waits retain bounded local fallback");
+        Begin();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"catalog_turn","joint-stale",true,"jev");
+        routine=MonoBehaviour.LastRoutine;relevant=false;Drain(routine);
+        Check(commits==0,"Joint approval is discarded when evidence changes");
+        Begin();synth.TransmissionAdvisor=null;
+        Check(synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"test","local-id") && commits==0,
+            "Offline transmission defers commitment until request telemetry can be recorded");
+        Drain(MonoBehaviour.LastRoutine);Check(commits==0,"Approval alone does not consume a guidance gate");Drain(MonoBehaviour.LastRoutine);Check(commits==1,"Offline transmission commits once");
+        synth.Stop();Time.unscaledTime+=5;
+    }
+
+    // Replay-derived regressions: Run 20 had delayed confirmations/milestones,
+    // timeout repeats and silence measured from the previous trial's guidance.
+    static void CheckRun20Pacing(VoiceSynthesizer synth, string prepared)
+    {
+        var markEnd = typeof(VoiceSynthesizer).GetMethod("MarkGuidanceEnd", BindingFlags.Instance | BindingFlags.NonPublic);
+        void End(string context, string phrase)
+        {
+            Set(synth, "m_CurrentContext", context); Set(synth, "m_CurrentPhrase", phrase);
+            markEnd.Invoke(synth, null); Set(synth, "m_CurrentContext", null);
+        }
+        synth.Stop(); Time.unscaledTime += 5;
+        Set(synth, "m_LastSpeechEnd", null);
+        Check(Newtonsoft.Json.Linq.JObject.Parse(synth.CaptureTransmissionContext())["seconds_since_speech_ended"].Type ==
+            Newtonsoft.Json.Linq.JTokenType.Null, "Unknown speech age is null, never a synthetic hundreds-of-seconds interval");
+        foreach (var context in new[] { "guidance_opening", "setup", "congrats", "tip" })
+        {
+            End(context, prepared); Time.unscaledTime += 1.06f;
+            double silence = (double)Newtonsoft.Json.Linq.JObject.Parse(synth.CaptureTransmissionContext())["seconds_since_speech_ended"];
+            Check(Math.Abs(silence - 1.06) < .002, "Speech age includes actual completion of " + context);
+        }
+        foreach (var reason in new[] { "gaze_target_vicinity_hold", "controller_target_gaze_vicinity",
+            "turn_progress_milestone", "gaze_target_plane", "stable_wall_entry", "sustained_target_selection_reminder",
+            "recent_target_departure", "target_bearing_overshoot", "gaze_overshoot_return" })
+        {
+            synth.Stop(); Time.unscaledTime += 5;
+            int calls = 0, commits = 0; bool relevant = true; float committedAt = -1;
+            synth.TransmissionAdvisor = (state, token) => { calls++; return System.Threading.Tasks.Task.FromResult(false); };
+            Check(synth.TryGuidanceTransmission(prepared, () => relevant,
+                () => { commits++; committedAt = Time.unscaledTime; }, reason, "priority"), "Qualified event queues: " + reason);
+            float requested = Time.unscaledTime;
+            Drain(MonoBehaviour.LastRoutine);
+            Check(calls == 0 && commits == 0 && Time.unscaledTime - requested < .1f,
+                "Qualified event is queued without a second advisor decision, not yet consumed: " + reason);
+            Drain(MonoBehaviour.LastRoutine);
+            Check(commits == 1, "Qualified event commits when its audio actually starts: " + reason);
+            Check(committedAt - requested < .2f,
+                "Idle prepared event reaches playback within 0.2 simulated seconds even when advisor would wait: " + reason);
+            Check(!synth.TryGuidanceTransmission(prepared, () => true, () => commits++, reason, "gap"),
+                "Priority does not bypass the post-playback gap");
+            synth.Stop(); Time.unscaledTime += 5;
+            synth.TryGuidanceTransmission(prepared, () => relevant, () => commits++, reason, "stale-priority");
+            relevant = false; Drain(MonoBehaviour.LastRoutine);
+            Check(commits == 1, "Priority still discards stale evidence: " + reason);
+        }
+        // Give the prepared test clip an authored turn meaning; test both standalone
+        // timeout advice and the joint catalog path without making real API requests.
+        var original = SpatialVoice.SpeechPhraseMetadata.Describe(prepared);
+        SpatialVoice.SpeechPhraseMetadata.Register(prepared, SpatialVoice.SpeechPhraseMetadata.Describe("Turn way right."));
+        try
+        {
+            synth.Stop(); Time.unscaledTime += 5;
+            End("guidance_opening", prepared); Time.unscaledTime += .8f;
+            int commits = 0;
+            synth.TransmissionAdvisor = (state, token) => new System.Threading.Tasks.TaskCompletionSource<bool>().Task;
+            Check(!synth.TryGuidanceTransmission(prepared, () => true, () => commits++, "stable_direction", "timeout-repeat"),
+                "Timeout fallback cannot repeat an opening direction after only 0.8 seconds of silence");
+            Check(!synth.TryGuidanceTransmission(prepared, () => true, () => commits++, "catalog_turn", "joint-repeat", true, "jev"),
+                "Joint approval cannot bypass semantic repeat suppression");
+            SpatialVoice.SpeechPhraseMetadata.Register(prepared, SpatialVoice.SpeechPhraseMetadata.Describe("Turn way left."));
+            Check(synth.TryGuidanceTransmission(prepared, () => true, () => commits++, "stable_direction", "changed-direction"),
+                "Changed direction does not inherit same-direction suppression");
+            Drain(MonoBehaviour.LastRoutine); Check(commits == 0, "Timeout admission does not consume early");
+            Drain(MonoBehaviour.LastRoutine); Check(commits == 1, "Timeout still permits a genuinely changed current direction"); Time.unscaledTime += .8f;
+            Check(!synth.TryGuidanceTransmission(prepared, () => true, () => commits++, "stable_direction", "second-repeat"),
+                "Repeated fallback after playback is suppressed");
+            Time.unscaledTime += 2.21f;
+            Check(synth.TryGuidanceTransmission(prepared, () => true, () => commits++, "stable_direction", "later-reminder"),
+                "A stalled user can receive a reminder after three seconds of silence");
+            Drain(MonoBehaviour.LastRoutine); Check(commits == 1, "Timeout reminder remains pending until playback");
+            Drain(MonoBehaviour.LastRoutine); Check(commits == 2, "Timeout reminder remains available after cooldown"); Time.unscaledTime += .8f; synth.ClearGuidanceEvidence();
+            Check(synth.TryGuidanceTransmission(prepared, () => true, () => commits++, "stable_direction", "new-trial"),
+                "A new trial clears the preceding trial's direction history");
+            synth.Stop();
+        }
+        finally { SpatialVoice.SpeechPhraseMetadata.Register(prepared, original); synth.TransmissionAdvisor = null; synth.Stop(); Time.unscaledTime += 5; }
+    }
+
+    static void CheckSmoothInterruptions(VoiceSynthesizer synth, string next)
+    {
+        string actualNext = DirectionalHintPolicy.AreaEntry(DirectionalHintPolicy.DownPhrase, 0);
+        string scope = "el-clone-" + SessionConfig.SelfSimilarVoiceId;
+        var cachePath = typeof(VoiceSynthesizer).GetMethod("GetCachePath", BindingFlags.Instance | BindingFlags.NonPublic);
+        var clips = (System.Collections.Generic.Dictionary<string, AudioClip>)typeof(VoiceSynthesizer).GetField("m_PreparedClips", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth);
+        string oldPath = (string)cachePath.Invoke(synth, new object[] { VoicePromptText.FormatForVoice(next, SessionConfig.Voice), scope });
+        string newPath = (string)cachePath.Invoke(synth, new object[] { VoicePromptText.FormatForVoice(actualNext, SessionConfig.Voice), scope });
+        clips[newPath] = clips[oldPath]; next = actualNext;
+        var source = (AudioSource)typeof(VoiceSynthesizer).GetField("m_AudioSource", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth);
+        int requests = 0, committed = 0;
+        bool relevant = true;
+        System.Threading.Tasks.TaskCompletionSource<bool> pending = null;
+        void Begin()
+        {
+            synth.Stop(); Time.unscaledTime += 3;
+            Set(synth, "m_LastSmoothInterruption", -100d);
+            Set(synth, "m_CurrentContext", "tip");
+            Set(synth, "m_CurrentPhrase", "Turn way right.");
+            Set(synth, "m_SpeechStartStage", "outside_target_wall");
+            source.clip = new AudioClip { length = 4 }; source.time = 1; source.volume = .4f; source.HoldPlayback = true;
+            relevant = true;
+            pending = new System.Threading.Tasks.TaskCompletionSource<bool>();
+            synth.InterruptionAdvisor = (state, token) => { requests++; return pending.Task; };
+        }
+        Begin(); int before = source.StopCalls;
+        var liveState=Newtonsoft.Json.Linq.JObject.Parse(synth.CaptureDecisionContext());
+        Check((bool)liveState["playback"]["is_speaking"] && (string)liveState["playback"]["context"]=="tip" &&
+            (double)liveState["playback"]["elapsed_seconds"]==source.time &&
+            (double)liveState["playback"]["speech_remaining_seconds"]>1 &&
+            !string.IsNullOrEmpty((string)liveState["playback"]["current_phrase"]),
+            "Decision context reports the actual active AudioSource and utterance timing");
+        Check(!synth.TryAreaCorrection(next, () => relevant, () => committed++), "Advice runs in parallel without stopping speech");
+        for (int i=0;i<5;i++) synth.TryAreaCorrection(next, () => relevant);
+        Check(requests == 1 && source.StopCalls == before && source.volume == .4f, "Repeated ticks cannot flood advice or duck while pending");
+        pending.SetResult(true);
+        Check(synth.TryAreaCorrection(next, () => relevant, () => committed++), "Current approval starts fade");
+        var fade = MonoBehaviour.LastRoutine;
+        fade.MoveNext(); float start = Time.unscaledTime;
+        Time.unscaledTime = start + .075f; fade.MoveNext();
+        Check(Math.Abs(source.volume - .2f) < .001 && source.StopCalls == before, "150ms linear fade is half gain at 75ms");
+        Time.unscaledTime = start + .149f; fade.MoveNext();
+        Check(source.StopCalls == before, "Never stop before 150ms");
+        Time.unscaledTime = start + .151f; fade.MoveNext();
+        Check(source.StopCalls == before+1 && source.VolumeAtStop == 0 && committed == 0, "Stop at zero; a queued correction has not consumed its gate");
+        Check(Math.Abs(source.volume-.7f)<.001, "Next phrase restores normal gain");
+        Drain(MonoBehaviour.LastRoutine); Check(committed == 1, "Fresh correction commits only at replacement playback");
+
+        Begin(); before=source.StopCalls;
+        synth.TryAreaCorrection(next, () => relevant); pending.SetResult(false);
+        Check(!synth.TryAreaCorrection(next, () => relevant) && source.StopCalls == before, "Finish decision preserves playback");
+        int count=requests; synth.TryAreaCorrection(next, () => relevant);
+        Check(requests==count,"One advice attempt per utterance even after a finish decision");
+        Begin(); synth.TryAreaCorrection(next, () => relevant); Time.unscaledTime += .41f; pending.SetResult(true);
+        Check(!synth.TryAreaCorrection(next, () => relevant), "Late approval discarded");
+        Begin(); synth.TryAreaCorrection(next, () => relevant); relevant=false; pending.SetResult(true);
+        Check(!synth.TryAreaCorrection(next, () => relevant), "Invalid gaze cannot accept approval");
+        Begin(); synth.TryAreaCorrection(next, () => relevant); pending.SetResult(true);
+        Check(synth.TryAreaCorrection(next, () => relevant, () => committed++), "Fresh correction can start");
+        fade=MonoBehaviour.LastRoutine; fade.MoveNext(); relevant=false; Time.unscaledTime += .16f; fade.MoveNext();
+        Check(committed==1 && !source.HoldPlayback, "Once fading, stop smoothly but discard a now-stale replacement");
+        Begin(); synth.TryAreaCorrection(next, () => relevant); pending.SetResult(true);
+        Check(synth.TryAreaCorrection(next, () => relevant, () => committed++), "Fresh correction can finish its fade");
+        fade=MonoBehaviour.LastRoutine; fade.MoveNext(); Time.unscaledTime += .16f; fade.MoveNext();
+        Check(committed==1, "Finished fade has not consumed the replacement's gate before audio onset");
+        var queuedCorrection=MonoBehaviour.LastRoutine; synth.CancelPendingGuidance(); Drain(queuedCorrection);
+        Check(committed==1 && !synth.IsSpeaking, "Phase change after fade cancels queued replacement without a false acknowledgment");
+
+        Begin(); before=source.StopCalls;
+        synth.InterruptIfAbout("tip"); fade=MonoBehaviour.LastRoutine; fade.MoveNext();
+        Time.unscaledTime += .075f; fade.MoveNext(); synth.InterruptIfAbout("tip");
+        Check(ReferenceEquals(fade,MonoBehaviour.LastRoutine), "Invalid tracking ticks do not restart fade");
+        Time.unscaledTime += .076f; fade.MoveNext();
+        Check(source.StopCalls==before+1 && source.VolumeAtStop==0, "Tracking loss fades without Jev");
+
+        Begin(); before=source.StopCalls; count=requests;
+        synth.SuppressSearchGuidanceForControllerTarget(); fade=MonoBehaviour.LastRoutine;
+        fade.MoveNext(); Time.unscaledTime+=.075f; fade.MoveNext();
+        synth.SuppressSearchGuidanceForControllerTarget();
+        Check(ReferenceEquals(fade,MonoBehaviour.LastRoutine) && source.StopCalls==before && Math.Abs(source.volume-.2f)<.001,
+            "Controller hit starts one smooth fade of contradictory search speech before the hold qualifies");
+        Time.unscaledTime+=.076f; fade.MoveNext();
+        Check(source.StopCalls==before+1 && source.VolumeAtStop==0 && requests==count && committed==1,
+            "Controller suppression stops at zero without Jev or a false pointing acknowledgment");
+        foreach (var protectedText in new[] { DirectionalHintPolicy.PointingPhrase, DirectionalHintPolicy.LookingPhrase,
+            DirectionalHintPolicy.SelectionReminderPhrase })
+        {
+            Begin(); before=source.StopCalls; Set(synth,"m_CurrentPhrase",protectedText);
+            synth.SuppressSearchGuidanceForControllerTarget();
+            Check(source.StopCalls==before && source.volume==.4f && typeof(VoiceSynthesizer).GetField("m_InterruptionCoroutine", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth)==null,
+                "Controller suppression preserves gaze/pointing confirmations and trigger reminders");
+        }
+        Begin(); Set(synth,"m_CurrentPhrase",DirectionalHintPolicy.BriefProgress(0));
+        synth.SuppressSearchGuidanceForControllerTarget();
+        Check(typeof(VoiceSynthesizer).GetField("m_InterruptionCoroutine", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth)!=null,"Already pointing cancels keep-going progress as well as explicit directions");
+        Begin(); Set(synth,"m_CurrentContext","success");
+        synth.SuppressSearchGuidanceForControllerTarget();
+        Check(typeof(VoiceSynthesizer).GetField("m_InterruptionCoroutine", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth)==null,"Controller suppression never cancels correct-selection feedback");
+        Begin(); source.time=3.3f; count=requests;
+        Check(!synth.TryAreaCorrection(next, () => true) && requests==count,"Let the final 0.7 seconds finish rather than clipping the last word");
+        Begin(); synth.TryAreaCorrection(next, () => relevant); source.time=3.05f; pending.SetResult(true);
+        Check(!synth.TryAreaCorrection(next, () => relevant), "Recheck protected ending after remote approval arrives");
+        Begin(); count=requests;
+        Check(!synth.TryAreaCorrection(next, () => true, reason:"stable_direction") && requests==count,
+            "Ordinary refinement cannot become an interruption request");
+        Begin(); count=requests;
+        Check(!synth.TryAreaCorrection(next, () => true, reason:"turn_progress_milestone") && requests==count,
+            "Progress encouragement waits rather than interrupting");
+        Begin(); count=requests; Set(synth,"m_SpeechStartStage","within_target_wall");
+        Set(synth,"m_CurrentPhrase","Look to your right.");
+        Check(!synth.TryAreaCorrection(next, () => true) && requests==count, "Same-wall arrival does not interrupt an existing within-wall cue");
+        foreach (var protectedText in new[] { "Unregistered wording.", DirectionalHintPolicy.BitMorePhrase, DirectionalHintPolicy.LittleMorePhrase })
+        {
+            Begin(); count=requests; Set(synth,"m_CurrentPhrase",protectedText);
+            Check(!synth.TryAreaCorrection(next, () => true) && requests==count, "Unknown meaning and small progress cues finish locally");
+        }
+        Begin(); source.HoldPlayback=false;
+        string acknowledgment=DirectionalHintPolicy.LookingPhrase;
+        string ackPath=(string)cachePath.Invoke(synth,new object[]{VoicePromptText.FormatForVoice(acknowledgment,SessionConfig.Voice),scope});
+        clips[ackPath]=clips[oldPath];
+        Set(synth,"m_LastGuidanceWasAcknowledgment",false);
+        Set(synth,"m_LastGuidanceEnd",Time.realtimeSinceStartupAsDouble-.15);
+        Check(!synth.GuidanceReady,"Ordinary directions still wait250ms after ordinary speech");
+        Check(synth.TryAreaCorrection(acknowledgment,()=>true,()=>committed++,"gaze_target_vicinity_hold","ack-gap-regression"),
+            "Qualified upcoming acknowledgment can start150ms after ordinary speech, without inheriting250ms direction gap");
+        Drain(MonoBehaviour.LastRoutine); Drain(MonoBehaviour.LastRoutine);
+        Check(committed==2,"Prepared acknowledgment commits at actual playback after its own100ms gap");
+        Begin(); source.HoldPlayback=false; int transmissionCalls=0;
+        synth.TransmissionAdvisor=(state,token)=>{transmissionCalls++;return System.Threading.Tasks.Task.FromResult(false);};
+        Set(synth,"m_LastGuidanceWasAcknowledgment",false);
+        Set(synth,"m_LastGuidanceEnd",Time.realtimeSinceStartupAsDouble-.09);
+        Check(!synth.TryAreaCorrection(acknowledgment,()=>true,null,"gaze_target_vicinity_hold","too-early"),
+            "Qualified acknowledgment still respects its100ms minimum gap");
+        Time.unscaledTime+=.02f;
+        Check(synth.TryAreaCorrection(acknowledgment,()=>true,()=>committed++,"gaze_target_vicinity_hold","ack-transmission-gap"),
+            "Transmission-advice path also admits qualified acknowledgment after100ms");
+        Drain(MonoBehaviour.LastRoutine); Drain(MonoBehaviour.LastRoutine);
+        Check(committed==3 && transmissionCalls==0,"Final transmission readiness preserves100ms acknowledgment gap and local priority");
+        synth.TransmissionAdvisor=null;
+        Begin(); source.time=3.7f; count=requests;
+        Check(!synth.TryAreaCorrection(next, () => true) && requests==count,"Protect near-complete phrase locally");
+        Begin(); source.time=3.1f; Set(synth,"m_CurrentSpeechSeconds",3.6d); count=requests;
+        Check(!synth.TryAreaCorrection(next, () => true) && requests==count,"Clone effect tail cannot extend interruptible speech time");
+        Begin(); Set(synth,"m_CurrentPhrase",DirectionalHintPolicy.PointingPhrase); count=requests;
+        Check(!synth.TryAreaCorrection(next, () => true) && requests==count,"Protect acknowledgment locally");
+        Begin(); synth.TryAreaCorrection(next, () => relevant); var obsolete=pending;
+        synth.Stop(); obsolete.SetResult(true);
+        Check(!source.HoldPlayback,"Lifecycle stop cannot resurrect late advice");
+        synth.InterruptionAdvisor=null;
+    }
     static void Main()
     {
         string root = Path.Combine(Path.GetTempPath(), "gaze-voice-tests-" + Guid.NewGuid());
         Directory.CreateDirectory(root);
         try
         {
+            CheckParallelDownloads(root);
             // Exercise real DSP: exact neutral bypass, no onset delay, stereo room tail,
             // determinism and silence. Library tests below check treated RMS/peaks.
             var impulse = new float[4800]; impulse[0] = 0.5f;
@@ -91,11 +461,12 @@ class VoiceIsolationChecks
             Check(externalText != collaborativeText, "perspectives produce distinct formatted text");
 
             var synth = new VoiceSynthesizer();
+            Set(synth,"m_VerifyAudio",new Func<string,byte[],string,Action<VoiceAudioVerification.Result>,IEnumerator>(VerifiedFixture));
             Set(synth, "m_CacheDir", root);
             Set(synth, "m_ApiKey", "fake-key");
             Set(synth, "m_AudioSource", new AudioSource());
-            var provider = new VoxtralClient();
-            Set(synth, "m_Voxtral", provider);
+            var provider = new ElevenLabsVoiceClient();
+            Set(synth, "m_CloneClient", provider);
             Action run = () => {
                 UnityWebRequest.Requests.Clear(); provider.Calls = 0;
                 synth.Speak("test phrase");
@@ -105,7 +476,7 @@ class VoiceIsolationChecks
             };
             string female = Cache(synth, "el-21m00Tcm4TlvDq8ikWAM");
             string male = Cache(synth, "el-cjVigY5qzO86Huf0OWal");
-            string self = Cache(synth, "vx-participant-clone");
+            string self = Cache(synth, "el-clone-participant-clone");
             Check(female != male && male != self && female != self, "voice cache isolation");
             Check(SessionConfig.TrySetPerspective(VoicePerspective.External), "perspective can change before library preparation");
             string externalCache = Cache(synth, "el-21m00Tcm4TlvDq8ikWAM");
@@ -114,7 +485,7 @@ class VoiceIsolationChecks
             // A populated neutral cache must never rescue a failed self-similar request.
             const string introduction = "Welcome to the surrounding search. Stay seated at the center. Objects will appear around you.";
             foreach (var introGender in new[] { NeutralVoiceProfile.Male, NeutralVoiceProfile.Female })
-                for (int introOption = 0; introOption < 2; introOption++)
+                for (int introOption = 0; introOption < SessionConfig.NeutralVoiceCount; introOption++)
                 {
                     SessionConfig.SelectNeutralVoice(introGender, introOption);
                     SessionConfig.Voice = VoiceCondition.SelfSimilar;
@@ -132,6 +503,7 @@ class VoiceIsolationChecks
                 }
             SessionConfig.ResetForNewParticipant();
             File.WriteAllBytes(female, new byte[120]);
+            VoiceAudioVerification.SaveReceipt(female,"test phrase",new byte[120],"test phrase");
             SessionConfig.Voice = VoiceCondition.SelfSimilar;
             foreach (bool pending in new[] { false, true })
             {
@@ -142,6 +514,7 @@ class VoiceIsolationChecks
             }
             SessionConfig.SelfSimilarVoiceId = "participant-clone";
             File.WriteAllBytes(self, new byte[120]);
+            VoiceAudioVerification.SaveReceipt(self,"test phrase",new byte[120],"test phrase");
             run();
             Check(UnityWebRequest.Requests.Count == 0, "pending enrollment cannot play even cached clone");
             SessionConfig.SelfSimilarEnrollmentPending = false;
@@ -149,10 +522,10 @@ class VoiceIsolationChecks
             provider.HasKey = false;
             run();
             Check(UnityWebRequest.Requests.Count == 0 && provider.Calls == 0, "missing key stays silent");
-            Set(synth, "m_Voxtral", null);
+            Set(synth, "m_CloneClient", null);
             run();
             Check(UnityWebRequest.Requests.Count == 0, "missing provider stays silent");
-            Set(synth, "m_Voxtral", provider); provider.HasKey = true;
+            Set(synth, "m_CloneClient", provider); provider.HasKey = true;
             foreach (byte[] result in new byte[][] { null, new byte[0], new byte[50] })
             {
                 provider.Audio = result;
@@ -181,19 +554,32 @@ class VoiceIsolationChecks
             Application.TestPath = root;
             var voiceKeys = new System.Collections.Generic.HashSet<string>();
             foreach (var gender in new[] { NeutralVoiceProfile.Female, NeutralVoiceProfile.Male })
-                for (int option = 0; option < 2; option++)
+                for (int option = 0; option < SessionConfig.NeutralVoiceCount; option++)
                 {
                     SessionConfig.SelectNeutralVoice(gender, option);
-                    Check(voiceKeys.Add(Cache(synth, "el-" + SessionConfig.NeutralVoiceId)), "all four neutral voices have distinct cache keys");
+                    Check(voiceKeys.Add(Cache(synth, "el-" + SessionConfig.NeutralVoiceId)), "all twelve neutral voices have distinct cache keys");
                     Check(!string.IsNullOrEmpty(SessionConfig.NeutralVoiceName), "every voice choice is named");
                 }
             SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Female, 0);
+            Check(SessionConfig.NeutralVoiceCount == 6 && voiceKeys.Count == 12, "six distinct choices per gender");
+            Check(SessionConfig.NeutralId(NeutralVoiceProfile.Male, 4) == "nPczCjzI2devNBz1zQrb" &&
+                  SessionConfig.NeutralId(NeutralVoiceProfile.Female, 4) == "hpp4J3VqNfWAUOO0d1Us" &&
+                  SessionConfig.NeutralName(NeutralVoiceProfile.Male, 5) == "Liam" &&
+                  SessionConfig.NeutralName(NeutralVoiceProfile.Female, 5) == "Laura", "new choices append without remapping existing last indices");
             SessionConfig.ConfigureVoiceBlocks();
             Check(SessionConfig.NeutralFirst, "odd participant neutral first");
-            Check(SessionConfig.VoiceForRound(9) == VoiceCondition.Generic && SessionConfig.VoiceForRound(10) == VoiceCondition.SelfSimilar, "block boundary after ten trials");
+            Check(ChallengeSet.PracticeTrialCount == 1 &&
+                SessionConfig.VoiceForRound(ChallengeSet.PracticeRound(0).roundIndex) == VoiceCondition.Generic,
+                "Order A single practice uses preferred catalog voice");
+            Check(SessionConfig.VoiceForRound(39) == VoiceCondition.Generic && SessionConfig.VoiceForRound(40) == VoiceCondition.SelfSimilar, "block boundary after forty trials");
             File.WriteAllText(Path.Combine(SessionConfig.ParticipantPath, "voice-order-v1.txt"), "selfsimilar_then_neutral");
             SessionConfig.ConfigureVoiceBlocks();
             Check(!SessionConfig.NeutralFirst, "persisted assignment wins on restart");
+            Check(SessionConfig.VoiceForRound(ChallengeSet.PracticeRound(0).roundIndex) == VoiceCondition.SelfSimilar,
+                "Order B single practice uses cloned voice");
+            bool rejectedSecondPractice = false;
+            try { ChallengeSet.PracticeRound(1); } catch (System.ArgumentOutOfRangeException) { rejectedSecondPractice = true; }
+            Check(rejectedSecondPractice, "second practice cannot silently select the second block voice");
             SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Male, 1);
             SessionConfig.ConfigureVoiceBlocks(replaceNeutralSelection: true);
             Check(SessionConfig.NeutralVoiceName == "Roger" && !SessionConfig.NeutralFirst,
@@ -201,6 +587,19 @@ class VoiceIsolationChecks
             SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Female, 0);
             SessionConfig.ConfigureVoiceBlocks();
             Check(SessionConfig.NeutralVoiceName == "Roger", "restart restores the exact saved voice option");
+            foreach (var newGender in new[] { NeutralVoiceProfile.Male, NeutralVoiceProfile.Female })
+            {
+                SessionConfig.SelectNeutralVoice(newGender, 5);
+                string selectedId = SessionConfig.NeutralVoiceId;
+                SessionConfig.ConfigureVoiceBlocks(replaceNeutralSelection: true);
+                SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Female, 0);
+                SessionConfig.ConfigureVoiceBlocks();
+                Check(SessionConfig.NeutralVoiceOption == 5 && SessionConfig.NeutralVoiceId == selectedId,
+                    "sixth voice persists and restores the exact provider identity");
+                string catalog = File.ReadAllText(Path.Combine(SessionConfig.ParticipantPath, "neutral-catalog-v1.json"));
+                Check(catalog.Contains(SessionConfig.NeutralCatalogVersion) && catalog.Contains(selectedId) &&
+                    catalog.Contains("Liam") && catalog.Contains("Laura"),"catalog snapshot preserves additions and version");
+            }
             File.Delete(Path.Combine(SessionConfig.ParticipantPath, "neutral-choice-v2.txt"));
             File.WriteAllText(Path.Combine(SessionConfig.ParticipantPath, "neutral-profile-v1.txt"), "Female");
             SessionConfig.ConfigureVoiceBlocks();
@@ -210,15 +609,29 @@ class VoiceIsolationChecks
             Check(!SessionConfig.NeutralFirst, "even participant self first");
             provider.HasKey = true; provider.Audio = new byte[120];
             bool prepared = false;
+            var preparationProgress = new System.Collections.Generic.List<float>();
+            Action<string> trackPreparation = _ => {
+                float value = synth.PreparationProgress;
+                Check(value >= 0 && value <= 1, "Preparation percentage stays within bounds");
+                Check(preparationProgress.Count == 0 || value >= preparationProgress[preparationProgress.Count - 1],
+                    "Preparation percentage never runs backwards");
+                if (value == 1) Check(synth.LibraryReady &&
+                    File.Exists(Path.Combine(SessionConfig.ParticipantPath, "voice-library-manifest.json")),
+                    "100 percent requires a ready library and saved manifest");
+                preparationProgress.Add(value);
+            };
             DownloadHandlerAudioClip.AlternatePeak = true;
-            Drain(synth.PrepareLibraries(new[] { "test phrase", "another phrase" }, null, ok => prepared = ok));
+            Drain(synth.PrepareLibraries(new[] { "test phrase", "another phrase" }, trackPreparation, ok => prepared = ok));
             Check(prepared && synth.LibraryReady, "both libraries prepared");
+            Check(preparationProgress[0] == 0 && synth.PreparationProgress == 1 &&
+                preparationProgress.Exists(value => value > 0 && value < 1),
+                "Both-voice preparation reports real intermediate work and reaches 100 percent");
             var audits = (IEnumerable)typeof(VoiceSynthesizer)
                 .GetField("m_Audit", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth);
             foreach (var audit in audits)
             {
                 var type = audit.GetType();
-                bool clone = (string)type.GetField("provider").GetValue(audit) == "mistral";
+                bool clone = (string)type.GetField("voice_condition").GetValue(audit) == "selfsimilar";
                 Check((string)type.GetField("effect_profile").GetValue(audit) == (clone ? InnerThoughtVoice.Version : "dry"),
                     "manifest identifies clone-only effect and dry neutral audio");
             }
@@ -237,9 +650,11 @@ class VoiceIsolationChecks
             DownloadHandlerAudioClip.AlternatePeak = false;
             Check(File.Exists(Path.Combine(SessionConfig.ParticipantPath, "voice-library-manifest.json")), "manifest saved");
             WaitForSeconds.Count = 0; provider.Calls = 0;
-            Drain(synth.PrepareLibraries(new[] { "test phrase", "another phrase" }, null, ok => prepared = ok));
+            preparationProgress.Clear();
+            Drain(synth.PrepareLibraries(new[] { "test phrase", "another phrase" }, trackPreparation, ok => prepared = ok));
             Check(prepared && provider.Calls == 0 && WaitForSeconds.Count == 0,
                 "cached preparation has no synthesis requests or artificial waits");
+            Check(preparationProgress[0] == 0 && synth.PreparationProgress == 1, "Cached preparation resets and completes progress");
             SessionConfig.Voice = VoiceCondition.SelfSimilar; run();
             Check(UnityWebRequest.Requests.Count == 0 && provider.Calls == 0, "prepared trial needs no provider request");
             synth.Speak("not in manifest"); Drain(MonoBehaviour.LastRoutine);
@@ -247,6 +662,7 @@ class VoiceIsolationChecks
             DownloadHandlerAudioClip.Corrupt = true;
             Drain(synth.PrepareLibraries(new[] { "test phrase" }, null, ok => prepared = ok));
             Check(!prepared && !synth.LibraryReady, "corrupt audio blocks readiness");
+            Check(synth.PreparationProgress < 1, "Failed audio never reports 100 percent");
             Check(synth.PreparationStage.Contains("neutral"), "failure reports the actual preparation stage");
             Check(File.ReadAllText(Path.Combine(SessionConfig.ParticipantPath, "voice-preparation-errors.log"))
                 .Contains(synth.LastError), "preparation error survives device log rotation");
@@ -268,11 +684,11 @@ class VoiceIsolationChecks
             string targetPrompt = "Locate the Blue Cube.";
             string practicePrompt = "This is a practice round. It does not count toward the study. " + targetPrompt;
             Drain(synth.PrepareLibraries(new[] { targetPrompt, practicePrompt }, null, ok => prepared = ok));
-            Check(prepared && provider.Texts.Contains("I need to find the blue cube."),
+            Check(prepared && provider.Texts.Contains("Locate the Blue Cube."),
                 "self-similar synthesis receives the selected formatted target wording");
             Check(UnityWebRequest.RequestBodies.Exists(body => body.Contains("Locate the Blue Cube.")),
                 "neutral synthesis retains external target wording");
-            Check(provider.Texts.Contains("I will try a practice trial. This one does not count toward my study trials. I need to find the blue cube."),
+            Check(provider.Texts.Contains("This is a practice round. It does not count toward the study. Locate the Blue Cube."),
                 "self-similar practice keeps its explicit practice declaration");
             provider.Calls = 0; UnityWebRequest.Requests.Clear();
             synth.Speak(targetPrompt); Drain(MonoBehaviour.LastRoutine);
@@ -291,9 +707,9 @@ class VoiceIsolationChecks
             UnityWebRequest.Requests.Clear();
             synth.Speak(lazyPrompt, "round"); Drain(MonoBehaviour.LastRoutine);
             Check(string.IsNullOrEmpty(synth.LastError) && provider.Calls == 1 &&
-                provider.Texts.Contains("I need to find the purple sphere.") &&
+                provider.Texts.Contains("Locate the Purple Sphere.") &&
                 UnityWebRequest.Requests.TrueForAll(url => url.StartsWith("file:")),
-                "first-use trial synthesizes in the assigned clone with first-person wording and no neutral request");
+                "first-use trial synthesizes in the assigned clone with shared wording and no neutral request");
             Check(File.Exists(SessionConfig.GetFilePath("voice-library-manifest.json")),
                 "on-demand clip updates the active run manifest");
             matchedRms = null;
@@ -357,8 +773,8 @@ class VoiceIsolationChecks
             int foregroundFailures = 0;
             synth.PlaybackFailed += error => foregroundFailures++;
             synth.StartBackgroundLoading(new[] { failedBackground });
+            provider.Audio = null; // Both conditions now start together in one bounded batch.
             update.Invoke(synth, null); Drain(MonoBehaviour.LastRoutine);
-            provider.Audio = null;
             update.Invoke(synth, null); Drain(MonoBehaviour.LastRoutine);
             Check(foregroundFailures == 0 && string.IsNullOrEmpty(synth.LastError) && !synth.IsBusy,
                 "background failure cannot stop the trial or poison accepted audio checks");
@@ -374,8 +790,8 @@ class VoiceIsolationChecks
             foreach (string phrase in hintPhrases)
             {
                 string selfText = VoicePromptText.FormatForVoice(phrase, VoiceCondition.SelfSimilar);
-                Check(selfText.StartsWith("I"), "self-similar guidance is first-person singular");
-                Check(provider.Texts.Contains(selfText), "clone provider receives first-person hint");
+                Check(selfText == phrase, "self-similar guidance shares the external command");
+                Check(provider.Texts.Contains(selfText), "clone provider receives shared command");
                 Check(UnityWebRequest.RequestBodies.Exists(body => body.Contains(phrase)), "neutral provider receives external hint");
                 SessionConfig.Voice = VoiceCondition.SelfSimilar;
                 provider.Calls = 0; UnityWebRequest.Requests.Clear();
@@ -404,6 +820,9 @@ class VoiceIsolationChecks
                 Check(string.IsNullOrEmpty(synth.LastError) && failures == 0 && starts == 1,
                     "valid later clip with limited headroom must play instead of aborting trial");
                 Check(limited == 1, "limited normalization is recorded in telemetry");
+                var recent = Newtonsoft.Json.Linq.JObject.Parse(synth.CaptureDecisionContext())["playback"]["recent_history"]["speech"];
+                Check(recent.HasValues && (string)recent.Last["text"]==VoicePromptText.FormatForVoice(lazyPrompt, SessionConfig.Voice) &&
+                    (string)recent.Last["outcome"]=="completed", "Decision memory records actual completed playback");
                 var audit = (IList)typeof(VoiceSynthesizer).GetField("m_Audit", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth);
                 var last = audit[audit.Count - 1]; var auditType = last.GetType();
                 float gain = (float)auditType.GetField("gain").GetValue(last);
@@ -430,36 +849,75 @@ class VoiceIsolationChecks
                 int stopsBeforeCorrection = source.StopCalls;
                 bool relevant = true;
                 int correctionCommits = 0;
-                Check(synth.TryAreaCorrection(lazyPrompt, () => relevant, () => correctionCommits++), "playing hint accepts fade");
+                bool abortedDecisionLogged = false;
+                Action<string,string,string,string> abortedTelemetry = (kind,context,key,detail) => {
+                    if (kind=="guidance_decision_aborted" && detail.Contains("decision_id=abandoned-decision")) abortedDecisionLogged=true;
+                };
+                synth.Telemetry += abortedTelemetry;
+                Check(!synth.TryAreaCorrection(lazyPrompt, () => relevant, () => correctionCommits++), "Playing go-back phrase must finish before any confirmation");
+                Check(source.HoldPlayback && source.StopCalls == stopsBeforeCorrection, "Deferred correction does not stop or fade speech");
+                source.Finish();
+                var markEnd = typeof(VoiceSynthesizer).GetMethod("MarkGuidanceEnd", BindingFlags.Instance | BindingFlags.NonPublic);
+                markEnd.Invoke(synth,null);
+                Check(!synth.TryAreaCorrection(lazyPrompt, () => true), "Natural completion starts a pause before another sentence");
+                Time.unscaledTime += .26f;
+                Check(synth.TryAreaCorrection(lazyPrompt, () => relevant, () => correctionCommits++, guidanceDecisionId:"abandoned-decision"), "Idle prepared correction is eligible after its gap");
                 var abandonedFade = MonoBehaviour.LastRoutine;
-                abandonedFade.MoveNext();
-                Time.unscaledTime += 0.02f;
-                abandonedFade.MoveNext();
-                Check(source.volume > 0 && source.volume < 0.7f, "ongoing hint fades gradually");
                 relevant = false; Drain(abandonedFade);
                 Check(Math.Abs(source.volume - 0.7f) < 0.0001f && starts == 2,
-                    "leaving target zone during fade restores volume and cancels correction");
-                Check(correctionCommits == 0, "abandoned fade must not commit the cue or consume cooldown");
+                    "Obsolete evidence cancels a pending correction before speech");
+                Check(correctionCommits == 0, "Abandoned cue does not consume cooldown");
+                Check(abortedDecisionLogged,"Abandoned request records its own decision ID without playback");
+                synth.Telemetry -= abortedTelemetry;
                 bool returnReasonLogged = false;
+                bool correctionStartLinked = false;
                 Action<string, string, string, string> correctionTelemetry = (kind, context, key, detail) =>
-                { if (kind == "audio_area_correction" && detail.Contains("gaze_overshoot_return")) returnReasonLogged = true; };
+                {
+                    if (kind == "audio_area_correction" && detail.Contains("gaze_overshoot_return") && detail.Contains("decision_id=return-decision")) returnReasonLogged = true;
+                    if (kind == "audio_playback_start" && detail.Contains("decision_id=return-decision")) correctionStartLinked = true;
+                };
                 synth.Telemetry += correctionTelemetry;
-                Check(synth.TryAreaCorrection(lazyPrompt, () => true, () => correctionCommits++, "gaze_overshoot_return"),
-                    "prepared correction can replace a hint");
+                Check(synth.TryAreaCorrection(lazyPrompt, () => true, () => correctionCommits++, "gaze_overshoot_return","return-decision"),
+                    "prepared correction follows the completed hint");
                 var fade = MonoBehaviour.LastRoutine;
                 Check(synth.IsBusy, "pending fade blocks ordinary hints");
                 Drain(fade);
                 Drain(MonoBehaviour.LastRoutine);
-                Check(!source.HoldPlayback && source.StopCalls > stopsBeforeCorrection, "correction cuts off unfinished speech");
+                Check(!source.HoldPlayback && source.StopCalls == stopsBeforeCorrection, "correction never cuts off unfinished speech");
                 Check(starts == 3 && failures == 0, "correction plays once without failure");
                 Check(correctionCommits == 1 && returnReasonLogged, "committed correction consumes cooldown once and logs return reason");
+                Check(correctionStartLinked,"Audible correction retains the request decision through fade and Speak reset");
+                Check(!synth.GuidanceReady,"Actual correction completion enforces the next post-playback pause");
+                Time.unscaledTime += .26f;
+                Check(synth.GuidanceReady,"Ordinary guidance resumes after its gap");
+                Set(synth,"m_CurrentContext","tip"); Set(synth,"m_CurrentPhrase",DirectionalHintPolicy.LookingPhrase);
+                markEnd.Invoke(synth,null);
+                Time.unscaledTime += .09f;
+                Check(!synth.GuidanceReady,"YEP retains a short pause before another direction");
+                Time.unscaledTime += .02f;
+                Check(synth.GuidanceReady,"Acknowledgment pause ends normally");
+                Set(synth,"m_CurrentContext",null);
                 synth.Telemetry -= correctionTelemetry;
                 Check(provider.Calls == 0 && UnityWebRequest.Requests.Count == 0, "correction needs no network");
                 synth.PlaybackFailed -= failure; synth.Telemetry -= telemetry;
+                CheckTransmission(synth, lazyPrompt);
+                CheckRun20Pacing(synth, lazyPrompt);
+                CheckSmoothInterruptions(synth, lazyPrompt);
             }
+            var decisionEvents = new System.Collections.Generic.List<string>();
+            Action<string,string,string,string> captureDecisionEvents = (kind,context,key,detail) => decisionEvents.Add(kind+"|"+detail);
+            synth.Telemetry += captureDecisionEvents;
+            synth.Speak(lazyPrompt,"tip",guidanceDecisionId:"original-decision"); Drain(MonoBehaviour.LastRoutine);
+            foreach (var kind in new[] {"audio_request","audio_playback_start","audio_playback_end"})
+                Check(decisionEvents.Exists(e=>e.StartsWith(kind+"|") && e.Contains("decision_id=original-decision")),
+                    "Audio lifecycle preserves the original decision ID: "+kind);
+            decisionEvents.Clear();
+            synth.Speak(lazyPrompt,"round"); Drain(MonoBehaviour.LastRoutine);
+            Check(!decisionEvents.Exists(e=>e.Contains("decision_id=")),"Non-guidance speech cannot inherit a prior decision");
+            synth.Telemetry -= captureDecisionEvents;
             DownloadHandlerAudioClip.ForceSkewed = false;
             DownloadHandlerAudioClip.Quiet = false;
-            Check(ChallengeSet.TotalRounds == 20 && ChallengeSet.RoundsPerBlock == 10 && ChallengeSet.BlockCount == 2, "full two-block schedule");
+            Check(ChallengeSet.TotalRounds == 80 && ChallengeSet.RoundsPerBlock == 40 && ChallengeSet.BlockCount == 2, "full two-block schedule");
             var angleCounts = new int[2, 5];
             foreach (var trial in ChallengeSet.Rounds)
             {
@@ -475,7 +933,7 @@ class VoiceIsolationChecks
             // Selection previews bypass library readiness, cancel prior prepared
             // content, and always request the chosen neutral provider (never a clone).
             foreach (var gender in new[] { NeutralVoiceProfile.Male, NeutralVoiceProfile.Female })
-                for (int option = 0; option < 2; option++)
+                for (int option = 0; option < SessionConfig.NeutralVoiceCount; option++)
                 {
                     SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Female, 0);
                     SessionConfig.Voice = VoiceCondition.SelfSimilar;
@@ -511,11 +969,11 @@ class VoiceIsolationChecks
             SessionConfig.SelectNeutralVoice(NeutralVoiceProfile.Male, 1);
             SessionConfig.ResetForNewParticipant();
             string correction = VoicePromptText.WrongSelectionPhrase("Blue", "Cube");
-            Check(VoicePromptText.FormatForVoice(correction, VoiceCondition.Generic) == "Locate the blue cube.",
-                "neutral wrong-selection reminder names the intended target");
-            Check(VoicePromptText.FormatForVoice(correction, VoiceCondition.SelfSimilar) == "I'm looking for the blue cube.",
-                "self-similar wrong-selection reminder uses the requested first-person wording");
-            Check(VoicePromptText.FormatForVoice("Locate the Blue Cube.", VoiceCondition.SelfSimilar) == "I need to find the blue cube.",
+            Check(VoicePromptText.FormatForVoice(correction, VoiceCondition.Generic) == "Try another object.",
+                "neutral wrong-selection reminder does not reveal identity");
+            Check(VoicePromptText.FormatForVoice(correction, VoiceCondition.SelfSimilar) == "Try another object.",
+                "self-similar wrong-selection reminder does not reveal identity");
+            Check(VoicePromptText.FormatForVoice("Locate the Blue Cube.", VoiceCondition.SelfSimilar) == "Locate the Blue Cube.",
                 "wrong-selection wording does not replace normal target announcements");
             foreach (var condition in new[] { VoiceCondition.Generic, VoiceCondition.SelfSimilar })
             {
@@ -528,8 +986,8 @@ class VoiceIsolationChecks
                 Drain(MonoBehaviour.LastRoutine);
                 Check(string.IsNullOrEmpty(synth.LastError) && !synth.IsBusy, "wrong-selection reminder plays successfully");
                 Check(condition == VoiceCondition.Generic
-                    ? provider.Calls == 0 && UnityWebRequest.RequestBodies.Exists(body => body.Contains("Locate the blue cube."))
-                    : provider.Calls == 1 && provider.Texts.Contains("I'm looking for the blue cube."),
+                    ? provider.Calls == 0 && UnityWebRequest.RequestBodies.Exists(body => body.Contains("Try another object."))
+                    : provider.Calls == 1 && provider.Texts.Contains("Try another object."),
                     "wrong-selection reminder reaches the condition's provider with exact wording");
                 Check(SessionConfig.Voice == condition, "wrong-selection reminder preserves trial voice assignment");
             }
@@ -540,34 +998,47 @@ class VoiceIsolationChecks
             Check(VoicePromptText.AudioLevelCheck == audioCheck, "audio check tells participant how to accept volume");
             foreach (var condition in new[] { VoiceCondition.Generic, VoiceCondition.SelfSimilar })
                 Check(VoicePromptText.FormatForVoice(audioCheck, condition) == audioCheck, "both voices speak identical audio-check instructions");
+            foreach (string phrase in DirectionalHintPolicy.AllPhrases())
+            {
+                string firstPerson = VoicePromptText.FormatForVoice(phrase, VoiceCondition.SelfSimilar);
+                Check(firstPerson == phrase, "every assistance variant has shared imperative wording: " + phrase);
+                Check(!firstPerson.Contains("I'll try looking right"), "rejected first-person phrase never returns");
+            }
             Check(VoicePromptText.FormatForVoice("Go back. That was the correct area.", VoiceCondition.SelfSimilar) ==
-                "I need to go back. That was the correct area.", "return cue uses first person for self-similar voice");
-            Check(VoicePromptText.FormatForVoice("Look way left.", VoiceCondition.SelfSimilar) == "I need to look way left." &&
-                VoicePromptText.FormatForVoice("Look way right.", VoiceCondition.SelfSimilar) == "I need to look way right.",
-                "strong directional cues use first person for the self-similar voice");
+                "Go back. That was the correct area.", "return cue uses shared commands for self-similar voice");
+            Check(VoicePromptText.FormatForVoice("Look way left.", VoiceCondition.SelfSimilar) == "Look way left." &&
+                VoicePromptText.FormatForVoice("Look way right.", VoiceCondition.SelfSimilar) == "Look way right.",
+                "strong directional cues use shared commands for the self-similar voice");
             Check(VoicePromptText.FormatForVoice("Look way right.", VoiceCondition.Generic) == "Look way right.",
                 "neutral strong cue stays external");
             string[] neutralVariants = { "Look to your left.", "Look to your right.", "Try looking left.", "Try looking right.", "Search to your left.", "Search to your right." };
-            string[] selfVariants = { "I need to look to my left.", "I need to look to my right.", "I'll try looking left.", "I need to look right.", "I need to search to my left.", "I need to search to my right." };
+            string[] selfVariants = neutralVariants;
             for (int i = 0; i < neutralVariants.Length; i++)
             {
                 Check(VoicePromptText.FormatForVoice(neutralVariants[i], VoiceCondition.Generic) == neutralVariants[i], "neutral alternative remains external");
-                Check(VoicePromptText.FormatForVoice(neutralVariants[i], VoiceCondition.SelfSimilar) == selfVariants[i], "self-similar alternative is first person");
+                Check(VoicePromptText.FormatForVoice(neutralVariants[i], VoiceCondition.SelfSimilar) == selfVariants[i], "self-similar alternative uses the same wording");
             }
             for (int participant = 1; participant <= 50; participant++)
             {
                 SessionConfig.ParticipantId = $"P{participant:D3}";
                 var schedule = ChallengeSet.Rounds;
                 var firstCounts = new int[5]; var secondCounts = new int[5];
+                var identities = new[] { new System.Collections.Generic.Dictionary<string, int>(), new System.Collections.Generic.Dictionary<string, int>() };
                 var seeds = new System.Collections.Generic.HashSet<int>();
                 foreach (var trial in schedule)
                 {
                     int targetIndex = Array.FindIndex(trial.objects, o => o.shape == trial.target.shape && o.color == trial.target.color);
                     Check(targetIndex == trial.targetPlane * 21 + trial.targetSlot, "actual target obeys schedule");
-                    Check(trial.startPlane == (trial.roundIndex == 0 ? ChallengeSet.PracticeRound(1).targetPlane : schedule[trial.roundIndex - 1].targetPlane),
+                    Check(trial.startPlane == (trial.roundIndex == 0 ? ChallengeSet.PracticeRound(0).targetPlane : schedule[trial.roundIndex - 1].targetPlane),
                         "start wall follows actual previous target, including practice and block boundary");
                     Check(seeds.Add(trial.layoutSeed), "each trial has its own layout seed");
                     (trial.blockIndex == 0 ? firstCounts : secondCounts)[trial.AbsoluteTheta / 45]++;
+                    string identity = trial.target.shape + ":" + trial.target.color;
+                    var counts = identities[trial.blockIndex];
+                    counts[identity] = counts.ContainsKey(identity) ? counts[identity] + 1 : 1;
+                    if (trial.roundIndex > 0)
+                        Check(identity != schedule[trial.roundIndex - 1].target.shape + ":" + schedule[trial.roundIndex - 1].target.color,
+                            "no adjacent target identities, including block boundary");
                     if (trial.blockIndex == 0)
                     {
                         var mirror = Array.Find(schedule, t => t.blockIndex == 1 && t.anglePair == trial.anglePair);
@@ -575,23 +1046,34 @@ class VoiceIsolationChecks
                             "paired angles mirror across the two blocks");
                     }
                 }
-                for (int half = 0; half < 4; half++)
+                Check(identities[0].Count == 24 && identities[1].Count == 24, "every identity appears in both voices");
+                int doubled = 0;
+                foreach (var identity in identities[0])
+                {
+                    Check(identity.Value == identities[1][identity.Key] && identity.Value >= 1 && identity.Value <= 2,
+                        "both voices receive identical identity counts with at most two occurrences per block");
+                    if (identity.Value == 2) doubled++;
+                }
+                Check(doubled == 16, "sixteen repeated and eight single identities per block");
+                for (int half = 0; half < ChallengeSet.TotalRounds / 5; half++)
                 {
                     var halfAngles = new System.Collections.Generic.HashSet<int>();
                     for (int i = 0; i < 5; i++) halfAngles.Add(schedule[half * 5 + i].AbsoluteTheta);
                     Check(halfAngles.Count == 5, "every five trials cover all absolute angles without early clustering");
                 }
-                int[] quota = { 2, 2, 2, 2, 2 };
+                int[] quota = { 8, 8, 8, 8, 8 };
                 for (int a = 0; a < 5; a++) Check(firstCounts[a] == quota[a] && secondCounts[a] == quota[a], "fixed per-block quotas");
                 var saved = new StringWriter(); ChallengeSet.WriteSchedule(saved);
                 var rows = saved.ToString().Trim().Split('\n');
-                Check(rows.Length == 21, "manifest documents all twenty planned trials");
+                Check(rows.Length == 81, "manifest documents all eighty planned trials");
                 for (int r = 0; r < schedule.Length; r++)
                 {
                     var cells = rows[r + 1].Trim().Split(',');
-                    Check(cells.Length == 20 && int.Parse(cells[10]) == schedule[r].SignedTheta &&
+                    Check(cells.Length == 22 && int.Parse(cells[10]) == schedule[r].SignedTheta &&
                         int.Parse(cells[11]) == schedule[r].AbsoluteTheta && int.Parse(cells[13]) == schedule[r].layoutSeed && int.Parse(cells[17]) == schedule[r].startPlane,
                         "exported angle and seed match executable plan");
+                    Check(cells[20] == ChallengeSet.TargetIdentityPolicy && cells[21] == ChallengeSet.HeightAssignmentPolicy,
+                        "manifest distinguishes implemented identity balancing from pending signed-height quotas");
                 }
                 SessionConfig.ParticipantId = "P999"; var other = ChallengeSet.Rounds;
                 SessionConfig.ParticipantId = $"P{participant:D3}";
@@ -599,6 +1081,29 @@ class VoiceIsolationChecks
                 Check(restored.ToString() == saved.ToString(), "participant restart reproduces full plan");
                 Check(other[0].layoutSeed != schedule[0].layoutSeed, "participant identity changes randomization");
             }
+            foreach (bool neutralFirst in new[] { true, false })
+            {
+                Directory.CreateDirectory(SessionConfig.ParticipantPath);
+                File.WriteAllText(Path.Combine(SessionConfig.ParticipantPath, "voice-order-v1.txt"),
+                    neutralFirst ? "neutral_then_selfsimilar" : "selfsimilar_then_neutral");
+                SessionConfig.ConfigureVoiceBlocks();
+                int neutralTrials = 0, selfTrials = 0;
+                foreach (var trial in ChallengeSet.Rounds)
+                {
+                    if (SessionConfig.VoiceForRound(trial.roundIndex) == VoiceCondition.Generic) neutralTrials++;
+                    else selfTrials++;
+                }
+                Check(neutralTrials == 40 && selfTrials == 40, "both saved orders assign forty trials to each voice");
+            }
+            ChallengeSet.DebugRoundCountOverride = 7;
+            var truncated = new StringWriter(); ChallengeSet.WriteSchedule(truncated);
+            int enabled = 0;
+            foreach (var row in truncated.ToString().Trim().Split('\n'))
+                if (row.StartsWith(SessionConfig.ParticipantId + ",") && row.Split(',')[16] == "1") enabled++;
+            Check(enabled == 7 && ChallengeSet.Rounds.Length == 80, "short run preserves complete plan and flags only seven enabled trials");
+            ChallengeSet.DebugRoundCountOverride = 999;
+            Check(ChallengeSet.RoundCount == 80, "debug cannot exceed full study");
+            ChallengeSet.DebugRoundCountOverride = 0;
             foreach (var trial in ChallengeSet.Rounds)
             {
                 int targetCount = 0, colorOnly = 0, shapeOnly = 0;
@@ -612,7 +1117,7 @@ class VoiceIsolationChecks
                 Check(trial.objects.Length == 168 && targetCount == 1 && colorOnly == 39 && shapeOnly == 39,
                     "168-object trials preserve one target and scaled conjunction distractors");
             }
-            for (int practice = 0; practice < 2; practice++)
+            for (int practice = 0; practice < ChallengeSet.PracticeTrialCount; practice++)
             {
                 var round = ChallengeSet.PracticeRound(practice); int targets = 0;
                 foreach (var obj in round.objects) if (obj.shape == round.target.shape && obj.color == round.target.color) targets++;
@@ -635,7 +1140,96 @@ class VoiceIsolationChecks
             clock.Begin(4000); clock.Pause(4003);
             Check(clock.Elapsed(6000) == 3, "next trial starts a fresh search clock");
             SessionConfig.ResetForNewParticipant();
-            Console.WriteLine("PASS: missing/pending clone, missing provider/key, failed/short audio, offline cache, neutral selection and busy-state isolation.");
+            SessionConfig.SelfSimilarVoiceId = "old-participant-clone";
+            SessionConfig.SelfSimilarEnrollmentPending = true;
+            SessionConfig.ConfigureNeutralQuickTest();
+            Check(SessionConfig.NeutralQuickTest && !SessionConfig.VoiceBlocksEnabled &&
+                SessionConfig.Voice == VoiceCondition.Generic && SessionConfig.NeutralVoiceName == "Eric" &&
+                SessionConfig.SelfSimilarVoiceId == "" && !SessionConfig.SelfSimilarEnrollmentPending,
+                "quick test clears participant/clone state and uses neutral only");
+            Check(SessionConfig.ParticipantId == "DEV_NEUTRAL" && ChallengeSet.RoundCount == 40,
+                "quick test has a separate development identity and one 40-trial block");
+            var quickPlan = ChallengeSet.Rounds;
+            Check(quickPlan[0].startPlane == 0, "quick test starts at the centered wall without practice");
+            string quickRun = SessionConfig.BeginRun();
+            Check(quickRun.Contains("dev_quick_test") && File.ReadAllText(Path.Combine(quickRun, "session-mode-v1.txt")).Contains("study_data=false"),
+                "quick test data cannot be mistaken for a coded participant run");
+            var quickSchedule = new StringWriter(); ChallengeSet.WriteSchedule(quickSchedule);
+            var scheduleLines = quickSchedule.ToString().Trim().Split('\n');
+            for (int i = 1; i < scheduleLines.Length; i++)
+                Check(scheduleLines[i].Split(',')[16] == (i <= 40 ? "1" : "0"), "schedule flags only the executed quick-test block");
+            provider.Calls = 0; UnityWebRequest.Requests.Clear();
+            DownloadHandlerAudioClip.Corrupt = false; DownloadHandlerAudioClip.Quiet = false;
+            Drain(synth.PrepareLibraries(new[] { "Quick test neutral guidance." }, null, ok => prepared = ok, neutralOnly: true));
+            Check(prepared && synth.LibraryReady && provider.Calls == 0 && SessionConfig.Voice == VoiceCondition.Generic,
+                "neutral-only library becomes ready without a clone request");
+            foreach (var audit in (IEnumerable)typeof(VoiceSynthesizer).GetField("m_Audit", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth))
+                Check((string)audit.GetType().GetField("voice_condition").GetValue(audit) != "selfsimilar", "quick-test manifest has no clone clips");
+            Check(SessionConfig.VoiceForRound(40) == VoiceCondition.Generic, "quick test never changes to the cloned voice");
+            SessionConfig.RememberDevelopmentClone("dev-clone-fixture");
+            SessionConfig.ConfigureCloneQuickTest(SessionConfig.SavedDevelopmentClone());
+            Check(SessionConfig.CloneQuickTest && SessionConfig.DevelopmentQuickTest && !SessionConfig.NeutralQuickTest &&
+                SessionConfig.ParticipantId == "DEV_CLONE" && ChallengeSet.RoundCount == 40 &&
+                SessionConfig.SelfSimilarVoiceId == "dev-clone-fixture" && !SessionConfig.VoiceBlocksEnabled &&
+                SessionConfig.VoiceForRound(0) == VoiceCondition.SelfSimilar &&
+                SessionConfig.VoiceForRound(40) == VoiceCondition.SelfSimilar,
+                "Clone shortcut uses only explicitly saved clone and a separate development block");
+            string cloneRun=SessionConfig.BeginRun();
+            Check(File.ReadAllText(Path.Combine(cloneRun,"session-mode-v1.txt")).Contains("mode=clone_quick_test\nstudy_data=false"),
+                "Clone quick run is never labeled study data");
+            provider.Calls=0; UnityWebRequest.Requests.Clear();
+            Drain(synth.PrepareLibraries(new[] { "Clone quick guidance." }, null, ok=>prepared=ok, onlyVoice: VoiceCondition.SelfSimilar));
+            Check(prepared && synth.LibraryReady && provider.Calls>0 && SessionConfig.Voice==VoiceCondition.SelfSimilar,
+                "Clone-only preparation completes through the clone provider");
+            foreach(var audit in (IEnumerable)typeof(VoiceSynthesizer).GetField("m_Audit",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(synth))
+                Check((string)audit.GetType().GetField("voice_condition").GetValue(audit)=="selfsimilar",
+                    "Clone-only manifest never includes neutral clips");
+            bool rejectedEmpty=false;
+            try { SessionConfig.ConfigureCloneQuickTest(""); } catch(ArgumentException) { rejectedEmpty=true; }
+            Check(rejectedEmpty && SessionConfig.CloneQuickTest, "Missing clone rejected without resetting active session");
+            SessionConfig.ConfigureNewCloneQuickTest();
+            Check(SessionConfig.NewCloneQuickTest && SessionConfig.CloneQuickTest && SessionConfig.DevelopmentQuickTest &&
+                !SessionConfig.NeutralQuickTest && !SessionConfig.VoiceBlocksEnabled &&
+                SessionConfig.SelfSimilarVoiceId == "" && SessionConfig.SelfSimilarEnrollmentPending &&
+                SessionConfig.ParticipantId == "DEV_CLONE" && ChallengeSet.RoundCount == 40,
+                "Fresh-clone quick test clears old voice and waits for new enrollment without a study assignment");
+            provider.Calls = 0; prepared = true;
+            Drain(synth.PrepareLibraries(new[] { "Fresh clone guidance." }, null, ok=>prepared=ok, onlyVoice: VoiceCondition.SelfSimilar));
+            Check(!prepared && !synth.LibraryReady && provider.Calls == 0,
+                "Fresh-clone quick test cannot prepare stale saved audio before enrollment");
+            Check(SessionConfig.TrySetJevLedGuidance(true) && SessionConfig.JevLedGuidance,
+                "Action policy can be enabled explicitly in clone development mode");
+            SessionConfig.SelfSimilarVoiceId = "newly-recorded-dev-clone";
+            SessionConfig.SelfSimilarEnrollmentPending = false;
+            Drain(synth.PrepareLibraries(new[] { "Fresh clone guidance." }, null, ok=>prepared=ok, onlyVoice: VoiceCondition.SelfSimilar));
+            Check(prepared && synth.LibraryReady && provider.Calls > 0 &&
+                SessionConfig.VoiceForRound(0) == VoiceCondition.SelfSimilar &&
+                SessionConfig.VoiceForRound(39) == VoiceCondition.SelfSimilar,
+                "Successful fresh enrollment prepares clone-only audio throughout quick-test block");
+            string newCloneRun = SessionConfig.BeginRun();
+            Check(File.ReadAllText(Path.Combine(newCloneRun, "session-mode-v1.txt")).Contains("mode=new_clone_quick_test\nstudy_data=false"),
+                "Fresh-clone quick-test recording is identified separately and excluded from study data");
+            SessionConfig.ResetForNewParticipant();
+            Check(!SessionConfig.DevelopmentQuickTest && !SessionConfig.NewCloneQuickTest && SessionConfig.SelfSimilarVoiceId=="" &&
+                ChallengeSet.RoundCount == 80 && SessionConfig.ParticipantId == "",
+                "new participant restores the full study schedule and disables shortcut");
+            Check(!SessionConfig.JevLedGuidance && !SessionConfig.TrySetJevLedGuidance(true),
+                "New participant reset clears development policy and study cannot enable it");
+            SessionConfig.ParticipantId = "DEV_NEUTRAL"; // Same seed: mode must still invalidate cached geometry.
+            var studyPlan = ChallengeSet.Rounds;
+            Check(studyPlan[0].startPlane == ChallengeSet.PracticeRound(0).targetPlane,
+                "study still starts from the last practice target");
+            for (int i = 0; i < quickPlan.Length; i++)
+            {
+                Check(quickPlan[i].SignedTheta == studyPlan[i].SignedTheta,
+                    "quick-test origin preserves every planned signed theta");
+                if (i > 0) Check(quickPlan[i].startPlane == quickPlan[i - 1].targetPlane,
+                    "quick-test transitions continue from each actual prior target");
+            }
+            SessionConfig.ConfigureNeutralQuickTest();
+            Check(ChallengeSet.Rounds[0].startPlane == 0, "re-entering quick test resets cached starting geometry");
+            SessionConfig.ResetForNewParticipant();
+            Console.WriteLine("PASS: voice isolation, cache, audio failures, neutral quick-test preparation, development identity and schedule/reset.");
         }
         finally { Directory.Delete(root, true); }
     }
@@ -643,9 +1237,10 @@ class VoiceIsolationChecks
 
 namespace UnityEngine
 {
-    public static class Time { public static float unscaledTime; }
+    public class SerializeField : Attribute { }
+    public static class Time { public static float unscaledTime; public static double realtimeSinceStartupAsDouble => unscaledTime; }
     public struct Color { public float r, g, b, a; public Color(float r,float g,float b,float a=1) { this.r=r;this.g=g;this.b=b;this.a=a; } }
-    public static class Mathf { public static int Clamp(int value,int min,int max) => Math.Min(max, Math.Max(min,value)); }
+    public static class Mathf { public static float Lerp(float a,float b,float t) => a + (b-a) * Math.Min(1,Math.Max(0,t)); public static int Clamp(int value,int min,int max) => Math.Min(max, Math.Max(min,value)); }
     public class MonoBehaviour
     {
         protected static void Destroy(object value) { }
@@ -657,8 +1252,16 @@ namespace UnityEngine
     }
     public class GameObject { public T AddComponent<T>() where T : new() => new T(); }
     public class Coroutine { }
+    public class AsyncOperation { public bool isDone = true; }
+    public class WWWForm
+    {
+        public System.Collections.Generic.Dictionary<string,string> Fields = new System.Collections.Generic.Dictionary<string,string>();
+        public byte[] Audio;
+        public void AddField(string key,string value) { Fields[key]=value; }
+        public void AddBinaryData(string key,byte[] bytes,string filename,string type) { Audio=bytes; }
+    }
     public class WaitForSeconds { public static int Count; public WaitForSeconds(float seconds) { Count++; } }
-    public class AudioSource { public float spatialBlend, volume, pitch; public bool playOnAwake; int playPolls; public bool HoldPlayback; public int StopCalls; public bool isPlaying => HoldPlayback || playPolls-- > 0; public AudioClip clip; public void Play() { playPolls = 2; } public void Stop() { playPolls = 0; HoldPlayback = false; StopCalls++; } }
+    public class AudioSource { public float spatialBlend, volume, pitch, time; public float VolumeAtStop; public bool playOnAwake; int playPolls; public bool HoldPlayback; public int StopCalls; public bool isPlaying => HoldPlayback || playPolls-- > 0; public AudioClip clip; public void Play() { playPolls = 2; } public void Finish() { playPolls = 0; HoldPlayback = false; } public void Stop() { VolumeAtStop = volume; playPolls = 0; HoldPlayback = false; StopCalls++; } }
     public class AudioClip
     {
         public float length = 1f; public int samples => m_Data.Length / channels; public int channels = 1; public int frequency = 48000;
@@ -697,29 +1300,47 @@ namespace UnityEngine.Networking
     {
         public static System.Collections.Generic.List<string> Requests = new System.Collections.Generic.List<string>();
         public static System.Collections.Generic.List<string> RequestBodies = new System.Collections.Generic.List<string>();
-        public enum Result { Success }
+        public enum Result { Success, ProtocolError }
+        public static readonly System.Collections.Generic.Queue<long> StatusCodes = new System.Collections.Generic.Queue<long>();
+        public static string ContentType = "audio/mpeg";
+        public static bool HoldRequests;
+        public static int Aborts;
+        public static string VerificationResponse="{}";
+        public static UnityEngine.WWWForm LastForm;
         public Result result; public string error; public long responseCode; public int timeout;
         public UploadHandlerRaw uploadHandler; public DownloadHandlerBuffer downloadHandler = new DownloadHandlerBuffer();
         string url;
+        public UnityEngine.WWWForm Form;
+        public static UnityWebRequest Post(string url,UnityEngine.WWWForm form)
+        { LastForm=form; return new UnityWebRequest(url,"POST") { Form=form,downloadHandler=new DownloadHandlerBuffer {text=VerificationResponse} }; }
         public UnityWebRequest(string url, string method) { this.url = url; }
         public void SetRequestHeader(string k, string v) { }
+        public string GetResponseHeader(string k) => ContentType;
+        public void Abort() { Aborts++; }
         public IEnumerator SendWebRequest() {
             Requests.Add(url);
+            responseCode=StatusCodes.Count>0?StatusCodes.Dequeue():200;
+            result=responseCode>=400?Result.ProtocolError:Result.Success;
             if (uploadHandler != null && uploadHandler.Bytes != null)
                 RequestBodies.Add(System.Text.Encoding.UTF8.GetString(uploadHandler.Bytes));
-            yield return null;
+            if(HoldRequests) yield return new UnityWebRequestAsyncOperation { isDone=false,webRequest=this };
+            else yield return null;
         }
         public void Dispose() { }
     }
+    public class UnityWebRequestAsyncOperation : UnityEngine.AsyncOperation { public UnityWebRequest webRequest; }
     public static class UnityWebRequestMultimedia { public static UnityWebRequest GetAudioClip(string path, AudioType type) => new UnityWebRequest(path, "GET"); }
     public static class DownloadHandlerAudioClip { public static bool Corrupt, AlternatePeak, ForceSkewed, Quiet; static int count; public static AudioClip GetContent(UnityWebRequest request) => Corrupt ? null : new AudioClip(ForceSkewed || (AlternatePeak && count++ % 2 == 0), Quiet); }
 }
-public class VoxtralClient
+public class TrialReplayRecorder { public void PrepareVoiceClip(UnityEngine.AudioClip clip) { } }
+
+public class ElevenLabsVoiceClient
 {
+    public const string Model = "eleven_turbo_v2_5";
     public bool HasKey = true; public byte[] Audio; public int Calls; public string Error = "simulated failure";
     public System.Collections.Generic.List<string> Texts = new System.Collections.Generic.List<string>();
     public void Initialize(string key) { }
-    public IEnumerator Synthesize(string text, string voice, Action<byte[]> ok, Action<string> error)
+    public IEnumerator Synthesize(string text, string voice, Action<byte[]> ok, Action<string> error, int repairAttempt = 0)
     {
         Calls++; Texts.Add(text); yield return null;
         if (Audio == null) error(Error); else ok(Audio);

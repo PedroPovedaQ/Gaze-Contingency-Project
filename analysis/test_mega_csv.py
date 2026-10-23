@@ -4,10 +4,36 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from mega_csv import export
+from mega_csv import export, replay_rows
 
 
 class MegaCSVTests(unittest.TestCase):
+    def test_replay_reader_rejects_malformed_types_before_deriving_metrics(self):
+        path = self.package/'recording.jsonl'
+        baseline = [json.loads(line) for line in path.read_text().splitlines()]
+        for index, field, value in ((0, 'schema', True), (1, 'sequence', 1.5), (1, 'sequence', True),
+                                     (1, 'time', True), (2, 'headTracked', True), (2, 'gazeTracked', '1'),
+                                     (2, 'gazeTracked', 2), (2, 'searchActive', 'false'),
+                                     (2, 'headAvailable', 1), (3, 'correct', 'false'),
+                                     (4, 'complete', 'false'), (2, 'headPosition', {'x':float('nan')})):
+            with self.subTest(field=field, value=value):
+                rows = [dict(r) for r in baseline]
+                rows[index][field] = value
+                path.write_text(''.join(json.dumps(r)+'\n' for r in rows))
+                with self.assertRaises(ValueError):
+                    list(replay_rows(path, []))
+        # Missing or actual false completion stays explicit incomplete evidence.
+        for complete in (False, None):
+            rows = [dict(r) for r in baseline]
+            if complete is None:
+                rows[-1].pop('complete')
+            else:
+                rows[-1]['complete'] = complete
+            path.write_text(''.join(json.dumps(r)+'\n' for r in rows))
+            warnings = []
+            self.assertEqual(len(list(replay_rows(path, warnings))), len(rows))
+            self.assertTrue(any('incomplete' in warning for warning in warnings))
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)

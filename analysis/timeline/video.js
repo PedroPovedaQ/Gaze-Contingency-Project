@@ -1,6 +1,6 @@
  // Video and telemetry use the continuous recording clock, not searchSeconds.
  // Positive offset means the camera started after replay recording began.
- const video=el('video'), runKey=JSON.stringify([data.participant,data.utc]);
+ const video=el('video'), runKey=JSON.stringify(data.recordingId?[data.participant,data.utc,data.recordingId]:[data.participant,data.utc]);
  let videoFile=null, videoURL=null, offset=null, videoFailed=false, playPending=false, videoGeneration=0;
  const setVideoStatus=message=>{el('video-status').textContent=message;};
  const fileIdentity=file=>({name:file.name,size:file.size,lastModified:file.lastModified});

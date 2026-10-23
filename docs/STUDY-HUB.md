@@ -1,13 +1,13 @@
 # Study hub
 
-Updated **September 22, 2026**. Start here for the current study plan, questionnaires and research sources. [Latest meeting reconciliation: progress, owners and next steps](meeting-reconciliation-2026-09-22.md).
+Updated **October 20, 2026**. Current: [final-survey decision and handoff reconciliation](protocol/2026-10-20-final-survey-decision.md). **Qualtrics on hold.** Start with the [current implementation audit and outstanding checks](protocol/2026-10-20-alignment-audit.md). For historical context, see the [meeting decisions and task map](meeting-reconciliation-2026-09-30.md) and [September 28 data/guidance requirements](meeting-reconciliation-2026-09-28.md). Older implementation snapshots below are dated evidence, not current runtime verification.
 
 **Current status:** working beta; protocol and survey forms are being finalized. IRB not yet submitted, per the researcher. This page separates current planning from implemented behavior and older documents.
 
 | I want to… | Open |
 |---|---|
-| Prepare a rehearsal | [Annotated run sheet](protocol/experimenter-run-sheet.md) · [Earlier Word edition](protocol/Gaze_Search_Experimenter_Run_Sheet.docx) — #27 must reconcile generic/dwell wording before using a revised script |
-| Edit the formatted meeting run sheet | [Overleaf project](https://www.overleaf.com/project/6a84bc097073254fbca6985b) · [Standalone LaTeX and PDF](protocol/overleaf/README.md) — annotated review edition, September 22 |
+| Prepare a rehearsal | [Current editable run sheet](protocol/overleaf/experimenter-run-sheet.tex) · [Headset QA](voice-study-qa.md) — locally reconciled and compiled; operator rehearsal and final instrument/consent review remain |
+| Edit the formatted meeting run sheet | [Overleaf project](https://www.overleaf.com/project/6a84bc097073254fbca6985b) · [Standalone LaTeX and PDF](protocol/overleaf/README.md) — all 19 live Overleaf files verified against local sources at `f9f49e4` |
 | Understand the current experiment | [Protocol at a glance](#current-protocol-at-a-glance) · [Confirmed decisions and implementation gaps](thesis-study-alignment.md) |
 | See every survey | [Survey shelf](#survey-shelf) |
 | See everything we measure | [Measures register](measures-register.md) — timing, scoring, roles, data sources and missing implementation |
@@ -15,28 +15,25 @@ Updated **September 22, 2026**. Start here for the current study plan, questionn
 | Know what to do next | [GitHub delivery board](https://github.com/users/PedroPovedaQ/projects/2) · [Epic #19](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/19) |
 | Check what the app actually does | [Eight-plane beta](eight-plane-beta.md) · [Round flow](guide/02-gameplay-round-flow.md) · [Telemetry](guide/03-gaze-agent-and-telemetry.md) |
 
+[Current procedure figure (SVG)](protocol/overleaf/study-procedure-current.svg) · [PDF](protocol/overleaf/study-procedure-current.pdf) · [Runtime/data-flow diagram](diagram.md). These replace the old dwell/table and 60-trial graphics for planning; they are not protocol approval.
+
 ## Current protocol at a glance
 
-**Protocol proposal — current researcher direction:** seat the participant at the center of the search field and have them rotate to find objects. Compare the participant's explicitly **preferred voice** with their **self-similar voice**, in two counterbalanced blocks. Both voices provide gaze-contingent warmer/colder guidance. Gaze is measured independently; **controller ray + trigger selects**. Voice preparation uses cloud services. This supersedes arbitrary generic-voice and gaze-dwell requirements, but does not change the beta by itself.
+**Protocol proposal — current researcher direction:** two counterbalanced preferred/self-similar voice blocks, **40 measured trials each** plus one practice trial. The agent knows the target; the participant discovers it through horizontal guidance to the correct wall, then within-wall up/down guidance, and selects with the **right controller ray + trigger**. Target identity stays out of participant speech/UI.
 
-**Protocol proposal — session flow:**
+Both voices will use shared participant-directed commands (“turn left,” “look slightly up”), short conversational variants and less silent contextual assistance. Setup will offer **6–8 candidates per chosen gender** and show `Loading...` during normal processing. Correct selection will receive a chime and varied reinforcement from the active voice. Extra cloned-voice pitch/personality remains an **Open decision** to pilot, with voice-identity/style confounds documented.
 
-1. Consent, background questions and baseline symptom check.
-2. Early voice sample/cloning and curated preferred-voice previews, every candidate's rating/rank and saved exact voice identity; #24 defines necessary exposure.
-3. Headset fitting, built-in eye calibration, readability/custom validation and fixed-front reference; researcher delivers task instructions.
-4. Short practice for search, controller selection, target repetition and tracking. Two practice trials are provisional; voice exposure and readiness criterion remain open.
-5. First voice block. Each trial: **return to fixed front → hear target → reveal objects → rotate/search with warmer/colder hints → controller ray/trigger selects target**. Provisional schedule: 30 trials per voice, 60 measured plus two practice.
-6. External block-specific questionnaires and break up to five minutes. Proposed battery: NASA-TLX, IMI, selected Guo agent-perception measures, separate voice/accent similarity and liking ratings, and technical checks. Final items/order and one TLX collection route remain open.
-7. Re-don headset, revalidate tracking and alignment to the same front, then complete the second voice block and its questionnaires.
-8. Post-exposure symptoms, voice preference, final interview and debrief. Verify files and survey joins.
+**Protocol proposal — session flow:** consent/background/SSQ; preferred-voice auditions and natural-voice recording; headset calibration/validation; one practice trial using the first assigned voice; first 40-trial voice block; rest/comfort/tracking check; second 40-trial block; headset removal and final SSQ; final questionnaires separately referring to each voice block; comparative preference and open-first debrief. No questionnaire between blocks.
 
-**Implemented on audited v2 (`6457c1f`):** the beta has eight planes at 45-degree intervals, seven objects per plane (56 total), two practice trials and 14 measured trials in two neutral/self-similar voice blocks. Selection remains gaze dwell; the comparator is a male/female neutral profile. Eight starter clips load before remaining audio prepares in the background. The shared script modes are merged.
+**Data contract:** one performance/subjective CSV per trial plus separate motion/reconstruction data, joined by stable IDs/timestamps. Preserve raw events, objects and audio/video references. Block ratings repeated in trial rows retain their original scope.
 
-**Implementation gaps:** preferred-voice evaluations (#33), controller selection/repeat (#34), fixed-front reset and 30+30 schedule (#10/#13), external survey gates, calibration metadata, canonical trial rows and completion validation. The final shared [voice script mode](voice-script-pilot.md) still needs selection. Replay work is on a separate local branch, not on audited `v2`. See the [evidence table](meeting-reconciliation-2026-09-22.md#progress-actually-on-v2).
+**Implemented locally, hardware acceptance pending:** the app now has 40+40 measured trials, hidden-target shared commands, horizontal/fine/vertical guidance, six [voice choices](voice-choices.md) per gender, right-controller controls and a shared validity-aware gaze stream. [Trial CSV export](trial-performance-csv.md) describes the post-session exporter. See the [current system overview](guide/01-system-overview.md) and [morning evidence/checklist](overnight/2026-10-01-morning-verification.md). Meeting decisions are not proof that all runtime behavior is implemented. Earlier September 22 v2/dwell/14-round and 30+30 planning descriptions are superseded for the current study design.
 
-**Open decisions:** candidate matching/scales/ranking/exposure; trigger press versus hold and repeat mapping; first-gaze rule and calibration validation; practice policy; 30-per-voice angle allocation; shared wording; survey selection; primary outcome and sample justification; timeout and actual pilot date. See the [decision register](meeting-reconciliation-2026-09-22.md#open-decision-register).
+**Open decisions:** headset audition/acceptance of the implemented six-per-gender catalog, cadence and spatial thresholds, optional prosody/treatment comparability, primary outcomes and power/sensitivity, final-survey burden and retrospective recall, calibration acceptance and hardware verification. Existing tasks and ownership are in the [September 30 task map](meeting-reconciliation-2026-09-30.md#existing-task-ownership).
 
-[Current decision detail](thesis-study-alignment.md) is the best companion to this summary. The [long procedure](experiment-procedure.md) and [IRB protocol source](irb/source/protocol.md) still contain historical sections and require reconciliation. They are not frozen operator scripts.
+**Power planning progress, October 1:** a [reproducible sensitivity report](voice-power-sensitivity.md) compares participant counts and 10 versus 40 trials per voice using explicit synthetic variance/correlation/missingness assumptions. It provides analytical benchmarks, simulation uncertainty and bias checks, and recruitment-retention scenarios. Final outcome, meaningful effect, model, sample size and missingness policy remain open; this is not evidence that 40+40 is adequately powered.
+
+The [long procedure](experiment-procedure.md) now separates the current implementation from historical decisions; the [local run sheet](protocol/overleaf/experimenter-run-sheet.tex) is reconciled and compiles. The October 20 Overleaf/local reconciliation covers the current protocol and survey documents. Legacy rendered [IRB sources](irb/source/protocol.md) and submission packets still require a separately reviewed rebuild; these notes do not claim an approved IRB packet.
 
 ## Survey shelf
 
@@ -44,17 +41,17 @@ Updated **September 22, 2026**. Start here for the current study plan, questionn
 
 | Survey / instrument | Status for our study | Read / download |
 |---|---|---|
-| **NASA-TLX** — workload | Included, after each voice block. Finalize documented response range and scoring. | [Questionnaire source](irb/source/questionnaires.md#raw-nasa-task-load-index-after-each-block) · [Existing PDF draft](irb/submission/02_NASA-TLX.pdf) |
-| **IMI** — motivation and activity experience | Included. Proposed four subscales: interest/enjoyment, effort/importance, pressure/tension, value/usefulness. Final form open. | [Official complete instrument PDF](../resources/surveys/imi-complete.pdf) · [Our selection/scoring plan](measures-register.md#imi-specification-and-source-transfer) · [Kao reference paper](../resources/surveys/kao-2021-self-similar-avatar-voice.pdf) |
-| **Guo et al. Table A1** — agent perception | Added to planning. Full bank preserved: 42 ratings + one open response. Selection and voice-agent adaptations open. | [All questions and original references](../resources/surveys/guo-2024-survey.md) · [CSV item bank](../resources/surveys/guo-2024-table-a1-items.csv) · [Paper PDF, Table A1 on p. 23](../resources/surveys/guo-2024-collaborating-with-my-doppelganger.pdf) |
-| **Voice similarity and individual voice ratings** | Included; final items and overlap with Guo survey need review. | [Source draft](irb/source/questionnaires.md#post-block-assistance-and-voice-check) · [Existing PDF draft](irb/submission/03_Assistance_and_Voice_Ratings.pdf) |
-| **Final preference / interview** | Included; update legacy comparison questions to two voices. | [Source draft](irb/source/questionnaires.md#post-session-comparison-legacy-draft--revise-for-voice-only-design) · [Existing PDF draft](irb/submission/05_Post-Session_Comparison.pdf) |
-| **Background / prior experience** | Retained as protocol proposal, once before the task. | [Source draft](irb/source/questionnaires.md#background-and-prior-experience-once-per-participant) · [Existing PDF draft](irb/submission/01_Demographics_and_Prior_Experience.pdf) |
+| **NASA-TLX** — workload | Final survey, separately referencing each block; documented 0–10 adaptation and complete unweighted mean. | [Questionnaire source](irb/source/questionnaires.md) · [Existing PDF draft](irb/submission/02_NASA-TLX.pdf) |
+| **IMI** — motivation and activity experience | Selected 24-item four-subscale form; final retrospective sets for each block. | [Official complete instrument PDF](../resources/surveys/imi-complete.pdf) · [Our selection/scoring plan](measures-register.md#imi-specification-and-source-transfer) · [Kao reference paper](../resources/surveys/kao-2021-self-similar-avatar-voice.pdf) |
+| **Guo et al. Table A1** — agent perception | Selected 21 items: Q1–6, Q13–18, Q20–22, Q37–42; final retrospective sets. Q20–22 analyzed individually. | [All questions and original references](../resources/surveys/guo-2024-survey.md) · [CSV item bank](../resources/surveys/guo-2024-table-a1-items.csv) · [Paper PDF, Table A1 on p. 23](../resources/surveys/guo-2024-collaborating-with-my-doppelganger.pdf) |
+| **Voice similarity and individual voice ratings** | Selected 14 custom numeric ratings per referenced block, collected at the end; accent questions removed. | [Source draft](irb/source/questionnaires.md) · [Existing PDF draft](irb/submission/03_Assistance_and_Voice_Ratings.pdf) |
+| **Final preference / interview** | Included; update legacy comparison questions to two voices. | [Source draft](irb/source/questionnaires.md) · [Existing PDF draft](irb/submission/05_Post-Session_Comparison.pdf) |
+| **Background / prior experience** | Retained as protocol proposal, once before the task. | [Source draft](irb/source/questionnaires.md) · [Existing PDF draft](irb/submission/01_Demographics_and_Prior_Experience.pdf) |
 | **SSQ** — simulator sickness | Retained as safety/comfort proposal; baseline and post-exposure. | [Questionnaire source](irb/source/questionnaires.md) · [Existing PDF draft](irb/submission/06_Simulator_Sickness_Questionnaire.pdf) |
-| **Legacy eeriness differential** | Candidate; not interchangeable with Guo Q20–Q22. Avoid duplication; original anchors need verification. | [Source draft](irb/source/questionnaires.md#perceived-eeriness-legacy-candidate--exact-form-open) · [Existing PDF draft](irb/submission/04_Perceived_Eeriness.pdf) |
+| **Legacy eeriness differential** | Candidate; not interchangeable with Guo Q20–Q22. Avoid duplication; original anchors need verification. | [Source draft](irb/source/questionnaires.md) · [Existing PDF draft](irb/submission/04_Perceived_Eeriness.pdf) |
 | **IPQ presence** | On hold; not reconfirmed for passthrough MR. | [Legacy PDF](irb/submission/07_Presence.pdf) · [Official item list](https://igroup.org/pq/ipq/download.php) |
 
-**Survey burden:** the proposed full IMI selection (24) + full Guo rating bank (42) + TLX (6) totals **72 ratings per block**, before other checks. These are resources to select from deliberately; the final battery has not been frozen.
+**Survey burden:** 65 numeric ratings per referenced block, **130 across both final-survey sets**, plus technical checks, optional text and final SSQ/comparison. [Current complete questions](protocol/overleaf/survey-questions-by-block.tex) and [scoring](protocol/overleaf/survey-instruments.tex). Pilot burden and retrospective recall. Legacy PDF forms below are historical, not current collection materials.
 
 [Combined questionnaire source](irb/source/questionnaires.md) · [Survey resource index and provenance](../resources/surveys/README.md) · [Survey implementation issue #26](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/26).
 

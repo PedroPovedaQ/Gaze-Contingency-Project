@@ -75,8 +75,8 @@ fi
 
 # If the editor is already open for this project, batchmode cannot acquire the lock.
 # Fall back to parsing the most recent compiler output from the live Editor.log.
-if [[ -f "$ROOT_DIR/Temp/UnityLockfile" ]]; then
-  echo "Unity lockfile detected. Checking live Editor.log instead of batchmode..."
+if [[ -f "$ROOT_DIR/Temp/UnityLockfile" ]] && lsof -t "$ROOT_DIR/Temp/UnityLockfile" >/dev/null 2>&1; then
+  echo "Unity holds this project lock. Checking live Editor.log instead of batchmode..."
   if print_recent_editor_errors "$EDITOR_LOG_MAC"; then
     echo "Unity compile check passed (Editor.log)."
     exit 0

@@ -76,7 +76,7 @@ public static void BuildAndRunAndroidMenu()
 }
 ```
 
-The build uses the enabled scenes from Build Settings and launches the player on device:
+The build uses the enabled scenes from Build Settings. The Codex command selects a verified Focus Vision before building, preferring Wi-Fi; it then installs and launches with explicit `adb -s SERIAL` commands. It no longer uses Unity's remembered/default run device:
 
 ```csharp
 var options = new BuildPlayerOptions
@@ -84,7 +84,7 @@ var options = new BuildPlayerOptions
     scenes = enabledScenes,
     target = BuildTarget.Android,
     locationPathName = apkPath,
-    options = BuildOptions.AutoRunPlayer
+    options = BuildOptions.None // CodexBuildTools deploys explicitly after success.
 };
 ```
 
@@ -103,6 +103,23 @@ This script:
 - Starts the Android build and deploy flow on the connected device.
 
 The script is the preferred end-of-edit action in this repo.
+
+### Wireless deployment (implemented October 20, 2026)
+
+No cable is needed while the headset is reachable through wireless ADB. Keep the headset awake and on a network reachable from the Mac. `scripts/headset-adb.py` prefers an online Focus Vision Wi-Fi connection, remembers its endpoint under ignored `UserSettings/headset-adb-wifi.txt`, and attempts to reconnect it next time. A single connected USB Focus Vision is a fallback. Multiple candidates require an explicit selection; phones, offline and unauthorized devices are not used. No shared ADB-server reset is performed, preserving Trial Review connections.
+
+```bash
+# Verify/reconnect without installing:
+python3 scripts/headset-adb.py
+# Specify a changed address, or choose between headsets:
+python3 scripts/headset-adb.py --serial 192.168.1.208:5555
+# Reinstall an already-built APK without rebuilding:
+python3 scripts/headset-adb.py --apk Builds/CodexAndroid/codex_build.apk --package com.DefaultCompany.MixedRealityTemplate
+```
+
+The normal refocus script and the Unity Codex Build And Run menu use this helper. The build pins the selected serial for installation and launch; a lost connection fails deployment and leaves the APK available for retry. Python 3 and Android SDK platform-tools are required on the build Mac. Set `ADB` to an alternate executable path if needed.
+
+If the headset stops listening after reboot or its IP changes, reconnect using its current address. For classic TCP ADB, initial enablement may require an authorized USB connection: `adb -s USB_SERIAL tcpip 5555`, then `adb connect HEADSET_IP:5555`. Headsets exposing Android's Wireless debugging pairing UI can instead use `adb pair IP:PAIRING_PORT` and `adb connect IP:DEBUG_PORT`. Pairing and debug ports may differ. This does not bypass headset authorization. See [Android's official ADB connection instructions](https://developer.android.com/tools/adb#connect-to-a-device-over-wi-fi).
 
 ## Where the data goes
 
@@ -354,10 +371,10 @@ Fix:
 
 Check:
 
-1. USB cable and power.
-2. Developer mode on the Vive Focus Vision.
-3. USB debugging accepted on the headset.
-4. `adb devices` lists the device as `device`, not `unauthorized`.
+1. Headset awake, with Wi-Fi reachable from the Mac; run `python3 scripts/headset-adb.py`.
+2. Developer mode and ADB debugging enabled on the Vive Focus Vision.
+3. Debugging authorization accepted on the headset. If wireless listening was reset, use the setup steps above.
+4. `adb devices -l` lists the chosen endpoint as `device`, not `offline` or `unauthorized`.
 
 Example:
 

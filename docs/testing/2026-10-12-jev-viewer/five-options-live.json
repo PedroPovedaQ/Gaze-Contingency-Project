@@ -1,0 +1,30 @@
+[
+  {
+    "gaze_valid": true,
+    "elapsed_ms": 826,
+    "offered_choice": true,
+    "transmission_correct": true,
+    "probability_count": 5
+  },
+  {
+    "gaze_valid": false,
+    "elapsed_ms": 335,
+    "offered_choice": true,
+    "transmission_correct": true,
+    "probability_count": 5
+  },
+  {
+    "gaze_valid": true,
+    "elapsed_ms": 342,
+    "offered_choice": true,
+    "transmission_correct": true,
+    "probability_count": 5
+  },
+  {
+    "gaze_valid": false,
+    "elapsed_ms": 387,
+    "offered_choice": true,
+    "transmission_correct": true,
+    "probability_count": 5
+  }
+]

@@ -1,0 +1,2761 @@
+{
+  "measurement": "Mac HTTP via production C# adapter; synthetic states; no audio or participant behavior",
+  "rows": [
+    {
+      "case": "right_progress",
+      "repeat": 0,
+      "arm": "baseline",
+      "elapsed_ms": 421.5029,
+      "choice": null,
+      "speak": null,
+      "error": "TaskCanceledException",
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": 90.0,
+            "pitchErrorDegrees": 0.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Turning",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look right.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look right."
+      },
+      "offered": [
+        {
+          "id": "orient",
+          "text": "Look right.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "right",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep going to the right.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "right",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "right_progress",
+      "repeat": 0,
+      "arm": "actions",
+      "elapsed_ms": 264.623,
+      "choice": "encourage",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": 90.0,
+            "pitchErrorDegrees": 0.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Turning",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look right.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look right."
+      },
+      "offered": [
+        {
+          "id": "orient",
+          "text": "Look right.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "right",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep going to the right.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "right",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "left_progress",
+      "repeat": 0,
+      "arm": "baseline",
+      "elapsed_ms": 149.501,
+      "choice": "Look left.",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": -90.0,
+            "pitchErrorDegrees": 0.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Turning",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look left.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look left."
+      },
+      "offered": [
+        {
+          "id": "orient",
+          "text": "Look left.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "left",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep going to the left.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "left",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "left_progress",
+      "repeat": 0,
+      "arm": "actions",
+      "elapsed_ms": 187.39530000000002,
+      "choice": "encourage",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": -90.0,
+            "pitchErrorDegrees": 0.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Turning",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look left.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look left."
+      },
+      "offered": [
+        {
+          "id": "orient",
+          "text": "Look left.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "left",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep going to the left.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "left",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "up_progress",
+      "repeat": 0,
+      "arm": "baseline",
+      "elapsed_ms": 401.64860000000004,
+      "choice": null,
+      "speak": null,
+      "error": "TaskCanceledException",
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": true,
+            "yawErrorDegrees": 0.0,
+            "pitchErrorDegrees": 20.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Refining",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look higher.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look higher."
+      },
+      "offered": [
+        {
+          "id": "refine",
+          "text": "Look higher.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "none",
+            "vertical": "up",
+            "magnitude": "medium",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep looking up.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "none",
+            "vertical": "up",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "up_progress",
+      "repeat": 0,
+      "arm": "actions",
+      "elapsed_ms": 353.41470000000004,
+      "choice": "encourage",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": true,
+            "yawErrorDegrees": 0.0,
+            "pitchErrorDegrees": 20.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Refining",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look higher.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look higher."
+      },
+      "offered": [
+        {
+          "id": "refine",
+          "text": "Look higher.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "none",
+            "vertical": "up",
+            "magnitude": "medium",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep looking up.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "none",
+            "vertical": "up",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "down_progress",
+      "repeat": 0,
+      "arm": "baseline",
+      "elapsed_ms": 189.34470000000002,
+      "choice": "Look lower.",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": true,
+            "yawErrorDegrees": 0.0,
+            "pitchErrorDegrees": -20.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Refining",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look lower.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look lower."
+      },
+      "offered": [
+        {
+          "id": "refine",
+          "text": "Look lower.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "none",
+            "vertical": "down",
+            "magnitude": "medium",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep looking down.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "none",
+            "vertical": "down",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "down_progress",
+      "repeat": 0,
+      "arm": "actions",
+      "elapsed_ms": 160.92510000000001,
+      "choice": "encourage",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": true,
+            "yawErrorDegrees": 0.0,
+            "pitchErrorDegrees": -20.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Refining",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look lower.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look lower."
+      },
+      "offered": [
+        {
+          "id": "refine",
+          "text": "Look lower.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "none",
+            "vertical": "down",
+            "magnitude": "medium",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep looking down.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "none",
+            "vertical": "down",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "diagonal_progress",
+      "repeat": 0,
+      "arm": "baseline",
+      "elapsed_ms": 324.159,
+      "choice": "Look lower and left.",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": true,
+            "yawErrorDegrees": -15.0,
+            "pitchErrorDegrees": -20.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Refining",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look lower and left.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look lower and left."
+      },
+      "offered": [
+        {
+          "id": "refine",
+          "text": "Look lower and left.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "left",
+            "vertical": "down",
+            "magnitude": "medium",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep looking down and left.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "left",
+            "vertical": "down",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "diagonal_progress",
+      "repeat": 0,
+      "arm": "actions",
+      "elapsed_ms": 182.4583,
+      "choice": "encourage",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": true,
+            "yawErrorDegrees": -15.0,
+            "pitchErrorDegrees": -20.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Refining",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look lower and left.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look lower and left."
+      },
+      "offered": [
+        {
+          "id": "refine",
+          "text": "Look lower and left.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "left",
+            "vertical": "down",
+            "magnitude": "medium",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep looking down and left.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "left",
+            "vertical": "down",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "return_after_ack",
+      "repeat": 0,
+      "arm": "baseline",
+      "elapsed_ms": 130.4951,
+      "choice": "wait",
+      "speak": false,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": true,
+            "yawErrorDegrees": 0.0,
+            "pitchErrorDegrees": -20.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": true,
+            "targetAcknowledged": true,
+            "guidanceState": {
+              "phase": "Refining",
+              "allowedAction": "ReturnTarget",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Yep, that's it!",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 1.5,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Go back down."
+      },
+      "offered": [
+        {
+          "id": "correct",
+          "text": "Go back down.",
+          "tone": 0,
+          "metadata": {
+            "intent": "return_to_target",
+            "horizontal": "none",
+            "vertical": "down",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "verified_target_departure"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "refine",
+          "text": "Look lower.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "none",
+            "vertical": "down",
+            "magnitude": "medium",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "return_after_ack",
+      "repeat": 0,
+      "arm": "actions",
+      "elapsed_ms": 198.0196,
+      "choice": "correct",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": true,
+            "yawErrorDegrees": 0.0,
+            "pitchErrorDegrees": -20.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": true,
+            "targetAcknowledged": true,
+            "guidanceState": {
+              "phase": "Refining",
+              "allowedAction": "ReturnTarget",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Yep, that's it!",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 1.5,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Go back down."
+      },
+      "offered": [
+        {
+          "id": "correct",
+          "text": "Go back down.",
+          "tone": 0,
+          "metadata": {
+            "intent": "return_to_target",
+            "horizontal": "none",
+            "vertical": "down",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "verified_target_departure"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "refine",
+          "text": "Look lower.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "none",
+            "vertical": "down",
+            "magnitude": "medium",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "stationary",
+      "repeat": 0,
+      "arm": "baseline",
+      "elapsed_ms": 133.52,
+      "choice": "Look right.",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": 90.0,
+            "pitchErrorDegrees": 0.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Turning",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look right.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look right."
+      },
+      "offered": [
+        {
+          "id": "orient",
+          "text": "Look right.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "right",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "stationary",
+      "repeat": 0,
+      "arm": "actions",
+      "elapsed_ms": 127.2076,
+      "choice": "orient",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": 90.0,
+            "pitchErrorDegrees": 0.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Turning",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look right.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look right."
+      },
+      "offered": [
+        {
+          "id": "orient",
+          "text": "Look right.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "right",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "recent_repeat",
+      "repeat": 0,
+      "arm": "baseline",
+      "elapsed_ms": 125.42,
+      "choice": "wait",
+      "speak": false,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": 90.0,
+            "pitchErrorDegrees": 0.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Turning",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look right.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 0.4,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look right."
+      },
+      "offered": [
+        {
+          "id": "orient",
+          "text": "Look right.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "right",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "recent_repeat",
+      "repeat": 0,
+      "arm": "actions",
+      "elapsed_ms": 164.2389,
+      "choice": "wait",
+      "speak": false,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": 90.0,
+            "pitchErrorDegrees": 0.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Turning",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look right.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 0.4,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look right."
+      },
+      "offered": [
+        {
+          "id": "orient",
+          "text": "Look right.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "right",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "right_progress",
+      "repeat": 1,
+      "arm": "actions",
+      "elapsed_ms": 348.3541,
+      "choice": "encourage",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": 90.0,
+            "pitchErrorDegrees": 0.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Turning",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look right.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look right."
+      },
+      "offered": [
+        {
+          "id": "orient",
+          "text": "Look right.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "right",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep going to the right.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "right",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "right_progress",
+      "repeat": 1,
+      "arm": "baseline",
+      "elapsed_ms": 157.71,
+      "choice": "Look right.",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": 90.0,
+            "pitchErrorDegrees": 0.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Turning",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look right.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look right."
+      },
+      "offered": [
+        {
+          "id": "orient",
+          "text": "Look right.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "right",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep going to the right.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "right",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "left_progress",
+      "repeat": 1,
+      "arm": "actions",
+      "elapsed_ms": 146.4559,
+      "choice": "encourage",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": -90.0,
+            "pitchErrorDegrees": 0.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Turning",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look left.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look left."
+      },
+      "offered": [
+        {
+          "id": "orient",
+          "text": "Look left.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "left",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep going to the left.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "left",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "left_progress",
+      "repeat": 1,
+      "arm": "baseline",
+      "elapsed_ms": 183.55280000000002,
+      "choice": "Look left.",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": -90.0,
+            "pitchErrorDegrees": 0.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Turning",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look left.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look left."
+      },
+      "offered": [
+        {
+          "id": "orient",
+          "text": "Look left.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "left",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep going to the left.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "left",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "up_progress",
+      "repeat": 1,
+      "arm": "actions",
+      "elapsed_ms": 132.887,
+      "choice": "encourage",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": true,
+            "yawErrorDegrees": 0.0,
+            "pitchErrorDegrees": 20.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Refining",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look higher.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look higher."
+      },
+      "offered": [
+        {
+          "id": "refine",
+          "text": "Look higher.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "none",
+            "vertical": "up",
+            "magnitude": "medium",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep looking up.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "none",
+            "vertical": "up",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "up_progress",
+      "repeat": 1,
+      "arm": "baseline",
+      "elapsed_ms": 135.7406,
+      "choice": "Look higher.",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": true,
+            "yawErrorDegrees": 0.0,
+            "pitchErrorDegrees": 20.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Refining",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look higher.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look higher."
+      },
+      "offered": [
+        {
+          "id": "refine",
+          "text": "Look higher.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "none",
+            "vertical": "up",
+            "magnitude": "medium",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep looking up.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "none",
+            "vertical": "up",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "down_progress",
+      "repeat": 1,
+      "arm": "actions",
+      "elapsed_ms": 159.2657,
+      "choice": "encourage",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": true,
+            "yawErrorDegrees": 0.0,
+            "pitchErrorDegrees": -20.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Refining",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look lower.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look lower."
+      },
+      "offered": [
+        {
+          "id": "refine",
+          "text": "Look lower.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "none",
+            "vertical": "down",
+            "magnitude": "medium",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep looking down.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "none",
+            "vertical": "down",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "down_progress",
+      "repeat": 1,
+      "arm": "baseline",
+      "elapsed_ms": 125.06530000000001,
+      "choice": "Look lower.",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": true,
+            "yawErrorDegrees": 0.0,
+            "pitchErrorDegrees": -20.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Refining",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look lower.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look lower."
+      },
+      "offered": [
+        {
+          "id": "refine",
+          "text": "Look lower.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "none",
+            "vertical": "down",
+            "magnitude": "medium",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep looking down.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "none",
+            "vertical": "down",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "diagonal_progress",
+      "repeat": 1,
+      "arm": "actions",
+      "elapsed_ms": 189.854,
+      "choice": "encourage",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": true,
+            "yawErrorDegrees": -15.0,
+            "pitchErrorDegrees": -20.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Refining",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look lower and left.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look lower and left."
+      },
+      "offered": [
+        {
+          "id": "refine",
+          "text": "Look lower and left.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "left",
+            "vertical": "down",
+            "magnitude": "medium",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep looking down and left.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "left",
+            "vertical": "down",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "diagonal_progress",
+      "repeat": 1,
+      "arm": "baseline",
+      "elapsed_ms": 145.2425,
+      "choice": "Look lower and left.",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": true,
+            "yawErrorDegrees": -15.0,
+            "pitchErrorDegrees": -20.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Refining",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look lower and left.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look lower and left."
+      },
+      "offered": [
+        {
+          "id": "refine",
+          "text": "Look lower and left.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "left",
+            "vertical": "down",
+            "magnitude": "medium",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "encourage",
+          "text": "Keep looking down and left.",
+          "tone": 3,
+          "metadata": {
+            "intent": "progress_encouragement",
+            "horizontal": "left",
+            "vertical": "down",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [
+              "fresh_valid_gaze",
+              "same_direction",
+              "measured_progress"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "return_after_ack",
+      "repeat": 1,
+      "arm": "actions",
+      "elapsed_ms": 201.6808,
+      "choice": "correct",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": true,
+            "yawErrorDegrees": 0.0,
+            "pitchErrorDegrees": -20.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": true,
+            "targetAcknowledged": true,
+            "guidanceState": {
+              "phase": "Refining",
+              "allowedAction": "ReturnTarget",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Yep, that's it!",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 1.5,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Go back down."
+      },
+      "offered": [
+        {
+          "id": "correct",
+          "text": "Go back down.",
+          "tone": 0,
+          "metadata": {
+            "intent": "return_to_target",
+            "horizontal": "none",
+            "vertical": "down",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "verified_target_departure"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "refine",
+          "text": "Look lower.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "none",
+            "vertical": "down",
+            "magnitude": "medium",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "return_after_ack",
+      "repeat": 1,
+      "arm": "baseline",
+      "elapsed_ms": 132.2945,
+      "choice": "wait",
+      "speak": false,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": true,
+            "yawErrorDegrees": 0.0,
+            "pitchErrorDegrees": -20.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": true,
+            "targetAcknowledged": true,
+            "guidanceState": {
+              "phase": "Refining",
+              "allowedAction": "ReturnTarget",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Yep, that's it!",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 1.5,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Go back down."
+      },
+      "offered": [
+        {
+          "id": "correct",
+          "text": "Go back down.",
+          "tone": 0,
+          "metadata": {
+            "intent": "return_to_target",
+            "horizontal": "none",
+            "vertical": "down",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "verified_target_departure"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        },
+        {
+          "id": "refine",
+          "text": "Look lower.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "none",
+            "vertical": "down",
+            "magnitude": "medium",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "stationary",
+      "repeat": 1,
+      "arm": "actions",
+      "elapsed_ms": 171.03,
+      "choice": "orient",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": 90.0,
+            "pitchErrorDegrees": 0.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Turning",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look right.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look right."
+      },
+      "offered": [
+        {
+          "id": "orient",
+          "text": "Look right.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "right",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "stationary",
+      "repeat": 1,
+      "arm": "baseline",
+      "elapsed_ms": 135.03990000000002,
+      "choice": "Look right.",
+      "speak": true,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": 90.0,
+            "pitchErrorDegrees": 0.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Turning",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look right.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 4.0,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look right."
+      },
+      "offered": [
+        {
+          "id": "orient",
+          "text": "Look right.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "right",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "recent_repeat",
+      "repeat": 1,
+      "arm": "actions",
+      "elapsed_ms": 172.38230000000001,
+      "choice": "wait",
+      "speak": false,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": 90.0,
+            "pitchErrorDegrees": 0.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Turning",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look right.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 0.4,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look right."
+      },
+      "offered": [
+        {
+          "id": "orient",
+          "text": "Look right.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "right",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    },
+    {
+      "case": "recent_repeat",
+      "repeat": 1,
+      "arm": "baseline",
+      "elapsed_ms": 192.0731,
+      "choice": "wait",
+      "speak": false,
+      "error": null,
+      "state": {
+        "schema": "development-action-v1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": 90.0,
+            "pitchErrorDegrees": 0.0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "targetReturnPending": false,
+            "targetAcknowledged": false,
+            "guidanceState": {
+              "phase": "Turning",
+              "allowedAction": "Direction",
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false,
+            "recent_history": {
+              "spoken": [
+                {
+                  "text": "Look right.",
+                  "outcome": "completed"
+                }
+              ]
+            }
+          },
+          "seconds_since_speech_ended": 0.4,
+          "locally_qualified": true
+        },
+        "proposed_phrase": "Look right."
+      },
+      "offered": [
+        {
+          "id": "orient",
+          "text": "Look right.",
+          "tone": 0,
+          "metadata": {
+            "intent": "direction",
+            "horizontal": "right",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "replace_if_misleading",
+            "requires": [
+              "fresh_valid_gaze",
+              "qualified_direction"
+            ],
+            "canBeSupersededBy": [
+              "target_acquired",
+              "direction_reversed",
+              "target_wall_reached"
+            ]
+          }
+        }
+      ],
+      "actual_playback": false
+    }
+  ]
+}

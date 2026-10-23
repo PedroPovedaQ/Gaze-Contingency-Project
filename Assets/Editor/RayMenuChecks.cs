@@ -34,6 +34,11 @@ public static class RayMenuChecks
             var selector = host.AddComponent<VoiceModeSelector>();
             selector.Initialize(null);
             panel = (GameObject)Read(selector, "m_CanvasGO");
+            var card = panel.GetComponentInChildren<StudyPromptCard>();
+            Check(card != null && card.GetComponent<Image>().sprite != null, "Setup has the shared rounded coaching card");
+            Check(card.GetComponent<Image>().raycastTarget, "Card backgrounds retain controller ray blocking");
+            Call(selector, "Update");
+            Capture(panel, "/tmp/gaze-prompt-start.png");
             Check(panel.GetComponent<TrackedDeviceGraphicRaycaster>() != null, "Setup uses XRI tracked raycaster");
             typeof(VoiceModeSelector).GetField("m_PerspectiveChosen", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(selector, true);
             var phase = typeof(VoiceModeSelector).GetField("m_Phase", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -46,6 +51,8 @@ public static class RayMenuChecks
             Check(Read(selector, "m_Phase").ToString() == "ChoosingNeutral", "Pointer down alone cannot skip a screen");
             Click(male, events); Call(selector, "RefreshChoices");
             Check(ButtonIn(panel, "Eric") != null && ButtonIn(panel, "Roger") != null, "Male cards are available");
+            Check(panel.GetComponentsInChildren<VoicePreviewHover>().Length == 6, "All six male voices are auditionable");
+            Check(panel.GetComponentsInChildren<RawImage>().Length == 6, "Every male card has its own portrait");
             foreach (var image in panel.GetComponentsInChildren<RawImage>()) Check(image.texture != null, "Each card loads its avatar");
             var eric = ButtonIn(panel, "Eric");
             var pointer = new PointerEventData(events) { pointerId = 101 };
@@ -67,7 +74,7 @@ public static class RayMenuChecks
             Check(ButtonIn(panel, "Roger").GetComponent<Outline>().enabled && !eric.GetComponent<Outline>().enabled,
                 "Only chosen card has persistent selection border");
             Check(!ButtonIn(panel, "Confirm").interactable, "Unavailable audio disables Confirm");
-            Capture(panel);
+            Capture(panel, "/tmp/gaze-ray-menu-male-six.png");
             selector.PreviewNeutralVoiceOption(0);
             Check((int)Read(selector, "m_SelectedVoiceOption") == 1 && ButtonIn(panel, "Roger").GetComponent<Outline>().enabled,
                 "Previewing Eric preserves selected Roger border");
@@ -81,10 +88,28 @@ public static class RayMenuChecks
             selector.SelectGeneric(); Call(selector, "RefreshChoices");
             Click(ButtonIn(panel, "Female"), events); Call(selector, "RefreshChoices");
             Check(ButtonIn(panel, "Janet") != null && ButtonIn(panel, "Sarah") != null, "Female cards are available");
+            Check(panel.GetComponentsInChildren<VoicePreviewHover>().Length == 6, "All six female voices are auditionable");
+            Check(panel.GetComponentsInChildren<RawImage>().Length == 6, "Every female card has its own portrait");
             foreach (var image in panel.GetComponentsInChildren<RawImage>()) Check(image.texture != null, "Each female card loads its avatar");
             Check(ButtonIn(panel, "Back") != null && (int)Read(selector, "m_SelectedVoiceOption") == -1,
                 "Changing gender resets selection and restores Back");
-            var ui = host.AddComponent<FindObjectUI>(); ui.Initialize(); ui.ShowBlockSurvey(1);
+            Capture(panel, "/tmp/gaze-ray-menu-female-six.png");
+            var ui = host.AddComponent<FindObjectUI>(); ui.Initialize();
+            Capture((GameObject)Read(ui,"m_CanvasGO"), "/tmp/gaze-prompt-center.png");
+            ui.ShowObjective(Color.red, "Cube", 0, 10);
+            var status = (TMPro.TextMeshProUGUI)Read(ui, "m_ObjectiveText");
+            Check(status.text == "", "Timing panel does not reveal the target");
+            Check(((TMPro.TextMeshProUGUI)Read(ui, "m_TimerText")).enabled &&
+                ((TMPro.TextMeshProUGUI)Read(ui, "m_ProgressText")).enabled,
+                "Timer and trial progress remain visible");
+            ui.ShowRoundAudioWait(true);
+            Check(status.text.Contains("Listen to the agent") && !status.text.Contains("Cube"),
+                "Readiness status remains available without target identity");
+            ui.ShowWrongFeedback();
+            Check(status.text.Contains("Wrong object"), "Wrong-selection feedback remains available");
+            ui.ShowRoundAudioWait(false);
+            Check(status.text == "", "Clearing readiness does not restore target text");
+            ui.ShowBlockSurvey(1);
             var canvas = (GameObject)Read(ui, "m_CanvasGO");
             surveyCanvas = canvas; canvas.transform.SetParent(null);
             Check(canvas.GetComponent<TrackedDeviceGraphicRaycaster>() != null, "Survey uses XRI tracked raycaster");
@@ -99,7 +124,17 @@ public static class RayMenuChecks
             int finished = 0; ui.OnStatsDismissed += () => finished++;
             ui.ShowPostSurveyStats("Test stats"); Click(ButtonIn(canvas, "Finish"), events);
             Check(finished == 1, "Finish action is reachable through a visible button");
-            Debug.Log("[RayMenuChecks] PASS: hover audition without selection; no steady-hover/second-ray restarts; reentry retry; persistent exclusive border; Back becomes Confirm; no-audio gate; all four avatars; XRI raycasters; survey and finish. Preview: /tmp/gaze-ray-menu-preview.png");
+            ui.ShowBlockSurvey(1);
+            Capture((GameObject)Read(ui,"m_CanvasGO"), "/tmp/gaze-prompt-survey.png");
+            ui.ShowCompletion(80, 123, externalSurvey: true);
+            Check(!(bool)Read(ui, "m_ShowingNasaTlxSurvey") &&
+                !((GameObject)Read(ui, "m_NasaTlxSurveyRoot")).activeSelf,
+                "Study completion hides the legacy in-headset workload form");
+            Check(((TMPro.TextMeshProUGUI)Read(ui, "m_CompletionText")).text.Contains("final questionnaires"),
+                "Study completion hands off to final external questionnaires");
+            ui.ShowThankYouMessage();
+            Capture((GameObject)Read(ui,"m_CanvasGO"), "/tmp/gaze-prompt-thank-you.png");
+            Debug.Log("[RayMenuChecks] PASS: hover audition without selection; no steady-hover/second-ray restarts; reentry retry; persistent exclusive border; Back becomes Confirm; no-audio gate; twelve voice cards and portraits; XRI raycasters; survey and finish. Previews: /tmp/gaze-ray-menu-{male,female}-six.png");
         }
         finally
         {
@@ -110,7 +145,7 @@ public static class RayMenuChecks
         }
     }
 
-    static void Capture(GameObject panel)
+    static void Capture(GameObject panel, string output)
     {
         var cameraGO = new GameObject("MenuPreviewCamera", typeof(Camera));
         var camera = cameraGO.GetComponent<Camera>();
@@ -127,7 +162,7 @@ public static class RayMenuChecks
             camera.fieldOfView = 35; camera.targetTexture = target;
             Canvas.ForceUpdateCanvases(); camera.Render(); RenderTexture.active = target;
             image.ReadPixels(new Rect(0, 0, 1000, 800), 0, 0); image.Apply();
-            System.IO.File.WriteAllBytes("/tmp/gaze-ray-menu-preview.png", image.EncodeToPNG());
+            System.IO.File.WriteAllBytes(output, image.EncodeToPNG());
         }
         finally
         {

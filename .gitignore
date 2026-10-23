@@ -43,6 +43,7 @@ ExportedObj/
 sysinfo.txt
 
 # Builds
+/Builds/CodexAndroid/
 *.apk
 *.aab
 *.unitypackage

@@ -1,0 +1,362 @@
+[
+  {
+    "local_gate": true,
+    "effective_fade": false,
+    "id": "arrival_diagonal",
+    "round": 0,
+    "expected_fade": true,
+    "fade": null,
+    "failure": "deadline_finish",
+    "elapsed_ms": 405
+  },
+  {
+    "local_gate": true,
+    "effective_fade": true,
+    "id": "vertical_reverse_higher",
+    "round": 0,
+    "expected_fade": true,
+    "fade": true,
+    "failure": null,
+    "elapsed_ms": 345
+  },
+  {
+    "local_gate": true,
+    "effective_fade": false,
+    "id": "return_same_diagonal",
+    "round": 0,
+    "expected_fade": false,
+    "fade": null,
+    "failure": "deadline_finish",
+    "elapsed_ms": 417
+  },
+  {
+    "local_gate": true,
+    "effective_fade": true,
+    "id": "acquired_after_diagonal",
+    "round": 0,
+    "expected_fade": true,
+    "fade": true,
+    "failure": null,
+    "elapsed_ms": 324
+  },
+  {
+    "local_gate": true,
+    "effective_fade": true,
+    "id": "controller_acquired",
+    "round": 0,
+    "expected_fade": true,
+    "fade": true,
+    "failure": null,
+    "elapsed_ms": 243
+  },
+  {
+    "local_gate": false,
+    "effective_fade": false,
+    "id": "area_still_correct_lower",
+    "round": 0,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 195
+  },
+  {
+    "local_gate": false,
+    "effective_fade": false,
+    "id": "area_still_correct_right",
+    "round": 0,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 236
+  },
+  {
+    "local_gate": true,
+    "effective_fade": true,
+    "id": "wall_exit_reversal",
+    "round": 0,
+    "expected_fade": true,
+    "fade": true,
+    "failure": null,
+    "elapsed_ms": 275
+  },
+  {
+    "local_gate": true,
+    "effective_fade": false,
+    "id": "same_overshoot_lower",
+    "round": 0,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 194
+  },
+  {
+    "local_gate": false,
+    "effective_fade": false,
+    "id": "pointing_to_gaze",
+    "round": 0,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 209
+  },
+  {
+    "local_gate": false,
+    "effective_fade": false,
+    "id": "reminder_to_pointing",
+    "round": 0,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 247
+  },
+  {
+    "local_gate": false,
+    "effective_fade": false,
+    "id": "confirmation_to_reverse",
+    "round": 0,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 226
+  },
+  {
+    "local_gate": true,
+    "effective_fade": false,
+    "id": "arrival_diagonal",
+    "round": 1,
+    "expected_fade": true,
+    "fade": null,
+    "failure": "deadline_finish",
+    "elapsed_ms": 400
+  },
+  {
+    "local_gate": true,
+    "effective_fade": false,
+    "id": "vertical_reverse_higher",
+    "round": 1,
+    "expected_fade": true,
+    "fade": null,
+    "failure": "deadline_finish",
+    "elapsed_ms": 402
+  },
+  {
+    "local_gate": true,
+    "effective_fade": false,
+    "id": "return_same_diagonal",
+    "round": 1,
+    "expected_fade": false,
+    "fade": null,
+    "failure": "deadline_finish",
+    "elapsed_ms": 402
+  },
+  {
+    "local_gate": true,
+    "effective_fade": true,
+    "id": "acquired_after_diagonal",
+    "round": 1,
+    "expected_fade": true,
+    "fade": true,
+    "failure": null,
+    "elapsed_ms": 388
+  },
+  {
+    "local_gate": true,
+    "effective_fade": true,
+    "id": "controller_acquired",
+    "round": 1,
+    "expected_fade": true,
+    "fade": true,
+    "failure": null,
+    "elapsed_ms": 191
+  },
+  {
+    "local_gate": false,
+    "effective_fade": false,
+    "id": "area_still_correct_lower",
+    "round": 1,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 162
+  },
+  {
+    "local_gate": false,
+    "effective_fade": false,
+    "id": "area_still_correct_right",
+    "round": 1,
+    "expected_fade": false,
+    "fade": true,
+    "failure": null,
+    "elapsed_ms": 210
+  },
+  {
+    "local_gate": true,
+    "effective_fade": true,
+    "id": "wall_exit_reversal",
+    "round": 1,
+    "expected_fade": true,
+    "fade": true,
+    "failure": null,
+    "elapsed_ms": 197
+  },
+  {
+    "local_gate": true,
+    "effective_fade": false,
+    "id": "same_overshoot_lower",
+    "round": 1,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 188
+  },
+  {
+    "local_gate": false,
+    "effective_fade": false,
+    "id": "pointing_to_gaze",
+    "round": 1,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 218
+  },
+  {
+    "local_gate": false,
+    "effective_fade": false,
+    "id": "reminder_to_pointing",
+    "round": 1,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 188
+  },
+  {
+    "local_gate": false,
+    "effective_fade": false,
+    "id": "confirmation_to_reverse",
+    "round": 1,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 196
+  },
+  {
+    "local_gate": true,
+    "effective_fade": true,
+    "id": "arrival_diagonal",
+    "round": 2,
+    "expected_fade": true,
+    "fade": true,
+    "failure": null,
+    "elapsed_ms": 194
+  },
+  {
+    "local_gate": true,
+    "effective_fade": true,
+    "id": "vertical_reverse_higher",
+    "round": 2,
+    "expected_fade": true,
+    "fade": true,
+    "failure": null,
+    "elapsed_ms": 189
+  },
+  {
+    "local_gate": true,
+    "effective_fade": false,
+    "id": "return_same_diagonal",
+    "round": 2,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 200
+  },
+  {
+    "local_gate": true,
+    "effective_fade": true,
+    "id": "acquired_after_diagonal",
+    "round": 2,
+    "expected_fade": true,
+    "fade": true,
+    "failure": null,
+    "elapsed_ms": 208
+  },
+  {
+    "local_gate": true,
+    "effective_fade": true,
+    "id": "controller_acquired",
+    "round": 2,
+    "expected_fade": true,
+    "fade": true,
+    "failure": null,
+    "elapsed_ms": 211
+  },
+  {
+    "local_gate": false,
+    "effective_fade": false,
+    "id": "area_still_correct_lower",
+    "round": 2,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 267
+  },
+  {
+    "local_gate": false,
+    "effective_fade": false,
+    "id": "area_still_correct_right",
+    "round": 2,
+    "expected_fade": false,
+    "fade": true,
+    "failure": null,
+    "elapsed_ms": 196
+  },
+  {
+    "local_gate": true,
+    "effective_fade": true,
+    "id": "wall_exit_reversal",
+    "round": 2,
+    "expected_fade": true,
+    "fade": true,
+    "failure": null,
+    "elapsed_ms": 192
+  },
+  {
+    "local_gate": true,
+    "effective_fade": false,
+    "id": "same_overshoot_lower",
+    "round": 2,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 193
+  },
+  {
+    "local_gate": false,
+    "effective_fade": false,
+    "id": "pointing_to_gaze",
+    "round": 2,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 197
+  },
+  {
+    "local_gate": false,
+    "effective_fade": false,
+    "id": "reminder_to_pointing",
+    "round": 2,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 182
+  },
+  {
+    "local_gate": false,
+    "effective_fade": false,
+    "id": "confirmation_to_reverse",
+    "round": 2,
+    "expected_fade": false,
+    "fade": false,
+    "failure": null,
+    "elapsed_ms": 271
+  }
+]

@@ -4,7 +4,7 @@ using UnityEngine;
 
 /// <summary>
 /// Minimal encoder: Unity float samples -> 16-bit PCM WAV byte buffer.
-/// Used to package a microphone recording for the Voxtral clone endpoint.
+/// Used to package a microphone recording for the ElevenLabs clone endpoint.
 /// </summary>
 public static class WavUtility
 {

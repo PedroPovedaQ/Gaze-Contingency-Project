@@ -17,7 +17,14 @@ public sealed class TrialReplayRenderer : IDisposable
     string m_Trial;
     public float Yaw = 0, Pitch = 25, Distance = 5;
     public bool RecordedHead, Overhead, ShowGaze = true, ShowTarget, ShowControllers = true;
+    public bool ShowUnalignedGaze;
     public Camera Camera => m_Preview.camera;
+    public double MaxSampleAgeSeconds = TrialReplayState.DefaultMaxSampleAgeSeconds;
+    public bool SampleCurrent { get; private set; }
+    public bool UsingRecordedHead { get; private set; }
+    public bool GazeDrawn => m_Ray.enabled;
+    public bool LeftControllerDrawn => m_LeftRay.enabled;
+    public bool RightControllerDrawn => m_RightRay.enabled;
 
     public TrialReplayRenderer(TrialReplayTimeline timeline)
     {
@@ -27,8 +34,20 @@ public sealed class TrialReplayRenderer : IDisposable
         m_Preview.camera.fieldOfView = 65;
         m_Root = new GameObject("Replay preview (isolated)");
         m_Preview.AddSingleGO(m_Root);
+        AddMeshes(timeline);
+        m_Ray = MakeRay("Recorded gaze", new Color(1, 0.55f, 0.1f));
+        m_LeftRay = MakeRay("Left controller", Color.cyan);
+        m_RightRay = MakeRay("Right controller", new Color(0.65f, 0.4f, 1));
+        m_CrossHorizontal = MakeRay("Readiness cross horizontal", Color.white);
+        m_CrossVertical = MakeRay("Readiness cross vertical", Color.white);
+        m_CrossCharge = MakeRay("Readiness left-to-right charge", Color.green);
+    }
+
+    void AddMeshes(TrialReplayTimeline timeline)
+    {
         foreach (var pair in timeline.Meshes)
         {
+            if (m_Meshes.ContainsKey(pair.Key)) continue;
             var saved = pair.Value;
             var mesh = new Mesh { name = pair.Key, indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
             mesh.vertices = saved.vertices; mesh.triangles = saved.triangles;
@@ -36,12 +55,6 @@ public sealed class TrialReplayRenderer : IDisposable
             else mesh.RecalculateNormals();
             mesh.RecalculateBounds(); m_Meshes.Add(pair.Key, mesh);
         }
-        m_Ray = MakeRay("Recorded gaze", new Color(1, 0.55f, 0.1f));
-        m_LeftRay = MakeRay("Left controller", Color.cyan);
-        m_RightRay = MakeRay("Right controller", new Color(0.65f, 0.4f, 1));
-        m_CrossHorizontal = MakeRay("Readiness cross horizontal", Color.white);
-        m_CrossVertical = MakeRay("Readiness cross vertical", Color.white);
-        m_CrossCharge = MakeRay("Readiness left-to-right charge", Color.green);
     }
 
     LineRenderer MakeRay(string name, Color color)
@@ -54,11 +67,19 @@ public sealed class TrialReplayRenderer : IDisposable
     }
     void DrawController(LineRenderer line, TrialReplayController c)
     {
-        line.enabled = ShowControllers && c != null && c.rayAvailable && c.tracked == 1;
+        line.enabled = ShowControllers && ControllerUsable(c);
         if (!line.enabled) return;
         line.SetPosition(0, c.rayOrigin); line.SetPosition(1, c.rayEnd);
         line.startWidth = line.endWidth = c.triggerHeld == 1 ? 0.018f : 0.009f;
     }
+    public static bool ControllerUsable(TrialReplayController controller) =>
+        controller != null && controller.available && controller.rayAvailable && controller.tracked == 1;
+
+    public static bool GazeUsable(TrialReplayRecord sample) =>
+        sample != null && sample.gazeAvailable && sample.gazeTracked == 1 && sample.gazeDirection.sqrMagnitude > 0.000001f;
+
+    public static bool HeadUsable(TrialReplayRecord sample) =>
+        sample != null && sample.headAvailable && sample.headTracked == 1;
 
     Material Material(Color color)
     {
@@ -70,9 +91,12 @@ public sealed class TrialReplayRenderer : IDisposable
         m_Materials.Add(mat); return mat;
     }
 
-    public void Prepare(TrialReplayTimeline timeline, double time, bool forceVisible = false)
+    public void Prepare(TrialReplayTimeline timeline, double time, bool forceVisible = false, long maxSequence = long.MaxValue)
     {
-        timeline.Seek(time); var state = timeline.State;
+        AddMeshes(timeline);
+        timeline.Seek(time, maxSequence); var state = timeline.State;
+        SampleCurrent = state.HasCurrentSample(time, MaxSampleAgeSeconds);
+        var sample = SampleCurrent && !forceVisible ? state.Sample : null;
         if (state.Trial != null && m_Trial != state.Trial.trialId)
         {
             foreach (var obj in m_Objects.Values) UnityEngine.Object.DestroyImmediate(obj);
@@ -100,38 +124,45 @@ public sealed class TrialReplayRenderer : IDisposable
             if (!forceVisible)
             {
                 if (ShowTarget && o.target) color = Color.green;
-                if (state.Sample != null && state.Sample.hoveredId == o.id) color = Color.Lerp(color, new Color(1, 0.6f, 0.05f), 0.65f);
-                if (ShowControllers && state.Sample != null &&
-                    (state.Sample.leftController?.hoveredId == o.id || state.Sample.rightController?.hoveredId == o.id))
+                if (GazeUsable(sample) && sample.hoveredId == o.id) color = Color.Lerp(color, new Color(1, 0.6f, 0.05f), 0.65f);
+                if (ShowControllers && sample != null &&
+                    ((ControllerUsable(sample.leftController) && sample.leftController.hoveredId == o.id) ||
+                     (ControllerUsable(sample.rightController) && sample.rightController.hoveredId == o.id)))
                     color = Color.Lerp(color, Color.cyan, 0.7f);
                 if (state.Selection != null && state.Selection.objectId == o.id && time - state.Selection.time <= 0.3) color = Color.white;
             }
             m_Objects[o.id].GetComponent<Renderer>().sharedMaterial.color = color;
         }
-        var sample = state.Sample;
         var readiness = state.Readiness;
-        bool showCross = readiness != null && readiness.readinessActive && !readiness.readinessPaused;
+        bool showCross = !forceVisible && !state.Searching && TrialReplayState.IsFresh(readiness, time, MaxSampleAgeSeconds) &&
+            (state.PoseBoundary == null || readiness.sequence > state.PoseBoundary.sequence) &&
+            readiness.readinessActive && !readiness.readinessPaused;
         DrawCrossLine(m_CrossHorizontal, readiness, showCross, new Vector3(-0.1f, 0, 0), new Vector3(0.1f, 0, 0));
         DrawCrossLine(m_CrossVertical, readiness, showCross, new Vector3(0, -0.1f, 0), new Vector3(0, 0.1f, 0));
         DrawCrossLine(m_CrossCharge, readiness, showCross && readiness.readinessProgress > 0,
             new Vector3(-0.2f, -0.18f, 0), new Vector3(-0.2f + 0.4f * (readiness?.readinessProgress ?? 0), -0.18f, 0));
         DrawController(m_LeftRay, forceVisible ? null : sample?.leftController);
         DrawController(m_RightRay, forceVisible ? null : sample?.rightController);
-        if (RecordedHead && sample != null && sample.headAvailable)
+        UsingRecordedHead = RecordedHead && HeadUsable(sample);
+        if (UsingRecordedHead)
             Camera.transform.SetPositionAndRotation(sample.headPosition, sample.headRotation);
         else
         {
             var rotation = Quaternion.Euler(Overhead ? 89 : Pitch, Yaw, 0);
             Camera.transform.SetPositionAndRotation(rotation * new Vector3(0, 0, -Distance), rotation);
         }
-        m_Ray.enabled = !forceVisible && ShowGaze && (state.Visible || showCross) && sample != null && sample.gazeAvailable && sample.gazeTracked != 0;
+        bool unaligned = ShowUnalignedGaze && sample != null && sample.gazeRayVersion == TrialReplayGaze.Version;
+        m_Ray.enabled = ShowGaze && (state.Visible || showCross) && GazeUsable(sample) &&
+            (!unaligned || (sample.gazeUnalignedAvailable && sample.gazeUnalignedDirection.sqrMagnitude > .000001f));
         if (m_Ray.enabled)
         {
-            m_Ray.SetPosition(0, sample.gazeOrigin);
+            Vector3 origin = unaligned ? sample.gazeUnalignedOrigin : sample.gazeOrigin;
+            Vector3 direction = unaligned ? sample.gazeUnalignedDirection : sample.gazeDirection;
+            m_Ray.SetPosition(0, origin);
             float length = 3;
             if (!string.IsNullOrEmpty(sample.hoveredId) && state.Transforms.TryGetValue(sample.hoveredId, out var target))
-                length = Vector3.Distance(sample.gazeOrigin, target.position);
-            m_Ray.SetPosition(1, sample.gazeOrigin + sample.gazeDirection.normalized * length);
+                length = Vector3.Distance(origin, target.position);
+            m_Ray.SetPosition(1, origin + direction.normalized * length);
         }
     }
 

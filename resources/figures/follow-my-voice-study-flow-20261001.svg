@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="526" height="546" preserveAspectRatio="xMinYMin meet" viewBox="0 0 526 546" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="526" height="546"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-546)" style="clip-path: url(#clip)">
+		<g transform=" matrix(1,0,0,1,8,8)">
+			<rect x="0" y="0" width="510" height="530" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="0" y="514" style="font-family: Helvetica-Bold; font-size: 14px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,1028) scale(1,-1)">Follow My Voice: setup and session flow</text>
+			<text x="0" y="499" style="font-family: Helvetica; font-size: 7.8px;fill: rgb(32%,38%,44%); stroke:none;" transform="translate(0,998) scale(1,-1)">October 1, 2026  |  Local implementation + proposed operator flow; headset acceptance pending</text>
+			<path d="M 0,489 L 510,489 Z" style="stroke: rgb(72%,76%,79%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<text x="0" y="472" style="font-family: Helvetica-Bold; font-size: 10px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,944) scale(1,-1)">A  Seated mixed-reality setup</text>
+			<text x="270" y="472" style="font-family: Helvetica-Bold; font-size: 10px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,944) scale(1,-1)">B  Session flow</text>
+			<text x="270" y="459" style="font-family: Helvetica; font-size: 7.4px;fill: rgb(32%,38%,44%); stroke:none;" transform="translate(0,918) scale(1,-1)">Preferred / self-similar voice order is counterbalanced</text>
+			<path d="M 198.682001,372.762725 L 153.762725,417.682001 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 1; stroke-dasharray: 3, 2;"/>
+			<circle cx="188.02017113907056" cy="378.00231864143177" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="181.19244113962614" cy="384.8300486408762" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="173.51124489025113" cy="392.51124489025113" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="165.83004864087616" cy="400.1924411396261" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="159.00231864143177" cy="407.02017113907056" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<path d="M 153.762725,417.682001 L 90.237275,417.682001 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 1; stroke-dasharray: 3, 2;"/>
+			<circle cx="142.5187202765514" cy="413.847901138515" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="132.86285191111543" cy="413.847901138515" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="122.0" cy="413.847901138515" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="111.13714808888456" cy="413.847901138515" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="101.48127972344862" cy="413.847901138515" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<path d="M 90.237275,417.682001 L 45.317999,372.762725 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 1; stroke-dasharray: 3, 2;"/>
+			<circle cx="84.99768135856826" cy="407.02017113907056" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="78.16995135912383" cy="400.1924411396261" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="70.48875510974887" cy="392.51124489025113" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="62.80755886037389" cy="384.8300486408762" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="55.97982886092946" cy="378.00231864143177" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<path d="M 45.317999,372.762725 L 45.317999,309.237275 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 1; stroke-dasharray: 3, 2;"/>
+			<circle cx="49.152098861485044" cy="361.5187202765514" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="49.15209886148503" cy="351.86285191111546" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="49.15209886148503" cy="341.0" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="49.15209886148503" cy="330.13714808888454" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="49.15209886148503" cy="320.4812797234486" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<path d="M 45.317999,309.237275 L 90.237275,264.317999 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 1; stroke-dasharray: 3, 2;"/>
+			<circle cx="55.97982886092946" cy="303.99768135856823" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="62.80755886037388" cy="297.1699513591238" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="70.48875510974887" cy="289.48875510974887" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="78.16995135912384" cy="281.8075588603739" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="84.99768135856826" cy="274.97982886092944" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<path d="M 90.237275,264.317999 L 153.762725,264.317999 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 1; stroke-dasharray: 3, 2;"/>
+			<circle cx="101.48127972344862" cy="268.152098861485" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="111.13714808888457" cy="268.152098861485" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="122.00000000000001" cy="268.152098861485" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="132.86285191111546" cy="268.152098861485" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="142.5187202765514" cy="268.152098861485" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<path d="M 153.762725,264.317999 L 198.682001,309.237275 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 1; stroke-dasharray: 3, 2;"/>
+			<circle cx="159.00231864143177" cy="274.9798288609295" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="165.83004864087616" cy="281.8075588603739" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="173.51124489025113" cy="289.4887551097489" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="181.19244113962614" cy="297.16995135912384" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="188.02017113907056" cy="303.99768135856823" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<path d="M 198.682001,309.237275 L 198.682001,372.762725 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 1; stroke-dasharray: 3, 2;"/>
+			<circle cx="194.84790113851497" cy="320.48127972344867" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="194.84790113851497" cy="330.1371480888846" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="194.84790113851497" cy="341.0" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="194.84790113851497" cy="351.86285191111546" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<circle cx="194.84790113851497" cy="361.5187202765514" r="1.6" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(72%,76%,79%); fill-rule: evenodd;"/>
+			<path d="M 122,433 L 122,451 Z" style="stroke: rgb(9%,14%,20%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<polygon points="122 451, 120.1119 447.4737, 123.8881 447.4737" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(9%,14%,20%); fill-rule: evenodd;"/>
+			<text x="132" y="440" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,880) scale(1,-1)">Fixed room-front reference</text>
+			<circle cx="122" cy="333" r="21" style="stroke: rgb(9%,14%,20%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(94%,96%,96%); fill-rule: evenodd;"/>
+			<rect x="111" y="323" width="22" height="21" rx="5" ry="5" style="stroke: rgb(9%,14%,20%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(84%,88%,90%); fill-rule: evenodd;"/>
+			<circle cx="122" cy="349" r="10" style="stroke: rgb(9%,14%,20%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<rect x="111" y="351" width="22" height="5" rx="2" ry="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(9%,14%,20%); fill-rule: evenodd;"/>
+			<rect x="147" y="334" width="5" height="11" rx="2" ry="2" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(13%,36%,57%); fill-rule: evenodd;"/>
+			<path d="M 122,358 L 109,413 Z" style="stroke: rgb(13%,45%,40%); stroke-linecap: butt; stroke-width: 1;"/>
+			<polygon points="109 413, 107.9737 409.1339, 111.6486 410.0025" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(13%,45%,40%); fill-rule: evenodd;"/>
+			<path d="M 150,346 L 184,385 Z" style="stroke: rgb(13%,36%,57%); stroke-linecap: butt; stroke-width: 1;"/>
+			<polygon points="184 385, 180.2595 383.5827, 183.1059 381.1012" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(13%,36%,57%); fill-rule: evenodd;"/>
+			<text x="84.38" y="302" style="font-family: Helvetica; font-size: 7.5px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,604) scale(1,-1)">Swivel chair + headset</text>
+			<text x="157" y="320" style="font-family: Helvetica; font-size: 7.1px;fill: rgb(13%,36%,57%); stroke:none;" transform="translate(0,640) scale(1,-1)">Right</text>
+			<text x="157" y="311" style="font-family: Helvetica; font-size: 7.1px;fill: rgb(13%,36%,57%); stroke:none;" transform="translate(0,622) scale(1,-1)">controller</text>
+			<text x="44.045" y="246" style="font-family: Helvetica; font-size: 7.5px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,492) scale(1,-1)">8 virtual surfaces around the seated participant</text>
+			<text x="52.801249999999996" y="233" style="font-family: Helvetica; font-size: 7.5px;fill: rgb(32%,38%,44%); stroke:none;" transform="translate(0,466) scale(1,-1)">168 scattered objects; dots are schematic</text>
+			<path d="M 4,217 L 20,217 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 1; stroke-dasharray: 3, 2;"/>
+			<text x="25" y="214" style="font-family: Helvetica; font-size: 7.5px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,428) scale(1,-1)">Virtual surface, not a physical wall</text>
+			<path d="M 4,202 L 20,202 Z" style="stroke: rgb(13%,45%,40%); stroke-linecap: butt; stroke-width: 1;"/>
+			<text x="25" y="199" style="font-family: Helvetica; font-size: 7.5px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,398) scale(1,-1)">Eye gaze informs guidance and measurement</text>
+			<path d="M 4,187 L 20,187 Z" style="stroke: rgb(13%,36%,57%); stroke-linecap: butt; stroke-width: 1;"/>
+			<text x="25" y="184" style="font-family: Helvetica; font-size: 7.5px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,368) scale(1,-1)">Right ray highlights; trigger selects</text>
+			<rect x="270" y="424" width="240" height="25" rx="3" ry="3" style="stroke: rgb(72%,76%,79%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="333.7915" y="434.0" style="font-family: Helvetica; font-size: 7.9px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,868) scale(1,-1)">Consent and baseline questions</text>
+			<path d="M 390,424 L 390,417 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<polygon points="390 417, 391.8881 420.5263, 388.1119 420.5263" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(32%,38%,44%); fill-rule: evenodd;"/>
+			<rect x="270" y="392" width="240" height="25" rx="3" ry="3" style="stroke: rgb(72%,76%,79%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="330.6078" y="407.0" style="font-family: Helvetica; font-size: 7.9px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,814) scale(1,-1)">Fit; choose gender + 1 of 6 voices</text>
+			<text x="326.6657" y="397.0" style="font-family: Helvetica; font-size: 7.9px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,794) scale(1,-1)">Natural sample + audio level checks</text>
+			<path d="M 390,392 L 390,385 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<polygon points="390 385, 391.8881 388.5263, 388.1119 388.5263" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(32%,38%,44%); fill-rule: evenodd;"/>
+			<rect x="270" y="360" width="240" height="25" rx="3" ry="3" style="stroke: rgb(72%,76%,79%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="313.923" y="370.0" style="font-family: Helvetica; font-size: 7.9px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,740) scale(1,-1)">Eye calibration + independent spatial check</text>
+			<path d="M 390,360 L 390,353 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<polygon points="390 353, 391.8881 356.5263, 388.1119 356.5263" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(32%,38%,44%); fill-rule: evenodd;"/>
+			<rect x="270" y="328" width="240" height="25" rx="3" ry="3" style="stroke: rgb(72%,76%,79%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="326.5551" y="338.0" style="font-family: Helvetica; font-size: 7.9px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,676) scale(1,-1)">2 practice trials: one with each voice</text>
+			<path d="M 390,328 L 390,321 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<polygon points="390 321, 391.8881 324.5263, 388.1119 324.5263" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(32%,38%,44%); fill-rule: evenodd;"/>
+			<rect x="270" y="296" width="240" height="25" rx="3" ry="3" style="stroke: rgb(13%,36%,57%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(94%,96%,96%); fill-rule: evenodd;"/>
+			<text x="342.363" y="306.0" style="font-family: Helvetica; font-size: 7.9px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,612) scale(1,-1)">Block 1: 40 measured trials</text>
+			<path d="M 390,296 L 390,289 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<polygon points="390 289, 391.8881 292.5263, 388.1119 292.5263" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(32%,38%,44%); fill-rule: evenodd;"/>
+			<rect x="270" y="264" width="240" height="25" rx="3" ry="3" style="stroke: rgb(72%,76%,79%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="323.69925" y="274.0" style="font-family: Helvetica; font-size: 7.9px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,548) scale(1,-1)">Block questions, break, fit / drift check</text>
+			<path d="M 390,264 L 390,257 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<polygon points="390 257, 391.8881 260.5263, 388.1119 260.5263" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(32%,38%,44%); fill-rule: evenodd;"/>
+			<rect x="270" y="232" width="240" height="25" rx="3" ry="3" style="stroke: rgb(13%,36%,57%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(94%,96%,96%); fill-rule: evenodd;"/>
+			<text x="325.89545" y="242.0" style="font-family: Helvetica; font-size: 7.9px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,484) scale(1,-1)">Block 2: 40 trials with the other voice</text>
+			<path d="M 390,232 L 390,225 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<polygon points="390 225, 391.8881 228.5263, 388.1119 228.5263" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(32%,38%,44%); fill-rule: evenodd;"/>
+			<rect x="270" y="200" width="240" height="25" rx="3" ry="3" style="stroke: rgb(72%,76%,79%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="315.35685" y="210.0" style="font-family: Helvetica; font-size: 7.9px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,420) scale(1,-1)">Block questions, final interview and debrief</text>
+			<text x="270" y="184" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(32%,38%,44%); stroke:none;" transform="translate(0,368) scale(1,-1)">Setup activities are grouped; final survey route is open.</text>
+			<path d="M 0,168 L 510,168 Z" style="stroke: rgb(72%,76%,79%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<text x="0" y="151" style="font-family: Helvetica-Bold; font-size: 10px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,302) scale(1,-1)">Within each trial</text>
+			<rect x="0" y="103" width="94" height="31" rx="3" ry="3" style="stroke: rgb(72%,76%,79%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="15.9968" y="121.0" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,242) scale(1,-1)">Previous-wall cross</text>
+			<text x="15.683599999999998" y="111.0" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,222) scale(1,-1)">+ spoken readiness</text>
+			<path d="M 95,118 L 103,118 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<polygon points="103 118, 99.47367 119.8881, 99.47367 116.1119" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(32%,38%,44%); fill-rule: evenodd;"/>
+			<rect x="104" y="103" width="94" height="31" rx="3" ry="3" style="stroke: rgb(72%,76%,79%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="126.3904" y="121.0" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,242) scale(1,-1)">Reveal objects;</text>
+			<text x="122.99199999999999" y="111.0" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,222) scale(1,-1)">start search clock</text>
+			<path d="M 199,118 L 207,118 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<polygon points="207 118, 203.4737 119.8881, 203.4737 116.1119" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(32%,38%,44%); fill-rule: evenodd;"/>
+			<rect x="208" y="103" width="94" height="31" rx="3" ry="3" style="stroke: rgb(13%,36%,57%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(94%,96%,96%); fill-rule: evenodd;"/>
+			<text x="222.186" y="121.0" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,242) scale(1,-1)">Horizontal guidance,</text>
+			<text x="231.384" y="111.0" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,222) scale(1,-1)">then up / down</text>
+			<path d="M 303,118 L 311,118 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<polygon points="311 118, 307.4737 119.8881, 307.4737 116.1119" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(32%,38%,44%); fill-rule: evenodd;"/>
+			<rect x="312" y="103" width="94" height="31" rx="3" ry="3" style="stroke: rgb(13%,36%,57%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(94%,96%,96%); fill-rule: evenodd;"/>
+			<text x="328.9904" y="121.0" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,242) scale(1,-1)">Right-ray highlight;</text>
+			<text x="328.1912" y="111.0" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,222) scale(1,-1)">trigger confirmation</text>
+			<path d="M 407,118 L 415,118 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<polygon points="415 118, 411.4737 119.8881, 411.4737 116.1119" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(32%,38%,44%); fill-rule: evenodd;"/>
+			<rect x="416" y="103" width="94" height="31" rx="3" ry="3" style="stroke: rgb(72%,76%,79%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="425.3872" y="121.0" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,242) scale(1,-1)">Record correct capture;</text>
+			<text x="423.8824" y="111.0" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,222) scale(1,-1)">chime + praise, advance</text>
+			<path d="M 359,103 L 359,87 Z" style="stroke: rgb(72%,76%,79%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 359,87 L 255,87 Z" style="stroke: rgb(72%,76%,79%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 255,87 L 255,103 Z" style="stroke: rgb(32%,38%,44%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<polygon points="255 103, 253.1119 99.47367, 256.8881 99.47367" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(32%,38%,44%); fill-rule: evenodd;"/>
+			<text x="254.3768" y="75" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(32%,38%,44%); stroke:none;" transform="translate(0,150) scale(1,-1)">Incorrect: same target; continue</text>
+			<text x="0" y="59" style="font-family: Helvetica-Bold; font-size: 8px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,118) scale(1,-1)">The agent knows the target; its identity is not announced or shown to the participant.</text>
+			<text x="0" y="44" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(9%,14%,20%); stroke:none;" transform="translate(0,88) scale(1,-1)">Requested pauses stop active-search timing. Invalid / stale gaze suspends new guidance decisions.</text>
+			<text x="0" y="28" style="font-family: Helvetica; font-size: 7.5px;fill: rgb(32%,38%,44%); stroke:none;" transform="translate(0,56) scale(1,-1)">Implementation: 40 + 40 trials, shared command wording, right controller. Proposal: operator / survey flow.</text>
+			<text x="0" y="15" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(32%,38%,44%); stroke:none;" transform="translate(0,30) scale(1,-1)">Open: final surveys, signed-height quotas, participant sample size, spatial / timing acceptance and hardware checks.</text>
+		</g>
+	</g>
+</svg>

@@ -3,32 +3,30 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.XR;
-using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using Unity.XR.CoreUtils;
 
 /// <summary>Observes the study. Recording failures never change the live trial or its existing CSVs.</summary>
-[DefaultExecutionOrder(300)]
+[DefaultExecutionOrder(400)] // After guidance state and controller telemetry.
 public sealed class TrialReplayRecorder : MonoBehaviour
 {
     FindObjectGameManager m_Game;
     ControllerRaySelector m_Controllers;
     TrialReplayRecord m_Context;
     bool m_TrialReady;
-    XRGazeInteractor m_Gaze;
     XROrigin m_XrOrigin;
     VoiceSynthesizer m_Voice;
     TrialReplayWriter m_Writer;
     readonly Dictionary<int, string> m_Meshes = new Dictionary<int, string>();
     readonly Dictionary<int, string> m_Clips = new Dictionary<int, string>();
     readonly Dictionary<string, TrialReplayTransform> m_Transforms = new Dictionary<string, TrialReplayTransform>();
-    readonly List<InputDevice> m_Eyes = new List<InputDevice>();
     Vector3 m_Origin;
     Quaternion m_OriginRotation;
-    double m_Started, m_NextDeviceCheck, m_NextResolve;
+    double m_Started, m_NextResolve;
     long m_Sequence;
     int m_TrialNumber;
     string m_TrialId, m_Directory, m_Failure;
-    bool m_Finished;
+    bool m_Finished, m_HeaderWritten;
+    string m_RecordingId;
     public string RecordingDirectory => m_Directory;
 
     void Start() => Resolve();
@@ -49,7 +47,6 @@ public sealed class TrialReplayRecorder : MonoBehaviour
     void Resolve()
     {
         if (m_Controllers == null) m_Controllers = GetComponent<ControllerRaySelector>();
-        if (m_Gaze == null) m_Gaze = FindFirstObjectByType<XRGazeInteractor>();
         if (m_XrOrigin == null) m_XrOrigin = FindFirstObjectByType<XROrigin>();
         var voice = GetComponent<VoiceSynthesizer>();
         if (m_Voice != voice)
@@ -60,26 +57,41 @@ public sealed class TrialReplayRecorder : MonoBehaviour
         }
     }
 
+    // Audio can be transferred during Loading. Defer the header/origin/clock until
+    // the first real transition, so preparation does not change trial coordinates.
+    void EnsureStorage()
+    {
+        if (m_Writer != null) return;
+        m_RecordingId = Guid.NewGuid().ToString("N");
+        m_Directory = Path.Combine(Application.persistentDataPath, "GazeReplays", DateTime.UtcNow.ToString("yyyyMMddTHHmmss") + "_" + m_RecordingId);
+        Directory.CreateDirectory(Path.Combine(m_Directory, "audio"));
+        m_Writer = new TrialReplayWriter(Path.Combine(m_Directory, "recording.jsonl"));
+    }
+
     bool EnsureStarted()
     {
         if (m_Failure != null || m_Finished) return false;
-        if (m_Writer != null) return true;
+        if (m_HeaderWritten) return true;
         try
         {
             Resolve();
             m_Started = Time.realtimeSinceStartupAsDouble;
             m_Origin = m_Game.SeatedOrigin;
             m_OriginRotation = Quaternion.Euler(0, m_Game.SeatedForwardYaw, 0);
-            string id = Guid.NewGuid().ToString("N");
-            m_Directory = Path.Combine(Application.persistentDataPath, "GazeReplays", DateTime.UtcNow.ToString("yyyyMMddTHHmmss") + "_" + id);
-            Directory.CreateDirectory(Path.Combine(m_Directory, "audio"));
-            m_Writer = new TrialReplayWriter(Path.Combine(m_Directory, "recording.jsonl"));
+            EnsureStorage();
             var header = Record("header");
-            header.recordingId = id; header.sourceType = Application.isEditor ? "editor_simulation" : "live_headset";
+            header.recordingId = m_RecordingId; header.sourceType = Application.isEditor ? "editor_simulation" : "live_headset";
             header.utc = DateTime.UtcNow.ToString("O"); header.appVersion = Application.version;
             header.buildGuid = Application.buildGUID; header.unityVersion = Application.unityVersion;
+            header.interactionPolicy = SessionConfig.InteractionPolicy; header.repeatEventVersion = SessionConfig.RepeatEventVersion;
+            header.guidanceAuditVersion = SessionConfig.GuidanceAuditVersion;
+            header.gazeLinkVersion = SessionConfig.GazeReplayLinkVersion;
+            header.gazeRayVersion = TrialReplayGaze.Version;
+            header.neutralCatalogVersion = SessionConfig.NeutralCatalogVersion;
             header.origin = m_Origin; header.originRotation = m_OriginRotation;
+            header.gazeRecordingPath = SharedGazeStream.Instance != null ? SharedGazeStream.Instance.RecordingPath : "";
             header.detail = "Unity metres, +Y up, +Z forward; poses relative to fixed recording origin; software audio onset; gaze interaction proxy.";
+            m_HeaderWritten = true;
             Write(header);
             Debug.Log("[TrialReplay] Recording to " + m_Directory);
             return true;
@@ -94,7 +106,8 @@ public sealed class TrialReplayRecorder : MonoBehaviour
         m_TrialReady = false;
         m_Context = new TrialReplayRecord {
             round = m_Game.CurrentObjectiveIndex, practice = m_Game.IsPractice,
-            voice = SessionConfig.VoiceTag, participantCode = SessionConfig.ParticipantId,
+            voice = SessionConfig.VoiceBlocksEnabled ? SessionConfig.VoiceLabelForRound(m_Game.CurrentObjectiveIndex) : SessionConfig.VoiceTag,
+            participantCode = SessionConfig.ParticipantId,
             runNumber = m_Game.IsPractice ? 0 : SessionConfig.RunNumber,
             sourceRunFolder = m_Game.IsPractice ? "" : Path.GetFileName(SessionConfig.CurrentRunFolder),
             sourceTrialId = m_Game.IsPractice || SessionConfig.RunNumber == 0 ? "" :
@@ -157,6 +170,8 @@ public sealed class TrialReplayRecorder : MonoBehaviour
             {
                 var planned = ChallengeSet.Rounds[round];
                 r.scheduleVersion = ChallengeSet.ScheduleVersion; r.scheduleSeed = ChallengeSet.ScheduleSeed;
+                r.targetIdentityPolicy = ChallengeSet.TargetIdentityPolicy;
+                r.heightAssignmentPolicy = ChallengeSet.HeightAssignmentPolicy;
                 r.block = planned.blockIndex; r.anglePair = planned.anglePair; r.targetPlane = planned.targetPlane;
                 r.startPlane = planned.startPlane;
                 r.signedTheta = planned.SignedTheta; r.absoluteTheta = planned.AbsoluteTheta;
@@ -193,10 +208,16 @@ public sealed class TrialReplayRecorder : MonoBehaviour
     {
         if (EnsureStarted()) { BeginTrial(); var r = Record("transition"); r.detail = color + " " + shape; Write(r); }
     }
-    void SearchStarted(int round) { if (m_Writer != null) Write(Record("search_start")); }
-    void Checkpoint(string name) { if (m_Writer != null) Write(Record(name)); }
-    void ReadinessEvent(string name) { if (m_Writer != null) Write(Record(name)); }
-    void Completed(float elapsed) => Finish(true, "completed");
+    void SearchStarted(int round) { if (m_HeaderWritten) Write(Record("search_start")); }
+    void Checkpoint(string name) { if (m_HeaderWritten) Write(Record(name)); }
+    void ReadinessEvent(string name) { if (m_HeaderWritten) Write(Record(name)); }
+    void Completed(float elapsed) => StartCoroutine(FinishAfterSuccess());
+    System.Collections.IEnumerator FinishAfterSuccess()
+    {
+        yield return null;
+        while (GetComponent<VoiceAssistantController>()?.SuccessFeedbackBusy == true) yield return null;
+        Finish(true, "completed");
+    }
     void Stopped(string reason) => Finish(false, reason);
 
     // Called before advancing the objective or resetting controller selection. Gaze never selects.
@@ -208,7 +229,7 @@ public sealed class TrialReplayRecorder : MonoBehaviour
         var r = Record("selection"); r.objectId = info.objectId; r.correct = correct;
         try
         {
-            Resolve(); CapturePoses(r);
+            Resolve(); CapturePoses(r); CaptureObjectChanges(r);
             r.selectingHand = m_Controllers != null ? m_Controllers.SelectingHand : null;
             Write(r);
             if (correct) m_TrialReady = false;
@@ -235,35 +256,22 @@ public sealed class TrialReplayRecorder : MonoBehaviour
 
     void CapturePoses(TrialReplayRecord r)
     {
+        r.guidanceState = m_Game.GetComponent<HintGenerator>()?.CurrentStateSnapshot;
         r.searchActive = m_Game.SearchActive; r.visible = m_Game.SearchActive;
         var head = Camera.main;
         r.headAvailable = head != null;
         if (head != null) { r.headPosition = Position(head.transform.position); r.headRotation = Rotation(head.transform.rotation); }
-        r.gazeAvailable = m_Gaze != null && m_Gaze.isActiveAndEnabled;
-        if (r.gazeAvailable)
-        {
-            r.gazeOrigin = Position(m_Gaze.transform.position);
-            r.gazeDirection = Quaternion.Inverse(m_OriginRotation) * m_Gaze.transform.forward;
-        }
+        var stream = SharedGazeStream.Instance;
+        var gaze = stream != null ? stream.Latest : null;
+        TrialReplayGaze.Capture(r, gaze, stream != null && stream.TryGetValid(out _), m_Origin, m_OriginRotation);
         r.xrOriginAvailable = m_XrOrigin != null;
         if (m_XrOrigin != null)
         { r.xrOriginPosition = Position(m_XrOrigin.transform.position); r.xrOriginRotation = Rotation(m_XrOrigin.transform.rotation); }
         var hmd = InputDevices.GetDeviceAtXRNode(XRNode.Head);
         if (hmd.isValid && hmd.TryGetFeatureValue(CommonUsages.isTracked, out bool headTracked)) r.headTracked = headTracked ? 1 : 0;
-        if (Time.realtimeSinceStartupAsDouble >= m_NextDeviceCheck)
-        {
-            InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.EyeTracking, m_Eyes);
-            m_NextDeviceCheck = Time.realtimeSinceStartupAsDouble + 2;
-        }
-        foreach (var eye in m_Eyes)
-            if (eye.isValid && eye.TryGetFeatureValue(CommonUsages.isTracked, out bool tracked)) { r.gazeTracked = tracked ? 1 : 0; break; }
-        // XRI hover is an interaction proxy, independent of controller confirmation.
-        if (m_Gaze != null && r.gazeAvailable && r.gazeTracked != 0 && m_Game.SearchActive)
-            foreach (var hover in m_Gaze.interactablesHovered)
-            {
-                var info = hover.transform.GetComponentInParent<SpawnableObjectInfo>();
-                if (info != null && m_Transforms.ContainsKey(info.objectId)) { r.hoveredId = info.objectId; break; }
-            }
+        // Same valid ray as guidance; this is an intersection proxy, not a fixation.
+        if (m_Game.SearchActive && stream != null && stream.TryHit(out var hitInfo) && m_Transforms.ContainsKey(hitInfo.objectId))
+            r.hoveredId = hitInfo.objectId;
         if (m_Controllers != null && m_Controllers.TelemetryFrame == Time.frameCount)
         {
             r.leftController = Controller(m_Controllers.LeftTelemetry);
@@ -302,27 +310,64 @@ public sealed class TrialReplayRecorder : MonoBehaviour
         r.changes = changes?.ToArray();
     }
 
+    // Called only after the final voice treatment and level matching. No network
+    // acknowledgement is needed: optional replay must never hold up guidance.
+    public void PrepareVoiceClip(AudioClip clip)
+    {
+        if (clip == null || m_Finished || m_Failure != null) return;
+        try { EnsureStorage(); SaveClip(clip); }
+        catch (Exception e) { Fail(e.Message); }
+    }
+
+    string SaveClip(AudioClip clip)
+    {
+        if (m_Clips.TryGetValue(clip.GetInstanceID(), out string relative)) return relative;
+        relative = "audio/clip_" + m_Clips.Count.ToString("D4") + ".wav";
+        var samples = new float[clip.samples * clip.channels];
+        if (!clip.GetData(samples, 0)) throw new IOException("Cannot read replay clip.");
+        if (!m_Writer.Asset(Path.Combine(m_Directory, relative), TrialReplayAudio.Encode(samples, clip.channels, clip.frequency)))
+            throw new IOException(m_Writer.Error);
+        m_Clips.Add(clip.GetInstanceID(), relative);
+        return relative;
+    }
+
+    public void RecordEffect(AudioClip clip, string name, float volume)
+    {
+        if (!m_HeaderWritten || m_Writer == null || clip == null) return;
+        var r = Record("audio_playback_start"); r.text = name; r.audioVolume = volume;
+        try
+        {
+            r.clip = SaveClip(clip);
+        }
+        catch (Exception e) { r.detail="audio_asset_missing="+e.Message+";"; }
+        r.detail += "success_effect;software_one_shot_start;duration=" + clip.length.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        Write(r);
+    }
     void AudioEvent(string kind, string context, string clipId, string detail)
     {
-        if (m_Writer == null) return;
+        if (!m_HeaderWritten || m_Writer == null) return;
         var r = Record(kind); r.detail = context + ";" + detail;
+        if (kind == "guidance_state") r.guidanceState = JsonUtility.FromJson<GuidanceStateSnapshot>(detail);
+        else if (kind == "guidance_decision")
+        {
+            r.guidanceDecision = JsonUtility.FromJson<GuidanceDecision>(detail);
+            r.guidanceDecisionId = r.guidanceDecision?.decisionId;
+        }
+        else
+        {
+            // The ID belongs to the original request, not the gaze at playback.
+            const string key = "decision_id=";
+            foreach (var field in (detail ?? "").Split(';'))
+                if (field.StartsWith(key, StringComparison.Ordinal))
+                { r.guidanceDecisionId = field.Substring(key.Length); break; }
+        }
         int textAt = detail == null ? -1 : detail.IndexOf("text=", StringComparison.Ordinal);
         if (textAt >= 0) r.text = detail.Substring(textAt + 5);
         if (kind == "audio_playback_start" && m_Voice.ReplayClip != null)
         {
             try
             {
-                AudioClip clip = m_Voice.ReplayClip;
-                if (!m_Clips.TryGetValue(clip.GetInstanceID(), out string relative))
-                {
-                    relative = "audio/clip_" + m_Clips.Count.ToString("D4") + ".wav";
-                    var samples = new float[clip.samples * clip.channels];
-                    if (!clip.GetData(samples, 0)) throw new IOException("Cannot read playback clip.");
-                    byte[] bytes = TrialReplayAudio.Encode(samples, clip.channels, clip.frequency);
-                    if (!m_Writer.Asset(Path.Combine(m_Directory, relative), bytes)) throw new IOException(m_Writer.Error);
-                    m_Clips.Add(clip.GetInstanceID(), relative);
-                }
-                r.clip = relative;
+                r.clip = SaveClip(m_Voice.ReplayClip);
             }
             catch (Exception e) { r.detail += ";audio_asset_missing=" + e.Message; }
         }
@@ -332,7 +377,8 @@ public sealed class TrialReplayRecorder : MonoBehaviour
     void Finish(bool complete, string reason)
     {
         if (m_Writer == null) return;
-        var r = Record("end"); r.complete = complete; r.detail = reason; Write(r);
+        if (m_HeaderWritten)
+        { var r = Record("end"); r.complete = complete; r.detail = reason; Write(r); }
         m_Finished = true;
         m_Writer?.Dispose();
         if (m_Writer?.Error != null) m_Failure = m_Writer.Error;
@@ -351,7 +397,13 @@ public sealed class TrialReplayRecorder : MonoBehaviour
         if (m_Voice != null) m_Voice.Telemetry -= AudioEvent;
     }
     void OnApplicationQuit() => Finish(false, "application_quit");
-    void OnApplicationPause(bool paused) { if (paused && m_Writer != null) Write(Record("application_paused")); }
+    void OnApplicationPause(bool paused)
+    {
+        if (!paused || m_Writer == null) return;
+        if (m_HeaderWritten) Write(Record("application_paused"));
+        if (m_Writer != null && !m_Writer.RequestFlush())
+            Fail(m_Writer.Error ?? "Replay writer could not accept the pause flush.");
+    }
     void OnGUI()
     {
         if (m_Failure != null) GUI.Label(new Rect(10, 10, 900, 40), "Replay recording stopped: " + m_Failure);

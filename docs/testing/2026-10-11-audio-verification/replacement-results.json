@@ -1,0 +1,18 @@
+[
+  {
+    "clip": "tts_55ed6142ca21c3b908c68e307343ccda9ee44906b05f071b9f9716750a936ac6",
+    "expected": "Look left, please.",
+    "transcript": "Look left, please.",
+    "replacement_sha256": "254fcb88252ede84877c7fde3009b3f5894be28309a69b68d5a5f1b8215c093d",
+    "verification_model": "scribe_v2",
+    "no_verbatim": false
+  },
+  {
+    "clip": "tts_b0312eba4bb9b70c35358479405162b3ecbcbca4a84e2c58b52cf0c352c9c4ba",
+    "expected": "Now, look left.",
+    "transcript": "Now look left",
+    "replacement_sha256": "0d518131b512436cea51d4b9e9e51f376c862aa996f9faee712a6bfca33d607c",
+    "verification_model": "scribe_v2",
+    "no_verbatim": false
+  }
+]

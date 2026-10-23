@@ -1,0 +1,24 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype,amsmath,booktabs,tabularx,longtable,graphicx}
+\usepackage[margin=0.8in,headheight=15pt]{geometry}
+\usepackage{xcolor,fancyhdr,enumitem,xurl}
+\usepackage[hidelinks]{hyperref}
+\definecolor{Gold}{HTML}{987100}
+\setlength{\parindent}{0pt}\setlength{\parskip}{6pt}
+\setlist{nosep,leftmargin=*}\emergencystretch=3em
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small Follow My Voice}\fancyfoot[R]{\thepage}
+\newcommand{\qid}[1]{\par\smallskip\textbf{\texttt{#1}}\par}
+\begin{document}
+{\LARGE\bfseries Manuscript Sections}\par
+\begin{tabularx}{\linewidth}{@{}lX@{}}\toprule Section & Scope \\\midrule
+1 Introduction & Research question and voice comparison \\
+2 Related work & Voice-agent measurement and XR procedure precedents \\
+3 System description & Gaze/controller sensing, local state, bounded memory, Jev and playback \\
+4 Experiment & Two 40-trial voice blocks, starting geometry and measures \\
+5 Planned analysis & Theta-adjusted completion time, repeated measures and missingness \\
+6 Contributions and limitations & Interpretation and generalizability \\
+7 Conclusion & Planned contribution \\\bottomrule\end{tabularx}
+
+\end{document}

@@ -1,3 +1,11 @@
+# Current synchronization status — October 20, 2026
+
+Published Overleaf revision: `f9f49e450c7b64b34c319a557114f1fa4393f003`. Qualtrics is on hold. All 19 live project files match the repository counterparts after a fresh fetch. The full handoff and later user clarification specify one practice using the first assigned voice, 40×2 measured trials, and two retrospective condition-specific sets in the final survey. Retain rest/comfort/tracking checks between blocks. Claude's live Section 3 was preserved with reviewed evidence corrections, bibliography wiring and propagation to aggregate documents. Practice wording was then updated through an isolated four-file Overleaf commit, followed by a schematic-count caption correction without resetting the dedicated checkout.
+
+Current counterparts in this directory include the run sheet, survey questions/scoring, study protocol, manuscript sections and vector procedure figure. See `../2026-10-20-alignment-audit.md` for implemented changes, evidence and remaining runtime/export checks. Previous synchronization records below are historical.
+
+## Historical synchronization record
+
 # Survey inventory: Overleaf sync
 
 Project: https://www.overleaf.com/project/6a84bc097073254fbca6985b

@@ -1,5 +1,19 @@
 # Controller-ray menus and directional hints
 
+## Current implementation — October 1, 2026
+
+**Implemented locally; headset verification pending.** Study interaction is right-controller ray + fresh trigger only, with blue hover and one entry haptic pulse. Setup offers six voices per chosen gender in a three-by-two grid, with a fictional portrait for all twelve candidates. Hover auditions; trigger selects; Confirm requires completed successful audio. See [voice choices](voice-choices.md).
+
+Right-ray Settings, Pause and Repeat guidance controls are available. Settings docks the existing wrist content; opening during search/readiness pauses and hides stimuli. If Settings was opened earlier during setup/success feedback, newly active readiness/search is also paused while it remains open. Closing Settings exposes Continue rather than resuming automatically. Guidance boundary still toggles the eight wall outlines and degree labels together.
+
+The study now uses 40 measured trials per voice, plus separate practice; see the [balanced schedule](balanced-angle-schedule.md). Both voices use the same participant-directed imperative wording and 44 contextual variants. Pilot cadence is 1.25 seconds between ordinary request eligibility, with valid/stable gaze required. Horizontal wall guidance precedes within-wall horizontal/vertical correction. The participant is not told the target identity. See the [current gaze/telemetry guide](guide/03-gaze-agent-and-telemetry.md) for signal validity, overshoot and interruption details.
+
+Latest Unity integration checks cover the settings lifecycle, right-only policy and six-card behavior; graphical renders were inspected for both gender presentations. Physical haptics, reachability, audio levels and full 40+40 completion still require Vive verification.
+
+## Historical beta implementation notes
+
+The dated notes below preserve development history. Their earlier two/five-voice counts, ten-trial blocks, first-person language, left-controller use and two/four-second cadence are superseded by the current section above.
+
 **Implemented — beta, 2026-09-27.** Point at a control, see its blue hover feedback and feel one 0.04-second pulse on that controller, then pull the trigger. Hover alone never activates a button. A/B, keyboard digits, and global trigger shortcuts no longer drive setup, checkpoints or surveys. Wrist/tutorial controls use their existing XRI pointer actions with shared hover feedback. Global EventSystem navigation/Submit is disabled; gaze UI interaction is disabled. Physical UI rays use their existing left/right Trigger bindings.
 
 Visible controls cover Start setup; gender; the two avatar voice cards with hover previews and Back / Confirm; Finish recording; preparation retry / re-record / cancel; audio Accept / Replay / Restart; Center and begin; practice/block/pause checkpoints; NASA-TLX sliders and Submit; Finish and Reset to Start. Disabled audio acceptance cannot bypass failed or unfinished playback. The clone page says **Finish recording**, without a keyboard suffix.
@@ -53,3 +67,11 @@ Editor checks exercise actual Button pointer callbacks for gender/voice/back, ho
 ## Guidance boundary wrist option
 
 **Implemented:** Wrist menu → Settings → **Guidance boundary** shows/hides all eight wall outlines and degree labels together (formerly labeled Degree guides). Point at the switch and pull the trigger; the shared ray highlight and entry pulse apply. The choice remains in effect for later trials and newly created frames during the same session. Reopening the menu reflects the current value. This controls the guide visuals only: objects, search-zone geometry, gaze hints and readiness remain active. The public `FindObjectGameManager.SetDegreeGuidesVisible(bool)` API provides the same action. The existing default is visible; this change does not add a device-wide saved preference.
+
+## Expanded assistance — September 28, 2026
+
+**Implemented locally:** 32 source guidance phrases: eight left, eight right, four far-left, four far-right, four correct-area and four return variants. Self-similar speech has explicit first-person equivalents and excludes the rejected “I'll try looking right” option. Normal directional cues become eligible every two seconds from the previous request (previously four), still waiting for active speech to finish. Arrival/return debounce, six-second cooldown and stale-direction cancellation remain in effect; these cues vary only when their existing state gates permit them. This does not add periodic arrival chatter or vertical guidance. All variants enter the prepared voice inventory and actual spoken text remains logged. The larger starter inventory may take longer to prepare; listening/setup-time acceptance is still pending.
+
+**Implemented locally after clarification:** keep the headset bottom panel with timing, trial progress and agent status; remove its target name/color display. Readiness and wrong-selection messages remain generic. The browser timeline is unchanged. This panel change does not yet remove the separate readiness-cross target label or spoken target announcements; those remain part of the coordinated hidden-target work in #11/#34.
+
+**Implemented 2026-09-28:** voice cards now offer five choices per gender in a three-plus-two grid. The original four avatars remain; six new choices use named cards. Hover previews, trigger selection, exclusive border, and Back → Confirm gating are unchanged. See [voice choices](voice-choices.md) for the ElevenLabs cloning migration and remaining hardware checks.

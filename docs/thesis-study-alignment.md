@@ -1,5 +1,6 @@
 # Seated rotating-search thesis: alignment checkpoint
 
+**Protocol proposal / October 20 update:** one practice trial in the first assigned voice; final-only condition-specific questionnaires after both 40-trial blocks; between-block rest/comfort/tracking checks remain. Qualtrics is on hold. See `docs/protocol/2026-10-20-final-survey-decision.md`. The practice/survey gates now align locally; see [the implementation audit](protocol/2026-10-20-alignment-audit.md). The September entries below are historical and are superseded where they conflict.
 **Measurement planning (2026-09-16):** see the [living measures register](measures-register.md) for all surveys, behavioral metrics, scoring, implementation gaps and open decisions. IMI is now included; final subscales/form are proposed.
 
 Updated 2026-09-22. Planning companion to [the procedure](experiment-procedure.md) and [epic #19](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/19). This is not a frozen participant protocol or an institutional approval record. The [September 22 reconciliation](meeting-reconciliation-2026-09-22.md) records all meeting requirements, current source evidence and next steps.

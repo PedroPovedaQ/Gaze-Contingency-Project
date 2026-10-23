@@ -82,7 +82,7 @@ class VerifierTests(unittest.TestCase):
 
     def test_alignment_gate_captures_locked_design_details(self) -> None:
         required = verifier.REQUIRED_STUDY_ALIGNMENT[
-            "HRP-503_Gaze_Contingency_Protocol_DRAFT.docx"
+            "HRP-503_Gaze_Contingency_Protocol.docx"
         ]
         for detail in (
             "up to 64 experimental trials",

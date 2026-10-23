@@ -1,0 +1,13 @@
+analyzable_participants,retention_probability,expected_count_enrollment,assurance,enrollment_for_assurance,assumption
+15,0.8,19,0.9,22,independent equal completion probability; no informative loss; not a selected target
+15,0.85,18,0.9,20,independent equal completion probability; no informative loss; not a selected target
+15,0.9,17,0.9,18,independent equal completion probability; no informative loss; not a selected target
+20,0.8,25,0.9,28,independent equal completion probability; no informative loss; not a selected target
+20,0.85,24,0.9,26,independent equal completion probability; no informative loss; not a selected target
+20,0.9,23,0.9,24,independent equal completion probability; no informative loss; not a selected target
+30,0.8,38,0.9,42,independent equal completion probability; no informative loss; not a selected target
+30,0.85,36,0.9,39,independent equal completion probability; no informative loss; not a selected target
+30,0.9,34,0.9,36,independent equal completion probability; no informative loss; not a selected target
+48,0.8,60,0.9,65,independent equal completion probability; no informative loss; not a selected target
+48,0.85,57,0.9,61,independent equal completion probability; no informative loss; not a selected target
+48,0.9,54,0.9,57,independent equal completion probability; no informative loss; not a selected target

@@ -1,323 +1,68 @@
-# Gameplay Round Flow
+# Gameplay round flow
 
-**Current pilot implementation — 2026-09-27:** researcher-requested directional guidance supersedes warmer/colder-only wording below. Both voices use gaze-relative “Look left” / “Look right” toward the target wall, followed by a debounced correct-area cue when gaze enters it. Self-similar speech uses first-person singular (“I need to find the red cube”; “I need to look left”; “I'm in the correct area. I need to keep looking”), while the other voice uses external instructions. Voice identity and wording therefore differ together; this is not a voice-only manipulation. The phrase/cache version is `perspective-v3-first-person-directional`, guidance policy `gaze-directional-v1`. Both directions and the area cue are startup-prepared (seven phrases per voice, fourteen total); tracking loss suppresses directional guidance, and obsolete direction cues are cancelled. Target instructions remain protected. These are pilot settings requiring headset validation.
+**Implemented locally / October 20 update:** one practice trial; final-only condition-specific questionnaires after both 40-trial blocks; between-block rest/comfort/tracking checks remain. Qualtrics is on hold. See `docs/protocol/2026-10-20-final-survey-decision.md`. Wearer acceptance of the changed sequence remains pending.
 
-**Implemented beta (2026-09-11):** `codex/eight-plane-beta` now starts from a seated center with eight surrounding planes, 21 randomly scattered objects each. It retains two practice trials. The current beta uses two ten-trial voice blocks with [balanced relative wall angles](../balanced-angle-schedule.md). See [beta behavior and QA](../eight-plane-beta.md). Shelf-specific descriptions below describe the retained legacy mode.
+**Implemented (2026-10-10):** correct right-trigger selection stops search timing before a 1.2-second, 100-fragment crumble effect begins. Fragments are cosmetic, share one mesh, have no colliders or rigidbodies, and use a separate deterministic RNG. The original target metadata remains available to capture observers. Existing chime and positive reinforcement still play; wrong selections do not crumble objects.
+**Implemented locally — October 1, 2026; headset acceptance pending.** The current study has two counterbalanced voice blocks of 40 measured trials, plus one separate practice trial in the first assigned voice. Targets stay hidden from participant instructions/UI. Both voices use shared gaze-contingent commands, and only the right-controller ray/trigger selects an object. Earlier table-tap, shelf, dwell, 14-/20-trial and first-person descriptions are historical; see Git history for those implementations.
 
-This guide walks through the full lifecycle of a run in the Find Object game, from the first tap that starts the session to the final completion screen.
 
-**Implemented:** neutral profile selection → self-similar enrollment → both phrase libraries prepared and audio samples accepted → two practice trials → seven experimental trials → block-1 NASA-TLX and break → seven trials in the other voice → block-2 NASA-TLX. Guidance is always gaze-contingent. See [QA procedure](../voice-study-qa.md).
+## Neutral quick test — implemented development shortcut
 
-## What this game is doing
+On the first voice setup panel, point the right controller at **Quick test — neutral voice** and press the trigger. This sets the session-only `SessionConfig.NeutralQuickTest` flag. The standard **Start setup** path stays unchanged. Quick test uses Eric (neutral male catalog option 0), clears any previous participant/clone state, prepares only the neutral phrase library, and skips voice selection, recording, sample acceptance, the study introduction and the single practice trial. Missing audio must load successfully before proceeding; a failed preparation offers retry/cancel and never starts silent trials. Existing cached clips are reused.
 
-The game is a controlled visual-search task. Every round places one target and 167 distractors into a reproducible random 168-object array. The participant must locate the correct object, point the controller ray at it and press the trigger.
+After loading, select **Center and begin** while seated and facing forward. This preserves floor-origin validation, normal per-trial readiness, hidden-target guidance and right-controller selection. The quick-test schedule starts from wall 0 (the centered forward direction), rather than the last practice target. Its version ends in `quick-origin0-v1`; all planned signed turn angles are preserved, and every later trial starts from the previous target wall. The run contains the first 40 planned trials (or a smaller existing debug override), all neutral, with ordinary gaze, motion, event and replay recording. The schedule's `enabled_in_run` flags match that limit. Runs use participant `DEV_NEUTRAL`, a `dev_quick_test_` folder label, `session-mode-v1.txt` with `study_data=false`, and `session_mode=neutral_quick_test` in the trial summary. Exclude them from study analysis. No two-voice readiness acceptance is fabricated. Resetting for a new participant clears the flag and restores the study schedule; it is not a saved launch preference.
 
-The important design property is that the run is not improvisational. The shelf layout, target schedule, and object combinations are deterministic. That makes the study repeatable and makes the analytics interpretable.
 
-## Timeline of a complete run
+## Session setup and practice
 
-1. The first surface tap establishes the shelf geometry; progress waits for both voice libraries and accepted playback samples.
-2. Two separate practice trials expose the task in each assigned voice. **Implemented:** each is announced as practice aloud, labeled PRACTICE during the fixation transition, and shown as PRACTICE 1 / 2 or 2 / 2 with “not counted” during the search. A researcher checkpoint starts the measured run.
-3. `OnGameStarted` opens one run folder for all 14 experimental trials.
-4. Each transition sets the assigned block voice and announces the goal while objects are prepared but hidden.
-5. `OnRoundReady` records object readiness. After the announcement completes, `BeginSearch` reveals objects, resets controller confirmation, starts the search clock and emits `OnSearchStarted`.
-6. Correct capture stops search timing and logs the completed trial; wrong capture remains within that trial.
-7. After trial seven, logs flush, NASA-TLX records block 1 and a checkpoint holds the break. The next voice is applied only after confirmation.
-8. After trial fourteen, the summary is finalized and NASA-TLX records block 2. Timeout, withdrawal and technical stops retain an incomplete summary without replacement trials.
-9. Explicit pause hides objects and stops speech/selection/timing; confirmation resumes the same trial with accumulated search time preserved.
+**Implemented development shortcut — October 20:** the startup panel now also offers **Quick test — new cloned voice**, alongside neutral and last-clone options. It records a fresh microphone sample through the existing tone/reading/Finish recording flow, creates a new ElevenLabs clone, prepares only that clone's verified phrase library, then enters the same Center and begin / 40-trial development path. It does not reuse a saved voice or create a study block assignment. Enrollment failure offers Record again / Cancel; preparation failure offers Retry audio / Cancel and does not start trials. Fresh-clone runs use `DEV_CLONE`, `session_mode=new_clone_quick_test`, and `study_data=false`. The successfully created clone remains available to the explicit last-clone shortcut later. The fresh shortcut skips study voice selection, sample acceptance and practice, just like the existing quick tests; it does not fabricate study audio-readiness acceptance. Normal participant setup is unchanged.
 
-## First tap: how the session starts
+The active scene is `GazeContingencyStudyScene`. `VoiceModeSelector` handles presentation and preferred-voice choice: six candidates in each offered gender category, hover preview, selection and confirmation. Natural-voice enrollment prepares the self-similar condition. `VoiceAssistantController` and `VoiceSynthesizer` coordinate preparation and accepted playback levels for the assigned voices; failures must not silently replace a condition.
 
-The game does not begin from a menu button in the usual sense. It begins when the `ObjectSpawner` emits its first spawn event. That initial spawn is treated as the session trigger, not as one of the actual round objects.
+In rotational mode, the right-ray **Center and begin** checkpoint captures the seated position and horizontal room-front reference. Floor tracking must be available. No room-setup table tap is required. Head turning after centering does not redefine the fixed scene reference.
 
-The game manager listens for that event:
+One practice trial introduces the same task and selection method using the first assigned voice: preferred catalog for Order A, self-similar for Order B. It is explicitly labelled practice and remains outside measured-trial counts. After successful practice feedback, a researcher checkpoint confirms readiness. `FinishPractice` starts the measured run and emits `OnGameStarted`; `TrialDataLogger` then opens a single coded run folder for both blocks. Replay/raw-eye recordings can also include practice and setup, with their own explicit phase identities.
 
-```csharp
-void OnObjectSpawned(GameObject obj)
-{
-    if (m_State == GameState.Idle)
-    {
-        var voice = GetComponent<VoiceAssistantController>();
-        if (voice != null && !voice.IsReady) { StartCoroutine(WaitThenStart(obj)); return; }
-        StartGame(obj);
-    }
-    else Destroy(obj);
-}
-```
+**Protocol proposal:** consent, background, equipment fitting, natural sample, voice choice, calibration and independent validation occur before measured trials. The [run sheet](../protocol/overleaf/experimenter-run-sheet.tex) owns operator wording; final survey/capture choices and setup sequencing need researcher review. The setup figure groups related activities rather than prescribing a new acquisition order.
 
-If voice services are not ready yet, the manager waits. Once ready, `StartGame()` uses the tap location as the initial spawn center, then starts a transition-style first-round intro (cross + goal announcement + blank pause) before spawning round 1 objects.
+## Reproducible objects and angles
 
-That startup behavior is deliberate: round 1 now mirrors inter-round timing so participants always receive the goal announcement during a fixation phase, not over active object search.
+`ChallengeSet` creates 80 measured definitions and records participant/schedule/layout seeds. Each block has eight trials in each absolute-angle category: 0, 45, 90, 135 and 180 degrees. Eight shuffled five-trial groups each contain all five categories. Paired directions are mirrored across blocks; their order is independently randomized. Theta uses the previous target wall as its reference, not fixed room front. Practice initializes at the front wall; the first measured trial starts from that practice target wall. Study schedules use `previous-wall-angle-v6-stratified-40-trials-one-practice`; old recorded schedules remain unchanged.
 
-## Shelf generation
+Each trial has 168 objects, 21 on each octagonal face, with exactly one target identity. Layout sampling randomizes horizontal position and floor-relative height. Actual mesh transforms are saved for reconstruction. Target wall/slot allocation and repeated-identity counts are controlled separately from scatter. See [schedule definitions](../balanced-angle-schedule.md) and [geometry](../eight-plane-beta.md).
 
-Shelf generation happens once per run, not every round.
+**Open decision:** current floor-relative heights do not enforce equal above/below quotas. The October 20 protocol uses readiness-cross center as the vertical reference and plans 20 above/20 below per block. Deadband, allowable magnitudes and seated feasibility still need to be frozen before implementing that balance. A short debug run truncates the full schedule; it does not preserve completed-trial balance or establish full-session behavior.
 
-The shelf system is responsible for:
+## One trial: transition to selection
 
-- deciding which way the bookshelf should face,
-- creating the visible bookshelf geometry,
-- computing the fixed spawn slots for all round objects,
-- caching that layout so later rounds can reuse it.
+1. `BeginFirstRoundTransition` clears announcement readiness, resets controller confirmation, sets the assigned voice and the stable **presented trial** context, then emits `OnRoundTransitionStarted`.
+2. `TrialReadinessGate` places a world-fixed cross on the previous target wall. Valid continuous gaze charges the gate; tracking loss, leaving the padded cross, pausing or an excessive unobserved frame gap resets it. This is a readiness interaction, not object dwell selection or a validated fixation.
+3. `DoSpawnRound` creates/configures the planned objects, colliders, shape/color/plane metadata and non-grabbable interactables. Objects remain visually hidden. `OnRoundReady` publishes the snapshot; the voice coordinator marks announcement completion independently.
+4. **Implemented October 9:** after the gaze cross completes and setup audio is ready, the agent says the opening direction (for example, “The object is to the right.”) while objects remain hidden and the search clock is stopped. **Implemented October 11:** if valid gaze is already in the target wall, this opening instead uses the existing vertical/lateral refinement (for example, “Look lower and left.”), with the same 20%/50% wall-height magnitude bands. It uses fresh direction thresholds and does not carry the previous trial’s direction hysteresis. A matching natural audio-playback completion permits `BeginSearch` to reveal the objects, start the pause-aware `StudyTrialClock`, reset trigger confirmation, hide the cross and emit `OnSearchStarted`. Cancelled/failed opening audio cannot start search. A readiness pause cancels that opening and requires a fresh cross charge after Continue. No 3-2-1 countdown or extra timed wait is added.
+5. `SharedGazeStream` supplies validity-aware observations to guidance and logging. `HintGenerator` guides toward the correct horizontal wall, then smaller vertical, horizontal or combined diagonal adjustments. A 0.1-second valid gaze hold inside the target vicinity, with the target uniquely closest among overlapping object rings, can say “Yep, that's it!” or another confirmation variant; the right-controller target hold plus nearby gaze can say “You're on it!” Invalid or stale gaze suspends new decisions; changes can cancel obsolete speech. The agent does not name the target's color/shape.
+6. `ControllerRaySelector` highlights the intersected object, sends an entry haptic and accepts a fresh right-trigger confirmation. Wrong selections emit `OnWrongCapture` and retain the current target/search. Looking alone never captures an object.
+7. On correct selection, replay captures the selection/controller/object state before the manager advances its counter. The search clock stops; `OnObjectFound` writes the completed trial. A chime and varied reinforcement play in the active voice before the next transition. Success-feedback time is outside active-search time; logs remain open through it.
 
-The layout is computed from the detected table and the player’s viewpoint. The shelf faces toward the player, and the object-facing rotation is cached for all later spawns.
+The timing/progress panel remains visible without target identity. A debug log or researcher replay can show target metadata; participant speech/UI cannot.
 
-```csharp
-ObjectFacingRotation = Quaternion.LookRotation(facingDir, Vector3.up);
-ShelfRight = shelfRight;
-ShelfFacing = facingDir;
-```
+## Pauses, block boundaries and completion
 
-The shelf rows are fixed:
+`PauseSession` hides objects, suspends selection/speech and pauses the search clock. `ResumeSession` requires explicit Continue and retains the same trial. A readiness pause resets the charge and replays the readiness announcement; it does not resume an old search timer. Opening Settings during readiness/search invokes this pause behavior; closing Settings does not automatically continue. Hold right-controller **A** and click its thumbstick twice within **450ms** to open/close Settings. The right-ray Settings button remains available. The panel opens 0.8m ahead at 130% of its original scale, stays fixed while the head moves, and has a **Close settings** button beneath it. After closing, select **Continue** to resume a paused trial.
 
-```csharp
-const int k_Rows = 7;
-const int k_Cols = 2;
-```
+After measured trial 40, the app shows a researcher break/comfort/tracking checkpoint before applying the other voice. It does not collect a questionnaire there. After trial 80, it finalizes the measured run and hands off to the researcher for headset removal, immediate symptom check, then final questionnaires referring separately to Block 1 and Block 2. Qualtrics remains on hold. Development quick tests alone retain the legacy in-headset 0–100 TLX form; these are not participant study responses.
 
-Each slot uses a deterministic Y position. The shelf code spaces rows evenly and then computes positions within each shelf column:
+Withdrawal, audio failure, timeout and other technical stops retain the partial run and reason. A stop during success feedback does not reverse a recorded correct capture. No replacement trial is silently inserted. A replay/raw-eye file without a clean footer/receipt remains incomplete even if some trials were completed.
 
-```csharp
-float y = tableY + row * rowH + k_PlankThickness + 0.04f;
+## Data and verification
 
-Vector3 pos = colCenters[col]
-    + shelfRight * localX
-    + shelfForward * localZ
-    + Vector3.up * (y - tableY);
-```
+`TrialDataLogger` writes trial events, object manifest, schedule and run summary. `GazeDataLogger` is the compatibility CSV consumer of the shared gaze stream; continuous raw observations and replay remain separate. The offline [trial exporter](../trial-performance-csv.md) produces one aggregate performance/subjective CSV per logical trial, a combined table and provenance manifest. Repeated block ratings retain block scope.
 
-The important consequence is that the same round always uses the same shelf geometry and the same slot structure, which is what makes the study repeatable.
+Use [study QA](../voice-study-qa.md), [measurement validation](../gaze-measurement-validation.md), [telemetry definitions](03-gaze-agent-and-telemetry.md) and the [morning verification report](../overnight/2026-10-01-morning-verification.md). Offline integration checks and successful Android packaging do not verify physical haptics, acoustic behavior, eye accuracy, native 120 Hz acquisition, participant comfort or full-session burden.
 
-## Deterministic challenge set
+### Shared instruction cards (implemented October 8, 2026)
 
-The challenge set is pre-generated with a fixed RNG seed:
+`StudyPromptCard` and `Resources/UI/StudyPromptCard.prefab` provide the coaching-style surface and Inter typography for setup, audio checks, recording/loading, start instructions, trial status, surveys and completion. `RayMenuFeedback` uses the same rounded treatment for ray-selectable buttons. Instructions use a short heading and next action; the voice-card grid, survey questions, trigger/haptic behavior and hidden-target rules remain in their existing screen controllers. The readiness cross retains its prior stimulus typography and geometry. `Tools > Codex > Refresh Study Prompt Style` regenerates the shared prefab from the original coaching assets (using the surviving rounded template sprite when the legacy background reference is missing).
 
-```csharp
-var rng = new System.Random(42);
-```
+The original template Coaching UI and its Relaunch Coaching wrist control are disabled in the study scene to avoid duplicate startup instructions. The shared study setup card owns participant instructions.
 
-This means the experiment is deterministic across participants. Everyone gets the same round sequence, the same target/distractor composition, and the same shelf slot mapping.
-
-Each round contains:
-
-- 1 target object,
-- 39 same-color distractors,
-- 39 same-shape distractors,
-- the remaining neutral distractors needed to bring the total to 168 objects.
-
-The round record stores both the target and the full object array:
-
-```csharp
-s_Rounds[r] = new RoundDef
-{
-    roundIndex = r,
-    blockIndex = 0,
-    target = target,
-    objects = objects.ToArray()
-};
-```
-
-**Implemented:** All 14 rounds use gaze-contingent hints, regardless of participant number or selected voice. `ChallengeSet.IsGazeAware()` always returns true, and `blockIndex` is 0 for trials 1–7 and 1 for trials 8–14. Voice order is saved per coded participant.
-
-## Spawning and configuration
-
-Once the game starts, `DoSpawnRound()` performs the actual round setup.
-
-First it reads the deterministic round definition:
-
-```csharp
-var round = ChallengeSet.Rounds[m_CurrentRound];
-m_CurrentTarget = (round.target.shape, round.target.color, round.target.colorValue);
-```
-
-The manager exposes `CurrentRoundGazeAware = true` and `CurrentRoundConditionLabel = "gaze_aware"` throughout the run. `HintGenerator` has no unaware toggle or control policy.
-
-### How each object is configured
-
-The manager computes a fixed list of spawn points from the shelf layout:
-
-```csharp
-m_SpawnPoints.AddRange(ShelfSpawner.ComputeSpawnPoints(
-    m_SpawnCenter, m_PlaneSize, m_PlaneRight, m_PlaneForward, ChallengeSet.ObjectsPerRound));
-```
-
-Then it instantiates a prefab for each object and immediately strips out stale interactable state from the prefab copy:
-
-```csharp
-var obj = Instantiate(prefabs[0]);
-
-var oldGrab = obj.GetComponent<XRGrabInteractable>();
-if (oldGrab != null) DestroyImmediate(oldGrab);
-```
-
-After that, the shape/color factory applies the deterministic combo:
-
-```csharp
-m_Factory.EnqueueCombo(def.shape, def.color);
-m_Factory.ConfigureObject(obj);
-```
-
-`ShapeObjectFactory` is what swaps the mesh, applies the color, sizes the object, and adds metadata:
-
-```csharp
-var info = obj.AddComponent<SpawnableObjectInfo>();
-info.shapeName = shapeName;
-info.colorName = colorName;
-obj.name = info.DisplayName;
-```
-
-It also makes gaze interaction possible:
-
-```csharp
-grab.allowGazeInteraction = true;
-grab.allowGazeSelect = false;
-grab.allowGazeAssistance = false;
-```
-
-The game manager then places the object at the assigned shelf slot and corrects special cases like the pyramid base height:
-
-```csharp
-obj.transform.position = sp.position;
-obj.transform.rotation = ShelfSpawner.ObjectFacingRotation;
-
-if (info.shapeName == "Pyramid")
-{
-    var p = obj.transform.position;
-    p.y -= obj.transform.localScale.y * 0.5f;
-    obj.transform.position = p;
-}
-```
-
-Finally, the game waits one frame, adds a fresh `XRGrabInteractable`, waits for registration, resets controller confirmation, and only then shows the objective.
-
-## Controller selection
-
-**Implemented (September 22):** point either physical controller ray at an object to highlight it light blue, then press that controller's trigger once to confirm. `ControllerRaySelector` uses the existing XRI Near-Far ray hit, respects foreground UI, and only accepts input while search is active and the controller is tracked. Gaze alone never highlights or captures an object.
-
-The trigger must be released during active search before a press is accepted. Holding it does not repeat or carry a selection across pauses, tracking loss or rounds. Search objects reject grab selection and remain fixed. During octagonal search, controller casts use searchable layer 8; normal masks return outside search. Near grabbing is disabled during search.
-
-`GazeHighlightManager` retains its serialized identity only as the gaze anchor for telemetry/hints and gaze wall filtering. The legacy `dwell_progress` CSV column is always zero. Trial summaries record `selection_method: controller_ray_trigger_press_v1`; earlier dwell runs must not be silently pooled with this interaction method. Headset validation remains pending.
-
-If the captured object matches the current target’s shape and color, the round counts as correct. Otherwise the UI shows wrong feedback and the game continues.
-
-## Transition cross
-
-When the player finds the correct object, the game does not immediately spawn the next round. It switches into a transition state.
-
-The transition does three things:
-
-1. pauses the timer,
-2. destroys all current round objects,
-3. shows a fixation cross with the next round’s goal text.
-
-The UI helper for the cross is:
-
-```csharp
-public void ShowFixationCross(string color = null, string shape = null)
-{
-    if (m_CrossGoalText != null)
-    {
-        bool hasGoal = !string.IsNullOrEmpty(color) && !string.IsNullOrEmpty(shape);
-        m_CrossGoalText.enabled = hasGoal;
-        m_CrossGoalText.text = hasGoal ? $"Goal: {color} {shape}" : "";
-    }
-    if (m_CrossCanvasGO != null) m_CrossCanvasGO.SetActive(true);
-}
-```
-
-That goal text is drawn in black at the top-left of the cross box.
-
-The game manager shows it like this:
-
-```csharp
-var nextTarget = ChallengeSet.Rounds[m_CurrentRound].target;
-m_UI.ShowFixationCross(nextTarget.color, nextTarget.shape);
-OnRoundTransitionStarted?.Invoke(m_CurrentRound, nextTarget.color, nextTarget.shape);
-```
-
-## Blank pause
-
-After the transition cross is hidden, the game inserts a blank pause before the next objects appear. This is intentional and is there to reduce anticipation.
-
-The pause is randomized between 0.2 and 1.3 seconds:
-
-```csharp
-const float k_BlankPauseMin = 0.2f;
-const float k_BlankPauseMax = 1.3f;
-```
-
-And the runtime code is:
-
-```csharp
-float blankPause = Random.Range(k_BlankPauseMin, k_BlankPauseMax);
-yield return new WaitForSeconds(blankPause);
-```
-
-This means the participant sees:
-
-1. transition cross,
-2. next-goal label,
-3. blank screen,
-4. next round.
-
-## Next-round spawn
-
-After the blank pause, the manager resets controller confirmation and spawns the next round:
-
-```csharp
-if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
-
-m_State = GameState.Playing;
-yield return DoSpawnRound();
-```
-
-The important point is that the next round is not a continuation of the previous hovered state. It is a fresh state with:
-
-- a new target,
-- a new object array,
-- a released-trigger confirmation gate,
-- updated hint mode,
-- a fresh UI objective.
-
-## End of run
-
-When the last target is found, the game switches to `Completed`, stops the timer, and shows the completion panel.
-
-```csharp
-if (m_CurrentRound >= k_TotalRounds)
-{
-    m_State = GameState.Completed;
-    float elapsed = m_UI.StopTimer();
-    m_UI.ShowCompletion(k_TotalRounds, elapsed);
-    OnGameCompleted?.Invoke(elapsed);
-    StartCoroutine(ResetAfterDelay());
-}
-```
-
-The completion HUD explicitly asks for the post-run survey:
-
-```csharp
-m_CompletionText.text =
-    $"All {total} rounds complete!\n" +
-    $"Time: {timeStr}\n\n" +
-    "Please submit NASA-TLX now.";
-```
-
-## Why the flow is structured this way
-
-This flow is intentionally rigid.
-
-- Deterministic challenge generation keeps the study reproducible.
-- Shelf caching keeps layout stable across rounds.
-- Fresh object instantiation prevents stale interactable state.
-- Dwell capture standardizes selection.
-- Transition cross plus blank pause reduces anticipatory behavior.
-- A single gaze-contingent policy is used throughout either voice run.
-
-If you are debugging the game, the most useful mental model is:
-
-`tap -> bootstrap -> build shelf once -> first-round cross+announcement -> spawn deterministic round -> controller trigger capture -> transition cross -> blank pause -> next round -> repeat -> completion`
-
-### Controller intersection haptics (implemented locally, 2026-09-24)
-
-During active search, entering a search object with a controller ray produces one 40 ms pulse at 0.2 amplitude on that controller, alongside its highlight. Holding the ray on the same object does not repeat the pulse; switching objects or exiting and re-entering does. Both targets and distractors use identical feedback. Pause, tracking loss and selection reset clear intersection history. Strength and duration are serialized settings on ControllerRaySelector. Device feel and delivery remain to be verified.
+**Implemented:** the current eight-wall study requires no surface selection. Voice setup proceeds to seated **Center and begin**, then the existing introduction/readiness/trial sequence. Room-floor tracking and gaze-readiness checks still apply.

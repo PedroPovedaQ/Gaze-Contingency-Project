@@ -1,0 +1,67 @@
+{
+  "model": "gpt-6-astra",
+  "advisory": true,
+  "report_sha256": "66503d1611681dc1e95554061582e77bbfe46a35aced83b2bdaa213e3f2e7ab7",
+  "result": {
+    "recommendation": "Use these runs to identify scheduling and playback-validation issues for further testing, without ranking policies or recommending deployment. Preserve the distinction between request-time choice validity and playback-time relevance. The roughly 2-second concern is not reproduced as an observed confirmation delay here: delivered confirmations reached at most 1.4 seconds in all_jev and 0.6 seconds in each protected policy. It remains unresolved for real headset playback, and missing confirmations must not disappear from the assessment simply because they have no measured delay.",
+    "caveats": "This is an advisory assessment of fixed trajectories, not participant experience. The actual C# state machine qualifies events; audio starts, 1.0/1.8-second durations, fades and scheduling are simulated. Only Mac HTTP times are measured: policy medians are approximately 0.23\u20130.25 seconds, with maxima of 0.35\u20130.65 seconds. These do not establish headset end-to-end latency. Zero simulated delay means the same 50 ms tick. Remaining delay mechanisms include existing speech, polling/scheduler waits, deadline handling and stale pending responses; local priority does not eliminate waiting for audio. Missing evidence includes headset qualification-to-audible-onset measurements, actual audio durations and buffering, repeated trials and latency tails, participant responses and perceived pacing, and the exact production phrase/pacing runtime. Requests occur only while audio is idle, so these runs do not validate Jev interruption judgments during ongoing speech. Speech histories follow each policy's simulated starts; trajectories cannot demonstrate behavioral benefit. Episode denominators depend on prior consumption, so 16 versus 17 qualified episodes is not a matched outcome comparison. Restricted is a reference action menu; full menus contain about 30 actions, not 500 authored phrases.",
+    "policies": [
+      {
+        "policy": "restricted",
+        "assessment": "All 16 unique qualified confirmation episodes received valid starts; none were missing. Median simulated delay was 0 seconds, maximum 0.6 seconds, with two episodes above 0.5 seconds. In turn_wall_vertical and speech_then_confirm, the 0.6-second gaze delay comprises 0.5 seconds of existing speech plus 0.1 seconds of scheduler/policy waiting. Thus residual audio contention remains despite local priority. The turn sequence also had a deadline event before its first direction; successful HTTP completion is distinct from meeting the simulated request deadline. Across sequences, guidance follows turning, refinement, qualified gaze, qualified controller pointing and, where present, successful trigger selection. The two overshoot gaze confirmations represent acquisition and reacquisition, not redundant praise. Controller-before-gaze guidance fades locally when pointing changes the state; no extra gaze episode should be invented before the first qualified pointing confirmation. Gaze-controller-elsewhere provides an aim/trigger reminder before pointing confirmation and later success. Repetition suppression leaves two 'Turn right' starts separated by 3.3 seconds of silence in ignored_direction_silence, followed by progress and downward refinement. Whether that silence or the spaced repeat helps a person is unknown. Rapid reversal blocks request-valid directions that become stale or lose evidence before playback. Pause handling and simulated fades are observable scheduler behavior, not validated Jev interruption decisions. No flagged playback starts were recorded; that does not establish production-runtime quality.",
+        "evidence_ids": [
+          "turn_wall_vertical:restricted",
+          "overshoot_reacquire:restricted",
+          "controller_before_gaze:restricted",
+          "gaze_controller_elsewhere:restricted",
+          "overlap_blink_pause:restricted",
+          "rapid_reverse:restricted",
+          "ignored_direction_silence:restricted",
+          "speech_then_confirm:restricted"
+        ]
+      },
+      {
+        "policy": "eligible_actions",
+        "assessment": "All 16 unique confirmation episodes received valid starts, with none missing; median simulated delay was 0 seconds and maximum 0.6 seconds. Two exceeded 0.5 seconds: turn-wall gaze confirmation at 0.55 seconds and speech-then-confirm gaze confirmation at 0.6 seconds, primarily waiting for existing speech. Whole sequences show local confirmations, return guidance, reminders and success after selection. Two 'Keep going right' utterances in turn_wall_vertical correspond to distinct qualified progress milestones, so their repeated wording alone does not establish unnecessary speech. Overshoot reacquisition likewise warrants a separate confirmation assessment. Ignored_direction_silence contains two spaced rightward instructions, a 3.2-second silent interval, then progress and refinement; usefulness of this pacing is unknown. Geometry/revision checks block directions that were valid when requested but stale at playback, including reversal, unavailable evidence and looking at the target. These blocks demonstrate protection rather than erroneous request-time Jev geometry choices. Controller-before-gaze contains two local simulated fades; overlap/pause handling avoids new speech during pause. No flagged starts or repeat-review candidates were recorded. Small timing differences from the other protected runs do not establish a menu advantage.",
+        "evidence_ids": [
+          "turn_wall_vertical:eligible_actions",
+          "overshoot_reacquire:eligible_actions",
+          "controller_before_gaze:eligible_actions",
+          "gaze_controller_elsewhere:eligible_actions",
+          "overlap_blink_pause:eligible_actions",
+          "rapid_reverse:eligible_actions",
+          "ignored_direction_silence:eligible_actions",
+          "speech_then_confirm:eligible_actions"
+        ]
+      },
+      {
+        "policy": "all_jev",
+        "assessment": "Of 17 unique qualified confirmation episodes, 13 received valid starts and four were missing within their qualified episodes: the first overshoot gaze episode, the pointing episode in gaze_controller_elsewhere, and the first two overlap_blink_pause gaze episodes. Report these separately from delivered-confirmation delays: median 0.8 seconds, maximum 1.4 seconds, and 12 above 0.5 seconds. The 1.4-second turn-wall gaze delay includes 1.0 second of existing speech and 0.4 seconds pending Jev; controller-before-gaze's later pointing delay is 1.25 seconds, including 0.95 seconds of speech. Six playback flags expose final-check/scheduling problems: two opposing directions, one direction after gaze acquisition, two unqualified gaze confirmations and one pointing confirmation after successful selection. Their corresponding choices were valid at request time: for example, overshoot requested gaze confirmation at 1.8 seconds while looking, then played it at 2.05 after gaze was lost; gaze_controller_elsewhere requested pointing confirmation at 6.95 before selection, then played it at 7.3 after completion. These are not evidence of intrinsically wrong Jev choices. Sequence-level repetition is clearest in ignored_direction_silence: five 'Turn right' starts with only about 0.2\u20130.3 seconds between utterances, four marked for repeat review. That is a pacing concern, although participant annoyance or benefit is unknown. The fifth repeat candidate, rapid_reverse's second 'Turn left', follows changed geometry and unavailable evidence, so its necessity is uncertain. Repeated progress at separate turn-wall milestones and qualified reacquisition are not automatically excessive. Overshoot's 'Look down and left' remains useful return guidance despite differing from the reference wording. In ignored_direction_silence, rightward encouragement requested before wall entry plays after the transition; its usefulness is uncertain, and downward refinement follows later. Waiting choices generally match request-time eligibility, but polling and deadlines can leave newly qualified opportunities silent or missed. The 1.35-second maximum actionable-silence summary does not negate the dense repetition or missing confirmations. Pause cancellation interrupts one simulated utterance; ongoing-speech Jev interruption judgment remains untested.",
+        "evidence_ids": [
+          "turn_wall_vertical:all_jev",
+          "overshoot_reacquire:all_jev",
+          "controller_before_gaze:all_jev",
+          "gaze_controller_elsewhere:all_jev",
+          "overlap_blink_pause:all_jev",
+          "rapid_reverse:all_jev",
+          "ignored_direction_silence:all_jev",
+          "speech_then_confirm:all_jev"
+        ]
+      },
+      {
+        "policy": "jev_overrides",
+        "assessment": "All 16 unique qualified confirmation episodes received valid starts, with none missing; median simulated delay was 0 seconds, maximum 0.6 seconds, and two exceeded 0.5 seconds. Both 0.6-second gaze delays consist of 0.5 seconds of existing speech plus 0.1 seconds of scheduler/policy waiting, so the remaining delay concern includes audio contention even with local overrides. Whole sequences preserve qualified acquisition/reacquisition, controller confirmation, aim/trigger reminders and success only after selection. Distinct turn-wall progress milestones explain repeated encouragement. Rapid-reversal, overlap and speech-then-confirm responses that become stale are blocked before playback; they were valid against their request observations. In ignored_direction_silence, Jev explicitly chooses wait three times despite an available rightward action, but the resulting spoken sequence still matches restricted's two spaced rightward instructions, progress and refinement, including a 3.3-second silent interval. That is evidence of some history-sensitive waiting, not demonstrated improvement in experienced pacing; local suppression also shapes the result. Controller-before-gaze has two locally initiated simulated fades, and pause handling remains intact. No flagged starts or repeat-review candidates were recorded. Many pivotal utterances are supplied by local priority, including entire runs without Jev requests, so these results cannot isolate the contribution of broader Jev choice or establish superiority over the other protected policies.",
+        "evidence_ids": [
+          "turn_wall_vertical:jev_overrides",
+          "overshoot_reacquire:jev_overrides",
+          "controller_before_gaze:jev_overrides",
+          "gaze_controller_elsewhere:jev_overrides",
+          "overlap_blink_pause:jev_overrides",
+          "rapid_reverse:jev_overrides",
+          "ignored_direction_silence:jev_overrides",
+          "speech_then_confirm:jev_overrides"
+        ]
+      }
+    ]
+  }
+}

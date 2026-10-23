@@ -1,5 +1,6 @@
 # Researcher Session, Deviation, and Event Record
 
+**Protocol proposal / October 20 update:** one practice trial; final-only condition-specific questionnaires after both 40-trial blocks; between-block rest/comfort/tracking checks remain. Qualtrics is on hold. See `docs/protocol/2026-10-20-final-survey-decision.md`. Earlier runtime descriptions below do not establish implementation of these new decisions.
 **Protocol proposal:** This checklist records the intended approved workflow. It does not establish that the workflow is implemented or authorized for participant use.
 
 Study: **Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent**

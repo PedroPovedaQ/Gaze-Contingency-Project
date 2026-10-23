@@ -11,7 +11,7 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
 /// <summary>
-/// 20-round conjunction search game with eight-plane beta or table-shelf layouts.
+/// 80-round conjunction search game with eight-plane beta or table-shelf layouts.
 /// Player finds 1 target via controller ray and trigger. On correct capture: show fixation cross,
 /// destroy objects, wait, spawn fresh, finalize gaze interactables, go.
 /// </summary>
@@ -39,6 +39,11 @@ public class FindObjectGameManager : MonoBehaviour
     public event System.Action<string> OnCheckpoint;
     public bool SearchActive { get; private set; }
     public bool IsPractice { get; private set; }
+    // The trial currently presented, retained through its success feedback.
+    // CurrentObjectiveIndex advances on capture and is therefore not a recording ID.
+    public int PresentedRoundIndex { get; private set; } = -1;
+    public bool PresentedRoundIsPractice { get; private set; }
+    public string PresentedVoiceTag { get; private set; }
     int m_PracticeIndex;
     public float CurrentSearchSeconds => (float)m_SearchClock.Elapsed(Time.timeAsDouble);
     readonly StudyTrialClock m_SearchClock = new StudyTrialClock();
@@ -46,12 +51,12 @@ public class FindObjectGameManager : MonoBehaviour
     [SerializeField] float m_TrialTimeoutSeconds = 0f; // Disabled until the study protocol sets a ceiling.
     bool m_TechnicallyStopped;
     StudyCheckpoint m_Checkpoint;
-    bool m_AwaitingBlockSurvey;
     TrialReadinessGate m_Readiness;
     int m_LastCompletedPlane;
     bool m_PausedDuringReadiness;
     public TrialReadinessGate Readiness => m_Readiness;
     public bool AnnouncementReady { get; private set; }
+    bool m_OpeningDirectionReady;
     public bool ResearcherPaused => m_ResearcherPaused;
     public event System.Action<string> OnReadinessEvent;
     public void RecordReadinessEvent(string name) => OnReadinessEvent?.Invoke(name);
@@ -61,20 +66,38 @@ public class FindObjectGameManager : MonoBehaviour
             AnnouncementReady = true;
     }
 
+    public void BeginOpeningDirection(int round)
+    {
+        if (!CanOpenSearch(round) || m_OpeningDirectionReady) return;
+        var voice = GetComponent<VoiceAssistantController>();
+        if (voice == null) { TechnicalStop("audio_failure: opening voice unavailable"); return; }
+        voice.AnnounceSearchOpening(round);
+    }
+    bool CanOpenSearch(int round) => !m_TechnicallyStopped && m_State == GameState.Playing &&
+        m_CurrentRound == round && !SearchActive && !m_ResearcherPaused && AnnouncementReady &&
+        m_Readiness != null && m_Readiness.Active && m_Readiness.Completed;
+
+    public void CompleteOpeningDirection(int round)
+    {
+        if (!CanOpenSearch(round)) return;
+        m_OpeningDirectionReady = true;
+        RecordReadinessEvent("opening_direction_completed");
+        BeginSearch(round);
+    }
+
     public void BeginSearch(int round)
     {
-        if (m_TechnicallyStopped || m_State != GameState.Playing || m_CurrentRound != round || SearchActive || m_ResearcherPaused ||
-            !AnnouncementReady || m_Readiness == null || !m_Readiness.Completed) return;
+        if (!CanOpenSearch(round) || !m_OpeningDirectionReady) return;
         foreach (var obj in m_SpawnedObjects)
             if (obj != null && obj.TryGetComponent<MeshRenderer>(out var renderer)) renderer.enabled = true;
-        m_UI.HideFixationCross();
+        m_Readiness.Finish();
         SearchActive = true;
         m_SearchClock.Begin(Time.timeAsDouble);
         m_UI.ShowRoundAudioWait(false);
         m_ControllerSelector?.ResetSelection();
         m_UI.ResumeTimer();
-        OnSearchStarted?.Invoke(round);
         GetComponent<HintGenerator>()?.OnNewObjective();
+        OnSearchStarted?.Invoke(round);
     }
 
     public void TechnicalStop(string reason)
@@ -82,10 +105,12 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_TechnicallyStopped || m_State == GameState.Completed) return;
         m_SearchClock.Pause(Time.timeAsDouble);
         m_TechnicallyStopped = true; SearchActive = false;
+        GetComponent<HintGenerator>()?.SetLifecycle(GuidancePhase.Stopped, reason);
+        GetComponent<VoiceAssistantController>()?.CancelSearchOpening();
         m_Readiness?.Cancel();
         if (m_StartAfterIntroCoroutine != null) { StopCoroutine(m_StartAfterIntroCoroutine); m_StartAfterIntroCoroutine = null; }
         m_UI.PauseTimer();
-        m_AwaitingBlockSurvey = false; m_UI.HideBlockSurvey();
+        m_UI.HideBlockSurvey();
         m_ControllerSelector?.ResetSelection();
         GetComponent<VoiceSynthesizer>()?.Stop();
         GetComponent<HintGenerator>()?.CancelPending();
@@ -108,7 +133,12 @@ public class FindObjectGameManager : MonoBehaviour
     {
         if ((!SearchActive && (m_Readiness == null || !m_Readiness.Active)) || m_ResearcherPaused) return;
         m_PausedDuringReadiness = !SearchActive;
-        if (m_PausedDuringReadiness) { m_Readiness.ResetCharge(); m_UI.HideFixationCross(); }
+        if (m_PausedDuringReadiness)
+        {
+            GetComponent<VoiceAssistantController>()?.CancelSearchOpening();
+            m_OpeningDirectionReady = false; m_Readiness.ResetCharge(); m_UI.HideFixationCross();
+        }
+        GetComponent<HintGenerator>()?.SetLifecycle(GuidancePhase.Paused, "researcher_pause");
         m_ResearcherPaused = true; SearchActive = false; m_SearchClock.Pause(Time.timeAsDouble);
         m_UI.PauseTimer(); m_ControllerSelector?.ResetSelection();
         GetComponent<VoiceSynthesizer>()?.Stop(); GetComponent<HintGenerator>()?.CancelPending();
@@ -126,13 +156,14 @@ public class FindObjectGameManager : MonoBehaviour
         m_ResearcherPaused = false;
         if (m_PausedDuringReadiness)
         {
+            GetComponent<HintGenerator>()?.SetLifecycle(GuidancePhase.Opening, "readiness_resumed");
             AnnouncementReady = false;
             m_Readiness.Show();
             GetComponent<VoiceAssistantController>()?.RepeatReadinessAnnouncement();
             OnCheckpoint?.Invoke("readiness_resumed"); return;
         }
         SearchActive = true; m_SearchClock.Resume(Time.timeAsDouble);
-        m_UI.ResumeTimer(); GetComponent<HintGenerator>()?.OnNewObjective();
+        m_UI.ResumeTimer(); GetComponent<HintGenerator>()?.OnNewObjective(resumed: true);
         OnCheckpoint?.Invoke("search_resumed");
     }
 
@@ -167,13 +198,29 @@ public class FindObjectGameManager : MonoBehaviour
     [SerializeField] bool m_ShowDegreeGuides = true;
     readonly List<GameObject> m_DegreeGuides = new();
     float m_FloorHeight;
+    public float SearchPlaneHeight => m_MaxObjectHeight + 0.1f;
+
+    // Intersect the eye ray with the target wall's object plane, even above or
+    // below its outline. Clamping would understate a large vertical correction.
+    public bool TryVerticalGuidanceError(Vector3 origin, Vector3 direction, int plane, float targetY,
+        out float heightError)
+    {
+        heightError = 0;
+        if (plane < 0 || plane >= RotationalSearchLayout.PlaneCount || SearchPlaneHeight <= 0) return false;
+        Vector3 normal = m_SeatedRotation * Quaternion.Euler(0, plane * RotationalSearchLayout.PlaneAngleDegrees, 0) * Vector3.forward;
+        var wall = new Plane(normal, m_SpawnCenter + normal * m_RotationalRadius);
+        var ray = new Ray(origin, direction);
+        if (!wall.Raycast(ray, out float distance) || distance <= 0) return false;
+        heightError = targetY - ray.GetPoint(distance).y;
+        return !float.IsNaN(heightError) && !float.IsInfinity(heightError);
+    }
     public bool IsInsideSearchPlane(Vector3 point, int plane)
     {
         Quaternion rotation = m_SeatedRotation * Quaternion.Euler(0, plane * RotationalSearchLayout.PlaneAngleDegrees, 0);
         Vector3 local = Quaternion.Inverse(rotation) * (point - m_SpawnCenter);
         float halfWidth = m_RotationalRadius * Mathf.Tan(Mathf.PI / RotationalSearchLayout.PlaneCount);
         return Mathf.Abs(local.x) <= halfWidth && point.y >= m_FloorHeight &&
-            point.y <= m_FloorHeight + m_MaxObjectHeight + 0.1f;
+            point.y <= m_FloorHeight + SearchPlaneHeight;
     }
     // Guidance zones are horizontal sectors. Vertical scanning must not count as
     // leaving/reentering the correct area or trigger an overshoot cue.
@@ -328,6 +375,7 @@ public class FindObjectGameManager : MonoBehaviour
         Physics.IgnoreLayerCollision(8, 8, true);
         m_Spawner = GetComponent<ObjectSpawner>();
         if (m_Spawner == null) return;
+        if (GetComponent<StudyRayControls>() == null) gameObject.AddComponent<StudyRayControls>();
         m_Readiness = GetComponent<TrialReadinessGate>();
         if (m_Readiness == null) m_Readiness = gameObject.AddComponent<TrialReadinessGate>();
         if (GetComponent<TrialReplayRecorder>() == null) gameObject.AddComponent<TrialReplayRecorder>();
@@ -357,13 +405,14 @@ public class FindObjectGameManager : MonoBehaviour
             voice = GetComponent<VoiceAssistantController>();
         } while (selector == null || !selector.IsComplete || voice == null || !voice.IsReady);
         // Let the setup confirmation disappear before showing the independent start gate.
-        yield return new WaitForSeconds(3.1f);
+        if (!SessionConfig.DevelopmentQuickTest) yield return new WaitForSeconds(3.1f);
         if (m_TechnicallyStopped || m_CenterAccepted) yield break;
         m_UI.HideStartPrompt();
         if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
         while (!m_CenterAccepted && !m_TechnicallyStopped)
         {
-            m_Checkpoint.Show("<b>360° SEARCH BETA</b>\nSit at the center and face your chosen forward direction.\nEight planes will surround you, 21 objects on each.\nStay seated and turn to search.",
+            m_Checkpoint.Show((SessionConfig.DevelopmentQuickTest ? "<b>" + SessionConfig.QuickTestTitle + " · DEVELOPMENT ONLY</b>\n" : "<b>360° SEARCH BETA</b>\n") +
+                "Sit at the center and face your chosen forward direction.\nEight planes will surround you, 21 objects on each.\nStay seated and turn to search.",
                 "Center and begin");
             while (m_Checkpoint.Waiting && !m_TechnicallyStopped) yield return null;
             if (m_TechnicallyStopped || m_CenterAccepted) yield break;
@@ -530,6 +579,7 @@ public class FindObjectGameManager : MonoBehaviour
         m_State = GameState.Transitioning;
         m_GameStartTime = Time.time;
         m_CurrentRound = 0;
+        PresentedRoundIndex = -1;
         m_UI.StartTimer();
         m_UI.PauseTimer();
         BuildObjectiveList();
@@ -554,8 +604,9 @@ public class FindObjectGameManager : MonoBehaviour
             m_ShelvesBuilt = true;
         }
 
-        IsPractice = true; m_PracticeIndex = 0;
-        SetPracticeObjective();
+        IsPractice = !SessionConfig.DevelopmentQuickTest; m_PracticeIndex = 0;
+        if (IsPractice) SetPracticeObjective();
+        else OnGameStarted?.Invoke(); // Start the normal loggers before the first test trial.
         StartCoroutine(BeginFirstRoundTransition());
     }
 
@@ -575,7 +626,7 @@ public class FindObjectGameManager : MonoBehaviour
     {
         m_DegreeGuides.Clear();
         float bottom = m_FloorHeight - m_SpawnCenter.y;
-        float top = bottom + m_MaxObjectHeight + 0.1f;
+        float top = bottom + SearchPlaneHeight;
         float halfWidth = RotationalSearchLayout.FrameHalfWidth(m_RotationalRadius);
         var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default");
         if (shader != null)
@@ -604,7 +655,9 @@ public class FindObjectGameManager : MonoBehaviour
             label.transform.SetParent(frame.transform, false);
             label.transform.localPosition = new Vector3(0f, 0.43f, 0f);
             var text = label.AddComponent<TextMeshPro>();
-            text.text = plane == 0 ? "0° · FORWARD" : $"{azimuth}°";
+            // Signed labels around seated forward; the rear wall is both -180 and +180.
+            float signedAzimuth = Mathf.DeltaAngle(0f, azimuth);
+            text.text = plane == 0 ? "0° · FORWARD" : plane == 4 ? "±180°" : $"{signedAzimuth:+0;-0;0}°";
             text.fontSize = 1.8f;
             text.alignment = TextAlignmentOptions.Center;
             text.color = Color.white;
@@ -623,12 +676,13 @@ public class FindObjectGameManager : MonoBehaviour
 
     IEnumerator FinishPractice()
     {
+        while (GetComponent<VoiceAssistantController>()?.SuccessFeedbackBusy == true) yield return null;
         m_State = GameState.Transitioning;
         foreach (var obj in m_SpawnedObjects) if (obj != null) Destroy(obj);
         m_SpawnedObjects.Clear();
         m_UI.HideObjectiveDuringTransition();
         if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
-        m_Checkpoint.Show("Practice complete in both voices.\nConfirm task understanding before beginning the two study blocks.");
+        m_Checkpoint.Show("Practice complete.\nConfirm task understanding before beginning the two study blocks.");
         while (m_Checkpoint.Waiting && !m_TechnicallyStopped) yield return null;
         if (m_TechnicallyStopped) yield break;
         IsPractice = false; m_CurrentRound = 0; BuildObjectiveList();
@@ -790,13 +844,16 @@ public class FindObjectGameManager : MonoBehaviour
             Debug.Log($"{k_Tag} Round {m_CurrentRound + 1} correct: {info.DisplayName}");
             m_SearchClock.Pause(Time.timeAsDouble);
             SearchActive = false;
+            GetComponent<HintGenerator>()?.SetLifecycle(GuidancePhase.Completed, "correct_target_selected");
             m_UI.PauseTimer();
+            TargetCrumble.Play(obj, this);
             if (IsPractice)
             {
                 GetComponent<VoiceSynthesizer>()?.Stop(); GetComponent<HintGenerator>()?.CancelPending();
                 m_ControllerSelector?.ResetSelection();
+                GetComponent<VoiceAssistantController>()?.PlaySuccessFeedback();
                 m_PracticeIndex++;
-                if (m_PracticeIndex < 2) { SetPracticeObjective(); StartCoroutine(TransitionToNextRound()); }
+                if (m_PracticeIndex < ChallengeSet.PracticeTrialCount) { SetPracticeObjective(); StartCoroutine(TransitionToNextRound()); }
                 else StartCoroutine(FinishPractice());
                 return;
             }
@@ -810,8 +867,9 @@ public class FindObjectGameManager : MonoBehaviour
                 ClearPlayfieldForPostRunSurvey();
                 float elapsed = m_UI.StopTimer();
                 m_LastCompletedElapsed = elapsed;
-                m_UI.ShowCompletion(k_TotalRounds, elapsed);
-                if (SessionConfig.VoiceBlocksEnabled) m_UI.SetSurveyBlockLabel(2);
+                // Study questionnaires are administered externally after both blocks.
+                // Preserve the legacy in-headset workload form only for development runs.
+                m_UI.ShowCompletion(k_TotalRounds, elapsed, externalSurvey: !SessionConfig.DevelopmentQuickTest);
                 OnGameCompleted?.Invoke(elapsed);
             }
             else
@@ -834,6 +892,7 @@ public class FindObjectGameManager : MonoBehaviour
 
     IEnumerator TransitionToNextRound()
     {
+        while (GetComponent<VoiceAssistantController>()?.SuccessFeedbackBusy == true) yield return null;
         m_State = GameState.Transitioning;
         if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
 
@@ -852,15 +911,10 @@ public class FindObjectGameManager : MonoBehaviour
             GetComponent<VoiceSynthesizer>()?.Stop();
             GetComponent<HintGenerator>()?.CancelPending();
             OnCheckpoint?.Invoke("block_end");
-            m_AwaitingBlockSurvey = true;
-            m_UI.ShowBlockSurvey(1);
-            while (m_AwaitingBlockSurvey && !m_TechnicallyStopped) yield return null;
-            if (m_TechnicallyStopped) yield break;
-            m_UI.HideBlockSurvey();
             if (m_UseRotationalLayout) m_UI.PositionForRotationalSearch();
             else m_UI.PositionStaticLeft(m_SpawnCenter, ShelfSpawner.ObjectFacingRotation);
             if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
-            m_Checkpoint.Show("Block 1 complete.\nQuestionnaire saved. Take a break.\nConfirm when ready for the second voice.");
+            m_Checkpoint.Show("Block 1 complete.\nTake a break. Check comfort and eye tracking.\nConfirm when ready for the second voice.");
             while (m_Checkpoint.Waiting && !m_TechnicallyStopped) yield return null;
             if (m_TechnicallyStopped) yield break;
             SessionConfig.ApplyRoundVoice(m_CurrentRound);
@@ -873,7 +927,8 @@ public class FindObjectGameManager : MonoBehaviour
     IEnumerator BeginFirstRoundTransition()
     {
         m_State = GameState.Transitioning;
-        AnnouncementReady = false;
+        AnnouncementReady = false; m_OpeningDirectionReady = false;
+        GetComponent<VoiceAssistantController>()?.CancelSearchOpening();
         m_ControllerSelector?.ResetSelection();
         m_UI.HideObjectiveDuringTransition();
         var planned = IsPractice ? ChallengeSet.PracticeRound(m_PracticeIndex) : ChallengeSet.Rounds[m_CurrentRound];
@@ -886,6 +941,7 @@ public class FindObjectGameManager : MonoBehaviour
         Vector3 crossPosition = m_SpawnCenter + rotation * Vector3.forward * m_RotationalRadius;
         crossPosition.y = m_FloorHeight + (m_MinObjectHeight + m_MaxObjectHeight) * 0.5f;
         // Establish replay/trial identity before the first readiness event or next instruction.
+        SetPresentedTrialContext();
         OnRoundTransitionStarted?.Invoke(m_CurrentRound, planned.target.color, planned.target.shape);
         m_Readiness.Begin(m_LastCompletedPlane, crossPosition, rotation, planned.target.color, planned.target.shape, IsPractice);
         // Let destruction finish, then prepare hidden objects while the cross charges.
@@ -895,11 +951,19 @@ public class FindObjectGameManager : MonoBehaviour
         yield return DoSpawnRound();
     }
 
+    // Called only when the next trial is actually presented, not at capture time.
+    void SetPresentedTrialContext()
+    {
+        PresentedRoundIndex = m_CurrentRound;
+        PresentedRoundIsPractice = IsPractice;
+        PresentedVoiceTag = SessionConfig.VoiceBlocksEnabled ? SessionConfig.VoiceLabelForRound(m_CurrentRound) : SessionConfig.VoiceTag;
+    }
+
     void ShowCurrentObjective()
     {
         m_UI.ShowObjective(m_CurrentTarget.colorValue,
             $"{m_CurrentTarget.color} {m_CurrentTarget.shape}",
-            IsPractice ? m_PracticeIndex : m_CurrentRound, IsPractice ? 2 : k_TotalRounds, IsPractice);
+            IsPractice ? m_PracticeIndex : m_CurrentRound, IsPractice ? ChallengeSet.PracticeTrialCount : k_TotalRounds, IsPractice);
         m_UI.ShowRoundAudioWait(true);
     }
 
@@ -923,14 +987,8 @@ public class FindObjectGameManager : MonoBehaviour
     void HandleNasaTlxSubmitted(FindObjectUI.NasaTlxResult tlx)
     {
         if (m_TechnicallyStopped) return;
-        if (m_AwaitingBlockSurvey)
-        {
-            if (m_TrialLogger == null) m_TrialLogger = GetComponent<TrialDataLogger>();
-            m_TrialLogger?.RecordNasaTlx(tlx.mental, tlx.physical, tlx.temporal,
-                tlx.performance, tlx.effort, tlx.frustration, 0);
-            m_AwaitingBlockSurvey = false;
-            return;
-        }
+        // Study survey responses arrive through the external, versioned final survey.
+        if (!SessionConfig.DevelopmentQuickTest) return;
         if (m_State != GameState.Completed || m_UI == null) return;
         if (m_NasaTlxSubmittedForRun) return;
         if (m_TrialLogger == null) m_TrialLogger = GetComponent<TrialDataLogger>();
