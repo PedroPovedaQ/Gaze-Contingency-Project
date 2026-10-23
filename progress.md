@@ -1,3 +1,21 @@
+## 2026-10-23 — Dictated abstract and thesis navigation revisions
+
+- Rebuilt the 165-page PDF; checked title, abbreviations and TOC layout, chapter/appendix numbering and internal links. PDF/UA-2 validation passed 451,191 checks with zero failures. Prepared all accumulated changes on this branch for the author-requested main sync.
+- Applied author-directed abstract wording on tone/voice identity, agent assistance, self-similar naming, hidden target, gaze context, right-controller trigger selection and common hint guidance. Removed the requested similarity/debrief sentence and draft-results disclaimer from the abstract; draft status remains explicit elsewhere.
+- Enabled chapter/section/subsection numbering, including letter-prefixed appendix headings, and added a 19-entry abbreviation list compiled from active manuscript terms. Retained cited works’ original reality settings and corrected an overlooked passthrough description of our planned VR task.
+- Confirmed Searching Across Realities was in BibTeX but not cited in active chapters; added a bounded introduction connection to object search and attention measurement rather than voice-effect evidence.
+
+## 2026-10-23 — Author-supplied front matter
+
+- Added B.Sc. in Computer Science below the author name and Dr. Roshan Venkatakrishnan as major professor using the supplied UCF class commands. Used the professor spelling already present in the project bibliography.
+- Added acknowledgments immediately after the abstract, thanking Dr. Venkatakrishnan for thesis guidance/support and Merav for IRB-process assistance, following the author's final instruction to include it. No surname, degree institution or degree year was invented.
+- Confirmed that a dedicated list of abbreviations is not currently present; no such section added solely in response to the question.
+
+## 2026-10-23 — Thesis terminology: virtual reality
+
+- At the author's request during abstract review, changed this study's title, abstract and narrative from mixed reality to virtual reality. Revised the apparatus description to a virtual room while retaining truthful documentation that passthrough is an available software option; the final study configuration requires release verification.
+- Preserved cited studies' original AR/MR contexts and the prior-headset-experience questionnaire. No Unity setting or device build changed. This is a manuscript decision, not evidence of runtime reconfiguration.
+
 ## 2026-10-23 — Complete thesis accessibility and independent review
 
 - Completed independent full CE manuscript review against the supplied submission checklist; no actionable manuscript findings remained. Ran a separate follow-up review for PDF export repairs, with independent adversarial fallback after the Claude route failed before content transmission.

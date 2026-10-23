@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-23",
+  "status": "Author-directed edits, verified for main checkpoint",
+  "pages": 165,
+  "pdf_sha256": "7f11af590b14002f1b26354577495eebb6450c32abc49b1b16538ff513ed757e",
+  "changes": [
+    "VR study terminology; cited AR/MR settings preserved",
+    "Degree and major professor; acknowledgments",
+    "Abstract wording and two requested deletions",
+    "List of abbreviations before Chapter 1",
+    "Sections/subsections numbered throughout chapters and appendices",
+    "Searching Across Realities citation added to introduction"
+  ],
+  "verification": [
+    "LuaLaTeX/BibTeX successful; no undefined references or overfull boxes",
+    "Sampled title, abbreviations and TOC visual inspection",
+    "PDF structure check passed",
+    "veraPDF 1.30.3 PDF/UA-2: 451191 passed checks, zero failures"
+  ],
+  "scope": "No runtime configuration, live Overleaf, or Qualtrics edits."
+}
