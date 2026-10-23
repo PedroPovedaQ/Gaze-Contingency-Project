@@ -1,3 +1,29 @@
+## 2026-10-23 — Carry the voice rationale through the introduction and discussion
+
+- Reworked the introduction around practical AR/VR search motivations from Binetti, Zhang, HiveFive, and Two-Step Gaze Guidance; distinguished application examples from demonstrated deployment outcomes.
+- Connected that motivation to the value of comparing self-similar and participant-preferred voices. Extended discussion of conditional design implications, engagement versus efficiency, and transfer from the controlled hidden-target task.
+- Preserved protocol, instruments, analysis, and pending-results status. Source provenance is recorded in `docs/thesis/review/practical-motivation-and-voice-throughline-20261023.md`. Compiled and visually checked the 159-page draft; no missing/duplicate citation keys, undefined references, or overfull boxes. Refreshed PDF/source delivery and included the accumulated thesis work in the requested local checkpoint. Qualtrics remains on hold; no push.
+
+## 2026-10-23 — Ground the self-similar voice rationale in full-text evidence
+
+- Read the six selected voice/audio-guidance papers through primary full texts or author copies. Expanded Chapter 2 around self-similar versus participant-preferred voice, separating performance, engagement, favorable experience, and eeriness; extended the interpretation in Chapter 8.
+- Distinguished gaze-contingent sonification, spatial audio, audiovisual cueing, and spoken opening instructions. Supporting design connections are explicit adaptations, not claimed replications or additional treatment factors.
+- Added source links and evidence locations in `docs/thesis/review/audio-guidance-and-self-voice-20261023.md`. Preserved protocol, instruments, pending results, live Overleaf, and Qualtrics hold. LuaLaTeX build and citation audit passed; inspected revised pages and all references, and refreshed the 157-page PDF/source package. No missing/duplicate citation keys or overfull boxes. No commit or push.
+
+## 2026-10-23 — Add RippleVision as bounded visual-guidance context
+
+- Verified final RippleVision metadata against Crossref and PubMed; added `kudnick2026ripplevision` to the active thesis, manuscript, and protocol bibliography files, preserving historical snapshots.
+- Added a Chapter 2 comparison that keeps self-similar voice central and distinguishes visual guidance from the shared spoken policy. Saved source links, transfer boundaries, and follow-up questions in `docs/literature/ripplevision-2026.md`.
+- Full text could not be retrieved through the checked publisher/author routes. The discussion explicitly relies on the published abstract; detailed study methods, thresholds, statistical findings, and figures are not transferred. Full-text review remains open.
+- Recompiled the thesis and refreshed PDF/source delivery: 155 pages; citation audit has no missing or duplicate keys. Inspected the added discussion and bibliography. No live Overleaf, Qualtrics, or runtime changes; no commit or push.
+
+## 2026-10-23 — Center the thesis on self-similar voice
+
+- Reframed the abstract, contributions, chapter openings, research-question wording and conclusion around self-similar voice compared with a participant-preferred catalog voice. Voice identity/experience now leads the literature; voice preparation leads the shared apparatus chapter.
+- Moved detailed state-machine/memory/cancellation and Jev policy-pilot/diagnostic material into supporting Appendix F. Participant voice results now lead Chapter 7; pending results and all protocol/instrument decisions remain explicit.
+- Read the supplied Yang et al. embodied AR navigation preprint as context. Added a bounded literature comparison of interface versus mechanism, without transferring embodiment findings or changing the study.
+- Rebuilt and visually checked: 154 pages, approximately 28,625 words, 14 figures, 16 tables and six appendices. No undefined references/citations, LaTeX warnings or overfull boxes; original instruments and figure assets retained. Updated PDF/source delivery. Local manuscript edits only; not committed or pushed. Live Overleaf and Qualtrics remain on hold.
+
 ## 2026-10-23 — Synthesize Opus 5.5 thesis language review
 
 - Applied 99 reviewed paragraph revisions across the abstract, Chapters 1–8 and decision-contract appendix, improving sentence connections and grammar while preserving instruments, counts, timing definitions and pending-results status.

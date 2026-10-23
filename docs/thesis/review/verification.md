@@ -1,20 +1,38 @@
-# Delivery verification — October 23, 2026 (Opus 5.5 synthesis)
+# Delivery verification — October 23, 2026 (self-similar voice focus)
 
-- Successful LuaLaTeX / BibTeX build: 148 letter-size pages, tagged PDF. Final-pass log: `compile-delivery-final.txt`.
-- No undefined citations/references, LaTeX/package warnings, or overfull boxes in the final log. Non-fatal underfull-box and PDF structure diagnostics remain; this is not formal PDF/UA validation.
-- All listed PDF fonts are embedded (`final-fonts.txt`).
-- 14 numbered figures and 16 numbered tables; five appendices. All supplied assets and references resolve.
-- TOC retains uppercase chapter/appendix entries, indented sections/subsections, dotted leaders, Roman front matter, and Arabic body pages. LOF and LOT include the updated titles and page references.
-- Visually inspected rendered pages for the new research-question table, related-work table, policy comparison, failure taxonomy, decision-contract appendix, and the updated TOC/LOT. Kept the JSON example together and condensed the reproduction table to one readable page. Earlier figure inspection remains applicable; image assets were not changed.
-- Approximately 27,595 words by the same whole-PDF extraction method used for Truong's thesis (28,272 words / 140 PDF pages). Counts include front matter, references, and extracted figure text and are approximate.
-- Claude reviewed the additions. Source-inspection scope, provider condition visibility, RQ mapping, consent for hosted replay, unknown judgments, and proposed evaluation controls were clarified. See `claude-reference-alignment-review.md` and `review-resolution.md`.
-- `truong-gap-audit.md` maps the reference's useful structural practices to the applied changes and records what could not responsibly be filled in.
-- Original Overleaf snapshot retained. Live Overleaf, Qualtrics, and Unity runtime were not modified by this pass. The new appendix distinguishes a three-file working-source inspection from deployment and release testing.
+- Built with LuaLaTeX/BibTeX and repeated LuaLaTeX passes after chapter reorganization: 159 letter-size pages, tagged PDF.
+- No unresolved references/citations, LaTeX warnings, or overfull boxes in the final log. All listed fonts embedded. Non-fatal underfull-box/PDF-structure diagnostics do not constitute formal accessibility validation.
+- Nine chapters, six appendices, 14 numbered figures, 16 numbered tables. Existing figure assets, labels, and citation groups retained; one contextual preprint and one bounded visual-guidance citation added.
+- Visually checked abstract, contents hierarchy, platform opening and results-framework opening (PDF pages 4, 7, 8, 36 and 80). TOC, LOF and LOT regenerated after technical material moved to Appendix F.
+- Approximately 30,411 words by the same whole-PDF extraction method as the reference comparison; counts include references, front matter, and extracted figure text.
+- Original questionnaire/data/scenario/readiness/decision-contract appendices match the prior checkpoint byte-for-byte. One practice, two 40-trial blocks, practice in the first assigned voice, final-only questionnaire administration and the pending-results status are preserved.
+- The preceding Opus 5.5 review is historical provenance. This subsequent author-requested structural revision was synthesized in the main thread; it was not represented as a new Opus review.
+- The Yang et al. supplied preprint is used only to distinguish an interface comparison from supporting navigation architecture. No numerical findings or claimed self-similar voice effects were transferred.
+- Live Overleaf, Qualtrics and Unity runtime were not changed by this manuscript revision. The accumulated thesis revision is included in the author-requested local checkpoint; no push is requested.
 
-## Limits
+## RippleVision addition — October 23, 2026
 
-This remains an advisor-review first pass, not a completed empirical thesis. Participant findings, final sample size/power, exact pre-cue geometry implementation, vertical quotas, frozen release validation, cloud-consent reconciliation, full citation audit, author metadata, and formal ETD/accessibility checks remain open. The Trial Review screenshot uses synthetic demonstration data. Constructed failure examples and model reviews do not establish human-perceived correctness or empirical improvement.
+- Citation metadata verified against Crossref and PubMed; key `kudnick2026ripplevision`. Chapter 2 includes only an abstract-supported mechanism description and explicitly identified conceptual relevance. Full-text access remains unresolved; detailed results were not transferred.
+- Recompiled and inspected the new literature discussion and reference entry. DOI is retained in the source and printed as a clickable bibliography note. Active manuscript/protocol bibliography copies match; historical snapshot unchanged.
+- Citation audit: 65 entries, 44 used keys, zero missing or duplicate keys. Existing uncited entries and other DOI-render-hint warnings remain outside this addition.
 
-## Subsequent language-review verification
+## Full-text voice and auditory-guidance synthesis — October 23, 2026
 
-The final integrated TeX/class/BibTeX inputs match the successfully compiled Opus synthesis copy byte-for-byte. The reviewer visually inspected PDF pages 4, 29, 64 and 139. Actual model identity was Claude Opus 5.5. See `opus55-language-synthesis-20261023.md`, accepted edits, model provenance and build-verification JSON. Original instrument wording and scientific status distinctions remain intact. The complete workflow remains a first pass; neither editorial review nor compilation certifies study validity or institutional acceptance.
+- Expanded Chapter 2 and the interpretation in Chapter 8; self-similar versus preferred voice remains the focal comparison. See `audio-guidance-and-self-voice-20261023.md` for six full-text sources, evidence locations, and transfer limits.
+- Rebuilt PDF: 157 pages, 29,506 approximate extracted words; 14 figures and 16 tables retained. No unresolved citations/references, LaTeX warnings, or overfull boxes; all fonts embedded.
+- Visually inspected revised literature flow and table (PDF 27–38), discussion addition (88), contents (7–9), and complete reference list (151–157). No clipping or collisions found.
+- Citation audit: 65 entries, 44 cited keys, zero missing/duplicate keys. Existing 12 DOI-render-hint warnings and 21 uncited entries remain documented in `audio-literature-citation-audit.txt`.
+- Hash comparison confirms all 28 protected method/measurement/analysis, appendix, and source-snapshot files unchanged in this pass. Existing concurrent/uncommitted work preserved. PDF/source delivery refreshed; no commit or push.
+
+## Introduction/discussion throughline and local checkpoint — October 23, 2026
+
+- Introduction now grounds usefulness in cited AR/VR application motivations before developing the self-similar voice question. Discussion returns to practical implications and transfer limits. Source locations and links: `practical-motivation-and-voice-throughline-20261023.md`.
+- Final LuaLaTeX/BibTeX build: 159 pages, approximately 30,411 extracted words, 14 figures and 16 tables. No unresolved references/citations, LaTeX warnings, overfull boxes, or extracted `??`; all fonts embedded.
+- Inspected complete changed chapter flows, contents, and reference list. Shortened the roadmap and future-work paragraph to eliminate two nearly empty spill pages; checked final chapter endings (PDF 26 and 95), following chapter openings (27 and 96), and bibliography (153–159).
+- Citation audit: 44 used keys / 65 retained entries, zero missing/duplicate keys; 21 intentionally retained uncited entries and 12 existing DOI-render-hint warnings. No new source entries required for this pass.
+- All 28 protected method, measurement, analysis, appendix, and historical-snapshot files match their pre-pass hashes. Participant results remain pending; Qualtrics remains on hold.
+- The requested checkpoint includes the prior voice-focus restructuring, supporting Appendix F, RippleVision bibliography synchronization, full-text synthesis, and current introduction/discussion edits. No runtime files or live Overleaf edits are included. PDF and editable source delivery refreshed.
+
+## Remaining limitations
+
+Participant results, sample-size/power justification, frozen release validation, exact pre-cue geometry, vertical allocation, cloud-consent reconciliation, complete source-to-claim auditing, author metadata and formal UCF/PDF accessibility review remain pending. The Trial Review screenshot is a synthetic demonstration. Engineering records and advisory model reviews are not participant outcomes.
