@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-23",
+  "status": "passed",
+  "build": "LuaLaTeX, BibTeX, two subsequent LuaLaTeX passes via build.sh; final source rebuilt after synthesis edits",
+  "pdf_pages": 148,
+  "pdftotext_words": 27595,
+  "numbered_figures": 14,
+  "numbered_tables": 16,
+  "no_overfull_boxes": true,
+  "no_undefined_citations_or_references": true,
+  "no_latex_warnings": true,
+  "visual_inspection_pdf_pages": [
+    4,
+    29,
+    64,
+    139
+  ],
+  "structural_invariants": "All original labels, cross-references, section/chapter headings, figure includes, and citation groups retained. Questionnaire appendices unchanged.",
+  "note": "148 PDF pages is total including front matter. Review is editorial and not empirical validation."
+}

@@ -1,0 +1,695 @@
+[
+  {
+    "group": "framing",
+    "index": 0,
+    "file": "main.tex",
+    "reason": "Joins the choppy opening declaratives into a motivated sequence. Content is unchanged.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 1,
+    "file": "main.tex",
+    "reason": "Shows how local state constrains Jev's choices. Keeps the four recorded event types distinct.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 2,
+    "file": "main.tex",
+    "reason": "Makes clear that the final-only questionnaire is referenced to each block. Ties the pending-results statement to the contribution claim.",
+    "synthesis": "Narrowed block-reference wording to condition-specific ratings; did not imply every final questionnaire item is repeated per block."
+  },
+  {
+    "group": "framing",
+    "index": 3,
+    "file": "chapters/01-introduction.tex",
+    "reason": "Joins each claim to its qualification as a parallel series of cautions.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 4,
+    "file": "chapters/01-introduction.tex",
+    "reason": "Joins the chain of short negations. Gaze acknowledgment, controller acknowledgment and trigger completion stay distinct.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 5,
+    "file": "chapters/01-introduction.tex",
+    "reason": "Links the rationale to the analytic decision.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 6,
+    "file": "chapters/01-introduction.tex",
+    "reason": "Joins the claim and its contrast into one sentence.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 7,
+    "file": "chapters/01-introduction.tex",
+    "reason": "Joins two closing fragments.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 8,
+    "file": "chapters/01-introduction.tex",
+    "reason": "Removes a stunted definition-then-list pattern.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 9,
+    "file": "chapters/02-literature.tex",
+    "reason": "Replaces the bibliography-inventory framing with a scholarly opener. Joins the qualification to its example.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 10,
+    "file": "chapters/02-literature.tex",
+    "reason": "Groups the related citations and smooths an awkward noun stack.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 11,
+    "file": "chapters/02-literature.tex",
+    "reason": "Joins the stunted 'This is a design adaptation.' sentence to its consequence.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 12,
+    "file": "chapters/02-literature.tex",
+    "reason": "Joins related statements and makes the inference explicit.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 13,
+    "file": "chapters/02-literature.tex",
+    "reason": "Links the control, its limitation and the planned checks causally.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 14,
+    "file": "chapters/02-literature.tex",
+    "reason": "Joins four short declaratives into two connected sentences.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 15,
+    "file": "chapters/02-literature.tex",
+    "reason": "Turns a choppy list into a reasoned chain. All requirements are kept.",
+    "synthesis": "Split an overlong sentence while retaining the linked qualification."
+  },
+  {
+    "group": "framing",
+    "index": 16,
+    "file": "chapters/02-literature.tex",
+    "reason": "Pairs each instrument with its adaptation or reporting rule.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 17,
+    "file": "chapters/02-literature.tex",
+    "reason": "Makes the inference from construct to interpretation explicit.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 18,
+    "file": "chapters/08-discussion.tex",
+    "reason": "Contrasts the two interval cases directly and joins fragmented sentences. The qualifications are unchanged.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 19,
+    "file": "chapters/08-discussion.tex",
+    "reason": "Links the confound sources to the planned response.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 20,
+    "file": "chapters/08-discussion.tex",
+    "reason": "Joins cause and effect and fixes the awkward phrase 'behavior dependence'.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 21,
+    "file": "chapters/08-discussion.tex",
+    "reason": "Reorders the sentences so the pending pilot rule follows from the stated limitation.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 22,
+    "file": "chapters/08-discussion.tex",
+    "reason": "Joins the stunted chain and gives the vague 'this' a clear referent. The protocol is unchanged.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "framing",
+    "index": 23,
+    "file": "chapters/08-discussion.tex",
+    "reason": "States the benefit and cost of the retrospective design together.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 0,
+    "file": "chapters/06-analysis.tex",
+    "reason": "Joins fragmented planning statements into connected prose without changing what is prespecified.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 1,
+    "file": "chapters/06-analysis.tex",
+    "reason": "Consolidates a chain of choppy declaratives; makes the final-only administration with block-referenced scope explicit and logically linked to the recall caveat.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 2,
+    "file": "chapters/06-analysis.tex",
+    "reason": "Improves rhythm and shows how the retention, censoring and scoring rules relate to one another.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 3,
+    "file": "chapters/06-analysis.tex",
+    "reason": "Connects related evaluation commitments and gives a reason for sequence-level review.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 4,
+    "file": "chapters/06-analysis.tex",
+    "reason": "Makes the conditional-versus-marginal logic explicit; keeps the short closing boundary statement.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 5,
+    "file": "chapters/06-analysis.tex",
+    "reason": "Presents the simulation workflow as a connected procedure rather than a list of separate sentences.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 6,
+    "file": "chapters/06-analysis.tex",
+    "reason": "Tightens the causal link from the example to the measure-specific exclusion rule.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 7,
+    "file": "chapters/06-analysis.tex",
+    "reason": "Brings the design reason forward and links the missing cutoff to the freeze requirement.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 8,
+    "file": "chapters/06-analysis.tex",
+    "reason": "Separates what is specified from what remains open, with clearer causal phrasing.",
+    "synthesis": "Removed an inaccurate contrast connective; kept unresolved preregistration decisions explicit."
+  },
+  {
+    "group": "analysis",
+    "index": 9,
+    "file": "chapters/07-evaluation.tex",
+    "reason": "Joins the claim and its limitation so the evidential boundary reads as a single point.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 10,
+    "file": "chapters/07-evaluation.tex",
+    "reason": "Improves flow and links provenance to the reporting requirement; all counts are kept.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 11,
+    "file": "chapters/07-evaluation.tex",
+    "reason": "Turns a list of examples into connected support for the thesis sentence.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 12,
+    "file": "chapters/07-evaluation.tex",
+    "reason": "Combines stunted sentences and keeps the order of deterministic checks before advisory judging.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 13,
+    "file": "chapters/07-evaluation.tex",
+    "reason": "Gives the three-part enumeration an integrated structure.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 14,
+    "file": "chapters/07-evaluation.tex",
+    "reason": "Consolidates choppy labeling rules into a coherent criterion.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 15,
+    "file": "chapters/07-evaluation.tex",
+    "reason": "Frames the alternatives up front and replaces the 'Another possibility / A third' list with connected prose.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 16,
+    "file": "chapters/07-evaluation.tex",
+    "reason": "Links the hypothesized cause to its consequence and to the diagnostic requirement.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 17,
+    "file": "chapters/07-evaluation.tex",
+    "reason": "Shows the reporting order with transitions instead of parallel stand-alone sentences.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 18,
+    "file": "appendices/e-decision-contract.tex",
+    "reason": "Integrates the payload structure description; all identifiers and the 2\u20135 constraint are kept.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 19,
+    "file": "appendices/e-decision-contract.tex",
+    "reason": "Connects the response categories with contrastive transitions; keeps the short concluding directive.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 20,
+    "file": "appendices/e-decision-contract.tex",
+    "reason": "Makes the logical chain behind the condition-blindness caveat explicit; all paths are kept verbatim.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 21,
+    "file": "appendices/e-decision-contract.tex",
+    "reason": "Pairs parallel structures to reduce choppiness; values and identifiers are kept.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 22,
+    "file": "appendices/e-decision-contract.tex",
+    "reason": "Fixes the awkward 'phase while' construction and links the overview's scope to the release requirement.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "analysis",
+    "index": 23,
+    "file": "appendices/e-decision-contract.tex",
+    "reason": "States the independence of the three achievements up front and presents them as a single structured sentence.",
+    "synthesis": "Accepted after factual and citation check."
+  },
+  {
+    "group": "methods",
+    "index": 0,
+    "file": "chapters/03-system.tex",
+    "reason": "Joins a run of short declaratives into connected description and makes the causal link between withheld identity and reliance on guidance explicit.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 1,
+    "file": "chapters/03-system.tex",
+    "reason": "Pairs the immediate suppression with the delayed acknowledgment so the reader sees the contrast, and keeps the three distinct events.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 2,
+    "file": "chapters/03-system.tex",
+    "reason": "Splits an overloaded paragraph into memory retention and interaction gates, fixes the subject-verb agreement error (\"is copied\"), and keeps every threshold and the citation.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 3,
+    "file": "chapters/03-system.tex",
+    "reason": "Presents the decision pipeline as a sequence and separates the intended safeguard from its acknowledged limits.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 4,
+    "file": "chapters/03-system.tex",
+    "reason": "Connects the shared configuration to the manipulation claim and states the limit of automated checks as a reason.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 5,
+    "file": "chapters/03-system.tex",
+    "reason": "Fixes the tense/agreement error (\"will report ... and do not label\") and adds missing articles.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 6,
+    "file": "chapters/03-system.tex",
+    "reason": "Replaces three parallel \"owns\" sentences with one structured sentence and gives the paragraph a clear organizing claim.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 7,
+    "file": "chapters/03-system.tex",
+    "reason": "Links the parallel examples and folds the purpose clause into the claim it supports.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 8,
+    "file": "chapters/03-system.tex",
+    "reason": "Gives the progression a natural sequence and fixes the dangling agent in the final sentence (evidence \"treating\" absence).",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 9,
+    "file": "chapters/03-system.tex",
+    "reason": "Breaks the repetitive three-\"If\" rhythm while keeping trigger completion independent of acknowledgment.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 10,
+    "file": "chapters/03-system.tex",
+    "reason": "Links the staleness conditions directly to the recheck and keeps the closing sentence as a short summary.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 11,
+    "file": "chapters/03-system.tex",
+    "reason": "Makes the contrast between local and cloud-mediated paths explicit and connects the latency premise to its consequence.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 12,
+    "file": "chapters/03-system.tex",
+    "reason": "Joins the capability and its limit, and links the audit to the stated uncertainty.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 13,
+    "file": "chapters/03-system.tex",
+    "reason": "Groups the three inspected request-builder properties into one sentence and keeps the inspected-versus-release boundary.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 14,
+    "file": "chapters/03-system.tex",
+    "reason": "Sets local reproducibility against external drift in one comparative sentence instead of three isolated ones.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 15,
+    "file": "chapters/04-method.tex",
+    "reason": "Merges the setting sentences and attaches the completion boundary to the selection method.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 16,
+    "file": "chapters/04-method.tex",
+    "reason": "Presents the trial phases as a connected sequence and gives the final sentence a clear referent.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 17,
+    "file": "chapters/04-method.tex",
+    "reason": "Turns the confound explanation into one causal sentence and joins the shared configuration with its behavioral caveat.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 18,
+    "file": "chapters/04-method.tex",
+    "reason": "Puts the session sequence in temporal order, combines the practice details, and links the implemented sampling directly to its consequence.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 19,
+    "file": "chapters/04-method.tex",
+    "reason": "Clarifies the dangling participial phrase about schedule representation.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 20,
+    "file": "chapters/04-method.tex",
+    "reason": "Pairs the parallel latency definitions and joins the missing-data and resolution rules.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 21,
+    "file": "chapters/04-method.tex",
+    "reason": "Consolidates the definition with its interpretation and ties the implementation gap to the prohibition on substitutes.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 22,
+    "file": "chapters/04-method.tex",
+    "reason": "Pairs the parallel translation and rotation definitions.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 23,
+    "file": "chapters/04-method.tex",
+    "reason": "Folds the anchor description into the adaptation sentence; the anchor wording and link are unchanged.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 24,
+    "file": "chapters/04-method.tex",
+    "reason": "Groups the secondary and exploratory tiers and links the two-sided test to its rationale.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 25,
+    "file": "chapters/04-method.tex",
+    "reason": "Attaches the approval caveat to its requirement and makes the procedural sequence clearer.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 26,
+    "file": "chapters/04-method.tex",
+    "reason": "Adds the transition between no in-session questionnaires and final administration, and smooths the final-session sequence.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 27,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Sets the two requirements against each other and joins the design decision to its rationale.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 28,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Fixes the ambiguous antecedent (\"Its\" referred to the sign convention) and joins the tie-rule caveat.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 29,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Builds the argument from offset objects to the limit of category balance in one step.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 30,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Makes explicit that the unenforced balance is the reason for the check.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 31,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Joins the value with its timestamp requirement and states the limitation as a consequence.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 32,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Connects the secondary interval to its justification (voice-dependent clip durations).",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 33,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Links each rule to the distinction it protects instead of listing them separately.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 34,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Replaces four stunted one-clause sentences with one enumerated sentence.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 35,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Links the tradeoff to its verification requirement and removes the awkward stacked possessive.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 36,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Joins the distinctness claim with its gaze dependency and puts suppression in time order; the example utterance is unchanged.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 37,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Puts the rationale before the requirement instead of after it as an orphaned sentence.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 38,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Contrasts the two timestamp types directly and fixes the dangling gerund.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 39,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Joins the recommendation to its justification.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 40,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Combines the parallel definitions and attaches the denominator rule to its rationale; the short boundary sentence is kept. See cautions on \"motion totals\".",
+    "synthesis": "Corrected pre-existing totals/rates mismatch: the sentence discusses a rate denominator, not the gross-motion total."
+  },
+  {
+    "group": "methods",
+    "index": 41,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Joins the labeling rule to its premise and adds a transition to the visualization caveat.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 42,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Groups the definition with its exclusions and the total with its boundaries.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 43,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Links the limitation to its reason.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 44,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Connects the episode definition to its consequence and its endpoint reporting.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 45,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Makes the dual-scope retention follow from the opening principle.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "methods",
+    "index": 46,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Attaches the metadata requirement to the range discrepancy that motivates it.",
+    "synthesis": "Accepted after factual, numeral, citation, and event-boundary check."
+  },
+  {
+    "group": "synthesis",
+    "index": 0,
+    "file": "main.tex",
+    "reason": "Jev was used in the abstract without being introduced. 'Synchronized' suggests a clock alignment that Chapter 5 still lists as a requirement to establish.",
+    "synthesis": "Accepted after evidence-scope review."
+  },
+  {
+    "group": "synthesis",
+    "index": 1,
+    "file": "chapters/02-literature.tex",
+    "reason": "Joins the observation and its consequence more smoothly. Adds the memo's required boundary that the 15-second/four-entry and spatial-history limits are our own choices, not values from EmBARDiment.",
+    "synthesis": "Reduced repeated context/contextual/grounded wording while preserving the source relationship and retention-limit boundary."
+  },
+  {
+    "group": "synthesis",
+    "index": 2,
+    "file": "chapters/02-literature.tex",
+    "reason": "Matches the cue categories in Chapter 5: acknowledgments refer to gaze or pointing evidence, and success speech follows selection. Also changes to future tense, since the study has not yet been run.",
+    "synthesis": "Accepted after evidence-scope review."
+  },
+  {
+    "group": "synthesis",
+    "index": 3,
+    "file": "chapters/05-measurement.tex",
+    "reason": "Uses the thesis's established outcome name instead of introducing 'active-search measure'. Uses 'illustrates', which fits a source checked only from its abstract. Puts the no-equivalence boundary next to the citation instead of in a separate closing disclaimer. Removes 'similarly', which suggested a methodological parallel the source's abstract alone cannot support.",
+    "synthesis": "Accepted after evidence-scope review."
+  }
+]

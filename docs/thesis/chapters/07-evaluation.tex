@@ -1,9 +1,9 @@
 \chapter{ENGINEERING VERIFICATION AND RESULTS FRAMEWORK}
 \label{ch:evaluation}
 \section{Evidence Available for This Draft}
-This chapter distinguishes existing engineering records from participant results that have not yet been collected. The October 20 alignment audit documents software checks, analysis tests, and an Android build/install/launch. These records support specific implementation claims. They do not establish a treatment effect, a naturalness rating, eye-tracker accuracy, or acoustic response latency.
+This chapter separates existing engineering records from participant results that have not yet been collected. The October 20 alignment audit documents software checks, analysis tests, and an Android build/install/launch. These records support specific implementation claims, but they do not establish a treatment effect, a naturalness rating, eye-tracker accuracy, or acoustic response latency.
 
-The audit reports passing schedule and voice-isolation checks, including one practice trial in the first assigned voice, two measured blocks, and nominal-angle quotas. It also records 38 trial-export tests and seven workload scoring/plot tests. Those counts describe the audit's test run, not a newly executed suite for this manuscript. The verification record should accompany any later thesis statement so the tested revision remains identifiable.
+The audit reports passing schedule and voice-isolation checks, including one practice trial in the first assigned voice, two measured blocks, and nominal-angle quotas, and it records 38 trial-export tests and seven workload scoring/plot tests. These counts describe the audit's test run rather than a newly executed suite for this manuscript. The verification record should therefore accompany any later thesis statement so that the tested revision remains identifiable.
 
 \begin{table}[htbp]
 \centering\caption{Evidence status at the documented implementation checkpoint.}
@@ -20,9 +20,9 @@ Voice-condition outcomes & No confirmatory dataset reported & No performance or 
 \end{table}
 
 \section{Why Sequence Evaluation Is Necessary}
-A phrase can be geometrically admissible in isolation and still be poor guidance in sequence. Repeating a direction immediately after it was delivered can be unnecessary. A correct downward cue can become obsolete after the controller reaches the target. A gaze acknowledgment can arrive late after multiple model waits even though each individual response was well formed. Evaluation must therefore inspect recent state, actions, and actual speech around the event.
+A phrase can be geometrically admissible in isolation and still be poor guidance in sequence. Repeating a direction immediately after it was delivered can be unnecessary, and a correct downward cue can become obsolete once the controller reaches the target. Likewise, a gaze acknowledgment can arrive late after multiple model waits even though each individual response was well formed. Evaluation must therefore inspect recent state, actions, and actual speech around the event.
 
-The deterministic checks will establish whether the evidence supports an action. They will distinguish gaze confirmation, controller confirmation, and trial completion. A model judge may then assess wording, timing, repetition, and interruption appropriateness using that evidence. Its ratings remain advisory. They are not human-perceived correctness and do not convert an incompletely logged episode into a known success or failure.
+Deterministic checks will first establish whether the evidence supports an action, distinguishing gaze confirmation, controller confirmation, and trial completion. A model judge may then use that evidence to assess the appropriateness of wording, timing, repetition, and interruption. Its ratings remain advisory: they do not represent human-perceived correctness, and they cannot convert an incompletely logged episode into a known success or failure.
 
 \section{Paired Policy Pilots}
 Paired pilots will feed identical recorded states and scripted trajectories to the baseline and candidate policies. The scenario set includes large turns, wall entry, vertical refinement, overshoot, gaze on target with the controller elsewhere, controller on target with nearby gaze, overlapping vicinity regions, blinks, stale tracking, pauses, and delayed model responses. Audio occupancy and readiness must also be represented so that playback admission can be compared fairly.
@@ -33,7 +33,7 @@ Replaying an observed trajectory is a counterfactual engineering test. The origi
 
 
 \subsection{Development Cases and an Untouched Evaluation Set}
-\textbf{Protocol proposal.} The engineering evaluation will maintain three explicitly labeled sources of cases. Scripted fixtures will exercise known transitions and fault conditions. A development corpus will contain recorded sequences used to identify faults and tune policy. A separate evaluation corpus will be held out from those tuning decisions. At this stage, no frozen split, sample count, or completed held-out score is claimed.
+\textbf{Protocol proposal.} The engineering evaluation will maintain three explicitly labeled sources of cases: scripted fixtures that exercise known transitions and fault conditions, a development corpus of recorded sequences used to identify faults and tune policy, and a separate evaluation corpus held out from those tuning decisions. At this stage, no frozen split, sample count, or completed held-out score is claimed.
 
 The split must occur at a level that prevents closely related observations from appearing on both sides. Adjacent requests from the same confirmation episode cannot be separated into development and evaluation as if they were independent cases. Where feasible, whole sessions, and participants when repeated sessions exist, will be assigned together. The release record will enumerate included sessions, duplicate checks, exclusions, and the moment at which the policy was frozen. It will identify each corpus as scripted, developer, pilot, or participant data. Participant-derived sequences will be replayed through hosted providers only where consent and data-handling terms permit. Previously inspected development runs cannot later be described as untouched evaluation data.
 
@@ -62,14 +62,14 @@ For each policy, the report will summarize qualification-to-software-playback la
 
 Jev request latency, failures, timeouts, calls per trial, cancellations, and late responses will be reported separately. A provider timeout can lead to a timely local fallback, while a successful provider response can still arrive too late for the current state. Provider reliability and delivered guidance reliability therefore require different measures.
 
-Wrong-direction and stale hints will be labeled only when the available evidence shows the instruction is unhelpful toward the task. A different but valid phrase is not automatically wrong. Missing evidence remains unknown. Repetition, unnecessary speech, excessive silence, and interruption appropriateness require context beyond a sign check on an angle.
+Wrong-direction and stale hints will be labeled only when the available evidence shows that the instruction is unhelpful toward the task; a different but valid phrase is not automatically wrong, and missing evidence remains unknown. Judgments about repetition, unnecessary speech, excessive silence, and interruption appropriateness likewise require context beyond a sign check on an angle.
 
 \section{Illustrative Failure Analysis}
-An ordering failure can occur when a correction is queued before the controller reaches the target. If playback checks use the older snapshot, the correction can play immediately before a pointing acknowledgment. Another possibility is that the controller hold has not qualified yet and the ordinary-direction policy remains active during the hold. A third is that action priority admits a lower-priority cue despite newer pointing evidence. These causes require different fixes and cannot be distinguished from the spoken text alone.
+An ordering failure can occur when a correction is queued before the controller reaches the target, and several distinct mechanisms could produce it. If playback checks use the older snapshot, the correction can play immediately before a pointing acknowledgment. Alternatively, the controller hold may not yet have qualified, leaving the ordinary-direction policy active during the hold, or action priority may admit a lower-priority cue despite newer pointing evidence. These causes require different fixes, yet they cannot be distinguished from the spoken text alone.
 
 The intended correction is to suppress contradictory away-directions as soon as valid controller-on-target evidence is present, while retaining the independent qualification timer for the spoken pointing acknowledgment. A final playback check must repeat the suppression after any asynchronous wait or audio fade. If the controller leaves the target before qualification, no pointing acknowledgment should be emitted merely because the earlier request was valid.
 
-A separate reference-frame problem arises when an object appears higher than a highlighted neighbor but the instruction says to look lower. The instruction may be calculated relative to the current eye ray, which could lie above both. The phrase can then be geometrically consistent yet confusing because the highlight suggests a different reference object. Diagnosis requires the recorded gaze ray, object positions, highlighted candidate, and playback time. It must not rely only on the review camera's screen-space layout.
+A separate reference-frame problem arises when an object appears higher than a highlighted neighbor but the instruction says to look lower. If the instruction is calculated relative to the current eye ray, which could lie above both objects, the phrase can be geometrically consistent yet confusing because the highlight suggests a different reference object. Diagnosis therefore requires the recorded gaze ray, object positions, highlighted candidate, and playback time; it must not rely only on the review camera's screen-space layout.
 
 These examples are diagnostic categories drawn from the development history. This chapter does not report their incidence or claim they have all been eliminated in a frozen participant build. The acceptance matrix in Appendix~\ref{app:scenarios} defines evidence required to make those claims.
 
@@ -105,7 +105,7 @@ For each reported real example, the completed thesis will provide the case-selec
 \section{Participant Results to Be Added}
 The completed empirical chapter will first report participant flow, exclusions, incomplete sessions, and data coverage by condition and order. It will then describe realized starting geometry and the similarity manipulation check before presenting the primary voice contrast. This order allows readers to assess whether the intended comparison was delivered and measured.
 
-The primary result will include the fitted time contrast, its uncertainty, the analyzed participant and trial counts, and model diagnostics. Secondary sections will report workload and IMI subscales at participant-by-block level. Exploratory sections will report agent perception, voice experience, guidance behavior, and debrief themes. Tables will identify missing observations rather than silently change denominators.
+The primary result will include the fitted time contrast, its uncertainty, the analyzed participant and trial counts, and model diagnostics. Secondary sections will then report workload and IMI subscales at participant-by-block level, followed by exploratory sections on agent perception, voice experience, guidance behavior, and debrief themes. Tables will identify missing observations rather than silently change denominators.
 
 \begin{table}[htbp]
 \centering\caption{Planned empirical results, not observed findings.}
