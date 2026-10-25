@@ -16,6 +16,20 @@ partial class VoiceIsolationChecks
         Check(VoiceAudioVerification.Matches("All right, look left.","Alright look left"),"Spelling variant accepted without dropping direction");
         Check(VoiceAudioVerification.Matches("Turn right 165 degrees.","Turn right one hundred and sixty-five degrees."),"Spoken numbers match digits without weakening angle checks");
         Check(!VoiceAudioVerification.Matches("Turn right 165 degrees.","Turn right fifteen degrees."),"Incorrect numeric instruction is rejected");
+        Check(VoiceAudioVerification.Matches("Keep looking up and right.", "Keep looking up and write"),
+            "Observed directional right/write ASR homophone must not block preparation");
+        Check(VoiceAudioVerification.Matches("Go back up and right.", "Go back up and write"),
+            "Observed go-back directional homophone matches");
+        Check(!VoiceAudioVerification.Matches("Look right.", "Look left."), "Direction changes remain rejected");
+        Check(!VoiceAudioVerification.Matches("More, more.", "More."), "Missing repeated word remains rejected");
+        Check(VoiceAudioVerification.Matches("Turn left 47.5 degrees.", "Turn left forty seven point five degrees."),
+            "Decimal angle retains spoken point");
+        Check(!VoiceAudioVerification.Matches("Turn left 47.5 degrees.", "Turn left forty seven, five degrees."),
+            "Missing decimal point must not earn a receipt");
+        Check(!VoiceAudioVerification.Matches("Turn left 47.5 degrees.", "Turn left 475 degrees."),
+            "Incorrect decimal magnitude remains rejected");
+        Check((string)Newtonsoft.Json.Linq.JObject.Parse(VoiceSynthesisRequest.Json("Turn left 47.5 degrees.", "model"))["text"] ==
+            "Turn left forty seven point five degrees.", "Decimal angles are explicit from the first synthesis attempt");
         foreach(var heard in new[] { "Um look left", "Look right", "Look left please", "Look", "Look left ugh", "Look left (sneezes)", "" })
             Check(!VoiceAudioVerification.Matches("Look left.",heard),"Added/missing/changed words or events rejected: "+heard);
         var initial = Newtonsoft.Json.Linq.JObject.Parse(VoiceSynthesisRequest.Json("Turn right 165 degrees.", "model", 0));

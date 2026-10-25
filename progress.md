@@ -1,3 +1,10 @@
+## 2026-10-25 — Cloned-audio verification recovery
+
+- **Implemented:** fixed an observed on-headset setup failure where Scribe transcribed “Keep looking up and right” and “Go back up and right” as “...up and write” on all three attempts. Canonicalization now recognizes this acoustically identical spelling only in the up/down-and-right context; wrong directions, omitted words and fillers still fail.
+- **Implemented:** preserve decimal points when comparing angle instructions and spell decimal numbers explicitly for synthesis. The old receipt for 47.5 degrees accepted “forty seven, five”; the new verifier rejects a missing “point”. Bumped receipt version so old cached clips are checked again instead of trusting the old numeric comparison.
+- Regression test reproduced the directional failure before the patch; full voice-isolation/download checks pass after it. Scoped manual review and simplicity pass found no additional changes necessary. Unity Android Build And Run succeeded in 66.3 seconds, installed via USB and relaunched (update time 12:41:52 EDT). APK SHA-256: `41bdd13115581bc4a99d80e6544c60f31708dac5b2c04bd04a73b0177ec425bb`.
+- The headset now uses Wi-Fi address 192.168.0.25 rather than the old 192.168.1.208; this session uses USB. Live video opened with scrcpy. Cache and saved clone retained. Post-install voice preparation/trial entry is awaiting wearer selection of the saved-clone quick test.
+
 ## 2026-10-25 — Further local Jev fine-tuning
 
 Implemented a separate v4 continuation from saved v3 weights: 2,400 training rows, compact versioned input, all action/direction coverage, and an untouched 500-case fresh wording/gate-combination test. Validation-only selection retained epoch 7 of eight. Fresh offered-action agreement improved 77.4% → 98.4%; unchanged mandatory gates corrected the eight remaining failures. Actual saved-model inference matched all 500 final expected actions. Earlier production-case regression improved 7/10 → 10/10.

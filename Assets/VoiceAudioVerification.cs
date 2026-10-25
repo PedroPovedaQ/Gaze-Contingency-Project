@@ -10,7 +10,7 @@ using UnityEngine.Networking;
 /// <summary>Verbatim ASR gate. Never supplies the expected phrase as a recognition hint.</summary>
 public static class VoiceAudioVerification
 {
-    public const string Version = "scribe-v2-verbatim-v1";
+    public const string Version = "scribe-v2-verbatim-v2";
     public const string Endpoint = "https://api.elevenlabs.io/v1/speech-to-text";
     public sealed class Result { public bool matches; public string transcript, error; }
 
@@ -26,9 +26,13 @@ public static class VoiceAudioVerification
         value = Regex.Replace(value, @"\bnasa\s+t\s+l\s+x\b", "nasa tlx");
         value = Regex.Replace(value, @"\balright\b", "all right");
         value = Regex.Replace(value, @"\bok\b", "okay");
+        value = VoiceSynthesisRequest.ExpandDecimals(value);
         value = Regex.Replace(value, @"\b\d{1,3}\b", m => VoiceSynthesisRequest.NumberWords(int.Parse(m.Value)));
         value = Regex.Replace(value, @"\bhundred\s+and\b", "hundred");
-        return Regex.Replace(Regex.Replace(value, @"[^\p{L}\p{N}]+", " ").Trim(), @"\s+", " ");
+        value = Regex.Replace(Regex.Replace(value, @"[^\p{L}\p{N}]+", " ").Trim(), @"\s+", " ");
+        // Scribe spells the identical-sounding direction as "write" in diagonal
+        // guidance. Limit equivalence to that directional context, preserving words.
+        return Regex.Replace(value, @"\b(up|down) and write\b", "$1 and right");
     }
     public static bool Matches(string expected, string transcript) => !string.IsNullOrWhiteSpace(transcript) &&
         !VoiceAudioIntegrity.HasForbiddenFiller(transcript) && !VoiceAudioIntegrity.HasForbiddenFiller(expected) &&

@@ -8,7 +8,10 @@ public static class VoiceSynthesisRequest
 {
     public static string Json(string text, string model, int attempt = 0)
     {
-        string spokenText = attempt > 0 ? ExpandIntegers(text) : text;
+        // Say the decimal separator explicitly; otherwise 47.5 can be rendered as
+        // two separate integers. Keep the original script as the verification target.
+        string spokenText = ExpandDecimals(text);
+        if (attempt > 0) spokenText = ExpandIntegers(spokenText);
         // Eric can fuse the /s/ in "look slightly" into "looks slightly" even at
         // maximum stability. A final-attempt pause separates the words; the same
         // verbatim ASR gate still verifies against the untouched original script.
@@ -29,6 +32,14 @@ public static class VoiceSynthesisRequest
     // Expand only whole integers. Do not turn 1.5 into "one.five" or alter IDs.
     public static string ExpandIntegers(string text) => Regex.Replace(text ?? "",
         @"(?<![\p{L}\p{N}.])\d{1,3}(?![\p{L}\p{N}.])", m => NumberWords(int.Parse(m.Value)));
+
+    public static string ExpandDecimals(string text) => Regex.Replace(text ?? "",
+        @"(?<![\p{L}\p{N}.])(?<whole>\d{1,3})\.(?<fraction>\d+)(?![\p{L}\p{N}]|\.\d)", m =>
+        {
+            string words = NumberWords(int.Parse(m.Groups["whole"].Value)) + " point";
+            foreach (char digit in m.Groups["fraction"].Value) words += " " + NumberWords(digit - '0');
+            return words;
+        });
 
     public static string NumberWords(int value)
     {
