@@ -5,6 +5,8 @@ Fine-tunes a pretrained MiniLM encoder to choose `wait`, `orient`, `refine`,
 policy classifier, not Jev weights or a general language model. No Unity endpoint,
 voice generation, playback, trial geometry or study condition is changed.
 
+Latest results: [continued model evaluation](../../docs/testing/2026-10-25-local-jev-continuation.md).
+
 The endpoint supports **only `navigation_action`** with structured
 `development-action-v1` state. It rejects the normal joint `navigation_phrase` /
 `transmit` request, interruption requests and round summaries. Never substitute
@@ -52,6 +54,38 @@ cap. The base model revision and direct dependency versions are pinned. Accelera
 training need not be bitwise identical across systems. Outputs refuse overwrite.
 The first model download requires internet; saved-model inference is local.
 
+## Further fine-tuning
+
+The continuation experiment starts from saved v3 weights rather than reinitializing
+the model. It uses 2,400 synthetic training rows and 400 validation rows with all
+five actions and both cardinal/diagonal directions. Offered direction-cue wording
+families are separated before generation. A fresh 500-case evaluation holds out
+additional prepared wording and triple gate failures; it is generated before
+training and evaluated only after checkpoint selection is frozen. The old tests
+are now explicitly regression evidence. Labels still come from the authored rule
+oracle, so fresh wording does not establish independent human agreement.
+Validation wording is disjoint from continuation training but was available in
+the parent's training pool; only the fresh pool is new across both rounds.
+
+```sh
+~/.local/share/follow-my-voice-models/venv/bin/python tools/local-jev/continue_train.py \
+  --parent ~/.local/share/follow-my-voice-models/20261025-minilm-action-v3 \
+  --output /absolute/path/to/new-continuation
+~/.local/share/follow-my-voice-models/venv/bin/python tools/local-jev/compare_local.py \
+  --before ~/.local/share/follow-my-voice-models/20261025-minilm-action-v3 \
+  --after /absolute/path/to/new-continuation
+```
+
+This run combines additional training, broader examples and a shorter input format;
+it is not a controlled ablation of extra epochs alone. `compact-v2` inputs retain
+each gate individually, normalize direction words and include offered text plus
+last actual speech. They do not include the oracle's final action or a computed
+gate/repeat decision. The saved model config records its input format; old weights
+continue to receive their original representation. The same external gates and
+candidate mask still apply. Training uses eight fixed epochs, 0.00002 learning
+rate, warmup/cosine decay and validation-only checkpoint selection. It preserves
+the parent weights and writes a separate immutable output directory.
+
 `--live-jev` sends at most 20 existing synthetic fixture requests to the current
 Jev endpoint, using `jev_key` from the ignored `Assets/StreamingAssets/api_keys.json`.
 No key is written to reports. Omit the flag for local/historical comparison only.
@@ -66,8 +100,8 @@ headset frame rate, Wi-Fi transport or time to audible speech.
 
 ```sh
 ~/.local/share/follow-my-voice-models/venv/bin/python tools/local-jev/serve.py \
-  --model ~/.local/share/follow-my-voice-models/20261025-minilm-action-v3/model \
-  --device cpu --port 8766
+  --model ~/.local/share/follow-my-voice-models/20261025-minilm-action-v4/model \
+  --device mps --port 8766
 curl http://127.0.0.1:8766/health
 ```
 

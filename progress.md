@@ -1,3 +1,9 @@
+## 2026-10-25 — Further local Jev fine-tuning
+
+Implemented a separate v4 continuation from saved v3 weights: 2,400 training rows, compact versioned input, all action/direction coverage, and an untouched 500-case fresh wording/gate-combination test. Validation-only selection retained epoch 7 of eight. Fresh offered-action agreement improved 77.4% → 98.4%; unchanged mandatory gates corrected the eight remaining failures. Actual saved-model inference matched all 500 final expected actions. Earlier production-case regression improved 7/10 → 10/10.
+
+Paired warmed local HTTP measured 7.24 ms → 6.52 ms median; separate current local/cloud comparison measured 15.27 ms versus Jev 196.87 ms. Thirteen tests and independent review pass. These are synthetic authored-policy results, not participant helpfulness, headset FPS or acoustic timing. Parent model preserved; no Unity/headset deployment. Evidence and remaining decisions: `docs/testing/2026-10-25-local-jev-continuation.md`.
+
 ## 2026-10-25 — Local Jev action-model experiment and checkpoint
 
 Implemented an isolated, reproducible MiniLM action-classifier fine-tune after saving study work as `76d7cda` (voice worker fix remains in `1e47031`). Trained 22.7M parameters on 1,200 synthetic authored-policy examples with actual library phrases; validation-only selection, separate diagonal and production-C# holdouts, local loopback server and paired current-Jev latency benchmark. Ten tests and independent review pass. No Unity runtime or headset change.

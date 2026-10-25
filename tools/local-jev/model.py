@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from data import LABELS, blocked, text, unpack
+from continuation_data import model_text
 
 MAX_TOKENS = 384
 
@@ -27,7 +28,7 @@ class Policy:
         _, _, _, _, choices = unpack(payload)
         if guard and blocked(payload):
             return self.answer('wait', {'wait': 1.0}, payload, start, 'local_gate')
-        encoded = self.tokenizer(text(payload), return_tensors='pt', truncation=False)
+        encoded = self.tokenizer(model_text(payload, getattr(self.model.config, 'local_jev_feature_version', None)), return_tensors='pt', truncation=False)
         if encoded['input_ids'].shape[1] > MAX_TOKENS:
             raise ValueError('Input exceeds supported context; refusing silent truncation')
         with torch.inference_mode():
