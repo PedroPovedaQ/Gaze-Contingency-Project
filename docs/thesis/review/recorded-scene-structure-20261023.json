@@ -1,0 +1,390 @@
+{
+  "pdf": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/docs/thesis/follow-my-voice-thesis-first-pass.pdf",
+  "pages": 169,
+  "title": "FOLLOW MY VOICE: SELF-SIMILAR AND NEUTRAL VOICES FOR GAZE-CONTINGENT OBJECT SEARCH IN VIRTUAL REALITY",
+  "language": "en-US",
+  "display_document_title": true,
+  "tagged": true,
+  "structure_counts": {
+    "": 0,
+    "/Document": 1,
+    "/text-unit": 622,
+    "/text": 1030,
+    "/Div": 361,
+    "/Sect": 163,
+    "/chapter": 24,
+    "/Span": 55,
+    "/Reference": 266,
+    "/Link": 351,
+    "/Em": 6,
+    "/TOC": 27,
+    "/TOCI": 170,
+    "/Lbl": 166,
+    "/description": 1,
+    "/item": 181,
+    "/itemlabel": 181,
+    "/itembody": 181,
+    "/section": 98,
+    "/section-number": 120,
+    "/subsection": 22,
+    "/paragraph": 11,
+    "/Formula": 47,
+    "/math": 47,
+    "/msub": 51,
+    "/mi": 154,
+    "/mn": 23,
+    "/mo": 90,
+    "/mtable": 6,
+    "/mtr": 7,
+    "/mtd": 16,
+    "/mtext": 12,
+    "/mpadded": 5,
+    "/mrow": 17,
+    "/mspace": 8,
+    "/mover": 1,
+    "/mfrac": 1,
+    "/Table": 17,
+    "/TR": 137,
+    "/TH": 45,
+    "/TD": 319,
+    "/enumerate": 15,
+    "/subsubsection": 8,
+    "/quote": 3,
+    "/Caption": 31,
+    "/Artifact": 5,
+    "/list": 1,
+    "/figures": 1,
+    "/float": 26,
+    "/Figure": 15,
+    "/tables": 1
+  },
+  "tables": [
+    {
+      "id": "ID.03020",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    },
+    {
+      "id": "ID.03792",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    },
+    {
+      "id": "ID.03869",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    },
+    {
+      "id": "ID.04057",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    },
+    {
+      "id": "ID.04214",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    },
+    {
+      "id": "ID.04434",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    },
+    {
+      "id": "ID.01027",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    },
+    {
+      "id": "ID.01348",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    },
+    {
+      "id": "ID.01557",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    },
+    {
+      "id": "ID.01716",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    },
+    {
+      "id": "ID.02250",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    },
+    {
+      "id": "ID.02362",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    },
+    {
+      "id": "ID.02669",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    },
+    {
+      "id": "ID.02773",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    },
+    {
+      "id": "ID.04537",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    },
+    {
+      "id": "ID.04686",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    },
+    {
+      "id": "ID.04765",
+      "first_rows": [
+        [
+          "/TH",
+          "/TH",
+          "/TH"
+        ],
+        [
+          "/TD",
+          "/TD",
+          "/TD"
+        ]
+      ],
+      "has_header": true
+    }
+  ],
+  "figures": [
+    {
+      "id": "ID.01099",
+      "alt": "Two voice conditions feed a shared hidden-target search task and a paired outcome comparison."
+    },
+    {
+      "id": "ID.01465",
+      "alt": "Overhead scene illustration showing a seated headset wearer, surrounding vertical object panels, and gaze and controller rays."
+    },
+    {
+      "id": "ID.01475",
+      "alt": "Three-panel reconstruction of development Run 26: the recorded first-person view of colored objects on vertical planes; an overhead view of eight surrounding planes and the central wearer avatar; and magnified cube, sphere, pyramid, cylinder, capsule and star examples."
+    },
+    {
+      "id": "ID.01498",
+      "alt": "Gaze and controller sensing feed local state and memory, constrained Jev choices, a fresh playback check, and actual speech feedback."
+    },
+    {
+      "id": "ID.01511",
+      "alt": "Trial Review application showing its explicitly synthetic three-trial demonstration, reconstructed scene, evidence inspector, and synchronized timeline."
+    },
+    {
+      "id": "ID.01604",
+      "alt": "Setup and one practice trial precede two counterbalanced forty-trial blocks and final retrospective questionnaires; each trial separates opening cue, reveal, and trigger selection."
+    },
+    {
+      "id": "ID.01812",
+      "alt": "Two blocks separated by a break are followed by a final session with questionnaires referring separately to Block 1 and Block 2."
+    },
+    {
+      "id": "ID.01842",
+      "alt": "Raw observations and events feed versioned processing, trial summaries, Trial Review, and analysis tables."
+    },
+    {
+      "id": "ID.02037",
+      "alt": "Overhead octagonal layout with origin, cross reference, nominal wall center, and an offset target showing distinct bearings."
+    },
+    {
+      "id": "ID.02044",
+      "alt": "Side elevation of cross and target with positive signed height difference and a distinction between allocation and live refinement."
+    },
+    {
+      "id": "ID.02137",
+      "alt": "Three separate rows show qualified gaze, qualified controller pointing, and correct trigger selection as distinct events."
+    },
+    {
+      "id": "ID.02237",
+      "alt": "Timeline distinguishes first valid evidence, qualification, admission, final recheck, and software playback; intervals are illustrative."
+    },
+    {
+      "id": "ID.02349",
+      "alt": "Participant contains two voice conditions, each with 40 trial outcomes and one retrospective questionnaire set, feeding a paired study contrast."
+    },
+    {
+      "id": "ID.04520",
+      "alt": "Spatial history and recent speech and state history are copied into a request and checked against current state before playback."
+    },
+    {
+      "id": "ID.04617",
+      "alt": "Common path from opening through turning and refinement to acquisition and readiness, with pause and suspension and independent trigger completion."
+    }
+  ],
+  "internal_links_missing_named_destination": [],
+  "link_count": 358,
+  "named_destinations": 576,
+  "top_level_outline_items": 38,
+  "scope": "Structural inspection only; not an Acrobat or PDF/UA conformance check."
+}

@@ -1,0 +1,48 @@
+# Figure provenance
+
+Before the development-results addition, the 15 numbered figures combined three project assets, ten new vector explanations, one demonstration-interface capture, and one composite of actual recorded-data replay captures. None depicts newly collected participant results.
+
+## Reused project assets
+
+- `image.png`: existing Overleaf search-scene illustration, preserved in `source-snapshot/`. Drawn object count is schematic.
+- `study-procedure-current.svg/pdf`: current project procedure diagram. Editable SVG copied from Overleaf; the working PDF was regenerated with embedded fonts. The active labels use neutral voice; the source snapshot remains unchanged.
+- `voice-guidance-memory-architecture.svg/pdf`: current Overleaf architecture diagram. Same font-embedding treatment, with the active label updated to neutral voice; source snapshot remains unchanged.
+
+## New explanatory figures
+
+`generate-thesis-diagrams.py` creates paired editable SVG and vector PDF files. It requires Python, CairoSVG, and pypdf; run from any directory. Tested versions are CairoSVG 2.9.1 and pypdf 6.21.2. Install these in the Python environment used to run the generator (`python -m pip install CairoSVG==2.9.1 pypdf==6.21.2`). On this machine the local Cairo library is under `/opt/homebrew/lib`. The generated diagrams describe the source snapshot and planned measurement contract; their captions identify implementation versus proposal. Geometry and timeline figures are schematic and not measured traces.
+
+Each export runs `normalize-pdf-font-maps.py` to make implicit identity maps in embedded TrueType CID fonts explicit, as required by PDF/UA-2. After exporting another SVG manually, run that helper on its PDF too. It preserves existing mappings and content streams and leaves already-normalized files untouched. The thesis's LuaTeX import keeps each PDF's original transparency group rather than appending a duplicate group dictionary. The checked-in figure PDFs require no Python dependencies for an ordinary thesis build.
+
+- `comparison-framework`: intended voice manipulation and common task.
+- `guidance-states`: common state families, not an exhaustive transition graph.
+- `evidence-events`: distinct gaze, controller, and trigger events.
+- `bounded-memory`: different spatial and speech/state history limits.
+- `starting-geometry`: nominal wall assignment versus exact cross-relative angle.
+- `height-reference`: cross-relative vertical demand versus live guidance.
+- `latency-definition`: qualification versus software delivery delay.
+- `data-provenance`: raw records, summaries, reconstruction, and analysis.
+- `survey-scopes`: final administration with two block references.
+- `analysis-units`: repeated trials and participant-by-block ratings.
+
+## Application screenshot
+
+`trial-review-synthetic-demo.png` was captured directly through the native UI from the verified October 20 Trial Review application at `live-audio-detached-verified/Trial Review.app`. It displays the bundled **SYNTHETIC / Run 1** demonstration with three sample trials. It is not a wearer recording, not a current live session, and not evidence for measured system performance. The caption preserves the application's missing-state and reconstructed-highlight caveats. The screenshot has not been composited or redrawn.
+
+No new screenshots of actual participant recordings or model-evaluation results are represented in this draft.
+
+## Recorded development scene
+
+`recorded-search-scene.svg/pdf/png` contains actual Trial Review screenshots from DEV_NEUTRAL Run 26, Trial 01, at session time 14.83 s. The source is a `live_headset` recording from October 20, 2026, not the bundled synthetic demonstration. The recorded layout contains 168 objects across eight planes and is an earlier development configuration, not a frozen study stimulus count or participant result. Panel (c) uses new zoomed screenshots of six actual objects from the same recorded layout, with blue, green, yellow and red examples. A capture-only camera aims at each recorded object and narrows its field of view; meshes, object poses and colors are unchanged. These are independent close-ups, not pixel enlargements from panel (a).
+
+`recorded-scene-sources/` preserves the unaltered overview and six close-up full-window captures and `provenance.json` with recording and screenshot hashes, sample identity, camera settings and limitations. The private raw recording is not copied into this repository. `compose-recorded-scene-figure.py` crops viewer chrome, embeds the screenshots and zoomed close-ups in an editable SVG, and exports PNG/PDF using Pillow and CairoSVG. After regeneration, run the PDF font-map normalization helper. The capture-only viewer hides optional reviewer labels, degrees, rings and subtitles and adjusts the overhead camera. Runtime source and raw recording data are unchanged. The body model, rays, highlights and environment are viewer reconstructions; this is not direct headset footage.
+
+## Recorded development plots (October 23)
+
+Four additional data figures (`development-search-times`, `development-speech-delivery`, `development-confirmation-sequence`, and `development-gaze-usability`) derive exclusively from actual DEV_NEUTRAL Runs 20–28. They are described and included in Results. See [source manifest, CSVs and methods](../development-results/README.md). No simulated observations or participant-study treatment effects are included.
+
+The search and delivery plots use lettered panels, observed-point overlays and descriptive quartile boxes. The search panel has a labeled logarithmic seconds axis and a separate completion-coverage panel. Delivery plots show run-level distributions and a logarithmic stage-duration panel. Colors are a display aid, not experimental conditions. Details and sample-count rules are in the development-results README.
+
+## Jev and final playback admission
+
+`jev-final-playback-gate.pdf/svg/png` is a vector schematic generated by `generate-jev-playback-gate.py`. It separates local observations and candidate filtering, asynchronous Jev advice, qualified local feedback, and the final current-state admission gate. Both provider and local routes remain gated; waiting and fallbacks remain subject to local policy. Source grounding: `Assets/VoiceSynthesizer.Transmission.cs`, `Assets/VoiceSynthesizer.cs`, `Assets/HintGenerator.Actions.cs`, and `Assets/SpatialVoice/NavigationActionMenu.cs`. The figure is a control-flow explanation, not measured data, an exhaustive state machine or proof of headset validation.

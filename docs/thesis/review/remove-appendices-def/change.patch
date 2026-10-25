@@ -1,0 +1,145 @@
+diff --git a/chapters/01-introduction.tex b/chapters/01-introduction.tex
+index f4bfe12..7ead015 100644
+--- a/chapters/01-introduction.tex
++++ b/chapters/01-introduction.tex
+@@ -74,7 +74,7 @@ Question & Intended contrast & Evidence and reporting destination \\\midrule
+ RQ1 & Does self-similar voice change active completion time relative to a neutral voice? & Trial timing and starting geometry; analysis in Section~\ref{ch:analysis}, results in Chapter~\ref{ch:evaluation}. \\
+ RQ2 & Do self-similar and neutral voices differ in workload or motivation? & Paired block-referenced workload and separate IMI subscales; final retrospective administration. \\
+ RQ3 & How do voices differ in agent perception, voice experience, reliance, and search behavior? & Custom ratings, agent constructs, debrief, and valid search measures; exploratory voice-by-angle comparison. \\
+-EQ1 & Can the recorded sequence explain eligibility, delivery, and unhelpful guidance? & State, request, and actual playback records; supporting evaluation in Appendix~\ref{app:guidance-support}. \\\bottomrule
++EQ1 & Can the recorded sequence explain eligibility, delivery, and unhelpful guidance? & State, request, and actual playback records; sequence tests and evaluation rubric in Appendix~\ref{app:scenarios}. \\\bottomrule
+ \end{tabularx}
+ \end{table}
+ 
+@@ -107,4 +107,4 @@ The implemented guidance and recording platform supports that empirical contribu
+ The empirical contribution remains pending: this draft reports no recruited sample, condition means, significance tests, or participant quotations. The completed thesis will replace the pending results sections with the actual voice-condition outcomes of the frozen study and revise its abstract and conclusion accordingly.
+ 
+ \section{Organization of the Thesis}
+-Chapter~\ref{ch:literature} connects XR applications, attention guidance, gaze interaction, and self-similar voice research. Chapter~\ref{ch:system} presents the methodology, including application design, the experiment and procedure, data collection, scoring, and the planned analysis. Chapter~\ref{ch:evaluation} organizes results into performance, experience, and supporting engineering evidence, with participant outcomes pending. Chapter~\ref{ch:discussion} considers interpretation, limitations, and future work, and the conclusion returns to the research questions. The appendices preserve instruments, data definitions, implementation details, and readiness requirements.
++Chapter~\ref{ch:literature} connects XR applications, attention guidance, gaze interaction, and self-similar voice research. Chapter~\ref{ch:system} presents the methodology, including application design, the experiment and procedure, data collection, scoring, and the planned analysis. Chapter~\ref{ch:evaluation} organizes results into performance, experience, and supporting engineering evidence, with participant outcomes pending. Chapter~\ref{ch:discussion} considers interpretation, limitations, and future work, and the conclusion returns to the research questions. The appendices preserve questionnaire instruments, data definitions and scoring rules, and guidance sequence tests.
+diff --git a/chapters/03-system.tex b/chapters/03-system.tex
+index 99e02ac..132d5a4 100644
+--- a/chapters/03-system.tex
++++ b/chapters/03-system.tex
+@@ -50,7 +50,7 @@ Because cloud responses arrive asynchronously, the participant's state may chang
+ \label{fig:architecture}
+ \end{figure}
+ 
+-Figure~\ref{fig:jev-final-gate} makes the final admission boundary explicit. Jev's response is advice based on an earlier snapshot; a decision to speak does not by itself authorize playback. Both provider-selected phrases and qualified local feedback pass through current-state checks before the prepared clip starts. This gate is a logical control boundary: readiness and pacing are checked during scheduling, and the queued relevance callback is evaluated again immediately before audio playback. The development-only Jev-led policy broadens the choice to eligible orientation, refinement, correction, or encouragement actions while retaining this local boundary. Appendix~\ref{app:decision-contract} records the request contract and memory fields, and Appendix~\ref{app:guidance-support} distinguishes the experimental policies.
++Figure~\ref{fig:jev-final-gate} makes the final admission boundary explicit. Jev's response is advice based on an earlier snapshot; a decision to speak does not by itself authorize playback. Both provider-selected phrases and qualified local feedback pass through current-state checks before the prepared clip starts. This gate is a logical control boundary: readiness and pacing are checked during scheduling, and the queued relevance callback is evaluated again immediately before audio playback. The development-only Jev-led policy broadens the choice to eligible orientation, refinement, correction, or encouragement actions while retaining this local boundary.
+ 
+ \begin{figure}[p]
+ \centering
+@@ -74,5 +74,5 @@ Figure~\ref{fig:trial-review-synthetic-demo} shows the standalone Trial Review a
+ \subsection{Delivery Quality as an Experimental Requirement}
+ Both voice conditions must use the same versioned guidance mechanism, yet the delivered sequences will still depend on participant behavior, and the clips may differ acoustically. The relevant control is a shared policy with documented exposure, not an assertion that every participant hears an identical sequence. Voice identity, library metadata, playback onset, and delivery faults must remain traceable to the corresponding condition.
+ 
+-A delayed or confusing cue could alter search performance or a participant's judgment of the voice, and could then be mistaken for an effect of voice condition. Technical inspection therefore supports, but does not replace, the participant evidence needed to evaluate the self-similar voice. Appendix~\ref{app:guidance-support} explains how the implementation can be checked, and Appendix~\ref{app:decision-contract} preserves the inspected provider contract.
++A delayed or confusing cue could alter search performance or a participant's judgment of the voice, and could then be mistaken for an effect of voice condition. Technical inspection therefore supports, but does not replace, the participant evidence needed to evaluate the self-similar voice. Appendix~\ref{app:scenarios} defines guidance sequence tests and an evaluation rubric for checking the implementation.
+ 
+diff --git a/chapters/04-method.tex b/chapters/04-method.tex
+index 8bf6fd9..d2bc3fd 100644
+--- a/chapters/04-method.tex
++++ b/chapters/04-method.tex
+@@ -1,6 +1,6 @@
+ \section{Experimental Design}
+ \label{ch:methodology}
+-\draftnote{This section specifies the proposed confirmatory procedure. The implemented snapshot supports one practice trial, two 40-trial blocks, and a final questionnaire handoff. Exact pre-cue geometry, vertical balancing, sample size, and pilot acceptance rules remain unresolved, as detailed in Appendix~\ref{app:readiness}.}
++\draftnote{This section specifies the proposed confirmatory procedure. The implemented snapshot supports one practice trial, two 40-trial blocks, and a final questionnaire handoff. Exact pre-cue geometry, vertical balancing, sample size, and pilot acceptance rules remain unresolved.}
+ \subsection{Voice Manipulation and Comparison Rationale}
+ The method compares two ways of personalizing assistance: a synthetic voice derived from the participant's recorded speech and a neutral voice selected by that participant from the supplied catalog. Letting participants choose the neutral alternative ties the comparison to a design choice a user could face, while the within-participant task provides repeated observations under both configurations. Similarity ratings will indicate whether participants heard the clone as resembling themselves, whereas performance and experience measures will compare how each voice functions as guidance.
+ 
+@@ -51,7 +51,7 @@ Participants will perform an agent-guided object-search task while seated on a s
+ 
+ Each trial will begin with the participant looking at a readiness cross. Once readiness is established, an opening directional cue will play while the objects remain hidden, and object reveal will then start active search timing. A correct trigger selection will stop timing and produce success feedback, whereas an incorrect selection will be counted and search will continue. This sequence separates readiness and opening guidance from the timed search interval while retaining their timestamps for analysis.
+ 
+-Before participant use, consent materials must be reconciled with ElevenLabs voice processing and Jev cloud decisions, including the data transmitted, retention, access, and deletion arrangements. This reconciliation remains among the readiness requirements listed in Appendix~\ref{app:readiness}. After consent, participants will complete background questions and baseline symptom ratings. They will then choose a neutral voice, rate auditioned voices, record a standard passage in their natural voice for synthesis, and confirm comfortable, clear audio for each condition. The retained English recording passage is reproduced in Appendix~\ref{app:instruments}, although its match to the frozen build and typical recording duration remain to be verified. Preferred gender presentation will be chosen explicitly rather than inferred from participant gender.
++Before participant use, consent materials must be reconciled with ElevenLabs voice processing and Jev cloud decisions, including the data transmitted, retention, access, and deletion arrangements. This reconciliation remains a requirement before participant recruitment. After consent, participants will complete background questions and baseline symptom ratings. They will then choose a neutral voice, rate auditioned voices, record a standard passage in their natural voice for synthesis, and confirm comfortable, clear audio for each condition. The retained English recording passage is reproduced in Appendix~\ref{app:instruments}, although its match to the frozen build and typical recording duration remain to be verified. Preferred gender presentation will be chosen explicitly rather than inferred from participant gender.
+ 
+ The researcher will fit the headset and conduct vendor calibration followed by independent spatial validation across relevant heights, wall boundaries, distances and head orientations. If an offset correction is introduced, the targets used to fit it will remain separate from those used for independent validation. Standardized instructions will explain that participants will rely on the agent to discover the target and use the right trigger to select it. Participants will then complete the single practice trial and the two assigned 40-trial blocks.
+ 
+diff --git a/chapters/05-measurement.tex b/chapters/05-measurement.tex
+index 418139d..10244a4 100644
+--- a/chapters/05-measurement.tex
++++ b/chapters/05-measurement.tex
+@@ -51,7 +51,7 @@ For nondegenerate vectors, the exact pre-cue starting angle is
+ \end{equation}
+ The sign convention will be verified against Unity's world-up signed-angle convention using known left and right targets. The absolute value $|\theta_0|$ describes horizontal demand from the saved cross reference. Exactly backward targets require a documented tie convention, because $-180$ and $+180$ identify the same horizontal bearing, although the absolute magnitude remains 180 degrees in either case.
+ 
+-This calculation is a required addition to the frozen study data contract. The October 20, 2026 implementation alignment audit (source register in Appendix~\ref{app:readiness}) found that existing signed and absolute theta fields represented nominal wall geometry relative to the previous target wall. They must not be renamed or silently interpreted as exact pre-cue measurements. A new snapshot must save origin, cross, target, timestamp, frame, and coordinate-frame identifier before the opening cue. If a horizontal vector is degenerate, the angle is unavailable; substituting zero would falsely describe an easy starting configuration.
++This calculation is a required addition to the frozen study data contract. The October 20, 2026 implementation alignment audit found that existing signed and absolute theta fields represented nominal wall geometry relative to the previous target wall. They must not be renamed or silently interpreted as exact pre-cue measurements. A new snapshot must save origin, cross, target, timestamp, frame, and coordinate-frame identifier before the opening cue. If a horizontal vector is degenerate, the angle is unavailable; substituting zero would falsely describe an easy starting configuration.
+ 
+ Nominal categories remain useful for allocation: each block contains eight scheduled trials in each absolute category, $0,45,90,135,180$ degrees. Because an object can be positioned away from the center of its assigned wall, however, its exact bearing need not equal the nominal category, and balance across categories therefore does not prove exact geometric matching between voice blocks. Both assigned and realized geometry will be inspected.
+ 
+diff --git a/chapters/06-analysis.tex b/chapters/06-analysis.tex
+index a5830e7..964d0b6 100644
+--- a/chapters/06-analysis.tex
++++ b/chapters/06-analysis.tex
+@@ -79,7 +79,7 @@ Instruction count, gaze path, and controller behavior can be consequences of voi
+ For example, slower search can produce more opportunities for guidance, and more guidance can itself affect search time. A correlation between instruction count and duration does not establish that speech caused delay. Timeline analysis can identify concrete scheduling failures, but observational associations among adaptive behaviors require more cautious interpretation.
+ 
+ \subsection{Guidance Delivery Evaluation}
+-Engineering analysis will distinguish event qualification, decision latency, model deferral, scheduling delay and actual playback, and it will evaluate gaze and controller confirmation separately. Because a cue can be judged only in context, sequence-level review will include what happened before and after it. Automatic checks and ratings produced by an offline language-model evaluator (Appendix~\ref{app:guidance-support}) will remain advisory engineering evidence rather than participant perception scores.
++Engineering analysis will distinguish event qualification, decision latency, model deferral, scheduling delay and actual playback, and it will evaluate gaze and controller confirmation separately. Because a cue can be judged only in context, sequence-level review will include what happened before and after it. Automatic checks and ratings produced by an offline language-model evaluator (Appendix~\ref{app:scenarios}) will remain advisory engineering evidence rather than participant perception scores.
+ 
+ \subsection{Qualitative Analysis and Mixed Evidence}
+ The debrief will begin with broad experience questions, followed by balanced probes about voice preference, perceived performance, comfort, and potential uses. The coding process will record the initial codebook, revisions, coding decisions, and independent review of a subset. Contradictory or minority accounts will be retained rather than forced into one favorable theme.
+diff --git a/chapters/07-evaluation.tex b/chapters/07-evaluation.tex
+index b05cdaa..41e779d 100644
+--- a/chapters/07-evaluation.tex
++++ b/chapters/07-evaluation.tex
+@@ -58,4 +58,4 @@ Voice-condition outcomes & No confirmatory dataset reported & No performance or
+ \section{Guidance Quality Supporting the Voice Contrast}
+ The completed report will describe gaze availability, actual speech exposure, delayed acknowledgments, interruptions, and unhelpful cues by voice condition and session. This account will help assess whether technical delivery problems affected one condition more than the other. The voice contrast will not automatically be adjusted for behavior-dependent hint counts or waiting time: these quantities arise after voice assignment, may themselves depend on voice condition, and cannot be treated as baseline difficulty (Section~\ref{ch:analysis}).
+ 
+-Gaze acknowledgment, controller acknowledgment, and correct trigger selection remain separate events. Their sequence records document feedback delivery, whereas participant ratings and debriefing address how that feedback was experienced. Advisory model judgments cannot substitute for those participant reports. Appendix~\ref{app:guidance-support} describes the policy pilots, episode definitions, failure categories, and investigation of two-second delays that support assessment of the apparatus before interpreting differences between voices.
++Gaze acknowledgment, controller acknowledgment, and correct trigger selection remain separate events. Their sequence records document feedback delivery, whereas participant ratings and debriefing address how that feedback was experienced. Advisory model judgments cannot substitute for those participant reports. Appendix~\ref{app:scenarios} defines sequence tests and evaluation criteria for assessing the apparatus before interpreting differences between voices.
+diff --git a/chapters/08-discussion.tex b/chapters/08-discussion.tex
+index a81d8da..45cc831 100644
+--- a/chapters/08-discussion.tex
++++ b/chapters/08-discussion.tex
+@@ -54,7 +54,7 @@ Adapting an embodied-agent measure to a voice agent can alter its meaning. Co-pr
+ \section{Gaze Quality and Feedback Coupling}
+ Gaze serves both as an input to assistance and as a recorded behavioral signal. Tracking gaps can change the participant's experience and reduce measurement coverage, affecting both the outcome being measured and the evidence available to interpret it. Coverage and technical events will therefore be considered alongside performance without automatically being treated as pre-existing participant characteristics.
+ 
+-A highlighted vicinity candidate can help indicate what the system currently attends to, but it can also suggest a reference object that differs from the mathematical gaze ray. For example, an instruction to look lower can be consistent with a gaze ray above the target yet confusing if the target appears higher than a highlighted neighbor; Appendix~\ref{app:guidance-support} describes this reference-frame failure. A cue should be evaluated in its visible interaction context, not solely against the sign of a geometric delta. Development-only rings and diagnostic markers must not silently enter the participant condition.
++A highlighted vicinity candidate can help indicate what the system currently attends to, but it can also suggest a reference object that differs from the mathematical gaze ray. For example, an instruction to look lower can be consistent with a gaze ray above the target yet confusing if the target appears higher than a highlighted neighbor. A cue should be evaluated in its visible interaction context, not solely against the sign of a geometric delta. Development-only rings and diagnostic markers must not silently enter the participant condition.
+ 
+ The proposed validity-aware stream and independent calibration checks address these risks, but headset-specific spatial performance and the rate of distinct gaze observations remain empirical questions. Validation results for the Vive Pro Eye cannot substitute for Focus Vision measurements, and an interaction threshold chosen for usability does not establish a validated measure of cognition.
+ 
+diff --git a/chapters/09-conclusion.tex b/chapters/09-conclusion.tex
+index 31b86cd..427bc0e 100644
+--- a/chapters/09-conclusion.tex
++++ b/chapters/09-conclusion.tex
+@@ -11,7 +11,7 @@ The present contribution is a rationale and operational design for studying self
+ \section{Status of the Research Questions}
+ RQ1 remains unanswered empirically: no confirmatory voice-condition contrast in active completion time is estimated here. RQ2 likewise remains open because the final retrospective workload and motivation responses have not been collected for this report. RQ3 has a defined exploratory battery and debrief structure, but no participant judgments or themes are presented as findings. The literature motivates these questions; it does not supply their answers for this task.
+ 
+-For EQ1, the platform and data contract provide a way to inspect sensing, state, decisions, and software playback separately. The October 20 alignment audit summarized in Chapter~\ref{ch:evaluation} supports specific implementation checks. The separate October 23 working-file inspection in Appendix~\ref{app:decision-contract} documents request, validation, and memory behavior in files whose deployment it does not confirm. Neither record provides a held-out guidance error rate or shows that all delayed confirmations have been removed. Together, these records describe the supporting apparatus and its current limits, while the question of whether the self-similar voice is more effective or more welcome than the neutral alternative remains for the participant study.
++For EQ1, the platform and data contract provide a way to inspect sensing, state, decisions, and software playback separately. The October 20 alignment audit summarized in Chapter~\ref{ch:evaluation} supports specific implementation checks. That audit does not provide a held-out guidance error rate or shows that all delayed confirmations have been removed. These records describe the supporting apparatus and its current limits, while the question of whether the self-similar voice is more effective or more welcome than the neutral alternative remains for the participant study.
+ 
+ \section{Next Empirical Step}
+ The immediate work is to freeze the study configuration, close the geometry and consent gaps, validate the full wearer procedure, and finalize the primary analysis and sample-size justification before confirmatory recruitment. The resulting data must preserve counterbalanced order, actual voice exposure, observation coverage, and the final retrospective survey references. Only then can this thesis replace its results framework with estimates and revise its abstract and conclusion around observed evidence.
+diff --git a/main.tex b/main.tex
+index 9d13a94..17b457b 100644
+--- a/main.tex
++++ b/main.tex
+@@ -100,7 +100,7 @@ I am deeply grateful to my wife, Vanessa Zameza-Poveda, for her endless support
+ \chapter*{PREFACE}
+ This is an advisor-review draft revised October 23, 2026. It expands the project's current Overleaf manuscript and bibliography into a thesis using the supplied UCF ETD LuaLaTeX template. It is not a completed empirical report. The abstract describes the study design in the present tense without asserting that data collection is complete. System descriptions refer to the documented implementation snapshot; future-tense methods describe the proposed study. Engineering checks, planned measurements, and participant outcomes are kept separate.
+ 
+-The source snapshot is Overleaf revision \texttt{f9f49e4}. The runtime alignment audit dated October 20 is the accompanying implementation record. Appendix~\ref{app:decision-contract} separately documents an October 23 inspection of three working implementation files, with their hashes and uncommitted status retained. That inspection does not update the deployment claims of the October 20 audit. Later software changes require a new reconciliation before submission. Exact pre-cue geometry, balanced vertical allocation, final sample size, and pilot acceptance rules remain explicit readiness requirements. Qualtrics synchronization remains on hold. The author has supplied the previous degree, B.Sc. in Computer Science, and identified Dr. Roshan Venkatakrishnan as major professor. The degree-granting institution and year, any remaining administrative details, and the final AI disclosure still require author confirmation before submission.
++The source snapshot is Overleaf revision \texttt{f9f49e4}. The runtime alignment audit dated October 20 is the accompanying implementation record. Later software changes require a new reconciliation before submission. Exact pre-cue geometry, balanced vertical allocation, final sample size, and pilot acceptance rules remain explicit readiness requirements. Qualtrics synchronization remains on hold. The author has supplied the previous degree, B.Sc. in Computer Science, and identified Dr. Roshan Venkatakrishnan as major professor. The degree-granting institution and year, any remaining administrative details, and the final AI disclosure still require author confirmation before submission.
+ 
+ One structural reference is Hoang Bao Truong's 2026 UCF thesis, \emph{Using Inferences from Natural Language Narratives to Improve Video Question Answering}. Its chapter hierarchy, front matter, detailed methods, diagnostic discussion, and appendices inform presentation only. The revised Methodology and Results organization also draws on Gabriela R. Shamblin's 2025 UCF thesis, \emph{The Impact of Visualization Styles on Movement Imitation Accuracy in Virtual Reality}. These theses inform organization only; their prose and results are not transferred to this study.
+ \tableofcontents
+@@ -122,9 +122,6 @@ One structural reference is Hoang Bao Truong's 2026 UCF thesis, \emph{Using Infe
+ \input{appendices/a-instruments}
+ \input{appendices/b-data-dictionary}
+ \input{appendices/c-scenarios}
+-\input{appendices/d-readiness}
+-\input{appendices/e-decision-contract}
+-\input{appendices/f-guidance-support}
+ \backmatter
+ \bibliographystyle{plain}
+ \bibliography{references}

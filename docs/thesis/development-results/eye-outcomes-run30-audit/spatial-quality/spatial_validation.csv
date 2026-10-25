@@ -1,0 +1,8 @@
+validation_id,set,target,spatial_ray_source,samples,recorded_updates,settled_updates,invalid_settled_updates,invalid_update_fraction,observed_settled_seconds,valid_seconds,gap_seconds,valid_time_fraction,median_error_deg,p90_error_deg,mirrored_origin_median_error_deg,precision_pairs,rms_s2s_deg,mean_direction_offset_deg,mean_yaw_bias_deg,mean_pitch_bias_deg,bias_geometry_samples,angular_sd_deg,angular_sd_dof,precision_segments
+ba32c0979ddd42de8755ec0788e64b2f,quick,target_0,OpenXR_EXT,0,536,506,506,1.0,4.239755675022025,0.0,4.239755675022025,0.0,,,,0,,,,,0,,0,0
+ba32c0979ddd42de8755ec0788e64b2f,quick,target_1,OpenXR_EXT,0,546,515,515,1.0,4.236553435970563,0.0,4.236553435970563,0.0,,,,0,,,,,0,,0,0
+ba32c0979ddd42de8755ec0788e64b2f,quick,target_2,OpenXR_EXT,0,534,504,504,1.0,4.242915103037376,0.0,4.242915103037376,0.0,,,,0,,,,,0,,0,0
+e3ae7f2c8f414aff9297eabf4bec1f99,quick,target_0,OpenXR_EXT,0,514,484,484,1.0,4.2422674460103735,0.0,4.2422674460103735,0.0,,,,0,,,,,0,,0,0
+a4e00490600443a69511c81012b3113f,quick,target_0,OpenXR_EXT,0,524,497,497,1.0,4.262022759008687,0.0,4.262022759008687,0.0,,,,0,,,,,0,,0,0
+a4e00490600443a69511c81012b3113f,quick,target_1,OpenXR_EXT,0,516,487,487,1.0,4.259031300025526,0.0,4.259031300025526,0.0,,,,0,,,,,0,,0,0
+a4e00490600443a69511c81012b3113f,quick,target_2,OpenXR_EXT,0,508,480,480,1.0,4.232056352950167,0.0,4.232056352950167,0.0,,,,0,,,,,0,,0,0

@@ -1,0 +1,26 @@
+[
+  {
+    "file": "docs/thesis/chapters/03-system.tex",
+    "before": "when speech is admitted",
+    "after": "when the speech scheduler permits the acknowledgment to play",
+    "reason": "Clarify scheduler terminology identified by Claude."
+  },
+  {
+    "file": "docs/thesis/chapters/05-measurement.tex",
+    "before": "when speech is admitted",
+    "after": "when the speech scheduler permits the acknowledgment to play",
+    "reason": "Clarify scheduler terminology identified by Claude."
+  },
+  {
+    "file": "docs/thesis/appendices/d-readiness.tex",
+    "before": "The method and planned-analysis chapters similarly expand the current standalone sections.",
+    "after": "The experimental-design and planned-analysis sections similarly expand the current standalone sections.",
+    "reason": "Match the current six-chapter structure."
+  },
+  {
+    "file": "docs/thesis/appendices/f-guidance-support.tex",
+    "before": "that the roughly two-second delays have been removed.",
+    "after": "that the roughly two-second delays observed during development have been removed.",
+    "reason": "Identify the observation as development evidence, not participant results."
+  }
+]

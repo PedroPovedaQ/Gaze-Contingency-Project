@@ -1,0 +1,81 @@
+\chapter{DECISION CONTRACT AND REPRODUCTION RECORD}
+\label{app:decision-contract}
+\newpage
+\section{Scope and Source Status}
+This appendix preserves the decision instructions, response contract, and operational conditions needed to interpret the project's speech decisions. The source is an uncommitted working implementation inspected on October 23, 2026, based on commit \texttt{4cbc1c8}. The inspected files are \path{Assets/SpatialVoice/JevDecisionClient.cs}, \path{Assets/SpatialVoice/SpeechDecisionMemory.cs}, and \path{Assets/GuidanceStateMachine.cs}. File hashes and inspection status are preserved in \path{review/implementation-contract-inspection.json}. These files include work beyond the main-branch documentation checkpoint, so their inspection documents source behavior without establishing deployment or release validation.
+
+The appendix describes ordinary navigation choices and their local admission boundary. It does not enumerate every specialized opening, success, interruption, or experimental action request. A frozen release must preserve each enabled request builder and its configuration, not assume that the ordinary-navigation contract covers all speech paths.
+
+\section{Ordinary Navigation Request and Response}
+The inspected builder uses the model alias \texttt{typesafe-ai/jev}, and its base payload contains a state and a questions object. Within that payload, the \texttt{navigation\_phrase} question has type \texttt{choice}, and eligible phrase texts are keys in a \texttt{criteria} object whose values carry tone, word count, semantic metadata, and a locally assigned geometric-validity flag. The builder requires two to five candidates and unique candidate texts. The local flag records the result of filtering at request time; it is not an independent model verification or a guarantee that the candidate will remain appropriate.
+
+The combined guidance request converts the state to a JSON object and adds a \texttt{transmit} choice with \texttt{speak} and \texttt{wait} alternatives. Shared candidate semantics may be factored into \texttt{candidate\_semantics\_defaults}; differing fields remain attached to individual candidates. Factoring is intended to reduce duplication without changing candidate semantics, which the retained serialized requests should confirm. The exact serialized request should likewise be kept whenever a test examines whether a change in representation alters response time or choice quality.
+
+The phrase-selection instruction in the inspected source is:
+\begin{quote}\small
+Choose one short navigation phrase. Prefer the requested tone and never repeat the last phrase when another valid choice exists. For Casual guidance, use a short Direct cue as the next alternative; avoid Technical wording unless Technical is requested. Do not infer task success or target passage.
+\end{quote}
+
+The combined request instructs the provider to choose to wait when gaze is invalid or speech is ongoing, to consider elapsed silence and recent speech, and to select a phrase even when it chooses to wait. Its criteria distinguish a newly qualified event from repeated same-direction advice during a silence interval shorter than three seconds. Additional compact-payload instructions state that busy playback also requires waiting, current evidence overrides history, and a false \texttt{newGuidanceAllowed} flag is binding. These are inspected software instructions, not a claim that three seconds is a validated human-factors threshold or that the provider always obeys them.
+
+The following response is a \emph{constructed contract example}. It illustrates that choosing wording does not itself authorize playback. The phrase is assumed to have been among the submitted candidates; no request was executed to produce this example.
+\begin{quote}\begin{minipage}{\linewidth}\small\ttfamily\singlespacing
+\{\par
+\quad "answers": \{\par
+\qquad "navigation\_phrase": \{\par
+\qquad\quad "type": "choice",\par
+\qquad\quad "choice": "Look slightly right."\par
+\qquad \},\par
+\qquad "transmit": \{\par
+\qquad\quad "type": "choice", "choice": "wait"\par
+\qquad \}\par
+\quad \}\par
+\}
+\end{minipage}\end{quote}
+
+The parser requires the expected choice type and an exact member of the submitted alternatives, and in the inspected request wrapper this validation occurs before a response is logged as accepted. A syntactically valid but unsupported phrase is therefore an invalid response, whereas a valid response that says wait is a deferral rather than a timeout. Even a valid speak response can still be canceled or rejected by the local scheduler after the state changes. Evaluation must preserve these distinctions.
+
+\section{State, History, and Evidence Fields}
+The state is a snapshot of an observation, not a live connection to the participant. The relevant inspected request paths include \path{runtime.evidence.valid}, \path{runtime.evidence.guidanceState.newGuidanceAllowed}, \path{runtime.playback.is_speaking}, \path{runtime.playback.is_busy}, and \path{runtime.seconds_since_speech_ended}, and the request also carries the locally built context and candidate semantics. These fields should be audited from the actual serialized payload whenever the adapter changes. Because this inspection did not establish whether voice-condition identifiers, voice IDs, or condition-linked tone requests appear in every enabled serialized request, provider decisions cannot yet be assumed condition-blind. The frozen-payload audit must therefore establish whether tone requests are held constant across voice conditions.
+
+Recent history is supplied under \path{runtime.playback.recent_history}. The memory object identifies its schema as \texttt{speech-memory-v1}, its reset scope, and its 15-second window. Speech entries record text, context, phase, allowed action, age, and whether playback started, completed, or was interrupted, while state entries retain the prior and current phase and the transition reason. The queues contain at most four speech entries and four transitions, and the current pending proposal is not treated as already spoken history.
+
+That distinction matters when asking a model to avoid repetition. A request that selected a phrase but never reached playback should not cause the agent to claim the participant already heard it. Conversely, a phrase interrupted halfway through cannot be assumed to have communicated its final words. A replay with missing playback-end evidence must retain that uncertainty.
+
+\section{Local Admission Algorithm}
+The following is explanatory pseudocode for responsibility boundaries, not a replacement for the release source or an exhaustive transition specification. The inspected files establish request validation, bounded memory, and guidance-state behavior. The scheduler, playback, and round-manager implementations were not part of this three-file inspection. The steps below specify the admission boundary to verify in release testing, especially cancellation, clip readiness, final rechecks, and playback-start acknowledgment. In that design, correct right-trigger selection remains a separate round-manager path and does not require a preceding spoken acknowledgment.
+\begin{enumerate}
+\item Collect current eye/head/controller observations, their validity and age, object intersections, and active trial identity.
+\item Update the guidance phase, qualification gates, permitted action, and recent state history from that evidence. Invalid or stale gaze suspends new gaze-dependent decisions.
+\item If the controller currently intersects the target, suppress contradictory search directions immediately. Preserve the distinct gate for a spoken pointing acknowledgment.
+\item For a qualified local-feedback action, submit the prepared clip to the shared scheduler. For ordinary navigation, build eligible candidates and an immutable state/history snapshot, then await the provider's validated response.
+\item Before playback, check trial identity, cancellation, current evidence, allowed action, controller-on-target suppression, audio occupancy, and clip readiness. Discard a stale result rather than replaying its old state.
+\item At actual software playback start, record the utterance and commit the relevant acknowledgment gate. Record completion or interruption separately. Update history from these events, not from proposals alone.
+\end{enumerate}
+
+Phase and action are separate outputs. The inspected working implementation includes a \texttt{PointingTarget} phase that applies while a current target hit awaits the required hold or gaze evidence; this phase is intended to keep a pending controller hold distinct from a qualified one. The state overview in Chapter~\ref{ch:system} shows common state families rather than an exhaustive edge list for every development revision, so release evidence must retain the precise enum and action version.
+
+% Keep this section and its long caption away from a page boundary.
+\clearpage
+\section{Release Manifest and Reproduction Checklist}
+Table~\ref{tab:release-manifest} specifies what a reproducible study record needs. It is a required manifest schema, not a claim that every value is already frozen. Values that cannot be obtained, such as an immutable hosted-model revision, must be marked unavailable and discussed as replication limits.
+
+\begingroup\small\singlespacing
+\begingroup
+\thesislongtablecaption[Release manifest for reproducing decisions]{Proposed release-manifest fields. The record contains configuration and permitted identifiers, never API credentials. Participant-derived identifiers require restricted handling.}\label{tab:release-manifest}
+\begin{longtable}{@{}p{0.26\linewidth}p{0.65\linewidth}@{}}
+\toprule
+Record group & Information to retain \\\midrule\endfirsthead
+\toprule Record group & Information to retain \\\midrule\endhead
+Build and apparatus & Source revision, clean/dirty status, application build hash, Unity/package versions, headset model/firmware, enabled launch mode.\\
+Observation contract & Gaze provider, clock mapping, validity/freshness rules, coordinate conversion, geometry source, calibration and independent validation records.\\
+Guidance policy & Phase/action enums, gate durations, vicinity tolerance, repetition and interruption policy, cancellation rules, fallback behavior.\\
+Decision provider & Adapter revision, endpoint/gateway identity without secrets, model alias and available revision, sampling settings or unavailable status, deadline/retry rules, payload and response schema.\\
+Phrase and voice assets & Library and semantic-schema versions, candidate IDs/texts, voice ID/condition, synthesis settings, prepared clip hashes, verification status. Restrict participant-derived IDs, record consent and provider retention, and use pseudonymous references in shared reports.\\
+Study and instruments & Order assignment, schedule seed/version, practice assignment, exact versus nominal geometry fields, instrument/item/scoring versions, final reference mapping.\\
+Evaluation & Session/episode split, policy versions, fixed candidate-set definitions, repetitions, rubric/judge version, human-review procedure, inclusion/exclusion log.\\\bottomrule
+\end{longtable}
+\endgroup
+\endgroup
+
+A reproduction report should distinguish three achievements, none of which implies the others. Rebuilding the software verifies that the source and dependencies can produce an application; replaying recorded observations verifies a particular decision and timing interpretation under a stated simulator; and a new wearer session tests the delivered interaction on actual hardware. In particular, fast simulated scheduling is not measured acoustic latency, and an offline alternative cannot show the participant's unobserved response to it.

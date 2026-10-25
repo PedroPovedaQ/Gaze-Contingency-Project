@@ -1,0 +1,8 @@
+{
+  "date": "2026-10-23",
+  "pdf_sha256": "b93118af56360fe13ca319abbdd6c5323e45bd53d5414420d552575acc74701d",
+  "pages": 167,
+  "build": "LuaLaTeX and BibTeX succeeded; no undefined citations, overfull boxes or rerun warnings in final log",
+  "structural_check": "Completed; table headers and figure descriptions retained, no missing internal named destinations",
+  "scope": "Structural inspection, not a new PDF/UA conformance validation."
+}

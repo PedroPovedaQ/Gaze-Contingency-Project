@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-23",
+  "pdf": "docs/thesis/follow-my-voice-thesis-first-pass.pdf",
+  "sha256": "9ebe7eeda73c01aab9e5631b0c40f66a7178c5e652874f2a39c8c1b67322dcab",
+  "pages": 163,
+  "approximate_words": 31018,
+  "bytes": 2772354,
+  "validator": "veraPDF 1.30.3",
+  "profile": "PDF/UA-2 + Tagged PDF",
+  "compliant": true,
+  "passed_rules": 1728,
+  "failed_rules": 0,
+  "passed_checks": 431298,
+  "failed_checks": 0,
+  "parser_warnings": 0,
+  "fonts_embedded": true,
+  "figure_alt_count": 14,
+  "tables_with_headers": 17,
+  "font_only_raster_equivalence": "3/3 figures pixel-identical at 120 dpi before contrast change",
+  "normalizer_idempotence": "12/12 source PDFs unchanged on repeat",
+  "manual_checks": "Sampled visual and reading-order checks; contrast corrected in three schematic figures",
+  "limitations": [
+    "No Acrobat checker pass claimed",
+    "Not a comprehensive screen-reader usability test or institutional approval",
+    "Participant results and author-dependent metadata remain pending"
+  ]
+}

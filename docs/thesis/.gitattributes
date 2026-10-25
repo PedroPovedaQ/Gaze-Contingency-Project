@@ -1,0 +1,6 @@
+*.pdf binary
+*.png binary
+# Preserve imported template, source snapshot, and diagnostic output verbatim.
+UCF_ETD.cls -whitespace
+source-snapshot/** -whitespace
+review/*.txt -whitespace

@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-23",
+  "source_checkout": "codex/recovered-study-20261007",
+  "status": "Inspected working files, including uncommitted changes; not a deployment or participant-release claim.",
+  "files": [
+    {
+      "path": "Assets/SpatialVoice/JevDecisionClient.cs",
+      "sha256": "bda1462f91dc4797ca1463fdccc475fff3c7724c41db5734aa8b91f5496d6c88",
+      "bytes": 19171
+    },
+    {
+      "path": "Assets/SpatialVoice/SpeechDecisionMemory.cs",
+      "sha256": "2ebc2584140290584a4c887fb1e7925eeca7982fa900b4780ca45f20d34a5aef",
+      "bytes": 3258
+    },
+    {
+      "path": "Assets/GuidanceStateMachine.cs",
+      "sha256": "4d15785088872e6c8b124a40c37fd051b834296bb746253ea56b49245b8ddbfd",
+      "bytes": 11926
+    }
+  ],
+  "base_commit": "4cbc1c8cafba95cab0f733bd4a34c339191f7587"
+}

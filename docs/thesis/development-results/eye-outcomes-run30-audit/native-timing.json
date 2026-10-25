@@ -1,0 +1,110 @@
+{
+  "schema": 1,
+  "kind": "native_gaze_timing_report",
+  "source": "/Users/pedro.poveda/Documents/Trial Review Live/data/EyeMeasurements/20261023T231821_7a137d30122c4d70a133b5b60e3a6453/native_gaze_observations.jsonl",
+  "sensor_120hz_established": false,
+  "sensor_acquisition_hz": null,
+  "interpretation": "120 Hz sensor acquisition is not established by this report. Runtime pose times may be clamped, predicted or interpolated; receipt times measure software query completion.",
+  "clock_policy": "No subtraction between XrTime, native steady-clock time, and Unity realtime. Pose time versus requested time compares XrTime only; it is not capture latency.",
+  "parameters": {
+    "gap_threshold_ms": 50,
+    "sustained_run_seconds": 60,
+    "sustained_definition": "Consecutive successful position-and-orientation-valid queries, focused at drain, without known global sequence gaps or ordering breaks, with positive receipt intervals no larger than the engineering gap threshold; not a sensor validation criterion."
+  },
+  "recording_integrity": {
+    "status": "unknown_or_incomplete",
+    "reasons": [
+      "end_status_missing_or_invalid"
+    ],
+    "batches": 18121,
+    "records": 36200,
+    "malformed_lines": 0,
+    "invalid_records": 0,
+    "unsupported_lines": 0
+  },
+  "feature_available_observed": [
+    true
+  ],
+  "capabilities": {
+    "schema": 1,
+    "kind": "native_gaze_capabilities",
+    "build": "eff669ece65a403688db38880f148a8b",
+    "runtime": "VIVE WAVE",
+    "runtimeVersion": "0.0.1",
+    "timestampMeaning": "XrEyeGazeSampleTimeEXT: clamped, predicted or interpolated pose-expression time; zero means unavailable",
+    "sourceIdentification": "Action space with a suggested EXT gaze binding; actual bound sensor source not independently established",
+    "clocks": "requestedTime/runtimePoseTime: XrTime nanoseconds; receiptMonotonicNs: native steady clock; Unity drain clock bracket is not capture time",
+    "coordinates": "Right-handed native OpenXR pose in recorded baseSpace, including recorded action-space offset; not Unity world space",
+    "rateConclusion": "120 Hz sensor acquisition NOT ESTABLISHED. Distinct reported pose times can be predicted/interpolated.",
+    "acquisition": "Passive interception of existing xrLocateSpace calls; does not increase sensor acquisition cadence",
+    "sensorCaptureSemanticsVerified": false
+  },
+  "end_status": null,
+  "epochs": [
+    {
+      "reported_counter_behind_observed_sequence": false,
+      "epoch": 1,
+      "observed_records": 36200,
+      "duplicate_sequences": 0,
+      "nonincreasing_enqueue_sequences": 0,
+      "missing_sequences_before_last_observed": 0,
+      "reported_records_not_observed_after_last": 0,
+      "native_buffer_drops_reported": 0
+    }
+  ],
+  "groups": [
+    {
+      "epoch": 1,
+      "session": 1001,
+      "space": 10806,
+      "baseSpace": 9590,
+      "queries": 36200,
+      "successful_queries": 36200,
+      "failed_queries": 0,
+      "valid_position_and_orientation_queries": 33146,
+      "tracked_position_and_orientation_queries": 29213,
+      "focused_at_drain_queries": 36200,
+      "unfocused_at_drain_queries": 0,
+      "unknown_focus_queries": 0,
+      "zero_pose_times_on_success": 1136,
+      "negative_pose_times_on_success": 0,
+      "timestamp_not_chained_on_success": 0,
+      "distinct_reported_pose_times": 30576,
+      "repeated_reported_pose_times": 4488,
+      "regressing_reported_pose_times": 13143,
+      "pose_time_equals_requested_time": 6987,
+      "pose_time_after_requested_time": 0,
+      "pose_time_before_requested_time": 28077,
+      "query_receipt_span_seconds": 7057.802421839,
+      "query_completion_hz": 5.128933602333386,
+      "distinct_pose_time_span_seconds": 278434.046734239,
+      "distinct_reported_pose_time_hz": 0.10981056504624727,
+      "positive_receipt_intervals_ms": {
+        "count": 36199,
+        "median": 8.171666,
+        "p95": 19.18920319999999,
+        "maximum": 6440476.081866
+      },
+      "receipt_gaps_over_threshold": 741,
+      "nonincreasing_receipt_intervals": 0,
+      "unavailable_receipt_times": 0,
+      "positive_pose_time_intervals_ms": {
+        "count": 17457,
+        "median": 13.151083,
+        "p95": 27.576454200000015,
+        "maximum": 278250115.686664
+      },
+      "longest_valid_focused_query_run": {
+        "start_sequence": 8006,
+        "end_sequence": 14268,
+        "queries": 6263,
+        "duration_seconds": 55.365806697,
+        "query_completion_hz": 113.1022985769899
+      },
+      "sustained_valid_focused_query_runs": []
+    }
+  ],
+  "warnings": [
+    "Missing native_gaze_end_status.json; corresponding evidence is unknown."
+  ]
+}

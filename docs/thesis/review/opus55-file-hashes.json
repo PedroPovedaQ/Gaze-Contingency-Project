@@ -1,0 +1,46 @@
+{
+  "main.tex": {
+    "before_sha256": "9d905f1692adb29d7dc7e7c7c03efbc743c662fe83ba1bfea2e2b0786a620026",
+    "after_sha256": "c00587a371ecc58f1e979c585748e884613c54984cea361d9ff3c9b0dc37903c"
+  },
+  "references.bib": {
+    "before_sha256": "7ef7b7c32f70c12086cc19d61498ef14e7767371305ab9180821a11224ac1791",
+    "after_sha256": "436a0d42a387f6e0df35f102512845ebae84065eee7e9d6043eb9c69acdc1a22"
+  },
+  "chapters/01-introduction.tex": {
+    "before_sha256": "55420e6553d7414ad0504dba167fdcdb3fb4d544b3aebd1d2c925edf846775aa",
+    "after_sha256": "ac3e540b213205ac9fdbb31018a6c4f891e6ada8c0521b5502c46d08edbd2b64"
+  },
+  "chapters/02-literature.tex": {
+    "before_sha256": "b34c01089a4a54db8bb28ed802564c78d83bec4aae108f0ee72eedfa164bc4cd",
+    "after_sha256": "c804899586aafb3141a99a5f0a0bf57b860a5cb7e4a9ddb228982731ee092eed"
+  },
+  "chapters/03-system.tex": {
+    "before_sha256": "48babefb2a84cd1adfb2efa5def5847fe98ef7441ef50886908b947e945581dc",
+    "after_sha256": "5f49d6ce6ea6cfcb39d2b676f904ed83dcb7f84c357c009e8bdb1834ae89c9cc"
+  },
+  "chapters/06-analysis.tex": {
+    "before_sha256": "afd375f128d08498e197df31fca1f672e9188efa8e4fc275cc80f7bbe2a304f8",
+    "after_sha256": "b66d6e1ef00d68caf4c1b6df0131302188431e1034733a95009c5c5cf4cfea9d"
+  },
+  "chapters/07-evaluation.tex": {
+    "before_sha256": "0c0b4b6707f38ba4a3db15f8af20f7bb5ab186c1cc6efc3af2a2d66086592ef8",
+    "after_sha256": "5dadd65990768eccbe8097605e4b675257a61d6a908155a3f0f5fdcb82d15d60"
+  },
+  "chapters/08-discussion.tex": {
+    "before_sha256": "dd645ad86c931eeb5d887cee312d899b901d47370fae2ec70d181d59cf2c48a4",
+    "after_sha256": "911c35a9df7328f1353c1c14da355461a56efc90661b2fcb70e5d60b2b6e97fd"
+  },
+  "chapters/04-method.tex": {
+    "before_sha256": "6ff9af3fe99f8446f253042e1731c0f461139060301eaacc43401a17365b47e0",
+    "after_sha256": "036adfae3c3cac10244a420bb26ad4ba77f849508e016707835784b0cd27515f"
+  },
+  "chapters/05-measurement.tex": {
+    "before_sha256": "51addb3664ca403a1daabb1e51f9e6694956522b45125ee6f49034b83c4770d3",
+    "after_sha256": "276184cfe82eb876dc1af6554faea214396df3c617a4ecbcadb9bdb7c0bef375"
+  },
+  "appendices/e-decision-contract.tex": {
+    "before_sha256": "3f5be97a26e8c906ce8ffcf0afe536c32944d0aceb895536d052fd857179e060",
+    "after_sha256": "de90afc6134b3f3a754b470b80f6845b188d8c56304abab8cb1c045b040e1222"
+  }
+}

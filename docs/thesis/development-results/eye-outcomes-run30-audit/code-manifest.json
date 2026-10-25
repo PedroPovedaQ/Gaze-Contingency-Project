@@ -1,0 +1,10 @@
+{
+  "test_eye_outcomes.py": "14d06163ec7c242c06d0f2cee12941172f402de546ea13a4e97495c6ad7d7608",
+  "test_pupil_diagnostics.py": "e72936712a1d82f2c57be73ccba9933858448b991a77970d4abd108e4a537af0",
+  "audit_htc_alignment.py": "31177eb29a02471f5cc7da0d82a569e7737bf29ff628a150a28460f1152e55e0",
+  "eye_quality.py": "9a648706cc7e54e867fb9208c4b6be8c3bdd292ae83e6eef5742135dc3019879",
+  "pupil_diagnostics.py": "abfb0b08a96dd51fb2b0543b8e52814da85f6e96be7e844db64160d1cdad5a9e",
+  "requirements-eye-outcomes.txt": "25f601503013ba65e7be64b7b850147cb5fea7b8e77c15f856e9141d289a6e5a",
+  "eye_outcomes.py": "774806b525ad4f24b6814f27ee852768053d4524344a3c0a21538a59d430cf12",
+  "pupil_sensitivity.py": "c6841a72cf9363eb2de4f66118ab51dbfa4d1f0fe4f177bfca33c9b4f0bb7602"
+}

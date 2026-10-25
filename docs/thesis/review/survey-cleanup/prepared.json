@@ -1,0 +1,26 @@
+{
+  "status": "compiled",
+  "parent": "31f41e1e98bd297fdef94dee9803c78502f6cb52",
+  "folder": "/var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/overleaf-survey-cleanup-c7_d82ma",
+  "files": [
+    "appendices/a-instruments.tex",
+    "chapters/04-method.tex",
+    "chapters/03-measures-scoring.tex",
+    "chapters/06-analysis.tex",
+    "chapters/08-discussion.tex",
+    "frontmatter/abbreviations.tex",
+    "figures/survey-scopes.svg",
+    "figures/survey-scopes.pdf"
+  ],
+  "local_hashes": {
+    "appendices/a-instruments.tex": "7eacf258e5fe0412e654bf858a1f28983302adfce60d77fc2d542336a41fa01a",
+    "chapters/04-method.tex": "04f7efd3faba43283436ec99d359791fc7c2072a0b248401eb9b372c55710482",
+    "chapters/03-measures-scoring.tex": "05598b32da74d02d6bba5e44ed4aa642a1a97021f3d8e6992c6d078516549d4e",
+    "chapters/06-analysis.tex": "a963e5e22315bbbf6fa47e39399242ce3b85a77d3ec17d5a073fe9bfad526f58",
+    "chapters/08-discussion.tex": "8f8a21b4bdb48ee0ea44441a63d736ad3245b715efe86d10553dd0e1f923de81",
+    "frontmatter/abbreviations.tex": "d19c6295bd5014aaa1c7b31f6b6a264c855176d83658873c1e091671a88b4e4b",
+    "figures/survey-scopes.svg": "29488334b34984882af4497c7172ce0e85dfe8a9614e076c3db78bc6fb83cd4c",
+    "figures/survey-scopes.pdf": "b2c12d002dffa108aff0827da4cc1a5323b719279aa5024ee849cd0e491253e4"
+  },
+  "removed_question_labels": 20
+}

@@ -1,0 +1,63 @@
+\chapter{RESULTS}
+\label{ch:evaluation}
+The results chapter returns to the question posed in the introduction: does guidance spoken in a synthetic version of the participant's own voice differ, in efficiency or experience, from guidance spoken in the neutral voice the participant selected? Its reporting framework first establishes how the comparison is delivered, then addresses search efficiency, workload, motivation, and exploratory measures of voice experience. Because no confirmatory participant outcomes are available in this draft, the sections below describe the reporting structure for each result and distinguish those pending results from the engineering evidence that currently supports the apparatus.
+
+\input{chapters/07-development-results}
+
+\section{Planned Reporting of Participant Results}
+The participant-results framework first covers participant flow, exclusions, incomplete sessions, and data coverage by condition and order. It then describes realized starting geometry and the similarity manipulation check before presenting the primary voice contrast.
+
+The primary result includes the fitted time contrast, its uncertainty, the analyzed participant and trial counts, and model diagnostics. Secondary reporting covers workload and IMI subscales at participant-by-block level, followed by exploratory sections on agent perception, voice experience, guidance behavior, and debrief themes. Each table states its denominator and identifies missing observations.
+
+\begin{table}[htbp]
+\centering\caption{Planned result families and their current status. No confirmatory participant outcomes are reported in this draft.}
+\small\tagpdfsetup{table/header-rows={1}}
+\begin{tabularx}{\linewidth}{@{}p{0.27\linewidth}XX@{}}\toprule
+Result family & Required evidence & Present status \\\midrule
+Participant flow & Consented, started, completed, stopped; reasons & Not available \\
+Manipulation check & Similarity by voice with paired scope & Not available \\
+Primary performance & Adjusted time contrast and uncertainty & Not estimated \\
+Workload and IMI & Versioned raw items and complete subscales & Not collected for this report \\
+Agent experience & Individual and construct-specific ratings & Not collected for this report \\
+Guidance quality & Sequence-level playback and evidence & Development traces reported; study comparison pending \\
+Debrief themes & Recorded responses and coding audit & Not available \\\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\subsection{Results Organized by Research Question}
+Following the manipulation check, the reporting framework addresses each research question in turn. For the primary question, the estimand is the marginal time contrast standardized over a common starting-difficulty distribution, as defined in Section~\ref{ch:analysis}; here, \emph{standardized} refers to that common distribution rather than to a standardized effect size. The estimate is accompanied by its uncertainty, the eligible participant and trial counts, and model diagnostics, following the analysis plan finalized before confirmatory recruitment. The secondary reporting framework covers the paired workload outcomes and the separate IMI subscales, using multiplicity families that the analysis plan has yet to fix. The exploratory reporting framework presents exploratory agent-perception and custom ratings alongside debrief themes and valid search measures. A contrast that cannot be estimated or proves inconclusive is reported as such rather than omitted.
+
+Guidance delivery is reported separately through sequence coverage, qualification-to-playback delay, provider reliability, and categorized faults. Neither a passing software test nor a favorable model rating establishes an effect on participants; likewise, a voice-condition difference does not verify that every instruction was delivered correctly.
+
+\section{User Performance}
+Participant-study estimates are not yet available; this section is reserved for active search-completion time, incorrect trigger selections, and valid gaze/controller contact latencies by voice condition. Reporting includes paired participant summaries and the planned adjusted contrast, with sample counts and uncertainty.
+
+\section{User Experience}
+Participant ratings are not yet available; this section is reserved for condition-referenced workload, the separate motivation subscales, agent experience, voice liking and similarity, and debrief responses. No questionnaire response or preference distribution is generated from synthetic trials.
+
+\section{Evidence Available for This Draft}
+Alongside the recorded development results in Section~\ref{sec:development-results}, engineering verification records document the apparatus. The October 20 alignment audit documents software checks, analysis tests, and a successful Android build, installation, and launch.
+
+The audit reports passing schedule and voice-isolation checks, including one practice trial in the first assigned voice, two measured blocks, and nominal-angle quotas, and it records 38 trial-export tests and seven workload scoring/plot tests. These counts describe the audit's own test run, not a suite re-executed for this manuscript, so any later claim based on them should cite the verification record and the revision it tested.
+
+\begin{table}[htbp]
+\centering\caption{Evidence status at the documented implementation checkpoint.}
+\small\tagpdfsetup{table/header-rows={1}}
+\begin{tabularx}{\linewidth}{@{}p{0.28\linewidth}XX@{}}\toprule
+Evidence & Supported conclusion & Boundary \\\midrule
+Schedule and voice checks & One practice and nominal 40-by-two allocation pass fixtures & Does not verify wearer completion of a full session \\
+Trial export and TLX tests & Declared scales and retrospective joins pass tested cases & Not validation of all questionnaires \\
+Unity integration checks & Listed state and interaction fixtures pass & Not proof against all timing races \\
+Android build/install/launch & Application built, installed, and started & Not a participant acceptance session \\
+Exact pre-cue theta & Required definition documented & Snapshot implementation remains a gap \\
+Vertical allocation & Cross-relative definition documented & 20/20 enforcement remains a gap \\
+Voice-condition outcomes & No confirmatory dataset reported & No performance or preference conclusion \\\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\section{Guidance Quality Supporting the Voice Contrast}
+The reporting framework describes gaze availability, actual speech exposure, delayed acknowledgments, interruptions, and unhelpful cues by voice condition and session. This account helps assess whether technical delivery problems affected one condition more than the other. The voice contrast is not automatically adjusted for behavior-dependent hint counts or waiting time: these quantities arise after voice assignment, may themselves depend on voice condition, and cannot be treated as baseline difficulty (Section~\ref{ch:analysis}).
+
+Gaze acknowledgment, controller acknowledgment, and correct trigger selection remain separate events. Their sequence records document feedback delivery, whereas participant ratings and debriefing address how that feedback was experienced. Appendix~\ref{app:scenarios} defines sequence tests and evaluation criteria for assessing the apparatus before interpreting differences between voices.

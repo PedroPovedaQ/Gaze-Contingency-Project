@@ -1,0 +1,18 @@
+{
+  "status": "published",
+  "parent": "0f4abbeb29595908924b75d52093569e667ec969",
+  "commit": "65a58bb7152f5dbb9b48e0ae9f7508eb6b51f73a",
+  "verified": "65a58bb7152f5dbb9b48e0ae9f7508eb6b51f73a",
+  "folder": "/var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/overleaf-remove-appendices-5k0xvwjd",
+  "files": [
+    "main.tex",
+    "chapters/01-introduction.tex",
+    "chapters/03-system.tex",
+    "chapters/04-method.tex",
+    "chapters/05-measurement.tex",
+    "chapters/06-analysis.tex",
+    "chapters/07-evaluation.tex",
+    "chapters/08-discussion.tex",
+    "chapters/09-conclusion.tex"
+  ]
+}

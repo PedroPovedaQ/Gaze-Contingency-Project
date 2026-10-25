@@ -1,0 +1,15 @@
+{
+  "status": "published",
+  "parent": "ebbea3a6b44ad80c1dd7c719af45fa6005d38e55",
+  "commit": "abce4b6dac1ead1f5ac39bdacb1b03623f9b87bc",
+  "verified": "abce4b6dac1ead1f5ac39bdacb1b03623f9b87bc",
+  "folder": "/var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/overleaf-eye-measures-xr0oult_",
+  "files": [
+    "chapters/03-system.tex",
+    "chapters/05-measurement.tex",
+    "chapters/06-analysis.tex",
+    "chapters/07-development-results.tex",
+    "references.bib",
+    "chapters/07-evaluation.tex"
+  ]
+}

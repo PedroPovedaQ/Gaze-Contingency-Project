@@ -1,0 +1,133 @@
+{
+  "source_sha256": "6f1ea9237b082c5ed1451676bff8ad7015e0d8daa1808ab19d68d50defc3d9f9",
+  "method": "Per-eye HTC world ray to recorded target; query deduplication; 250 ms settling; valid focused queries within 25 ms; quick alignment targets only, not held-out validation",
+  "validated": false,
+  "results": [
+    {
+      "validation_id": "ba32c0979ddd42de8755ec0788e64b2f",
+      "set": "quick",
+      "target": "target_0",
+      "eye": "left",
+      "queries": 509,
+      "median_error_deg": 4.349193819456256,
+      "p90_error_deg": 9.320882282578824
+    },
+    {
+      "validation_id": "ba32c0979ddd42de8755ec0788e64b2f",
+      "set": "quick",
+      "target": "target_0",
+      "eye": "right",
+      "queries": 509,
+      "median_error_deg": 4.8711199402343315,
+      "p90_error_deg": 9.793298287138278
+    },
+    {
+      "validation_id": "ba32c0979ddd42de8755ec0788e64b2f",
+      "set": "quick",
+      "target": "target_1",
+      "eye": "left",
+      "queries": 515,
+      "median_error_deg": 4.822803389596504,
+      "p90_error_deg": 9.546335248119318
+    },
+    {
+      "validation_id": "ba32c0979ddd42de8755ec0788e64b2f",
+      "set": "quick",
+      "target": "target_1",
+      "eye": "right",
+      "queries": 515,
+      "median_error_deg": 5.328255830597206,
+      "p90_error_deg": 9.998978204017044
+    },
+    {
+      "validation_id": "ba32c0979ddd42de8755ec0788e64b2f",
+      "set": "quick",
+      "target": "target_2",
+      "eye": "left",
+      "queries": 504,
+      "median_error_deg": 5.527358377103871,
+      "p90_error_deg": 8.067197095074064
+    },
+    {
+      "validation_id": "ba32c0979ddd42de8755ec0788e64b2f",
+      "set": "quick",
+      "target": "target_2",
+      "eye": "right",
+      "queries": 504,
+      "median_error_deg": 6.052926672892919,
+      "p90_error_deg": 8.589913517336662
+    },
+    {
+      "validation_id": "e3ae7f2c8f414aff9297eabf4bec1f99",
+      "set": "quick",
+      "target": "target_0",
+      "eye": "left",
+      "queries": 486,
+      "median_error_deg": 8.43599633858523,
+      "p90_error_deg": 19.22398590723834
+    },
+    {
+      "validation_id": "e3ae7f2c8f414aff9297eabf4bec1f99",
+      "set": "quick",
+      "target": "target_0",
+      "eye": "right",
+      "queries": 486,
+      "median_error_deg": 8.38910349374761,
+      "p90_error_deg": 18.80159539582779
+    },
+    {
+      "validation_id": "a4e00490600443a69511c81012b3113f",
+      "set": "quick",
+      "target": "target_0",
+      "eye": "left",
+      "queries": 499,
+      "median_error_deg": 4.324903566938874,
+      "p90_error_deg": 9.639904516163355
+    },
+    {
+      "validation_id": "a4e00490600443a69511c81012b3113f",
+      "set": "quick",
+      "target": "target_0",
+      "eye": "right",
+      "queries": 499,
+      "median_error_deg": 4.878871882405408,
+      "p90_error_deg": 10.250460136004033
+    },
+    {
+      "validation_id": "a4e00490600443a69511c81012b3113f",
+      "set": "quick",
+      "target": "target_1",
+      "eye": "left",
+      "queries": 487,
+      "median_error_deg": 4.7845929423993026,
+      "p90_error_deg": 4.960731462013829
+    },
+    {
+      "validation_id": "a4e00490600443a69511c81012b3113f",
+      "set": "quick",
+      "target": "target_1",
+      "eye": "right",
+      "queries": 487,
+      "median_error_deg": 5.37713240773795,
+      "p90_error_deg": 5.557295636914199
+    },
+    {
+      "validation_id": "a4e00490600443a69511c81012b3113f",
+      "set": "quick",
+      "target": "target_2",
+      "eye": "left",
+      "queries": 480,
+      "median_error_deg": 5.096590530897914,
+      "p90_error_deg": 9.531186478321185
+    },
+    {
+      "validation_id": "a4e00490600443a69511c81012b3113f",
+      "set": "quick",
+      "target": "target_2",
+      "eye": "right",
+      "queries": 480,
+      "median_error_deg": 5.628936078733743,
+      "p90_error_deg": 10.059588758924686
+    }
+  ]
+}

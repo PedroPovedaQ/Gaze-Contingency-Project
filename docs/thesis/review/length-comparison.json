@@ -1,0 +1,18 @@
+{
+  "method": "pdftotext -layout over whole PDF, join line-break hyphenation, count alphabetic word tokens including contractions/hyphenated words; includes front matter, appendices and references; excludes standalone numerical/math tokens. Approximate, not a word-processor count.",
+  "documents": [
+    {
+      "document": "Hoang Bao Truong",
+      "approximate_words": 28272,
+      "pdf_pages": 140,
+      "numbered_figures": 14
+    },
+    {
+      "document": "Follow My Voice draft",
+      "approximate_words": 31018,
+      "pdf_pages": 163,
+      "numbered_figures": 14,
+      "numbered_tables": 16
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+trial_id,condition,completed,first_selection_correct,active_search_seconds,missed_target,deadline_seconds,ipa_candidate_hz,ipa_eyes,pupil_seconds_per_eye
+DEV_NEUTRAL_run030_r00,Neutral voice,True,1,27.7435,,,0.68921125414877,2,2.17640090896748
+DEV_NEUTRAL_run030_r01,Neutral voice,True,1,14.6112,,,0.6680793184649321,2,2.2452423814684153
+DEV_NEUTRAL_run030_r02,Neutral voice,True,0,12.7023,,,0.592067137542978,2,4.222494108311366
+DEV_NEUTRAL_run030_r03,Neutral voice,True,1,32.8381,,,0.3784321654737788,2,5.284963019716088
+DEV_NEUTRAL_run030_r04,Neutral voice,True,1,21.4865,,,,0,

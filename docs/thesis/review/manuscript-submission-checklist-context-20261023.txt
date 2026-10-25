@@ -1,0 +1,77 @@
+  Manuscript Submission Checklist – Formatting & Accessibility
+The College of Graduate Studies may refuse manuscripts for format review or final submission if
+they do not comply with the following formatting and digital accessibility requirements, are
+otherwise unsuitable for publication, and/or submitted outside of established deadlines.
+
+☐ Is your thesis or dissertation at least 90% complete? (e.g., all chapters drafted, figures/tables
+included, appendixes and references substantially complete)
+
+☐ Has all of your thesis and dissertation content been copied into the official Word or LaTeX
+template?
+
+☐ Have you converted your Word or LaTeX document to a bookmarked PDF?
+
+☐ Have you added a document title? (in Word, see File > Info > Properties > Add your thesis or
+dissertation title to the title field)
+
+☐ Are document sections in the correct order?
+
+☐ Is the title page formatted correctly? (fill in all template fields correctly on this page)
+
+☐ Do all entries in table of contents, list of figures, and/or list of tables link properly?
+
+☐ Do page numbers follow requirements?
+
+☐ Are margins correct with no content appearing outside them?
+
+☐ Have Heading styles been applied consistently to all major headings and subheadings?
+
+☐ Has alternative text been applied to all images in the document (including Appendixes
+content)?
+
+☐ Have header rows been identified in all tables and have you ensured there are no split or
+merged cells?
+
+☐ Have figure and table captions been properly added and positioned correctly?
+
+☐ Have you run an Accessibility Check to verify there are no issues? (in Word or using Adobe
+Acrobat Pro; see next page)
+       Checking for Accessibility in Your Thesis or Dissertation
+The accessibility checker in Word will catch many issues, but it is not as robust as the accessibility
+checker in Adobe Pro. Adobe Pro is available in the UCF Library as well as other labs on campus.
+
+If you do not have access to run an accessibility check in Adobe Pro, we encourage you to schedule
+a Format Help appointment via Calendy to have someone run it for you.
+
+If you have questions regarding the results of the accessibility check, reach out to the Digital
+Accessibility Lab.
+
+
+In Word
+   •   Navigate to the Review tab in your document
+   •   Click on Check Accessibility
+   •   The Accessibility Assistant panel will open on the right side of the document
+   •   Beside each item listed, look for either a blue check mark indicating that everything looks
+       good, or a number indicating correction(s) to be made
+   •   If there is a number, click on it to resolve the issue. For example, if alt text is needed,
+       clicking on Missing Alt Text will take you to the area where you can add alt text to the figure
+
+
+In Adobe Pro
+   •   Open the Tools panel
+   •   Select Accessibility
+   •   In the new menu that opens, select Accessibility Check
+   •   The Accessibility Checker Options window will open. Make sure the following options are
+       selected:
+            o Page Range – all pages in the document
+            o Category – Document
+            o Accessibility permission flag is set
+            o Document is not image-only PDF
+            o Document is tagged PDF
+            o Text language is specified
+            o Document title is showing in title bar
+            o Bookmarks are present in large documents
+   •   Click Start Checking
+   •   The Accessibility Checker panel will appear with issues in bold
+   •   Click on an issue for more information
+

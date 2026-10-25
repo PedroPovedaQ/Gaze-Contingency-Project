@@ -1,0 +1,152 @@
+[
+  {
+    "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_012_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-10_15-57-20/trial_summary.json",
+    "sha256": "d634b43afe2b215e8580c00fcc865ea02098c69fc4635ad55e6a608e7a1f9551",
+    "run": 12,
+    "voice_condition": "neutral-male",
+    "started_voice_conditions": [
+      "neutral-male"
+    ],
+    "recorded_deadline_seconds": null
+  },
+  {
+    "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_013_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-10_16-23-25/trial_summary.json",
+    "sha256": "d9fabba2ae61e27819a999e8b79ca2eadf287df241c18eb9b33544e83fa78662",
+    "run": 13,
+    "voice_condition": "neutral-male",
+    "started_voice_conditions": [
+      "neutral-male"
+    ],
+    "recorded_deadline_seconds": null
+  },
+  {
+    "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_015_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-11_10-15-42/trial_summary.json",
+    "sha256": "e2d7e3160b443756d0d54dcd38d51118c6e184c52508585aa0aff459144a3a51",
+    "run": 15,
+    "voice_condition": "neutral-male",
+    "started_voice_conditions": [
+      "neutral-male"
+    ],
+    "recorded_deadline_seconds": null
+  },
+  {
+    "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_017_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-11_12-59-14/trial_summary.json",
+    "sha256": "143af70df6690d1084f7cfbdb0b3762308a6b51a40c018a2cacf2aae35059d3e",
+    "run": 17,
+    "voice_condition": "neutral-male",
+    "started_voice_conditions": [
+      "neutral-male"
+    ],
+    "recorded_deadline_seconds": null
+  },
+  {
+    "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_018_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-11_13-37-37/trial_summary.json",
+    "sha256": "f0a8d4f5d4992a47d44a2712f7cda9933e8aacaabc1ac42bb1b1b55341918f8f",
+    "run": 18,
+    "voice_condition": "neutral-male",
+    "started_voice_conditions": [
+      "neutral-male"
+    ],
+    "recorded_deadline_seconds": null
+  },
+  {
+    "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_019_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-11_14-06-05/trial_summary.json",
+    "sha256": "53dc4645325efad05caa9c582f474ff8dc90ab5194f1caf823f29c3b32613a5b",
+    "run": 19,
+    "voice_condition": "neutral-male",
+    "started_voice_conditions": [
+      "neutral-male"
+    ],
+    "recorded_deadline_seconds": null
+  },
+  {
+    "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_020_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-19_14-47-06/trial_summary.json",
+    "sha256": "b1b106f9d564fde05457647fdf43362590b88707e54c62f0cd02b883034f85d8",
+    "run": 20,
+    "voice_condition": "neutral-male",
+    "started_voice_conditions": [
+      "neutral-male"
+    ],
+    "recorded_deadline_seconds": null
+  },
+  {
+    "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_022_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-20_12-34-32/trial_summary.json",
+    "sha256": "2fee642d961212755de471ef888db7dd306ca868aa1342e6a873fc1207880a3d",
+    "run": 22,
+    "voice_condition": "neutral-male",
+    "started_voice_conditions": [
+      "neutral-male"
+    ],
+    "recorded_deadline_seconds": null
+  },
+  {
+    "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_023_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-20_12-56-02/trial_summary.json",
+    "sha256": "5fa9282098b7eda54cf162f818b095f3558411c74a867d1bc6f3e258d8c4e72e",
+    "run": 23,
+    "voice_condition": "neutral-male",
+    "started_voice_conditions": [
+      "neutral-male"
+    ],
+    "recorded_deadline_seconds": null
+  },
+  {
+    "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_024_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-20_13-06-40/trial_summary.json",
+    "sha256": "022bacd6b61b59347b968bb7c769f6dde83705b214b4609de0f2c861ec9f3d53",
+    "run": 24,
+    "voice_condition": "neutral-male",
+    "started_voice_conditions": [
+      "neutral-male"
+    ],
+    "recorded_deadline_seconds": null
+  },
+  {
+    "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_025_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-20_13-22-31/trial_summary.json",
+    "sha256": "deaf3f2ddf6226d521250fe047227ce21d9d34a79b0908e4917172461d179537",
+    "run": 25,
+    "voice_condition": "neutral-male",
+    "started_voice_conditions": [
+      "neutral-male"
+    ],
+    "recorded_deadline_seconds": null
+  },
+  {
+    "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_026_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-20_13-47-40/trial_summary.json",
+    "sha256": "f8f4729f8abad3c4ec4a00190f290bb0ab6b623d6adeab545915dce92ad99cfe",
+    "run": 26,
+    "voice_condition": "neutral-male",
+    "started_voice_conditions": [
+      "neutral-male"
+    ],
+    "recorded_deadline_seconds": null
+  },
+  {
+    "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_027_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-20_14-38-18/trial_summary.json",
+    "sha256": "156b471e5b23f3371271fb5c3c77a6d344d2c050b9709da74f22193cd3b9e690",
+    "run": 27,
+    "voice_condition": "neutral-male",
+    "started_voice_conditions": [
+      "neutral-male"
+    ],
+    "recorded_deadline_seconds": null
+  },
+  {
+    "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_028_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-20_18-00-16/trial_summary.json",
+    "sha256": "89209fb89dea1ceaaa2d736da7d5724c9b661b5358e7e5c0408d6b530ec78d74",
+    "run": 28,
+    "voice_condition": "neutral-male",
+    "started_voice_conditions": [
+      "neutral-male"
+    ],
+    "recorded_deadline_seconds": null
+  },
+  {
+    "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_030_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-23_21-28-09/trial_summary.json",
+    "sha256": "0b55186a43ff7a275165b69e24148ce58a0fe610b38ab4e571601d448d2e148c",
+    "run": 30,
+    "voice_condition": "neutral-male",
+    "started_voice_conditions": [
+      "neutral-male"
+    ],
+    "recorded_deadline_seconds": null
+  }
+]

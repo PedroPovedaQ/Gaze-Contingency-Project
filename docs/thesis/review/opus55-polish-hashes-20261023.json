@@ -1,0 +1,62 @@
+{
+  "appendices/a-instruments.tex": {
+    "before": "63ec615a639f4eb47126b25c79f0eeb7441073112287707aaa754a3c30f28af6",
+    "after": "62f5105afc9249b860789faedf77234b1f8e12486db2ff32fc1b17d2fc6e73f6"
+  },
+  "appendices/b-data-dictionary.tex": {
+    "before": "bb0e859460563753ce1d54e7edcd5881fd54011944e67360a3cd23cf07a26053",
+    "after": "09d3c3563b20fb1f8a59c79e57e13059522971c9aaac29b73f5ea4359848a062"
+  },
+  "appendices/c-scenarios.tex": {
+    "before": "e8b16c6c39ebe8a2a58bf7ce5bdebffe4333de12f960e64dbd6fb5c2d25d7f4f",
+    "after": "de6e599d3a3b616db813204b5505787e34359db262f12e63fd87ba52f049870f"
+  },
+  "appendices/d-readiness.tex": {
+    "before": "4152355713c9c758fb4f23ec7e953fc197b90e49a1c86cb3c2fd53a619d549f0",
+    "after": "1ae386ecaa79137b7e177c94fb64a0918bced5007096a2101b5e3f1224827e82"
+  },
+  "appendices/e-decision-contract.tex": {
+    "before": "032977bee15a8d6c9d63abdddee4bd01bd73260891878f7b673cc5066596a55b",
+    "after": "250c2ace50bffa1a3dcf0a56026daceb09975b7f64e40f163efff1adf252adbd"
+  },
+  "appendices/f-guidance-support.tex": {
+    "before": "2014f1fd720d8b4971f6c7ebac42dff4547b5bd459557aafe098764526200dc4",
+    "after": "8296e0f43a18d93e3510f40ba794b9ba5db5774a1a08408aa20244115b206f47"
+  },
+  "chapters/01-introduction.tex": {
+    "before": "d4927672a7f4fb86df1ac2c472296cdb1dce6eef82703025d44beb9be831dc0c",
+    "after": "48ac3e2a3ee446e58ba560ce6a2817a27ac0635c9cef0bbc26123666576bae73"
+  },
+  "chapters/02-literature.tex": {
+    "before": "44edc4305d98f2f03086c1587b059b0108f8357160c49fc5a63d7c77de45a787",
+    "after": "85e45faa21e3e5f3c492d04d1003750731fa13822b78adac1837bf88201255a8"
+  },
+  "chapters/03-system.tex": {
+    "before": "ca7acaf77d22c33bb1a3c8016ae41427fe70e868930613ef0026b64a64a69722",
+    "after": "d99ad2fcb8b33ed9bd93358af73a01682da227c45bb476cc68a98683a47606fa"
+  },
+  "chapters/04-method.tex": {
+    "before": "779ad11048e4f1f4e8f4c088bd13c3fc673c4672098cbd6ed3c26a7f5cdda991",
+    "after": "5e47d81b9b87cd0a1aff214ae476d708374e4387145837040c5eceaa26a73f2e"
+  },
+  "chapters/05-measurement.tex": {
+    "before": "540474bf724e9b133f3db8421092aaf20c466ebc34545416c34fc8a0b5f7ad21",
+    "after": "c5f483b7ca68e726c69b5033b5eb1a280a417008ef5086f1c950af0c6463649e"
+  },
+  "chapters/06-analysis.tex": {
+    "before": "bd1b301ff49edf74d50eb0ff5b5a42a0aaf2ff2ddbca4a240bd71f18b48c31f8",
+    "after": "f1a3ef013365a3b156dd1ca97f78112da188c44bb4f4f1bd633334f1c6fc4aa8"
+  },
+  "chapters/07-evaluation.tex": {
+    "before": "5af83bca17e10b53849c503aee9794da61f1e44cfcdcfefcf08ef3c82f89ec78",
+    "after": "a6ca337c3b1ba2dff2e1147d3e290cda873399ea277ea64f730217f21e9dbb1c"
+  },
+  "chapters/08-discussion.tex": {
+    "before": "1b329471352dd922b4d1ebd85080f967d03bf253e76de739086c2dfe500a45d8",
+    "after": "d66ff3ffdf53d2e5fc578fd835f2fadab665eb8ec277a457c2a9b8518752464f"
+  },
+  "chapters/09-conclusion.tex": {
+    "before": "ab0c929de1acccc0b1eac956d9f4bea81a08147c577e4c886d360c98cc17ff81",
+    "after": "3e91223d624a27900458fff0adf27ed1f4351bfcd3953c1f4a131fb5e138e41b"
+  }
+}

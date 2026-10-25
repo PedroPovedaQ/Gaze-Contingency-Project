@@ -1,0 +1,15 @@
+{
+  "status": "compiled",
+  "parent": "f198a6d092377ace2b4575f239de4c12333c949c",
+  "folder": "/var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/overleaf-voice-panels-qyvybt70",
+  "files": [
+    "chapters/07-development-results.tex",
+    "figures/development-voice-condition-panels.pdf",
+    "figures/development-voice-condition-panels.png"
+  ],
+  "local_hashes": {
+    "chapters/07-development-results.tex": "b5a2795c1790b4c73bb4cb1aac3009c3b658940a898769bb1d44ff6fe26fd930",
+    "figures/development-voice-condition-panels.pdf": "74d84cc025b80d128b8936d579160a9a0c26328c7a485d82788a0c02c878a371",
+    "figures/development-voice-condition-panels.png": "c3c4cb293c4b03be771b6c11c2d715cab43da0838da0bc73e5564ee459a6d504"
+  }
+}

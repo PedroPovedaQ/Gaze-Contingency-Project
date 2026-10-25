@@ -1,0 +1,13 @@
+{
+  "status": "published",
+  "parent": "65a58bb7152f5dbb9b48e0ae9f7508eb6b51f73a",
+  "commit": "2d3b13541fe26fc04b3a59b211f056839bb7cfd6",
+  "verified": "2d3b13541fe26fc04b3a59b211f056839bb7cfd6",
+  "folder": "/var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/overleaf-compact-walls-hrpk78hs",
+  "files": [
+    "chapters/03-system.tex",
+    "chapters/04-method.tex",
+    "chapters/05-measurement.tex",
+    "appendices/b-data-dictionary.tex"
+  ]
+}

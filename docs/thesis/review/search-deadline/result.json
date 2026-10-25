@@ -1,0 +1,12 @@
+{
+  "status": "published",
+  "parent": "2d3b13541fe26fc04b3a59b211f056839bb7cfd6",
+  "commit": "ebbea3a6b44ad80c1dd7c719af45fa6005d38e55",
+  "verified": "ebbea3a6b44ad80c1dd7c719af45fa6005d38e55",
+  "folder": "/var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/overleaf-search-deadline-yxkkm7ho",
+  "files": [
+    "chapters/04-method.tex",
+    "chapters/05-measurement.tex",
+    "chapters/06-analysis.tex"
+  ]
+}

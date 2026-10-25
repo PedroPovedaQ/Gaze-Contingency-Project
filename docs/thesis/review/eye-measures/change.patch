@@ -1,0 +1,141 @@
+diff --git a/chapters/03-system.tex b/chapters/03-system.tex
+index 79beebb..5a28bba 100644
+--- a/chapters/03-system.tex
++++ b/chapters/03-system.tex
+@@ -4,6 +4,8 @@ This chapter describes the application, experimental design, procedure, and data
+ 
+ The application runs on the HTC VIVE Focus Vision headset. Each participant completes one practice trial and 80 measured trials, divided into two counterbalanced blocks of 40 trials, one per voice condition. The project source is available at \href{https://github.com/PedroPovedaQ/Gaze-Contingency-Project}{the Gaze Contingency Project GitHub repository}. The following sections distinguish the documented implementation from the remaining requirements for the participant-study release.
+ 
++The methodological choices are informed by Chiossi et al.'s visual-search study, which combines search outcomes with eye-tracking measures~\cite{chiossi2024searching}. The present study adopts that separation between task performance and visual behavior while changing the research question to voice identity, withholding the target identity initially, and using a researcher-selected 15-second search limit. Complementary work by Pfeil et al. at UCF compares eye--head coordination in virtual and physical viewing~\cite{pfeil2018eyehead}; it motivates retaining head motion alongside eye direction when interpreting gaze in this application. These connections guide measurement design, rather than establish that detector parameters transfer unchanged between headsets and tasks.
++
+ \section{Application Design}
+ The application presents a virtual setup menu before the search task. Participants choose a neutral voice from the supplied options, record a standard passage for their self-similar voice, and confirm that both voices are clear and comfortable to hear. Voice preparation and eye-tracking setup precede practice. During search, participants remain seated on a swivel chair, inspect the surrounding scene, and use only the right controller for pointing and selection.
+ 
+diff --git a/chapters/05-measurement.tex b/chapters/05-measurement.tex
+index da5f121..e678b5f 100644
+--- a/chapters/05-measurement.tex
++++ b/chapters/05-measurement.tex
+@@ -96,6 +96,26 @@ A stopped or timed-out trial has an observed duration and an outcome reason, but
+ 
+ Recent conversational AR research shows why the definition must be explicit: Madritsch et al. distinguish overall task-completion time from active working time in an assistant-supported procedural task~\cite{madritsch2026assistance}, and their active measure is not assumed to correspond to the present clock. In Follow My Voice, active completion time includes ordinary waits for guidance between object reveal and correct selection, and only recorded pauses are excluded. Separate decision and playback timestamps will therefore help explain delivery delays without removing their task-level consequences from the primary outcome.
+ 
++\subsection{Missed Targets}
++A missed target is a search that reaches its recorded 15-second active-search deadline without a correct trigger selection. An incorrect selection followed by a correct selection before expiry is a completed search, with its selection error retained separately. Technical stops, withdrawal, and recordings without a known terminal outcome are not automatically classified as misses. For each participant, block, voice condition, and recorded deadline, the descriptive missed-target percentage is
++\begin{equation}
++M=100\frac{N_{\mathrm{timeout}}}{N_{\mathrm{selected}}+N_{\mathrm{timeout}}}.
++\end{equation}
++The denominator excludes practice and unresolved or technically interrupted attempts; their counts are reported alongside the percentage. A zero denominator yields an unavailable percentage. The full trial export implements \texttt{missed\_target} as 1 for timeout, 0 for successful completion, and blank otherwise. A separate \texttt{missed\_targets.csv} records grouped counts, deadlines, and development-data exclusion labels. Legacy records without an explicit deadline are retained but excluded from this deadline-specific percentage.
++
++This outcome follows Chiossi et al.'s distinction between successful search and searches ending without selection~\cite{chiossi2024searching}. Their five-second task and the present 15-second, verbally guided task differ; percentages are therefore interpretable within each protocol and are not directly comparable benchmarks. The six unfinished searches in the earlier development recordings remain unfinished records, not retrospectively assigned missed targets.
++
++\subsection{Exploratory Eye-Event and Pupil Measures}
++An implemented offline analysis preserves per-eye directions and pupil diameters from the HTC query stream, deduplicates repeated query timestamps, and separates search from readiness and pauses. Query receipts establish when software obtained data, not the sensor capture time or the independence of consecutive observations. Changes in trial or device, invalid tracking, reversed timestamps, and query gaps longer than 25 ms break continuity. Invalid per-eye observations and observed eye closure exclude nearby 200-ms intervals. These are explicit engineering screening rules, subject to validation on the study apparatus.
++
++Fixation candidates use an elapsed-time dispersion detector: the sum of horizontal and vertical angular ranges must remain within 1.8 degrees for at least 83 ms. This starting configuration follows the I-DT parameters reported by Chiossi et al.~\cite{chiossi2024searching}, within the detector family described by Salvucci and Goldberg~\cite{salvucci2000fixations}. Azimuth is unwrapped across the signed-angle boundary. The implementation retains event intervals and the duration of eligible segments; its counts are candidate classifications rather than validated fixations.
++
++Saccade candidates are computed separately from eye-in-head angular velocity, with a provisional 60-degree-per-second threshold, a duration of 20--100 ms, at least two sampled intervals, and observed lower-velocity samples on either side. Intervals with head speed above 20 degrees per second or unavailable head pose are excluded. The reported rate divides event count by retained low-head-speed duration. It therefore describes a restricted observation window, not all saccades during search. These restrictions reduce head-turn ambiguity but do not validate event identity or establish sensor-level eye--head synchronization.
++
++Exploratory Index of Pupillary Activity (IPA) follows the wavelet-based approach of Duchowski et al.~\cite{duchowski2018ipa}. Each eye is processed separately. Accepted pupil segments contain valid finite diameters, last at least two seconds, meet a median query-rate screen of 60 Hz, and pass an interval-regularity screen. Within each accepted segment, values are resampled at its median query interval; no interpolation crosses rejected gaps or invalid observations. Level-two sym16 wavelet detail coefficients yield thresholded modulus maxima, which are counted per retained second. The implementation records its thresholds, resampling, numerical tolerance, and nearest-neighbor boundary convention. IPA is unavailable when no segment qualifies; it is never filled with zero to represent missing measurements.
++
++Computational tests verify event boundaries, query deduplication, invalid-data handling, head-turn suppression, and wavelet calculations. They do not establish physiological validity. Independent event annotations, calibration checks, timing assessment, and held-out threshold evaluation remain necessary before fixation counts or saccade rates enter the participant analysis. Pupil-based interpretation additionally requires checks for luminance, gaze angle, blink artifacts, segment boundaries, and task-related confounds. IPA remains exploratory alongside NASA-TLX, rather than a validated estimate of workload in this apparatus. Final fixation duration on the target also remains unavailable until validated eye events can be joined to target areas of interest; the last ray contact is not a substitute.
++
+ \subsection{Gaze Contact, Vicinity, Pointing, and Selection}
+ Four event families are central to interpretation: a valid eye ray can intersect the target collider; a gaze direction can satisfy the larger target-vicinity rule; the right-controller ray can intersect the target; and a trigger press can select the target. These events can occur at different times and need not occur in that order in every recorded sample sequence.
+ 
+diff --git a/chapters/06-analysis.tex b/chapters/06-analysis.tex
+index 9297062..265b548 100644
+--- a/chapters/06-analysis.tex
++++ b/chapters/06-analysis.tex
+@@ -81,6 +81,11 @@ For example, slower search can produce more opportunities for guidance, and more
+ \subsection{Guidance Delivery Evaluation}
+ Engineering analysis will distinguish event qualification, decision latency, model deferral, scheduling delay and actual playback, and it will evaluate gaze and controller confirmation separately. Because a cue can be judged only in context, sequence-level review will include what happened before and after it. Automatic checks and ratings produced by an offline language-model evaluator (Appendix~\ref{app:scenarios}) will remain advisory engineering evidence rather than participant perception scores.
+ 
++\subsection{Additional Performance and Eye-Behavior Figures}
++Missed-target percentages complement completion-time distributions, with the number of completed, timed-out, technically interrupted, and unresolved attempts shown explicitly. For the participant study, paired participant summaries by voice condition are preferable to treating all trial rows as independent observations. Earlier unconstrained development recordings are kept separate from searches governed by the new deadline.
++
++After independent detector validation, possible additional figures include fixation-count distributions, saccade rates with their valid-time denominators, and IPA distributions with retained pupil coverage, each separated by voice condition and participant. Last-target-fixation duration requires validated events and a target-area join. No EEG or ERP plot can be generated from the current headset logs. Until those requirements are met, the candidate-eye figures in Section~\ref{sec:development-eye-candidates} serve only to inspect the processing pipeline; they do not test a voice effect or infer workload. Threshold sensitivity and missing-data summaries accompany each derived outcome.
++
+ \subsection{Qualitative Analysis and Mixed Evidence}
+ The debrief will begin with broad experience questions, followed by balanced probes about voice preference, perceived performance, comfort, and potential uses. The coding process will record the initial codebook, revisions, coding decisions, and independent review of a subset. Contradictory or minority accounts will be retained rather than forced into one favorable theme.
+ 
+diff --git a/chapters/07-evaluation.tex b/chapters/07-evaluation.tex
+index 41e779d..cd766a4 100644
+--- a/chapters/07-evaluation.tex
++++ b/chapters/07-evaluation.tex
+@@ -2,6 +2,8 @@
+ \label{ch:evaluation}
+ The completed results chapter will return to the question posed in the introduction: does guidance spoken in a synthetic version of the participant's own voice differ, in efficiency or experience, from guidance spoken in the neutral voice the participant selected? The chapter will first establish that the intended comparison was delivered, then report search efficiency, and finally examine workload, motivation, and exploratory measures of voice experience. Because no confirmatory participant outcomes are available in this draft, the sections below describe how each result will be reported and distinguish those pending results from the engineering evidence that currently supports the apparatus.
+ 
++\input{chapters/07-development-results}
++
+ \section{Planned Reporting of Participant Results}
+ The completed empirical chapter will first report participant flow, exclusions, incomplete sessions, and data coverage by condition and order. It will then describe realized starting geometry and the similarity manipulation check before presenting the primary voice contrast. This order allows readers to assess whether the intended comparison was delivered and measured.
+ 
+@@ -17,7 +19,7 @@ Manipulation check & Similarity by voice with paired scope & Not available \\
+ Primary performance & Adjusted time contrast and uncertainty & Not estimated \\
+ Workload and IMI & Versioned raw items and complete subscales & Not collected for this report \\
+ Agent experience & Individual and construct-specific ratings & Not collected for this report \\
+-Guidance quality & Sequence-level playback and evidence & Evaluation design specified \\
++Guidance quality & Sequence-level playback and evidence & Development traces reported; study comparison pending \\
+ Debrief themes & Recorded responses and coding audit & Not available \\\bottomrule
+ \end{tabularx}
+ \end{table}
+@@ -35,7 +37,7 @@ Participant-study estimates are not yet available; this section is reserved for
+ Participant ratings are not yet available; this section is reserved for condition-referenced workload, the separate motivation subscales, agent experience, voice liking and similarity, and debrief responses. Results will retain the distinction between preference, perceived resemblance, and task performance. No questionnaire response or preference distribution is generated from synthetic trials.
+ 
+ \section{Evidence Available for This Draft}
+-The evidence currently available consists of engineering records rather than participant data. The October 20 alignment audit documents software checks, analysis tests, and a successful Android build, installation, and launch. These records support specific implementation claims; they do not bear on a treatment effect, perceived naturalness, eye-tracker accuracy, or acoustic response latency.
++Alongside the recorded development results in Section~\ref{sec:development-results}, engineering verification records document the apparatus. These sources do not constitute confirmatory participant-study outcomes. The October 20 alignment audit documents software checks, analysis tests, and a successful Android build, installation, and launch. These records support specific implementation claims; they do not bear on a treatment effect, perceived naturalness, eye-tracker accuracy, or acoustic response latency.
+ 
+ The audit reports passing schedule and voice-isolation checks, including one practice trial in the first assigned voice, two measured blocks, and nominal-angle quotas, and it records 38 trial-export tests and seven workload scoring/plot tests. These counts describe the audit's own test run, not a suite re-executed for this manuscript, so any later claim based on them should cite the verification record and the revision it tested.
+ 
+diff --git a/references.bib b/references.bib
+index 92d3b2f..320b43c 100644
+--- a/references.bib
++++ b/references.bib
+@@ -541,7 +541,8 @@
+   volume = {20},
+   number = {3},
+   pages = {e0318890},
+-  doi = {10.1371/journal.pone.0318890}
++  doi = {10.1371/journal.pone.0318890},
++  note = {\href{https://doi.org/10.1371/journal.pone.0318890}{doi: 10.1371/journal.pone.0318890}}
+ }
+ 
+ @article{mcgettigan2025cloned,
+@@ -728,3 +729,35 @@
+   howpublished = {\url{https://www.vive.com/us/product/vive-focus-vision/overview/}},
+   note = {Manufacturer specifications; accessed October 23, 2026}
+ }
++
++
++@inproceedings{kao2022audiomatters,
++  author = {Dominic Kao and Rabindra Ratan and Christos Mousas and Amogh Joshi and Edward F. Melcer},
++  title = {{Audio Matters Too: How Audial Avatar Customization Enhances Visual Avatar Customization}},
++  booktitle = {Proceedings of the 2022 CHI Conference on Human Factors in Computing Systems},
++  year = {2022},
++  pages = {1--27},
++  doi = {10.1145/3491102.3501848},
++  url = {https://people.csail.mit.edu/dkao/pdf/kao2022chi.pdf},
++  note = {\href{https://doi.org/10.1145/3491102.3501848}{doi: 10.1145/3491102.3501848}}
++}
++
++@inproceedings{duchowski2018ipa,
++  author = {Duchowski, Andrew T. and Krejtz, Krzysztof and Krejtz, Izabela and Biele, Cezary and Niedzielska, Anna and Kiefer, Peter and Raubal, Martin and Giannopoulos, Ioannis},
++  title = {The Index of Pupillary Activity: Measuring Cognitive Load vis-\`a-vis Task Difficulty with Pupil Oscillation},
++  booktitle = {Proceedings of the 2018 CHI Conference on Human Factors in Computing Systems},
++  year = {2018},
++  pages = {1--13},
++  doi = {10.1145/3173574.3173856},
++  url = {https://par.nsf.gov/servlets/purl/10096514}
++}
++
++@inproceedings{pfeil2018eyehead,
++  author = {Pfeil, Kevin and Taranta, Eugene M. and Kulshreshth, Arun and Wisniewski, Pamela and LaViola, Joseph J.},
++  title = {A Comparison of Eye-Head Coordination Between Virtual and Physical Realities},
++  booktitle = {Proceedings of the ACM Symposium on Applied Perception},
++  year = {2018},
++  pages = {1--7},
++  doi = {10.1145/3225153.3225157},
++  url = {https://www.eecs.ucf.edu/isuelab/publications/pubs/SAP2018.pdf}
++}

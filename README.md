@@ -1,5 +1,11 @@
 # Gaze Contingency Project
 
+## Thesis first pass — October 23, 2026
+
+[Read the thesis PDF](docs/thesis/follow-my-voice-thesis-first-pass.pdf) · [Editable LaTeX source and build instructions](docs/thesis/README.md) · [Review and verification](docs/thesis/review/verification.md)
+
+The advisor-review draft contains 159 pages, 14 figures, and 16 tables, grounded in Overleaf revision `f9f49e4` and the October 20 implementation audit. Participant results and final study validation remain pending. Its documented implementation snapshot includes recovered-branch work that is not implied to be deployed by this documentation commit. Qualtrics remains on hold.
+
 ## Trial replay and live viewing
 
 The separate macOS **Trial Review** app opens saved 3D replay packages and offers

@@ -1,0 +1,61 @@
+\chapter{DATA CONTRACT AND SCORING RULES}
+\label{app:data}
+\newpage
+\section{Record Identity and Provenance}
+The following dictionary specifies what each recorded field must mean. The names shown are descriptive labels rather than exporter field names; they must be mapped to the versioned exporter schema before collection, and their inclusion here does not imply that every field already exists in the current build.
+
+\begingroup
+\thesislongtablecaption{Required record identity and scope.}
+\begin{longtable}{@{}p{0.26\linewidth}p{0.65\linewidth}@{}}
+\toprule
+Field family & Meaning \\\midrule\endfirsthead
+\toprule Field family & Meaning \\\midrule\endhead
+Participant ID & Coded study identifier; not a name or voice-provider credential.\\
+Session and run & Unique attempt/session context, including development versus study mode.\\
+Block and trial & Referenced measured block, within-block trial, global trial index, and separate practice flag.\\
+Voice condition & Neutral or self-similar; actual voice ID, provider, synthesis model and configuration.\\
+Assigned order & Neutral-first or self-similar-first, with practice following first assigned voice.\\
+Build and policy & Application revision, configuration, state-machine policy, phrase semantics, and library version.\\
+Schedule & Seed, schedule version, nominal wall assignment, realized geometry, and attempt status.\\
+Survey scope & Administration phase and timestamp distinct from referenced participant/block/voice.\\\bottomrule
+\end{longtable}
+\endgroup
+
+\section{Geometry and Timing Fields}
+\begingroup
+\thesislongtablecaption{Geometry and event contract.}
+\begin{longtable}{@{}p{0.28\linewidth}p{0.18\linewidth}p{0.43\linewidth}@{}}
+\toprule
+Quantity & Unit/reference & Required interpretation \\\midrule\endfirsthead
+\toprule Quantity & Unit/reference & Required interpretation \\\midrule\endhead
+Nominal angle & Degrees; wall schedule & Allocation category; not exact target bearing.\\
+Exact starting theta & Degrees; pre-cue cross & Signed horizontal angle from saved origin-to-cross toward origin-to-target; currently a readiness gap.\\
+Height difference & Metres; cross center & Target Y minus cross Y; intended and realized sign stored separately.\\
+Replay wall bounds & Metres; recording-local frame & Implemented for new rotational-search snapshots: wall bottom, height, and availability flag. Legacy bounds are estimated from objects; saved positions are not rescaled.\\
+Target distance & Metres; first tracked head after reveal & Three-dimensional distance with observation timestamp.\\
+Reveal & Session clock & Object visibility and active-search onset event.\\
+First gaze contact & Active clock & First valid target collider intersection; missing if absent.\\
+Last gaze contact & Active clock & Last valid observed target intersection; not fixation duration.\\
+First controller contact & Active clock & First tracked right-ray intersection with target.\\
+Gaze qualification & Session clock & Valid winning vicinity evidence meets interface timer.\\
+Pointing qualification & Session clock & Controller hold and current gaze requirements met.\\
+Correct selection & Session and active clocks & Trigger selection of target; separate from acknowledgment.\\
+Pause intervals & Session clock & Start, end, reason; union used for active time.\\
+Instruction onset & Session clock & Actual software playback start, phrase and event category.\\\bottomrule
+\end{longtable}
+\endgroup
+
+\section{Raw Observation Requirements}
+Gaze records should retain available source time or sequence, application time, validity, source identity, origin, direction, and sample age. Per-eye data must be labeled as such when available; combined gaze must not be described as independent left and right observations. A head-direction fallback must not silently replace eye gaze in an eye-derived outcome.
+
+Motion records should retain head and right-controller poses, tracking state, trigger state, and the time basis needed for reconstruction. Object records should retain stable identifiers, shape/color metadata, transforms, target designation, wall assignment, and layout version. Event records should identify state transitions, eligible actions, model requests and responses, cancellations, playback, interruptions, and trial outcomes. Fields whose values are unknown remain marked unavailable rather than being filled with plausible defaults.
+
+\section{Scoring Contract}
+NASA-TLX will retain six raw values on the documented 0--10 scale. The positively phrased Performance question runs from 0 = Failure to 10 = Perfect, so larger raw values indicate better perceived performance. This direction deliberately differs from the NASA form. Demand, effort and frustration retain their adverse direction. Preserve the raw Performance response and calculate a separate workload-oriented value as $10-r_{\mathrm{Performance}}$, exactly once. The unweighted workload mean uses this reversed Performance value and the other five raw ratings, and is calculated only when all six ratings are present; higher means indicate greater workload or poorer perceived performance. Do not reverse any of the other five dimensions. A normalized 0--100 field, if exported, must be named separately and calculated from explicit bounds, with its raw or workload-oriented direction identified. Legacy data without known bounds or performance direction remain unscored; the present reversal must not be applied automatically to earlier Perfect-to-Failure responses.
+
+IMI scoring uses separate complete subscale means: interest/enjoyment (7), effort/importance (5), pressure/tension (5), and value/usefulness (7). On the 1--7 response scale, reverse-coded values use $8-r$. Within-subscale reverse positions are enjoyment 3 and 4, effort 2 and 5, pressure 1 and 3, and none for value. There is no overall IMI total.
+
+The selected agent-perception battery retains source identifiers. Co-presence Q1--6, perceived intelligence Q13--18, and anthropomorphism Q37--42 are separate six-item means when complete. Q20 appealing, Q21 eerie, and Q22 familiar are individual ratings in their original directions. There is no 21-item or combined eeriness total. Custom voice/assistance items likewise remain individual outcomes.
+
+\section{Export Validation Cases}
+Before analysis, automated checks should reject duplicate trial keys, unknown voice/block joins, negative active intervals, selection before reveal, and scores outside declared bounds. They should preserve incomplete outcomes, missing contacts, absent questionnaire items, and old records whose provenance is insufficient. A joined table must verify one survey observation per participant and referenced block before repeating values on trial rows. Exports should be reproducible from raw records and a versioned analysis configuration.

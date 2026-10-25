@@ -1,0 +1,39 @@
+{
+  "Neutral voice": {
+    "started": 5,
+    "completed": 5,
+    "first_selection_n": 5,
+    "first_selection_correct": 4,
+    "accuracy_percent": 80.0,
+    "deadline_resolved_n": 0,
+    "timeout_n": 0,
+    "missed_percent": null,
+    "completion_seconds": [
+      27.7435,
+      14.6112,
+      12.7023,
+      32.8381,
+      21.4865
+    ],
+    "ipa_candidate_hz": [
+      0.68921125414877,
+      0.6680793184649321,
+      0.592067137542978,
+      0.3784321654737788
+    ],
+    "ipa_unavailable_trials": 1
+  },
+  "Self-similar voice": {
+    "started": 0,
+    "completed": 0,
+    "first_selection_n": 0,
+    "first_selection_correct": 0,
+    "accuracy_percent": null,
+    "deadline_resolved_n": 0,
+    "timeout_n": 0,
+    "missed_percent": null,
+    "completion_seconds": [],
+    "ipa_candidate_hz": [],
+    "ipa_unavailable_trials": 0
+  }
+}

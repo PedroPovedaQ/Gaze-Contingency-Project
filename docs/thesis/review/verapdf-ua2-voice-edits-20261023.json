@@ -1,0 +1,63 @@
+{"report":{"buildInformation":{"releaseDetails":[{
+  "id" : "core",
+  "version" : "1.30.3",
+  "buildDate" : 1791381720000
+},{
+  "id" : "validation-model",
+  "version" : "1.30.3",
+  "buildDate" : 1791395040000
+},{
+  "id" : "apps",
+  "version" : "1.30.3",
+  "buildDate" : 1791395520000
+}]},"jobs":[{"itemDetails":{
+  "name" : "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/docs/thesis/follow-my-voice-thesis-first-pass.pdf",
+  "size" : 2794781
+},"validationResult":[ {
+  "details" : {
+    "passedRules" : 1728,
+    "failedRules" : 0,
+    "passedChecks" : 451191,
+    "failedChecks" : 0,
+    "ruleSummaries" : [ ]
+  },
+  "jobEndStatus" : "normal",
+  "profileName" : "PDF/UA-2 + Tagged PDF validation profile",
+  "statement" : "PDF file is compliant with Validation Profile requirements.",
+  "compliant" : true
+} ],"processingTime":{
+  "start" : 1792775661159,
+  "finish" : 1792775682061,
+  "duration" : "00:00:20.902",
+  "difference" : 20902
+}}],"batchSummary":{
+  "duration" : {
+    "start" : 1792775660782,
+    "finish" : 1792775682200,
+    "duration" : "00:00:21.418",
+    "difference" : 21418
+  },
+  "totalJobs" : 1,
+  "outOfMemory" : 0,
+  "veraExceptions" : 0,
+  "multiJob" : false,
+  "featuresSummary" : {
+    "failedJobCount" : 0,
+    "totalJobCount" : 0,
+    "successfulJobCount" : 0
+  },
+  "repairSummary" : {
+    "failedJobCount" : 0,
+    "totalJobCount" : 0,
+    "successfulJobCount" : 0
+  },
+  "failedEncryptedJobs" : 0,
+  "failedParsingJobs" : 0,
+  "validationSummary" : {
+    "compliantPdfaCount" : 1,
+    "failedJobCount" : 0,
+    "totalJobCount" : 1,
+    "nonCompliantPdfaCount" : 0,
+    "successfulJobCount" : 1
+  }
+}}}

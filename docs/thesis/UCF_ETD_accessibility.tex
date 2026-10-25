@@ -1,0 +1,20 @@
+% UCF ETD accessible PDF setup.
+% This file must be loaded before \documentclass.
+% Students should not need to edit this file.
+\ifx\directlua\undefined
+\DocumentMetadata{
+  lang=en-US,
+  pdfstandard=ua-2,
+  pdfstandard=a-4f,
+  tagging=on
+}
+\else
+\DocumentMetadata{
+  lang=en-US,
+  pdfstandard=ua-2,
+  tagging=on,
+  tagging-setup={
+    math/setup=mathml-SE
+  }
+}
+\fi

@@ -1,0 +1,55 @@
+{
+  "search_rows": 15543,
+  "distinct_query_rows": 10362,
+  "repeated_query_rows": 5181,
+  "within_search_query_intervals": 10357,
+  "gaps_over_limit": 86,
+  "query_interval_ms_percentiles": {
+    "50": 9.925468999426812,
+    "95": 15.465833200141777,
+    "99": 23.357227114029243,
+    "100": 697.7086460101418
+  },
+  "eyes": {
+    "left": {
+      "raw_search_rows": 15543,
+      "reported_valid_pupil_rows": 15543,
+      "identical_value_adjacent_distinct_query_fraction": 0.07492517138167423,
+      "segment_counts_by_first_failure": {
+        "short_segment": 75,
+        "accepted": 6,
+        "irregular_query_timing": 8
+      },
+      "segment_seconds_by_first_failure": {
+        "short_segment": 68.74173283105483,
+        "accepted": 13.959445830027107,
+        "irregular_query_timing": 22.819493585906457
+      },
+      "retained_resampled_seconds": 13.92910041846335
+    },
+    "right": {
+      "raw_search_rows": 15543,
+      "reported_valid_pupil_rows": 15543,
+      "identical_value_adjacent_distinct_query_fraction": 0.0747320652698658,
+      "segment_counts_by_first_failure": {
+        "short_segment": 75,
+        "accepted": 6,
+        "irregular_query_timing": 8
+      },
+      "segment_seconds_by_first_failure": {
+        "short_segment": 68.74173283105483,
+        "accepted": 13.959445830027107,
+        "irregular_query_timing": 22.819493585906457
+      },
+      "retained_resampled_seconds": 13.92910041846335
+    }
+  },
+  "interpretation": "First-failure segment durations are mutually exclusive within the screened segments, not a full trial-time denominator. Missing, padded, singleton and between-segment time is outside these totals. Equal pupil values do not prove cached sensor samples. Query rate is not sensor rate.",
+  "physiological_validation": "pending",
+  "gate_config": {
+    "max_gap_s": 0.025,
+    "pupil_min_segment_s": 2.0,
+    "pupil_min_hz": 60.0,
+    "pupil_max_p95_relative_jitter": 0.5
+  }
+}

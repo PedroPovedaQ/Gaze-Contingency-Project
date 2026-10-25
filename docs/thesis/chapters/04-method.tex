@@ -1,0 +1,74 @@
+\section{Experimental Design}
+\label{ch:methodology}
+\draftnote{This section specifies the proposed confirmatory procedure. The implemented snapshot supports one practice trial, two 40-trial blocks, and a final questionnaire handoff. Exact pre-cue geometry, vertical balancing, sample size, and pilot acceptance rules remain unresolved.}
+\subsection{Voice Manipulation and Comparison Rationale}
+The method compares two ways of personalizing assistance: a synthetic voice derived from the participant's recorded speech and a neutral voice selected by that participant from the supplied catalog. Letting participants choose the neutral alternative ties the comparison to a design choice a user could face, while the within-participant task provides repeated observations under both configurations. Similarity ratings indicate whether participants heard the clone as resembling themselves, whereas performance and experience measures compare how each voice functions as guidance.
+
+Gaze contingency and the agent's decision rules are common to both conditions. Because the target identity is initially hidden, they create repeated occasions on which participants receive guidance in the assigned voice; Jev, memory, and gaze awareness are not varied as independent factors.
+
+\subsection{Design and Trial Allocation}
+The study uses a within-participant comparison of two voice conditions: a neutral voice and a self-similar synthetic voice. Both conditions use the same guidance policy, semantic phrase library, selection method and visual-feedback settings, although actual phrase sequences may differ because guidance responds to behavior. Because the neutral voice is chosen by the participant whereas the clone is derived from the participant's speech, the two voices may also differ in preference, gender presentation and synthesis quality; the contrast therefore cannot isolate self-similarity from these features.
+
+A saved, balanced randomized allocation assigns neutral-first or self-similar-first order. Each participant completes one practice trial followed by two measured blocks of 40 trials, one per voice. The practice trial uses the first voice in the assigned order (the neutral voice for Order A, or the self-similar voice for Order B) and is excluded from measured outcomes. A seed makes the trial and layout schedules reproducible. Nominal horizontal-angle quotas are identical across blocks, with trial order and left/right assignments randomized subject to those quotas. The implemented schedule, however, samples left/right signs without enforcing an equal split within each bilateral angle category, so exact four-left/four-right balance is not guaranteed; adopting that additional constraint would require an explicit protocol and implementation change before the study is frozen.
+
+\begin{table}[htbp]\centering
+\caption[Study allocation]{Study allocation. Nominal wall angles are schedule categories, not exact object bearings or accumulated head rotation.}
+\tagpdfsetup{table/header-rows={1}}
+\begin{tabularx}{\linewidth}{@{}lX@{}}\toprule
+Parameter & Allocation \\\midrule
+Voice conditions & Neutral voice; self-similar synthetic voice \\
+Measured trials & 40 per block; 80 per participant \\
+Practice & One trial; excluded from outcomes \\
+Absolute nominal wall step & Eight trials each at 0, 45, 90, 135 and 180 degrees per block \\
+Vertical allocation & 20 targets above and 20 below readiness-cross height per block (proposed; enforcement remains an implementation requirement) \\
+Condition order & Counterbalanced neutral-first and self-similar-first \\
+Active search limit & 25 seconds, excluding explicit pauses \\
+Selection & Right-controller ray and a trigger press \\\bottomrule
+\end{tabularx}
+\end{table}
+
+Objects vary in within-plane position within the shared compact layout described above, so the exact starting angle and target height must accompany the assigned wall. The proposed vertical allocation uses target-center height relative to the readiness cross, not the participant's seated eye height. Reducing wall height does not itself enforce the proposed 20-above/20-below quota. Feasible height ranges and realized quotas therefore remain subject to checks in pilot schedules before the study release is frozen.
+
+\begin{figure}[htbp]\centering
+\IfFileExists{figures/study-procedure-current.pdf}{\includegraphics[width=\linewidth,alt={Setup and one practice trial precede two counterbalanced forty-trial blocks and final retrospective questionnaires; each trial separates opening cue, reveal, and trigger selection.}]{figures/study-procedure-current.pdf}}{\fbox{\parbox{0.94\linewidth}{Consent and setup $\rightarrow$ calibration and practice $\rightarrow$ 40-trial voice block $\rightarrow$ break $\rightarrow$ 40-trial voice block $\rightarrow$ survey and debrief. Within each trial: readiness cross $\rightarrow$ opening cue $\rightarrow$ object reveal and active search $\rightarrow$ correct trigger selection.}}}
+\caption[Study procedure and trial timing]{Study procedure and trial timing. Opening guidance precedes object reveal; active completion time ends at correct right-trigger selection. The success path shown here is bounded by a 25-second active-search deadline; expiry ends the attempt without a successful completion time. Questionnaires and between-trial breaks remain outside active-search timing.}
+\label{fig:study-procedure}
+\end{figure}
+
+\clearpage
+Nominal angle steps are defined relative to the saved readiness (start) wall, which the aligned schedule represents as the center of the previous target wall. For the first measured trial, this reference is the practice target wall. The completed-session check must verify the saved cross placement. This wall-center reference is distinct from the proposed exact cross-to-target bearing defined below.
+
+\subsection{Participants}
+Eligible participants are consenting adults able to understand the task, hear the guidance, view the scene with usual correction and safely use the seated setup and right controller. Handedness, visual correction and prior XR and voice-assistant experience are recorded. Recruitment size and the enrollment ceiling require a prerecruitment determination using power analysis for the theta-adjusted repeated-measures outcome, including plausible within-participant variation and incomplete observations.
+
+\subsection{Research Questions}
+The primary question is whether self-similar and neutral voices differ in active completion time after accounting for absolute starting theta and repeated observations within participants. Secondary questions concern workload and the four IMI subscales, while exploratory questions concern agent perception, eeriness, voice experience, reliance, search behavior and variation in the voice contrast with starting angle. The primary voice contrast is two-sided because no directional advantage for self-similarity is assumed. Repeated trials add information within participants but are not treated as independent participants.
+
+
+\section{Procedure}
+Participants perform an agent-guided object-search task while seated on a swivel chair, with multiple colored geometric objects scattered across eight surrounding vertical planes. Although the application knows the target identity, the participant does not receive a color-and-shape description before searching. Instead, the agent guides the participant toward the target wall and then refines the direction horizontally, vertically or diagonally. The participant selects an object using the right-controller ray and trigger; looking at an object, receiving a gaze confirmation or pointing at it does not itself complete the trial.
+
+Each trial begins with the participant looking at a readiness cross. Once readiness is established, an opening directional cue plays while the objects remain hidden, and object reveal then starts active search timing. A correct trigger selection before the 25-second active-search deadline stops timing and produces success feedback; an incorrect selection is counted and search continues within that same limit.
+
+If the target has not been selected after 25 seconds of active search, the trial ends as a timeout. The application hides the objects, cancels pending spatial hints, and plays a prepared encouragement in the assigned voice, beginning with ``Time up,'' before presenting the next readiness cross. For example, the agent may say, ``Time up. Let's shake that round off and start the next.'' Separate wording introduces the block break or acknowledges the final trial. The same deadline and phrase set apply to both voice conditions and to the single practice trial; a timeout advances the scheduled attempt without adding a replacement. Explicit pauses suspend the clock, whereas tracking loss alone does not. The 25-second limit is a researcher-selected protocol parameter introduced on October 23, 2026, rather than a threshold established by the cited studies.
+
+Before participant use, consent materials must be reconciled with ElevenLabs voice processing and Jev cloud decisions, including the data transmitted, retention, access, and deletion arrangements. After consent, participants complete background questions. They then choose a neutral voice, rate auditioned voices, record a standard passage in their natural voice for synthesis, and confirm comfortable, clear audio for each condition. The retained English recording passage is reproduced in Appendix~\ref{app:instruments}, although its match to the frozen build and typical recording duration remain to be verified. The neutral voice is chosen explicitly rather than inferred from participant gender.
+
+The researcher fits the headset and conducts vendor calibration followed by independent spatial validation across relevant heights, wall boundaries, distances and head orientations. If an offset correction is introduced, the targets used to fit it remain separate from those used for independent validation. Standardized instructions explain that participants rely on the agent to discover the target and use the right trigger to select it. Participants then complete the single practice trial and the two assigned 40-trial blocks.
+
+No questionnaire interrupts the block sequence. Instead, during the final survey the same condition-specific questionnaire is completed twice, once referring to Block 1 and once to Block 2, with identical item wording and order. Breaks are offered between trials and at the block boundary, and any necessary in-trial pause is logged immediately. Tracking is rechecked between blocks and after headset adjustment. After headset removal, participants complete the two retrospective condition-specific sets, comparative voice preference and debrief. Participants may request a pause or stop, and symptoms or technical problems prompt researcher assessment.
+
+Figure~\ref{fig:survey-scopes} distinguishes administration time from reference scope: both condition-specific batteries are completed in the final session, but each response refers to a single measured block.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth,alt={Two blocks separated by a break are followed by a final session with questionnaires referring separately to Block 1 and Block 2.}]{figures/survey-scopes.pdf}
+\caption[Final questionnaire timing and block reference scope]{Proposed final retrospective administration. The intervening break contains comfort and tracking checks, not a block questionnaire. Each block-referenced battery contains 65 numeric ratings. Actual voice is recovered from the saved counterbalanced order.}
+\label{fig:survey-scopes}
+\end{figure}
+
+
+The final survey requires an unambiguous reminder linking each block reference to the voice heard in that block. The reminder format (such as neutral labels or replayed samples) remains an open protocol decision and must be piloted without adding differential cues between conditions.
+
+\subsection{Pilot Testing and Parameter Checks}
+Before confirmatory recruitment, pilot sessions verify the realized angle/height schedules, target visibility and seated comfort, readiness and selection behavior, gaze validity, audio timing and wording, and reconstruction of trial events from the saved data. Pilot assessment also measures survey comprehension and completion time. Those checks inform calibration acceptance, practice proficiency and technical-stop criteria; the suitability of the selected 25-second deadline is also assessed and documented with the study build and questionnaire versions.

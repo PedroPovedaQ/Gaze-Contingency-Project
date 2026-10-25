@@ -1,0 +1,10 @@
+TeX files: 17
+Bibliography files: 1
+Citation commands: 59
+Unique citation keys used: 44
+Bibliography entries: 65
+Missing keys (0): -
+Uncited entries (21): aymerich2012voicesimilarity, chiossi2024searching, gruenefeld2017eyesee360, homacdorman2017eeriness, jaggy2025similarity, kelley2025cueing, kennedy1993ssq, kim2022physicalvirtual, kumaran2023navigation, marquardt2020guidance, maxim2023vocal, maxim2025modulation, maxim2025realism, maxim2025voicechoice, mcgettigan2025cloned, qin2023openvoice, quinn2024review, schubert2001presence, trepkowski2019fov, williams1949residual, zibrek2018appearance
+Duplicate keys (0): -
+Cited entries without DOI/URL (0): -
+DOI entries without URL/note render hint (12): diel2024uncanny, fang2025emotional, kim2024selfvoice, lee2005socialpresence, mcauley1989imi, moussawi2019perception, nass1993voices, nass2001personality, ryan1982control, salvucci2000fixations, snyder2023onevoice, zagermann2016workload
