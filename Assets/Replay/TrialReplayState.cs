@@ -26,8 +26,8 @@ public sealed class TrialReplayState
     {
         if (r.kind == "trial" || r.kind == "transition" || r.kind == "search_start" ||
             r.kind == "search_resumed" || r.kind == "search_paused" || r.kind == "application_paused" ||
-            r.kind == "stop" || r.kind == "end") PoseBoundary = r;
-        if (r.kind == "transition" || r.kind == "end" || r.kind == "stop") Readiness = null;
+            r.kind == "trial_timeout" || r.kind == "stop" || r.kind == "end") PoseBoundary = r;
+        if (r.kind == "transition" || r.kind == "end" || r.kind == "stop" || r.kind == "trial_timeout") Readiness = null;
         if (r.kind == "sample" || r.kind.StartsWith("readiness_", StringComparison.Ordinal)) Readiness = r;
         if (r.kind == "trial")
         {
@@ -49,9 +49,9 @@ public sealed class TrialReplayState
             if (r.correct) Visible = Searching = false;
         }
         else if (r.kind == "search_start" || r.kind == "search_resumed") Visible = Searching = true;
-        else if (r.kind == "search_paused" || r.kind == "application_paused" || r.kind == "transition" || r.kind == "stop" || r.kind == "end")
+        else if (r.kind == "search_paused" || r.kind == "application_paused" || r.kind == "transition" || r.kind == "trial_timeout" || r.kind == "stop" || r.kind == "end")
         { Visible = Searching = false; }
-        if ((r.kind == "sample" || r.kind == "selection") && Trial != null && r.trialId == Trial.trialId && r.changes != null)
+        if ((r.kind == "sample" || r.kind == "selection" || r.kind == "readiness_completed") && Trial != null && r.trialId == Trial.trialId && r.changes != null)
             foreach (var transform in r.changes) Transforms[transform.id] = transform;
     }
 

@@ -47,21 +47,21 @@ public sealed class GazeDiagnosticView : MonoBehaviour
     public void SetVisible(bool visible)
     {
         // Never expose calibration stimuli during active experimental search.
-        if(visible && m_Game!=null && m_Game.SearchActive) return;
+        if(visible && (EntryGazeAlignment.IsShowing || (m_Game!=null && m_Game.SearchActive))) return;
         if(visible && !Visible && Camera.main!=null)
         {
             m_PanelAnchor=MenuPose(Camera.main.transform);
             Position(m_Panel,m_PanelAnchor,PanelOffset(m_Target!=null));
         }
         Visible=visible; if(m_Panel!=null)m_Panel.SetActive(visible);
-        if(!visible) Finish();
+        if(!visible && m_Set!=null) Finish();
     }
     void Update()
     {
         if(m_Panel==null || Camera.main==null) return;
         bool search=m_Game!=null && m_Game.SearchActive;
         // Researcher launch control is only available in setup or an explicit pause, not trial readiness.
-        bool canCheck=m_Game==null || m_Game.ResearcherPaused || m_Game.CurrentState!=FindObjectGameManager.GameState.Playing;
+        bool canCheck=!EntryGazeAlignment.IsShowing && (m_Game==null || m_Game.ResearcherPaused || m_Game.CurrentState!=FindObjectGameManager.GameState.Playing);
         if(search || !canCheck) SetVisible(false);
         bool showLauncher=!Visible && canCheck && !search;
         if(showLauncher && !m_Launcher.activeSelf)
@@ -90,7 +90,8 @@ public sealed class GazeDiagnosticView : MonoBehaviour
         string error=s.valid && s.validationTargetPresent ? s.targetErrorDegrees.ToString("F2")+" deg" : "not available";
         m_Text.text=$"<b>Eye measurement — researcher check</b>\n"+
             $"Valid: {s.valid}  {s.invalidReason}  Ray: {s.raySource}\nDelivery age: {s.ageSeconds*1000:F1} ms (sensor age unknown)\n"+
-            $"Input updates: {m_Deliveries/elapsed:F1}/s; rows: {m_Rows/elapsed:F1}/s\n<b>Native 120 Hz: not established</b>\n"+
+            $"Input updates: {m_Deliveries/elapsed:F1}/s; rows: {m_Rows/elapsed:F1}/s\n<b>Sensor 120 Hz: unverified</b>\n"+
+            $"{NativeGazeRecorder.Instance?.Status ?? "Native timestamps unavailable."}\n"+
             $"Raw origin: {s.rawWorldOrigin:F3}\nRaw direction: {s.rawWorldDirection:F3}\n"+
             $"Head: {s.headPosition:F2}; rotation: {s.headRotation.eulerAngles:F1}\n"+
             $"HTC L/R valid: {s.htcGazeAvailable} / {s.leftValid}/{s.rightValid}\n"+
@@ -103,6 +104,7 @@ public sealed class GazeDiagnosticView : MonoBehaviour
     }
     public void Begin(string set)
     {
+        if (EntryGazeAlignment.IsShowing) return;
         if(m_Game!=null && m_Game.CurrentState==FindObjectGameManager.GameState.Playing && !m_Game.ResearcherPaused)return;
         if(Camera.main==null)return;
         Finish();m_Set=set;m_ValidationId=Guid.NewGuid().ToString("N");m_TargetIndex=0;
@@ -151,7 +153,9 @@ public sealed class GazeDiagnosticView : MonoBehaviour
             m_Stream.ClearQuickAlignment("Quick alignment cancelled before completing all checks.");
         bool hadTarget=m_Target!=null;
         if(m_Target!=null)Destroy(m_Target);m_Target=null;
-        m_Stream?.SetValidationTarget(null,null,null,null);m_Set=null;
+        if (m_Stream != null && m_ValidationId != null && m_Stream.ValidationId == m_ValidationId)
+            m_Stream.SetValidationTarget(null,null,null,null);
+        m_Set=null;
         if(hadTarget && m_Panel!=null)Position(m_Panel,m_PanelAnchor,PanelOffset(false));
     }
     static Pose MenuPose(Transform head) => new Pose(head.position,Quaternion.Euler(0,head.eulerAngles.y,0));

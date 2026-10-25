@@ -53,6 +53,7 @@ public class TrialDataLogger : MonoBehaviour
         public int saccadeCount;
         public float totalSaccadeAmplitudeDeg;
         public bool completed;
+        public string preCueThetaJson;
     }
 
     FindObjectGameManager m_GameManager;
@@ -91,6 +92,7 @@ public class TrialDataLogger : MonoBehaviour
 
         m_GameManager.OnGameStarted += OnGameStarted;
         m_GameManager.OnObjectFound += OnObjectFound;
+        m_GameManager.OnRoundTimedOut += OnRoundTimedOut;
         m_GameManager.OnWrongCapture += OnWrongCapture;
         m_GameManager.OnGameCompleted += OnGameCompleted;
         m_GameManager.OnSearchStarted += OnSearchStarted;
@@ -110,6 +112,7 @@ public class TrialDataLogger : MonoBehaviour
         {
             m_GameManager.OnGameStarted -= OnGameStarted;
             m_GameManager.OnObjectFound -= OnObjectFound;
+            m_GameManager.OnRoundTimedOut -= OnRoundTimedOut;
             m_GameManager.OnWrongCapture -= OnWrongCapture;
             m_GameManager.OnGameCompleted -= OnGameCompleted;
             m_GameManager.OnSearchStarted -= OnSearchStarted;
@@ -207,12 +210,12 @@ public class TrialDataLogger : MonoBehaviour
         if (m_GameManager.IsPractice || round >= m_ObjectiveRecords.Count) return;
         var rec = m_ObjectiveRecords[round]; rec.objectsReadyTime = Time.time; m_ObjectiveRecords[round] = rec;
         WriteEvent("objects_ready", "", "", "", -1, false, 0, "");
-        WriteObjectManifest(round);
     }
     void OnSearchStarted(int round)
     {
         if (m_GameManager.IsPractice || round >= m_ObjectiveRecords.Count) return;
         m_ActiveObjectiveIndex = round;
+        WriteObjectManifest(round); // Final hidden geometry, after readiness constraints.
         var rec = m_ObjectiveRecords[round]; rec.startTime = Time.time; rec.outcome = "searching";
         m_ObjectiveRecords[round] = rec; m_HasLastFixation = false;
         WriteEvent("search_start", "", "", "", -1, false, 0, "");
@@ -229,6 +232,17 @@ public class TrialDataLogger : MonoBehaviour
     {
         if (m_EventWriter == null || m_GameManager.IsPractice) return;
         var gate = m_GameManager.Readiness;
+        if (name == "readiness_completed" && m_GameManager.PreCueTheta != null)
+        {
+            string snapshot = JsonUtility.ToJson(m_GameManager.PreCueTheta);
+            int index = m_GameManager.CurrentObjectiveIndex;
+            if (index >= 0 && index < m_ObjectiveRecords.Count)
+            {
+                var record = m_ObjectiveRecords[index]; record.preCueThetaJson = snapshot;
+                m_ObjectiveRecords[index] = record;
+            }
+            WriteEvent("theta_snapshot", "", "", "", -1, false, 0, snapshot);
+        }
         WriteEvent(name, "", "", "", -1, false, 0,
             FormattableString.Invariant($"start_plane={gate.Wall};start_wall_azimuth_deg={gate.Wall * 45};progress={gate.Progress:F4};announcement_ready={m_GameManager.AnnouncementReady}"));
     }
@@ -246,7 +260,7 @@ public class TrialDataLogger : MonoBehaviour
             var rec = m_ObjectiveRecords[m_ActiveObjectiveIndex];
             // Capture is final even if success speech or the next transition fails.
             // Keep its outcome/duration; the session stop is recorded separately.
-            if (!rec.completed)
+            if (!rec.completed && rec.outcome != "timeout")
             {
                 rec.outcome = m_SessionOutcome;
                 rec.searchSeconds = rec.startTime >= 0 ? m_GameManager.CurrentSearchSeconds : 0;
@@ -274,6 +288,18 @@ public class TrialDataLogger : MonoBehaviour
                 writer.WriteLine(FormattableString.Invariant($"{m_SessionId}_r{round:D2},{info.objectId},{info.shapeName},{info.colorName},{info.shelfLevel},{info.shelfColumn},{pos.x:F5},{pos.y:F5},{pos.z:F5},{(target ? 1 : 0)},{layout},{info.planeId},{info.planeSlot},{info.planeAzimuth:F1},{origin.x:F5},{origin.y:F5},{origin.z:F5},{m_GameManager.SeatedForwardYaw:F1},{m_GameManager.LayoutSeed}"));
             }
         }
+    }
+
+    void OnRoundTimedOut(int index)
+    {
+        if (m_GameManager.IsPractice || index < 0 || index >= m_ObjectiveRecords.Count) return;
+        FinalizeCurrentFixation();
+        var rec = m_ObjectiveRecords[index];
+        rec.outcome = "timeout"; rec.completed = false;
+        rec.searchSeconds = m_GameManager.CurrentSearchSeconds;
+        m_ObjectiveRecords[index] = rec; m_HasLastFixation = false;
+        WriteEvent("trial_timeout", "", "", "", -1, false, rec.searchSeconds, FormattableString.Invariant($"active_search_limit_seconds={StudyTrialClock.SearchLimitSeconds}"));
+        WriteSummary(Time.time - m_GameManager.GameStartTime);
     }
 
     void OnObjectFound(int objectiveIndex)
@@ -506,7 +532,7 @@ public class TrialDataLogger : MonoBehaviour
         for (int i = 0; i < m_ObjectiveRecords.Count; i++)
         {
             var record = m_ObjectiveRecords[i];
-            if (i == m_ActiveObjectiveIndex && record.startTime >= 0 && !record.completed)
+            if (i == m_ActiveObjectiveIndex && record.startTime >= 0 && !record.completed && record.outcome != "timeout")
             { record.searchSeconds = m_GameManager.CurrentSearchSeconds; m_ObjectiveRecords[i] = record; }
             totalTime += record.searchSeconds;
         }
@@ -514,6 +540,7 @@ public class TrialDataLogger : MonoBehaviour
 
         var sb = new StringBuilder();
         sb.AppendLine("{");
+        sb.AppendLine(FormattableString.Invariant($"  \"active_search_limit_seconds\": {StudyTrialClock.SearchLimitSeconds},"));
         sb.AppendLine(FormattableString.Invariant($"  \"participant_id\": \"{SessionConfig.ParticipantId}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"run_number\": {SessionConfig.RunNumber},"));
         sb.AppendLine(FormattableString.Invariant($"  \"condition\": \"{SessionConfig.ConditionLabel}\","));
@@ -531,7 +558,8 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine($"  \"target_identity_policy\": \"{ChallengeSet.TargetIdentityPolicy}\",");
         sb.AppendLine($"  \"height_assignment_policy\": \"{ChallengeSet.HeightAssignmentPolicy}\",");
         sb.AppendLine($"  \"angle_balance_applied\": {(m_GameManager.RotationalBetaEnabled ? "true" : "false")},");
-        sb.AppendLine("  \"theta_reference\": \"previous_target_wall_center\",");
+        sb.AppendLine($"  \"theta_reference\": \"{ChallengeSet.ThetaReference}\",");
+        sb.AppendLine($"  \"direction_policy\": \"{ChallengeSet.DirectionPolicy}\",");
         sb.AppendLine(FormattableString.Invariant($"  \"round_schedule\": \"always_gaze_aware\","));
         sb.AppendLine(FormattableString.Invariant($"  \"schema_version\": 2,"));
         sb.AppendLine(FormattableString.Invariant($"  \"session_outcome\": \"{m_SessionOutcome}\","));
@@ -623,6 +651,7 @@ public class TrialDataLogger : MonoBehaviour
                 sb.AppendLine(FormattableString.Invariant($"      \"signed_theta_deg\": {planned.SignedTheta}, \"absolute_theta_deg\": {planned.AbsoluteTheta},"));
                 sb.AppendLine(FormattableString.Invariant($"      \"angle_pair\": {planned.anglePair}, \"layout_seed\": {planned.layoutSeed},"));
             }
+            sb.AppendLine($"      \"pre_cue_theta\": {rec.preCueThetaJson ?? "null"},");
             sb.AppendLine(FormattableString.Invariant($"      \"trial_id\": \"{m_SessionId}_r{rec.index:D2}\","));
             sb.AppendLine(FormattableString.Invariant($"      \"outcome\": \"{rec.outcome}\","));
             sb.AppendLine(FormattableString.Invariant($"      \"transition_started_at\": {rec.transitionTime:F4},"));

@@ -18,6 +18,7 @@ public static class StudyFeedbackChecks
             "Near-vertical gaze cannot invent a horizontal cross direction.");
         CheckVerticalWallDistance();
         CheckRoundPerformance();
+        CheckTimeout();
         foreach (string phrase in DirectionalHintPolicy.AllPhrases())
             Check(Array.IndexOf(VoiceAssistantController.StarterPhrases(), phrase) >= 0 &&
                 Array.IndexOf(VoiceAssistantController.PhraseLibrary(), phrase) >= 0,
@@ -77,6 +78,59 @@ public static class StudyFeedbackChecks
             if (target != null) UnityEngine.Object.DestroyImmediate(target);
         }
         Debug.Log("[StudyFeedbackChecks] PASS: gaze-relative cross direction, prepared reminders, spherical 100-piece burst, 120 confetti pieces, no physics/RNG interference and cleanup.");
+    }
+
+    static void CheckTimeout()
+    {
+        var host = new GameObject("TimeoutFixture"); host.SetActive(false);
+        var target = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        void Set(object owner, string field, object value) => owner.GetType().GetField(field, flags).SetValue(owner, value);
+        try
+        {
+            var game = host.AddComponent<FindObjectGameManager>();
+            Set(game, "m_State", FindObjectGameManager.GameState.Playing);
+            Set(game, "<SearchActive>k__BackingField", true);
+            var clock = (StudyTrialClock)typeof(FindObjectGameManager).GetField("m_SearchClock", flags).GetValue(game);
+            var expire = typeof(FindObjectGameManager).GetMethod("TryExpireRound", flags);
+            ((System.Collections.Generic.List<GameObject>)typeof(FindObjectGameManager).GetField("m_SpawnedObjects", flags).GetValue(game)).Add(target);
+            int timeouts = 0, captures = 0, stops = 0;
+            game.OnRoundTimedOut += _ => timeouts++;
+            game.OnObjectFound += _ => captures++;
+            game.OnSessionStopped += _ => stops++;
+            clock.Begin(Time.timeAsDouble - 24);
+            Check(!(bool)expire.Invoke(game, null), "Search remains active before deadline.");
+            clock.Begin(Time.timeAsDouble - 26);
+            Check((bool)expire.Invoke(game, null), "Overdue frame closes search.");
+            Check(!game.SearchActive && game.CurrentSearchSeconds == 25 && !target.activeSelf,
+                "Deadline closes at 25 active seconds and hides targets.");
+            Check(timeouts == 1 && captures == 0 && stops == 0 && game.FoundCount == 0,
+                "Timeout is neither success nor a technical stop.");
+            Check(!(bool)expire.Invoke(game, null) && timeouts == 1, "Repeated updates cannot duplicate a timeout.");
+            int nextWall = ChallengeSet.Rounds[0].targetPlane;
+            Check((int)typeof(FindObjectGameManager).GetField("m_LastCompletedPlane", flags).GetValue(game) == nextWall,
+                "Next readiness uses scheduled previous target wall even on timeout.");
+            Set(game, "<SearchActive>k__BackingField", true); clock.Begin(Time.timeAsDouble - 20); clock.Pause(Time.timeAsDouble);
+            Check(!(bool)expire.Invoke(game, null), "Paused clock cannot expire.");
+            Set(game, "<SearchActive>k__BackingField", false);
+            Check(!(bool)expire.Invoke(game, null), "Readiness/feedback cannot expire.");
+            foreach (var line in VoicePromptText.TimeoutPhrases)
+                Check(Array.IndexOf(VoiceAssistantController.StarterPhrases(), line) >= 0 &&
+                    Array.IndexOf(VoiceAssistantController.PhraseLibrary(), line) >= 0,
+                    "Timeout lines prepared in quick and full voice paths.");
+            foreach (var line in new[] { VoicePromptText.TimeoutFinal, VoicePromptText.TimeoutBlockBreak })
+                Check(Array.IndexOf(VoiceAssistantController.StarterPhrases(), line) >= 0 &&
+                    Array.IndexOf(VoiceAssistantController.PhraseLibrary(), line) >= 0,
+                    "Boundary timeout lines also prepared.");
+            var replay = new TrialReplayState();
+            replay.Apply(new TrialReplayRecord { kind = "search_start", time = 0 });
+            Check(replay.Searching, "Replay search starts.");
+            replay.Apply(new TrialReplayRecord { kind = "trial_timeout", time = 15, sequence = 2 });
+            Check(!replay.Searching && !replay.Visible && replay.PoseBoundary.kind == "trial_timeout",
+                "Replay timeout hides old scene and invalidates stale pose.");
+        }
+        finally { UnityEngine.Object.DestroyImmediate(target); UnityEngine.Object.DestroyImmediate(host); }
+        Debug.Log("[StudyTimeoutChecks] PASS: deadline, pauses, one terminal event, no success/stop, next wall, prepared voices and replay boundary.");
     }
 
     static void CheckRoundPerformance()
@@ -179,6 +233,8 @@ public static class StudyFeedbackChecks
             typeof(FindObjectGameManager).GetField("m_SpawnCenter", flags).SetValue(game, new Vector3(3, 1, 2));
             typeof(FindObjectGameManager).GetField("m_SeatedRotation", flags).SetValue(game, Quaternion.Euler(0, 90, 0));
             typeof(FindObjectGameManager).GetField("m_RotationalRadius", flags).SetValue(game, 1.5f);
+            Check(Mathf.Abs(game.SearchPlaneHeight - 2.2036f) < .0001f,
+                "Default drawn wall and guidance denominator both use the compact height");
             typeof(FindObjectGameManager).GetField("m_MaxObjectHeight", flags).SetValue(game, 4f);
             Check(Mathf.Abs(game.SearchPlaneHeight - 4.1f) < .0001f, "Guidance denominator matches the full drawn wall height.");
             Vector3 eye = new Vector3(3, 1, 2), gaze = new Vector3(1, .2f, 0).normalized;

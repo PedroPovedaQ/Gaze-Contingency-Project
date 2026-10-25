@@ -385,6 +385,13 @@ public class FindObjectUI : MonoBehaviour
             : $"Round {found + 1} / {total}";
     }
 
+    public void ShowTimeout()
+    {
+        m_WrongFeedbackEndTime = 0;
+        m_RoundStatusText = "Time up. Let's take a fresh start.";
+        if (m_ObjectiveText != null) m_ObjectiveText.text = m_RoundStatusText;
+    }
+
     public void ShowWrongFeedback()
     {
         m_WrongFeedbackEndTime = Time.time + 0.8f;

@@ -14,6 +14,16 @@ public static class VoicePromptText
 {
     public const string Version = "perspective-v9-shared-imperative";
 
+    public static readonly string[] TimeoutPhrases = {
+        "Time up. Let's shake that round off and start the next.",
+        "Time up. No worries. Let's take a fresh start on the next round.",
+        "Time up. Keep at it. Let's move on to the next round."
+    };
+    public const string TimeoutBlockBreak = "Time up. Let's shake that one off. Take a break before the next block.";
+    public const string TimeoutFinal = "Time up. Thank you for your effort. That's the last round.";
+    public static string TimeoutPhrase(int variation, bool finalTrial, bool blockBreak) =>
+        finalTrial ? TimeoutFinal : blockBreak ? TimeoutBlockBreak : TimeoutPhrases[Math.Abs(variation % TimeoutPhrases.Length)];
+
     public const string AudioLevelCheck = "Hover your controller over Accept Audio and press the trigger to confirm this is an acceptable audio level.";
 
     // Neutral/external source phrase to collaborative equivalent. Keeping this

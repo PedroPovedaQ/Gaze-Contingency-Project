@@ -111,7 +111,7 @@ public sealed partial class TrialReviewApp
             case "Room": return "Show the illustrative room environment, not recorded passthrough video.";
             case "Reveal target": return "Reveal the target to the researcher in replay. This does not change what the participant saw.";
             case "Before alignment": case "Raw gaze": return "Show the available pre-alignment gaze ray for comparison; historical data is unchanged.";
-            case "Corrected gaze": case "Eye ray (display)": return "Legacy gaze display reconstruction. Check provenance before interpreting its accuracy.";
+            case "Corrected gaze": case "Eye ray (display)": return "Legacy gaze reconstruction. In third person, the visible line connects the headset to the analytical ray endpoint; analysis keeps its original origin and direction. Check provenance before interpreting accuracy.";
             case "Detection ring": return "Target-vicinity overlay for inspection. Eligibility still depends on the recorded closest-object and validity rules.";
             case "State markers": return "Labels captured direct gaze, vicinity winner and right-controller hits. Hidden for missing, stale or invalid state; never inferred from legacy geometry.";
             case "Subtitles": return "Show recorded speech text at the playhead, including when a saved audio file is missing.";
@@ -124,7 +124,7 @@ public sealed partial class TrialReviewApp
             case "First person": return "View through the recorded head pose.";
             case "Third person": return "Orbit around the reconstructed participant.";
             case "Overhead": return "Inspect the room layout and turning from above.";
-            case "Gaze": case "Eye gaze": return "Recorded gaze ray. A ray intersection is not a validated fixation.";
+            case "Gaze": case "Eye gaze": return "Recorded gaze ray. Third person connects the headset to its endpoint for display; analysis and first person retain the recorded origin and direction. A ray intersection is not a validated fixation.";
             case "Controller": case "Controllers": return "Recorded controller pose and ray; selection requires the recorded trigger event.";
             case "Vicinity": return "Inspect the target-vicinity region. This viewer overlay does not change recorded decisions.";
             case "Open run…": return "Open a saved recording.jsonl with its audio folder.";

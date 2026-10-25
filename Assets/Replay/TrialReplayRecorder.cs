@@ -38,6 +38,7 @@ public sealed class TrialReplayRecorder : MonoBehaviour
         m_Game.OnRoundReady += ObjectsReady;
         m_Game.OnRoundTransitionStarted += Transition;
         m_Game.OnSearchStarted += SearchStarted;
+        m_Game.OnRoundTimedOut += TimedOut;
         m_Game.OnCheckpoint += Checkpoint;
         m_Game.OnReadinessEvent += ReadinessEvent;
         m_Game.OnGameCompleted += Completed;
@@ -166,6 +167,12 @@ public sealed class TrialReplayRecorder : MonoBehaviour
             var r = Record("trial");
             r.layout = m_Game.RotationalBetaEnabled ? RotationalSearchLayout.LayoutTag : "shelves_v1";
             r.layoutSeed = m_Game.LayoutSeed;
+            if (m_Game.RotationalBetaEnabled)
+            {
+                r.hasSearchPlaneBounds = true;
+                r.searchPlaneBottom = Position(new Vector3(m_Origin.x, m_Game.SearchPlaneFloorY, m_Origin.z)).y;
+                r.searchPlaneHeight = m_Game.SearchPlaneHeight;
+            }
             if (!m_Game.IsPractice && m_Game.RotationalBetaEnabled)
             {
                 var planned = ChallengeSet.Rounds[round];
@@ -208,9 +215,31 @@ public sealed class TrialReplayRecorder : MonoBehaviour
     {
         if (EnsureStarted()) { BeginTrial(); var r = Record("transition"); r.detail = color + " " + shape; Write(r); }
     }
+    void TimedOut(int round)
+    {
+        if (m_HeaderWritten)
+        {
+            var r = Record("trial_timeout"); r.detail = System.FormattableString.Invariant($"active_search_limit_seconds={StudyTrialClock.SearchLimitSeconds}"); Write(r);
+            m_TrialReady = false;
+        }
+    }
     void SearchStarted(int round) { if (m_HeaderWritten) Write(Record("search_start")); }
     void Checkpoint(string name) { if (m_HeaderWritten) Write(Record(name)); }
-    void ReadinessEvent(string name) { if (m_HeaderWritten) Write(Record(name)); }
+    void ReadinessEvent(string name)
+    {
+        if (!m_HeaderWritten) return;
+        try
+        {
+            var record = Record(name);
+            if (name == "readiness_completed")
+            {
+                CaptureObjectChanges(record);
+                record.detail = m_Game.PreCueTheta == null ? null : JsonUtility.ToJson(m_Game.PreCueTheta);
+            }
+            Write(record);
+        }
+        catch (Exception error) { Fail(error.Message); }
+    }
     void Completed(float elapsed) => StartCoroutine(FinishAfterSuccess());
     System.Collections.IEnumerator FinishAfterSuccess()
     {
@@ -393,6 +422,7 @@ public sealed class TrialReplayRecorder : MonoBehaviour
             m_Game.OnSearchStarted -= SearchStarted; m_Game.OnCheckpoint -= Checkpoint;
             m_Game.OnReadinessEvent -= ReadinessEvent;
             m_Game.OnGameCompleted -= Completed; m_Game.OnSessionStopped -= Stopped;
+            m_Game.OnRoundTimedOut -= TimedOut;
         }
         if (m_Voice != null) m_Voice.Telemetry -= AudioEvent;
     }

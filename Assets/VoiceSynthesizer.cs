@@ -430,8 +430,8 @@ public partial class VoiceSynthesizer : MonoBehaviour
     public bool TryAreaCorrection(string phrase, Func<bool> stillRelevant, Action onCommitted = null,
         string reason = "gaze_target_plane", string guidanceDecisionId = null)
     {
-        // Only a bounded, current Jev approval may replace unfinished guidance.
-        // Missing/late/failed advice preserves the normal finish-phrase policy.
+        // Qualified target acquisition has a bounded local fast path; other corrections use Jev.
+        // Missing/late/failed advice preserves ordinary finish-phrase behavior.
         if (!LibraryReady || m_InterruptionCoroutine != null || m_SetupAnnouncement ||
             (m_CurrentContext != null && m_CurrentContext != "tip" && m_CurrentContext != "guidance_repeat" && m_CurrentContext != "prefetch")) return false;
         bool self = SessionConfig.Voice == VoiceCondition.SelfSimilar;

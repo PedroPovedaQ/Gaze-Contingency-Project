@@ -281,3 +281,22 @@ Plots use the existing analysis environment's matplotlib dependency. Pass `--no-
 `verify-study-session.py` now rejects a completed session with unfinished or contradictory trial outcomes, duplicate/missing trial identities or indices, invalid voice order/block counts, duplicate clip identities, non-finite/negative timing and impossible pause sequences. Readiness pauses are outside active search; capture during a search pause fails. Saved onset/capture times, when present, must agree with events. Explicit incomplete mode permits interruption but still checks recorded timing and playback identity; it cannot excuse a false completion claim.
 
 Regression fixtures include complete current 80-trial/168-object packages in both voice orders, historical 14-trial data, legitimate readiness/search pauses and malformed-input CLI exit behavior. These checks do not establish native eye rate, acoustic onset, completeness of separate raw-eye/replay files or hardware durability.
+
+### Fifteen-second timeout (October 23 build onward)
+
+A `trial_timeout` closes a search without a correct selection. Export it as `outcome=timeout`, `completed=0`, with recorded active exposure (15 seconds in this build) and an empty successful-selection time. The terminal event takes precedence over late audio or stale selection records. Timeout feedback and the next cross are outside search exposure. This is an unsuccessful/censored search, not a technical failure; preserve earlier recordings and their original limits. Do not replace missing historical timing with 15 seconds.
+
+`missed_targets.csv` summarizes deadline-expired attempts by participant/run/block/voice/deadline, alongside correct selections and other/unresolved endpoints. The percentage denominator is correct selections plus timeouts with a recorded deadline; practice is excluded. Keep counts, denominators, unknown deadlines and development/study labels when plotting. Per-trial `missed_target` and `missed_target_status` are also in the ordinary performance CSVs.
+
+## Exploratory eye outcomes
+
+`eye_outcomes.py` adds HTC per-eye query-clock fixation/saccade candidates and IPA diagnostics, with real-data figures, hash/configuration reports and optional independent annotation comparisons. See [measurement definitions and validation plan](../docs/research/eye-measures-validation-20261023.md). These outputs are separate from the condensed performance CSV until detector validation; zero and unavailable remain distinct. No synthetic signals enter the empirical figures.
+
+### Pupil exclusion audit and independent review
+
+The candidate eye-outcome command now always exports `pupil_segments.csv` (all
+failed checks plus first failure) and `pupil_quality.json`. `--plot` adds a pupil
+exclusion-duration figure; `--review-traces` exports unlabeled raw traces and empty
+annotation templates. See `docs/research/pupil-readiness-20261023.md` for the actual
+Run 30 diagnosis and the remaining held-out validation requirements. More retained
+data is not automatically better measurement; production thresholds remain unchanged.

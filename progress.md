@@ -1,3 +1,134 @@
+## 2026-10-25 — Angle-controlled randomization and GitHub checkpoint
+
+Implemented schedule v7 with independently balanced directions, randomized target identities/layouts, signed-height quotas and target placement from the valid pre-cue eye origin. Recorded assigned/realized geometry and finalized scene positions; retained spacing and technical-stop behavior for infeasible geometry. See `docs/research/theta-randomization-20261025.md` for assumptions, test checklist and export/thesis follow-up. This is development implementation pending headset QA, not a validated study release.
+
+Software verification: schedule/voice, constrained geometry, timeout, six native adapter suites, Unity compilation and readiness integration pass. The first-cross regression exposed by integration was corrected; later crosses retain bounded jitter.
+
+User requested GitHub Projects as the task system and removal of obsolete task-system references. Current tracking: issue #10 on Gaze Study — Participant Readiness. User then requested pushing the current work to main and a detailed Claude handoff for thesis work; runtime and latest synchronized thesis changes are being checkpointed together while preserving their distinct local checkouts.
+
+## 2026-10-23 — 25-second search and qualified-target fast feedback
+
+Updated the shared search deadline to 25 seconds, with summary and replay metadata deriving from the same clock constant. Preserved legacy deadline-aware analysis; added a 25-second export regression. Qualified gaze/controller acknowledgments can bypass interruption advice under local timing/semantic guards, with unchanged hold qualification, 150 ms fade, cooldown and final relevance checks. Added onset/ending, stale-target, ordinary-direction and protected-context tests. Both voice conditions share the policy. Headset behavior remains a wearer check after deployment.
+
+## 2026-10-23 — Final title includes Virtual Reality
+
+Author revised the title to **Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent in Virtual Reality**. Updated current title references; existing Nerella bibliography entry and citations remain.
+
+## 2026-10-23 — Paper title alignment
+
+Updated active manuscript/protocol and local study-draft title strings to **Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent**. No Qualtrics upload or external IRB submission; historical snapshots retained. Authoritative thesis and new Nerella citation are in the thesis-main-sync checkout/Overleaf.
+
+## 2026-10-23 — Pupil retention audit and validation readiness
+
+- Traced Run 30 loss to continuity/regularity screens, not SDK-reported pupil invalidity: per eye 68.74 s in short segments, 22.82 s rejected for timing, 13.93 s retained after resampling. Exported per-segment reasons, quality plots and independent unlabeled review traces; existing metric values preserved exactly.
+- Tested four engineering screen variants without deploying relaxed thresholds; retention alone is not validation. Renamed figure labels toward the reference paper with explicit candidate/restricted qualifications. Added graph coverage mapping and wearer/independent annotation checklist.
+- 36 existing eye tests, 7 diagnostic tests and 17 native timing regression tests pass. Android rebuild succeeded (14.8 s); wireless package update confirmed at 22:54:28 and app process running. No physiological validation or sensor 120-Hz claim; quick alignment records are not held-out validation. Headset connected and app running, no wearer session performed.
+
+## 2026-10-23 — Candidate eye outcomes and missed-target measurement
+
+Added offline per-eye I-DT/velocity candidates, pupil quality screening and wavelet IPA diagnostics, source hashing, independent annotation comparisons and threshold sensitivity. Computational eye tests (36) and trial export tests (41) pass; physiological detector validation remains open. Actual Run 30 data supports development-only figures; missing IPA is blank. Added UCF paper candidates without guessing the intended source. Missed Targets export distinguishes deadline expiry from technical/incomplete outcomes. See docs/research/eye-measures-validation-20261023.md.
+
+## 2026-10-23 — Fifteen-second active-search deadline
+
+- Implemented the user-selected 15-second ceiling for study, practice and quick-test searches, excluding explicit pauses and opening/feedback audio. Deadline rejects late trigger selection, cancels pending guidance, hides stimuli and advances after prepared “Time up” encouragement in the assigned voice. Separate break/final wording; no false success/chime/crumble or replacement trial.
+- Added explicit timeout lifecycle/event/outcome; actual found count excludes timed-out attempts. Summary, replay, viewer and condensed CSV preserve unsuccessful outcome and exposure without fabricating a completion time. Previous recordings are unchanged.
+- Clock/state checks and 39 CSV tests pass; Unity study-integration checks pass, including timeout, paused clock, one-shot event, next-wall reference, both phrase libraries and replay boundary. Android build succeeded (142 s); wireless install and launch succeeded on 192.168.1.208:5555 at 22:17, version 2.2.1. Viewer build passed; wearer pacing/audio remain unverified.
+- Added per-trial Missed Targets plus by-block/voice/deadline counts and percentage, preserving unknown/technical/unstarted outcomes and excluding practice. 41 exporter tests pass. Thesis deadline changes published in scoped Overleaf commit ebbea3a6; local PDF rebuilt.
+
+## 2026-10-23 — Compact vertical experiment layout and recorded replay bounds
+
+- **Implemented:** reduced default wall height from 3.148 m to 2.2036 m (30%), with centers from 0.10–2.1036 m. Kept 168 objects/21 per wall, radius, horizontal width, object scale and 20 cm minimum spacing. Versioned the regenerated deterministic layout as `rotational_scatter_v5_compact_vertical`.
+- Replay records exact local wall bottom/height with a presence flag; Trial Review uses those bounds and retains legacy inference for older recordings. No replay object transform is rescaled. Guidance height bands and readiness height derive from the compact runtime configuration.
+- Layout checks passed across 90 radius/seed combinations, including counts, bounds, spacing and reproducibility. Added replay bounds roundtrip/invalid-data checks and viewer legacy/new/trial-switch/projection regressions. Unity feedback and replay checks passed, including default guidance-height scaling and saved bounds validation. Isolated Trial Review verification/build passed (legacy geometry, compact bounds, projection, switching, no recorded-data mutation); opened the new Compact Walls viewer in live mode. Android build succeeded in 53.2 s and was installed/launched wirelessly. Installed APK hash matches `cf2cd5b5f7fb4e4f92156c9d2bde32e81041d8b23792a77ec60775c6781628b2`; no fatal/null-reference errors in the inspected startup window. Wearer verification of the new spacing remains pending.
+
+## 2026-10-23 — Entry calibration visibility and three-dot rejection fix
+
+- **Implemented:** small centered countdown replaces the active fixation center/shape, which is revealed only when the countdown ends. Replaced radial fill with an outward-growing gold glow. Added one 0.4-second white reveal pulse distinct from gold gaze confirmation; no repeating flash during collection. Hidden shapes cannot count as seen highlights.
+- **Observed:** report `a4e00490600443a69511c81012b3113f` rejected its third dot at about 5.28 degrees, although the completed three-dot mean is about 4.70 degrees. Guided fitting now applies the unchanged 5-degree cap to the completed mean, retaining stability, held-out accuracy/improvement and manual OK requirements. Oversized completed means still reject; explicit Skip (no offset) remains available.
+- Added recorded-mean regression, oversized-average rejection, countdown visibility/size, glow progression and single-pulse lifecycle checks. Method version is `head_local_three_dot_mean_user_confirmed_v2`; attention cue duration is saved with the report. This remains a pilot local correction, not vendor calibration or validated accuracy.
+- Verification: Unity guided/legacy calibration and entry presentation checks passed, along with the offline shared-gaze quality suite. Inspected real-component rendered previews of countdown, reveal pulse and expanding glow. Android IL2CPP build succeeded in 75.8 seconds and wireless install/launch succeeded on 192.168.1.208:5555. Installed APK SHA-256 matches `ee678144ee6b0a0e5f3a653942b5c3b115d271f71c4ff9a8490cf9fc5efe16d2`; app process runs. Inspected startup window has no fatal exception or calibration null reference, with the existing nonfatal Android Bundle metadata type warning. Wearer validation remains required. The HTC package emitted nonfatal spectator-feature prebuild null-reference diagnostics; this was not an app runtime failure.
+- Task-board connection refused locally; work recorded here. No GitHub commit/push requested.
+
+## 2026-10-23 — Native gaze timestamp diagnostics and independent review
+
+- **Implemented:** passive Android ARM64 OpenXR interception of existing eye-action queries, preserving the shared gaze/calibration/guidance pipeline. Added bounded native records, timestamp/validity/space/epoch metadata, asynchronous JSONL recording and diagnostic status.
+- Corrected the acquisition premise: `XrEyeGazeSampleTimeEXT` is a runtime pose-expression time that may be predicted/interpolated, not guaranteed sensor capture time. Physical 120 Hz remains unestablished; no polling-frequency change or fabricated sensor sequence was introduced.
+- Six native fake-runtime suites pass under AddressSanitizer/UndefinedBehaviorSanitizer. Seventeen analysis tests pass, including independently found/fixed missing/reordered sequence and inconsistent counter cases. Unity ABI/serialization/writer/configuration, shared-gaze and entry-alignment checks passed.
+- Independent agents reviewed the native design, bridge/recorder and analyzer. Android prebuild caught duplicate extension registration; adapter now consumes the existing Eye Gaze Interaction extension. Android IL2CPP build succeeded (104.1 s); wireless install/launch succeeded on 192.168.1.208:5555. Packaged native library matches the stripped source build. Device logs confirm feature initialization, one candidate eye action and recorded queries. Final copied unworn snapshot: 3,024 queries over 64.178 s, zero valid gaze poses, all returned times equal requested times, no native drops or missing sequences. No final end status because the app remains running; analysis correctly labels session completeness unknown. This is a diagnostic smoke test, not sensor-rate evidence. Sustained wearer validation remains open.
+- Task-board service was unavailable locally; this log records the work. No commit or push requested or performed.
+
+## 2026-10-23 — 120 Hz eye-acquisition feasibility audit
+
+- **Observed:** inspected the connected headset's latest raw-eye recording and installed HTC/OpenXR wrappers. Some five-second setup windows exceed 120 input deliveries/sec, but no sensor capture timestamps are recorded; these are not proven distinct sensor observations.
+- **Open:** genuine 120 Hz acquisition requires a native source-timestamp/sequence path and sustained wearer validation. Documented API constraints and evidence in `docs/eye-acquisition-120hz-audit-20261023.md`. No runtime changes, new build, or sensor-rate claim.
+
+## 2026-10-23 — Explicit countdown calibration and shape acceptance
+
+- Replaced the failed-to-charge entry interaction with Start calibration, red-centered world dots, a 3–2–1 countdown at each, and timed gaze collection independent of gaze-to-dot proximity. The candidate averages three per-dot mean head-relative offsets.
+- Added three independent shape checks with candidate-only gaze highlighting and explicit OK acceptance before shared guidance uses an offset. Retained raw gaze, source/validity safeguards, retry/skip, and recording of assumed fixation, per-point sample identities/errors and user confirmation.
+- Updated protocol/telemetry notes; this is a development local offset procedure, not HTC calibration or task-wide accuracy validation. Qualtrics remains on hold.
+- Verified legacy and guided calibration tests, entry UI/acceptance tests and shared-gaze quality checks. Final Android build succeeded (60 s), installed/launched over wireless ADB, and installed APK hash matches `75f0f34cc6bd6c9378a2d21d6331b0ddba1dfe95f6eb1d054ff438d8df98dd0f`. No fatal/null-reference startup errors in the inspected window. Wearer validation of countdown visibility, shape highlights and acceptance remains pending.
+
+## 2026-10-23 — Three-dot entry gaze check without offset
+
+- Replaced automatic entry offset fitting with three simultaneously visible world-fixed dots, charged in left/upper-center/right order. Each dot fills gold on its own surface after one second of valid gaze within 2.5 degrees; invalid/stale tracking, focus loss, gaps and looking away reset the active dot. Completed dots stay filled.
+- No offset is fitted or applied; existing diagnostic alignment remains a separate admin tool. Retained Skip/Retry and entry outcome recording (schema 2), and updated procedure/telemetry documentation. These are development interaction thresholds, not a calibration or accuracy validation.
+- Sequence checks passed for charging, completion, tracking loss, repeated deliveries, gaps, world anchoring and skipped outcomes. Android build succeeded and was installed/launched wirelessly; installed APK SHA-256 matches `636069c750d912141854310e6ff2de55242cccf7a5fd93527056fc12aa80b60e`. Wearer visual/interaction validation remains pending.
+
+## 2026-10-23 — Wireless latest-runtime deployment
+
+- Built the current recovered Unity checkout with entry eye alignment, then installed and launched it on VIVE Focus Vision over wireless ADB at 192.168.1.208:5555. Unity reported success in 24.4 seconds; all five headset-selection tests passed.
+- Verified the installed base APK matches the build SHA-256 `4251d5a43f1f422f607d66116cc399f51f562a7916af932d983a44042c2c2313`; application process was running after launch. No fatal crash in inspected startup logs. Android startup emitted a nonfatal loadingLogo metadata type warning; wearer interaction remains to be checked.
+
+## 2026-10-23 — Automatic experiment-entry eye alignment
+
+- Added the existing one-fit/two-held-out-dot offset check to normal and quick-test startup, before centering, practice or trial timing. Stationary gold targets have animated collection halos; world-fixed instructions offer right-ray Skip and failure Retry.
+- Preserved raw gaze and shared corrected-ray ownership. Skips/interruption get entry outcome records linked to detailed alignment reports; live setup status includes alignment progress. Closed a diagnostic-panel cleanup bug that could clear another screen's validation target.
+- Kept current thesis and Trial Review work separate. Verified: QuickGazeAlignmentChecks + EntryGazeAlignmentChecks, Unity gaze measurement/controller selection checks, offline gaze-quality and guidance-state suites, compiler check and clean diff whitespace. Android build succeeded (56 s); wireless ADB installed successfully and launched on Focus Vision at 192.168.1.208:5555. Wearer verification of target visibility, ring progress, skip/retry and held-out accuracy remains pending.
+
+## 2026-10-23 — Replay body clearance and headset-origin display ray
+
+- **Implemented:** moved the illustrative body, lap anchor and chair upper parts 12 cm backward; kept the chair base/layout center and recorded controller poses fixed.
+- Third-person orange gaze line now connects the headset face to the analytical ray endpoint. `GazeRay`, vicinity analysis, raw/corrected gaze and first-person projection retain their original origins/directions. Updated explanatory tooltips and provenance.
+- Visually verified P020 Run 1 at 88.76 seconds from front/side. Updated tests to separately verify analytical and display rays, endpoint preservation and first-person behavior. Full isolated desktop build/checks passed: `Trial Review Body and Headset.app`. No headset changes or commits.
+
+## 2026-10-23 — P020 replay torso-intersection fix
+
+- **Implemented:** reproduced the user's P020 Run 1 screenshot at 88.76 seconds. The controller was in front of the torso, but the IK elbow was only 1.8 cm from the torso centerline, hiding the arm inside the body.
+- Increased the right elbow's outward/downward preference while retaining the backward component. In the same recorded frame, elbow lateral offset is now 20.0 cm and the forearm is visible around the torso. Controller/root pose, hand contact, seat and raw telemetry remain unchanged.
+- Inspected front/side renders from the actual recording; added a chest-center controller regression across torso turns. Desktop build and arm/hand/left-lap checks passed. Output: `Trial Review Arm Clearance.app` in the side-conversation artifact folder. No headset changes or Git commits.
+
+## 2026-10-23 — Forward-bending replay arm
+
+- **Implemented:** changed the illustrative right-arm IK elbow preference from down/outward to torso-relative back/down/outward. Close-to-chest controller poses now place the elbow behind the hand so the forearm reaches forward. Left lap pose, controller root data and ray endpoint are unchanged.
+- Visually inspected side views for close and raised poses. Added regressions covering close/raised/lateral positions, 90°/180° torso turns, rewind and palm-to-controller contact.
+- Isolated desktop build and regressions passed, including `TRIAL_REVIEW_FORWARD_ELBOW_PASS`. Built `Trial Review Forward Arm.app` in the side-conversation artifact folder. No headset changes or Git commits.
+
+## 2026-10-23 — Straighter replay grip and controller-tip ray
+
+- **Implemented:** changed the illustrative right-hand grip from a sideways wrist frame to a forward grip. Rotated the vendor controller mesh inside its recorded-pose root so the handle extends back into the hand and the emitter faces forward.
+- Attached the desktop ray to the model emitter while preserving its recorded endpoint. Raw controller pose, ray origin, direction and hit data remain unchanged.
+- Visually checked low, raised and rotated poses; closed a visible emitter-to-ray gap. Added regression checks for tip attachment, preserved endpoints and hidden rays. Isolated desktop build and checks passed (`Trial Review Controller Tip.app`). No headset/runtime changes or Git commits.
+
+## 2026-10-23 — Trial Review controller grip refinement (side conversation)
+
+- **Implemented:** visually compared wrist frames, handle offsets, finger curls and thumb placement. The right palm now sits beside the handle, fingers wrap underneath, and the thumb rests over the controls. Left fist remains on the lap and rotates with the body.
+- Checked close-up and full-body renders for low, raised and rotated controller poses. These are illustrative hand poses, not measured finger tracking; recorded controller transforms are unchanged.
+- Added rotation regressions for palm contact, thumb attachment and controller-pose preservation. Isolated desktop verification and build passed (`TRIAL_REVIEW_HAND_EYE_PASS`, `TRIAL_REVIEW_RESTING_LEFT_ARM_PASS`, `TRIAL_REVIEW_BUILD_PASS`).
+- Built `Trial Review Natural Grip.app` in the side-conversation artifact directory. No headset/runtime changes or Git commits made in this side task.
+
+## 2026-10-23 — Replay hand poses
+
+- Posed the left hand as a fist at a body-relative lap anchor. Curled the right hand around the controller, reduced oversized cartoon hands, and moved the illustrative palm attachment behind the handle to keep the controls visible. Controller transforms and source telemetry remain unchanged.
+- Inspected full-body and hand close-up renders. Full isolated Trial Review build passed, including right grip position/orientation and left-lap stability across turns and rewind. Reopened `Trial Review Hand Poses.app` and verified the new viewer window.
+- Finger articulation is illustrative rather than measured hand tracking. Preview images and the standalone app are in the side conversation's October 23 artifact folder.
+
+## 2026-10-23 — Keep unused replay arm attached to the body
+
+- Trial Review now keeps the illustrative left arm in its body-relative resting pose and hides the unused left-controller model. Recorded left-controller samples remain untouched; right-controller pose and hand IK remain active.
+- Added replay checks for 90/180-degree body turns, backward seeking and a tracked left controller parked away from the body. These checks and the full isolated viewer build passed.
+- Built the side-thread `Trial Review Neutral Arm Fix.app` and reopened the viewer. This is a desktop presentation change only.
+
 ## 2026-10-23 — Neutral Trial Review avatar
 
 - Replaced the replay avatar's skater texture with a uniform gray mannequin material, retaining the existing rig, seated pose, headset and controller anchors. This remains an illustrative body, not a reconstruction of participant appearance.

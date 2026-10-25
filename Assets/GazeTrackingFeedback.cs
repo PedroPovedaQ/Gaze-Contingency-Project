@@ -40,7 +40,8 @@ public sealed class GazeTrackingFeedback : MonoBehaviour
         var head = Camera.main;
         var stream = SharedGazeStream.Instance;
         bool usable = stream != null && stream.TryGetValid(out _);
-        bool eligible = !m_Paused && Application.isFocused && head != null && now - m_EnabledAt >= 2;
+        // Entry alignment owns its tracking feedback and Skip button; never cover them.
+        bool eligible = !EntryGazeAlignment.IsShowing && !m_Paused && Application.isFocused && head != null && now - m_EnabledAt >= 2;
         m_State.Step(eligible, usable, now);
         if (!m_State.Visible)
         {

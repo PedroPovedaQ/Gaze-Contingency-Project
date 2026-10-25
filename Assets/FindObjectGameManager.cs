@@ -34,6 +34,7 @@ public class FindObjectGameManager : MonoBehaviour
     /// <summary>Fires when fixation cross appears and next goal can be announced.</summary>
     public event System.Action<int, string, string> OnRoundTransitionStarted; // next round, color, shape
 
+    public event System.Action<int> OnRoundTimedOut;
     public event System.Action<int> OnSearchStarted;
     public event System.Action<string> OnSessionStopped;
     public event System.Action<string> OnCheckpoint;
@@ -48,7 +49,8 @@ public class FindObjectGameManager : MonoBehaviour
     public float CurrentSearchSeconds => (float)m_SearchClock.Elapsed(Time.timeAsDouble);
     readonly StudyTrialClock m_SearchClock = new StudyTrialClock();
     bool m_ResearcherPaused;
-    [SerializeField] float m_TrialTimeoutSeconds = 0f; // Disabled until the study protocol sets a ceiling.
+    public float TrialTimeoutSeconds => (float)StudyTrialClock.SearchLimitSeconds;
+    int m_FoundCount;
     bool m_TechnicallyStopped;
     StudyCheckpoint m_Checkpoint;
     TrialReadinessGate m_Readiness;
@@ -64,6 +66,72 @@ public class FindObjectGameManager : MonoBehaviour
     {
         if (!m_TechnicallyStopped && !m_ResearcherPaused && m_State == GameState.Playing && m_CurrentRound == round)
             AnnouncementReady = true;
+    }
+
+    [System.Serializable]
+    public sealed class ThetaSnapshot
+    {
+        public string reference = ChallengeSet.ThetaReference;
+        public int round;
+        public long gazeSequence;
+        public double time, gazeReceiptTime;
+        public Vector3 eyeOrigin, readinessPosition, targetPosition;
+        public float assignedSignedDegrees, realizedSignedDegrees, absoluteDegrees, assignmentErrorDegrees;
+        public float targetHeightRelativeToCross;
+    }
+    public ThetaSnapshot PreCueTheta { get; private set; }
+
+    // Finalize hidden geometry before any directional cue. Never chase the eye
+    // during search: subsequent movement and overshoot remain measured outcomes.
+    public bool FinalizeTheta(GazeObservation gaze)
+    {
+        if (IsPractice || !m_UseRotationalLayout) return true;
+        if (gaze == null || !gaze.valid || m_Readiness == null) return false;
+        var planned = ChallengeSet.Rounds[m_CurrentRound];
+        var inverse = Quaternion.Inverse(m_SeatedRotation);
+        Vector3 origin = inverse * (gaze.worldOrigin - m_SpawnCenter);
+        Vector3 cross = inverse * (m_Readiness.Position - m_SpawnCenter);
+        float height = Mathf.Lerp(m_MinObjectHeight, m_MaxObjectHeight, planned.targetHeightFraction);
+        if (!RotationalSearchLayout.TryTarget(m_RotationalRadius, origin.x, origin.z, cross.x, cross.z,
+            planned.SignedTheta, planned.targetPlane, planned.targetSlot, height, out var target))
+        {
+            TechnicalStop("theta_geometry_outside_wall: recenter seated position before restarting");
+            return false;
+        }
+        RotationalSearchLayout.Slot[] slots;
+        try { slots = RotationalSearchLayout.Build(m_RotationalRadius, m_MinObjectHeight, m_MaxObjectHeight, LayoutSeed, target); }
+        catch (System.Exception error)
+        {
+            Debug.LogError($"{k_Tag} Theta layout failed: {error.Message}");
+            TechnicalStop("theta_layout_failed"); return false;
+        }
+        if (slots.Length != m_SpawnedObjects.Count) { TechnicalStop("theta_object_count_mismatch"); return false; }
+        m_RotationalSlots = slots;
+        for (int i = 0; i < slots.Length; i++)
+        {
+            var slot = slots[i];
+            var obj = m_SpawnedObjects[i];
+            if (obj == null) { TechnicalStop("theta_object_missing"); return false; }
+            Vector3 position = m_SpawnCenter + m_SeatedRotation * new Vector3(slot.x, m_FloorHeight - m_SpawnCenter.y + slot.y, slot.z);
+            if (obj.GetComponent<SpawnableObjectInfo>()?.shapeName == "Pyramid") position.y -= obj.transform.localScale.y * .5f;
+            obj.transform.position = position;
+        }
+        Physics.SyncTransforms();
+        Vector3 targetPosition = m_SpawnedObjects[planned.targetPlane * RotationalSearchLayout.ObjectsPerPlane + planned.targetSlot].transform.position;
+        Vector3 toCross = m_Readiness.Position - gaze.worldOrigin, toTarget = targetPosition - gaze.worldOrigin;
+        toCross.y = toTarget.y = 0;
+        float realized = Vector3.SignedAngle(toCross, toTarget, Vector3.up);
+        PreCueTheta = new ThetaSnapshot {
+            round = m_CurrentRound, gazeSequence = gaze.sequence, time = Time.realtimeSinceStartupAsDouble,
+            gazeReceiptTime = gaze.receiptTime, eyeOrigin = gaze.worldOrigin,
+            readinessPosition = m_Readiness.Position, targetPosition = targetPosition,
+            assignedSignedDegrees = planned.SignedTheta, realizedSignedDegrees = realized,
+            absoluteDegrees = Mathf.Abs(realized), assignmentErrorDegrees = Mathf.DeltaAngle(planned.SignedTheta, realized),
+            targetHeightRelativeToCross = targetPosition.y - m_Readiness.Position.y
+        };
+        if (Mathf.Abs(PreCueTheta.assignmentErrorDegrees) > .01f)
+        { TechnicalStop("theta_assignment_mismatch"); return false; }
+        return true;
     }
 
     public void BeginOpeningDirection(int round)
@@ -105,6 +173,7 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_TechnicallyStopped || m_State == GameState.Completed) return;
         m_SearchClock.Pause(Time.timeAsDouble);
         m_TechnicallyStopped = true; SearchActive = false;
+        m_EntryAlignment?.Abort();
         GetComponent<HintGenerator>()?.SetLifecycle(GuidancePhase.Stopped, reason);
         GetComponent<VoiceAssistantController>()?.CancelSearchOpening();
         m_Readiness?.Cancel();
@@ -175,15 +244,14 @@ public class FindObjectGameManager : MonoBehaviour
         if (keyboard != null && keyboard.pKey.wasPressedThisFrame) PauseSession();
         if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame && m_State != GameState.Idle) WithdrawSession();
 #endif
-        if (SearchActive && m_TrialTimeoutSeconds > 0 && CurrentSearchSeconds >= m_TrialTimeoutSeconds)
-            TechnicalStop("timeout");
+        CheckSearchDeadline();
     }
 
     public GameState CurrentState => m_State;
     public IReadOnlyList<(string shape, string color, Color colorValue)> Objectives => m_Objectives;
     public IReadOnlyList<GameObject> SpawnedObjects => m_SpawnedObjects;
     public int CurrentObjectiveIndex => m_CurrentRound;
-    public int FoundCount => m_CurrentRound;
+    public int FoundCount => m_FoundCount;
     public int TotalRounds => k_TotalRounds;
     public float GameStartTime => m_GameStartTime;
     public (string shape, string color, Color colorValue) CurrentTarget => m_CurrentTarget;
@@ -198,7 +266,8 @@ public class FindObjectGameManager : MonoBehaviour
     [SerializeField] bool m_ShowDegreeGuides = true;
     readonly List<GameObject> m_DegreeGuides = new();
     float m_FloorHeight;
-    public float SearchPlaneHeight => m_MaxObjectHeight + 0.1f;
+    public float SearchPlaneHeight => m_MaxObjectHeight + RotationalSearchLayout.TopMargin;
+    public float SearchPlaneFloorY => m_FloorHeight;
 
     // Intersect the eye ray with the target wall's object plane, even above or
     // below its outline. Clamping would understate a large vertical correction.
@@ -254,6 +323,7 @@ public class FindObjectGameManager : MonoBehaviour
     RotationalSearchLayout.Slot[] m_RotationalSlots;
     Material m_PlaneOutlineMaterial;
     bool m_CenterAccepted;
+    EntryGazeAlignment m_EntryAlignment;
     [SerializeField] bool m_UseDebugRoundCountOverride;
     [SerializeField, Min(1)] int m_DebugRoundCount = ChallengeSet.TotalRounds;
 
@@ -408,6 +478,14 @@ public class FindObjectGameManager : MonoBehaviour
         if (!SessionConfig.DevelopmentQuickTest) yield return new WaitForSeconds(3.1f);
         if (m_TechnicallyStopped || m_CenterAccepted) yield break;
         m_UI.HideStartPrompt();
+        // Participant/voice setup is settled before explicit calibration and acceptance.
+        // Neither the practice trial nor its clock may begin behind this screen.
+        while (Camera.main == null && !m_TechnicallyStopped) yield return null;
+        if (m_TechnicallyStopped) yield break;
+        m_EntryAlignment = GetComponent<EntryGazeAlignment>();
+        if (m_EntryAlignment == null) m_EntryAlignment = gameObject.AddComponent<EntryGazeAlignment>();
+        yield return m_EntryAlignment.Run();
+        if (m_TechnicallyStopped || !m_EntryAlignment.Completed) yield break;
         if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
         while (!m_CenterAccepted && !m_TechnicallyStopped)
         {
@@ -423,6 +501,7 @@ public class FindObjectGameManager : MonoBehaviour
 
     public bool StartCenteredSession()
     {
+        if (m_EntryAlignment == null || !m_EntryAlignment.Completed) return false;
         if (!m_UseRotationalLayout || m_CenterAccepted || m_State != GameState.Idle || !Application.isFocused || Camera.main == null) return false;
         var selector = GetComponent<VoiceModeSelector>();
         var voice = GetComponent<VoiceAssistantController>();
@@ -578,7 +657,7 @@ public class FindObjectGameManager : MonoBehaviour
         // fixation cross + announced goal, then spawn.
         m_State = GameState.Transitioning;
         m_GameStartTime = Time.time;
-        m_CurrentRound = 0;
+        m_CurrentRound = 0; m_FoundCount = 0;
         PresentedRoundIndex = -1;
         m_UI.StartTimer();
         m_UI.PauseTimer();
@@ -677,6 +756,7 @@ public class FindObjectGameManager : MonoBehaviour
     IEnumerator FinishPractice()
     {
         while (GetComponent<VoiceAssistantController>()?.SuccessFeedbackBusy == true) yield return null;
+        if (m_TechnicallyStopped) yield break;
         m_State = GameState.Transitioning;
         foreach (var obj in m_SpawnedObjects) if (obj != null) Destroy(obj);
         m_SpawnedObjects.Clear();
@@ -830,6 +910,7 @@ public class FindObjectGameManager : MonoBehaviour
     void OnObjectCaptured(GameObject obj)
     {
         if (m_State != GameState.Playing || !SearchActive) return;
+        if (CheckSearchDeadline()) return; // Deadline wins even if trigger processing precedes Update.
         if (obj == null || !obj.activeInHierarchy) return;
 
         var info = obj.GetComponent<SpawnableObjectInfo>();
@@ -847,35 +928,7 @@ public class FindObjectGameManager : MonoBehaviour
             GetComponent<HintGenerator>()?.SetLifecycle(GuidancePhase.Completed, "correct_target_selected");
             m_UI.PauseTimer();
             TargetCrumble.Play(obj, this);
-            if (IsPractice)
-            {
-                GetComponent<VoiceSynthesizer>()?.Stop(); GetComponent<HintGenerator>()?.CancelPending();
-                m_ControllerSelector?.ResetSelection();
-                GetComponent<VoiceAssistantController>()?.PlaySuccessFeedback();
-                m_PracticeIndex++;
-                if (m_PracticeIndex < ChallengeSet.PracticeTrialCount) { SetPracticeObjective(); StartCoroutine(TransitionToNextRound()); }
-                else StartCoroutine(FinishPractice());
-                return;
-            }
-            m_CurrentRound++;
-            OnObjectFound?.Invoke(m_CurrentRound - 1);
-            if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
-
-            if (m_CurrentRound >= k_TotalRounds)
-            {
-                m_State = GameState.Completed;
-                ClearPlayfieldForPostRunSurvey();
-                float elapsed = m_UI.StopTimer();
-                m_LastCompletedElapsed = elapsed;
-                // Study questionnaires are administered externally after both blocks.
-                // Preserve the legacy in-headset workload form only for development runs.
-                m_UI.ShowCompletion(k_TotalRounds, elapsed, externalSurvey: !SessionConfig.DevelopmentQuickTest);
-                OnGameCompleted?.Invoke(elapsed);
-            }
-            else
-            {
-                StartCoroutine(TransitionToNextRound());
-            }
+            AdvanceAfterRound(true);
         }
         else
         {
@@ -886,6 +939,56 @@ public class FindObjectGameManager : MonoBehaviour
         }
     }
 
+    bool CheckSearchDeadline()
+    {
+        if (!TryExpireRound()) return false;
+        AdvanceAfterRound(false);
+        return true;
+    }
+
+    bool TryExpireRound()
+    {
+        if (m_State != GameState.Playing || !SearchActive || !m_SearchClock.DeadlineReached(Time.timeAsDouble)) return false;
+        m_SearchClock.Expire();
+        SearchActive = false;
+        GetComponent<HintGenerator>()?.SetLifecycle(GuidancePhase.TimedOut, "search_deadline_reached");
+        GetComponent<HintGenerator>()?.CancelPending();
+        GetComponent<VoiceSynthesizer>()?.Stop();
+        m_ControllerSelector?.ResetSelection();
+        m_UI?.PauseTimer(); m_UI?.ShowTimeout();
+        // The schedule chains each next start to this trial's planned target wall, even on a miss.
+        var planned = IsPractice ? ChallengeSet.PracticeRound(m_PracticeIndex) : ChallengeSet.Rounds[m_CurrentRound];
+        m_LastCompletedPlane = planned.targetPlane;
+        foreach (var obj in m_SpawnedObjects) if (obj != null) obj.SetActive(false);
+        OnRoundTimedOut?.Invoke(m_CurrentRound); // Preserve presented trial and voice through feedback.
+        return true;
+    }
+
+    void AdvanceAfterRound(bool selected)
+    {
+        if (IsPractice)
+        {
+            if (selected) GetComponent<VoiceAssistantController>()?.PlaySuccessFeedback();
+            m_PracticeIndex++;
+            if (m_PracticeIndex < ChallengeSet.PracticeTrialCount) { SetPracticeObjective(); StartCoroutine(TransitionToNextRound()); }
+            else StartCoroutine(FinishPractice());
+            return;
+        }
+        int ended = m_CurrentRound++;
+        if (selected) { m_FoundCount++; OnObjectFound?.Invoke(ended); }
+        m_ControllerSelector?.ResetSelection();
+        if (m_CurrentRound >= k_TotalRounds)
+        {
+            m_State = GameState.Completed;
+            ClearPlayfieldForPostRunSurvey();
+            float elapsed = m_UI.StopTimer();
+            m_LastCompletedElapsed = elapsed;
+            m_UI.ShowCompletion(k_TotalRounds, elapsed, externalSurvey: !SessionConfig.DevelopmentQuickTest);
+            OnGameCompleted?.Invoke(elapsed);
+        }
+        else StartCoroutine(TransitionToNextRound());
+    }
+
     // =====================================================================
     //  Round transition — simple: destroy, cross, wait, respawn
     // =====================================================================
@@ -893,6 +996,7 @@ public class FindObjectGameManager : MonoBehaviour
     IEnumerator TransitionToNextRound()
     {
         while (GetComponent<VoiceAssistantController>()?.SuccessFeedbackBusy == true) yield return null;
+        if (m_TechnicallyStopped) yield break;
         m_State = GameState.Transitioning;
         if (m_ControllerSelector != null) m_ControllerSelector.ResetSelection();
 
@@ -927,7 +1031,7 @@ public class FindObjectGameManager : MonoBehaviour
     IEnumerator BeginFirstRoundTransition()
     {
         m_State = GameState.Transitioning;
-        AnnouncementReady = false; m_OpeningDirectionReady = false;
+        AnnouncementReady = false; m_OpeningDirectionReady = false; PreCueTheta = null;
         GetComponent<VoiceAssistantController>()?.CancelSearchOpening();
         m_ControllerSelector?.ResetSelection();
         m_UI.HideObjectiveDuringTransition();
@@ -939,6 +1043,8 @@ public class FindObjectGameManager : MonoBehaviour
         }
         Quaternion rotation = m_SeatedRotation * Quaternion.Euler(0, m_LastCompletedPlane * 45, 0);
         Vector3 crossPosition = m_SpawnCenter + rotation * Vector3.forward * m_RotationalRadius;
+        if (!IsPractice) crossPosition += rotation * Vector3.right *
+            (planned.crossOffsetFraction * RotationalSearchLayout.UsableHalfWidth(m_RotationalRadius));
         crossPosition.y = m_FloorHeight + (m_MinObjectHeight + m_MaxObjectHeight) * 0.5f;
         // Establish replay/trial identity before the first readiness event or next instruction.
         SetPresentedTrialContext();

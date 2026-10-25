@@ -3,6 +3,10 @@ using System;
 /// <summary>Search exposure only: announcements, transitions and explicit pauses are excluded.</summary>
 public sealed class StudyTrialClock
 {
+    public const double SearchLimitSeconds = 25;
+    public bool DeadlineReached(double now) => Running && Elapsed(now) >= SearchLimitSeconds;
+    // Close exposure at the deadline; the event timestamp separately records the frame that observed expiry.
+    public void Expire() { m_Accumulated = SearchLimitSeconds; Running = false; }
     double m_Accumulated;
     double m_Started;
     public bool Running { get; private set; }

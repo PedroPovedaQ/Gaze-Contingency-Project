@@ -1,5 +1,7 @@
 # Eight-plane rotational search
 
+**Implemented October 23, 2026:** compact vertical layout `rotational_scatter_v5_compact_vertical` uses a 2.2036 m wall (70% of the former 3.148 m). Object centers span 0.10–2.1036 m above the floor; radius, horizontal extent, shape scale, 21 objects per wall and 0.20 m minimum center separation are unchanged. Deterministic placement is regenerated within this shorter range. New replay snapshots save exact local wall bottom/height; legacy object coordinates and inferred walls are not compressed retroactively. Earlier geometry descriptions below are historical.
+
 **Implemented locally — October 1, 2026; headset acceptance pending.** This is the current seated octagonal layout. Historical fixed-seed, table/shelf, 10-trial-block, first-person/target-naming and either-controller descriptions are superseded. The [round-flow guide](guide/02-gameplay-round-flow.md) owns current lifecycle behavior.
 
 ## Scene reference and geometry

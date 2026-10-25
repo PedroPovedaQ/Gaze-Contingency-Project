@@ -98,6 +98,7 @@ public sealed class TrialReadinessGate : MonoBehaviour
         else if (previous == 0 && Progress > 0) m_Game.RecordReadinessEvent("readiness_charge_started");
         m_UI.SetReadinessProgress(Progress);
         if (!complete) return;
+        if (!m_Game.FinalizeTheta(gaze)) return;
         Completed = true; // Remain in readiness until the opening direction finishes.
         m_Game.RecordReadinessEvent("readiness_completed");
         m_Game.BeginOpeningDirection(m_Game.CurrentObjectiveIndex);

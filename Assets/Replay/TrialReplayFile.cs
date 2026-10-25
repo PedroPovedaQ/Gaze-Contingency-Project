@@ -107,6 +107,8 @@ public static class TrialReplayFile
             {
                 if (string.IsNullOrEmpty(r.trialId) || !trials.Add(r.trialId) || r.objects == null || r.objects.Length == 0 || r.objects.Length > 512)
                     throw new InvalidDataException("Invalid trial snapshot.");
+                if (r.hasSearchPlaneBounds && (!Finite(r.searchPlaneBottom) || !Finite(r.searchPlaneHeight) || r.searchPlaneHeight <= 0))
+                    throw new InvalidDataException("Invalid recorded search-plane bounds.");
                 trial = r.trialId; targetId = r.targetId; ids.Clear(); int targets = 0;
                 foreach (var o in r.objects)
                 {
@@ -194,6 +196,8 @@ public sealed class TrialReplayWriter : IDisposable
         string json = JsonUtility.ToJson(observation);
         return Enqueue(() => m_Stream.WriteLine(json));
     }
+    // Allows independent diagnostic schemas to reuse the bounded asynchronous writer.
+    public bool AppendJson(string json) => Enqueue(() => m_Stream.WriteLine(json));
     public bool Asset(string path, byte[] bytes) => Enqueue(() =>
     {
         // Wireless inventory ignores .tmp: a WAV becomes visible only when complete.

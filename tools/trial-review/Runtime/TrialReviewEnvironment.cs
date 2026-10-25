@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-/// <summary>Illustrative room and inferred octagonal wall bounds; never used for replay measurements.</summary>
+/// <summary>Illustrative room and recorded or legacy-inferred octagonal wall bounds; never used for replay measurements.</summary>
 public sealed class TrialReviewEnvironment : IDisposable
 {
     readonly GameObject m_Root=new GameObject("Replay spatial context");
@@ -19,6 +19,8 @@ public sealed class TrialReviewEnvironment : IDisposable
     public float Radius { get; private set; }
     public float Floor { get; private set; }
     float m_WallTop;
+    public float WallHeight => m_WallTop - Floor;
+    public bool HasRecordedWallBounds { get; private set; }
     public TrialReviewEnvironment()
     {
         m_Walls=new GameObject("Inferred study walls");m_Walls.transform.SetParent(m_Root.transform);
@@ -36,7 +38,7 @@ public sealed class TrialReviewEnvironment : IDisposable
     {
         if(!ReferenceEquals(m_Trial,trial))
         {
-            m_Trial=trial;Clear(m_Walls);Clear(m_Room);WallCount=0;DegreePositions=Array.Empty<Vector3>();
+            m_Trial=trial;Clear(m_Walls);Clear(m_Room);WallCount=0;HasRecordedWallBounds=false;DegreePositions=Array.Empty<Vector3>();
             if(trial?.objects!=null&&trial.objects.Length>0)Build(trial);
         }
         m_Walls.SetActive(showWalls&&WallCount>0);
@@ -49,15 +51,19 @@ public sealed class TrialReviewEnvironment : IDisposable
         var inverse=Quaternion.Inverse(trial.originRotation);
         var points=trial.objects.Select(o=>inverse*(o.position-Center)).ToArray();
         float bottom=points.Min(p=>p.y)-.2f,top=points.Max(p=>p.y)+.25f;
-        Floor=bottom;float height=Mathf.Max(1,top-bottom);
+        HasRecordedWallBounds=trial.hasSearchPlaneBounds &&
+            !float.IsNaN(trial.searchPlaneBottom) && !float.IsInfinity(trial.searchPlaneBottom) &&
+            !float.IsNaN(trial.searchPlaneHeight) && !float.IsInfinity(trial.searchPlaneHeight) && trial.searchPlaneHeight>0;
+        if(HasRecordedWallBounds) { bottom=trial.searchPlaneBottom; top=bottom+trial.searchPlaneHeight; }
+        Floor=bottom;float height=HasRecordedWallBounds?top-bottom:Mathf.Max(1,top-bottom);
         m_WallTop=bottom+height;
         var groups=trial.objects.Where(o=>o.planeId>=0&&o.planeId<8).GroupBy(o=>o.planeId).ToArray();
         bool octagon=trial.layout!=null&&trial.layout.StartsWith("rotational_",StringComparison.Ordinal)&&groups.Length==8;
         Radius=Mathf.Max(1,points.Max(p=>new Vector2(p.x,p.z).magnitude));
         if(octagon)
         {
-            // Radius is inferred from object-plane distance. Panel height spans the saved objects;
-            // neither these outlines nor the room imply recorded visibility or physical room geometry.
+            // Radius comes from saved object planes. New records supply exact vertical bounds;
+            // legacy files retain object-derived estimates. The surrounding room is illustrative.
             var radii=new List<float>();
             foreach(var group in groups)
             {

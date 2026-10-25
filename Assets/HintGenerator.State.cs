@@ -113,7 +113,7 @@ public partial class HintGenerator
     void PublishState(bool valid)
     {
         bool searching = m_State.Phase != GuidancePhase.Opening && m_State.Phase != GuidancePhase.Inactive &&
-            m_State.Phase != GuidancePhase.Paused && m_State.Phase != GuidancePhase.Completed && m_State.Phase != GuidancePhase.Stopped;
+            m_State.Phase != GuidancePhase.Paused && m_State.Phase != GuidancePhase.Completed && m_State.Phase != GuidancePhase.Stopped && m_State.Phase != GuidancePhase.TimedOut;
         var controllerHit = m_Controller != null ? m_Controller.RightTelemetry.target : null;
         CurrentStateSnapshot = m_State.Snapshot(Time.realtimeSinceStartupAsDouble, m_EvaluatedSample?.sequence ?? -1,
             valid, searching && m_ControllerEvidenceValid, m_GazeHitObjectId,

@@ -44,6 +44,9 @@ BASE_FIELDS = [
     "actual_voice_id",
     "outcome",
     "completed",
+    "missed_target",
+    "missed_target_status",
+    "active_search_limit_seconds",
     "search_started_at_unity_seconds",
     "capture_at_unity_seconds",
     "search_exposure_seconds",
@@ -384,6 +387,15 @@ class Trial:
         ):
             raise ValueError(f"Active search clock regressed: {self.row['trial_id']}")
         self.last_active_seconds = elapsed
+        if kind == "trial_timeout":
+            match = re.search(r"(?:^|;)active_search_limit_seconds=([0-9.]+)(?:;|$)", r.get("detail") or "")
+            if match and positive(match.group(1)) is not None:
+                self.row["active_search_limit_seconds"] = positive(match.group(1))
+            self.row.update(outcome="timeout", completed=False, search_exposure_seconds=elapsed,
+                            time_to_final_selection_seconds=None, completion_source=None)
+            self.zones.gap()
+            self.ended = True
+            return
         if kind == "selection":
             if r.get("searchActive") is True:
                 self.contacts(r, elapsed)
@@ -525,6 +537,13 @@ class Trial:
 
     def finish(self) -> dict:
         row = self.row
+        # Only terminal outcomes establish whether the target was missed. A
+        # technical failure or an unfinished recording is not a behavioral miss.
+        outcome = row.get("outcome")
+        row["missed_target"] = 1 if outcome == "timeout" else 0 if outcome == "completed" and row.get("completed") else None
+        row["missed_target_status"] = ("deadline_expired_without_correct_selection" if row["missed_target"] == 1
+                                       else "correct_selection" if row["missed_target"] == 0
+                                       else "unresolved_or_nonbehavioral_endpoint")
         row['head_motion_method'] = MOTION_METHOD
         if not row.get("replay_file"):
             self.flags.add("no_matching_replay")
@@ -641,6 +660,7 @@ def read_summary(run: Path) -> tuple[dict, dict[str, Trial]]:
             "voice_order": summary.get("voice_order"),
             "outcome": source.get("outcome", "unknown"),
             "completed": source.get("completed") is True,
+            "active_search_limit_seconds": nonnegative(summary.get("active_search_limit_seconds")),
             "source_summary": str(run / "trial_summary.json"),
             "source_trial_json": json.dumps(source, ensure_ascii=False, sort_keys=True),
             "schedule_version": summary.get("challenge_set"),
@@ -1046,6 +1066,47 @@ def fingerprint(path: Path) -> dict:
     return {"path": str(path), "bytes": path.stat().st_size, "sha256": h.hexdigest()}
 
 
+
+def positive(value):
+    number = nonnegative(value)
+    return number if number is not None and number > 0 else None
+
+
+def missed_target_summary(rows: list[dict]) -> list[dict]:
+    """One row per participant/run/block/voice/deadline, excluding practice.
+
+    Legacy trials without a recorded positive deadline retain counts but cannot
+    establish the denominator for a deadline-specific missed-target percentage.
+    """
+    groups = {}
+    keys = ("participant_id", "run_number", "block_index", "voice_condition")
+    for row in rows:
+        if row.get("is_practice"):
+            continue
+        limit = positive(row.get("active_search_limit_seconds"))
+        key = tuple(row.get(k) for k in keys) + (limit,)
+        if key not in groups:
+            groups[key] = {**{k: row.get(k) for k in keys},
+                **{k: row.get(k) for k in ("session_mode", "data_purpose", "exclude_from_study_analysis")},
+                "active_search_limit_seconds": limit, "selected_count": 0,
+                "missed_target_count": 0, "other_or_unresolved_count": 0,
+                "missed_target_denominator": 0, "missed_target_percentage": None}
+        group = groups[key]
+        result = row.get("missed_target")
+        if result == 1:
+            group["missed_target_count"] += 1
+        elif result == 0:
+            group["selected_count"] += 1
+        else:
+            group["other_or_unresolved_count"] += 1
+        if result in (0, 1) and limit is not None:
+            group["missed_target_denominator"] += 1
+    for group in groups.values():
+        n = group["missed_target_denominator"]
+        group["missed_target_percentage"] = 100 * group["missed_target_count"] / n if n else None
+        group["status"] = ("resolved_trials_only" if n else "no_resolved_trials_with_recorded_deadline")
+    return list(groups.values())
+
 def export(
     run: Path,
     output: Path,
@@ -1099,6 +1160,8 @@ def export(
         "participant_id": str(summary["participant_id"]),
         "run_number": summary["run_number"],
         "trial_count": len(rows),
+        "missed_targets": missed_target_summary(rows),
+        "missed_target_policy": "timeout without correct selection; percentage=100*timeouts/(correct selections+timeouts) with a recorded positive deadline; practice excluded; unresolved/technical endpoints reported separately; deadline groups remain separate",
         "max_motion_gap_seconds": max_gap_seconds,
         "warnings": sorted(set(warnings)),
         "inputs": [initial_fingerprints[p] for p in sorted(inputs)],
@@ -1118,9 +1181,9 @@ def export(
         staged = Path(temporary) / "package"
         staged.mkdir()
 
-        def write(path: Path, values: list[dict]) -> None:
+        def write(path: Path, values: list[dict], columns=None) -> None:
             with path.open("w", encoding="utf-8", newline="") as f:
-                w = csv.DictWriter(f, fieldnames=fields)
+                w = csv.DictWriter(f, fieldnames=columns or fields)
                 w.writeheader()
                 for row in values:
                     w.writerow({k: encode(v) for k, v in row.items()})
@@ -1137,6 +1200,8 @@ def export(
                 {"trial_id": tid, "file": name, "is_practice": row["is_practice"]}
             )
         write(staged / "trials.csv", rows)
+        if manifest["missed_targets"]:
+            write(staged / "missed_targets.csv", manifest["missed_targets"], list(manifest["missed_targets"][0]))
         if include_motion:
             manifest["motion"] = write_motion_package(staged, rows, manifest["trials"])
         if manifest["inputs"] != [fingerprint(p) for p in sorted(inputs)]:

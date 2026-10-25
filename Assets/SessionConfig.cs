@@ -142,7 +142,7 @@ public static class SessionConfig
     public static bool DevelopmentQuickTest => NeutralQuickTest || CloneQuickTest;
     static bool s_JevLedGuidance;
     public static bool JevLedGuidance => DevelopmentQuickTest && s_JevLedGuidance;
-    public static string GuidancePolicy => JevLedGuidance ? "jev_actions_overrides_v1" : "baseline_local_priority_v1";
+    public static string GuidancePolicy => JevLedGuidance ? "jev_actions_overrides_v2_target_fast" : "baseline_local_priority_v2_target_fast";
     public static bool TrySetJevLedGuidance(bool enabled)
     {
         if (!DevelopmentQuickTest) return false;

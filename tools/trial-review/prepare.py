@@ -63,6 +63,16 @@ def prepare(project):
     renderer = replace_once(renderer, 'using UnityEditor;\n', '')
     renderer = replace_once(renderer, '    string m_Trial;',
         '    public IReadOnlyDictionary<string, GameObject> Objects => m_Objects;\n    string m_Trial;')
+    # Attach the desktop illustration to its visible emitter. The recorded hit
+    # endpoint and source telemetry remain unchanged; this is display-only.
+    renderer = replace_once(renderer, '    void DrawController(LineRenderer line, TrialReplayController c)',
+        '''    public Vector3 RightControllerRayStart => m_RightRay.GetPosition(0);
+    public Vector3 RightControllerRayEnd => m_RightRay.GetPosition(1);
+    public void AttachControllerRay(Vector3 tip)
+    {
+        if (m_RightRay.enabled) m_RightRay.SetPosition(0, tip);
+    }
+    void DrawController(LineRenderer line, TrialReplayController c)''')
     # The study uses the right controller. Retain historical left-hand data/model, but suppress its ray.
     renderer = replace_once(renderer,
         'DrawController(m_LeftRay, forceVisible ? null : sample?.leftController);',

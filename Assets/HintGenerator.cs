@@ -73,7 +73,7 @@ public partial class HintGenerator : MonoBehaviour
         m_Navigation?.Cancel();
         m_OpeningTurn = null; m_TipsSuppressed = true; m_ActionProgress.Reset();
         // Correct capture/pause/stop already publish their distinct lifecycle.
-        if (m_State.Phase != GuidancePhase.Completed && m_State.Phase != GuidancePhase.Paused && m_State.Phase != GuidancePhase.Stopped)
+        if (m_State.Phase != GuidancePhase.Completed && m_State.Phase != GuidancePhase.Paused && m_State.Phase != GuidancePhase.Stopped && m_State.Phase != GuidancePhase.TimedOut)
             SetLifecycle(GuidancePhase.Inactive, "guidance_cancelled");
         m_Vicinity?.Hide();
         m_CurrentHint = m_ReturnDirection = null; InterruptGuidance(true);

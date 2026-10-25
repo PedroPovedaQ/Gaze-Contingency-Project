@@ -79,6 +79,8 @@ class GuidanceStateMachineChecks
         Check(m.Phase==GuidancePhase.Paused && m.Action==GuidanceAction.None && m.Revision!=old,"Pause invalidates pending work");
         m.ResumeSearch(4);m.Step(Input(4));m.Step(Input(4.3));Check(m.Phase==GuidancePhase.Turning,"Resume can establish current direction");
         m.SetLifecycle(GuidancePhase.Completed,"correct_selection",5);Check(m.Phase==GuidancePhase.Completed,"Success has explicit state");
+        old=m.Revision; m.SetLifecycle(GuidancePhase.TimedOut,"search_deadline",5.1);
+        Check(m.Phase==GuidancePhase.TimedOut && m.Action==GuidanceAction.None && m.Revision!=old,"Timeout invalidates pending guidance without claiming selection");
         m.SetLifecycle(GuidancePhase.Stopped,"technical_stop",6);Check(m.Phase==GuidancePhase.Stopped,"Technical stop is not success");
         CheckAdditionalTransitions();
         CheckReturnActionPriority();

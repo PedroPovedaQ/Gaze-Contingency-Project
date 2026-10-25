@@ -7,6 +7,11 @@ class GazeQualityChecks
         GazeTrackingFeedbackChecks.Run();
         // Reproduce go-back -> YEP -> look-down: no automatic cue may splice a
         // sentence; the following pause is measured from actual completion.
+        Check(GuidanceSpeechPolicy.CanConfirmTargetDuringSpeech("gaze_target_vicinity_hold",.35,2,10,0), "Qualified target opens faster bounded interruption");
+        Check(!GuidanceSpeechPolicy.CanConfirmTargetDuringSpeech("stable_direction",1,2,10,0), "Ordinary direction has no fast override");
+        Check(!GuidanceSpeechPolicy.CanConfirmTargetDuringSpeech("gaze_target_vicinity_hold",.34,2,10,0), "Protect onset");
+        Check(!GuidanceSpeechPolicy.CanConfirmTargetDuringSpeech("controller_target_gaze_vicinity",1,.49,10,0), "Protect ending");
+        Check(!GuidanceSpeechPolicy.CanConfirmTargetDuringSpeech("gaze_target_vicinity_hold",1,2,10,9), "Protect interruption cooldown");
         Check(!GuidanceSpeechPolicy.CanStart(true,10,-100,false),"A qualified 0.1-second gaze cannot cut an ongoing go-back phrase");
         Check(!GuidanceSpeechPolicy.CanStart(false,10.24,10,false),"A return cue needs a post-playback pause before YEP");
         Check(GuidanceSpeechPolicy.CanStart(false,10.26,10,false),"Fresh confirmation becomes eligible after the pause");

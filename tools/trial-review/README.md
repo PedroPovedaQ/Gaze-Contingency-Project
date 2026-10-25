@@ -1,5 +1,7 @@
 # Trial Review desktop app
 
+**Implemented October 23 — compact walls:** new experiment recordings include `hasSearchPlaneBounds`, `searchPlaneBottom` (recording-local Y) and `searchPlaneHeight`. The viewer uses these exact vertical bounds for outlines and gaze display projection. Older files retain object-derived bounds and all recorded object positions; the viewer never applies a global 0.7 scale to historical data. Default new study walls are 2.2036 m tall with unchanged radius/count/size/separation.
+
 ## Condensed whiteboard CSV
 
 **Implemented locally, October 16, 2026.** Automatic run export also produces
@@ -562,3 +564,7 @@ acoustic measurements, and do not identify which phrases the wearer previously
 reported missing. Separate checks cover late WAV arrival, bounded missing assets,
 cancellation, partial live tails and snapshot isolation. A new wearer run remains
 the end-to-end check for actual Wi-Fi delivery and listening.
+
+### Search deadline
+
+New headset recordings emit `trial_timeout` after 15 active-search seconds. Trial Review labels these trials **Time up**, hides the expired scene at that event, and retains the recorded encouragement/subtitles. A timeout does not imply a trigger selection or session failure. Historical recordings retain their original durations; the viewer does not impose the new deadline on them.

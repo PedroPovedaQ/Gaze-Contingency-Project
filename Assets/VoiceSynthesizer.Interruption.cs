@@ -94,6 +94,19 @@ public partial class VoiceSynthesizer
 
     bool ApproveInterruption(string phrase, string reason, Func<bool> stillRelevant, ref string decisionId)
     {
+        if (m_InterruptionCoroutine == null && IsSpeaking && m_AudioSource.clip != null &&
+            (m_CurrentContext == "tip" || m_CurrentContext == "guidance_repeat") &&
+            SpatialVoice.SpeechPhraseMetadata.Describe(m_CurrentPhrase).interruptPolicy == "replace_if_misleading" &&
+            GuidanceSpeechPolicy.IsAcknowledgment(phrase) &&
+            SpatialVoice.SpeechPhraseMetadata.CanReplace(m_CurrentPhrase, phrase) &&
+            GuidanceSpeechPolicy.CanConfirmTargetDuringSpeech(reason, m_AudioSource.time, SpeechRemaining,
+                Time.realtimeSinceStartupAsDouble, m_LastSmoothInterruption) && stillRelevant())
+        {
+            CancelInterruptionAdvice();
+            Telemetry?.Invoke("interruption_advice", m_CurrentContext, m_ActiveClipKey ?? "",
+                "decision_id=" + decisionId + ";result=local_qualified_target;reason=" + reason);
+            return true; // The existing fade and final playback gate still recheck relevance.
+        }
         if (!CanConsiderGuidanceInterruption || !GuidanceSpeechPolicy.IsCorrectionEvent(reason) ||
             GuidanceSpeechPolicy.IsRedundantArrival(reason, m_SpeechStartStage) || phrase == m_CurrentPhrase ||
             !SpatialVoice.SpeechPhraseMetadata.CanReplace(m_CurrentPhrase, phrase)) return false;

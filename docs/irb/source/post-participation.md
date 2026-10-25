@@ -2,7 +2,7 @@
 
 **Protocol proposal:** Provide this information only in the final UCF-approved form and at the approved point in the study procedure.
 
-Study: **Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent**
+Study: **Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent in Virtual Reality**
 
 Thank you for taking part. This study compares a generic voice with a private synthetic voice derived from your recording and compares two forms of spoken assistance. In gaze-contingent blocks, coarse directional guidance helped you orient toward the target area before closer/farther feedback narrowed the location. In noncontingent blocks, general prompts occurred at matching opportunities but did not use gaze, hover, coverage, or target-proximity information.
 

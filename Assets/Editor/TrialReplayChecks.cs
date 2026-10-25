@@ -39,6 +39,15 @@ public static class TrialReplayChecks
             var future = JsonUtility.FromJson<TrialReplayRecord>(lines[0]); future.schema = 99;
             bad = (string[])lines.Clone(); bad[0] = JsonUtility.ToJson(future); File.WriteAllLines(corrupt, bad);
             Reject(() => TrialReplayFile.Read(corrupt), "Unsupported schema must fail.");
+            int trialLine=Array.FindIndex(lines,l=>JsonUtility.FromJson<TrialReplayRecord>(l).kind=="trial");
+            var bounds=JsonUtility.FromJson<TrialReplayRecord>(lines[trialLine]);
+            bounds.hasSearchPlaneBounds=true;bounds.searchPlaneBottom=-1.2f;bounds.searchPlaneHeight=2.2036f;
+            bad=(string[])lines.Clone();bad[trialLine]=JsonUtility.ToJson(bounds);File.WriteAllLines(corrupt,bad);
+            var savedBounds=TrialReplayFile.Read(corrupt).Trials[0];
+            Assert(savedBounds.hasSearchPlaneBounds&&Mathf.Abs(savedBounds.searchPlaneHeight-2.2036f)<.0001f&&
+                Mathf.Abs(savedBounds.searchPlaneBottom+1.2f)<.0001f,"Recorded wall bounds survive file parsing");
+            bounds.searchPlaneHeight=-1;bad[trialLine]=JsonUtility.ToJson(bounds);File.WriteAllLines(corrupt,bad);
+            Reject(()=>TrialReplayFile.Read(corrupt),"Invalid recorded wall height fails explicitly");
             var samples = TrialReplayAudio.Decode(Path.Combine(timeline.DirectoryPath, "audio/tone.wav"), out int channels, out int rate);
             Assert(samples.Length == 24000 && channels == 1 && rate == 24000, "Recorded audio roundtrip.");
             timeline.Seek(1);

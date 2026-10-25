@@ -7,7 +7,7 @@ public sealed class TrialReviewActors : IDisposable
 {
     readonly GameObject m_Body,m_Left,m_Right;
     readonly TrialReviewArm m_LeftArm,m_RightArm;
-    readonly Transform m_LeftGrip,m_RightGrip;
+    readonly Transform m_LeftGrip,m_RightGrip,m_RightTip;
     readonly LineRenderer m_EyeRay;
     readonly Material m_EyeMaterial;
     public TrialReviewArm LeftArm => m_LeftArm;
@@ -36,7 +36,9 @@ public sealed class TrialReviewActors : IDisposable
     public bool LeftVisible => m_Left.activeSelf;
     public bool RightVisible => m_Right.activeSelf;
     public Transform HeadAnchor => m_Anchor;
+    public Vector3 HeadsetRayOrigin => m_Anchor.position+m_Anchor.forward*.065f;
     public Transform RightController => m_Right.transform;
+    public Vector3 RightControllerTip => m_RightTip.position;
     public TrialReviewActors()
     {
         m_Body=Spawn("ReplayParticipant");m_Left=Spawn("ReplayControllerL");m_Right=Spawn("ReplayControllerR");
@@ -47,6 +49,7 @@ public sealed class TrialReviewActors : IDisposable
         m_ChairBindPosition=m_ChairBase.localPosition;m_AnchorBindPosition=m_Anchor.position;
         m_LeftArm=new TrialReviewArm(m_Body,"Left");m_RightArm=new TrialReviewArm(m_Body,"Right");
         m_LeftGrip=m_Left.transform.Find("GripAnchor");m_RightGrip=m_Right.transform.Find("GripAnchor");
+        m_RightTip=m_Right.transform.Find("RayTip");
         m_EyeRay=new GameObject("Illustrative eye-origin gaze").AddComponent<LineRenderer>();
         m_EyeMaterial=new Material(Shader.Find("Unlit/Color")){color=new Color(1,.65f,.12f)};
         m_EyeRay.sharedMaterial=m_EyeMaterial;m_EyeRay.useWorldSpace=true;m_EyeRay.positionCount=2;
@@ -87,9 +90,11 @@ public sealed class TrialReviewActors : IDisposable
             m_Head.rotation=sample.headRotation*Quaternion.Inverse(m_AnchorBindRotation)*m_HeadBindRotation;
             m_ChairBase.rotation=Quaternion.identity; // Stationary base; seat swivels with the illustrative body.
         }
-        Controller(m_Left,sample?.leftController,showControllers);
+        // The task uses only the right controller. An unused left controller may
+        // be resting elsewhere, so it must not pull the illustrative arm off the body.
+        Controller(m_Left,null,false);
         Controller(m_Right,sample?.rightController,showControllers);
-        m_LeftArm.Prepare(m_Body.activeSelf&&m_Left.activeSelf?m_LeftGrip:null,m_Body.transform);
+        m_LeftArm.Prepare(null,m_Body.transform);
         m_RightArm.Prepare(m_Body.activeSelf&&m_Right.activeSelf?m_RightGrip:null,m_Body.transform);
         bool validGaze=validHead&&TrialReplayRenderer.GazeUsable(sample);
         GazeOriginOffset=validGaze?Vector3.Distance(sample.gazeOrigin,sample.headPosition):float.NaN;
@@ -113,7 +118,10 @@ public sealed class TrialReviewActors : IDisposable
             var origin=recordedRay?sample.gazeOrigin:CorrectionApplied?corrected.origin:sample.headPosition;
             var direction=CorrectionApplied?corrected.direction:sample.gazeDirection.normalized;
             GazeRay=new Ray(origin,direction);
-            m_EyeRay.SetPosition(0,origin);
+            // Connect the third-person illustration to the headset face. Keep
+            // the analytical ray and its endpoint independent of avatar fit.
+            // First person still uses the recorded/corrected origin for projection.
+            m_EyeRay.SetPosition(0,BodyVisible?HeadsetRayOrigin:origin);
             m_EyeRay.SetPosition(1,origin+direction*3);
         }
     }

@@ -329,6 +329,23 @@ partial class VoiceIsolationChecks
         var queuedCorrection=MonoBehaviour.LastRoutine; synth.CancelPendingGuidance(); Drain(queuedCorrection);
         Check(committed==1 && !synth.IsSpeaking, "Phase change after fade cancels queued replacement without a false acknowledgment");
 
+        string confirmation = DirectionalHintPolicy.LookingPhrase;
+        string confirmPath = (string)cachePath.Invoke(synth, new object[] { VoicePromptText.FormatForVoice(confirmation, SessionConfig.Voice), scope });
+        clips[confirmPath] = clips[oldPath];
+        Begin(); source.time = .4f; count = requests; int previousCommits = committed;
+        Check(synth.TryAreaCorrection(confirmation, () => relevant, () => committed++, "gaze_target_vicinity_hold"),
+            "Qualified vicinity confirmation starts local fade before the ordinary 650ms gate");
+        Check(requests == count, "Target confirmation never waits for interruption network advice");
+        fade = MonoBehaviour.LastRoutine; fade.MoveNext(); relevant = false; Time.unscaledTime += .16f; fade.MoveNext();
+        Check(committed == previousCommits, "Lost target during fast fade never confirms");
+        Begin(); source.time = .4f;
+        Check(!synth.TryAreaCorrection(confirmation, () => false, null, "gaze_target_vicinity_hold"), "Unqualified target cannot take fast path");
+        Begin(); source.time = 3.6f; count = requests;
+        Check(!synth.TryAreaCorrection(confirmation, () => true, null, "gaze_target_vicinity_hold") && requests == count,
+            "Fast path preserves final half-second of speech");
+        Begin(); source.time = .4f; Set(synth, "m_CurrentContext", "success");
+        Check(!synth.TryAreaCorrection(confirmation, () => true, null, "gaze_target_vicinity_hold"), "Fast path never cuts round feedback");
+
         Begin(); before=source.StopCalls;
         synth.InterruptIfAbout("tip"); fade=MonoBehaviour.LastRoutine; fade.MoveNext();
         Time.unscaledTime += .075f; fade.MoveNext(); synth.InterruptIfAbout("tip");
@@ -1039,12 +1056,17 @@ partial class VoiceIsolationChecks
                     if (trial.roundIndex > 0)
                         Check(identity != schedule[trial.roundIndex - 1].target.shape + ":" + schedule[trial.roundIndex - 1].target.color,
                             "no adjacent target identities, including block boundary");
-                    if (trial.blockIndex == 0)
-                    {
-                        var mirror = Array.Find(schedule, t => t.blockIndex == 1 && t.anglePair == trial.anglePair);
-                        Check((mirror.SignedTheta == -trial.SignedTheta || trial.AbsoluteTheta == 180) && mirror.AbsoluteTheta == trial.AbsoluteTheta,
-                            "paired angles mirror across the two blocks");
-                    }
+
+                }
+                for (int block = 0; block < 2; block++)
+                for (int angle = 0; angle <= 180; angle += 45)
+                {
+                    var trials = Array.FindAll(schedule, t => t.blockIndex == block && t.AbsoluteTheta == angle);
+                    Check(Array.FindAll(trials, t => t.targetHeightFraction > .5f).Length == 4,
+                        "four above and four below readiness height per angle per block");
+                    if (angle > 0 && angle < 180)
+                        Check(Array.FindAll(trials, t => t.SignedTheta > 0).Length == 4,
+                            "four left and four right per bilateral angle per block");
                 }
                 Check(identities[0].Count == 24 && identities[1].Count == 24, "every identity appears in both voices");
                 int doubled = 0;
@@ -1069,11 +1091,11 @@ partial class VoiceIsolationChecks
                 for (int r = 0; r < schedule.Length; r++)
                 {
                     var cells = rows[r + 1].Trim().Split(',');
-                    Check(cells.Length == 22 && int.Parse(cells[10]) == schedule[r].SignedTheta &&
+                    Check(cells.Length == 25 && int.Parse(cells[10]) == schedule[r].SignedTheta &&
                         int.Parse(cells[11]) == schedule[r].AbsoluteTheta && int.Parse(cells[13]) == schedule[r].layoutSeed && int.Parse(cells[17]) == schedule[r].startPlane,
                         "exported angle and seed match executable plan");
                     Check(cells[20] == ChallengeSet.TargetIdentityPolicy && cells[21] == ChallengeSet.HeightAssignmentPolicy,
-                        "manifest distinguishes implemented identity balancing from pending signed-height quotas");
+                        "manifest versions implemented identity and signed-height quotas");
                 }
                 SessionConfig.ParticipantId = "P999"; var other = ChallengeSet.Rounds;
                 SessionConfig.ParticipantId = $"P{participant:D3}";

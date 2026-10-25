@@ -11,7 +11,7 @@
 
 **Current decision / protocol proposal:** [September 28 meeting record](../meeting-reconciliation-2026-09-28.md) records 40 trials per voice, balanced signed height deltas, agent-led coarse-to-fine horizontal/vertical guidance, more frequent short varied cues, varied success speech, loading text and onboarding changes. It defines a one-file-per-trial performance/subjective export with separate reconstruction sources and draft reliance measures. Confirmed follow-up: both target identity and location are hidden from the participant and known to the agent. Guidance first reaches the correct vertical wall, then directs up/down within that wall. Only the right controller is required for setup, menus, wrist controls and trigger selection; no left-controller dependency. Vertical reference, turn/look threshold and later passthrough checkpoint remain explicit open decisions. See GitHub #19 and linked owners. This records requested work, not runtime behavior, questionnaire validation or IRB approval.
 
-Study: **Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent**  
+Study: **Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent in Virtual Reality**  
 Decision set: **Protocol design v2, 2026-08-14**
 
 These are **current protocol decisions** selected for drafting, implementation, and

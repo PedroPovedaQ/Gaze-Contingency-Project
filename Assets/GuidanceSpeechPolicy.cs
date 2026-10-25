@@ -16,6 +16,14 @@ public static class GuidanceSpeechPolicy
         reason == "target_bearing_overshoot" || reason == "gaze_overshoot_return";
     public static bool IsOrdinaryDirection(string reason) => reason == "stable_direction" || reason == "catalog_turn" || reason == "jev_action";
 
+    public static bool IsTargetConfirmation(string reason) => reason == "gaze_target_vicinity_hold" ||
+        reason == "controller_target_gaze_vicinity";
+    // Qualified acquisition can replace misleading search speech without a network round trip.
+    // Preserve phrase onset, the final half second, and the existing interruption cooldown.
+    public static bool CanConfirmTargetDuringSpeech(string reason, double elapsed, double remaining,
+        double now, double lastInterruption) => IsTargetConfirmation(reason) && elapsed >= .35 &&
+        remaining >= .5 && now - lastInterruption >= InterruptionCooldown;
+
     public const double InterruptionCooldown = 2.5;
     // Protect short phrases and their endings. Jev cannot override these local bounds.
     public static bool CanConsiderInterruption(bool acknowledgment, double elapsed, double remaining,

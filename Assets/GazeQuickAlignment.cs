@@ -15,6 +15,13 @@ public sealed class GazeQuickAlignment
     public const float MaxMedianErrorDegrees = 2, MaxP90ErrorDegrees = 3;
     public bool IsRunning { get; private set; }
     public bool IsActive { get; private set; }
+    public const float GuidedAttentionCueSeconds = .4f;
+    public bool GuidedEntry { get; private set; }
+    public bool AwaitingConfirmation { get; private set; }
+    public int FitPointCount => GuidedEntry ? 3 : 1;
+    public int PointCount => GuidedEntry ? 6 : 3;
+    public double CountdownRemaining(double now) => GuidedEntry ? Math.Max(0, m_SettleUntil - now) : 0;
+    public Vector3 TargetAt(int index) => m_Targets[index];
     public int TargetIndex { get; private set; }
     public Vector3 CurrentTarget => m_Targets[TargetIndex];
     public string Status { get; private set; } = "No quick alignment applied.";
@@ -22,7 +29,7 @@ public sealed class GazeQuickAlignment
     public float PointProgress => m_Window.Count < 2 ? 0 : Mathf.Clamp01((float)
         ((m_Window[m_Window.Count - 1].time - m_Window[0].time) / CollectionSeconds));
 
-    readonly Vector3[] m_Targets = new Vector3[3];
+    readonly Vector3[] m_Targets = new Vector3[6];
     readonly List<Measurement> m_Window = new List<Measurement>();
     double m_PointStarted, m_SettleUntil, m_LastInput = -1, m_PreviousReceipt = -1;
     Quaternion m_WindowHead;
@@ -31,6 +38,7 @@ public sealed class GazeQuickAlignment
 
     public void Begin(Vector3 headPosition, Quaternion headRotation, double now)
     {
+        GuidedEntry = AwaitingConfirmation = false;
         IsActive = false; IsRunning = true; TargetIndex = 0; m_SourceBound = false;
         m_LastInput = m_PreviousReceipt = -1;
         Report = new AlignmentReport { id = Guid.NewGuid().ToString("N"), startedAt = now,
@@ -41,17 +49,48 @@ public sealed class GazeQuickAlignment
         StartPoint(now);
     }
 
+    // Three timed fit locations; fixation is instructed, not selected by measured proximity.
+    public void BeginGuided(Vector3 position, Quaternion rotation, double now)
+    {
+        Begin(position, rotation, now);
+        GuidedEntry = true;
+        Report.method = "head_local_three_dot_mean_user_confirmed_v2";
+        Report.assumedFixation = true;
+        Report.fitPointCount = 3;
+        Report.settleSeconds = 3;
+        Report.attentionCueSeconds = GuidedAttentionCueSeconds;
+        Report.scope = "pilot_countdown_assumed_fixation_three_fit_three_check_not_vendor_calibration";
+        m_Targets[3] = position + rotation * Quaternion.Euler(5, 7, 0) * Vector3.forward * 2;
+        m_Targets[4] = position + rotation * Quaternion.Euler(-7, -7, 0) * Vector3.forward * 2;
+        m_Targets[5] = position + rotation * Quaternion.Euler(-8, 0, 0) * Vector3.forward * 2;
+        StartPoint(now);
+    }
+
+    public Vector3 PreviewDirection(GazeObservation sample) => sample.headRotation * CorrectHeadDirection(
+        Quaternion.Inverse(sample.headRotation) * sample.unalignedWorldDirection,
+        Report.yawCorrectionDegrees, Report.pitchCorrectionDegrees);
+
+    public bool ConfirmGuided(double now)
+    {
+        if (!AwaitingConfirmation || !GuidedEntry) return false;
+        AwaitingConfirmation = false; IsActive = true; m_State = "passed";
+        Report.userConfirmed = true; Report.outcome = "passed"; Report.finishedAt = now;
+        Status = Report.message = "Three-dot mean checked on three shapes and confirmed by the user.";
+        return true;
+    }
+
     void StartPoint(double now)
     {
         m_PointStarted = now; ResetWindow(now);
-        m_State = TargetIndex == 0 ? "collecting_fit" : "checking_independent_target";
-        Status = TargetIndex == 0 ? "Look directly at the dot and hold your head still."
+        m_State = TargetIndex < FitPointCount ? "collecting_fit" : "checking_independent_target";
+        Status = GuidedEntry ? $"Look at {(TargetIndex < 3 ? "dot" : "shape")} {TargetIndex % 3 + 1} of 3 and hold your head still."
+            : TargetIndex == 0 ? "Look directly at the dot and hold your head still."
             : $"Check {TargetIndex} of 2: look at the new dot. Keep your head still.";
     }
 
     void ResetWindow(double now)
     {
-        m_Window.Clear(); m_SettleUntil = now + SettleSeconds;
+        m_Window.Clear(); m_SettleUntil = now + (GuidedEntry ? 3 : SettleSeconds);
     }
 
     public void Observe(GazeObservation sample)
@@ -100,7 +139,12 @@ public sealed class GazeQuickAlignment
         float yaw = Percentile(m_Window.ConvertAll(x => x.yaw), .5f);
         float pitch = Percentile(m_Window.ConvertAll(x => x.pitch), .5f);
         float spread = Percentile(m_Window.ConvertAll(x => new Vector2(Mathf.DeltaAngle(yaw, x.yaw), x.pitch - pitch).magnitude), .9f);
-        if (TargetIndex == 0)
+        if (GuidedEntry && TargetIndex < FitPointCount)
+        {
+            yaw = Mean(m_Window.ConvertAll(x => x.yaw));
+            pitch = Mean(m_Window.ConvertAll(x => x.pitch));
+        }
+        if (!GuidedEntry && TargetIndex == 0)
         {
             Report.yawCorrectionDegrees = yaw; Report.pitchCorrectionDegrees = pitch;
             // Do not fit sub-quarter-degree noise into otherwise aligned gaze.
@@ -110,7 +154,9 @@ public sealed class GazeQuickAlignment
         var raw = m_Window.ConvertAll(x => Vector3.Angle(x.measured, x.expected));
         var corrected = m_Window.ConvertAll(x => Vector3.Angle(CorrectHeadDirection(x.measured,
             Report.yawCorrectionDegrees, Report.pitchCorrectionDegrees), x.expected));
-        var point = new AlignmentPoint { index = TargetIndex, purpose = TargetIndex == 0 ? "fit" : "held_out",
+        var point = new AlignmentPoint { index = TargetIndex, purpose = TargetIndex < FitPointCount ? "fit" : "held_out",
+            meanYawOffsetDegrees = Mean(m_Window.ConvertAll(x => x.yaw)),
+            meanPitchOffsetDegrees = Mean(m_Window.ConvertAll(x => x.pitch)), assumedFixation = GuidedEntry,
             targetWorld = CurrentTarget, updates = m_Window.Count, firstSequence = m_Window[0].sequence,
             lastSequence = m_Window[m_Window.Count - 1].sequence, firstInputTime = m_Window[0].time,
             lastInputTime = m_Window[m_Window.Count - 1].time, spreadP90Degrees = spread,
@@ -119,17 +165,33 @@ public sealed class GazeQuickAlignment
         Report.points.Add(point);
         if (spread > MaxSpreadDegrees)
         { Reject("Gaze was too variable. Refit and retry; no correction applied.", now); return; }
+        // Guided entry fits one equal-weight mean across three dots, not three
+        // independent corrections. Apply the correction cap to that completed fit.
+        if (GuidedEntry && TargetIndex == 2)
+        {
+            Report.yawCorrectionDegrees = (Report.points[0].meanYawOffsetDegrees + Report.points[1].meanYawOffsetDegrees + Report.points[2].meanYawOffsetDegrees) / 3;
+            Report.pitchCorrectionDegrees = (Report.points[0].meanPitchOffsetDegrees + Report.points[1].meanPitchOffsetDegrees + Report.points[2].meanPitchOffsetDegrees) / 3;
+        }
         if (new Vector2(Report.yawCorrectionDegrees, Report.pitchCorrectionDegrees).magnitude > MaxCorrectionDegrees)
-        { Reject("Offset is too large. Run HTC calibration before retrying.", now); return; }
-        if (TargetIndex > 0 && (point.afterMedianDegrees > MaxMedianErrorDegrees ||
+        { Reject($"Mean offset {new Vector2(Report.yawCorrectionDegrees, Report.pitchCorrectionDegrees).magnitude:F1} degrees exceeds the {MaxCorrectionDegrees:F0}-degree limit. Refit and run HTC eye calibration, or skip without an offset.", now); return; }
+        if (TargetIndex >= FitPointCount && (point.afterMedianDegrees > MaxMedianErrorDegrees ||
             point.afterP90Degrees > MaxP90ErrorDegrees || point.afterMedianDegrees > point.beforeMedianDegrees + .1f ||
             point.afterP90Degrees > point.beforeP90Degrees + .25f))
         { Reject("Separate dot check failed. Run HTC calibration and retry; no correction applied.", now); return; }
-        if (TargetIndex < 2) { TargetIndex++; StartPoint(now); return; }
-        float improvement = ((Report.points[1].beforeMedianDegrees - Report.points[1].afterMedianDegrees) +
-            (Report.points[2].beforeMedianDegrees - Report.points[2].afterMedianDegrees)) * .5f;
+        if (TargetIndex < PointCount - 1) { TargetIndex++; StartPoint(now); return; }
+        float improvement = 0;
+        for (int i = FitPointCount; i < PointCount; i++)
+            improvement += Report.points[i].beforeMedianDegrees - Report.points[i].afterMedianDegrees;
+        improvement /= PointCount - FitPointCount;
         if (new Vector2(Report.yawCorrectionDegrees, Report.pitchCorrectionDegrees).magnitude >= .25f && improvement < .25f)
         { Reject("No clear improvement on separate dots. No correction applied.", now); return; }
+        if (GuidedEntry)
+        {
+            IsRunning = false; AwaitingConfirmation = true; m_State = "awaiting_confirmation";
+            Report.outcome = "awaiting_confirmation";
+            Status = Report.message = "Check all three shapes light up, then confirm OK.";
+            return;
+        }
         IsRunning = false; IsActive = true; m_State = "passed";
         Status = "Quick alignment passed (pilot). Applied for this participant and gaze source.";
         Report.outcome = "passed"; Report.finishedAt = now; Report.message = Status;
@@ -137,15 +199,15 @@ public sealed class GazeQuickAlignment
 
     void Reject(string reason, double now)
     {
-        IsRunning = IsActive = false; m_State = "rejected"; Status = reason;
+        IsRunning = IsActive = AwaitingConfirmation = false; m_State = "rejected"; Status = reason;
         Report.outcome = "rejected"; Report.finishedAt = now; Report.message = reason;
     }
 
     public void CancelOrClear(string reason, double now)
     {
-        if (!IsRunning && !IsActive) return;
-        if (IsRunning) { Report.outcome = "cancelled"; Report.finishedAt = now; Report.message = reason; }
-        IsRunning = IsActive = false; m_State = "cleared"; Status = reason + " No quick correction applied.";
+        if (!IsRunning && !IsActive && !AwaitingConfirmation) return;
+        if (IsRunning || AwaitingConfirmation) { Report.outcome = "cancelled"; Report.finishedAt = now; Report.message = reason; }
+        IsRunning = IsActive = AwaitingConfirmation = false; m_State = "cleared"; Status = reason + " No quick correction applied.";
         m_Window.Clear();
     }
 
@@ -153,7 +215,7 @@ public sealed class GazeQuickAlignment
     // Rotation belongs in head coordinates: a constant world yaw would fail when the wearer turns.
     public void Apply(GazeObservation sample)
     {
-        if (IsActive && sample.valid && !SameSource(sample))
+        if ((IsActive || AwaitingConfirmation) && sample.valid && !SameSource(sample))
             CancelOrClear("Participant or gaze source changed; repeat alignment.", sample.receiptTime);
         sample.alignmentId = Report?.id;
         sample.alignmentStatus = m_State;
@@ -166,7 +228,7 @@ public sealed class GazeQuickAlignment
         sample.alignmentApplied = true;
         sample.alignmentYawDegrees = Report.yawCorrectionDegrees;
         sample.alignmentPitchDegrees = Report.pitchCorrectionDegrees;
-        sample.correction = Report.baseCorrection + "+" + AlignmentReport.Method;
+        sample.correction = Report.baseCorrection + "+" + Report.method;
     }
 
     bool SameSource(GazeObservation s) => s.deviceId == Report.deviceId && s.participant == Report.participant &&
@@ -181,6 +243,12 @@ public sealed class GazeQuickAlignment
         float az = (angles.x + yaw) * Mathf.Deg2Rad;
         float el = Mathf.Clamp(angles.y + pitch, -89.9f, 89.9f) * Mathf.Deg2Rad;
         return new Vector3(Mathf.Cos(el) * Mathf.Sin(az), Mathf.Sin(el), Mathf.Cos(el) * Mathf.Cos(az));
+    }
+
+    static float Mean(List<float> values)
+    {
+        float sum = 0; foreach (float value in values) sum += value;
+        return sum / values.Count;
     }
 
     static float Percentile(List<float> values, float fraction)
@@ -198,7 +266,9 @@ public sealed class GazeQuickAlignment
     public sealed class AlignmentReport
     {
         public const string Method = "head_local_yaw_pitch_quick_alignment_v1";
-        public int schema = 1, deviceId;
+        public int schema = 2, deviceId, fitPointCount = 1;
+        public bool assumedFixation, userConfirmed;
+        public float attentionCueSeconds;
         public string method = Method, id, participant, raySource, baseCorrection, recordingId, utcStarted,
             outcome = "collecting", message;
         public double startedAt, finishedAt;
@@ -214,6 +284,8 @@ public sealed class GazeQuickAlignment
     public sealed class AlignmentPoint
     {
         public int index, updates;
+        public float meanYawOffsetDegrees, meanPitchOffsetDegrees;
+        public bool assumedFixation;
         public string purpose;
         public Vector3 targetWorld;
         public long firstSequence, lastSequence;

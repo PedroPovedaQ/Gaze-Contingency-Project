@@ -97,6 +97,7 @@ public partial class VoiceAssistantController : MonoBehaviour
         // Subscribe to game events
         m_GameManager.OnGameStarted += HandleGameStarted;
         m_GameManager.OnObjectFound += HandleObjectFound;
+        m_GameManager.OnRoundTimedOut += HandleRoundTimedOut;
         m_GameManager.OnWrongCapture += HandleWrongCapture;
         m_GameManager.OnGameCompleted += HandleGameCompleted;
         m_GameManager.OnRoundTransitionStarted += HandleRoundTransitionStarted;
@@ -175,6 +176,7 @@ public partial class VoiceAssistantController : MonoBehaviour
         var phrases = new System.Collections.Generic.HashSet<string>(HintGenerator.AllPhrases());
         phrases.UnionWith(SpatialVoice.StudyNavigationVoiceBridge.Phrases());
         phrases.Add(k_CompletionLine); phrases.Add(StudyIntroLine); phrases.Add(k_ClosingLine); phrases.Add(AudioCheckLine); phrases.UnionWith(k_SuccessPhrases);
+        phrases.UnionWith(VoicePromptText.TimeoutPhrases); phrases.Add(VoicePromptText.TimeoutBlockBreak); phrases.Add(VoicePromptText.TimeoutFinal);
         foreach (var round in ChallengeSet.Rounds)
         {
             phrases.Add(RoundPhrase(round.roundIndex, round.target.color, round.target.shape));
@@ -194,6 +196,7 @@ public partial class VoiceAssistantController : MonoBehaviour
         var practice = ChallengeSet.PracticeRound(0);
         var phrases = new System.Collections.Generic.List<string>(HintGenerator.AllPhrases());
         phrases.AddRange(k_SuccessPhrases);
+        phrases.AddRange(VoicePromptText.TimeoutPhrases); phrases.Add(VoicePromptText.TimeoutBlockBreak); phrases.Add(VoicePromptText.TimeoutFinal);
         phrases.AddRange(new[] { AudioCheckLine, StudyIntroLine,
             RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape, true),
             VoicePromptText.WrongSelectionPhrase(practice.target.color, practice.target.shape) });
@@ -252,6 +255,7 @@ public partial class VoiceAssistantController : MonoBehaviour
         {
             m_GameManager.OnGameStarted -= HandleGameStarted;
             m_GameManager.OnObjectFound -= HandleObjectFound;
+            m_GameManager.OnRoundTimedOut -= HandleRoundTimedOut;
             m_GameManager.OnWrongCapture -= HandleWrongCapture;
             m_GameManager.OnGameCompleted -= HandleGameCompleted;
             m_GameManager.OnRoundTransitionStarted -= HandleRoundTransitionStarted;
@@ -319,6 +323,27 @@ public partial class VoiceAssistantController : MonoBehaviour
         // fixation cross appears.
         if (m_HintGenerator != null)
             m_HintGenerator.CancelPending();
+    }
+
+    int m_TimeoutFeedbackCount;
+    void HandleRoundTimedOut(int round)
+    {
+        CancelSuccessFeedback();
+        m_HintGenerator?.CancelPending(); m_VoiceSynthesizer?.Stop();
+        if (m_EncouragementSessionStopped || !isActiveAndEnabled) return;
+        m_SuccessRoutine = StartCoroutine(TimeoutFeedback(round));
+    }
+    IEnumerator TimeoutFeedback(int round)
+    {
+        SuccessFeedbackBusy = true; // Shared round-feedback barrier also protects voice switches.
+        bool study = !m_GameManager.PresentedRoundIsPractice;
+        string phrase = VoicePromptText.TimeoutPhrase(m_TimeoutFeedbackCount++,
+            study && round + 1 >= m_GameManager.TotalRounds,
+            study && SessionConfig.VoiceBlocksEnabled && round + 1 == ChallengeSet.RoundsPerBlock);
+        // Prepared for both voices before trials; no provider decision or success claim.
+        if (m_VoiceSynthesizer != null) m_VoiceSynthesizer.Speak(phrase, "trial_timeout", SessionConfig.Voice);
+        while (m_VoiceSynthesizer != null && m_VoiceSynthesizer.IsBusy) yield return null;
+        SuccessFeedbackBusy = false; m_SuccessRoutine = null;
     }
 
     void HandleObjectFound(int roundIndex) => PlaySuccessFeedback();

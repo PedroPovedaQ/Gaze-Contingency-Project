@@ -51,6 +51,7 @@ public sealed class SharedGazeStream : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         gameObject.AddComponent<GazeDiagnosticView>();
+        gameObject.AddComponent<NativeGazeRecorder>();
     }
     void OnEnable() => InputSystem.onAfterUpdate += AfterInput;
     void OnDisable()
@@ -130,10 +131,17 @@ public sealed class SharedGazeStream : MonoBehaviour
         SaveQuickAlignmentResult();
     }
 
+    public bool ConfirmEntryAlignment()
+    {
+        if (!TryGetValid(out var sample) || !sample.headValid || RecordingError != null || !QuickAlignment.ConfirmGuided(Time.realtimeSinceStartupAsDouble)) return false;
+        SaveQuickAlignmentResult();
+        return RecordingError == null && QuickAlignment.IsActive;
+    }
+
     void SaveQuickAlignmentResult()
     {
         var result = QuickAlignment.Report;
-        if (result == null || result.outcome == "collecting" || result.id == m_FinalizedAlignmentId) return;
+        if (result == null || (result.outcome == "collecting" || result.outcome == "awaiting_confirmation") || result.id == m_FinalizedAlignmentId) return;
         try
         {
             if (RecordingError != null || string.IsNullOrEmpty(RecordingPath))

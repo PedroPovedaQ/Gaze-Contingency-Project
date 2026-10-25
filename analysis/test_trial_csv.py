@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 from pathlib import Path
 
-from trial_csv import export, read_summary
+from trial_csv import export, read_summary, missed_target_summary
 
 
 def vector(x=0, y=0, z=0):
@@ -182,6 +182,77 @@ class TrialCSVTests(unittest.TestCase):
         with (target / "trials.csv").open(newline="") as f:
             rows = list(csv.DictReader(f))
         return rows, report
+
+    def test_25_second_timeout_keeps_recorded_deadline(self):
+        self.summary["active_search_limit_seconds"] = 25
+        self.summary["objectives"][0].update(outcome="timeout", completed=False,
+            capture_at=-1, search_exposure_seconds=25)
+        self.records = [r for r in self.records if r.get("time", 0) < 6]
+        self.records += [{"kind": "trial_timeout", "time": 30, "searchSeconds": 25,
+                          "searchActive": False, "detail": "active_search_limit_seconds=25"},
+                         {"kind": "end", "time": 31, "complete": True}]
+        self.save()
+        rows, report = self.read()
+        self.assertEqual(float(rows[0]["active_search_limit_seconds"]), 25)
+        self.assertEqual(float(rows[0]["search_exposure_seconds"]), 25)
+        self.assertEqual(rows[0]["missed_target"], "1")
+        self.assertEqual(report["missed_targets"][0]["active_search_limit_seconds"], 25)
+
+    def test_timeout_is_terminal_without_selection_and_survives_late_audio(self):
+        self.summary["active_search_limit_seconds"] = 15
+        self.summary["objectives"][0].update(outcome="timeout", completed=False,
+            capture_at=-1, search_exposure_seconds=15)
+        self.records = [r for r in self.records if r.get("time", 0) < 6]
+        self.records += [
+            {"kind": "trial_timeout", "time": 20, "searchSeconds": 15, "searchActive": False},
+            {"kind": "audio_playback_start", "time": 20.1, "searchSeconds": 15,
+             "detail": "trial_timeout;text=Time up. Let's start the next round."},
+            {"kind": "selection", "time": 20.2, "searchSeconds": 15, "correct": True},
+            {"kind": "end", "time": 21, "complete": True},
+        ]
+        self.save()
+        rows, report = self.read()
+        self.assertEqual(rows[0]["missed_target"], "1")
+        self.assertEqual(rows[1]["missed_target"], "")
+        group = report["missed_targets"][0]
+        self.assertEqual(group["missed_target_count"], 1)
+        self.assertEqual(group["missed_target_denominator"], 1)
+        self.assertEqual(group["other_or_unresolved_count"], 1)
+        self.assertEqual(group["missed_target_percentage"], 100)
+        self.assertTrue((self.root / "export" / "missed_targets.csv").exists())
+        self.assertEqual(rows[0]["outcome"], "timeout")
+        self.assertEqual(rows[0]["completed"], "0")
+        self.assertEqual(float(rows[0]["search_exposure_seconds"]), 15)
+        self.assertEqual(rows[0]["time_to_final_selection_seconds"], "")
+
+    def test_missed_target_rate_keeps_practice_failure_legacy_and_deadlines_separate(self):
+        base = dict(participant_id="P1", run_number=1, block_index=0,
+                    voice_condition="selfsimilar", active_search_limit_seconds=15,
+                    is_practice=False)
+        rows = [{**base, "missed_target": value} for value in (0, 1, None, None)]
+        rows += [{**base, "missed_target": 1, "is_practice": True},
+                 {**base, "missed_target": 0, "active_search_limit_seconds": None},
+                 {**base, "missed_target": 1, "active_search_limit_seconds": 45},
+                 {**base, "missed_target": 0, "block_index": 1, "voice_condition": "neutral"}]
+        groups = missed_target_summary(rows)
+        self.assertEqual(len(groups), 4)
+        self.assertEqual(groups[0]["missed_target_percentage"], 50)
+        self.assertEqual(groups[0]["missed_target_denominator"], 2)
+        self.assertEqual(groups[0]["other_or_unresolved_count"], 2)
+        self.assertIsNone(groups[1]["missed_target_percentage"])
+        self.assertEqual(groups[1]["missed_target_denominator"], 0)
+        self.assertEqual(groups[2]["active_search_limit_seconds"], 45)
+        self.assertEqual(groups[3]["missed_target_percentage"], 0)
+
+    def test_technical_failure_is_not_a_missed_target(self):
+        self.summary["active_search_limit_seconds"] = 15
+        self.summary["objectives"][0].update(outcome="technical_failure", completed=False, capture_at=-1)
+        self.records = [r for r in self.records if r.get("time", 0) < 6]
+        self.save()
+        rows, report = self.read()
+        self.assertEqual(rows[0]["missed_target"], "")
+        self.assertIsNone(report["missed_targets"][0]["missed_target_percentage"])
+        self.assertEqual(report["missed_targets"][0]["missed_target_denominator"], 0)
 
     def test_outputs_one_row_files_counts_clocks_and_geometry(self):
         rows, report = self.read()

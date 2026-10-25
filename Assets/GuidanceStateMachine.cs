@@ -1,6 +1,6 @@
 using System;
 
-public enum GuidancePhase { Inactive, Opening, Turning, Refining, AcquiringTarget, Acquired, ReadyToSelect, Suspended, Paused, Completed, Stopped, PointingTarget }
+public enum GuidancePhase { Inactive, Opening, Turning, Refining, AcquiringTarget, Acquired, ReadyToSelect, Suspended, Paused, Completed, Stopped, PointingTarget, TimedOut }
 public enum GuidanceAction { None, Direction, Progress, Arrival, ConfirmGaze, ConfirmPointing, SelectionReminder, ReturnTarget, ReturnBearing, ReturnWall }
 
 /// <summary>Single owner of guidance qualification, phase transitions and action priority.

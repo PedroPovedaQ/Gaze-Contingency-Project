@@ -37,7 +37,14 @@ public sealed class TrialReviewArm
         float solved=Mathf.Clamp(distance,Mathf.Abs(upper-lower)+.0001f,upper+lower-.0001f);
         ReachLimited=Mathf.Abs(solved-distance)>.001f;
         var direction=distance>.00001f?displacement/distance:body.forward;
-        var pole=Vector3.ProjectOnPlane(body.right*m_Side*.5f+Vector3.down,direction);
+        // Keep the elbow behind the hand: a down-only pole projects forward
+        // when a controller is held close to the chest, folding the forearm
+        // backward. Use the torso frame so the bend follows seated turns.
+        // A controller can cross the chest centerline. Give the right elbow an
+        // outward preference as well, otherwise a backward-only bend buries
+        // the upper arm and elbow inside the torso at these recorded poses.
+        var bend=m_Side>0?-body.forward*.75f+body.right*1.5f+Vector3.down:body.right*m_Side*.5f+Vector3.down;
+        var pole=Vector3.ProjectOnPlane(bend,direction);
         if(pole.sqrMagnitude<.00001f)pole=Vector3.ProjectOnPlane(body.forward,direction);
         float along=(upper*upper-lower*lower+solved*solved)/(2*solved);
         var elbow=shoulder+direction*along+pole.normalized*Mathf.Sqrt(Mathf.Max(0,upper*upper-along*along));

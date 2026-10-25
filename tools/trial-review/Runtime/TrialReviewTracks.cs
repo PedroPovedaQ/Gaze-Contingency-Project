@@ -9,7 +9,7 @@ public sealed class TrialReviewTracks
     {
         public TrialReplayRecord Snapshot;
         public double End;
-        public bool Completed;
+        public bool Completed, TimedOut;
         public readonly List<TrialReplayRecord> Events = new List<TrialReplayRecord>();
         public readonly List<Span> Gaze = new List<Span>();
     }
@@ -49,6 +49,7 @@ public sealed class TrialReviewTracks
             }
             if (r.kind!="sample" && r.kind!="header" && r.kind!="mesh") m_Current.Events.Add(r);
             if (r.kind=="selection" && r.correct) m_Current.Completed=true;
+            if (r.kind=="trial_timeout") { m_Current.TimedOut=true; CloseGaze(r.time); }
             if (r.kind=="transition" || r.kind=="search_start" || r.kind=="search_resumed" ||
                 r.kind=="search_paused" || r.kind=="application_paused" || r.kind=="stop" || r.kind=="end") CloseGaze(r.time);
         }

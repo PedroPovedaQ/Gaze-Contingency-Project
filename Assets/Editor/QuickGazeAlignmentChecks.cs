@@ -92,6 +92,55 @@ public static class QuickGazeAlignmentChecks
         newParticipant.raySource = "HTC_binocular_mean"; newParticipant.participant = "another-person";
         alignment.Apply(newParticipant);
         Check(!alignment.IsActive && !newParticipant.alignmentApplied, "Participant changes cannot reuse an offset");
+        alignment.BeginGuided(Vector3.zero, Quaternion.identity, time += 10);
+        for (int dot = 0; dot < 3; dot++)
+        {
+            FeedPoint(alignment, ref time, dot + 1, 1);
+            Check(!alignment.IsActive, "Timed fit dots never directly enable a correction");
+        }
+        Check(Mathf.Abs(alignment.Report.yawCorrectionDegrees + 2) < .01f &&
+            Mathf.Abs(alignment.Report.pitchCorrectionDegrees + 1) < .01f,
+            "Guided entry averages all three dot mean offsets equally");
+        Check(alignment.Report.assumedFixation && alignment.TargetIndex == 3, "Instruction-based fixation assumption is documented");
+        Check(!alignment.ConfirmGuided(time), "Cannot accept before independent shapes");
+        for (int shape = 0; shape < 3; shape++) FeedPoint(alignment, ref time, 2, 1);
+        Check(alignment.AwaitingConfirmation && !alignment.IsActive && alignment.Report.points.Count == 6,
+            "Three independent shapes leave correction pending explicit OK");
+        var preview = Sample(time, Vector3.zero, Quaternion.identity, alignment.CurrentTarget, 2, 1);
+        preview.unalignedWorldDirection = preview.worldDirection;
+        Check(Vector3.Angle(alignment.PreviewDirection(preview), alignment.CurrentTarget.normalized) < .03f,
+            "Candidate preview accurately illuminates independent shapes");
+        var unmodified = preview.worldDirection; alignment.Apply(preview);
+        Check(preview.worldDirection == unmodified && !preview.alignmentApplied, "Pending fit does not alter guidance or recorded used ray");
+        Check(alignment.ConfirmGuided(time) && alignment.Report.userConfirmed && alignment.IsActive,
+            "Only explicit acceptance activates the checked correction");
+        alignment.BeginGuided(Vector3.zero, Quaternion.identity, time += 10);
+        for (int dot = 0; dot < 3; dot++) FeedPoint(alignment, ref time, 2, 1);
+        FeedPoint(alignment, ref time, -2, -1);
+        Check(!alignment.IsActive && alignment.Report.outcome == "rejected", "Incorrect independent shape cannot pass");
+        alignment.BeginGuided(Vector3.zero, Quaternion.identity, time += 10);
+        // Regression fixture derived from the three recorded dot means in the rejected
+        // a4e004... headset attempt. This tests the algorithm, not hardware accuracy.
+        FeedPoint(alignment, ref time, .902891f, 4.102316f);
+        FeedPoint(alignment, ref time, -.060690f, 4.789500f);
+        FeedPoint(alignment, ref time, 1.812642f, 4.954318f);
+        Check(alignment.IsRunning && alignment.TargetIndex == 3 && !alignment.IsActive,
+            "A dot above five degrees must not reject an acceptable three-dot mean");
+        Check(new Vector2(alignment.Report.yawCorrectionDegrees, alignment.Report.pitchCorrectionDegrees).magnitude < 5,
+            "Recorded three-dot mean remains within the unchanged correction cap");
+        for (int shape = 0; shape < 3; shape++) FeedPoint(alignment, ref time, .884948f, 4.615378f);
+        Check(alignment.AwaitingConfirmation && !alignment.IsActive, "Mean fit still requires independent checks and explicit OK");
+        alignment.BeginGuided(Vector3.zero, Quaternion.identity, time += 10);
+        for (int dot = 0; dot < 3; dot++) FeedPoint(alignment, ref time, 6, 0);
+        Check(alignment.Report.points.Count == 3 && alignment.Report.outcome == "rejected" && !alignment.IsActive &&
+            !alignment.ConfirmGuided(time), "Oversized completed mean still rejects without applying an offset");
+        alignment.BeginGuided(Vector3.zero, Quaternion.identity, time += 10);
+        var countdownStart = time;
+        for (int n = 0; n < 120; n++)
+        { time += .02; alignment.Observe(Sample(time, Vector3.zero, Quaternion.identity, alignment.CurrentTarget, 2, 1)); }
+        Check(alignment.PointProgress == 0 && alignment.CountdownRemaining(time) > 0, "No samples collected during 3-2-1");
+        alignment.CancelOrClear("Skip", time);
+        Check(!alignment.IsActive && !alignment.AwaitingConfirmation, "Skip cancels guided entry");
         Debug.Log("[QuickGazeAlignmentChecks] PASS: independent checks, head-relative bias, immutable raw gaze, source change, gaps, duplicates, timeout, large bias and zero bias. Hardware validation remains required.");
     }
 
@@ -99,7 +148,7 @@ public static class QuickGazeAlignmentChecks
     {
         int index = alignment.TargetIndex;
         // Fixed head; targets stay at their recorded world positions.
-        for (int i = 0; i < 150 && alignment.IsRunning && alignment.TargetIndex == index; i++)
+        for (int i = 0; i < 400 && alignment.IsRunning && alignment.TargetIndex == index; i++)
         {
             time += .02;
             var sample = Sample(time, Vector3.zero, Quaternion.identity, alignment.CurrentTarget, yaw, pitch);

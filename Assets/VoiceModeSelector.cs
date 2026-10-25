@@ -721,7 +721,7 @@ public class VoiceModeSelector : MonoBehaviour
         m_LiveStatus?.Set("ready", "Experiment ready", true, 1);
         RefreshChoices();
         SelectionCompleted?.Invoke();
-        SetText(message + "\n\nStay seated. The center-and-begin step is next.");
+        SetText(message + "\n\nStay seated. Three-dot calibration is next.");
         // Leave the confirmation up briefly, then remove the panel.
         if (m_CanvasGO != null) Destroy(m_CanvasGO, SessionConfig.DevelopmentQuickTest ? 0f : 3.0f);
         enabled = false;

@@ -265,7 +265,7 @@ public sealed partial class TrialReviewApp
             var track=m_Tracks.For(trial);
             string duration=track==null?"":Clock(track.End-trial.time);
             bool selected=trial==m_Timeline.State.Trial;
-            if(GUILayout.Button($"{(selected?"› ":"")}{TrialNumber(trial):00}     {duration}\n|θ| {trial.absoluteTheta}°  ·  {(track?.Completed==true?"Selected":"Recorded")}",selected?m_ActiveRow:m_Row,GUILayout.Height(59)))SelectTrial(trial);
+            if(GUILayout.Button($"{(selected?"› ":"")}{TrialNumber(trial):00}     {duration}\n|θ| {trial.absoluteTheta}°  ·  {(track?.Completed==true?"Selected":track?.TimedOut==true?"Time up":"Recorded")}",selected?m_ActiveRow:m_Row,GUILayout.Height(59)))SelectTrial(trial);
             count++;
         }
         if(count==0)GUILayout.Label("No matching trials",m_MutedLabel);
@@ -282,6 +282,7 @@ public sealed partial class TrialReviewApp
         m_GuidanceState.Prepare(m_Timeline,m_Time,m_Sequence,WaitingForHeadset);
         m_Environment.Prepare(m_Timeline.State.Trial,m_ShowWalls,m_ShowRoom);
         m_Actors.Prepare(m_Timeline,m_Time,m_Renderer.RecordedHead,m_ShowBody,m_Renderer.ShowControllers,m_ShowEyeRay,m_Correction);
+        if(m_Actors.RightVisible)m_Renderer.AttachControllerRay(m_Actors.RightControllerTip);
         m_Vicinity.Prepare(m_Timeline,m_Renderer,m_Time,m_Sequence,m_Actors.GazeAvailable&&!WaitingForHeadset,m_Actors.GazeRay,m_ShowDetectionRing,m_GuidanceState.Current);
         // The orbit follows the fixed seated center, never per-frame head translation.
         if(!m_Renderer.RecordedHead)

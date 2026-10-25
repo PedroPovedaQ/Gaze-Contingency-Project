@@ -39,6 +39,10 @@ public sealed class TrialReplayRecord
     public GuidanceStateSnapshot guidanceState;
     public float dwell, audioVolume = 0.7f;
     public string hoveredId, targetId, layout;
+    // Additive schema-2 trial geometry. Absent flag means legacy inferred bounds.
+    // Bottom is relative to the recording origin, in the same local frame as saved objects.
+    public bool hasSearchPlaneBounds;
+    public float searchPlaneBottom, searchPlaneHeight;
     public TrialReplayObject[] objects;
     public TrialReplayMesh[] meshes;
     public TrialReplayTransform[] changes;

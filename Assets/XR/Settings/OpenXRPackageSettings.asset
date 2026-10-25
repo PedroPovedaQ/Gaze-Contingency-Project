@@ -766,6 +766,28 @@ MonoBehaviour:
   targetOpenXRApiVersion: 
   required: 0
   customRuntimeLoaderName: 
+--- !u!114 &-4885143529157437045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecf86d16125e4d049cd2be4ad0d04734, type: 3}
+  m_Name: NativeGazeTimestampFeature Android
+  m_EditorClassIdentifier: Assembly-CSharp::NativeGazeTimestampFeature
+  m_enabled: 1
+  nameUi: Gaze runtime timestamp diagnostics
+  version: 1.0.0
+  featureIdInternal: research.gaze.runtime-timestamps
+  openxrExtensionStrings: 
+  company: Gaze Contingency Project
+  priority: 0
+  targetOpenXRApiVersion: 
+  required: 0
+  customRuntimeLoaderName: 
 --- !u!114 &-4668447666386784508
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1236,6 +1258,7 @@ MonoBehaviour:
   - {fileID: -2262522482964328841}
   - {fileID: 4746087976659597858}
   - {fileID: -3652904001652368524}
+  - {fileID: -4885143529157437045}
   - {fileID: 646529887170889815}
   - {fileID: -1516735172755849795}
   - {fileID: -5098250373170711097}

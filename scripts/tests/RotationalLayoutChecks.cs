@@ -56,6 +56,10 @@ class RotationalLayoutChecks
         Check(!farInvalid, "invalid gaze does not produce a strong cue");
         Check(Array.IndexOf(DirectionalHintPolicy.AllPhrases(), "Turn to your left.") >= 0 &&
             Array.IndexOf(DirectionalHintPolicy.AllPhrases(), "Turn to your right.") >= 0, "both strong cues are preloaded");
+        Check(Math.Abs(RotationalSearchLayout.DefaultWallHeight - 3.148f * .7f) < .00001f,
+            "full default wall is 30 percent shorter");
+        Check(Math.Abs(RotationalSearchLayout.DefaultMaxHeight + RotationalSearchLayout.TopMargin -
+            RotationalSearchLayout.DefaultWallHeight) < .00001f, "object top preserves wall margin");
         foreach (float radius in new[] { 1f, 1.5f, 3f })
         for (int seed = 42000; seed < 42030; seed++)
         {
@@ -70,7 +74,7 @@ class RotationalLayoutChecks
                 double a=p.azimuth*Math.PI/180;
                 Check(Math.Abs(p.x*Math.Sin(a)+p.z*Math.Cos(a)-radius)<0.00001, "objects stay on their wall");
                 Check(Math.Abs(p.x*Math.Cos(a)-p.z*Math.Sin(a)) <= radius*Math.Tan(Math.PI/8)-0.14999, "corner clearance");
-                Check(p.y >= 0.1f && p.y <= 3.048f, "floor height bounds");
+                Check(p.y >= RotationalSearchLayout.DefaultMinHeight && p.y <= RotationalSearchLayout.DefaultMaxHeight, "floor height bounds");
                 low=Math.Min(low,p.y); high=Math.Max(high,p.y);
                 Check(p.x==again[i].x && p.y==again[i].y && p.z==again[i].z, "seed reproduces all positions");
                 for(int j=0;j<i;j++)
@@ -79,7 +83,7 @@ class RotationalLayoutChecks
                     Check(x*x+y*y+z*z >= 0.039999, "minimum 20cm separation across all walls");
                 }
             }
-            Check(low < 0.3 && high > 2.8, "scatter covers the vertical range");
+            Check(low < 0.3 && high > RotationalSearchLayout.DefaultMaxHeight - .25f, "scatter covers the vertical range");
             for(int plane=0;plane<8;plane++)
             {
                 Check(counts[plane]==21,"21 objects per wall");
@@ -89,6 +93,35 @@ class RotationalLayoutChecks
                 Check(Math.Abs(r*Math.Cos(a)-w*Math.Sin(a)-r*Math.Cos(b)-w*Math.Sin(b))<0.00001,"connected corners Z");
             }
         }
+        // Exact assigned bearing from translated eyes, including wraparound and 180.
+        for (int start = 0; start < 8; start++)
+        foreach (int theta in new[] { 0, 45, -45, 90, -90, 135, -135, 180 })
+        foreach (float offset in new[] { -.08f, 0, .08f })
+        {
+            double a = start * Math.PI / 4;
+            float cx = (float)(1.5 * Math.Sin(a) + .04 * Math.Cos(a));
+            float cz = (float)(1.5 * Math.Cos(a) - .04 * Math.Sin(a));
+            int plane = (start + theta / 45 + 8) % 8;
+            Check(RotationalSearchLayout.TryTarget(1.5f, offset, -offset, cx, cz, theta, plane, 20, 1.7f, out var target),
+                "feasible translated eye intersects assigned wall");
+            double crossAngle = Math.Atan2(cx - offset, cz + offset);
+            double targetAngle = Math.Atan2(target.x - offset, target.z + offset);
+            double error = ((targetAngle - crossAngle) * 180 / Math.PI - theta + 540) % 360 - 180;
+            Check(Math.Abs(error) < .0001, "exact assigned theta survives off-center eye and wall wrap");
+            var constrained = RotationalSearchLayout.Build(1.5f, seed: start + theta, pinnedTarget: target);
+            int index = plane * 21 + 20;
+            Check(constrained[index].x == target.x && constrained[index].y == target.y && constrained[index].z == target.z,
+                "target reservation survives distractor generation even at last slot");
+            for (int j = 0; j < constrained.Length; j++)
+            for (int k = 0; k < j; k++)
+            {
+                double x=constrained[j].x-constrained[k].x, y=constrained[j].y-constrained[k].y, z=constrained[j].z-constrained[k].z;
+                Check(x*x+y*y+z*z >= .039999, "constrained layout retains all-pair clearance");
+            }
+        }
+        Check(!RotationalSearchLayout.TryTarget(1.5f, 0, 0, 0, 0, 45, 1, 0, 1, out _), "degenerate cross abstains");
+        Check(!RotationalSearchLayout.TryTarget(1.5f, float.NaN, 0, 0, 1.5f, 45, 1, 0, 1, out _), "invalid eye abstains");
+        Check(!RotationalSearchLayout.TryTarget(1.5f, 2f, 0, 0, 1.5f, 90, 2, 0, 1, out _), "infeasible wall intersection abstains");
         var first=RotationalSearchLayout.Build(1.5f,seed:42);
         var next=RotationalSearchLayout.Build(1.5f,seed:43);
         Check(first[0].y!=next[0].y,"different trial seeds vary heights");
