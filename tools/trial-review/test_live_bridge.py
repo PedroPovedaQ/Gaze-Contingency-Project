@@ -7,7 +7,7 @@ import threading
 import unittest
 from unittest.mock import patch
 
-from live_bridge import Mirror, Receiver, safe_relative, main, LINK_SCAN_CHUNK, Adb, validate_headset_state
+from live_bridge import Mirror, Receiver, safe_relative, main, LINK_SCAN_CHUNK, Adb, validate_headset_state, validate_control, atomic_json
 
 
 class Remote:
@@ -33,6 +33,50 @@ class Remote:
 
 
 class LiveBridgeTests(unittest.TestCase):
+    def test_remote_controls_validate_session_age_capability_and_types(self):
+        state = dict(schema=1, sessionId='current', revision=12, wallControlAvailable=True, phase='ready', updatedUtc=300)
+        command = dict(schema=1, id='a'*32, sessionId='current', observedRevision=10, observedUtc=299,
+                       action='set_walls', wallsVisible=False, createdUtc=100)
+        self.assertEqual(validate_control(command,state,101),command)
+        for change in ({'sessionId':'old'},{'createdUtc':80},{'createdUtc':102},{'createdUtc':float('nan')},
+                       {'observedRevision':99},{'observedRevision':-1},{'wallsVisible':'false'},
+                       {'action':'start_trial'},{'id':"x'; touch bad"},{'observedUtc':float('nan')}):
+            with self.assertRaises(ValueError): validate_control(dict(command,**change),state,101)
+        for change in ({'wallControlAvailable':False},{'phase':'paused'},{'revision':35}):
+            with self.assertRaises(ValueError): validate_control(command,dict(state,**change),101)
+        remote=Adb('adb','127.0.0.1:5555','test.app')
+        with patch.object(remote,'headset_state',return_value=state), patch('live_bridge.time.time',return_value=101), patch.object(remote,'command') as send:
+            remote.send_control(command)
+            self.assertIn(' && mv ',send.call_args.args[1])
+            self.assertIn('live-headset-command.json.tmp',send.call_args.args[1])
+        self.assertEqual(remote.parse_inventory(('10|1|'+remote.root+'PreparationLogs/live-headset-command.json').encode()),{})
+
+    def test_receiver_control_nonblocking_deduplicated_and_stale_rejected(self):
+        with tempfile.TemporaryDirectory() as d:
+            remote=Remote(); receiver=Receiver(Path(d),remote)
+            gate=threading.Event(); entered=threading.Event(); sent=[]
+            def send(command): entered.set(); gate.wait(2); sent.append(command)
+            remote.send_control=send
+            receiver.headset_state=dict(sessionId='live',revision=2,wallControlAvailable=True,phase='ready')
+            receiver.headset_observed=100
+            command=dict(schema=1,id='b'*32,sessionId='live',observedRevision=2,observedUtc=100,
+                         action='set_walls',wallsVisible=False,createdUtc=100)
+            atomic_json(Path(d)/'headset-command.json',command)
+            try:
+                with patch('live_bridge.time.time',return_value=101):
+                    receiver.poll_control()
+                    self.assertTrue(entered.wait(1))
+                    self.assertEqual(receiver.control_result,'sending')
+                    receiver.poll_control()  # Returns despite blocked ADB command.
+                    gate.set(); receiver.control_future.result(timeout=2)
+                    receiver.poll_control(); receiver.poll_control()
+                    self.assertEqual(len(sent),1,'Never reapply an outstanding file every poll')
+                atomic_json(Path(d)/'headset-command.json',dict(command,id='c'*32,createdUtc=110))
+                with patch('live_bridge.time.time',return_value=111): receiver.poll_control()
+                self.assertEqual(receiver.control_result,'rejected')
+                self.assertEqual(len(sent),1,'Stale heartbeat disables commands even with a new Mac request')
+            finally: gate.set(); receiver.close()
+
     def test_preparation_heartbeat_requires_change_and_expires_without_refresh(self):
         from concurrent.futures import Future
         with tempfile.TemporaryDirectory() as d:

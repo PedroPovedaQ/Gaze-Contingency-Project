@@ -223,6 +223,14 @@ public sealed class TrialReplayRecorder : MonoBehaviour
             m_TrialReady = false;
         }
     }
+    public void RecordHeadsetControl(string detail)
+    {
+        if (!m_HeaderWritten || m_Finished) return;
+        var record = Record("headset_setting_changed");
+        record.detail = detail;
+        Write(record);
+    }
+
     void SearchStarted(int round) { if (m_HeaderWritten) Write(Record("search_start")); }
     void Checkpoint(string name) { if (m_HeaderWritten) Write(Record(name)); }
     void ReadinessEvent(string name)

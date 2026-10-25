@@ -62,6 +62,14 @@ public static class TrialReviewLiveChecks
         Check(captions.At(1.5,long.MaxValue)=="Look left.","rewinding restores caption");
         captions.Clear();Check(captions.At(2,long.MaxValue)==null,"run change clears captions");
         Debug.Log("TRIAL_REVIEW_SUBTITLES_PASS start, cancellation, overlap, pause, rewind, run reset, no WAV dependency");
+        var control = new TrialReviewHeadsetState { wallControlAvailable = true, phase = "ready" };
+        Check(TrialReviewHeadsetState.CanControl(control,true,true,false),"fresh live headset controls are enabled before a trial");
+        Check(!TrialReviewHeadsetState.CanControl(control,false,true,false),"stale controls are disabled");
+        Check(!TrialReviewHeadsetState.CanControl(control,true,false,false),"saved review cannot control headset");
+        Check(!TrialReviewHeadsetState.CanControl(control,true,true,true),"detached review cannot control headset");
+        control.phase="paused"; Check(!TrialReviewHeadsetState.CanControl(control,true,true,false),"sleep disables controls");
+        control.phase="ready"; control.wallControlAvailable=false;
+        Check(!TrialReviewHeadsetState.CanControl(control,true,true,false),"legacy headset cannot accept controls");
         var loading=new TrialReviewHeadsetState{schema=1,sessionId="session",phase="preparing",progressKnown=true,progress01=.4f};
         Check(TrialReviewHeadsetState.Fresh(loading,true,100,99),"pre-trial preparation heartbeat is available without a replay");
         Check(!TrialReviewHeadsetState.Fresh(loading,true,105,99),"stale preparation cannot masquerade as live loading");

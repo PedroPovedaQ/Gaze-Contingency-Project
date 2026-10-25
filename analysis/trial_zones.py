@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 POLICY = "octagon_ray_wall_debounce_v1"
 STABLE_SECONDS = 0.15  # Export policy for jitter suppression, not validated fixation duration.
 MAX_GAP_SECONDS = 0.1
+SUPPORTED_LAYOUTS = ("rotational_scatter_v4", "rotational_scatter_v6_precue_theta")
 
 
 def vector(value):
@@ -79,7 +80,9 @@ class ZoneVisits:
             return
         nx, nz = math.sin(math.radians(45*wall)), math.cos(math.radians(45*wall))
         radius = pos[0]*nx + pos[2]*nz
-        if radius <= 0 or abs(pos[0]*nz-pos[2]*nx) > 0.001:
+        lateral = abs(pos[0]*nz-pos[2]*nx)
+        limit = radius * math.tan(math.pi/8) if self.layout == "rotational_scatter_v6_precue_theta" else .001
+        if radius <= 0 or lateral > limit:
             return
         self.radius, self.cross_y = radius, pos[1]
 
@@ -90,7 +93,7 @@ class ZoneVisits:
         # Keep the last sensor identity: a repeated delivery cannot become a new sample.
 
     def observe(self, record):
-        if self.layout != "rotational_scatter_v4" or self.radius is None:
+        if self.layout not in SUPPORTED_LAYOUTS or self.radius is None:
             return
         if record.get("searchActive") is not True or record.get("gazeAvailable") is not True or record.get("gazeTracked") != 1:
             self.gap()
@@ -138,7 +141,7 @@ class ZoneVisits:
             zone_revisit_count=self.revisits if available else None,
             zone_observation_gap_count=self.gaps,
             zone_measurement_status="observed_stable_gaze_walls" if available else
-                "missing_recorded_cross_or_supported_layout" if self.radius is None or self.layout != "rotational_scatter_v4"
+                "missing_recorded_cross_or_supported_layout" if self.radius is None or self.layout not in SUPPORTED_LAYOUTS
                 else "no_stable_valid_gaze_zone",
             zone_measurement_method=POLICY,
             zone_stability_seconds=STABLE_SECONDS,

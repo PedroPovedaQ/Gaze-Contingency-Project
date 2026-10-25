@@ -51,6 +51,7 @@ public static class TrialReviewBuild
         TrialReviewCatalogChecks.Run(timeline);
         TrialReviewGazeLineChecks.Run();
         TrialReviewInterfaceChecks.Run(timeline);
+        TrialReviewThetaChecks.Run(timeline);
         TrialReviewJevChecks.Run();
         Assert(timeline.Trials.Count==3 && timeline.Meshes.Count==3,"Trial/mesh reconstruction");
         using(var renderer=new TrialReplayRenderer(timeline){RecordedHead=true})

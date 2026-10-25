@@ -22,6 +22,7 @@ from mega_csv import csv_rows, replay_rows
 from motion_csv import write_motion_package
 from trial_zones import ZoneVisits
 from tlx_scoring import score_tlx
+from theta_snapshot import FIELDS as THETA_FIELDS, flatten as flatten_theta
 
 SCHEMA = "trial-performance-subjective-v2"
 CONTACT_METHOD = "first_explicitly_tracked_ray_intersection_snapshot_v1"
@@ -111,6 +112,8 @@ BASE_FIELDS = [
     "signed_theta_deg",
     "absolute_theta_deg",
     "theta_reference",
+    *THETA_FIELDS,
+    "direction_policy",
     "target_x",
     "target_y",
     "target_z",
@@ -348,11 +351,16 @@ class Trial:
             if self.target and change.get("id") == self.target.get("id"):
                 self.target.update(change)
                 self.flags.add("target_moved_during_recording")
+                if not self.started:
+                    pos = vector(change.get("position"))
+                    if pos:
+                        self.planned_target_y = pos[1]
+                        self.row.update(zip(("target_x", "target_y", "target_z"), pos))
         if kind == "search_start":
             if self.started:
                 raise ValueError(f"Duplicate search onset: {self.row['trial_id']}")
             self.started = True
-            if (self.zones.layout == "rotational_scatter_v4" and
+            if (self.zones.layout in ("rotational_scatter_v4", "rotational_scatter_v5", "rotational_scatter_v6_precue_theta") and
                     self.zones.cross_y is not None and self.planned_target_y is not None):
                 self.row.update(
                     scheduled_height_delta_m=self.planned_target_y-self.zones.cross_y,
@@ -668,6 +676,7 @@ def read_summary(run: Path) -> tuple[dict, dict[str, Trial]]:
             "height_assignment_policy": summary.get("height_assignment_policy"),
             "schedule_seed": summary.get("schedule_seed"),
             "theta_reference": summary.get("theta_reference"),
+            "direction_policy": summary.get("direction_policy"),
             "selection_method": summary.get("selection_method"),
             "interaction_policy": summary.get("interaction_policy"),
             "neutral_catalog_version": summary.get("neutral_catalog_version"),
@@ -682,6 +691,7 @@ def read_summary(run: Path) -> tuple[dict, dict[str, Trial]]:
             "layout_seed",
         ):
             row[key] = source.get(key)
+        row.update(flatten_theta(source.get("pre_cue_theta"), trial_index=index, assigned=source.get("signed_theta_deg")))
         for source_key, dest in [
             ("search_started_at", "search_started_at_unity_seconds"),
             ("capture_at", "capture_at_unity_seconds"),

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Wireless ADB receiver. Copies evidence; never starts trials or changes source files."""
+"""Wireless ADB receiver. Copies evidence and sends explicit, session-bound wall display commands. Never starts trials."""
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 import fcntl
@@ -146,7 +146,7 @@ class Adb:
         for line in raw.decode().splitlines():
             size, modified, path = line.split('|', 2)
             name = safe_relative(path.removeprefix(self.root))
-            if name.endswith(('.tmp', '.receiving')) or name == 'PreparationLogs/live-headset-state.json': continue
+            if name.endswith(('.tmp', '.receiving')) or name in ('PreparationLogs/live-headset-state.json', 'PreparationLogs/live-headset-command.json'): continue
             result[name] = (int(size), int(modified))
         return result
 
@@ -169,6 +169,14 @@ class Adb:
         if len(raw) > 4096: raise ValueError('Oversized headset state')
         return validate_headset_state(json.loads(raw))
 
+    def send_control(self, command):
+        state = self.headset_state()
+        validate_control(command, state, time.time())
+        path = shlex.quote(self.root + 'PreparationLogs/live-headset-command.json')
+        pending = shlex.quote(self.root + 'PreparationLogs/live-headset-command.json.tmp')
+        payload = shlex.quote(json.dumps(command, separators=(',', ':')))
+        self.command('shell', "printf '%s' " + payload + ' > ' + pending + ' && mv ' + pending + ' ' + path, timeout=2)
+
     def digest(self, name):
         result = self.command('shell', 'sha256sum ' + shlex.quote(self.root + safe_relative(name)), timeout=45).decode().split()[0]
         if not re.fullmatch(r'[0-9a-f]{64}', result): raise OSError('Invalid remote digest')
@@ -187,8 +195,33 @@ def validate_headset_state(value):
             raise ValueError('Invalid headset state number')
     if not 0 <= value['progress01'] <= 1 or not isinstance(value.get('progressKnown'), bool):
         raise ValueError('Invalid headset progress')
-    return {key: value.get(key) for key in
-            ('schema', 'sessionId', 'revision', 'phase', 'progressKnown', 'progress01', 'updatedUtc')}
+    result = {key: value.get(key) for key in
+              ('schema', 'sessionId', 'revision', 'phase', 'progressKnown', 'progress01', 'updatedUtc')}
+    result.update(wallControlAvailable=value.get('wallControlAvailable') is True,
+                  wallsVisible=value.get('wallsVisible') is True,
+                  commandId=value.get('commandId') if isinstance(value.get('commandId'), str) else '',
+                  commandResult=value.get('commandResult') if value.get('commandResult') in ('applied', 'rejected') else '')
+    return result
+
+
+def validate_control(command, state, now):
+    if not isinstance(command, dict) or command.get('schema') != 1 or command.get('action') != 'set_walls':
+        raise ValueError('Unsupported headset control')
+    if not isinstance(command.get('id'), str) or not re.fullmatch(r'[0-9a-f]{32}', command['id']):
+        raise ValueError('Invalid control ID')
+    created = command.get('createdUtc')
+    if type(created) not in (float, int) or not math.isfinite(created) or not 0 <= now-created <= 10:
+        raise ValueError('Headset control expired; send again while connected')
+    observed = command.get('observedUtc')
+    if type(observed) not in (float, int) or not math.isfinite(observed):
+        raise ValueError('Invalid headset observation time')
+    revision = command.get('observedRevision')
+    if (not state or state.get('wallControlAvailable') is not True or state.get('phase') == 'paused' or
+            command.get('sessionId') != state.get('sessionId') or type(command.get('wallsVisible')) is not bool or
+            type(revision) is not int or type(state.get('revision')) is not int or
+            revision <= 0 or not 0 <= state['revision']-revision <= 20):
+        raise ValueError('Headset session unavailable or changed')
+    return command
 
 
 def wireless_endpoint(adb, requested):
@@ -237,6 +270,7 @@ class Receiver:
         self.checked_files = {}; self.checked_at = float('-inf')
         self.headset_state = None; self.headset_polled = float('-inf')
         self.headset_observed = 0; self.headset_worker = None; self.headset_future = None
+        self.control_id = ''; self.control_result = ''; self.control_future = None
 
     def close(self):
         if self.headset_worker is not None: self.headset_worker.shutdown(wait=True)
@@ -378,8 +412,34 @@ class Receiver:
             self.headset_polled = time.monotonic()
             self.headset_future = self.headset_worker.submit(reader)
 
+    def poll_control(self):
+        if self.control_future is not None:
+            if not self.control_future.done(): return
+            try:
+                self.control_future.result()
+                self.control_result = 'sent'
+            except (OSError, ValueError, subprocess.SubprocessError):
+                self.control_result = 'failed'
+            self.control_future = None
+        path = self.output / 'headset-command.json'
+        if not path.is_file(): return
+        try:
+            if path.stat().st_size > 4096: return
+            command = json.loads(path.read_text())
+            if not isinstance(command, dict) or command.get('id') == self.control_id: return
+            self.control_id = command.get('id', '')
+            self.control_result = 'rejected'
+            if not 0 < time.time() - self.headset_observed < 5: return
+            validate_control(command, self.headset_state, time.time())
+            if self.headset_worker is None: self.headset_worker = ThreadPoolExecutor(max_workers=1)
+            self.control_result = 'sending'
+            self.control_future = self.headset_worker.submit(self.remote.send_control, command)
+        except (OSError, ValueError):
+            self.control_result = 'rejected'
+
     def cycle(self):
         self.poll_headset_state()
+        self.poll_control()
         self.finish_verification()
         inventory, full_inventory = self.current_inventory()
         replay_dirs = sorted({str(PurePosixPath(p).parent) for p in inventory if p.startswith('GazeReplays/') and p.endswith('/recording.jsonl')})
@@ -477,6 +537,7 @@ class Receiver:
             'replayUpdatedUtc': self.replay_updated, 'replayPendingBytes': self.replay_pending,
             'recording': self.latest, 'archive': str(self.mirror.directory),
             'headsetState': self.headset_state, 'headsetStateObservedUtc': self.headset_observed,
+            'controlId': self.control_id, 'controlResult': self.control_result,
             'files': len(entries), 'verifiedFiles': sum(bool(x.get('verified')) for x in entries),
             'receivedBytes': sum(x.get('received', 0) for x in entries),
             'pendingBytes': sum(max(0, x.get('size', 0)-x.get('received', 0)) for x in entries),

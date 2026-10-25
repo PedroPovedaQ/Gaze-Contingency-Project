@@ -183,6 +183,34 @@ class TrialCSVTests(unittest.TestCase):
             rows = list(csv.DictReader(f))
         return rows, report
 
+    def test_exact_precue_snapshot_export_and_legacy_blanks(self):
+        from test_theta_snapshot import snapshot
+        self.summary["objectives"][0]["pre_cue_theta"] = snapshot()
+        self.save()
+        rows, _ = self.read()
+        row = next(r for r in rows if r["trial_id"] == self.tid)
+        self.assertEqual(row["pre_cue_theta_realized_signed_deg"], "90")
+        self.assertEqual(row["pre_cue_theta_assignment_error_deg"], "0")
+        self.assertEqual(row["pre_cue_theta_eye_origin_x_m"], "0.2")
+        self.assertEqual(row["pre_cue_theta_realtime_seconds"], "15.25")
+        self.assertEqual(row["pre_cue_theta_coordinate_frame"], "unity_world")
+        legacy = next(r for r in rows if r["trial_id"] != self.tid and r["is_practice"] == "0")
+        self.assertEqual(legacy["pre_cue_theta_status"], "not_recorded")
+        self.assertEqual(legacy["pre_cue_theta_realized_signed_deg"], "")
+        for path in (self.root / "export").glob("trial_*_performance_subjective.csv"):
+            with path.open() as stream:
+                per_trial = list(csv.DictReader(stream))[0]
+            if per_trial["trial_id"] == self.tid:
+                self.assertEqual(per_trial["pre_cue_theta_eye_origin_x_m"], "0.2")
+
+    def test_corrupt_snapshot_cannot_publish_export(self):
+        from test_theta_snapshot import snapshot
+        self.summary["objectives"][0]["pre_cue_theta"] = snapshot(index=7)
+        self.save()
+        with self.assertRaisesRegex(ValueError, "round mismatch"):
+            self.read()
+        self.assertFalse((self.root / "export").exists())
+
     def test_25_second_timeout_keeps_recorded_deadline(self):
         self.summary["active_search_limit_seconds"] = 25
         self.summary["objectives"][0].update(outcome="timeout", completed=False,
@@ -770,6 +798,19 @@ class TrialCSVTests(unittest.TestCase):
         self.assertEqual(rows[0]["target_minus_head_height_m"], "1")
         self.assertEqual(rows[0]["completion_timing_definition"], "final_correct_controller_selection")
         self.assertNotIn("time_to_final_correct_zone_seconds", rows[0])
+
+    def test_v7_export_uses_final_target_after_offset_cross_readiness(self):
+        self.records[1]["layout"] = "rotational_scatter_v6_precue_theta"
+        target = next(o for o in self.records[1]["objects"] if o["target"])
+        self.records.insert(2, dict(kind="readiness_completed", time=1.5, trialId="a",
+            readinessPosition=vector(.1,.4,1.5), readinessWall=0,
+            changes=[dict(id=target["id"], position=vector(0,1.7,2), rotation=dict(x=0,y=0,z=0,w=1), scale=vector(.1,.1,.1))]))
+        self.save()
+        rows, _ = self.read()
+        self.assertAlmostEqual(float(rows[0]["scheduled_height_delta_m"]),1.3)
+        self.assertEqual(rows[0]["scheduled_height_reference_y_m"],"0.4")
+        self.assertAlmostEqual(float(rows[0]["target_minus_head_height_m"]),.7)
+        self.assertEqual(rows[0]["target_y"],"1.7")
 
     def test_legacy_completion_is_not_relabelled_controller_selection(self):
         self.records[1]["selectionMethod"] = "gaze_dwell"

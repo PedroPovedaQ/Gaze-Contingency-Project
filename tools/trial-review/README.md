@@ -1,5 +1,9 @@
 # Trial Review desktop app
 
+**Implemented October 25 — live headset controls:** While following **Live**, the Wi-Fi panel has a separate **Headset controls → Walls** button. It sets all eight headset wall outlines and degree labels together using the same API as the wrist setting; target objects, search geometry, schedule and trial clocks are unchanged. **Viewer walls** still affects only the desktop reconstruction. This control requires the updated headset build and a fresh, awake connection. The label reflects headset-reported state, including wrist changes, and requests show pending/confirmed/rejected status. Saved and detached review cannot send controls. Commands are session-bound, expire after ten seconds, and become invalid across sleep/focus changes. Accepted requests are retained under `PreparationLogs/controls_<launch-session>/commands.jsonl`; changes during an active replay also appear as `headset_setting_changed` events. Pre-trial changes use the standalone audit without starting a replay.
+
+**Implemented October 25 — theta v7:** **At cursor** displays recorded pre-cue assigned/realized angles, error, signed target height, eye/cross/target coordinates, gaze sequence and both realtime clocks. Coordinates are explicitly Unity world, separate from replay coordinates. Earlier cursors/legacy recordings remain unavailable. Repeated pre-search readiness attempts and backwards seeking retain the correct snapshot and finalized object positions. Selected-trial export adds exact `pre-cue-theta.jsonl`; **Final data** includes every flattened snapshot field. Condensed CSV adds five fields: snapshot status, realized signed/absolute angle, assignment error, and target-minus-cross height (22 columns total). These are recorded geometric measurements, not total physical rotation.
+
 **Implemented October 23 — compact walls:** new experiment recordings include `hasSearchPlaneBounds`, `searchPlaneBottom` (recording-local Y) and `searchPlaneHeight`. The viewer uses these exact vertical bounds for outlines and gaze display projection. Older files retain object-derived bounds and all recorded object positions; the viewer never applies a global 0.7 scale to historical data. Default new study walls are 2.2036 m tall with unchanged radius/count/size/separation.
 
 ## Condensed whiteboard CSV
@@ -12,7 +16,7 @@ dataset → Files**. Existing recordings generate it when reopened or when
 **Regenerate CSVs** is selected; earlier exports remain intact. Live mode waits
 for run end and verified transfer, as with the full export.
 
-The 17 columns are source participant ID, trial ID, block index, voice condition,
+The original 17 columns are source participant ID, trial ID, block index, voice condition,
 absolute wall theta, signed wall theta, actual signed head-to-target yaw,
 target-minus-head height, Euclidean target distance, delivered instruction count,
 active search time, first and final gaze contact time, first right-controller
@@ -44,8 +48,8 @@ Green markers indicate speak/playback, gray indicates wait/pending or legacy tel
 
 **Implemented locally, October 10, 2026.** The desktop viewer can receive the
 headset's existing recordings over wireless ADB, reconstruct the current run,
-and archive new runs automatically. No different study build or Unity server is
-required. The headset remains the source of truth and continues recording if
+and archive new runs automatically. Receiving recordings needs no Unity server. Remote headset controls require
+the updated study build. The headset remains the source of truth and continues recording if
 the computer disconnects. This is buffered live telemetry reconstruction, not
 passthrough screen video or a new sensor acquisition path.
 

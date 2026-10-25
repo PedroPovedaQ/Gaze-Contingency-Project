@@ -127,7 +127,7 @@ def prepare(project):
     shutil.copyfile(HERE / 'export_run.py', assets / 'StreamingAssets/export_run.py')
     analysis = assets / 'StreamingAssets/Analysis'
     analysis.mkdir(exist_ok=True)
-    for name in ['trial_csv', 'trial_column_dictionary', 'mega_csv', 'motion_csv', 'trial_zones', 'tlx_scoring',
+    for name in ['trial_csv', 'theta_snapshot', 'trial_column_dictionary', 'mega_csv', 'motion_csv', 'trial_zones', 'tlx_scoring',
                  'guidance_eval', 'guidance_audit', 'eye_quality', 'guidance_codex_judge']:
         (analysis / (name + '.py')).write_text(source('analysis/' + name + '.py'))
     notices = assets / 'StreamingAssets/ThirdPartyNotices'

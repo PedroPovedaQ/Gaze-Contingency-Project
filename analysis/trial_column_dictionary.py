@@ -58,9 +58,9 @@ DEFINITIONS = {
     "target_object_id": "Stable target ID within the recorded layout.",
     "target_shape": "Recorded target shape.", "target_color": "Recorded target color.",
     "target_plane": "Recorded target wall index.", "start_plane": "Recorded starting wall index.",
-    "signed_theta_deg": "Planned signed wall-to-wall turn; consult theta_reference for its origin.",
+    "signed_theta_deg": "Planned signed horizontal angle; consult theta_reference and schedule_version (v7 constrains eye-to-cross-to-target geometry).",
     "absolute_theta_deg": "Magnitude of planned signed turn; not actual accumulated head rotation.",
-    "theta_reference": "Recorded reference convention for planned wall angle.",
+    "theta_reference": "Recorded reference convention for the planned horizontal angle.",
     "coordinate_frame": "Coordinate system for target/head geometry; do not mix replay and world positions.",
     "target_distance_m": "Euclidean target-to-head distance at first tracked post-onset pose.",
     "target_minus_head_height_m": "Signed target Y minus head Y at first tracked post-onset pose.",
@@ -76,7 +76,7 @@ DEFINITIONS = {
     "target_identity_policy": "Recorded policy governing target identity disclosure and scheduling.",
     "height_assignment_policy": "Recorded policy for target height assignment; not proof of vertical balance.",
     "schedule_seed": "Recorded seed for schedule reproduction.", "layout_seed": "Recorded seed for object layout.",
-    "angle_pair": "Recorded angle-pair identifier from the schedule.",
+    "angle_pair": "Recorded allocation ID; v7 does not promise mirrored trials across blocks.",
     "selection_method": "Recorded interaction method, such as controller_ray_trigger.",
     "selecting_hand": "Hand recorded at final selection; historical left-hand data remain left-hand data.",
     "replay_file": "Matched source recording path.", "replay_recording_id": "Recording identity; scopes replay time.",
@@ -118,3 +118,20 @@ def definition(field: str) -> str:
     if field.startswith("source_schedule__"):
         return "Original planned schedule field: " + field.removeprefix("source_schedule__") + "."
     raise ValueError(f"No definition for exported column: {field}")
+
+# Additive fields retain snapshot clocks/frame separately from replay geometry.
+from theta_snapshot import SCALARS as THETA_SCALARS, VECTORS as THETA_VECTORS
+DEFINITIONS.update({
+    "pre_cue_theta_status": "recorded only for a complete validated snapshot; not_recorded means absent, never zero.",
+    "pre_cue_theta_reference": "Recorded pre-cue eye-origin to readiness-cross horizontal angle reference.",
+    "pre_cue_theta_coordinate_frame": "unity_world; these coordinates must not be combined with replay_fixed_origin positions.",
+    "direction_policy": "Recorded signed-angle allocation policy; independent v7 blocks are not mirrored pairs.",
+})
+for _source, _name in THETA_SCALARS.items():
+    DEFINITIONS["pre_cue_theta_" + _name] = (
+        "Exact recorded pre-cue snapshot field " + _source +
+        ". Angles are degrees, height is metres, clocks are app realtime seconds (not replay time); round is zero-based and gaze sequence identifies the source observation."
+    )
+for _source, _name in THETA_VECTORS.items():
+    for _axis in "xyz":
+        DEFINITIONS[f"pre_cue_theta_{_name}_{_axis}_m"] = f"Exact recorded {_source}.{_axis} in Unity world metres at pre-cue readiness completion."

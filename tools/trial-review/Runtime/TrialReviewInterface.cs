@@ -120,7 +120,7 @@ public sealed partial class TrialReviewApp
         HandlePlaybackKeyboard(Event.current, GUI.enabled, GUI.GetNameOfFocusedControl());
         Header(width);
         if(m_LivePanel)LiveControls(width);
-        float top=m_LivePanel?164:78,bottom=height-260,rail=204,inspector=m_Tab==3?380:274;
+        float top=m_LivePanel?(m_FollowLive?210:164):78,bottom=height-260,rail=204,inspector=m_Tab==3?380:274;
         Panel(new Rect(0,top,rail,bottom-top));Panel(new Rect(width-inspector,top,inspector,bottom-top));
         float left=rail+14,viewWidth=width-inspector-14-left;
         m_OptionColumns=Mathf.Clamp(Mathf.FloorToInt(viewWidth/145),3,8);
@@ -307,7 +307,7 @@ public sealed partial class TrialReviewApp
         m_ShowEyeRay=ViewToggle(0,m_ShowEyeRay,recordedGaze?"Eye gaze":m_Correction.Supported?"Corrected gaze":"Eye ray (display)");
         m_Renderer.ShowControllers=ViewToggle(1,m_Renderer.ShowControllers,"Controllers");
         m_ShowBody=ViewToggle(2,m_ShowBody,"Human model");
-        m_ShowWalls=ViewToggle(3,m_ShowWalls,"Walls");
+        m_ShowWalls=ViewToggle(3,m_ShowWalls,"Viewer walls");
         m_ShowDegrees=ViewToggle(4,m_ShowDegrees,"Degrees");
         m_ShowRoom=ViewToggle(5,m_ShowRoom,"Room");
         m_Renderer.ShowTarget=ViewToggle(6,m_Renderer.ShowTarget,"Reveal target");
@@ -410,6 +410,7 @@ public sealed partial class TrialReviewApp
             GUILayout.Label(trial==null?"No trial":$"{(trial.practice?"Practice":"Trial")} {TrialNumber(trial):00}",m_Title);GUILayout.Space(14);
             Metric("Voice",Voice(trial?.voice));Metric("Study time",Clock(m_Time));Metric("Trial time",Clock(m_Time-(trial?.time??0)));Metric("Search",state.Searching?"Active":"Inactive");
             GuidanceInspector();
+            ThetaInspector();
             GUILayout.Space(12);GUILayout.Label("TRACKING",m_Heading);GUILayout.Space(8);
             bool current=m_Renderer.SampleCurrent&&!WaitingForHeadset;
             Metric("Eye gaze",current&&TrialReplayRenderer.GazeUsable(sample)?"Valid ray":current?"Unavailable / invalid":"No current sample");

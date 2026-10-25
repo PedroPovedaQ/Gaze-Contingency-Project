@@ -6,12 +6,18 @@ import json
 import math
 from collections import Counter
 from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "analysis"))
+from theta_snapshot import V7, REFERENCE, flatten as flatten_theta
 
 
 def validate_schedule(folder, summary):
-    """Audit the full v5 planned allocation, even when the observed run is partial."""
-    version = "previous-wall-angle-v5-stratified-40-trials"
-    if summary.get("challenge_set") != version:
+    """Audit versioned full plans, including disabled/unstarted trials."""
+    version = summary.get("challenge_set")
+    v7 = version in V7
+    quick = version == "readiness-target-angle-v7-quick-origin0"
+    if not v7 and version != "previous-wall-angle-v5-stratified-40-trials":
         return []  # Historical schedules retain their original contract.
     errors = []
     try:
@@ -19,15 +25,42 @@ def validate_schedule(folder, summary):
             rows = list(csv.DictReader(file))
         if len(rows) != 80 or [int(r["trial_index"]) for r in rows] != list(range(80)):
             return ["Schedule: expected all 80 uniquely ordered planned trials"]
+        if v7:
+            for key in ("total_rounds", "debug_round_override", "nominal_total_rounds", "rounds_per_block", "schedule_seed"):
+                if type(summary.get(key)) is not int:
+                    errors.append(f"Schedule: v7 {key} must be an integer")
+            if errors:
+                return errors
+            if summary["debug_round_override"] < 0 or summary["schedule_seed"] < 0:
+                errors.append("Schedule: negative debug override/seed")
+            if summary.get("angle_balance_applied") is not True:
+                errors.append("Schedule: v7 requires angle balancing to be applied")
+            if not quick and (summary.get("session_mode") != "study" or summary.get("voice_condition") != "counterbalanced"):
+                errors.append("Schedule: normal v7 requires study mode and counterbalanced voices")
         count = summary["total_rounds"]
         override = summary["debug_round_override"]
         expected_count = max(1, min(80, override)) if override > 0 else 80
+        if quick:
+            expected_count = min(40, expected_count)
+            if summary.get("session_mode") not in ("neutral_quick_test", "clone_quick_test", "new_clone_quick_test"):
+                errors.append("Schedule: quick version requires a development quick-test mode")
+            expected_quick_voice = ("neutral-" + summary["neutral_voice_profile"]
+                                    if summary.get("session_mode") == "neutral_quick_test" else "selfsimilar")
+            if summary.get("voice_condition") != expected_quick_voice:
+                errors.append("Schedule: quick-test mode and voice disagree")
+        if v7 and (summary.get("theta_reference") != REFERENCE
+                or summary.get("direction_policy") != "independent-blocks-four-left-four-right-v1"
+                or summary.get("height_assignment_policy") != "four-above-four-below-per-angle-v1"
+                or summary.get("target_identity_policy") != "matched-counts-shuffled-24-plus-16-v1"):
+            errors.append("Schedule: v7 policy/reference mismatch")
         if summary["rounds_per_block"] != 40 or summary["nominal_total_rounds"] != 80 or count != expected_count:
             errors.append("Schedule: block/full/debug counts disagree")
         for index, row in enumerate(rows):
             block = index // 40
             neutral = (block == 0) == (summary["voice_order"] == "neutral_then_selfsimilar")
             expected_voice = "neutral-" + summary["neutral_voice_profile"] if neutral else "selfsimilar"
+            if quick:
+                expected_voice = summary["voice_condition"]
             start, target = int(row["start_plane"]), int(row["target_plane"])
             steps = (target - start + 8) % 8
             signed = (steps if steps <= 4 else steps - 8) * 45
@@ -43,10 +76,21 @@ def validate_schedule(folder, summary):
                     or int(row["schedule_seed"]) != summary["schedule_seed"]
                     or int(row["block_index"]) != block or int(row["trial_in_block"]) != index % 40
                     or row["voice_condition"] != expected_voice or int(row["enabled_in_run"]) != int(index < count)
-                    or row["theta_reference"] != "previous_target_wall_center"
+                    or row["theta_reference"] != (REFERENCE if v7 else "previous_target_wall_center")
                     or row["target_identity_policy"] != summary["target_identity_policy"]
                     or row["height_assignment_policy"] != summary["height_assignment_policy"]):
                 errors.append(f"Schedule trial {index}: identity, version, assignment or enabled flag mismatch")
+            if v7:
+                height, offset = float(row["target_height_fraction"]), float(row["cross_offset_fraction"])
+                if (row["direction_policy"] != summary["direction_policy"] or not math.isfinite(height)
+                        or not (.05 - 1e-6 <= height <= .4 + 1e-6 or .6 - 1e-6 <= height <= .95 + 1e-6)
+                        or not math.isfinite(offset) or abs(offset) > .200001
+                        or index == 0 and offset != 0
+                        or int(row["wall_azimuth_deg"]) != target * 45
+                        or int(row["start_wall_azimuth_deg"]) != start * 45):
+                    errors.append(f"Schedule trial {index}: invalid v7 direction/height/cross geometry")
+                if index == 0 and quick and start != 0:
+                    errors.append("Schedule: wrong initial readiness wall")
         identity_counts = []
         for block in range(2):
             subset = rows[block * 40:(block + 1) * 40]
@@ -57,6 +101,13 @@ def validate_schedule(folder, summary):
             for offset in range(0, 40, 5):
                 if {int(r["absolute_theta_deg"]) for r in subset[offset:offset + 5]} != {0,45,90,135,180}:
                     errors.append(f"Schedule block {block}: five-trial angle group mismatch")
+            if v7:
+                for angle in (0, 45, 90, 135, 180):
+                    category = [r for r in subset if int(r["absolute_theta_deg"]) == angle]
+                    if sum(float(r["target_height_fraction"]) > .5 for r in category) != 4:
+                        errors.append(f"Schedule block {block}: height quota mismatch at {angle}")
+                    if angle in (45, 90, 135) and sum(int(r["signed_theta_deg"]) > 0 for r in category) != 4:
+                        errors.append(f"Schedule block {block}: direction quota mismatch at {angle}")
             identities = Counter((r["target_shape"], r["target_color"]) for r in subset)
             identity_counts.append(identities)
             if len(identities) != 24 or Counter(identities.values()) != Counter({1: 8, 2: 16}):
@@ -64,7 +115,7 @@ def validate_schedule(folder, summary):
         if identity_counts[0] != identity_counts[1]:
             errors.append("Schedule: voice blocks have different target identity counts")
         second = {int(r["angle_pair"]): r for r in rows[40:]}
-        for row in rows[:40]:
+        for row in ([] if v7 else rows[:40]):
             mirror = second.get(int(row["angle_pair"]))
             if mirror is None or (int(row["signed_theta_deg"]) + int(mirror["signed_theta_deg"])) % 360 != 0:
                 errors.append("Schedule: angle pair is not mirrored")
@@ -79,8 +130,20 @@ def validate_schedule(folder, summary):
                 errors.append("Schedule: summary trial index outside enabled plan")
                 continue
             planned = rows[index]
+            if v7:
+                snapshot = record.get("pre_cue_theta")
+                started = finite_time(record.get("search_started_at")) or record.get("outcome") in ("completed", "timeout")
+                if snapshot is None and started and summary.get("angle_balance_applied") is not False:
+                    errors.append(f"Schedule trial {index}: missing pre-cue theta snapshot")
+                if snapshot is not None:
+                    try:
+                        flatten_theta(snapshot, trial_index=index, assigned=int(planned["signed_theta_deg"]))
+                        if (snapshot["targetHeightRelativeToCross"] > 0) != (float(planned["target_height_fraction"]) > .5):
+                            errors.append(f"Schedule trial {index}: realized target height side disagrees with plan")
+                    except ValueError as error:
+                        errors.append(f"Schedule trial {index}: {error}")
             for key in ("start_plane", "target_plane", "signed_theta_deg", "absolute_theta_deg", "angle_pair", "layout_seed"):
-                if record[key] != int(planned[key]):
+                if (v7 and type(record[key]) is not int) or record[key] != int(planned[key]):
                     errors.append(f"Schedule trial {index}: summary {key} disagrees with manifest")
             if (record["shape"] != planned["target_shape"] or record["color"] != planned["target_color"]
                     or record["voice_condition"] != planned["voice_condition"]):
@@ -106,11 +169,13 @@ def finite_time(value):
         return False
 
 
-def completed_trial_timing(record, events):
+def completed_trial_timing(record, events, timeout_limit=None):
     """Use the event sequence to delimit active search, excluding readiness pauses."""
     trial = record["trial_id"]
     errors = []
-    for key in ("objects_ready_at", "time_to_find_seconds"):
+    timeout = timeout_limit is not None
+    duration_key = "search_exposure_seconds" if timeout else "time_to_find_seconds"
+    for key in ("objects_ready_at", duration_key):
         if not finite_time(record.get(key)):
             errors.append(f"{trial}: invalid {key}")
     if any(not finite_time(e.get("timestamp")) for e in events):
@@ -121,9 +186,12 @@ def completed_trial_timing(record, events):
     if any(later < earlier for earlier, later in zip(times, times[1:])):
         return [f"{trial}: event timestamps are out of order"]
     starts = [i for i, e in enumerate(events) if e["event_type"] == "search_start"]
-    ends = [i for i, e in enumerate(events) if e["event_type"] == "capture_correct"]
+    terminal_event = "trial_timeout" if timeout else "capture_correct"
+    ends = [i for i, e in enumerate(events) if e["event_type"] == terminal_event]
+    if any(e["event_type"] == ("capture_correct" if timeout else "trial_timeout") for e in events):
+        errors.append(f"{trial}: contradictory terminal event")
     if len(starts) != 1 or len(ends) != 1 or starts[0] >= ends[0]:
-        return [f"{trial}: missing/duplicate or reversed onset/capture"]
+        return errors + [f"{trial}: missing/duplicate or reversed onset/{terminal_event}"]
     start, end = starts[0], ends[0]
     announcements = [i for i, e in enumerate(events) if e["event_type"] == "audio_playback_end"
                      and "context=round;" in e["detail"]]
@@ -148,15 +216,38 @@ def completed_trial_timing(record, events):
             else:
                 active = timestamp
     if active is None:
-        errors.append(f"{trial}: capture occurred while search was paused")
+        errors.append(f"{trial}: {terminal_event} occurred while search was paused")
     else:
         elapsed += times[end] - active
-    if abs(elapsed - float(record["time_to_find_seconds"])) > 0.03:
+    if timeout:
+        # Expire() caps exposure at the deadline; its event is emitted on the
+        # first frame that observes expiry and can be later than that deadline.
+        if (not finite_time(timeout_limit) or float(timeout_limit) <= 0
+                or elapsed + .03 < float(timeout_limit)
+                or abs(float(record[duration_key]) - float(timeout_limit)) > .03):
+            errors.append(f"{trial}: timeout duration/deadline mismatch")
+        detail = dict(part.split("=", 1) for part in events[end]["detail"].split(";") if "=" in part)
+        declared = detail.get("active_search_limit_seconds")
+        if not finite_time(declared) or not finite_time(timeout_limit) or abs(float(declared) - float(timeout_limit)) > .001:
+            errors.append(f"{trial}: timeout event deadline mismatch")
+        if finite_time(record.get("capture_at")) or finite_time(record.get("time_to_find_seconds")):
+            errors.append(f"{trial}: timeout contains a success time")
+    elif abs(elapsed - float(record[duration_key])) > 0.03:
         errors.append(f"{trial}: search duration disagrees with events")
-    for key, actual in (("search_started_at", times[start]), ("capture_at", times[end])):
+    if not timeout and "search_exposure_seconds" in record and (
+            not finite_time(record["search_exposure_seconds"])
+            or abs(float(record["search_exposure_seconds"]) - elapsed) > .03):
+        errors.append(f"{trial}: search exposure disagrees with events")
+    for key, actual in (("search_started_at", times[start]),) + (() if timeout else (("capture_at", times[end]),)):
         if key in record and (not finite_time(record[key]) or abs(float(record[key]) - actual) > 0.03):
             errors.append(f"{trial}: {key} disagrees with events")
     return errors
+
+
+def is_opening_event(event):
+    return event["event_type"] == "opening_direction_started" or (
+        event["event_type"] == "audio_playback_start"
+        and "context=guidance_opening;" in event["detail"])
 
 
 def validate(folder, allow_incomplete=False):
@@ -188,7 +279,7 @@ def validate(folder, allow_incomplete=False):
         completed = record.get("completed")
         if type(completed) is not bool:
             errors.append(f"{trial}: completed must be boolean")
-        if claims_complete and completed is not True:
+        if claims_complete and completed is not True and record.get("outcome") != "timeout":
             errors.append(f"{trial}: completed session contains an unfinished trial")
         if "outcome" in record and ((record["outcome"] == "completed") != (completed is True)):
             errors.append(f"{trial}: completion flag and outcome disagree")
@@ -211,7 +302,12 @@ def validate(folder, allow_incomplete=False):
     # Historical perspectives deliberately differed. The current shared-command
     # policy must actually contain the same prepared text in both voices.
     shared_commands = summary.get("voice_perspective") == "shared_participant_directed_imperative"
-    if not sets.get("neutral") or not sets.get("selfsimilar") or (
+    quick = summary.get("challenge_set") == "readiness-target-angle-v7-quick-origin0"
+    quick_neutral = str(summary.get("voice_condition", "")).startswith("neutral-")
+    if quick:
+        if not sets.get("neutral" if quick_neutral else "selfsimilar"):
+            errors.append("Quick-test voice phrase set is empty")
+    elif not sets.get("neutral") or not sets.get("selfsimilar") or (
         (shared_commands or not explicit_conditions) and sets.get("neutral") != sets.get("selfsimilar")
     ):
         errors.append("Voice phrase sets differ or are empty")
@@ -223,13 +319,60 @@ def validate(folder, allow_incomplete=False):
     objects_per_round = summary.get("objects_per_round", 56)
     if type(rounds_per_block) is not int or rounds_per_block <= 0 or type(objects_per_round) is not int or objects_per_round <= 0:
         return errors + ["Invalid block or object count"]
+    if summary.get("challenge_set") in V7 and objects_per_round != 168:
+        errors.append("Schedule: v7 requires 168 objects per trial")
     for record in records:
         trial = record["trial_id"]
-        neutral = (record["index"] < rounds_per_block) == neutral_first
+        neutral = quick_neutral if quick else (record["index"] < rounds_per_block) == neutral_first
         expected = "neutral-" + summary["neutral_voice_profile"] if neutral else "selfsimilar"
         if record["voice_condition"] != expected:
             errors.append(f"{trial}: wrong voice assignment")
         trial_events = [event for event in events if event["trial_id"] == trial]
+        if summary.get("challenge_set") in V7:
+            snapshots = [event for event in trial_events if event["event_type"] == "theta_snapshot"]
+            snapshot = record.get("pre_cue_theta")
+            started = any(e["event_type"] == "search_start" for e in trial_events)
+            if started and snapshot is None and summary.get("angle_balance_applied") is not False:
+                errors.append(f"{trial}: search event has no pre-cue theta snapshot")
+            if snapshots or snapshot is not None or any(is_opening_event(e) for e in trial_events):
+                try:
+                    if not snapshots or json.loads(snapshots[-1]["detail"]) != snapshot:
+                        errors.append(f"{trial}: final theta event/summary mismatch")
+                    seen_search = False
+                    previous_snapshot = None
+                    reset_since_snapshot = False
+                    for event in trial_events:
+                        kind = event["event_type"]
+                        if kind == "search_start": seen_search = True
+                        if kind == "readiness_reset": reset_since_snapshot = True
+                        if is_opening_event(event) and (previous_snapshot is None or reset_since_snapshot):
+                            errors.append(f"{trial}: opening cue precedes its pre-cue theta snapshot")
+                        if kind != "theta_snapshot": continue
+                        decoded = json.loads(event["detail"])
+                        if decoded is None:
+                            raise ValueError("null snapshot event")
+                        flatten_theta(decoded, trial_index=record["index"], assigned=record["signed_theta_deg"])
+                        if seen_search:
+                            errors.append(f"{trial}: theta snapshot occurs after search onset")
+                        if previous_snapshot is not None and (not reset_since_snapshot or decoded["time"] <= previous_snapshot["time"]):
+                            errors.append(f"{trial}: repeated theta snapshot without readiness reset/new timestamp")
+                        previous_snapshot = decoded
+                        reset_since_snapshot = False
+                except (ValueError, KeyError, TypeError):
+                    errors.append(f"{trial}: malformed theta snapshot event")
+            if started:
+                presented = [o for o in objects if o["trial_id"] == trial]
+                if (len(presented) != objects_per_round
+                        or len({o["object_id"] for o in presented}) != objects_per_round
+                        or sum(o["is_target"] == "1" for o in presented) != 1):
+                    errors.append(f"{trial}: started trial lacks a complete unique object manifest")
+            if snapshot is not None and started:
+                targets = [o for o in objects if o["trial_id"] == trial and o["is_target"] == "1"]
+                try:
+                    if len(targets) != 1 or any(not math.isfinite(float(targets[0][a])) or abs(float(targets[0][a]) - snapshot["targetPosition"][a]) > .001 for a in "xyz"):
+                        errors.append(f"{trial}: manifest target disagrees with pre-cue snapshot")
+                except (KeyError, TypeError, ValueError):
+                    errors.append(f"{trial}: invalid theta manifest geometry")
         for event in trial_events:
             if event["event_type"] != "audio_playback_start":
                 continue
@@ -237,9 +380,10 @@ def validate(folder, allow_incomplete=False):
             clip = clips.get(details.get("clip_id"))
             if not clip or clip_condition(clip) != ("neutral" if neutral else "selfsimilar") or (neutral and clip["voice_id"] != neutral_id):
                 errors.append(f"{trial}: playback identity disagrees with assignment")
-        if record.get("completed") is not True:
-            if any(e["event_type"] == "capture_correct" for e in trial_events):
-                errors.append(f"{trial}: unfinished trial contains a correct capture")
+        is_timeout = record.get("outcome") == "timeout"
+        if record.get("completed") is not True and not is_timeout:
+            if any(e["event_type"] in ("capture_correct", "trial_timeout") for e in trial_events):
+                errors.append(f"{trial}: unfinished trial contains a terminal event")
             if any(not finite_time(e.get("timestamp")) for e in trial_events):
                 errors.append(f"{trial}: invalid event timestamp")
             else:
@@ -247,7 +391,20 @@ def validate(folder, allow_incomplete=False):
                 if any(b < a for a, b in zip(times, times[1:])):
                     errors.append(f"{trial}: event timestamps are out of order")
             continue
-        errors.extend(completed_trial_timing(record, trial_events))
+        if is_timeout:
+            limit = summary.get("active_search_limit_seconds")
+            if not finite_time(limit) or float(limit) <= 0:
+                errors.append(f"{trial}: missing/invalid timeout deadline")
+            else:
+                errors.extend(completed_trial_timing(record, trial_events, limit))
+        else:
+            errors.extend(completed_trial_timing(record, trial_events))
+            limit = summary.get("active_search_limit_seconds")
+            if limit is not None or summary.get("challenge_set") in V7:
+                if not finite_time(limit) or float(limit) <= 0:
+                    errors.append(f"{trial}: missing/invalid search deadline")
+                elif finite_time(record.get("time_to_find_seconds")) and float(record["time_to_find_seconds"]) > float(limit) + .03:
+                    errors.append(f"{trial}: successful search exceeds the recorded deadline")
         trial_objects = [obj for obj in objects if obj["trial_id"] == trial]
         if len(trial_objects) != objects_per_round or len({obj["object_id"] for obj in trial_objects}) != objects_per_round or sum(obj["is_target"] == "1" for obj in trial_objects) != 1:
             errors.append(f"{trial}: expected {objects_per_round} unique objects and one target")

@@ -8,6 +8,7 @@ public sealed class TrialReplayState
     public TrialReplayRecord Sample { get; private set; }
     public TrialReplayRecord Selection { get; private set; }
     public TrialReplayRecord Readiness { get; private set; }
+    public TrialReplayRecord ThetaSnapshot { get; private set; }
     public TrialReplayRecord PoseBoundary { get; private set; }
     // A display freshness rule, not a fixation threshold or acquisition-rate claim.
     public const double DefaultMaxSampleAgeSeconds = 0.1;
@@ -17,7 +18,7 @@ public sealed class TrialReplayState
 
     public void Reset()
     {
-        Trial = Sample = Selection = Readiness = PoseBoundary = null;
+        Trial = Sample = Selection = Readiness = PoseBoundary = ThetaSnapshot = null;
         Visible = Searching = false;
         Transforms.Clear();
     }
@@ -31,7 +32,7 @@ public sealed class TrialReplayState
         if (r.kind == "sample" || r.kind.StartsWith("readiness_", StringComparison.Ordinal)) Readiness = r;
         if (r.kind == "trial")
         {
-            Trial = r; Sample = Selection = Readiness = null; Visible = Searching = false;
+            Trial = r; Sample = Selection = Readiness = ThetaSnapshot = null; Visible = Searching = false;
             Transforms.Clear();
             foreach (var o in r.objects)
                 Transforms.Add(o.id, new TrialReplayTransform { id = o.id, position = o.position, rotation = o.rotation, scale = o.scale });
@@ -51,6 +52,8 @@ public sealed class TrialReplayState
         else if (r.kind == "search_start" || r.kind == "search_resumed") Visible = Searching = true;
         else if (r.kind == "search_paused" || r.kind == "application_paused" || r.kind == "transition" || r.kind == "trial_timeout" || r.kind == "stop" || r.kind == "end")
         { Visible = Searching = false; }
+        if (r.kind == "readiness_completed" && Trial != null && r.trialId == Trial.trialId && !string.IsNullOrEmpty(r.detail))
+            ThetaSnapshot = r;
         if ((r.kind == "sample" || r.kind == "selection" || r.kind == "readiness_completed") && Trial != null && r.trialId == Trial.trialId && r.changes != null)
             foreach (var transform in r.changes) Transforms[transform.id] = transform;
     }

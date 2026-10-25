@@ -141,6 +141,15 @@ public static class TrialReplayFile
                     Check(t.position); Check(t.rotation); Check(t.scale);
                 }
             }
+            if (r.kind == "readiness_completed")
+            {
+                if (trial == null || r.trialId != trial) throw new InvalidDataException("Readiness completion has no matching trial.");
+                if (r.changes != null) foreach (var t in r.changes)
+                {
+                    if (t == null || !ids.Contains(t.id)) throw new InvalidDataException("Unknown readiness-moved object.");
+                    Check(t.position); Check(t.rotation); Check(t.scale);
+                }
+            }
             if (r.kind == "audio_playback_start" && (!Finite(r.audioVolume) || r.audioVolume < 0 || r.audioVolume > 1))
                 throw new InvalidDataException("Invalid recorded audio volume.");
             if (!string.IsNullOrEmpty(r.clip)) AssetPath(directory, r.clip);

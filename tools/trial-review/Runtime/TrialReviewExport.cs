@@ -51,6 +51,9 @@ public static class TrialReviewExport
             output.WriteLine(Row("object_id","shape","color","is_target","plane","x","y","z","raw_snapshot_json"));
             foreach(var o in trial.objects??Array.Empty<TrialReplayObject>())output.WriteLine(Row(o.id,o.shape,o.color,o.target?"1":"0",o.planeId.ToString(),Number(o.position.x),Number(o.position.y),Number(o.position.z),JsonUtility.ToJson(o)));
         }
+        var theta=records.Where(r=>r.kind=="readiness_completed"&&!string.IsNullOrEmpty(r.detail)).ToArray();
+        if(theta.Length>0)using(var output=Writer(Path.Combine(folder,"pre-cue-theta.jsonl")))
+            foreach(var r in theta)output.WriteLine(r.detail);
         if(summary!=null)using(var output=Writer(Path.Combine(folder,"final-summary.csv")))
         {output.WriteLine(Row(summary.Keys.ToArray()));output.WriteLine(Row(summary.Values.ToArray()));}
         var manifest=new Manifest{recordingId=timeline.Header.recordingId,trialId=trial.trialId,sourcePath=timeline.FilePath,sourceSha256=sourceHash,exportedUtc=DateTime.UtcNow.ToString("O"),records=records.Length,includesMatchedFinalSummary=summary!=null};
@@ -59,6 +62,7 @@ public static class TrialReviewExport
             "Recorded trial observation export. Times are session elapsed seconds and trial-relative elapsed seconds, not search-only durations.\n"+
             "samples.csv contains replay observations, not the separate full eye-acquisition stream. Gaze validity is retained; no fixation detection is performed.\n"+
             "objects.csv is the initial snapshot; subsequent object changes are preserved inside observations.jsonl and raw_record_json.\n"+
+            "pre-cue-theta.jsonl, when present, retains exact recorded snapshot JSON in Unity world coordinates and app realtime seconds (not the replay frame/clock).\n"+
             "This is a data subset, not a standalone replay package: retain the original recording and sibling audio/ folder.\n"+
             (summary==null?"No final performance/subjective CSV was joined. Use the study analysis exporter and load its matching results under Final data.\n":"final-summary.csv contains the previously loaded hash-matched final results, including available survey context.\n"));
         return folder;

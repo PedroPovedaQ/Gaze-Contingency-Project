@@ -12,6 +12,18 @@ The run must contain `trial_summary.json`. Optional `trial_schedule.csv`, `objec
 
 Planned but unstarted, interrupted and practice trials remain separate, explicit records. Practice IDs include their recording ID, have no measured-run/block assignment and never inherit block surveys. A completed trial in an incomplete recording remains completed but carries `replay_incomplete` quality information. Do not treat planned rows as completed trials or count the combined table in addition to its individual files.
 
+## October 25: exact pre-cue theta (implemented)
+
+Full `trials.csv` and every per-trial performance CSV include `pre_cue_theta_*` fields: availability status, reference, coordinate frame, round, source gaze sequence, snapshot/receipt realtime, assigned/realized signed angle, absolute angle, circular assignment error, target-minus-cross height and all three eye/cross/target coordinates. These copy the recorded `pre_cue_theta` summary object without rounding or substituting later head poses. Malformed or contradictory snapshots stop export before publication. Older/missing snapshots have `not_recorded` status and blank measurements; zero remains a real recorded value.
+
+Snapshot coordinates use **Unity world metres** and snapshot clocks use **application realtime seconds**. They are separate from the fixed-origin replay frame and replay elapsed clock. The snapshot is at readiness completion before opening speech, not necessarily at acoustic cue onset. It measures horizontal geometry, not accumulated movement.
+
+Replay target geometry and cross-relative height now use finalized readiness transforms, including v7 lateral cross offsets. The v7 octagonal layout also supports the existing gaze-wall analysis. `direction_policy` documents independent block allocation; `angle_pair` is an allocation ID, not a promise of mirrored v7 trials.
+
+Trial Review shows the snapshot under **At cursor**, keeps it through samples, removes future evidence on backward seeks, and clears it at the next trial. **Final data** shows every exported field. Selected-trial exports retain exact snapshot JSON in `pre-cue-theta.jsonl`; repeated readiness attempts remain separate records. The condensed CSV adds status, realized signed/absolute angle, assignment error and target-minus-cross height. Use full CSV/JSON for coordinates and clocks.
+
+Validate stopped v7 runs with `python3 scripts/verify-study-session.py RUN_FOLDER`; add `--allow-incomplete` only for a deliberately stopped run. The validator audits the full 80-row plan even for shortened or 40-trial development modes, independent direction/height quotas, policy/identity metadata, snapshots and opening order, manifest target geometry, and completed/timeout timing. Valid timeouts are terminal outcomes, not successful selections. A passing log audit does not establish ergonomic comfort or headset calibration validity.
+
 ## What the columns mean
 
 ### October 8 measurement decisions (implemented locally, export schema v2)

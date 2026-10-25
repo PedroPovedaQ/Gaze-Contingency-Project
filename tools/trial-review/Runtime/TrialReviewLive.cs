@@ -8,7 +8,7 @@ public sealed partial class TrialReviewApp
     [Serializable] public sealed class LiveStatus
     {
         public int schema, revision, audioRevision, files, verifiedFiles;
-        public string state, message, endpoint, recording, archive;
+        public string state, message, endpoint, recording, archive, controlId, controlResult;
         public double updatedUtc, lastDataUtc, receivedBytes, pendingBytes, replayUpdatedUtc, replayPendingBytes, headsetStateObservedUtc;
         public TrialReviewHeadsetState headsetState;
     }
@@ -60,6 +60,9 @@ public sealed partial class TrialReviewApp
             Directory.CreateDirectory(m_LiveOutput);
             string stop = Path.Combine(m_LiveOutput, "stop-request");
             if (File.Exists(stop)) File.Delete(stop);
+            string commandPath = Path.Combine(m_LiveOutput, "headset-command.json");
+            if (File.Exists(commandPath)) File.Delete(commandPath);
+            m_HeadsetCommand = null; m_ControlError = null;
             m_BridgeError = ""; m_LiveStatus = null;
             m_Bridge?.Dispose();
             m_Bridge = new Process { StartInfo = new ProcessStartInfo(python,
@@ -197,9 +200,65 @@ public sealed partial class TrialReviewApp
         }
     }
 
+    [Serializable] sealed class HeadsetCommand
+    {
+        public int schema = 1;
+        public string id, sessionId, action = "set_walls";
+        public int observedRevision;
+        public double createdUtc, observedUtc;
+        public bool wallsVisible;
+    }
+    HeadsetCommand m_HeadsetCommand;
+    string m_ControlError;
+
+    void HeadsetControls()
+    {
+        var state = m_LiveStatus?.headsetState;
+        bool fresh = TrialReviewHeadsetState.Fresh(state, ReceiverConnected, UtcSeconds, m_LiveStatus?.headsetStateObservedUtc ?? 0);
+        bool available = TrialReviewHeadsetState.CanControl(state, fresh, m_FollowLive, m_DetachedReview);
+        string feedback = "Changes walls and degree labels inside the headset";
+        bool pending = false;
+        if (m_HeadsetCommand != null)
+        {
+            if (state?.sessionId != m_HeadsetCommand.sessionId) feedback = "Headset session changed; request retired";
+            else if (fresh && state.commandId == m_HeadsetCommand.id)
+                feedback = state.commandResult == "applied" ? "Confirmed by headset" : "Headset rejected request; send again";
+            else if (m_LiveStatus?.controlId == m_HeadsetCommand.id &&
+                (m_LiveStatus.controlResult == "failed" || m_LiveStatus.controlResult == "rejected"))
+                feedback = "Request not delivered; send again";
+            else if (UtcSeconds - m_HeadsetCommand.createdUtc > 12) feedback = "No confirmation; check connection and send again";
+            else { pending = true; feedback = "Waiting for headset confirmation…"; }
+        }
+        if (!fresh) feedback = "Waiting for a fresh headset connection";
+        else if (!state.wallControlAvailable) feedback = "Headset build does not support remote walls";
+        else if (state.phase == "paused") feedback = "Wake the headset to change its settings";
+        if (!string.IsNullOrEmpty(m_ControlError)) feedback = m_ControlError;
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Headset controls", m_Heading, GUILayout.Width(150));
+        bool wasEnabled = GUI.enabled;
+        GUI.enabled = wasEnabled && available && !pending;
+        if (Button(fresh && state.wallControlAvailable ? state.wallsVisible ? "Walls: ON · Hide" : "Walls: OFF · Show" : "Walls: unknown", GUILayout.Width(175)))
+        {
+            try
+            {
+                var command = new HeadsetCommand { id = Guid.NewGuid().ToString("N"), sessionId = state.sessionId,
+                    observedRevision = state.revision, observedUtc = state.updatedUtc, createdUtc = UtcSeconds, wallsVisible = !state.wallsVisible };
+                string path = Path.Combine(m_LiveOutput, "headset-command.json");
+                File.WriteAllText(path + ".tmp", JsonUtility.ToJson(command));
+                if (File.Exists(path)) File.Replace(path + ".tmp", path, null);
+                else File.Move(path + ".tmp", path);
+                m_HeadsetCommand = command; m_ControlError = null;
+            }
+            catch (Exception e) { m_ControlError = "Could not send headset setting: " + e.Message; }
+        }
+        GUI.enabled = wasEnabled;
+        GUILayout.Label(feedback, m_MutedLabel);
+        GUILayout.EndHorizontal();
+    }
+
     void LiveControls(float width)
     {
-        GUILayout.BeginArea(new Rect(22, 73, width - 44, 86));
+        GUILayout.BeginArea(new Rect(22, 73, width - 44, m_FollowLive ? 132 : 86));
         GUILayout.BeginHorizontal();
         GUILayout.Label("Headset Wi-Fi IP", m_Label, GUILayout.Width(125));
         GUI.SetNextControlName("text:wifi-endpoint");
@@ -224,6 +283,7 @@ public sealed partial class TrialReviewApp
         if (m_FollowLive && m_LiveAudioClock.WaitingForAudio) view = "Buffering recorded speech audio · " + view;
         if (m_LiveAudioClock.UnavailableCount > 0) view += $" · {m_LiveAudioClock.UnavailableCount} audio asset(s) unavailable after 5 s";
         GUILayout.Label(m_LiveStatus?.state == "error" ? m_LiveStatus.message : view + " · Headset keeps the original recording", m_MutedLabel);
+        if (m_FollowLive) HeadsetControls();
         GUILayout.EndArea();
     }
 }
@@ -234,9 +294,13 @@ public sealed class TrialReviewHeadsetState
 {
     public int schema, revision;
     public string sessionId, phase;
-    public bool progressKnown;
+    public bool progressKnown, wallControlAvailable, wallsVisible;
+    public string commandId, commandResult;
     public float progress01;
     public double updatedUtc;
+    public static bool CanControl(TrialReviewHeadsetState state, bool fresh, bool live, bool detached) =>
+        fresh && live && !detached && state != null && state.wallControlAvailable && state.phase != "paused";
+
     public static bool Fresh(TrialReviewHeadsetState state, bool connected, double now, double observed)
     {
         // Receipt age is independent of headset/Mac clock offset. The receiver only

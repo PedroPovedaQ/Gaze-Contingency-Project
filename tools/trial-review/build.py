@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the read-only Mac viewer without opening or changing the study project."""
+"""Build the Mac trial viewer in an isolated generated Unity project."""
 import argparse
 import os
 from pathlib import Path

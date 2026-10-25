@@ -24,6 +24,8 @@ CONDENSED_FILE = "trials_condensed.csv"
 CONDENSED_FIELDS = (
     "participant_id", "trial_id", "block_index", "voice_condition",
     "absolute_theta_deg", "signed_theta_deg",
+    "pre_cue_theta_status", "pre_cue_theta_realized_signed_deg", "pre_cue_theta_absolute_deg",
+    "pre_cue_theta_assignment_error_deg", "pre_cue_theta_target_minus_cross_height_m",
     "actual_signed_head_to_target_yaw_deg", "target_minus_head_height_m",
     "target_distance_m", "instruction_count", "search_exposure_seconds",
     "time_to_first_target_gaze_seconds", "time_to_final_target_gaze_seconds",

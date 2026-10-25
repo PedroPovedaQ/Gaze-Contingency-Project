@@ -15,6 +15,14 @@ class ZoneTests(unittest.TestCase):
         self.time = 0
         self.sequence = 0
 
+    def test_v7_offset_cross_still_defines_the_same_wall_radius(self):
+        self.zones = ZoneVisits(layout="rotational_scatter_v6_precue_theta")
+        self.zones.capture_cross(dict(kind="readiness_completed", readinessWall=0,
+                                     readinessPosition=vec(.1, -.1, 1.5)))
+        self.assertEqual(self.zones.radius, 1.5)
+        self.samples(0)
+        self.assertEqual(self.zones.fields()["unique_zones_visited_count"], 1)
+
     def samples(self, wall, n=5, **overrides):
         angle = math.radians(wall*45)
         for _ in range(n):

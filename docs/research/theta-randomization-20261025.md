@@ -26,7 +26,7 @@ Exact theta is defined at the saved pre-cue instant. It is not total head/eye ro
 - [ ] Wearer: lean/translate near wall feasibility limits; confirm clear technical-stop behavior and preserved partial logs.
 - [ ] Export/replay: compare final target position with `pre_cue_theta`, verify circular error below 0.01 degree, and inspect replay at readiness/reveal boundary.
 - [ ] Full two-block run: audit assigned and realized height/direction quotas, both voice orders and aborted sessions. Completed-only quotas need not remain balanced.
-- [ ] Extend the legacy session-validator and flat trial-CSV schema for v7 snapshot fields; current exact evidence is in JSON/events/manifest/replay. Do not interpret old nominal theta fields as measured pre-cue theta.
+- [x] Extend the session validator and flat trial-CSV schema for v7 snapshots; exact evidence is now available in CSV, JSON, events, manifest and replay. Historical nominal theta fields remain historical.
 - [ ] Reconcile thesis methodology after verification. The synchronized Overleaf manuscript still describes exact snapshots and signed-height quotas as pending in the earlier aligned release. Do not silently relabel old recordings.
 
 The 25-second search deadline, calibration work and native gaze diagnostics predate this change. No participant study or physical 120 Hz sensor-rate validation is implied by software tests.
@@ -34,3 +34,11 @@ The 25-second search deadline, calibration work and native gaze diagnostics pred
 ## Checkpoint verification
 
 Schedule/voice checks across 50 participant IDs and both voice orders passed. Geometry checks cover every starting wall, all signed angle categories, translated eye origins, wraparound, infeasible/invalid inputs and all-pair spacing around the reserved target. Timeout and six native adapter suites passed. Unity compilation and readiness integration checks passed; the latter caught and fixed the initial cross needing to remain centered. Headset build/install evidence is recorded separately in the session handoff.
+
+## October 25 export and viewer completion
+
+**Implemented:** exact snapshot fields in full/per-trial CSVs, concise snapshot metrics in condensed CSV, strict malformed-value handling, v7 full/short/quick schedule validation, valid terminal-timeout checks and reset-aware pre-opening snapshot order. Finalized target positions and jittered cross geometry propagate to analysis and replay. Trial Review displays all snapshot values and raw JSON, supports exact cursor/rewind boundaries, and preserves snapshot history in selected-trial exports.
+
+**Software verification:** Python exporter/validator regressions cover missing legacy data, exact zeros, corrupt geometry, both voice orders, quick modes, shortened runs, timeouts and readiness restart. Desktop checks exercise snapshot parsing, invalid nested values, overflow, object transforms, backwards seeks and exact export. Independent subagent reviews covered validation, viewer/export and runtime geometry; reported defects were fixed. Existing schedule and rotational geometry suites pass.
+
+**Open wearer acceptance:** both full voice orders/blocks, neutral/clone quick modes, comfortable seated placement, pause during opening and subsequent retry, deliberate leaning/infeasible intersection, and matching saved viewer/CSV evidence. Software readiness does not replace these human/device observations or research authorization. No study outcome was invented.

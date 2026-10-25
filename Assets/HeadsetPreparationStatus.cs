@@ -19,12 +19,34 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
         public bool progressKnown;
         public float progress01;
         public double updatedUtc;
+        public bool wallControlAvailable, wallsVisible;
+        public string commandId, commandResult;
+    }
+
+    [Serializable]
+    sealed class Command
+    {
+        public int schema;
+        public string id, sessionId, action;
+        public long observedRevision;
+        public double observedUtc;
+        public bool wallsVisible;
+    }
+
+    [Serializable]
+    sealed class ControlAudit
+    {
+        public string utc, sessionId, commandId, source = "trial_viewer", setting = "walls_and_degrees";
+        public bool before, after;
+        public int round;
+        public string phase;
     }
 
     readonly Status m_Status = new Status();
     FindObjectGameManager m_Game;
     string m_Path;
     double m_NextWrite;
+    long m_MinCommandRevision;
     bool m_Paused, m_Unfocused, m_Warned;
 
     void Awake()
@@ -57,7 +79,49 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
 
     void Update()
     {
-        if (Time.realtimeSinceStartupAsDouble >= m_NextWrite) Write();
+        if (Time.realtimeSinceStartupAsDouble >= m_NextWrite)
+        {
+            ReadCommand();
+            Write();
+        }
+    }
+
+    static double UtcSeconds => (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds;
+
+    void ReadCommand()
+    {
+        string path = Path.Combine(Path.GetDirectoryName(m_Path), "live-headset-command.json");
+        try
+        {
+            if (!File.Exists(path) || new FileInfo(path).Length > 4096) return;
+            var command = JsonUtility.FromJson<Command>(File.ReadAllText(path));
+            if (command == null || command.schema != 1 || !Guid.TryParseExact(command.id, "N", out _) ||
+                command.sessionId != m_Status.sessionId || command.id == m_Status.commandId) return;
+            // Use the headset heartbeat revision, never a comparison of Mac/headset clocks.
+            m_Status.commandId = command.id;
+            m_Status.commandResult = "rejected";
+            if (command.action != "set_walls" || m_Game == null || m_Paused || m_Unfocused ||
+                command.observedRevision <= 0 || command.observedRevision < m_MinCommandRevision || command.observedRevision > m_Status.revision ||
+                m_Status.revision - command.observedRevision > 20 ||
+                double.IsNaN(command.observedUtc) || double.IsInfinity(command.observedUtc) ||
+                UtcSeconds - command.observedUtc < 0 || UtcSeconds - command.observedUtc > 10) return;
+            var audit = new ControlAudit { utc = DateTime.UtcNow.ToString("O"), sessionId = m_Status.sessionId,
+                commandId = command.id, before = m_Game.DegreeGuidesVisible, after = command.wallsVisible,
+                round = m_Game.CurrentObjectiveIndex, phase = m_Status.phase };
+            string auditPath = Path.Combine(Path.GetDirectoryName(m_Path), "controls_" + m_Status.sessionId, "commands.jsonl");
+            Directory.CreateDirectory(Path.GetDirectoryName(auditPath));
+            // Record the requested change before applying it; a failed audit leaves the setting unchanged.
+            string detail = JsonUtility.ToJson(audit);
+            File.AppendAllText(auditPath, detail + "\n");
+            m_Game.SetDegreeGuidesVisible(command.wallsVisible);
+            GetComponent<TrialReplayRecorder>()?.RecordHeadsetControl(detail);
+            m_Status.commandResult = "applied";
+        }
+        catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException)
+        {
+            // Keep the previous acknowledgment if no new valid command ID was parsed.
+            // Identified requests are already marked rejected before any I/O or mutation.
+        }
     }
 
     void Transition(int round, string color, string shape) => Set("ready", "Waiting for the next round");
@@ -65,8 +129,8 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
     void Stopped(string reason) => Set("error", "Session stopped");
     void Completed(float elapsed) => Set("ready", "Session complete");
 
-    void OnApplicationPause(bool paused) { m_Paused = paused; Write(); }
-    void OnApplicationFocus(bool focused) { m_Unfocused = !focused; Write(); }
+    void OnApplicationPause(bool paused) { m_Paused = paused; m_MinCommandRevision = m_Status.revision + 1; Write(); }
+    void OnApplicationFocus(bool focused) { m_Unfocused = !focused; m_MinCommandRevision = m_Status.revision + 1; Write(); }
     void OnApplicationQuit() { m_Paused = true; Write(); }
 
     void Write()
@@ -83,8 +147,10 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
                 m_Status.message = "Headset app paused";
                 m_Status.progressKnown = false;
             }
+            m_Status.wallControlAvailable = m_Game != null;
+            m_Status.wallsVisible = m_Game != null && m_Game.DegreeGuidesVisible;
             m_Status.revision++;
-            m_Status.updatedUtc = (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds;
+            m_Status.updatedUtc = UtcSeconds;
             Directory.CreateDirectory(Path.GetDirectoryName(m_Path));
             string temp = m_Path + ".tmp";
             File.WriteAllText(temp, JsonUtility.ToJson(m_Status));
