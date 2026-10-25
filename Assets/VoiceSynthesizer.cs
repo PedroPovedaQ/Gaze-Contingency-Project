@@ -4,6 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -24,6 +25,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
     string m_CacheDir;
     AudioSource m_AudioSource;
     Coroutine m_SpeakCoroutine;
+    Func<float[], int, int, bool, InnerThoughtVoice.Result> m_ProcessAudio = InnerThoughtVoice.Process;
     Coroutine m_InterruptionCoroutine;
     string m_CurrentContext;
 
@@ -674,7 +676,42 @@ public partial class VoiceSynthesizer : MonoBehaviour
             if (!clip.GetData(samples, 0)) { RejectClip(clip, filePath, "Could not read decoded audio samples."); yield break; }
             // Raw provider caches stay untouched. Replay captures this processed clip;
             // normalization below measures the actual treated waveform in both modes.
-            var treated = InnerThoughtVoice.Process(samples, clip.channels, clip.frequency, wantSelfSimilar);
+            // FFT/filter work is pure PCM processing and can take hundreds of ms per
+            // phrase. Never run it on the XR frame thread. Unity object access stays
+            // here; the worker owns only the copied samples and captured format.
+            int channels = clip.channels, frequency = clip.frequency;
+            var input = samples;
+            var processor = m_ProcessAudio;
+            var processing = Task.Run(() => processor(input, channels, frequency, wantSelfSimilar));
+            InnerThoughtVoice.Result treated;
+            bool consumed = false;
+            try
+            {
+                while (!processing.IsCompleted)
+                {
+                    if (generation != m_PreparationGeneration) yield break;
+                    yield return null;
+                }
+                if (generation != m_PreparationGeneration) yield break;
+                if (processing.IsFaulted || processing.IsCanceled)
+                {
+                    Fail("Could not process voice audio.");
+                    yield break;
+                }
+                treated = processing.Result;
+                consumed = true;
+            }
+            finally
+            {
+                if (!consumed)
+                {
+                    Destroy(clip);
+                    // A cancelled coroutine cannot publish a late result. Observe
+                    // any later failure without touching Unity from the worker.
+                    _ = processing.ContinueWith(t => { _ = t.Exception; },
+                        TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+                }
+            }
             if (treated.Samples != samples)
             {
                 // The treatment returns stereo with a short room tail, so it needs its own clip.

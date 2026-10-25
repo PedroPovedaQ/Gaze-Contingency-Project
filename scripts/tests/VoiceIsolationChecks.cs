@@ -11,7 +11,68 @@ partial class VoiceIsolationChecks
     static void Check(bool condition, string name) { if (!condition) throw new Exception(name); }
     static void Drain(IEnumerator routine)
     {
-        while (routine.MoveNext()) { Time.unscaledTime += 0.05f; if (routine.Current is IEnumerator child) Drain(child); }
+        while (routine.MoveNext()) { Time.unscaledTime += 0.05f; if (routine.Current is IEnumerator child) Drain(child); else System.Threading.Thread.Sleep(1); }
+    }
+    static void CheckVoiceProcessing(string root)
+    {
+        var synth = new VoiceSynthesizer();
+        Set(synth, "m_CacheDir", root);
+        Set(synth, "m_PreparingText", "test phrase");
+        Set(synth, "m_Preparing", true);
+        string path = Path.Combine(root, "worker-test.mp3");
+        File.WriteAllBytes(path, new byte[120]);
+        VoiceAudioVerification.SaveReceipt(path, "test phrase", new byte[120], "test phrase");
+        int mainThread = System.Threading.Thread.CurrentThread.ManagedThreadId;
+        var clips = (System.Collections.Generic.Dictionary<string, AudioClip>)typeof(VoiceSynthesizer)
+            .GetField("m_PreparedClips", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(synth);
+        IEnumerator Load() => (IEnumerator)typeof(VoiceSynthesizer)
+            .GetMethod("PlayFromFile", BindingFlags.NonPublic | BindingFlags.Instance)
+            .Invoke(synth, new object[] { path, true, "synthetic-clone", true });
+        foreach (bool cancel in new[] { false, true })
+        {
+            using (var started = new System.Threading.ManualResetEventSlim())
+            using (var release = new System.Threading.ManualResetEventSlim())
+            using (var finished = new System.Threading.ManualResetEventSlim())
+            {
+                Set(synth, "m_ProcessAudio", new Func<float[], int, int, bool, InnerThoughtVoice.Result>((pcm, channels, hz, clone) =>
+                {
+                    Check(System.Threading.Thread.CurrentThread.ManagedThreadId != mainThread,
+                        "Clone DSP must not block the Unity/render thread");
+                    started.Set();
+                    try
+                    {
+                        Check(release.Wait(5000), "Test released DSP worker");
+                        return InnerThoughtVoice.Process(pcm, channels, hz, clone);
+                    }
+                    finally { finished.Set(); }
+                }));
+                var routine = Load();
+                try
+                {
+                    Check(routine.MoveNext(), "Decode yields before processing");
+                    Check(routine.MoveNext(), "Preparation yields while DSP runs");
+                    Check(started.Wait(2000), "DSP runs on a worker while the frame returns");
+                    Check(routine.MoveNext() && clips.Count == 0, "Pending DSP does not publish a clip");
+                    if (cancel) synth.Stop();
+                    release.Set();
+                    Drain(routine);
+                    Check(clips.Count == (cancel ? 0 : 1), "Cancelled DSP cannot publish stale audio");
+                    Check(finished.Wait(2000), "Worker finishes independently of cancellation");
+                    clips.Clear();
+                }
+                finally
+                {
+                    release.Set();
+                    if (started.IsSet) finished.Wait(5000);
+                    (routine as IDisposable)?.Dispose();
+                }
+            }
+        }
+        Set(synth, "m_ProcessAudio", new Func<float[], int, int, bool, InnerThoughtVoice.Result>((pcm, channels, hz, clone) =>
+            throw new InvalidOperationException("synthetic DSP failure")));
+        Drain(Load());
+        Check(clips.Count == 0 && !string.IsNullOrEmpty(synth.LastError) && File.Exists(path),
+            "DSP failure blocks readiness without deleting verified provider audio");
     }
     static void Set(object instance, string field, object value) => instance.GetType()
         .GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(instance, value);
@@ -435,6 +496,7 @@ partial class VoiceIsolationChecks
         try
         {
             CheckParallelDownloads(root);
+            CheckVoiceProcessing(root);
             // Exercise real DSP: exact neutral bypass, no onset delay, stereo room tail,
             // determinism and silence. Library tests below check treated RMS/peaks.
             var impulse = new float[4800]; impulse[0] = 0.5f;
