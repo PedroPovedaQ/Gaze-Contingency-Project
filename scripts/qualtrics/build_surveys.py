@@ -169,7 +169,7 @@ IMI_SECTIONS = [
 
 
 def baseline() -> list[str]:
-    out = ["[[AdvancedFormat]]", *block("Study information and baseline"), *text("BASE_INTRO", "DRAFT — Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent. This survey is for study setup and baseline measures. Use the study code only; do not enter your name. The instrument map remains subject to IRB and pilot review."), *te("BASE_STUDY_CODE", "Study code (assigned by the researcher):")]
+    out = ["[[AdvancedFormat]]", *block("Study information and baseline"), *text("BASE_INTRO", "DRAFT — Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent in Virtual Reality. This survey is for study setup and baseline measures. Use the study code only; do not enter your name. The instrument map remains subject to IRB and pilot review."), *te("BASE_STUDY_CODE", "Study code (assigned by the researcher):")]
     out += mc("BASE_AGE", "Age range:", ["18–24", "25–34", "35–44", "45–54", "55–64", "65+", "Prefer not to answer"])
     out += mc("BASE_GENDER", "Gender identity (select all that apply):", ["Woman", "Man", "Nonbinary", "Another identity", "Prefer not to answer"], multiple=True)
     out += te("BASE_GENDER_OTHER", "If you selected Another identity, please describe (optional):")

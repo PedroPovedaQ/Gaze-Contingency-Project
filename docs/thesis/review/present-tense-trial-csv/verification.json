@@ -1,0 +1,14 @@
+{
+  "eye_analysis_tests": 36,
+  "trial_export_tests": 41,
+  "physiological_validation": false,
+  "participant_results_available": false,
+  "figure": "Figure 4.5, printed page 89 (PDF page 108)",
+  "visual_checks": [
+    "Figure 4.5 four panels and caption fit",
+    "Table 3.2 trial CSV caption and rows fit"
+  ],
+  "condensed_mentions_in_pdf": 0,
+  "overleaf_revision": "804cf4ca6551fa2d6167da536b43b0d5e097a1c1",
+  "github_push": false
+}

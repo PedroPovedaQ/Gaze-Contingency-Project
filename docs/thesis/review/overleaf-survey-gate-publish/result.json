@@ -1,0 +1,19 @@
+{
+  "status": "published",
+  "parent_revision": "8dbfa76529e6023d5dc46f10f07ace9f40889c0d",
+  "commit": "0f4abbeb29595908924b75d52093569e667ec969",
+  "verified_remote_revision": "0f4abbeb29595908924b75d52093569e667ec969",
+  "files": [
+    "appendices/a-instruments.tex",
+    "appendices/b-data-dictionary.tex",
+    "chapters/03-measures-scoring.tex",
+    "chapters/03-system.tex",
+    "figures/jev-final-playback-gate.pdf",
+    "figures/jev-final-playback-gate.svg",
+    "figures/jev-final-playback-gate.png"
+  ],
+  "staging_checkout": "/var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/overleaf-survey-gate-5ld7yeaq",
+  "preserved_remote_base": true,
+  "force_push": false,
+  "qualtrics_changed": false
+}

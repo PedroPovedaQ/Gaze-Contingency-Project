@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-23",
+  "pdf_sha256": "6cc3147d5bd1a74bc33e826c816ca5436a34dddddf927a9499b6eca2be3cdd2d",
+  "pages": 170,
+  "pdf_bytes": 3645965,
+  "build_errors": false,
+  "build_warning_matches": [],
+  "automated_pdf_ua2": {
+    "details": {
+      "passedRules": 1728,
+      "failedRules": 0,
+      "passedChecks": 461202,
+      "failedChecks": 0,
+      "ruleSummaries": []
+    },
+    "jobEndStatus": "normal",
+    "profileName": "PDF/UA-2 + Tagged PDF validation profile",
+    "statement": "PDF file is compliant with Validation Profile requirements.",
+    "compliant": true
+  },
+  "all_figures_have_alt": true,
+  "all_tables_have_headers": true,
+  "missing_internal_destinations": [],
+  "visual_spot_checks_pdf_pages": [
+    26,
+    51
+  ],
+  "figure_png_sha256": "ebe18ae49e6035f925d0ae5450dff749cc0e1709f9d4871362ef053a1d9d930d",
+  "scope": "Automated validation and visual spot checks, not institutional approval or exhaustive assistive-technology review."
+}

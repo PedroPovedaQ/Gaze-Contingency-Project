@@ -2,7 +2,7 @@
 
 **Protocol proposal:** These are proposed recruitment versions. Use only the channels and final text approved by UCF.
 
-Study: **Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent**
+Study: **Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent in Virtual Reality**
 
 Use only the versions and channels approved by UCF. Complete the administrative contact/location fields before submission.
 

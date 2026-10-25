@@ -1,0 +1,38 @@
+{
+  "remote_revision": "8dbfa76529e6023d5dc46f10f07ace9f40889c0d",
+  "files": [
+    {
+      "file": "appendices/a-instruments.tex",
+      "identical": false,
+      "remote_bubble_macros": false,
+      "local_bubble_macros": true,
+      "remote_performance_lines": [
+        "\\item Performance -- How unsuccessful were you in accomplishing the task?",
+        "\\textit{Response:} Integer ratings from 0 to 10. For demand, effort and frustration: 0 = Very low; 10 = Very high. For performance: 0 = Perfect; 10 = Failure. Intermediate values are numbered without additional anchors."
+      ],
+      "local_performance_lines": [
+        "Performance -- How successful were you in accomplishing what you were asked to do?",
+        "\\textit{Response:} Integer ratings from 0 to 10. For demand, effort and frustration: 0 = Very low; 10 = Very high. For performance: 0 = Failure; 10 = Perfect. Intermediate values are numbered without additional anchors."
+      ]
+    },
+    {
+      "file": "appendices/b-data-dictionary.tex",
+      "identical": false,
+      "remote_bubble_macros": false,
+      "local_bubble_macros": false,
+      "remote_performance_lines": [],
+      "local_performance_lines": []
+    },
+    {
+      "file": "chapters/03-measures-scoring.tex",
+      "identical": false,
+      "remote_bubble_macros": false,
+      "local_bubble_macros": false,
+      "remote_performance_lines": [
+        "\\paragraph{Workload.} Six NASA-TLX dimensions---mental, physical and temporal demand, performance, effort and frustration---will be rated separately for each voice block during the final survey, after both blocks. The study will use a documented 0--10 adaptation without pairwise weighting, in which performance runs from Perfect to Failure and the other dimensions run from Very low to Very high. Individual ratings and the unweighted mean of all six completed dimensions will be retained, with higher scores indicating greater workload or poorer perceived performance. The source instrument is \\href{https://doi.org/10.1016/S0166-4115(08)62386-9}{Hart and Staveland's NASA-TLX}."
+      ],
+      "local_performance_lines": []
+    }
+  ],
+  "writes_to_overleaf_or_active_sources": false
+}

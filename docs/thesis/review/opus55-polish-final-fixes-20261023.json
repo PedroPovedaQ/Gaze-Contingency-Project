@@ -1,0 +1,58 @@
+[
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "The present design gives speech an ongoing instructional role and compares it with a neutral voice that already reflects the participant's preference.",
+    "new": "The present design gives speech an ongoing instructional role and compares the self-similar voice with a neutral voice that already reflects the participant's preference.",
+    "reason": "\"It\" grammatically refers to \"speech\", so the sentence compares speech with a neutral voice instead of naming the central comparison: the self-similar voice versus the neutral voice.",
+    "severity": "medium",
+    "claude_new": "The present design gives speech an ongoing instructional role and compares the self-similar voice with a neutral voice that already reflects the participant's preference."
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "relative to the control. Relative to the control condition, the audio cue therefore changed one aspect of search behavior without a detectable reduction in completion time. This supports examining",
+    "new": "relative to the control. The study therefore supports examining",
+    "reason": "Leftover redundancy: the middle sentence repeats the previous one almost word for word and stacks a second \"relative to the control\". Removing it keeps the reported finding and the conclusion about attention allocation.",
+    "severity": "medium",
+    "claude_new": "relative to the control. The study therefore supports examining"
+  },
+  {
+    "file": "chapters/04-method.tex",
+    "old": "they create repeated occasions on which participants rely on the assigned voice;",
+    "new": "they create repeated occasions on which participants receive guidance in the assigned voice;",
+    "reason": "Overstates certainty. Reliance is measured as an exploratory outcome (RQ3, custom reliance and guidance-use items), so the design rationale should not assume it. This restores the original meaning: repeated opportunities to receive guidance.",
+    "severity": "medium",
+    "claude_new": "they create repeated occasions on which participants receive guidance in the assigned voice;"
+  },
+  {
+    "file": "chapters/05-measurement.tex",
+    "old": "The system will also retain the interval from opening-cue onset to selection, preserving the opening instruction and subsequent search within a broader timing measure. This record permits examination of differences in opening-clip duration across voices, while active completion time remains the primary outcome.",
+    "new": "The system will also retain the broader interval from opening-cue onset to selection. This measure includes the opening instruction, whose duration may differ across voices, while active completion time remains the primary outcome.",
+    "reason": "The revision implies that this interval measures clip-duration differences, but it does not. The original reason was that clip duration differs across voices, which is why the broader interval is kept. The phrase \"preserving the opening instruction ... within a broader timing measure\" is also awkward.",
+    "severity": "low",
+    "claude_new": "The system will also retain the broader interval from opening-cue onset to selection, which includes the time spent receiving the opening instruction. Because prepared opening clips can differ in duration across voices, this record remains informative, although active completion time is the primary outcome."
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "This coupling complicates interpretation, because reduced gaze availability can both reduce measurement coverage and suspend guidance.",
+    "new": "Tracking gaps can therefore affect both the outcome being measured and the evidence available to interpret it.",
+    "reason": "Leftover redundancy: the previous sentence already says poor tracking reduces measurement coverage. This sentence repeats that (\"reduced ... reduce\") instead of making the original point, which was that a gaze gap is more than missing data.",
+    "severity": "low",
+    "claude_new": "This coupling complicates interpretation, because a gap in gaze availability is not simply missing data when it also suspends guidance."
+  },
+  {
+    "file": "chapters/03-system.tex",
+    "old": "Together, these functions support the comparison of voice experiences, with the decision provider held common across conditions.",
+    "new": "Together, these functions support the voice comparison, with the decision provider held common across conditions.",
+    "reason": "\"Voice experiences\" narrows the platform's purpose to experience only, but active completion time is the primary outcome.",
+    "severity": "low",
+    "claude_new": "Together, these functions support the voice comparison, with the decision provider held common across conditions."
+  },
+  {
+    "file": "appendices/d-readiness.tex",
+    "old": "An actual Trial Review capture shows its explicitly synthetic bundled demonstration. Figure sources and provenance are listed in \\path{figures/README.md}. These figures are explanatory schematics or interface illustrations, not measured participant results.",
+    "new": "An actual Trial Review capture shows its explicitly synthetic bundled demonstration, and a three-panel reconstruction shows the recorded scene from headset development Run 26. Figure sources and provenance are listed in \\path{figures/README.md}. These figures are explanatory schematics, interface illustrations, or reconstructions of development recordings, not measured participant results.",
+    "reason": "The provenance register leaves out the new figure reconstructed from real recorded development data (Run 26). It also calls every figure a schematic or interface illustration, which contradicts the Chapter 3 caption saying the recording supplies the object geometry, positions and poses.",
+    "severity": "medium",
+    "claude_new": "An actual Trial Review capture shows its explicitly synthetic bundled demonstration, and a three-panel reconstruction shows the recorded scene from headset development Run 26. Figure sources and provenance are listed in \\path{figures/README.md}. These figures are explanatory schematics, interface illustrations, or reconstructions of development recordings, not measured participant results."
+  }
+]

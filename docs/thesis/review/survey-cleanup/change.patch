@@ -1,0 +1,884 @@
+diff --git a/appendices/a-instruments.tex b/appendices/a-instruments.tex
+index e3a0b90..23a117e 100644
+--- a/appendices/a-instruments.tex
++++ b/appendices/a-instruments.tex
+@@ -18,9 +18,6 @@ This appendix retains the instrument wording and response ranges from the curren
+   \surveybubble\ 6\hfill\surveybubble\ 7\hfill\surveybubble\ 8\hfill
+   \surveybubble\ 9\hfill\surveybubble\ 10\par
+   \noindent #1\hfill #2\par}}
+-\newcommand{\surveyssq}{%
+-  \par\nopagebreak\smallskip{\small\noindent
+-  \surveychoice{0 None}\surveychoice{1 Slight}\surveychoice{2 Moderate}\surveychoice{3 Severe}\par}}
+ \newcommand{\surveywrite}{\par\nopagebreak\noindent\rule{\linewidth}{0.3pt}\par}
+ 
+ \section{Administration}
+@@ -29,131 +26,57 @@ Participants will complete one practice trial in the first assigned voice, follo
+ \tagpdfsetup{table/header-rows={1}}
+ \begin{tabularx}{\linewidth}{@{}p{0.27\linewidth}X@{}}\toprule
+ Stage & Measures \\\midrule
+-Before headset exposure & Demographics, experience and baseline SSQ \\
+-Voice setup & Agent-gender preference, audition ratings and voice choice \\
++Before headset exposure & Demographics and experience \\
++Voice setup & Audition ratings and voice choice \\
+ Between voice blocks & Rest break, immediate comfort and tracking checks; no questionnaire \\
+-Final survey after both blocks & Post-exposure SSQ; two condition-specific sets (6 workload, 24 IMI, 21 agent-perception and 14 voice/assistance ratings each), technical checks, optional comments, voice comparison and debrief \\\bottomrule
++Final survey after both blocks & Two condition-specific sets (6 workload, 24 IMI, 21 agent-perception and 14 voice/assistance ratings each), technical checks, optional comments, voice comparison and debrief \\\bottomrule
+ \end{tabularx}
+-Each condition-specific set in the final survey contains 65 numeric responses (130 across both sets) before technical checks and optional text. Setup will include a separate liking rating for each auditioned voice, including the self-similar voice. Baseline and final SSQ together contain 32 symptom ratings.
++Each condition-specific set in the final survey contains 65 numeric responses (130 across both sets) before technical checks and optional text. Setup will include a separate liking rating for each auditioned voice, including the self-similar voice.
+ 
+ \section{Baseline}
+ Fill one circle per question unless instructed to select all that apply. Write numeric or text responses on the lines provided. An unanswered item remains missing.
+ 
+-\qid{BASE\_STUDY\_CODE}
++\par\medskip\noindent
+ Study code (assigned by the researcher):
+ \textit{Response:} Coded identifier; no name or contact details.\surveywrite
+-\qid{BASE\_AGE}
++\par\medskip\noindent
+ Age range:
+ \par\nopagebreak \surveychoice{18--24}\surveychoice{25--34}\surveychoice{35--44}\surveychoice{45--54}\surveychoice{55--64}\surveychoice{65+}\surveychoice{Prefer not to answer}
+-\qid{BASE\_GENDER}
++\par\medskip\noindent
+ Gender identity (select all that apply):
+ \par\nopagebreak \surveychoice{Woman}\surveychoice{Man}\surveychoice{Nonbinary}\par\nopagebreak\noindent\surveychoice{Another identity (optional description)}\surveychoice{Prefer not to answer}\par Optional description:\surveywrite
+-\qid{BASE\_HANDEDNESS}
++\par\medskip\noindent
+ Which hand do you usually use for everyday tasks?
+ \par\nopagebreak \surveychoice{Right}\surveychoice{Left}\surveychoice{Both equally}\surveychoice{Prefer not to answer}
+-\qid{BASE\_CORRECTION}
++\par\medskip\noindent
+ Do you use glasses or contact lenses?
+ \par\nopagebreak \surveychoice{Neither}\surveychoice{Glasses}\surveychoice{Contact lenses}\surveychoice{Both}\surveychoice{Prefer not to answer}
+-\qid{BASE\_MR}
++\par\medskip\noindent
+ How often have you used virtual- or mixed-reality headsets?
+ \par\nopagebreak \surveychoice{Never}\surveychoice{Once or twice}\surveychoice{Several times}\surveychoice{Monthly}\surveychoice{Weekly or more}
+-\qid{BASE\_EYE}
++\par\medskip\noindent
+ Have you used eye-tracking technology before?
+ \par\nopagebreak \surveychoice{No}\surveychoice{Yes}\surveychoice{Unsure}
+-\qid{BASE\_VOICE}
++\par\medskip\noindent
+ Have you used a synthetic or cloned version of your own voice before?
+ \par\nopagebreak \surveychoice{No}\surveychoice{Yes}\surveychoice{Unsure}
+-\qid{BASE\_AI\_FAMILIARITY}
++\par\medskip\noindent
+ How familiar are you with AI voice assistants?
+ \surveyseven{Not at all familiar}{}{Extremely familiar}
+-\subsection{Current symptoms}
+-\qid{BASE\_SSQ}
+-Rate each symptom now, before headset use.
+-\textit{Response:} One severity rating per symptom.
+-\begin{enumerate}
+-\item \begin{minipage}[t]{\linewidth}
+-General discomfort
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Fatigue
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Headache
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Eyestrain
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Difficulty focusing
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Increased salivation
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Sweating
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Nausea
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Difficulty concentrating
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Fullness of head
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Blurred vision
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Dizziness with eyes open
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Dizziness with eyes closed
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Vertigo
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Stomach awareness
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Burping
+-\surveyssq
+-\end{minipage}
+-\end{enumerate}
+-\textit{Response:} 0 = None; 1 = Slight; 2 = Moderate; 3 = Severe.
+ \section{Voice setup}
+-\qid{SETUP\_AGENT\_GENDER}
+-What gender presentation would you prefer for the agent's voice?
+-\par\nopagebreak \surveychoice{Masculine}\surveychoice{Feminine}\surveychoice{Another presentation (optional description)}\surveychoice{No preference}\surveychoice{Prefer not to answer}\par Optional description:\surveywrite
+-\qid{SETUP\_CANDIDATE\_LIKING}
++\par\medskip\noindent
+ How much do you like this voice?
+ \textit{Response:} 0--100, with 0 = Do not like at all and 100 = Like extremely; Unable to rate. Repeat for every auditioned candidate and the self-similar voice.\par\noindent Rating (0--100): \rule{0.2\linewidth}{0.3pt}\quad\surveychoice{Unable to rate}
+-\qid{SETUP\_CHOSEN\_VOICE}
++\par\medskip\noindent
+ Which of these voices would you prefer to use for the task?
+ \textit{Response:} Select from the voices actually offered. Ties in liking ratings will be resolved by this explicit choice.\surveywrite
+-\qid{SETUP\_AUDIO\_CHECK}
++\par\medskip\noindent
+ Can you hear the voice clearly and at a comfortable volume?
+ \par\nopagebreak \surveychoice{Yes}\surveychoice{No} Resolve volume or audibility problems before continuing.
+-Record the offered catalog/version, voice IDs, audition order, selected voice and any unavailable preference. Demographic gender, preferred agent presentation and perceived voice gender are distinct variables, and no voice preference will be inferred from demographic gender.
++Record the offered voice set/version, voice IDs, audition order and selected voice. Demographic gender and perceived voice gender are distinct variables; voice choice is recorded directly rather than inferred from demographic gender.
+ \clearpage\section{Final survey: condition-specific questionnaire sets}
+ Complete this set twice during the final survey, first for Block 1 and then for Block 2. Display the referenced block number and actual voice condition before each set. Please answer only about that indicated block. There are no right or wrong answers. You may leave an item unanswered if you cannot answer it.
+-The researcher will associate the response with participant, session and block IDs, actual voice condition/ID, condition order, survey version and actual administration timestamp. Record administration phase as final and reference scope as participant-by-block; the BLOCK item IDs describe the referent, not collection timing.
++The researcher will associate the response with participant, session and block IDs, actual voice condition/ID, condition order, survey version and actual administration timestamp. Record administration phase as final and reference scope as participant-by-block.
+ \subsection{Workload}
+ Rate each aspect of the indicated block. Fill one circle per row. This is a 0--10 adaptation of NASA-TLX; the positive Performance prompt follows the \href{https://human-factors.arc.nasa.gov/groups/TLX/downloads/TLXScale.pdf}{NASA rating form}, but its Failure-to-Perfect response direction is a deliberate local adaptation.
+ \begin{enumerate}
+@@ -443,108 +366,33 @@ I was motivated to complete the task without the agent's guidance.
+ \surveyseven{Strongly disagree}{}{Strongly agree}
+ \end{minipage}
+ \end{enumerate}
+-\qid{BLOCK\_VOICE\_LIKING}
++\par\medskip\noindent
+ How much did you like the voice in this block?
+ \textit{Response:} 0--100; 0 = Do not like at all, 100 = Like extremely; Unable to rate.\par\noindent Rating (0--100): \rule{0.2\linewidth}{0.3pt}\quad\surveychoice{Unable to rate}
+-\qid{BLOCK\_GUIDANCE\_USE\_PCT}
++\par\medskip\noindent
+ During this block, what percentage of the time did you use the agent's guidance to decide where to search?
+ \textit{Response:} 0--100\%; 0 = None of the time, 100 = All of the time; Unable to estimate.\par\noindent Percentage (0--100): \rule{0.16\linewidth}{0.3pt}\,\%\quad\surveychoice{Unable to estimate}
+ \par\noindent\begin{minipage}{\linewidth}
+-\qid{BLOCK\_PERCEIVED\_GENDER}
++\par\medskip\noindent
+ How would you describe the gender presentation of the agent's voice?
+ \textit{Response:} Optional free text.\surveywrite\surveychoice{Unsure}
+ \end{minipage}\par
+ \subsection{Technical and comfort checks}
+-\qid{BLOCK\_HEARD}
++\par\medskip\noindent
+ Did you hear all prompts clearly?
+ \par\nopagebreak \surveychoice{Yes}\surveychoice{No}\surveychoice{Unsure}
+-\qid{BLOCK\_FAULT}
++\par\medskip\noindent
+ Did any prompt unexpectedly repeat, cut off, arrive late, or use the wrong voice?
+ \par\nopagebreak \surveychoice{No}\surveychoice{Yes}\surveychoice{Unsure} If Yes, optional description.\surveywrite
+-\qid{BLOCK\_BREAK}
++\par\medskip\noindent
+ Did you take an unplanned break or experience an interruption?
+ \par\nopagebreak \surveychoice{No}\surveychoice{Yes} If Yes, optional description.\surveywrite
+-\qid{BLOCK\_COMMENT}
++\par\medskip\noindent
+ Is there anything else you would like to share about this block?
+ \textit{Response:} Optional free text.\surveywrite
+-\section{Final survey: symptoms, comparison and debrief}
+-\subsection{Post-exposure symptoms and comfort}
+-Administer these current-symptom items immediately after headset removal, before the retrospective condition-specific sets. Rate each symptom now.
+-\begin{enumerate}
+-\item \begin{minipage}[t]{\linewidth}
+-General discomfort
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Fatigue
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Headache
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Eyestrain
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Difficulty focusing
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Increased salivation
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Sweating
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Nausea
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Difficulty concentrating
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Fullness of head
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Blurred vision
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Dizziness with eyes open
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Dizziness with eyes closed
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Vertigo
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Stomach awareness
+-\surveyssq
+-\end{minipage}
+-\item \begin{minipage}[t]{\linewidth}
+-Burping
+-\surveyssq
+-\end{minipage}
+-\end{enumerate}
+-\textit{Response:} 0 = None; 1 = Slight; 2 = Moderate; 3 = Severe.
+-\qid{POST\_STOP}
+-Did you stop or pause because of symptoms?
+-\par\nopagebreak \surveychoice{No}\surveychoice{Yes}
+-\qid{POST\_READY}
+-Do you feel ready to leave the lab?
+-\par\nopagebreak \surveychoice{Yes}\surveychoice{No} A No response requires researcher follow-up.
++\section{Final survey: comparison and debrief}
+ \subsection{Voice comparison and debrief}
+-\qid{POST\_VOICE\_PREF}
++\par\medskip\noindent
+ Which voice did you prefer?
+ \par\nopagebreak \surveychoice{The neutral voice I selected}\surveychoice{The synthetic version of my own voice}\surveychoice{No preference}\surveychoice{Unsure}
+ \begin{enumerate}
+diff --git a/chapters/03-measures-scoring.tex b/chapters/03-measures-scoring.tex
+index 3b8d3c6..c0cd44f 100644
+--- a/chapters/03-measures-scoring.tex
++++ b/chapters/03-measures-scoring.tex
+@@ -25,7 +25,7 @@ Distinct walls visited, wall transitions and revisits summarize search coverage
+ 
+ \paragraph{Voice experience and reliance.} Twelve custom 1--7 agreement items assess voice similarity, responsiveness, helpfulness, distraction, familiarity, trust, comfort, uncanniness, reliance, naturalness, willingness to follow and motivation to act without guidance. Voice similarity serves as a manipulation check. Voice liking and retrospective percentage of guidance use each use 0--100 responses with separate unable-to-answer options. These 14 numeric items are analyzed separately; they are not a validated composite scale. Liking during voice audition remains separate from condition-specific liking collected at the end.
+ 
+-\paragraph{Symptoms and debrief.} The 16 \href{https://doi.org/10.1207/s15327108ijap0303_3}{Simulator Sickness Questionnaire} symptoms are rated from 0 = None to 3 = Severe before headset exposure and after headset removal. Canonical total or subscale scores require the published membership and weights. Open debrief questions explore perceived performance, guidance experience, own-voice comfort, possible use cases and voice preference; broad experience questions precede specific eeriness or inner-dialogue probes.
++\paragraph{Debrief.} Open debrief questions explore perceived performance, guidance experience, own-voice comfort, possible use cases and voice preference; broad experience questions precede specific eeriness or inner-dialogue probes.
+ 
+ Each condition-specific set in the final survey contains 65 numeric responses (130 across both sets): six workload ratings, 24 IMI items, 21 Guo items and 14 custom ratings. Technical checks and optional text are additional. Questionnaire observations have participant-by-block scope even when copied into per-trial summary files; they are not treated as 40 independent responses. Missing answers are not replaced with zero.
+ 
+@@ -33,7 +33,7 @@ Each condition-specific set in the final survey contains 65 numeric responses (1
+ Table~\ref{tab:battery} summarizes the condition-specific battery. Counts refer to numeric items in one block-referenced set, not independent scales. Exact wording and reverse-key positions are preserved in Appendices~\ref{app:instruments} and~\ref{app:data}.
+ \begin{table}[htbp]
+ \centering
+-\caption[Condition-specific questionnaire battery]{Proposed final questionnaire battery for each referenced voice block. These ratings are administered after both blocks; setup voice ratings and the baseline/final SSQ are separate.}
++\caption[Condition-specific questionnaire battery]{Proposed final questionnaire battery for each referenced voice block. These ratings are administered after both blocks; setup voice ratings are separate.}
+ \label{tab:battery}
+ \small
+ \tagpdfsetup{table/header-rows={1}}
+diff --git a/chapters/04-method.tex b/chapters/04-method.tex
+index 09fd6fb..fb4bd1b 100644
+--- a/chapters/04-method.tex
++++ b/chapters/04-method.tex
+@@ -54,18 +54,18 @@ Each trial begins with the participant looking at a readiness cross. Once readin
+ 
+ If the target has not been selected after 25 seconds of active search, the trial ends as a timeout. The application hides the objects, cancels pending spatial hints, and plays a prepared encouragement in the assigned voice, beginning with ``Time up,'' before presenting the next readiness cross. For example, the agent may say, ``Time up. Let's shake that round off and start the next.'' Separate wording introduces the block break or acknowledges the final trial. Timeout feedback is outside the search interval and does not imply a correct selection. The same deadline and phrase set apply to both voice conditions and to the single practice trial; a timeout advances the scheduled attempt without adding a replacement. Explicit pauses suspend the clock, whereas tracking loss alone does not. The 25-second limit is a researcher-selected protocol parameter introduced on October 23, 2026, rather than a threshold established by the cited studies.
+ 
+-Before participant use, consent materials must be reconciled with ElevenLabs voice processing and Jev cloud decisions, including the data transmitted, retention, access, and deletion arrangements. This reconciliation remains a requirement before participant recruitment. After consent, participants complete background questions and baseline symptom ratings. They then choose a neutral voice, rate auditioned voices, record a standard passage in their natural voice for synthesis, and confirm comfortable, clear audio for each condition. The retained English recording passage is reproduced in Appendix~\ref{app:instruments}, although its match to the frozen build and typical recording duration remain to be verified. Preferred gender presentation is chosen explicitly rather than inferred from participant gender.
++Before participant use, consent materials must be reconciled with ElevenLabs voice processing and Jev cloud decisions, including the data transmitted, retention, access, and deletion arrangements. This reconciliation remains a requirement before participant recruitment. After consent, participants complete background questions. They then choose a neutral voice, rate auditioned voices, record a standard passage in their natural voice for synthesis, and confirm comfortable, clear audio for each condition. The retained English recording passage is reproduced in Appendix~\ref{app:instruments}, although its match to the frozen build and typical recording duration remain to be verified. The neutral voice is chosen explicitly rather than inferred from participant gender.
+ 
+ The researcher fits the headset and conducts vendor calibration followed by independent spatial validation across relevant heights, wall boundaries, distances and head orientations. If an offset correction is introduced, the targets used to fit it remain separate from those used for independent validation. Standardized instructions explain that participants rely on the agent to discover the target and use the right trigger to select it. Participants then complete the single practice trial and the two assigned 40-trial blocks.
+ 
+-No questionnaire interrupts the block sequence. Instead, during the final survey the same condition-specific questionnaire is completed twice, once referring to Block 1 and once to Block 2, with identical item wording and order. Breaks are offered between trials and at the block boundary, and any necessary in-trial pause is logged immediately. Tracking is rechecked between blocks and after headset adjustment. After headset removal, participants first complete the final symptom check, followed by the two retrospective condition-specific sets, comparative voice preference and debrief. Participants may request a pause or stop, and symptoms or technical problems prompt researcher assessment.
++No questionnaire interrupts the block sequence. Instead, during the final survey the same condition-specific questionnaire is completed twice, once referring to Block 1 and once to Block 2, with identical item wording and order. Breaks are offered between trials and at the block boundary, and any necessary in-trial pause is logged immediately. Tracking is rechecked between blocks and after headset adjustment. After headset removal, participants complete the two retrospective condition-specific sets, comparative voice preference and debrief. Participants may request a pause or stop, and symptoms or technical problems prompt researcher assessment.
+ 
+ Figure~\ref{fig:survey-scopes} distinguishes administration time from reference scope: both condition-specific batteries are completed in the final session, but each response refers to a single measured block.
+ 
+ \begin{figure}[htbp]
+ \centering
+ \includegraphics[width=\linewidth,alt={Two blocks separated by a break are followed by a final session with questionnaires referring separately to Block 1 and Block 2.}]{figures/survey-scopes.pdf}
+-\caption[Final questionnaire timing and block reference scope]{Proposed final retrospective administration. The intervening break contains comfort and tracking checks, not a block questionnaire. Each block-referenced battery contains 65 numeric ratings; the final SSQ is separate. Actual voice is recovered from the saved counterbalanced order.}
++\caption[Final questionnaire timing and block reference scope]{Proposed final retrospective administration. The intervening break contains comfort and tracking checks, not a block questionnaire. Each block-referenced battery contains 65 numeric ratings. Actual voice is recovered from the saved counterbalanced order.}
+ \label{fig:survey-scopes}
+ \end{figure}
+ 
+diff --git a/chapters/06-analysis.tex b/chapters/06-analysis.tex
+index a6a59b5..52e3659 100644
+--- a/chapters/06-analysis.tex
++++ b/chapters/06-analysis.tex
+@@ -30,7 +30,7 @@ Role & Unit & Planned interpretation \\\midrule
+ Primary performance & Trial within participant & Voice contrast in active time, adjusted for starting geometry and design factors. \\
+ Secondary experience & Participant by referenced block & Workload and separate IMI subscales, retaining paired scope. \\
+ Exploratory perception & Participant by referenced block & Agent constructs, individual custom items, and voice-similarity manipulation check. \\
+-Safety & Participant over full session & Baseline-to-final symptoms and stops; no separate voice-specific SSQ effect. \\
++Safety & Participant over full session & Recorded discomfort reports, pauses, stops and incomplete exposure. \\
+ Engineering quality & Qualified event episode / request & Delivery delays, errors, repetition, and provider reliability with distinct denominators. \\
+ Qualitative experience & Participant response / coded excerpt & Debrief themes with an audit trail, not causal performance estimates. \\\bottomrule
+ \end{tabularx}
+@@ -94,6 +94,6 @@ Reported reliance and observed behavior are considered together without treating
+ Self-reports of perceived performance, voice comfort, reliance, and possible uses for one's own synthetic voice complement measured task performance rather than substitute for it.
+ 
+ \subsection{Safety Outcomes and Manipulation Checks}
+-Baseline and final Simulator Sickness Questionnaire responses describe symptom burden and pre-to-post change across the full exposure, with canonical scores calculated only from the intended item anchors and scoring rules. Because there is no between-block administration, these measurements do not provide separate voice-block sickness effects. Safety stops, discomfort reports, and incomplete exposure are reported alongside symptom change. No numerical exclusion or stopping cutoff has yet been specified, and the operational stopping procedure must be frozen before participant collection.
++Safety reporting describes recorded discomfort reports, pauses, stops and incomplete exposure, including the reason for each interruption when available. These observations document tolerability and session completion; they do not provide a standardized pre-to-post symptom score. The operational stopping procedure must be frozen before participant collection.
+ 
+ The similarity manipulation check reports the paired difference between self-similar and neutral-voice ratings with uncertainty. A group-level decision rule and any practically meaningful difference remain open preregistration decisions. Because equivalence testing is not currently specified, a nonsignificant voice contrast is not interpreted as equivalence.
+diff --git a/chapters/08-discussion.tex b/chapters/08-discussion.tex
+index c482763..3e0eb65 100644
+--- a/chapters/08-discussion.tex
++++ b/chapters/08-discussion.tex
+@@ -47,7 +47,7 @@ Practice uses the first assigned voice, which aligns initial exposure with the f
+ \section{Retrospective Questionnaires and Burden}
+ The final-only survey avoids interrupting the two-block search sequence with a long questionnaire, but it also requires participants to recall Block 1 after completing Block 2. Ratings may therefore reflect recency, contrast, or imperfect recall. Each rating set identifies its referenced block; the reminder linking that block to its voice remains to be piloted. These reminders may aid recall but cannot guarantee accurate recollection.
+ 
+-The condition-specific battery contains 130 numeric responses across both blocks, in addition to symptoms, setup ratings, comparison questions, and debrief. Its completion time, missingness, and comprehension therefore require pilot measurement. Because participants may be tired or symptomatic after exposure, the post-exposure safety check precedes the retrospective sets. The breadth of the battery reflects a current design decision; it does not demonstrate that every item is necessary or equally interpretable.
++The condition-specific battery contains 130 numeric responses across both blocks, in addition to setup ratings, comparison questions, and debrief. Its completion time, missingness, and comprehension therefore require pilot measurement. Because participants may be tired or uncomfortable after exposure, researchers check whether they are comfortable continuing before administering the retrospective sets. The breadth of the battery reflects a current design decision; it does not demonstrate that every item is necessary or equally interpretable.
+ 
+ Adapting an embodied-agent measure to a voice agent can alter its meaning. Co-presence or anthropomorphism items may be understood differently without a visible character. The thesis retains attribution and wording changes, reports the adaptation, and avoids asserting new psychometric validation from a small experimental sample. Custom reliance and naturalness items remain individual exploratory measures.
+ 
+diff --git a/figures/survey-scopes.pdf b/figures/survey-scopes.pdf
+index 436db5af56244d81ee1c7ba85802b02aef1ded95..c4f8910e1ec979ac1c3f321f65e1489acea5278a 100644
+GIT binary patch
+delta 12803
+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
+V(hYi(Oj8~TF*i2~B_%~qMhe4?DenLP
+
+delta 12714
+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
+
+diff --git a/figures/survey-scopes.svg b/figures/survey-scopes.svg
+index d6c67af..5f36fd5 100644
+--- a/figures/survey-scopes.svg
++++ b/figures/survey-scopes.svg
+@@ -1 +1 @@
+-<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560"><defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#617078"/></marker></defs><rect width="1000" height="100%" fill="white"/><text x="35" y="35.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="26" font-weight="bold" fill="#173c48">Questionnaire administration and reference scope</text><text x="35" y="66.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#617078">Protocol proposal: no between-block questionnaires; Qualtrics synchronization remains on hold.</text><rect x="30" y="115" width="205" height="100" rx="12" fill="#eef3f5" stroke="#bac6cc"/><text x="48" y="147.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="bold" fill="#173c48">Block 1</text><text x="48" y="180.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">40 measured trials</text><rect x="280" y="115" width="160" height="100" rx="12" fill="#eef3f5" stroke="#bac6cc"/><text x="298" y="147.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="bold" fill="#173c48">Break</text><text x="298" y="180.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">Comfort checks</text><rect x="485" y="115" width="205" height="100" rx="12" fill="#eef3f5" stroke="#bac6cc"/><text x="503" y="147.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="bold" fill="#173c48">Block 2</text><text x="503" y="180.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">40 measured trials</text><rect x="735" y="115" width="235" height="100" rx="12" fill="#fff0c7" stroke="#bac6cc"/><text x="753" y="147.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="bold" fill="#173c48">Final session</text><text x="753" y="180.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">SSQ, then survey items</text><line x1="235" y1="165" x2="280" y2="165" stroke="#617078" stroke-width="2.5" marker-end="url(#a)"/><line x1="440" y1="165" x2="485" y2="165" stroke="#617078" stroke-width="2.5" marker-end="url(#a)"/><line x1="690" y1="165" x2="735" y2="165" stroke="#617078" stroke-width="2.5" marker-end="url(#a)"/><rect x="100" y="310" width="365" height="140" rx="12" fill="#eef3f5" stroke="#bac6cc"/><text x="118" y="342.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="bold" fill="#173c48">Reference: Block 1</text><text x="118" y="375.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">Workload, IMI, agent experience</text><text x="118" y="400.65" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">Actual voice mapped by saved order</text><text x="118" y="426.3" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">65 numeric ratings</text><rect x="535" y="310" width="365" height="140" rx="12" fill="#eef3f5" stroke="#bac6cc"/><text x="553" y="342.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="bold" fill="#173c48">Reference: Block 2</text><text x="553" y="375.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">Same instruments and item versions</text><text x="553" y="400.65" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">Actual voice mapped by saved order</text><text x="553" y="426.3" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">65 numeric ratings</text><line x1="840" y1="215" x2="280" y2="300" stroke="#617078" stroke-width="2.5" marker-end="url(#a)"/><line x1="860" y1="215" x2="720" y2="300" stroke="#617078" stroke-width="2.5" marker-end="url(#a)"/><text x="500" y="515.0" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="bold" fill="#173c48">Administration time = final session; response scope = participant × referenced block.</text></svg>
+\ No newline at end of file
++<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560"><defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#617078"/></marker></defs><rect width="1000" height="100%" fill="white"/><text x="35" y="35.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="26" font-weight="bold" fill="#173c48">Questionnaire administration and reference scope</text><text x="35" y="66.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#617078">Protocol proposal: no between-block questionnaires; Qualtrics synchronization remains on hold.</text><rect x="30" y="115" width="205" height="100" rx="12" fill="#eef3f5" stroke="#bac6cc"/><text x="48" y="147.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="bold" fill="#173c48">Block 1</text><text x="48" y="180.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">40 measured trials</text><rect x="280" y="115" width="160" height="100" rx="12" fill="#eef3f5" stroke="#bac6cc"/><text x="298" y="147.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="bold" fill="#173c48">Break</text><text x="298" y="180.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">Comfort checks</text><rect x="485" y="115" width="205" height="100" rx="12" fill="#eef3f5" stroke="#bac6cc"/><text x="503" y="147.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="bold" fill="#173c48">Block 2</text><text x="503" y="180.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">40 measured trials</text><rect x="735" y="115" width="235" height="100" rx="12" fill="#fff0c7" stroke="#bac6cc"/><text x="753" y="147.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="bold" fill="#173c48">Final session</text><text x="753" y="180.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">Questionnaires + debrief</text><line x1="235" y1="165" x2="280" y2="165" stroke="#617078" stroke-width="2.5" marker-end="url(#a)"/><line x1="440" y1="165" x2="485" y2="165" stroke="#617078" stroke-width="2.5" marker-end="url(#a)"/><line x1="690" y1="165" x2="735" y2="165" stroke="#617078" stroke-width="2.5" marker-end="url(#a)"/><rect x="100" y="310" width="365" height="140" rx="12" fill="#eef3f5" stroke="#bac6cc"/><text x="118" y="342.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="bold" fill="#173c48">Reference: Block 1</text><text x="118" y="375.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">Workload, IMI, agent experience</text><text x="118" y="400.65" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">Actual voice mapped by saved order</text><text x="118" y="426.3" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">65 numeric ratings</text><rect x="535" y="310" width="365" height="140" rx="12" fill="#eef3f5" stroke="#bac6cc"/><text x="553" y="342.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="bold" fill="#173c48">Reference: Block 2</text><text x="553" y="375.0" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">Same instruments and item versions</text><text x="553" y="400.65" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">Actual voice mapped by saved order</text><text x="553" y="426.3" text-anchor="start" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#173c48">65 numeric ratings</text><line x1="840" y1="215" x2="280" y2="300" stroke="#617078" stroke-width="2.5" marker-end="url(#a)"/><line x1="860" y1="215" x2="720" y2="300" stroke="#617078" stroke-width="2.5" marker-end="url(#a)"/><text x="500" y="515.0" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="bold" fill="#173c48">Administration time = final session; response scope = participant × referenced block.</text></svg>
+\ No newline at end of file
+diff --git a/frontmatter/abbreviations.tex b/frontmatter/abbreviations.tex
+index fa9318b..a3efc66 100644
+--- a/frontmatter/abbreviations.tex
++++ b/frontmatter/abbreviations.tex
+@@ -20,7 +20,6 @@
+ \item[JSON] JavaScript Object Notation
+ \item[NASA-TLX] National Aeronautics and Space Administration Task Load Index
+ \item[PDF] Portable Document Format
+-\item[SSQ] Simulator Sickness Questionnaire
+ \item[SVG] Scalable Vector Graphics
+ \item[TLX] Task Load Index (see NASA-TLX)
+ \item[UCF] University of Central Florida

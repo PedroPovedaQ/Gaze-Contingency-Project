@@ -1,0 +1,27 @@
+{
+  "changed_prose_files": [
+    "chapters/01-introduction.tex",
+    "chapters/02-literature.tex",
+    "chapters/03-system.tex",
+    "chapters/06-analysis.tex",
+    "chapters/07-evaluation.tex",
+    "chapters/09-conclusion.tex",
+    "chapters/08-discussion.tex",
+    "chapters/04-method.tex",
+    "chapters/05-measurement.tex",
+    "appendices/c-scenarios.tex",
+    "appendices/a-instruments.tex",
+    "appendices/b-data-dictionary.tex",
+    "appendices/f-guidance-support.tex",
+    "appendices/d-readiness.tex",
+    "appendices/e-decision-contract.tex"
+  ],
+  "abstract_and_front_matter_main_tex_unchanged": true,
+  "citation_commands_and_labels_preserved": true,
+  "display_equations_preserved": true,
+  "instrument_response_lines_and_item_headings_preserved": true,
+  "bib_entries": 67,
+  "cited_keys": 47,
+  "missing_citation_keys": [],
+  "scope": "Mechanical preservation checks; language and scientific meaning reviewed separately."
+}

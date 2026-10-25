@@ -1,0 +1,322 @@
+[
+  {
+    "policy": "strict_current",
+    "trial_id": "DEV_NEUTRAL_run030_r00",
+    "eye": "left",
+    "retained_seconds": 2.17640090896748,
+    "ipa": 0.9189483388650267,
+    "participant_policy": false
+  },
+  {
+    "policy": "strict_current",
+    "trial_id": "DEV_NEUTRAL_run030_r00",
+    "eye": "right",
+    "retained_seconds": 2.17640090896748,
+    "ipa": 0.45947416943251335,
+    "participant_policy": false
+  },
+  {
+    "policy": "strict_current",
+    "trial_id": "DEV_NEUTRAL_run030_r01",
+    "eye": "left",
+    "retained_seconds": 2.2452423814684153,
+    "ipa": 0.44538621230995473,
+    "participant_policy": false
+  },
+  {
+    "policy": "strict_current",
+    "trial_id": "DEV_NEUTRAL_run030_r01",
+    "eye": "right",
+    "retained_seconds": 2.2452423814684153,
+    "ipa": 0.8907724246199095,
+    "participant_policy": false
+  },
+  {
+    "policy": "strict_current",
+    "trial_id": "DEV_NEUTRAL_run030_r02",
+    "eye": "left",
+    "retained_seconds": 4.222494108311366,
+    "ipa": 0.7104805650515736,
+    "participant_policy": false
+  },
+  {
+    "policy": "strict_current",
+    "trial_id": "DEV_NEUTRAL_run030_r02",
+    "eye": "right",
+    "retained_seconds": 4.222494108311366,
+    "ipa": 0.4736537100343824,
+    "participant_policy": false
+  },
+  {
+    "policy": "strict_current",
+    "trial_id": "DEV_NEUTRAL_run030_r03",
+    "eye": "left",
+    "retained_seconds": 5.284963019716088,
+    "ipa": 0.5676482482106682,
+    "participant_policy": false
+  },
+  {
+    "policy": "strict_current",
+    "trial_id": "DEV_NEUTRAL_run030_r03",
+    "eye": "right",
+    "retained_seconds": 5.284963019716088,
+    "ipa": 0.1892160827368894,
+    "participant_policy": false
+  },
+  {
+    "policy": "strict_current",
+    "trial_id": "DEV_NEUTRAL_run030_r04",
+    "eye": "left",
+    "retained_seconds": 0.0,
+    "ipa": null,
+    "participant_policy": false
+  },
+  {
+    "policy": "strict_current",
+    "trial_id": "DEV_NEUTRAL_run030_r04",
+    "eye": "right",
+    "retained_seconds": 0.0,
+    "ipa": null,
+    "participant_policy": false
+  },
+  {
+    "policy": "jitter_100pct_only",
+    "trial_id": "DEV_NEUTRAL_run030_r00",
+    "eye": "left",
+    "retained_seconds": 2.17640090896748,
+    "ipa": 0.9189483388650267,
+    "participant_policy": false
+  },
+  {
+    "policy": "jitter_100pct_only",
+    "trial_id": "DEV_NEUTRAL_run030_r00",
+    "eye": "right",
+    "retained_seconds": 2.17640090896748,
+    "ipa": 0.45947416943251335,
+    "participant_policy": false
+  },
+  {
+    "policy": "jitter_100pct_only",
+    "trial_id": "DEV_NEUTRAL_run030_r01",
+    "eye": "left",
+    "retained_seconds": 4.280382706434466,
+    "ipa": 0.4672479395343573,
+    "participant_policy": false
+  },
+  {
+    "policy": "jitter_100pct_only",
+    "trial_id": "DEV_NEUTRAL_run030_r01",
+    "eye": "right",
+    "retained_seconds": 4.280382706434466,
+    "ipa": 0.700871909301536,
+    "participant_policy": false
+  },
+  {
+    "policy": "jitter_100pct_only",
+    "trial_id": "DEV_NEUTRAL_run030_r02",
+    "eye": "left",
+    "retained_seconds": 7.41812864021631,
+    "ipa": 0.8088293275843006,
+    "participant_policy": false
+  },
+  {
+    "policy": "jitter_100pct_only",
+    "trial_id": "DEV_NEUTRAL_run030_r02",
+    "eye": "right",
+    "retained_seconds": 7.41812864021631,
+    "ipa": 0.4044146637921503,
+    "participant_policy": false
+  },
+  {
+    "policy": "jitter_100pct_only",
+    "trial_id": "DEV_NEUTRAL_run030_r03",
+    "eye": "left",
+    "retained_seconds": 17.22129490430234,
+    "ipa": 0.6387440701251743,
+    "participant_policy": false
+  },
+  {
+    "policy": "jitter_100pct_only",
+    "trial_id": "DEV_NEUTRAL_run030_r03",
+    "eye": "right",
+    "retained_seconds": 17.22129490430234,
+    "ipa": 0.46454114190921764,
+    "participant_policy": false
+  },
+  {
+    "policy": "jitter_100pct_only",
+    "trial_id": "DEV_NEUTRAL_run030_r04",
+    "eye": "left",
+    "retained_seconds": 5.609926133067347,
+    "ipa": 0.5347663995639255,
+    "participant_policy": false
+  },
+  {
+    "policy": "jitter_100pct_only",
+    "trial_id": "DEV_NEUTRAL_run030_r04",
+    "eye": "right",
+    "retained_seconds": 5.609926133067347,
+    "ipa": 0.8912773326065424,
+    "participant_policy": false
+  },
+  {
+    "policy": "gap_50ms_only",
+    "trial_id": "DEV_NEUTRAL_run030_r00",
+    "eye": "left",
+    "retained_seconds": 2.17640090896748,
+    "ipa": 0.9189483388650267,
+    "participant_policy": false
+  },
+  {
+    "policy": "gap_50ms_only",
+    "trial_id": "DEV_NEUTRAL_run030_r00",
+    "eye": "right",
+    "retained_seconds": 2.17640090896748,
+    "ipa": 0.45947416943251335,
+    "participant_policy": false
+  },
+  {
+    "policy": "gap_50ms_only",
+    "trial_id": "DEV_NEUTRAL_run030_r01",
+    "eye": "left",
+    "retained_seconds": 0.0,
+    "ipa": null,
+    "participant_policy": false
+  },
+  {
+    "policy": "gap_50ms_only",
+    "trial_id": "DEV_NEUTRAL_run030_r01",
+    "eye": "right",
+    "retained_seconds": 0.0,
+    "ipa": null,
+    "participant_policy": false
+  },
+  {
+    "policy": "gap_50ms_only",
+    "trial_id": "DEV_NEUTRAL_run030_r02",
+    "eye": "left",
+    "retained_seconds": 2.886708791833371,
+    "ipa": 0.6928305361656465,
+    "participant_policy": false
+  },
+  {
+    "policy": "gap_50ms_only",
+    "trial_id": "DEV_NEUTRAL_run030_r02",
+    "eye": "right",
+    "retained_seconds": 2.886708791833371,
+    "ipa": 0.6928305361656465,
+    "participant_policy": false
+  },
+  {
+    "policy": "gap_50ms_only",
+    "trial_id": "DEV_NEUTRAL_run030_r03",
+    "eye": "left",
+    "retained_seconds": 0.0,
+    "ipa": null,
+    "participant_policy": false
+  },
+  {
+    "policy": "gap_50ms_only",
+    "trial_id": "DEV_NEUTRAL_run030_r03",
+    "eye": "right",
+    "retained_seconds": 0.0,
+    "ipa": null,
+    "participant_policy": false
+  },
+  {
+    "policy": "gap_50ms_only",
+    "trial_id": "DEV_NEUTRAL_run030_r04",
+    "eye": "left",
+    "retained_seconds": 0.0,
+    "ipa": null,
+    "participant_policy": false
+  },
+  {
+    "policy": "gap_50ms_only",
+    "trial_id": "DEV_NEUTRAL_run030_r04",
+    "eye": "right",
+    "retained_seconds": 0.0,
+    "ipa": null,
+    "participant_policy": false
+  },
+  {
+    "policy": "both_experimental",
+    "trial_id": "DEV_NEUTRAL_run030_r00",
+    "eye": "left",
+    "retained_seconds": 26.8059579806868,
+    "ipa": 0.26113597600366945,
+    "participant_policy": false
+  },
+  {
+    "policy": "both_experimental",
+    "trial_id": "DEV_NEUTRAL_run030_r00",
+    "eye": "right",
+    "retained_seconds": 26.8059579806868,
+    "ipa": 0.26113597600366945,
+    "participant_policy": false
+  },
+  {
+    "policy": "both_experimental",
+    "trial_id": "DEV_NEUTRAL_run030_r01",
+    "eye": "left",
+    "retained_seconds": 14.5950239856611,
+    "ipa": 0.27406601071226777,
+    "participant_policy": false
+  },
+  {
+    "policy": "both_experimental",
+    "trial_id": "DEV_NEUTRAL_run030_r01",
+    "eye": "right",
+    "retained_seconds": 14.5950239856611,
+    "ipa": 0.13703300535613389,
+    "participant_policy": false
+  },
+  {
+    "policy": "both_experimental",
+    "trial_id": "DEV_NEUTRAL_run030_r02",
+    "eye": "left",
+    "retained_seconds": 12.473236153717153,
+    "ipa": 0.3206866246020652,
+    "participant_policy": false
+  },
+  {
+    "policy": "both_experimental",
+    "trial_id": "DEV_NEUTRAL_run030_r02",
+    "eye": "right",
+    "retained_seconds": 12.473236153717153,
+    "ipa": 0.3206866246020652,
+    "participant_policy": false
+  },
+  {
+    "policy": "both_experimental",
+    "trial_id": "DEV_NEUTRAL_run030_r03",
+    "eye": "left",
+    "retained_seconds": 32.01052387387608,
+    "ipa": 0.49983561853099395,
+    "participant_policy": false
+  },
+  {
+    "policy": "both_experimental",
+    "trial_id": "DEV_NEUTRAL_run030_r03",
+    "eye": "right",
+    "retained_seconds": 32.01052387387608,
+    "ipa": 0.5935547970055554,
+    "participant_policy": false
+  },
+  {
+    "policy": "both_experimental",
+    "trial_id": "DEV_NEUTRAL_run030_r04",
+    "eye": "left",
+    "retained_seconds": 17.133317177533172,
+    "ipa": 0.46692651032517846,
+    "participant_policy": false
+  },
+  {
+    "policy": "both_experimental",
+    "trial_id": "DEV_NEUTRAL_run030_r04",
+    "eye": "right",
+    "retained_seconds": 17.133317177533172,
+    "ipa": 0.35019488274388383,
+    "participant_policy": false
+  }
+]

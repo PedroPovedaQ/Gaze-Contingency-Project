@@ -1,0 +1,19 @@
+{
+  "tests_passed": 6,
+  "figure": "4.6",
+  "printed_page": 95,
+  "pdf_page": 114,
+  "rendered_pages_checked": [
+    109,
+    114
+  ],
+  "clipping_observed": false,
+  "synthetic_data_in_figure": false,
+  "neutral_started_trials": 5,
+  "self_similar_started_trials": 0,
+  "accuracy_percent": 80,
+  "completion_time_n": 5,
+  "ipa_trial_mean_n": 4,
+  "missed_targets": "unavailable_no_recorded_deadline",
+  "independent_participant_claim": false
+}

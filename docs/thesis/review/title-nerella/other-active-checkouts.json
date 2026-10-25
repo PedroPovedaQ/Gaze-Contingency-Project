@@ -1,0 +1,31 @@
+{
+  "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project": [
+    "docs/manuscript/gaze-guidance-planned-study.tex",
+    "docs/irb/decision-register.md",
+    "docs/irb/irb-readiness-brief.md",
+    "docs/protocol/overleaf/rough_draft.tex",
+    "docs/irb/source/session-record.md",
+    "docs/irb/source/consent.md",
+    "docs/irb/source/recruitment.md",
+    "docs/irb/source/voice-script.md",
+    "docs/irb/source/screening.md",
+    "docs/irb/source/post-participation.md",
+    "docs/irb/source/protocol.md",
+    "scripts/qualtrics/build_surveys.py"
+  ],
+  "/Users/pedro.poveda/Gaze Contingency Project": [
+    "docs/manuscript/gaze-guidance-planned-study.tex",
+    "docs/irb/decision-register.md",
+    "docs/irb/irb-readiness-brief.md",
+    "docs/protocol/overleaf/survey-questions-by-block.tex",
+    "docs/irb/source/session-record.md",
+    "docs/irb/source/consent.md",
+    "docs/irb/source/recruitment.md",
+    "docs/irb/source/questionnaires.md",
+    "docs/irb/source/voice-script.md",
+    "docs/irb/source/screening.md",
+    "docs/irb/source/post-participation.md",
+    "docs/irb/source/protocol.md",
+    "scripts/qualtrics/build_surveys.py"
+  ]
+}

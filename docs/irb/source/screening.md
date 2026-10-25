@@ -2,7 +2,7 @@
 
 **Protocol proposal:** This is a proposed screening workflow. The PI and UCF must approve the consent point, eligibility rules, safety thresholds, and record-retention procedure before use.
 
-Study: **Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent**
+Study: **Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent in Virtual Reality**
 
 Researcher instructions: Conduct only after the approved screening consent/consent point specified by UCF. Ask in private. Record the study ID and eligibility result, not diagnostic detail. Do not retain reasons longer than the approved screening-record schedule. “Yes” to a safety item does not authorize the researcher to diagnose the person.
 

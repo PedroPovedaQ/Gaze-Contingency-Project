@@ -1,0 +1,13 @@
+diff --git a/main.tex b/main.tex
+index 27db378..fdccebb 100644
+--- a/main.tex
++++ b/main.tex
+@@ -67,7 +67,7 @@
+ \raggedbottom
+ \newcommand{\qid}[1]{\par\smallskip\textbf{\texttt{#1}}\par}
+ \newcommand{\draftnote}[1]{\par\noindent\textbf{Draft status.} #1\par}
+-\title{Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent}
++\title{Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent in Virtual Reality}
+ \author{PEDRO POVEDA QUEVEDO}
+ % Previous degree and major professor supplied by the author during review.
+ \prevdegreei{B.Sc. in Computer Science}

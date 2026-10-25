@@ -96,7 +96,7 @@ d.line(825,240,825,320);d.box(555,320,410,115,'Analysis tables',['Trials nested 
 d.text(500,510,['Derived CSV rows do not replace raw records.','Repeating a block score across 40 rows does not create 40 ratings.'],21,True,'middle');d.save('data-provenance')
 
 d=Drawing(560);d.title('Questionnaire administration and reference scope','Protocol proposal: no between-block questionnaires; Qualtrics synchronization remains on hold.')
-d.box(30,115,205,100,'Block 1',['40 measured trials']);d.box(280,115,160,100,'Break',['Comfort checks']);d.box(485,115,205,100,'Block 2',['40 measured trials']);d.box(735,115,235,100,'Final session',['SSQ, then survey items'],gold)
+d.box(30,115,205,100,'Block 1',['40 measured trials']);d.box(280,115,160,100,'Break',['Comfort checks']);d.box(485,115,205,100,'Block 2',['40 measured trials']);d.box(735,115,235,100,'Final session',['Questionnaires + debrief'],gold)
 for a,b in [(235,280),(440,485),(690,735)]:d.line(a,165,b,165)
 d.box(100,310,365,140,'Reference: Block 1',['Workload, IMI, agent experience','Actual voice mapped by saved order','65 numeric ratings'])
 d.box(535,310,365,140,'Reference: Block 2',['Same instruments and item versions','Actual voice mapped by saved order','65 numeric ratings'])

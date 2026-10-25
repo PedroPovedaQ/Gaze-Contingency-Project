@@ -1,0 +1,61 @@
+\chapter{RESULTS}
+\label{ch:evaluation}
+The completed results chapter will return to the question posed in the introduction: does guidance spoken in a synthetic version of the participant's own voice differ, in efficiency or experience, from guidance spoken in the neutral voice the participant selected? The chapter will first establish that the intended comparison was delivered, then report search efficiency, and finally examine workload, motivation, and exploratory measures of voice experience. Because no confirmatory participant outcomes are available in this draft, the sections below describe how each result will be reported and distinguish those pending results from the engineering evidence that currently supports the apparatus.
+
+\section{Planned Reporting of Participant Results}
+The completed empirical chapter will first report participant flow, exclusions, incomplete sessions, and data coverage by condition and order. It will then describe realized starting geometry and the similarity manipulation check before presenting the primary voice contrast. This order allows readers to assess whether the intended comparison was delivered and measured.
+
+The primary result will include the fitted time contrast, its uncertainty, the analyzed participant and trial counts, and model diagnostics. Secondary sections will then report workload and IMI subscales at participant-by-block level, followed by exploratory sections on agent perception, voice experience, guidance behavior, and debrief themes. Each table will state its denominator and identify missing observations, so that changes in the analyzed sample remain visible.
+
+\begin{table}[htbp]
+\centering\caption{Planned result families and their current status. No confirmatory participant outcomes are reported in this draft.}
+\small\tagpdfsetup{table/header-rows={1}}
+\begin{tabularx}{\linewidth}{@{}p{0.27\linewidth}XX@{}}\toprule
+Result family & Required evidence & Present status \\\midrule
+Participant flow & Consented, started, completed, stopped; reasons & Not available \\
+Manipulation check & Similarity by voice with paired scope & Not available \\
+Primary performance & Adjusted time contrast and uncertainty & Not estimated \\
+Workload and IMI & Versioned raw items and complete subscales & Not collected for this report \\
+Agent experience & Individual and construct-specific ratings & Not collected for this report \\
+Guidance quality & Sequence-level playback and evidence & Evaluation design specified \\
+Debrief themes & Recorded responses and coding audit & Not available \\\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\subsection{Results Organized by Research Question}
+Following the manipulation check, each research question will be answered in turn. For RQ1, the estimate will be the marginal time contrast standardized over a common starting-difficulty distribution, as defined in Section~\ref{ch:analysis}; here, \emph{standardized} refers to that common distribution rather than to a standardized effect size. The estimate will be accompanied by its uncertainty, the eligible participant and trial counts, and model diagnostics, following the analysis plan finalized before confirmatory recruitment. RQ2 will report the paired workload outcomes and the separate IMI subscales, using multiplicity families that the analysis plan has yet to fix. RQ3 will present exploratory agent-perception and custom ratings alongside debrief themes and valid search measures. A contrast that cannot be estimated or proves inconclusive will be reported as such rather than omitted.
+
+EQ1 will be reported separately through sequence coverage, qualification-to-playback delay, provider reliability, and categorized faults. These engineering measures assess the delivery of guidance, while the participant study evaluates differences between voices. As summarized in Table~\ref{tab:rq-map}, neither a passing software test nor a favorable model rating establishes an effect on participants; likewise, a voice-condition difference does not verify that every instruction was delivered correctly.
+
+\section{User Performance}
+Participant-study estimates are not yet available; this section is reserved for active search-completion time, incorrect trigger selections, and valid gaze/controller contact latencies by voice condition. Reporting will include paired participant summaries and the planned adjusted contrast, with sample counts and uncertainty. Recorded development runs may illustrate delivery or export behavior in a separately labeled pilot analysis, but cannot establish that one voice improves participant performance.
+
+\section{User Experience}
+Participant ratings are not yet available; this section is reserved for condition-referenced workload, the separate motivation subscales, agent experience, voice liking and similarity, and debrief responses. Results will retain the distinction between preference, perceived resemblance, and task performance. No questionnaire response or preference distribution is generated from synthetic trials.
+
+\section{Evidence Available for This Draft}
+The evidence currently available consists of engineering records rather than participant data. The October 20 alignment audit documents software checks, analysis tests, and a successful Android build, installation, and launch. These records support specific implementation claims; they do not bear on a treatment effect, perceived naturalness, eye-tracker accuracy, or acoustic response latency.
+
+The audit reports passing schedule and voice-isolation checks, including one practice trial in the first assigned voice, two measured blocks, and nominal-angle quotas, and it records 38 trial-export tests and seven workload scoring/plot tests. These counts describe the audit's own test run, not a suite re-executed for this manuscript, so any later claim based on them should cite the verification record and the revision it tested.
+
+\begin{table}[htbp]
+\centering\caption{Evidence status at the documented implementation checkpoint.}
+\small\tagpdfsetup{table/header-rows={1}}
+\begin{tabularx}{\linewidth}{@{}p{0.28\linewidth}XX@{}}\toprule
+Evidence & Supported conclusion & Boundary \\\midrule
+Schedule and voice checks & One practice and nominal 40-by-two allocation pass fixtures & Does not verify wearer completion of a full session \\
+Trial export and TLX tests & Declared scales and retrospective joins pass tested cases & Not validation of all questionnaires \\
+Unity integration checks & Listed state and interaction fixtures pass & Not proof against all timing races \\
+Android build/install/launch & Application built, installed, and started & Not a participant acceptance session \\
+Exact pre-cue theta & Required definition documented & Snapshot implementation remains a gap \\
+Vertical allocation & Cross-relative definition documented & 20/20 enforcement remains a gap \\
+Voice-condition outcomes & No confirmatory dataset reported & No performance or preference conclusion \\\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\section{Guidance Quality Supporting the Voice Contrast}
+The completed report will describe gaze availability, actual speech exposure, delayed acknowledgments, interruptions, and unhelpful cues by voice condition and session. This account will help assess whether technical delivery problems affected one condition more than the other. The voice contrast will not automatically be adjusted for behavior-dependent hint counts or waiting time: these quantities arise after voice assignment, may themselves depend on voice condition, and cannot be treated as baseline difficulty (Section~\ref{ch:analysis}).
+
+Gaze acknowledgment, controller acknowledgment, and correct trigger selection remain separate events. Their sequence records document feedback delivery, whereas participant ratings and debriefing address how that feedback was experienced. Advisory model judgments cannot substitute for those participant reports. Appendix~\ref{app:guidance-support} describes the policy pilots, episode definitions, failure categories, and investigation of two-second delays that support assessment of the apparatus before interpreting differences between voices.

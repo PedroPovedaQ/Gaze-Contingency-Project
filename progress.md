@@ -1,3 +1,145 @@
+## 2026-10-25 — Synchronized thesis checkpoint for main
+
+User requested pushing the current work to main before a Claude thesis handoff. Verified the Overleaf importer reports sources and PDF up to date at remote revision a06157ad688f521e41f4956cfd65b3628f106c6f; preserved the existing conflict baseline. Checkpoint includes latest manuscript, figures, recorded-development analysis, review evidence and one-way sync tooling. Fourteen sync regressions and six voice-panel regressions pass. Current runtime theta v7 work is a separate development checkpoint; the manuscript still identifies exact pre-cue geometry/height balancing as gaps in its earlier aligned release, requiring explicit reconciliation rather than retroactive claims about recordings.
+
+## 2026-10-23
+
+- Thesis survey cleanup: removed pre/post exposure symptom batteries and the agent-gender setup preference question; removed visible question IDs while preserving response circles and scale anchors. Updated procedure, scoring, safety-reporting description, abbreviations, and the Python-generated survey timing figure. General comfort checks and pause/stop procedures remain. Qualtrics remains on hold. Published the scoped changes to Overleaf as 72e570a, preserving concurrent introduction and main-document edits. The revised snapshot compiled and rendered cleanly; the integrated local PDF rebuilt successfully with no sync conflicts. No GitHub commit or push.
+
+## 2026-10-23 — 25-second deadline and faster qualified target feedback
+
+Updated the thesis methodology, scoring, analysis, and development-figure annotations to the selected 25-second active-search deadline. Documented the qualified-target local interruption fast path, protected onset/ending, cooldown, unchanged gaze/controller holds, 150 ms fade, and final rechecks. Regenerated Python/Matplotlib panels from identical recorded inputs; no historical observation or timeout was relabeled. Scoped Overleaf changes preserve concurrent manuscript edits. Six figure tests and 42 export tests plus runtime clock/gaze/guidance/voice checks pass.
+
+## 2026-10-23 — Voice-condition outcome panels
+
+Implemented four reproducible panels with Neutral voice and Self-similar voice axes, using actual Run 30 evidence. First-selection accuracy is 4/5 completed searches; completion-time n=5; exploratory IPA trial-mean n=4. No self-similar observations or recorded 15-second deadline exist in this selected recording, so corresponding cells remain unavailable rather than zero. Preserved raw per-eye diagnostics, source hashes, plotted CSV, and summary inventory. Six scoring/join tests pass. Chapter 4 receives explicit definitions and limitations; no synthetic data or participant-condition inference.
+
+## 2026-10-23 — Final title includes Virtual Reality
+
+Author revised the title to **Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent in Virtual Reality**. Updated current title references; existing Nerella bibliography entry and citations remain.
+
+## 2026-10-23 — Thesis title and gaze-based workload literature
+
+User-selected title: **Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent**. Reconciled title/source metadata and added Nerella et al. (2026, DOI 10.1145/3806040) to workload literature and future spoken-assistance adaptation, preserving the self-similar voice comparison. Updated current manuscript/protocol and local IRB/Qualtrics draft title strings; no Qualtrics upload, IRB submission, or GitHub push. Historical review snapshots remain unchanged. See docs/thesis/review/title-nerella for citation evidence and build verification.
+
+## 2026-10-23 — Eye metrics, recorded graphs, and thesis wording
+
+Published the reviewed Missed Targets definition, exploratory eye-measurement methods, and Figure 4.5 from actual Run 30 data to Overleaf; reconciled the previously local development graphs and voice-literature additions without discarding browser edits. Added Chiossi method attribution, Duchowski IPA source and a bounded Pfeil UCF eye/head connection; the exact UCF paper the user remembers remains unidentified. Updated nine chapters to present-tense methodological language and replaced condensed-export wording with trial CSV. Both scoped Overleaf builds passed; figure and table layouts inspected. 36 eye-analysis and 41 trial-export tests passed. Detector physiological validation remains pending independent labels; no study results or 120 Hz capture are claimed. No GitHub commit/push performed.
+
+## 2026-10-23 — Thesis compact-wall methodology alignment
+
+- Updated Chapter 3 application design, experimental-design height constraints, data collection, and Appendix B for the implemented 30% wall-height reduction (3.148 to 2.2036 m), 0.10–2.1036 m object-center range, unchanged 168 objects/21 per plane, default 1.5 m radius and 0.20 m minimum 3D center separation.
+- Distinguished earlier recorded figures from the revised layout and documented per-recording replay wall bounds without rescaling historical object positions. Comfort, visibility, and proposed vertical balance remain pilot checks, not established benefits.
+- Published only four scoped source files to Overleaf, preserving concurrent/unrelated edits; verified remote revision 2d3b13541fe26fc04b3a59b211f056839bb7cfd6. Remote snapshot and local PDF rebuilt successfully; no sync conflicts. Visually checked the geometry page and verified no final-pass undefined references/citations. No GitHub commit or push.
+
+## 2026-10-23 — Remove thesis Appendices D, E and F
+
+- Removed D (readiness/source register), E (decision contract) and F (supporting guidance implementation) from the compiled manuscript and TOC. Cleaned all live cross-references, preserving the Jev figure in Chapter 3 and Appendices A–C. Source files remain available as excluded working material.
+- Published the scoped changes to Overleaf in `65a58bb7152f5dbb9b48e0ae9f7508eb6b51f73a` after successful compilation. Preserved Claude's remote text and cleanly merged the existing local voice-literature improvements and development-result graphs; no baseline reset or unrelated upload. Local rebuild passed and removed appendix headings are absent from the PDF.
+
+## 2026-10-23 — Publish survey format and Jev playback-gate figure to Overleaf
+
+- Published the bubble surveys, Failure-to-Perfect Performance item with scoring documentation, and Jev final playback gate figure in scoped Overleaf commit `0f4abbeb29595908924b75d52093569e667ec969`.
+- Based the publish on fresh remote revision `8dbfa76529e6023d5dc46f10f07ace9f40889c0d`; retained Claude's chapter text and inserted only the requested figure/explanation. Seven intended files changed; no GitHub push or Qualtrics edits.
+- Compiled the merged remote sources before publication and verified the remote commit. Subsequent one-way sync detected only an extra trailing blank line in Chapter 3; reconciled that whitespace, preserving the text. Sync reports up to date with no conflicts, and the local PDF rebuild succeeded.
+- Review evidence: `docs/thesis/review/overleaf-survey-gate-publish/`.
+
+## 2026-10-23 — Jev final-gate figure
+
+- Added an editable vector figure to Chapter 3 showing Unity observations/filtering, Jev phrase and speak/wait advice, qualified local feedback, and the final fresh-state playback gate. Marked the broader action mode as development-only, retained bounded waiting/fallback caveats, and distinguished actual playback from proposals. Local thesis update; no runtime, Qualtrics or live Overleaf changes.
+
+## 2026-10-23 — Development distributions and questionnaire layout
+
+- Reformatted actual recorded development search and speech plots into lettered distribution panels with individual observations, sample counts, quartile boxes, and explicit log-scale labels where needed. Retained all long durations and separate unfinished-search counts; no synthetic data or significance claims. Astra updated printable survey response bubbles and positive NASA-TLX Performance wording. On user clarification, Performance displays 0 Failure to 10 Perfect, and only that response is reversed once before the workload mean. Rebuilt 190 pages and inspected representative figures/surveys with no final-pass overflow or missing-glyph warnings; Qualtrics and concurrent live Overleaf edits remain untouched.
+
+## 2026-10-23
+
+- Added four thesis development-results figures from actual headset DEV_NEUTRAL Runs 20–28, with immutable source hashes, derived CSVs, missingness and export cross-checks. Recorded 27 started / 21 completed searches; retained unfinished endpoints. Added request-to-playback statistics and the historical 2.19 s gaze-confirmation deferral sequence to prevent conflating delivered-request latency with full response delay. Gaze charts report rendered-frame usability, not sensor accuracy or 120 Hz. No synthetic observations, voice-effect estimates, or Overleaf upload; concurrent browser edits remain protected.
+
+## 2026-10-23
+
+- Pulled latest Overleaf introduction/abbreviations, then strengthened the self-similar voice motivation using verified full-text evidence on game performance, agent experience, voice resemblance, and avatar voice choice. Added Kao et al. 2022 Audio Matters Too; Guo et al. already existed. Preserved exact pre-edit sources and a patch for reconciliation with ongoing Claude browser edits. No Overleaf upload or GitHub commit/push.
+
+## 2026-10-23
+
+- Extended the Overleaf sync to rebuild changed thesis sources automatically using the existing LuaLaTeX/BibTeX toolchain. Builds use an isolated source snapshot, back up existing PDFs, publish only successful current output, retry failures, and skip unchanged successful builds. Updated the existing 10-minute automation and added build/recovery tests (14 total passing). A real pull retrieved an Overleaf introduction edit at revision 29bbe56e8dfad9ad25e484f0ac9867eb7ed316f6 and rebuilt/published the PDF successfully in 44.85 seconds.
+
+## 2026-10-23
+
+- Enabled one-way Overleaf thesis source sync every 10 minutes via Codex heartbeat `sync-overleaf-thesis-to-local`. Added a tested importer with upload-baseline comparison, local-edit preservation, conflict snapshots, backups, path restrictions, and status reporting. First authenticated pull confirmed sources match. PDF rebuilding remains separate; no automatic commit, push, or bidirectional sync.
+
+## 2026-10-23
+
+- Imported the current thesis source and figures into a separate Overleaf project for Visual Editor editing: https://www.overleaf.com/project/6adbf46b3f96e54f5b3cc805. Configured LuaLaTeX and automatic compilation; verified Visual Editor opens the introduction and the PDF preview renders. Documented that this copy requires reconciliation with local Git edits. Original protocol project preserved.
+
+## 2026-10-23 — Full-paper Claude language pass
+
+- Reviewed all current thesis chapters and appendices using three verified Claude Opus 5.5 batches with the abstract and study context. Integrated 47 wording suggestions plus four clarifications; rejected five proposals that were unnecessary or could change meaning. Kept self-similar voice central.
+- Preserved the abstract, acknowledgments, citations, questionnaire/quoted wording, equations, tables, figures and study definitions. Exact before/after edits and rationale are in `docs/thesis/review/claude-full-language-summary-20261023.md` and linked JSON records.
+- Rebuilt 174 pages; no unresolved citations/references or overfull boxes. PDF/UA-2 passed 483,477 checks with zero failures; checked structural tags/internal destinations and four representative changed pages. PDF and source delivery refreshed. No commit/push, runtime change or Qualtrics work.
+
+## 2026-10-23 — Apparatus wording
+
+- Removed the optional video-passthrough statement from the thesis apparatus description; retained the VR study configuration.
+
+## 2026-10-23 — Thesis methodology and literature organization
+
+- Consolidated platform, method, measurement and analysis into Chapter 3 Methodology; Chapter 4 is Results, with separate performance and experience sections. Preserved detailed definitions and pending participant-results status.
+- Added XR application context, explicit gaze/speech/controller rationale, and bounded relevance to low-vision assistance. Verified HTC specifications, stimulus definitions and the 17-column condensed CSV. Shortened Figure 3.2 caption while retaining recorded-source provenance in review materials.
+- Qualtrics, live Overleaf and runtime unchanged. No sample outcomes invented; GPS-paper identity remains unresolved. Rebuilt 174-page PDF, checked revised layout and internal links, and passed PDF/UA-2 automated validation (483,344 checks, zero failures). Refreshed PDF and source delivery.
+
+## 2026-10-23 — Problem statement and proposed EEG extension
+
+- Reframed the problem statement around attention-guidance and self-similar voice research, initially unnamed target search, and performance/experience outcomes. Retained existing two-sided research questions without adding a directional hypothesis.
+- Added Yang et al. (IEEE VR 2026) to the bibliography and a future-work subsection proposing synchronized EEG alongside gaze, speech events, behavior and questionnaires. Kept neural measurements proposed and visual-flicker evidence distinct from the voice comparison. Metadata verified against Crossref and the supplied first page; full-text access remains unavailable. Qualtrics and runtime unchanged. Rebuilt 171-page PDF, checked changed pages and bibliography, and passed PDF/UA-2 automated validation (465,224 checks, zero failures); refreshed delivery.
+
+## 2026-10-23 — Introduction application and guidance framing
+
+- Revised Section 1.1.1 to introduce VR applications and connect instructional voice presentation to performance, perceived workload and enjoyment. Reframed the Binetti, Zhang and Chiossi examples while preserving their citations and distinguishing their studies from the present voice comparison.
+
+## 2026-10-23 — Abstract eeriness wording
+
+- Changed the abstract to “but can also elicit greater eeriness” as requested, preserving its citation.
+
+## 2026-10-23 — Full-manuscript language polish and recorded figure refinement
+
+- Completed the author-requested Claude Opus 5.5 review with full manuscript and project context. Integrated 150 language edits across nine chapters and six appendices, with synthesis to preserve claims; resolved seven final-review findings. Kept the approved abstract, instruments, citations, equations, study design and source snapshots intact. Qualtrics remains on hold.
+- Removed the recorded figure footer, added outer padding and captured real zoomed object views in four recorded colors. Preserved the original telemetry and source screenshots; provenance stays in the caption and metadata.
+- Corrected the stale bibliography inventory count to 67. No participant results or study-approval claims were introduced.
+- Rebuilt the 170-page PDF; PDF/UA-2 automated validation passes with 461,202 checks and zero failures. Inspected the revised prose and figure page, checked internal destinations, and refreshed the PDF/source delivery.
+
+## 2026-10-23 — Recorded scene figure
+
+- Implemented a three-panel thesis figure from actual Run 26 headset data: recorded-head first-person view, overhead arrangement, and six magnified object examples. No synthetic demonstration or generated scene data was used.
+- Preserved source screenshots and hashes, labeled the 168-object layout as an earlier development configuration, and added a caption distinguishing replay reconstruction from headset video and participant results. Capture-only camera/overlay settings leave runtime and telemetry unchanged.
+
+## 2026-10-23 — Family acknowledgments
+
+- Added the author’s thanks to his wife, Vanessa Zameza-Poveda, and mother, Carmen Quevedo, in the thesis acknowledgments.
+
+## 2026-10-23 — Abstract spatial-hint examples
+
+- Added “turn to the left” and “look up” as concrete examples of gaze-informed spatial hints in the abstract, retaining the requested present tense.
+
+## 2026-10-23 — Abstract search-layout wording
+
+- Clarified that seated participants search for colored geometric objects in a virtual environment, with the objects arranged on eight vertical planes around them. Retained present tense and the out-of-view rationale.
+
+## 2026-10-23 — Abstract voice terminology and tense
+
+- Changed the self-similar condition to a “synthetic cloned voice” and converted every future-tense study-description sentence in the abstract to the present tense. Kept prior-research findings in their appropriate tense and preserved the manuscript’s explicit distinction between study design and collected results.
+
+## 2026-10-23 — Accessible spoken-guidance rationale
+
+- Added Coughlan et al. (2020) to the abstract, literature review and bibliography as a blind-user precedent for verbal guidance to points of interest on physical objects. Replaced the proposed comparative claim about partial blindness with wording matched to the four-participant feasibility study.
+- Preserved the distinction between an accessibility motivation and validation of our gaze-contingent system for blind or low-vision users; no recruitment or runtime change.
+
+## 2026-10-23 — Audio attention-guidance grounding
+
+- Strengthened the abstract opening with distinct examples of VR audio alerts, AR spatialized target sounds, and spoken AR search hints. Added Sabouni et al. (2025) to the thesis bibliography and linked its attention-guidance precedent in the introduction and literature review.
+- Reviewed primary full-text cue methods/results; preserved the distinction between nonverbal alerts and speech, conditional performance benefits, and self-similar voice as the study focus. Applied the final dictated wording separating completion-time performance from workload, motivation and agent experience.
+- Rebuilt and refreshed the 165-page PDF/source bundle; 46 cited keys, 66 bibliography entries, no missing/duplicate keys or unresolved references. Checked affected pages and bibliography. No protocol/runtime change or Qualtrics synchronization.
+
 ## 2026-10-23 — Dictated abstract and thesis navigation revisions
 
 - Rebuilt the 165-page PDF; checked title, abbreviations and TOC layout, chapter/appendix numbering and internal links. PDF/UA-2 validation passed 451,191 checks with zero failures. Prepared all accumulated changes on this branch for the author-requested main sync.

@@ -1,0 +1,25 @@
+{
+  "status": "published",
+  "parent": "effeb6a0fdac54bb0632652d0a1a93cfab1c9269",
+  "folder": "/var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/overleaf-deadline25-l68cu0qy",
+  "files": [
+    "chapters/04-method.tex",
+    "chapters/05-measurement.tex",
+    "chapters/06-analysis.tex",
+    "chapters/07-development-results.tex",
+    "chapters/03-system.tex",
+    "figures/development-voice-condition-panels.pdf",
+    "figures/development-voice-condition-panels.png"
+  ],
+  "local_hashes": {
+    "chapters/04-method.tex": "ea1803d7b53318ba7cc0cf220983a770967dfe01752caf6a68374805db6df443",
+    "chapters/05-measurement.tex": "0c3ac8a999bc5e352865ae90358b0af89a70b132dc5a0d2ba877201b952980b1",
+    "chapters/06-analysis.tex": "6354f48614a23f4db8212e5a6fa43477e2c7cdc6462d91421f4dc66fbb9b5661",
+    "chapters/07-development-results.tex": "4b62ba741d79b383ba1d90e9d592e13a2c764729352ad6404659c2a163e84682",
+    "chapters/03-system.tex": "dc6ae9aa3415054dd8df5555ffbe4f4073cc5db49c99dae80d20f12ce54e04a7",
+    "figures/development-voice-condition-panels.pdf": "0e6ab332b7fa2e61ddb309c22b995e53898408359725b4100fbdbb691cfceae1",
+    "figures/development-voice-condition-panels.png": "6b10f8bab532b809a3c981fca3f28587ad0777a878f595a063b707bae7be9431"
+  },
+  "commit": "1f9c90b00d817f5898d2b182f2bfdd035ab78aa0",
+  "verified": "1f9c90b00d817f5898d2b182f2bfdd035ab78aa0"
+}

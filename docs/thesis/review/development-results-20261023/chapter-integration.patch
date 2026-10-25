@@ -1,0 +1,29 @@
+--- chapters/07-evaluation.tex.before
++++ chapters/07-evaluation.tex
+@@ -1,6 +1,8 @@
+ \chapter{RESULTS}
+ \label{ch:evaluation}
+ The completed results chapter will return to the question posed in the introduction: does guidance spoken in a synthetic version of the participant's own voice differ, in efficiency or experience, from guidance spoken in the neutral voice the participant selected? The chapter will first establish that the intended comparison was delivered, then report search efficiency, and finally examine workload, motivation, and exploratory measures of voice experience. Because no confirmatory participant outcomes are available in this draft, the sections below describe how each result will be reported and distinguish those pending results from the engineering evidence that currently supports the apparatus.
++
++\input{chapters/07-development-results}
+ 
+ \section{Planned Reporting of Participant Results}
+ The completed empirical chapter will first report participant flow, exclusions, incomplete sessions, and data coverage by condition and order. It will then describe realized starting geometry and the similarity manipulation check before presenting the primary voice contrast. This order allows readers to assess whether the intended comparison was delivered and measured.
+@@ -17,7 +19,7 @@
+ Primary performance & Adjusted time contrast and uncertainty & Not estimated \\
+ Workload and IMI & Versioned raw items and complete subscales & Not collected for this report \\
+ Agent experience & Individual and construct-specific ratings & Not collected for this report \\
+-Guidance quality & Sequence-level playback and evidence & Evaluation design specified \\
++Guidance quality & Sequence-level playback and evidence & Development traces reported; study comparison pending \\
+ Debrief themes & Recorded responses and coding audit & Not available \\\bottomrule
+ \end{tabularx}
+ \end{table}
+@@ -35,7 +37,7 @@
+ Participant ratings are not yet available; this section is reserved for condition-referenced workload, the separate motivation subscales, agent experience, voice liking and similarity, and debrief responses. Results will retain the distinction between preference, perceived resemblance, and task performance. No questionnaire response or preference distribution is generated from synthetic trials.
+ 
+ \section{Evidence Available for This Draft}
+-The evidence currently available consists of engineering records rather than participant data. The October 20 alignment audit documents software checks, analysis tests, and a successful Android build, installation, and launch. These records support specific implementation claims; they do not bear on a treatment effect, perceived naturalness, eye-tracker accuracy, or acoustic response latency.
++Alongside the recorded development results in Section~\ref{sec:development-results}, engineering verification records document the apparatus. These sources do not constitute confirmatory participant-study outcomes. The October 20 alignment audit documents software checks, analysis tests, and a successful Android build, installation, and launch. These records support specific implementation claims; they do not bear on a treatment effect, perceived naturalness, eye-tracker accuracy, or acoustic response latency.
+ 
+ The audit reports passing schedule and voice-isolation checks, including one practice trial in the first assigned voice, two measured blocks, and nominal-angle quotas, and it records 38 trial-export tests and seven workload scoring/plot tests. These counts describe the audit's own test run, not a suite re-executed for this manuscript, so any later claim based on them should cite the verification record and the revision it tested.
+ 

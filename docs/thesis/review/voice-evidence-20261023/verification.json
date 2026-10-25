@@ -1,0 +1,29 @@
+{
+  "pages": 176,
+  "pdf_sha256": "d7757ca81358e2bf394cd134bdb47af03ca2b27625c70060c3b5a4be4ff0b299",
+  "missing_citation_keys": 0,
+  "duplicate_bibliography_keys": 0,
+  "used_citation_keys": 52,
+  "bibliography_entries": 70,
+  "retained_uncited_entries": 18,
+  "final_pass_undefined_references": false,
+  "final_pass_overfull_lines": [],
+  "extracted_double_question_marks": false,
+  "visually_checked_physical_pages": [
+    24,
+    25,
+    26,
+    35,
+    36,
+    169,
+    170,
+    171,
+    172,
+    173,
+    174,
+    175,
+    176
+  ],
+  "scope": "Build, citation audit, extracted text, updated prose and entire bibliography layout. Not a renewed PDF/UA compliance audit.",
+  "overleaf_upload": "Not performed: concurrent browser edits preserved; exact base and patch retained."
+}

@@ -1,0 +1,87 @@
+{
+  "status": "Implemented: figure from actual development recording; not participant results",
+  "recordingId": "7a5d5e26c41b4040828e08536f9ae726",
+  "recording_sha256": "6c731b5902d307955ccdfbe5f56ffd5cddf70e6d3a9b425842ef70a965278c15",
+  "sourceType": "live_headset",
+  "utc": "2026-10-20T17:47:40.0114880Z",
+  "run": 26,
+  "trialId": "trial_001",
+  "session_time_seconds": 14.83,
+  "preceding_sample": {
+    "sequence": 919,
+    "time": 14.821534992988745,
+    "frame": 3693,
+    "headAvailable": true,
+    "headTracked": 1,
+    "gazeAvailable": true,
+    "gazeTracked": 1
+  },
+  "object_count": 168,
+  "shape_counts": {
+    "Pyramid": 22,
+    "Cube": 40,
+    "Sphere": 25,
+    "Capsule": 37,
+    "Star": 24,
+    "Cylinder": 20
+  },
+  "viewer_source_commit": "cec4da026d336de0b6a9cd6ad6828b680380cd2e",
+  "capture": "Native Trial Review window screenshots via Codex computer-use tool; CLI --recording, --time 14.83, --review-window, --view first-person/overhead",
+  "presentation_changes": [
+    "Isolated desktop viewer build; no changes to recording or participant application",
+    "Hide degrees, detection ring, subtitles and state-marker labels",
+    "Overhead camera yaw 0 degrees, pitch 89 degrees, distance 5.5 metres; first-person uses recorded head pose",
+    "Viewer avatar, walls, gaze marker, highlights and rays are reconstructed visualizations",
+    "24 logical-pixel outer horizontal padding; removed provenance footer from image, retained caption and metadata",
+    "Six close-ups use recorded head position, camera aimed at recorded object bounds center, vertical FOV=clamp(2 atan(0.75 bounds diagonal/distance),2,25 degrees). Object geometry, colors and transforms unchanged.",
+    "Close-up screenshots cropped and laid out; no generative redrawing or recoloring"
+  ],
+  "limitations": [
+    "Saved development recording is incomplete and has no completed trial",
+    "168-object development layout is not the frozen study configuration",
+    "Replay rendering is not a headset video capture",
+    "Object insets have independent magnification, not a common physical scale"
+  ],
+  "screenshots": {
+    "first-person-final-full.png": "0f0d082f9c913b74add862c9d67ef749a4b1332f8c78ad3e5d0f09e4aacc7934",
+    "overhead-framed-full.png": "b327218657bb28805b449108ef29839b86c6bdd8da8e065d32764af6a020fe33",
+    "zoom-pyramid-r00_o64.png": "d75c0cf715514e4debde921dbaed032dcc746d29cab9ba1c5ca30d7f60dc3e42",
+    "zoom-cube-r00_o89.png": "884e9439b2f3c62095855168ee22acf7af880ca7f556b6ff0521427078020bad",
+    "zoom-sphere-r00_o100.png": "6fc2ef1b82d0fd9c1dbbb2b80165ee650b7e68f9b14132fd5c6edbcf72bee33f",
+    "zoom-cylinder-r00_o86.png": "f754f96cfd945a413d94e82f0df3d4981195f0db529cd7cd6d4a844f03f09c3f",
+    "zoom-star-r00_o107.png": "6ea7434ac956541784651c676771f6715529fad25e0829546e9fee512bbc49f8",
+    "zoom-capsule-r00_o93.png": "5eecad7e8163ce3adc38c27e73d7aa33301526e08975c8cde5ea987479de48f5"
+  },
+  "object_inset_identity_check": [
+    {
+      "label": "Cube",
+      "recorded_object_id": "r00_o89",
+      "recorded_color": "Blue"
+    },
+    {
+      "label": "Sphere",
+      "recorded_object_id": "r00_o100",
+      "recorded_color": "Green"
+    },
+    {
+      "label": "Pyramid",
+      "recorded_object_id": "r00_o64",
+      "recorded_color": "Yellow"
+    },
+    {
+      "label": "Cylinder",
+      "recorded_object_id": "r00_o86",
+      "recorded_color": "Red"
+    },
+    {
+      "label": "Capsule",
+      "recorded_object_id": "r00_o93",
+      "recorded_color": "Green"
+    },
+    {
+      "label": "Star",
+      "recorded_object_id": "r00_o107",
+      "recorded_color": "Blue"
+    }
+  ]
+}

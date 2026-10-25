@@ -1,0 +1,1502 @@
+[
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "This provides a methodological rationale for treating object search as a controlled task with behavioral and gaze measures. Their comparison concerns augmented reality and augmented virtuality, rather than voice identity; it motivates specifying the visual environment carefully while the present study varies the guiding voice.",
+    "new": "Their work provides a methodological rationale for treating object search as a controlled task with behavioral and gaze measures. Because the comparison concerns augmented reality and augmented virtuality rather than voice identity, its main implication here is that the visual environment should be specified carefully so that the guiding voice can be varied against a well-defined scene.",
+    "reason": "Fixes the unclear 'This provides' and the semicolon-joined pair of claims, and states the methodological lesson directly. The AR/AV terms describing the cited paper are kept.",
+    "group": "framing",
+    "index": 0,
+    "claude_new": "Their work provides a methodological rationale for treating object search as a controlled task with behavioral and gaze measures. Because the comparison concerns augmented reality and augmented virtuality rather than voice identity, its main implication here is that the visual environment should be specified carefully so that the guiding voice can be varied against a well-defined scene.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "The study supports considering an auditory channel alongside visual guidance; it does not establish that speech alone is superior to visual cues.",
+    "new": "The study therefore supports an auditory channel alongside visual guidance, although its cues were alarm sounds rather than speech and it does not show that speech alone is superior to visual cues.",
+    "reason": "Turns a disclaimer tacked on with a semicolon into one connected qualification, and explains why the limit applies (the cues were alarm sounds, not speech), as already stated in this paragraph.",
+    "group": "framing",
+    "index": 1,
+    "claude_new": "The study therefore supports an auditory channel alongside visual guidance, although its cues were alarm sounds rather than speech and it does not show that speech alone is superior to visual cues.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "Their verbal cue was delivered at task onset rather than continuously in response to gaze. The study therefore motivates spoken search assistance without establishing the effectiveness of the more adaptive interaction proposed here.",
+    "new": "Because the verbal cue was delivered at task onset rather than updated in response to gaze, the study motivates spoken search assistance but does not address the more adaptive interaction proposed here.",
+    "reason": "Joins two choppy sentences into one causal argument and drops the stiff phrase 'establishing the effectiveness'.",
+    "group": "framing",
+    "index": 2,
+    "claude_new": "Because the verbal cue was delivered at task onset rather than updated in response to gaze, the study motivates spoken search assistance but does not address the more adaptive interaction proposed here.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "These studies used desktop displays rather than immersive headsets, and their cues should not be equated with conversational speech. Their relevance is the connection between what the user is currently looking at and what information the system supplies next.",
+    "new": "Both studies used desktop displays rather than immersive headsets, and their nonverbal cues differ from conversational speech. Their relevance here is the principle of linking the user's current gaze to the information the system supplies next.",
+    "reason": "Replaces the instruction to the reader ('should not be equated') and the abstract 'Their relevance is the connection' with plain scholarly statements.",
+    "group": "framing",
+    "index": 3,
+    "claude_new": "Both studies used desktop displays rather than immersive headsets, and neither cue resembles conversational speech. What they contribute here is the principle of linking what the user is currently looking at to the information the system supplies next.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "Follow My Voice applies this idea through short spoken directions: first orient toward a target region, then refine the search within it. The agent knows the target, while the participant initially does not know which object to select. Speech consequently has an ongoing instructional role, progressively connecting a direction with an intended object. This provides a setting in which the user repeatedly encounters the guiding voice, raising a further question: does hearing that guidance in a voice resembling one's own change the experience or effectiveness of receiving help?",
+    "new": "Follow My Voice applies this principle through short spoken directions that first orient the participant toward a target region and then refine the search within it. Because the agent knows the target while the participant initially does not know which object to select, speech plays an ongoing instructional role, progressively connecting a direction with the intended object. The participant therefore hears the guiding voice repeatedly during search, which raises a further question: does hearing that guidance in a voice resembling one's own change the experience or effectiveness of receiving help?",
+    "reason": "Replaces the imperative fragment and the vague 'This provides a setting' with a connected causal chain leading into the self-similarity question.",
+    "group": "framing",
+    "index": 4,
+    "claude_new": "Follow My Voice applies this principle through short spoken directions that first orient the participant toward a target region and then refine the search within it. Because the agent knows the target while the participant initially does not know which object to select, speech plays an ongoing instructional role, progressively connecting a direction with the intended object. The participant therefore hears the guiding voice repeatedly during search, which raises a further question: does hearing that guidance in a voice resembling one's own change the experience or effectiveness of receiving help?",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "These findings show why favorable impressions and discomfort should be examined separately. They do not establish that self-similar speech improves object-search speed or that the same responses will occur when the guide has no visible body.",
+    "new": "These findings indicate that favorable impressions and discomfort should be measured separately, although they do not show that self-similar speech improves object-search speed or that the same responses will occur when the guide has no visible body.",
+    "reason": "Merges the implication and its limit into one sentence so the caveat stops reading as a separate disclaimer.",
+    "group": "framing",
+    "index": 5,
+    "claude_new": "These findings indicate that favorable impressions and discomfort should be measured separately, although they do not show that self-similar speech improves object-search speed or that the same responses will occur when the guide has no visible body.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "Research on self-similar avatar voices in an educational game supplies additional motivation through selected engagement and identification outcomes, while also underscoring that findings depend on the task and measures~\\cite{kao2021selfsimilar}.",
+    "new": "Research on self-similar avatar voices in an educational game adds further motivation: self-similar voice was associated with several engagement and identification outcomes but not with every measure, which suggests that effects depend on the task and on what is measured~\\cite{kao2021selfsimilar}.",
+    "reason": "Rewrites the vague 'supplies additional motivation through selected ... outcomes' so it says what the cited study found, in line with the Kao summary already in Chapter 2.",
+    "group": "framing",
+    "index": 6,
+    "claude_new": "Research on self-similar avatar voices in an educational game adds further motivation: self-similar voice was associated with several engagement and identification outcomes but not with every measure, which suggests that effects depend on the task and on what is measured~\\cite{kao2021selfsimilar}.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "Voice selection accommodates preference; cloning introduces resemblance to the participant. Both are practical ways to personalize an assistant, so the study asks what self-resemblance contributes when the alternative already reflects the user's choice. Because the voices can differ in acoustic properties as well as resemblance, the comparison concerns these two voice configurations rather than an isolated causal effect of similarity.",
+    "new": "Selecting a voice and cloning one are both practical ways to personalize an assistant, but they work differently: selection accommodates preference, whereas cloning introduces resemblance to the participant. The study therefore asks what self-resemblance contributes when the alternative already reflects the user's choice. Because the voices can differ in acoustic properties as well as resemblance, the comparison concerns these two voice configurations rather than an isolated causal effect of similarity.",
+    "reason": "Replaces a telegraphic contrast split by a semicolon with a connected explanation of why the two forms of personalization differ. The confound qualification is kept.",
+    "group": "framing",
+    "index": 7,
+    "claude_new": "Selecting a voice and cloning one are both practical ways to personalize an assistant, but they work differently: selection accommodates preference, whereas cloning introduces resemblance to the participant. The study therefore asks what self-resemblance contributes when the alternative already reflects the user's choice. Because the voices can differ in acoustic properties as well as resemblance, the comparison concerns these two voice configurations rather than an isolated causal effect of similarity.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "Usefulness will be evaluated through both behavior and experience. Recognizing the clone is a manipulation check, not a performance benefit; liking it without searching faster is still an experience result. Likewise, completing efficiently while finding the voice eerie would distinguish task effectiveness from acceptability. The thesis therefore examines completion time, workload, motivation, and agent experience separately. This approach follows the Doppelg\\\"anger findings in allowing favorable and adverse reactions to coexist, without assuming that self-similar guidance will be preferable.",
+    "new": "Perceived voice-similarity ratings will assess whether participants experience the intended resemblance, providing a manipulation check for the self-similar condition. Search completion time, workload, motivation, and agent experience will be evaluated separately, because a voice can be appealing or unsettling without a corresponding change in task performance. This distinction follows the Doppelg\\\"anger findings, which showed favorable impressions alongside eeriness, and allows the study to examine both the effectiveness and acceptability of self-similar guidance without assuming an advantage for either voice.",
+    "reason": "The sentence the author objected to. Replaces the glib 'not a performance benefit' / 'still an experience result' contrast with an explanation of what the manipulation check shows and why liking and eeriness can diverge from speed. All substantive distinctions are kept.",
+    "group": "framing",
+    "index": 8,
+    "claude_new": "The usefulness of self-similar guidance will be evaluated through both behavior and experience. Whether participants hear the clone as resembling their own voice is a manipulation check: it indicates that the condition was delivered as intended, not that the voice helped them search. A participant might also prefer the cloned voice without searching any faster, or complete trials efficiently while finding the voice eerie; each pattern would describe a different aspect of receiving assistance, and the second would separate task effectiveness from acceptability. Following the Doppelg\\\"anger findings, in which favorable and adverse reactions occurred together, the thesis examines completion time, workload, motivation, and agent experience as separate outcomes rather than assuming that self-similar guidance will be preferable.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "Follow My Voice studies this comparison in a surrounding object-search task. A seated participant wears a virtual-reality headset and views colored geometric objects distributed across eight vertical planes.",
+    "new": "Follow My Voice examines this comparison through seated object search in virtual reality. Colored geometric objects are distributed across eight vertical planes around the participant.",
+    "reason": "'Surrounding object-search task' is an awkward phrase; this states plainly what surrounds the participant.",
+    "group": "framing",
+    "index": 9,
+    "claude_new": "Follow My Voice studies this comparison in an object-search task that surrounds the participant. Seated and wearing a virtual-reality headset, the participant views colored geometric objects distributed across eight vertical planes.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "The controlled shapes and surrounding layout make starting geometry and trial events easier to specify across the two voice conditions. Object search gives the speech a concrete purpose and observable outcomes, while the initially unnamed target makes guidance consequential throughout the task. Maintenance, training, and everyday retrieval motivate the broader value of search assistance, but transfer to those settings would require further evaluation.",
+    "new": "Simple geometric shapes on a common arrangement of surrounding planes make starting geometry and trial events easier to specify consistently across the two voice conditions. Object search gives the speech a concrete purpose with observable outcomes, and because the target is initially unnamed, guidance remains consequential until the participant selects it. Applications such as maintenance, training, and everyday retrieval illustrate the broader value of search assistance, although transfer to those settings would require separate evaluation.",
+    "reason": "Makes the abstract subjects concrete ('controlled shapes and surrounding layout'; domains that 'motivate the broader value') and connects the reasoning, keeping the transfer limit. The wording avoids implying that object layouts are fixed across trials.",
+    "group": "framing",
+    "index": 10,
+    "claude_new": "Simple geometric shapes on a common arrangement of surrounding planes make starting geometry and trial events easier to specify consistently across the two voice conditions. Object search gives the speech a concrete purpose with observable outcomes, and because the target is initially unnamed, guidance remains consequential until the participant selects it. Applications such as maintenance, training, and everyday retrieval illustrate the broader value of search assistance, although transfer to those settings would require separate evaluation.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "The central comparison varies the assigned voice while the assistance mechanism stays common to both conditions. Gaze contingency and constrained agent decisions deliver relevant instructions but are not additional participant treatments. They provide the shared apparatus for asking whether hearing guidance in one's own synthetic voice changes the efficiency or experience of being guided.",
+    "new": "The central comparison varies the assigned voice while keeping the assistance mechanism common to both conditions. Gaze contingency and constrained agent decisions use the current search state to select instructions. These shared components provide the setting for examining whether guidance in one's own synthetic voice changes search efficiency or the experience of receiving assistance.",
+    "reason": "Removes the stilted 'deliver relevant instructions but are not additional participant treatments' and the clipped follow-on sentence, keeping the shared-apparatus distinction.",
+    "group": "framing",
+    "index": 11,
+    "claude_new": "The central comparison varies the assigned voice while keeping the assistance mechanism common to both conditions. Gaze contingency and constrained agent decisions keep the instructions relevant to the participant's search, but they form shared apparatus rather than additional treatments. Their role is to provide a consistent setting in which to ask whether hearing guidance in one's own synthetic voice changes the efficiency or experience of being guided.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "The unresolved issue is how those voice experiences relate to task performance and receiving repeated spatial instructions in the present setting.",
+    "new": "What remains unresolved is how those reactions to a voice relate to task performance when the voice delivers repeated spatial instructions in the present setting.",
+    "reason": "Fixes the ungrammatical parallel ('relate to task performance and receiving...') and the vague 'voice experiences'.",
+    "group": "framing",
+    "index": 12,
+    "claude_new": "What remains unresolved is how those reactions to a voice relate to task performance when the voice delivers repeated spatial instructions in the present setting.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "The study therefore compares two practical voice configurations within a common task. It asks whether self-similar guidance changes active search time, workload, motivation, and the experience of the agent relative to neutral-voice guidance, keeping these outcomes separate rather than defining usefulness through a single favorable score. Because the voices can also differ in naturalness and other acoustic properties, it does not isolate resemblance as their only difference.",
+    "new": "The study therefore compares two practical voice configurations within a common task, asking whether self-similar guidance changes active search time, workload, motivation, and the experience of the agent relative to neutral-voice guidance. These outcomes are kept separate rather than combined into a single favorable score. Because the voices can also differ in naturalness and other acoustic properties, the comparison does not isolate resemblance as their only difference.",
+    "reason": "Tightens the flow and gives the final 'it' a clear subject, keeping the acoustic-confound boundary.",
+    "group": "framing",
+    "index": 13,
+    "claude_new": "The study therefore compares two practical voice configurations within a common task, asking whether self-similar guidance changes active search time, workload, motivation, and the experience of the agent relative to neutral-voice guidance. These outcomes are kept separate rather than combined into a single favorable score. Because the voices can also differ in naturalness and other acoustic properties, the comparison does not isolate resemblance as their only difference.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "A credible answer requires appropriate guidance in both conditions and a record of what each participant actually heard. Gaze contingency, the shared decision policy, and playback logging serve that requirement. Independent gaze-quality checks and distinct records of looking, pointing, and selecting protect the interpretation of the interaction~\\cite{dunn2024reporting,niehorster2026dataquality}. Chapters~\\ref{ch:system} and~\\ref{ch:measurement} describe these controls; the central empirical question remains the value of self-similar voice as assistance.",
+    "new": "Answering this question requires appropriate guidance in both conditions and a record of what each participant actually heard. Gaze contingency, the shared decision policy, and playback logging support this requirement. Independent gaze-quality checks and separate records of looking, pointing, and selecting provide the evidence needed to interpret the interaction~\\cite{dunn2024reporting,niehorster2026dataquality}. Chapters~\\ref{ch:system} and~\\ref{ch:measurement} describe these controls in support of the central voice comparison.",
+    "reason": "Replaces the list of short declaratives and the vague 'the value of self-similar voice' with connected prose that explains each control's purpose.",
+    "group": "framing",
+    "index": 14,
+    "claude_new": "Answering this question credibly requires appropriate guidance in both conditions and a record of what each participant actually heard. Gaze contingency, the shared decision policy, and playback logging serve that requirement, while independent gaze-quality checks and separate records of looking, pointing, and selecting guard against misreading the interaction~\\cite{dunn2024reporting,niehorster2026dataquality}. Chapters~\\ref{ch:system} and~\\ref{ch:measurement} describe these controls, which support rather than replace the central question of what self-similar voice contributes as assistance.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "The questions are assigned stable identifiers so that the completed results and conclusion can answer the same questions introduced here. RQ1 is the primary empirical contrast; RQ2 concerns secondary experience measures; RQ3 is exploratory. EQ1 identifies an engineering question rather than a fourth participant research question. Table~\\ref{tab:rq-map} connects each question to its evidence and analysis. The identifiers organize the existing plan and do not add a new experimental factor or a directional hypothesis.",
+    "new": "Each question carries a stable identifier so that the completed results and conclusion can answer the questions as they are posed here. RQ1 is the primary empirical contrast, RQ2 concerns secondary experience measures, and RQ3 is exploratory; EQ1 is an engineering question rather than a fourth participant research question. Table~\\ref{tab:rq-map} connects each question to its evidence and analysis. The identifiers organize the existing plan without adding an experimental factor or a directional hypothesis.",
+    "reason": "Smooths the telegraphic list structure and the meta-commentary, keeping the EQ1 distinction and the statement that no hypothesis is added.",
+    "group": "framing",
+    "index": 15,
+    "claude_new": "Each question carries a stable identifier so that the completed results and conclusion can answer the questions as they are posed here. RQ1 is the primary empirical contrast, RQ2 concerns secondary experience measures, and RQ3 is exploratory; EQ1 is an engineering question rather than a fourth participant research question. Table~\\ref{tab:rq-map} connects each question to its evidence and analysis. The identifiers organize the existing plan without adding an experimental factor or a directional hypothesis.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "The voice-similarity manipulation check will be reported before the outcome contrasts to aid interpretation across questions. It is not an individual exclusion gate. RQ3 includes appealing, eerie, and familiar voice experiences and the exploratory variation of the voice contrast with starting angle.",
+    "new": "The voice-similarity manipulation check will be reported before the outcome contrasts because it informs the interpretation of every question; it will not be used to exclude individual participants. RQ3 also covers appealing, eerie, and familiar impressions of the voice and the exploratory question of whether the voice contrast varies with starting angle.",
+    "reason": "Replaces the clipped 'It is not an individual exclusion gate' and the awkward phrase 'exploratory variation of the voice contrast' with natural, precise phrasing.",
+    "group": "framing",
+    "index": 16,
+    "claude_new": "The voice-similarity manipulation check will be reported before the outcome contrasts because it informs the interpretation of every question; it will not be used to exclude individual participants. RQ3 also covers appealing, eerie, and familiar impressions of the voice and the exploratory question of whether the voice contrast varies with starting angle.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "Consequently, the study will not isolate the benefit of gaze contingency, short-term memory, the cloud decision agent, or synthetic speech in general. Those are shared system properties.",
+    "new": "Because these are shared system properties, the study will not isolate the contribution of gaze contingency, short-term memory, the cloud decision agent, or synthetic speech in general.",
+    "reason": "Puts the reason before the consequence, replaces vague 'benefit' with 'contribution', and removes the trailing fragment.",
+    "group": "framing",
+    "index": 17,
+    "claude_new": "Because these are shared system properties, the study will not isolate the contribution of gaze contingency, short-term memory, the cloud decision agent, or synthetic speech in general.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "The use of one practice trial in the first assigned voice is a current protocol decision. It introduces an exposure asymmetry: whichever voice appears first also appears during practice. Counterbalancing distributes that asymmetry across voices, but does not remove learning or carryover. The analysis must retain period and assigned order, and the report must describe the practice assignment explicitly.",
+    "new": "Under the current protocol, the single practice trial uses the first assigned voice. This introduces an exposure asymmetry, because whichever voice appears first is also heard during practice. Counterbalancing distributes that asymmetry across voices but does not remove learning or carryover, so the analysis will retain period and assigned order, and the report will describe the practice assignment explicitly.",
+    "reason": "Replaces administrative phrasing ('is a current protocol decision') and reviewer-style 'must' instructions with connected scholarly prose. The protocol is unchanged.",
+    "group": "framing",
+    "index": 18,
+    "claude_new": "Under the current protocol, the single practice trial uses the first assigned voice. This introduces an exposure asymmetry, because whichever voice appears first is also heard during practice. Counterbalancing distributes that asymmetry across voices but does not remove learning or carryover, so the analysis will retain period and assigned order, and the report will describe the practice assignment explicitly.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "Figure~\\ref{fig:comparison-framework} separates the voice manipulation from the shared task. A difference between conditions would require evidence from the planned study; the diagram specifies the comparison rather than predicting its direction.",
+    "new": "Figure~\\ref{fig:comparison-framework} separates the voice manipulation from the shared task; it specifies the comparison without predicting its direction.",
+    "reason": "Removes a redundant disclaimer (that evidence comes from the study) and keeps the one needed boundary: the figure does not predict a direction.",
+    "group": "framing",
+    "index": 19,
+    "claude_new": "Figure~\\ref{fig:comparison-framework} separates the voice manipulation from the shared task; it specifies the comparison without predicting its direction.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "\\section{Contributions of This First Pass}",
+    "new": "\\section{Intended Contributions}",
+    "reason": "'This First Pass' is draft-status phrasing in a heading. 'Intended' conveys the prospective status in thesis register. No label is attached.",
+    "group": "framing",
+    "index": 20,
+    "claude_new": "\\section{Intended Contributions}",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "The platform is the apparatus for studying self-similar voice; a provider benchmark or a new gaze-guidance algorithm is not the thesis's primary claim.",
+    "new": "The platform serves as the apparatus for studying self-similar voice; the thesis does not present a provider benchmark or a new gaze-guidance algorithm as its primary contribution.",
+    "reason": "Fixes an inverted, awkward negation and keeps the scope boundary.",
+    "group": "framing",
+    "index": 21,
+    "claude_new": "The platform serves as the apparatus for studying self-similar voice; the thesis does not present a provider benchmark or a new gaze-guidance algorithm as its primary contribution.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "The empirical contribution remains pending. This draft does not report a recruited sample, condition means, significance tests, or participant quotations. A completed thesis will replace the pending results sections with the frozen study's actual voice-condition outcomes and revise its abstract and conclusion accordingly.",
+    "new": "The empirical contribution remains pending: this draft reports no recruited sample, condition means, significance tests, or participant quotations. The completed thesis will replace the pending results sections with the actual voice-condition outcomes of the frozen study and revise its abstract and conclusion accordingly.",
+    "reason": "Joins choppy status sentences and keeps the explicit statement that no results exist.",
+    "group": "framing",
+    "index": 22,
+    "claude_new": "The empirical contribution remains pending: this draft reports no recruited sample, condition means, significance tests, or participant quotations. The completed thesis will replace the pending results sections with the actual voice-condition outcomes of the frozen study and revise its abstract and conclusion accordingly.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/01-introduction.tex",
+    "old": "Chapter~\\ref{ch:literature} establishes the voice rationale; Chapters~\\ref{ch:system} and~\\ref{ch:methodology} describe the apparatus and comparison. Chapters~\\ref{ch:measurement}--\\ref{ch:analysis} define measurement and analysis, and Chapter~\\ref{ch:evaluation} organizes the pending results. The discussion and conclusion address self-similar assistance and its limits. Appendices retain instruments, data definitions, readiness decisions, and implementation details.",
+    "new": "Chapter~\\ref{ch:literature} reviews the research on voice identity, self-similarity, and guided search that motivates the voice comparison. Chapter~\\ref{ch:system} describes the experimental platform, and Chapter~\\ref{ch:methodology} specifies the study design and procedure. Chapters~\\ref{ch:measurement} and~\\ref{ch:analysis} define the measures and the planned statistical analysis, and Chapter~\\ref{ch:evaluation} sets out the framework for reporting results once data are collected. Chapter~\\ref{ch:discussion} considers how the planned findings could be interpreted and what limits apply, and the conclusion summarizes the status of the research questions. The appendices contain the questionnaire wording, data definitions, guidance tests, readiness decisions, and implementation details.",
+    "reason": "Replaces a telegraphic roadmap with a readable chapter-by-chapter overview using existing labels. The content matches what the chapters actually contain.",
+    "group": "framing",
+    "index": 23,
+    "claude_new": "Chapter~\\ref{ch:literature} reviews the research on voice identity, self-similarity, and guided search that motivates the voice comparison. Chapter~\\ref{ch:system} describes the experimental platform, and Chapter~\\ref{ch:methodology} specifies the study design and procedure. Chapters~\\ref{ch:measurement} and~\\ref{ch:analysis} define the measures and the planned statistical analysis, and Chapter~\\ref{ch:evaluation} sets out the framework for reporting results once data are collected. Chapter~\\ref{ch:discussion} considers how the planned findings could be interpreted and what limits apply, and the conclusion summarizes the status of the research questions. The appendices contain the questionnaire wording, data definitions, guidance tests, readiness decisions, and implementation details.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "These perspectives motivate treating voice as more than a neutral transport for words. They do not establish that every listener will form the same impression, or that a social impression necessarily improves task performance.",
+    "new": "These perspectives motivate treating voice as more than a neutral carrier of words, although they do not imply that every listener will form the same impression or that a social impression necessarily improves task performance.",
+    "reason": "Folds the separate disclaimer sentence into the argument and replaces the odd 'transport'.",
+    "group": "framing",
+    "index": 24,
+    "claude_new": "These perspectives motivate treating voice as more than a neutral carrier of words, although they do not imply that every listener will form the same impression or that a social impression necessarily improves task performance.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "For this project, personalization has two meanings. Selection of the neutral voice allows the participant to choose among existing voices in the supplied catalog. Self-similar personalization uses recorded speech to create a synthetic voice resembling that participant. Both forms may produce familiarity or liking, but they operate through different routes. Preference is selected directly in the neutral condition, whereas perceived resemblance must be checked in the self-similar condition. The manipulation is therefore not adequately described as personalized versus generic.",
+    "new": "In this project, personalization takes two forms. In the neutral condition, the participant chooses among existing voices in the supplied catalog; in the self-similar condition, recorded speech is used to create a synthetic voice resembling that participant. Both forms may produce familiarity or liking, but through different routes: preference is expressed directly when the neutral voice is chosen, whereas resemblance is introduced by synthesis and must be confirmed through participants' perceptions. For this reason, the manipulation is better described as a comparison between two forms of personalization than as personalized versus generic voice.",
+    "reason": "Replaces a series of short definitional sentences and the odd 'Preference is selected' with a connected argument ending on a positive characterization, not a bare negation.",
+    "group": "framing",
+    "index": 25,
+    "claude_new": "In this project, personalization takes two forms. In the neutral condition, the participant chooses among existing voices in the supplied catalog; in the self-similar condition, recorded speech is used to create a synthetic voice resembling that participant. Both forms may produce familiarity or liking, but through different routes: preference is expressed directly when the neutral voice is chosen, whereas resemblance is introduced by synthesis and must be confirmed through participants' perceptions. For this reason, the manipulation is better described as a comparison between two forms of personalization than as personalized versus generic voice.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "The bibliography also includes work on voice-assistant personality customization and similarity~\\cite{snyder2023onevoice}. Personality similarity is conceptually different from acoustic self-resemblance. A listener can prefer a speaking style without hearing it as their own voice, and a close acoustic resemblance can be experienced as uncomfortable. The planned manipulation check asks about perceived voice similarity, while the experience battery separately asks about liking, naturalness, familiarity, and uncanniness.",
+    "new": "Research on customizing voice-assistant personality has also examined similarity between assistant and user~\\cite{snyder2023onevoice}. Personality similarity, however, is conceptually different from acoustic self-resemblance: a listener can prefer a speaking style without hearing it as their own voice, and a close acoustic resemblance can be experienced as uncomfortable. The planned manipulation check therefore asks about perceived voice similarity, while the experience battery separately asks about liking, naturalness, familiarity, and uncanniness.",
+    "reason": "Removes the self-referential 'The bibliography also includes' and connects the distinction to the measurement choice.",
+    "group": "framing",
+    "index": 26,
+    "claude_new": "Research on customizing voice-assistant personality has also examined similarity between assistant and user~\\cite{snyder2023onevoice}. Personality similarity, however, is conceptually different from acoustic self-resemblance: a listener can prefer a speaking style without hearing it as their own voice, and a close acoustic resemblance can be experienced as uncomfortable. The planned manipulation check therefore asks about perceived voice similarity, while the experience battery separately asks about liking, naturalness, familiarity, and uncanniness.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "The meaning of performance also changes across tasks. Longer voluntary play in Kao et al.'s game can indicate continued engagement; a longer fixed search trial here can indicate difficulty. Follow My Voice will therefore interpret completion time alongside workload, motivation, and reported reliance, without treating speed as a complete account of the value of self-similar voice. This is a transfer of the research question, not a prediction that the direction of every outcome will replicate.",
+    "new": "The meaning of performance also differs across tasks. In Kao et al.'s game, longer voluntary play can indicate continued engagement, whereas in the present fixed search task a longer trial can indicate difficulty. Follow My Voice will therefore interpret completion time alongside workload, motivation, and reported reliance, without treating speed as a complete account of the value of self-similar voice. The study carries Kao et al.'s research question into a new task rather than predicting that each of their outcomes will replicate in the same direction.",
+    "reason": "Replaces the glib 'X, not Y' closing sentence with a scholarly statement of how the prior work is used.",
+    "group": "framing",
+    "index": 27,
+    "claude_new": "The meaning of performance also differs across tasks. In Kao et al.'s game, longer voluntary play can indicate continued engagement, whereas in the present fixed search task a longer trial can indicate difficulty. Follow My Voice will therefore interpret completion time alongside workload, motivation, and reported reliance, without treating speed as a complete account of the value of self-similar voice. The study carries Kao et al.'s research question into a new task rather than predicting that each of their outcomes will replicate in the same direction.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "These results support keeping favorable and adverse reactions separate and distinguishing voice effects from effects of a visible character. They do not establish a search-speed advantage.",
+    "new": "These results support keeping favorable and adverse reactions separate and distinguishing voice effects from those of a visible character, although they provide no evidence about search speed.",
+    "reason": "Folds a choppy trailing disclaimer into the preceding sentence.",
+    "group": "framing",
+    "index": 28,
+    "claude_new": "These results support keeping favorable and adverse reactions separate and distinguishing voice effects from those of a visible character, although they provide no evidence about search speed.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "Both studies compared self-similar voices with assigned alternatives; Follow My Voice instead compares the clone with a neutral voice~\\cite{kao2021selfsimilar,guo2024doppelganger}. The substantive question is consequently whether resemblance to oneself offers a different experience from a voice one has already chosen. Recognition of the clone, liking of the voice, and willingness to follow its instructions need not coincide. Keeping these constructs separate makes a mixed outcome informative rather than contradictory.",
+    "new": "Both studies compared self-similar voices with assigned alternatives, whereas Follow My Voice compares the clone with a neutral voice selected by the participant~\\cite{kao2021selfsimilar,guo2024doppelganger}. The question is therefore whether resemblance to oneself offers a different experience from a voice one has already chosen. Separate measures of perceived resemblance, liking, and willingness to follow instructions allow the study to examine how these responses relate without assuming that they change together.",
+    "reason": "Makes the key contrast explicit: the comparison voice is participant-chosen, not merely neutral. Joins the choppy final sentences into one argument.",
+    "group": "framing",
+    "index": 29,
+    "claude_new": "Both studies compared self-similar voices with assigned alternatives, whereas Follow My Voice compares the clone with a neutral voice that the participant has chosen~\\cite{kao2021selfsimilar,guo2024doppelganger}. The question thus becomes whether resemblance to oneself offers a different experience from a voice one has already selected. Because recognizing the clone, liking the voice, and being willing to follow its instructions need not coincide, measuring these constructs separately allows a mixed outcome to be read as informative rather than contradictory.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "The distinction between embodiment of the participant and embodiment of the agent is important. Participants wear a headset and use a tracked controller, so the interaction involves physical sensing and action. The guiding agent, however, is not represented by a co-present animated character. Measures adapted from an embodied collaborator must therefore be described as adaptations. Their use does not establish that the same factor structure or interpretation holds for a disembodied voice.",
+    "new": "The present study also requires a distinction between the embodiment of the participant and that of the agent. Participants wear a headset and use a tracked controller, so their interaction involves physical sensing and action, but the guiding agent is not represented by a co-present animated character. Measures developed for an embodied collaborator are therefore reported as adaptations, and their use does not establish that the same factor structure or interpretation holds for a disembodied voice.",
+    "reason": "Removes the empty 'is important' opener and the reviewer-style 'must therefore be described', and joins the short sentences.",
+    "group": "framing",
+    "index": 30,
+    "claude_new": "The present study also requires a distinction between the embodiment of the participant and that of the agent. Participants wear a headset and use a tracked controller, so their interaction involves physical sensing and action, but the guiding agent is not represented by a co-present animated character. Measures developed for an embodied collaborator are therefore reported as adaptations, and their use does not establish that the same factor structure or interpretation holds for a disembodied voice.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "Self-voice applications in daily reminders and emotional self-voice interventions extend the range of contexts represented in the bibliography~\\cite{kim2024selfvoice,fang2025emotional}. They motivate asking whether participants can imagine uses for their own synthetic voice. They do not establish that navigation guidance will be more effective or that participants will experience it as inner speech. The debrief consequently begins with open questions before introducing probes about eeriness, self-talk, and possible applications.",
+    "new": "Applications of self-voice to daily reminders and emotional self-voice interventions extend this research beyond games and virtual collaboration~\\cite{kim2024selfvoice,fang2025emotional}. They motivate asking whether participants can imagine uses for their own synthetic voice, although they do not show that navigation guidance in that voice will be more effective or that participants will experience it as inner speech. The debrief therefore begins with open questions before introducing probes about eeriness, self-talk, and possible applications.",
+    "reason": "Removes the reference to 'the bibliography' and merges a repeated 'They...They' structure.",
+    "group": "framing",
+    "index": 31,
+    "claude_new": "Applications of self-voice to daily reminders and emotional self-voice interventions extend this research beyond games and virtual collaboration~\\cite{kim2024selfvoice,fang2025emotional}. They motivate asking whether participants can imagine uses for their own synthetic voice, although they do not show that navigation guidance in that voice will be more effective or that participants will experience it as inner speech. The debrief therefore begins with open questions before introducing probes about eeriness, self-talk, and possible applications.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "The possibility of both welcome and uncomfortable self-resemblance makes outcome selection part of the research argument. Task speed describes efficiency, while workload, motivation, and agent perception address different aspects of receiving help. The following measures retain those distinctions so that the comparison can reveal a tradeoff rather than require one voice to rank higher on every dimension.",
+    "new": "Because self-resemblance may be both welcome and uncomfortable, the choice of outcome measures is part of the research argument. Task speed describes efficiency, whereas workload, motivation, and agent perception address different aspects of receiving help. The measures reviewed below preserve these distinctions so that the comparison can reveal a tradeoff rather than requiring one voice to rank higher on every dimension.",
+    "reason": "Replaces a stacked nominal construction ('The possibility of ... makes outcome selection') with a clear causal opening.",
+    "group": "framing",
+    "index": 32,
+    "claude_new": "Because self-resemblance may be both welcome and uncomfortable, the choice of outcome measures is part of the research argument. Task speed describes efficiency, whereas workload, motivation, and agent perception address different aspects of receiving help. The measures reviewed below preserve these distinctions so that the comparison can reveal a tradeoff rather than requiring one voice to rank higher on every dimension.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "That motivates considering gaze-derived measures, but does not license interpreting an unvalidated ray-hit count as workload. The current confirmatory plan uses subjective workload dimensions and task performance. Pupil, fixation, and saccade analyses remain contingent on separate acquisition and event-validation work.",
+    "new": "This work motivates considering gaze-derived measures but does not justify interpreting an unvalidated count of ray hits as workload. The confirmatory plan therefore relies on subjective workload dimensions and task performance, and pupil, fixation, and saccade analyses remain contingent on separate acquisition and event-validation work.",
+    "reason": "Gives 'That' a clear antecedent and connects the choppy follow-on sentences into one line of reasoning.",
+    "group": "framing",
+    "index": 33,
+    "claude_new": "This work motivates considering gaze-derived measures but does not justify interpreting an unvalidated count of ray hits as workload. The confirmatory plan therefore relies on subjective workload dimensions and task performance, and pupil, fixation, and saccade analyses remain contingent on separate acquisition and event-validation work.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "Agent perception measures are drawn through Guo et al., with attribution to their originating measures~\\cite{guo2024doppelganger,biocca2001networked,moussawi2019perception}. Co-presence, perceived intelligence, and anthropomorphism concern participant attributions, so a high rating does not establish sentience or decision correctness. Conversely, deterministic validity checks do not establish that a participant found the agent natural. The design therefore needs both kinds of evidence while keeping their meanings separate.",
+    "new": "The agent-perception measures are taken from Guo et al., who attribute them to their original sources~\\cite{guo2024doppelganger,biocca2001networked,moussawi2019perception}. Co-presence, perceived intelligence, and anthropomorphism describe participants' attributions, so a high rating does not indicate sentience or correct decisions. Conversely, deterministic validity checks cannot show that a participant found the agent natural. The design therefore requires both kinds of evidence and keeps their meanings distinct.",
+    "reason": "Fixes the unnatural 'drawn through ... with attribution to their originating measures' and the stiff 'decision correctness'. Citation keys are unchanged.",
+    "group": "framing",
+    "index": 34,
+    "claude_new": "The agent-perception measures are taken from Guo et al., who attribute them to their original sources~\\cite{guo2024doppelganger,biocca2001networked,moussawi2019perception}. Co-presence, perceived intelligence, and anthropomorphism describe participants' attributions, so a high rating does not indicate sentience or correct decisions. Conversely, deterministic validity checks cannot show that a participant found the agent natural. The design therefore requires both kinds of evidence and keeps their meanings distinct.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "These works establish relevant design alternatives without implying that all forms of guidance are equivalent: a cue that changes visual salience, a vibration that indicates proximity, and a spoken spatial instruction impose different perceptual and interpretive demands.",
+    "new": "These works identify relevant design alternatives, but the forms of guidance they study are not interchangeable: a cue that changes visual salience, a vibration that indicates proximity, and a spoken spatial instruction impose different perceptual and interpretive demands.",
+    "reason": "Replaces the double hedge 'establish ... without implying' with a direct statement.",
+    "group": "framing",
+    "index": 35,
+    "claude_new": "These works identify relevant design alternatives, but the forms of guidance they study are not interchangeable: a cue that changes visual salience, a vibration that indicates proximity, and a spoken spatial instruction impose different perceptual and interpretive demands.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "This technique description is supported by the published abstract; detailed study methods and comparative outcomes remain outside the present synthesis pending full-text review. Its relevance here is conceptual: assistance can adapt to where a participant looks without specifying the target through spoken identity. It also raises a design question for voice guidance: how much assistance is useful before it becomes intrusive? That question motivates considering participant experience alongside task performance; it does not establish that visual and spoken cues have equivalent effects. Follow My Voice holds its assistance policy common across voice conditions to investigate self-similar voice, rather than comparing guidance modalities.",
+    "new": "This description is limited to the technique outlined in the published abstract; detailed methods and comparative outcomes are not evaluated here. The technique illustrates how assistance can adapt to a participant's gaze without identifying the target verbally. It also raises the question of how much guidance users find helpful before it becomes intrusive, motivating attention to experience as well as task performance. Follow My Voice holds the assistance policy common across voice conditions to examine self-similar voice; it neither compares guidance modalities nor assumes equivalent effects of visual and spoken cues.",
+    "reason": "Rewrites lab-note phrasing ('outside the present synthesis pending full-text review') and the unclear 'specifying the target through spoken identity', and joins the disclaimers. The abstract-only evidence boundary is kept.",
+    "group": "framing",
+    "index": 36,
+    "claude_new": "This description is based on the published abstract; the study's detailed methods and comparative outcomes await full-text review and are not drawn on here. Its relevance is conceptual: assistance can adapt to where a participant is looking without identifying the target verbally. The technique also raises a question for voice guidance, namely how much assistance is useful before it becomes intrusive, which motivates considering participant experience alongside task performance. Visual and spoken cues need not have equivalent effects, however, and Follow My Voice holds its assistance policy constant across voice conditions in order to study self-similar voice rather than to compare guidance modalities.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "This hidden-target design creates an important boundary. A participant who already knows the target can continue searching without further assistance. Here, the participant must obtain enough spatial information to infer which object is intended. The voice may consequently be heard more often and may be more consequential than in a task where it supplements an already known target. That is a reason to describe the task precisely, not a reason to assume stronger voice effects in advance.",
+    "new": "The hidden-target design also distinguishes this study from known-target search. A participant who already knows the target can continue searching without further assistance, whereas here the participant must obtain enough spatial information to infer which object is intended. The voice may therefore be heard more often, and may matter more, than in a task where it supplements an already known target. This difference calls for a precise task description, although it does not justify expecting stronger voice effects in advance.",
+    "reason": "Replaces the vague 'creates an important boundary' and the glib 'a reason to X, not a reason to Y' ending with connected argument.",
+    "group": "framing",
+    "index": 37,
+    "claude_new": "The hidden-target design also distinguishes this study from known-target search. A participant who already knows the target can continue searching without further assistance, whereas here the participant must obtain enough spatial information to infer which object is intended. The voice may therefore be heard more often, and may matter more, than in a task where it supplements an already known target. This difference calls for a precise task description, although it does not justify expecting stronger voice effects in advance.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "This is evidence for linking auditory feedback to current gaze, rather than evidence for any particular spoken phrase. The present adaptation uses short spatial instructions instead of a continuously varying tone so that participants encounter the assigned voice throughout search. Its frequency and timing remain design choices to validate, not benefits established by the sonification study.",
+    "new": "The study supports linking auditory feedback to current gaze but offers no evidence about any particular spoken phrase. The present adaptation replaces the continuously varying tone with short spatial instructions so that participants hear the assigned voice throughout search; the frequency and timing of those instructions are design choices that still require validation rather than properties established by the sonification study.",
+    "reason": "Removes the vague 'benefits' and the clipped 'X, not Y' contrasts, and makes clear that 'its' refers to the instructions.",
+    "group": "framing",
+    "index": 38,
+    "claude_new": "The study supports linking auditory feedback to current gaze but offers no evidence about any particular spoken phrase. The present adaptation replaces the continuously varying tone with short spatial instructions so that participants hear the assigned voice throughout search; the frequency and timing of those instructions are design choices that still require validation rather than properties established by the sonification study.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "The study had no sound-only condition. Its relevance is therefore conditional support for an auditory channel when visual guidance is constrained, not proof that speech is superior to visual cues. It also motivates retaining selection errors separately from completion time in the present voice comparison.",
+    "new": "Because the study had no sound-only condition, it offers conditional support for an auditory channel when visual guidance is constrained rather than evidence that speech is superior to visual cues. Its separate response-time and accuracy results also motivate reporting selection errors separately from completion time in the present voice comparison.",
+    "reason": "Joins choppy sentences, replaces the awkward 'Its relevance is ... support', and grounds the error-reporting point in the study's separate time and accuracy results, which this paragraph already describes.",
+    "group": "framing",
+    "index": 39,
+    "claude_new": "Because the study had no sound-only condition, it offers conditional support for an auditory channel when visual guidance is constrained rather than evidence that speech is superior to visual cues. Its separate response-time and accuracy results also motivate reporting selection errors separately from completion time in the present voice comparison.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "These results support considering task completion and workload together, while making cue timing and feedback exposure explicit. They do not establish that continuous spoken guidance or self-similar delivery will be better.",
+    "new": "These results support examining task completion and workload together and stating cue timing and feedback exposure explicitly, although they do not show that repeated spoken guidance or self-similar delivery would be more effective.",
+    "reason": "Merges the trailing disclaimer and replaces vague 'better'. 'Repeated' matches the preceding sentence's description of the present design ('repeated gaze-contingent speech').",
+    "group": "framing",
+    "index": 40,
+    "claude_new": "These results support examining task completion and workload together and stating cue timing and feedback exposure explicitly, although they do not show that repeated spoken guidance or self-similar delivery would be more effective.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "This is a precedent for drawing attention toward relevant objects, with benefits that need not appear as faster search. It does not establish the value of spoken directions or self-similar voice.",
+    "new": "Relative to the control condition, the audio cue therefore changed one aspect of search behavior without a detectable reduction in completion time. This supports examining attention allocation alongside completion time, while leaving the effects of spoken directions and self-similar voice unresolved.",
+    "reason": "Replaces the vague 'benefits that need not appear as faster search' with what the study observed (less task-list checking, no significant time reduction versus control).",
+    "group": "framing",
+    "index": 41,
+    "claude_new": "The study thus shows that a cue drawing attention toward relevant objects can change search behavior without a detectable reduction in completion time, although it does not address spoken directions or self-similar voice.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "Whether hearing that role in one's own synthetic voice changes performance, comfort, motivation, or reliance remains the empirical question.",
+    "new": "Whether hearing these instructions in one's own synthetic voice changes performance, comfort, motivation, or reliance remains the empirical question.",
+    "reason": "'Hearing that role' is an unnatural abstraction; participants hear instructions.",
+    "group": "framing",
+    "index": 42,
+    "claude_new": "Whether hearing these instructions in one's own synthetic voice changes performance, comfort, motivation, or reliance remains the empirical question.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "Guidance during search, acknowledgment of a qualified gaze or controller contact, and feedback after selection are recorded separately. The researcher-facing Trial Review tool should likewise be distinguished from Zhang et al.'s participant-facing gaze-playback intervention~\\cite{zhang2023seehear}: reviewing a recording to audit delivery does not expose a participant to a learning intervention. Similarly, a success chime cannot explain an earlier change in direction within the same trial, although it may affect subsequent experience. No participant playback intervention is added to the current protocol.",
+    "new": "The design records guidance during search, acknowledgments of qualified gaze or controller contact, and feedback after selection as separate events. A success chime after selection cannot explain an earlier change of direction within the same trial, although it may shape later experience. The researcher-facing Trial Review tool should likewise be distinguished from Zhang et al.'s participant-facing gaze-playback intervention~\\cite{zhang2023seehear}: reviewing a recording to audit delivery does not expose participants to a learning intervention, and the current protocol includes no participant playback.",
+    "reason": "Reorders so the feedback-timing point follows the event distinctions, and folds the standalone protocol sentence into the argument. Gaze and controller acknowledgment and post-selection feedback stay distinct.",
+    "group": "framing",
+    "index": 43,
+    "claude_new": "The design records guidance during search, acknowledgments of qualified gaze or controller contact, and feedback after selection as separate events. A success chime after selection cannot explain an earlier change of direction within the same trial, although it may shape later experience. The researcher-facing Trial Review tool should likewise be distinguished from Zhang et al.'s participant-facing gaze-playback intervention~\\cite{zhang2023seehear}: reviewing a recording to audit delivery does not expose participants to a learning intervention, and the current protocol includes no participant playback.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "Earlier project documents that considered a factorial combination of voice and gaze contingency are historical, and their interpretation cannot be transferred to this two-condition design. Any observed difference will therefore concern the assigned voice experience within the shared assistance system.",
+    "new": "A factorial combination of voice and gaze contingency was considered earlier in the project but is not the design studied here, and its interpretation does not transfer to the two-condition comparison. Any observed difference will therefore concern the assigned voice within the shared assistance system.",
+    "reason": "Replaces lab-note phrasing about 'project documents' being 'historical' and the vague 'voice experience'.",
+    "group": "framing",
+    "index": 44,
+    "claude_new": "A factorial combination of voice and gaze contingency was considered earlier in the project but is not the design studied here, and its interpretation does not transfer to the two-condition comparison. Any observed difference will therefore concern the assigned voice within the shared assistance system.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "That approach motivates making recent interaction evidence available to the assistance policy, although Follow My Voice implements a narrower, bounded interaction history. This history records recent spatial progress, actual speech, and guidance transitions, and its retention limits are implementation choices rather than thresholds taken from the cited system; it does not provide long-term autobiographical memory or an inferred model of the participant's mental state. The guiding voice also has no visible agent body, so the present system does not inherit the embodiment of the cited interface.",
+    "new": "That approach motivates making recent interaction evidence available to the assistance policy, although Follow My Voice implements a narrower, bounded history of recent spatial progress, actual speech, and guidance transitions. Its retention limits are implementation choices rather than thresholds taken from the cited system, and it provides neither long-term autobiographical memory nor an inferred model of the participant's mental state. Unlike the cited interface, the guiding voice also has no visible agent body.",
+    "reason": "Breaks up an overloaded sentence chained with semicolons and replaces the odd 'does not inherit the embodiment'. All boundaries are kept.",
+    "group": "framing",
+    "index": 45,
+    "claude_new": "That approach motivates making recent interaction evidence available to the assistance policy, although Follow My Voice implements a narrower, bounded history of recent spatial progress, actual speech, and guidance transitions. Its retention limits are implementation choices rather than thresholds taken from the cited system, and it provides neither long-term autobiographical memory nor an inferred model of the participant's mental state. Unlike the cited interface, the guiding voice also has no visible agent body.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "Memory-Augmented AR Agents and GenLARP represent additional directions in the bibliography~\\cite{choi2025memory,yu2025genlarp}. The former is a conceptual framework and the latter a short system description; neither supplies a validated timing threshold for this application. User-aware virtual agents and proactive AR assistance also offer context for designing state-dependent behavior~\\cite{gunawardhana2024useraware,li2025satori}. These works position a design problem, rather than prove that this implementation's memory mechanism improves performance.",
+    "new": "Work on memory-augmented AR agents and the GenLARP system illustrates further directions for context-aware XR agents~\\cite{choi2025memory,yu2025genlarp}. The former is a conceptual framework and the latter a short system description, so neither supplies a validated timing threshold for this application. Research on user-aware virtual agents and proactive AR assistance likewise informs the design of state-dependent behavior~\\cite{gunawardhana2024useraware,li2025satori}. These works frame the design problem rather than show that this implementation's memory mechanism improves performance.",
+    "reason": "Removes the self-referential 'directions in the bibliography' and the unnatural 'position a design problem'. The source-type qualifications are kept.",
+    "group": "framing",
+    "index": 46,
+    "claude_new": "Work on memory-augmented AR agents and the GenLARP system illustrates further directions for context-aware XR agents~\\cite{choi2025memory,yu2025genlarp}. The former is a conceptual framework and the latter a short system description, so neither supplies a validated timing threshold for this application. Research on user-aware virtual agents and proactive AR assistance likewise informs the design of state-dependent behavior~\\cite{gunawardhana2024useraware,li2025satori}. These works frame the design problem rather than show that this implementation's memory mechanism improves performance.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "This study is seated and uses head and chair rotation rather than free walking, so locomotion findings cannot be imported as direct estimates of its gaze behavior.",
+    "new": "Because the present study is seated and relies on head and chair rotation rather than free walking, locomotion findings cannot be imported as direct estimates of gaze behavior in this task.",
+    "reason": "'This study' could refer to Drewes et al. or to the thesis; clarified as the present study.",
+    "group": "framing",
+    "index": 47,
+    "claude_new": "Because the present study is seated and relies on head and chair rotation rather than free walking, locomotion findings cannot be imported as direct estimates of gaze behavior in this task.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "Salvucci and Goldberg discuss identifying fixations and saccades from eye-tracking protocols~\\cite{salvucci2000fixations}. An interaction region around an object serves a different purpose. The 100-ms vicinity qualification in this system is an interface acknowledgment rule, not a validated fixation classifier. The thesis will report gaze contacts and qualified vicinity events under their own names.",
+    "new": "Salvucci and Goldberg discuss methods for identifying fixations and saccades in eye-tracking data~\\cite{salvucci2000fixations}. The 100-ms vicinity qualification used here instead governs interface acknowledgment; it is not a validated fixation classifier. The thesis therefore reports gaze contacts and qualified vicinity events as interaction measures.",
+    "reason": "Joins four telegraphic sentences into a connected argument, keeping the gaze-contact versus fixation distinction.",
+    "group": "framing",
+    "index": 48,
+    "claude_new": "Salvucci and Goldberg discuss identifying fixations and saccades from eye-tracking protocols~\\cite{salvucci2000fixations}, a purpose different from that of an interaction region around an object. The 100-ms vicinity qualification in this system is an interface acknowledgment rule rather than a validated fixation classifier, so the thesis will report gaze contacts and qualified vicinity events under their own names.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "Table~\\ref{tab:related-work-map} compares the selected work by what it contributes to this design and what it leaves unresolved. It is a focused synthesis of the preceding review, not a systematic-review inventory or a ranking of systems. The literature does not supply one interchangeable baseline: spatial guidance, voice resemblance, context management, and measurement quality answer different questions.",
+    "new": "Table~\\ref{tab:related-work-map} summarizes what each selected research strand contributes to this design and what it leaves unresolved. The table condenses the preceding review rather than offering a systematic inventory or a ranking of systems. No single strand provides a baseline for the present study, because spatial guidance, voice resemblance, context management, and measurement quality address different questions.",
+    "reason": "Replaces the meta-disclaimer and the unclear phrase 'one interchangeable baseline' with direct prose.",
+    "group": "framing",
+    "index": 49,
+    "claude_new": "Table~\\ref{tab:related-work-map} summarizes what each selected research strand contributes to this design and what it leaves unresolved. The table condenses the preceding review rather than offering a systematic inventory or a ranking of systems. No single strand provides a baseline for the present study, because spatial guidance, voice resemblance, context management, and measurement quality address different questions.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "The resulting contribution is a particular combination of task and comparison. The agent knows an initially unnamed target, the participant receives adaptive spatial speech, and explicit right-trigger selection remains separate from gaze. The empirical manipulation changes the voice configuration while retaining that assistance mechanism. This combination defines the scope of RQ1--RQ3; it does not imply that voice familiarity, memory, and gaze contingency have been independently manipulated.",
+    "new": "Together, these strands frame the particular combination of task and comparison examined here. The agent knows an initially unnamed target, the participant receives adaptive spatial speech, and explicit right-trigger selection remains separate from gaze. The empirical manipulation changes the voice configuration while retaining that assistance mechanism. This combination defines the scope of RQ1--RQ3 without implying that voice familiarity, memory, and gaze contingency have been manipulated independently.",
+    "reason": "Avoids calling the combination a 'contribution' before any results exist, links the paragraph to the table, and folds the semicolon disclaimer into the sentence.",
+    "group": "framing",
+    "index": 50,
+    "claude_new": "Together, these strands frame the particular combination of task and comparison examined here. The agent knows an initially unnamed target, the participant receives adaptive spatial speech, and explicit right-trigger selection remains separate from gaze. The empirical manipulation changes the voice configuration while retaining that assistance mechanism. This combination defines the scope of RQ1--RQ3 without implying that voice familiarity, memory, and gaze contingency have been manipulated independently.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/02-literature.tex",
+    "old": "The selected work does not address this comparison when the voice guides an initially unnamed target through a surrounding object search. The design combines a consequential use for speech with a comparator that already accommodates preference. Its contribution will be to estimate whether and how those two voice configurations differ in this setting, including outcomes that favor neither configuration consistently.",
+    "new": "None of the selected work examines this voice comparison during search for an initially unnamed target in a surrounding virtual environment. The present design gives speech an ongoing instructional role and compares it with a neutral voice that already reflects the participant's preference. Its contribution will be to estimate whether and how the two voice configurations differ in this setting, including outcomes on which neither configuration is consistently favored.",
+    "reason": "Fixes the phrasing error that the voice 'guides an ... target' and the jargon 'comparator that already accommodates preference'. Scoped to the selected work, so it makes no claim to be the first study.",
+    "group": "framing",
+    "index": 51,
+    "claude_new": "None of the selected work examines this comparison in a setting where the voice guides participants toward an initially unnamed target in an object search that surrounds them. The present design combines a consequential role for speech with a comparison voice that already reflects the participant's preference. Its contribution will be to estimate whether and how the two voice configurations differ in this setting, including outcomes on which neither configuration is consistently favored.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/03-system.tex",
+    "old": "Recording ties each condition to the speech actually delivered. These functions organize the apparatus: the goal is to understand the voice experience rather than to make the decision provider an additional treatment.",
+    "new": "Recording links each voice condition to the speech actually delivered. Together, these functions support the comparison of voice experiences, with the decision provider held common across conditions.",
+    "reason": "Replaces a colon-driven editorial remark ('the goal is\u2026') with a connected statement of the chapter's purpose.",
+    "group": "methods",
+    "index": 0,
+    "claude_new": "Recording ties each condition to the speech actually delivered. The chapter is organized around these functions because the apparatus exists to make the voice experience comparable; the decision provider belongs to the shared mechanism rather than serving as an additional treatment.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/03-system.tex",
+    "old": "Both conditions share the semantic phrase library, guidance policy, and playback routing, so voice condition is the intended manipulation; behavior-dependent wording, hint counts, and synthesized acoustics nevertheless need not be identical. The preparation pipeline checks wording and library readiness, but per-voice intelligibility, loudness, and acoustic comparability still require pilot verification, because automated checks do not establish perceptual equivalence.",
+    "new": "Both conditions share the semantic phrase library, guidance policy, and playback routing, making voice condition the intended manipulation. Because guidance responds to behavior, however, the wording and number of hints can differ between blocks, and the synthesized clips can differ acoustically. The preparation pipeline checks wording and library readiness, but automated checks do not establish perceptual equivalence; per-voice intelligibility, loudness, and acoustic comparability therefore require pilot verification.",
+    "reason": "Breaks up a run of compressed qualifications and explains why sequences and acoustics can differ, without losing the pilot-verification requirement.",
+    "group": "methods",
+    "index": 1,
+    "claude_new": "Both conditions share the semantic phrase library, guidance policy, and playback routing, making voice condition the intended manipulation. Because guidance responds to behavior, however, the wording and number of hints can differ between blocks, and the synthesized clips can differ acoustically. The preparation pipeline checks wording and library readiness, but automated checks do not establish perceptual equivalence; per-voice intelligibility, loudness, and acoustic comparability therefore require pilot verification.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/03-system.tex",
+    "old": "The layout is illustrative; the drawn object count is schematic; object positions and target identity vary by trial. The converging rays and highlighted endpoint illustrate interaction, not an advance participant-visible target-identification cue.",
+    "new": "The layout and drawn object count are schematic, and object positions and target identity vary by trial. The converging rays and highlighted endpoint illustrate the selection interaction; they do not represent a cue that identifies the target to the participant before search.",
+    "reason": "Replaces telegraphic semicolon fragments and a stacked noun compound with readable caption prose; the meaning is unchanged.",
+    "group": "methods",
+    "index": 2,
+    "claude_new": "The layout and drawn object count are schematic, and object positions and target identity vary by trial. The converging rays and highlighted endpoint illustrate the selection interaction; they do not represent a cue that identifies the target to the participant before search.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/03-system.tex",
+    "old": "For repeated spoken directions to remain useful, the system needs evidence of the participant's progress. Sensing and guidance state provide that context to both voices, allowing an instruction to change from orientation toward a wall to refinement around an object.",
+    "new": "The system uses evidence of the participant's progress to update spoken directions. The same sensing and state logic serves both voice conditions, allowing instructions to shift from orientation toward a wall to refinement around an object.",
+    "reason": "'Provide that context to both voices' is an odd abstraction, since voices do not receive context. Restated as shared logic serving both conditions.",
+    "group": "methods",
+    "index": 3,
+    "claude_new": "Repeated spoken directions remain useful only if the system has evidence of the participant's progress. The same sensing and state logic serves both voice conditions, allowing instructions to shift from orientation toward a wall to refinement around an object.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/03-system.tex",
+    "old": "This suppression is intended to prevent away-directions during the qualification interval without falsely acknowledging an unqualified hold.",
+    "new": "The system is therefore intended to avoid directing the participant away from a target already under the controller ray during the qualification interval, without acknowledging a hold that has not yet qualified.",
+    "reason": "Replaces the jargon 'away-directions' and the awkward 'falsely acknowledging an unqualified hold' while keeping the distinction between suppression and acknowledgment.",
+    "group": "methods",
+    "index": 4,
+    "claude_new": "The system is therefore intended to avoid directing the participant away from a target already under the controller ray during the qualification interval, without acknowledging a hold that has not yet qualified.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/03-system.tex",
+    "old": "When a trace lacks the required events, the cause remains unknown rather than inferred from the spoken phrase alone.",
+    "new": "When a trace lacks the required events, the source of a delay is recorded as unknown rather than inferred from the spoken phrase alone.",
+    "reason": "Clarifies what 'the cause' refers to.",
+    "group": "methods",
+    "index": 5,
+    "claude_new": "When a trace lacks the required events, the source of a delay is recorded as unknown rather than inferred from the spoken phrase alone.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/03-system.tex",
+    "old": "This capture illustrates the review interface only; it is not a participant recording or a performance result. In particular, the demonstration explicitly marks state history as missing and highlights as reconstructed. That distinction is useful when reviewing legacy records: the viewer should expose unavailable evidence rather than imply it was measured.",
+    "new": "The capture illustrates the interface rather than a participant recording or performance result. Its demonstration explicitly marks state history as missing and highlights as reconstructed, a distinction that matters when reviewing legacy records because the viewer should expose unavailable evidence rather than imply that it was measured.",
+    "reason": "Joins three choppy, note-like sentences into connected prose; all qualifications are kept.",
+    "group": "methods",
+    "index": 6,
+    "claude_new": "The capture illustrates the interface rather than a participant recording or performance result. Its demonstration explicitly marks state history as missing and highlights as reconstructed, a distinction that matters when reviewing legacy records because the viewer should expose unavailable evidence rather than imply that it was measured.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/03-system.tex",
+    "old": "Both voices must receive the same versioned guidance mechanism, but their delivered sequences will still depend on participant behavior and their clips may differ acoustically.",
+    "new": "Both voice conditions must use the same versioned guidance mechanism, yet the delivered sequences will still depend on participant behavior, and the clips may differ acoustically.",
+    "reason": "Voices do not 'receive' a mechanism; refers to conditions instead.",
+    "group": "methods",
+    "index": 7,
+    "claude_new": "Both voice conditions must use the same versioned guidance mechanism, yet the delivered sequences will still depend on participant behavior, and the clips may differ acoustically.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/03-system.tex",
+    "old": "A delayed or confusing cue matters here because it could alter search performance or a participant's judgment of the voice. Technical inspection therefore supports interpretation of the voice contrast. Appendix~\\ref{app:guidance-support} explains how the implementation can be checked, and Appendix~\\ref{app:decision-contract} preserves the inspected provider contract. Neither substitutes for the participant evidence needed to evaluate self-similar voice.",
+    "new": "A delayed or confusing cue could alter search performance or a participant's judgment of the voice, and could then be mistaken for an effect of voice condition. Technical inspection therefore supports, but does not replace, the participant evidence needed to evaluate self-similar voice. Appendix~\\ref{app:guidance-support} explains how the implementation can be checked, and Appendix~\\ref{app:decision-contract} preserves the inspected provider contract.",
+    "reason": "Makes the threat to validity explicit and folds the closing disclaimer ('Neither substitutes\u2026') into the argument instead of tacking it on at the end.",
+    "group": "methods",
+    "index": 8,
+    "claude_new": "A delayed or confusing cue could alter search performance or a participant's judgment of the voice, and could then be mistaken for an effect of voice condition. Technical inspection therefore supports, but does not replace, the participant evidence needed to evaluate self-similar voice. Appendix~\\ref{app:guidance-support} explains how the implementation can be checked, and Appendix~\\ref{app:decision-contract} preserves the inspected provider contract.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/04-method.tex",
+    "old": "The implemented snapshot supports one practice, two 40-trial blocks, and final questionnaire handoff.",
+    "new": "The implemented snapshot supports one practice trial, two 40-trial blocks, and a final questionnaire handoff.",
+    "reason": "Fixes telegraphic phrasing ('one practice', missing article).",
+    "group": "methods",
+    "index": 9,
+    "claude_new": "The implemented snapshot supports one practice trial, two 40-trial blocks, and a final questionnaire handoff.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/04-method.tex",
+    "old": "Similarity ratings will indicate whether participants heard the clone as resembling themselves; performance and experience measures will address its value as guidance.",
+    "new": "Similarity ratings will indicate whether participants heard the clone as resembling themselves, whereas performance and experience measures will compare how each voice functions as guidance.",
+    "reason": "Replaces vague 'its value as guidance' with the actual comparative purpose of the measures.",
+    "group": "methods",
+    "index": 10,
+    "claude_new": "Similarity ratings will indicate whether participants heard the clone as resembling themselves, whereas performance and experience measures will compare how each voice functions as guidance.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/04-method.tex",
+    "old": "Gaze contingency and agent decision rules are common to the two conditions. They create repeated opportunities to receive voice guidance while the target identity remains initially hidden. The experiment does not vary Jev, memory, or gaze-awareness as independent factors.",
+    "new": "Gaze contingency and the agent's decision rules are common to both conditions. Because the target identity is initially hidden, they create repeated occasions on which participants rely on the assigned voice; Jev, memory, and gaze awareness are not varied as independent factors.",
+    "reason": "Joins three short, disconnected sentences into one argument that explains why the shared mechanism matters.",
+    "group": "methods",
+    "index": 11,
+    "claude_new": "Gaze contingency and the agent's decision rules are common to both conditions. Because the target identity is initially hidden, they create repeated occasions on which participants rely on the assigned voice; Jev, memory, and gaze awareness are not varied as independent factors.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/04-method.tex",
+    "old": "Moreover, because the neutral voice is participant-chosen while the clone is derived from the participant, preference, gender presentation and synthesis quality may differ along with self-similarity, and the contrast cannot isolate self-similarity from all of these features.",
+    "new": "Because the neutral voice is chosen by the participant whereas the clone is derived from the participant's speech, the two voices may also differ in preference, gender presentation and synthesis quality; the contrast therefore cannot isolate self-similarity from these features.",
+    "reason": "Untangles a sentence where a list of features followed a nested 'because' clause and was easily misparsed. The confound qualification is kept.",
+    "group": "methods",
+    "index": 12,
+    "claude_new": "Because the neutral voice is chosen by the participant whereas the clone is derived from the participant's speech, the two voices may also differ in preference, gender presentation and synthesis quality; the contrast therefore cannot isolate self-similarity from these features.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/04-method.tex",
+    "old": "Nominal angle steps are relative to the saved readiness/start wall, which the aligned schedule represents as the previous target wall center. The first measured start wall uses the practice target wall, and the completed-session check must verify the saved cross placement. This wall-center relationship is distinct from the proposed exact cross-to-target bearing.",
+    "new": "Nominal angle steps are defined relative to the saved readiness (start) wall, which the aligned schedule represents as the center of the previous target wall. For the first measured trial, this reference is the practice target wall. The completed-session check must verify the saved cross placement. This wall-center reference is distinct from the proposed exact cross-to-target bearing defined below.",
+    "reason": "Replaces lab-note shorthand ('readiness/start wall', 'first measured start wall uses') with precise prose and states the logical link.",
+    "group": "methods",
+    "index": 13,
+    "claude_new": "Nominal angle steps are defined relative to the saved readiness (start) wall, which the aligned schedule represents as the center of the previous target wall. The first measured trial therefore starts from the practice target wall, and the completed-session check must verify the saved cross placement. This wall-center relationship is distinct from the proposed exact cross-to-target bearing defined below.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/04-method.tex",
+    "old": "The identifiers RQ1--RQ3 and EQ1 are defined in Table~\\ref{tab:rq-map}; the following method-level questions retain that same scope.",
+    "new": "The questions below restate RQ1--RQ3 from Table~\\ref{tab:rq-map} in operational terms, without changing their scope; the engineering question EQ1 is defined in the same table.",
+    "reason": "Replaces an opaque cross-reference ('retain that same scope') with a clear statement of what follows.",
+    "group": "methods",
+    "index": 14,
+    "claude_new": "The questions below restate RQ1--RQ3 from Table~\\ref{tab:rq-map} in operational terms, without changing their scope; the engineering question EQ1 is defined in the same table.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/04-method.tex",
+    "old": "The primary voice contrast will be two-sided, so a directional benefit of self-similarity will not be assumed, and repeated trials will not be treated as independent participants.",
+    "new": "The primary voice contrast will be two-sided because no directional advantage for self-similarity is assumed. Repeated trials will add information within participants but will not be treated as independent participants.",
+    "reason": "Separates two unrelated commitments that had been chained with 'so\u2026and' and fixes the reversed causal logic.",
+    "group": "methods",
+    "index": 15,
+    "claude_new": "The primary voice contrast will be two-sided because no directional advantage for self-similarity is assumed. Repeated trials will add information within participants but will not be treated as independent participants.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/04-method.tex",
+    "old": "including the data transmitted, retention, access, and deletion arrangements; this reconciliation is a readiness requirement rather than a claim of current approval.",
+    "new": "including the data transmitted, retention, access, and deletion arrangements. This reconciliation remains among the readiness requirements listed in Appendix~\\ref{app:readiness}.",
+    "reason": "Replaces a defensive disclaimer with a factual status statement and points to the existing readiness register.",
+    "group": "methods",
+    "index": 16,
+    "claude_new": "including the data transmitted, retention, access, and deletion arrangements. This reconciliation remains among the readiness requirements listed in Appendix~\\ref{app:readiness}.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/04-method.tex",
+    "old": "If an offset correction is introduced, its fitting targets will be separate from independent validation targets; this is a conditional validation requirement, not a claim that a correction is already validated.",
+    "new": "If an offset correction is introduced, the targets used to fit it will remain separate from those used for independent validation.",
+    "reason": "The conditional 'if' already conveys the status; removes a rhetorical disclaimer and keeps the methodological separation.",
+    "group": "methods",
+    "index": 17,
+    "claude_new": "If an offset correction is introduced, the targets used to fit it will remain separate from those used for independent validation.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/04-method.tex",
+    "old": "Figure~\\ref{fig:survey-scopes} makes the distinction between administration time and reference scope explicit. Both condition-specific batteries occur in the final session; each response still refers to one measured block.",
+    "new": "Figure~\\ref{fig:survey-scopes} distinguishes administration time from reference scope: both condition-specific batteries are completed in the final session, but each response refers to a single measured block.",
+    "reason": "Removes the empty phrase 'makes \u2026 explicit' and joins two short sentences.",
+    "group": "methods",
+    "index": 18,
+    "claude_new": "Figure~\\ref{fig:survey-scopes} distinguishes administration time from reference scope: both condition-specific batteries are completed in the final session, but each response refers to a single measured block.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/04-method.tex",
+    "old": "Protocol proposal for final retrospective administration.",
+    "new": "Proposed final retrospective administration.",
+    "reason": "Caption polish; reads less like a working note.",
+    "group": "methods",
+    "index": 19,
+    "claude_new": "Proposed final retrospective administration.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/04-method.tex",
+    "old": "linking each block reference to its experienced voice.",
+    "new": "linking each block reference to the voice heard in that block.",
+    "reason": "'Experienced voice' is an unnatural abstraction.",
+    "group": "methods",
+    "index": 20,
+    "claude_new": "linking each block reference to the voice heard in that block.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/05-measurement.tex",
+    "old": "The research question becomes three measurement questions: did the participant perceive the voice as self-similar, did the voice condition change search performance, and how was the assistance experienced? Answering them requires both outcome measures and an account of exposure. This chapter connects voice identity, delivered speech, search events, and questionnaire responses so that recognizing the clone is not confused with benefiting from it. Detailed gaze and timing records support the interpretation, while Appendix~\\ref{app:instruments} retains instrument wording and scoring.",
+    "new": "Measuring the voice comparison involves three questions: whether participants perceived the self-similar voice as resembling their own, whether voice condition changed search performance, and how participants experienced the assistance. Answering them requires outcome measures together with an account of the speech each participant actually heard. This chapter therefore links voice identity, delivered speech, search events, and questionnaire responses, so that perceived similarity can be reported as a manipulation check and kept distinct from performance and experience outcomes. Detailed gaze and timing records support interpretation of these outcomes, and Appendix~\\ref{app:instruments} retains instrument wording and scoring.",
+    "reason": "Removes the same glib clone-recognition contrast the author objected to in the introduction. The manipulation-check distinction is now stated in scholarly terms, and the vague 'account of exposure' is clarified.",
+    "group": "methods",
+    "index": 21,
+    "claude_new": "Measuring the voice comparison involves three questions: whether participants perceived the self-similar voice as resembling their own, whether voice condition changed search performance, and how participants experienced the assistance. Answering them requires outcome measures together with an account of the speech each participant actually heard. This chapter therefore links voice identity, delivered speech, search events, and questionnaire responses, so that perceived similarity can be reported as a manipulation check and kept distinct from performance and experience outcomes. Detailed gaze and timing records support interpretation of these outcomes, and Appendix~\\ref{app:instruments} retains instrument wording and scoring.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/05-measurement.tex",
+    "old": "Figure~\\ref{fig:data-provenance} shows why a compact trial CSV must retain links to the underlying observations. Statistical scope and reconstruction detail impose different requirements on the exported data.",
+    "new": "Figure~\\ref{fig:data-provenance} shows how a compact trial CSV remains linked to the underlying observations. The link is necessary because statistical analysis and trial reconstruction impose different requirements on the exported data.",
+    "reason": "Connects the two sentences causally; 'statistical scope and reconstruction detail' was an unnatural abstraction.",
+    "group": "methods",
+    "index": 22,
+    "claude_new": "Figure~\\ref{fig:data-provenance} shows how a compact trial CSV remains linked to the underlying observations. The link is necessary because statistical analysis and trial reconstruction impose different requirements on the exported data.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/05-measurement.tex",
+    "old": "because at the source snapshot, floor-to-height scattering did not enforce that balance.",
+    "new": "because the height scattering in the source snapshot did not enforce that balance.",
+    "reason": "'Floor-to-height scattering' is unclear internal shorthand. The coordinator should confirm the paraphrase matches the implementation.",
+    "group": "methods",
+    "index": 23,
+    "claude_new": "because the height scattering in the source snapshot did not enforce that balance.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/05-measurement.tex",
+    "old": "Figures~\\ref{fig:starting-geometry} and~\\ref{fig:height-reference} illustrate the proposed geometric contract. Neither diagram represents a recorded layout. Their purpose is to show why nominal wall assignment, exact cross-relative bearing, cross-relative height, and live gaze error require separate names and saved references.",
+    "new": "Figures~\\ref{fig:starting-geometry} and~\\ref{fig:height-reference} illustrate the proposed geometric contract using conceptual rather than recorded layouts. They show why nominal wall assignment, exact cross-relative bearing, cross-relative height, and live gaze error require separate names and saved references.",
+    "reason": "Folds the separate disclaimer sentence into the description and removes the meta phrase 'Their purpose is to'.",
+    "group": "methods",
+    "index": 24,
+    "claude_new": "Figures~\\ref{fig:starting-geometry} and~\\ref{fig:height-reference} illustrate the proposed geometric contract using conceptual rather than recorded layouts. They show why nominal wall assignment, exact cross-relative bearing, cross-relative height, and live gaze error require separate names and saved references.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/05-measurement.tex",
+    "old": "Using the union prevents overlapping pause reasons from being subtracted twice. For example, an application-focus pause can overlap a researcher-requested pause. The resulting active interval should remain stopped until all relevant pause reasons are resolved.",
+    "new": "Using the union prevents overlapping pause reasons, such as an application-focus pause that coincides with a researcher-requested pause, from being subtracted twice. The active clock remains stopped until every relevant pause reason has been resolved.",
+    "reason": "Integrates the choppy example and fixes the odd idea of an 'active interval' that 'remains stopped'.",
+    "group": "methods",
+    "index": 25,
+    "claude_new": "Using the union prevents overlapping pause reasons, such as an application-focus pause that coincides with a researcher-requested pause, from being subtracted twice. The active clock remains stopped until every relevant pause reason has been resolved.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/05-measurement.tex",
+    "old": "Readiness and opening speech precede reveal and are excluded from active search. This is an intentional outcome boundary, not missing task time. The system will nonetheless retain a broader opening-cue-to-selection interval so that analyses can describe the time spent receiving the initial instruction; because prepared clips can have different durations across voices, this additional record remains useful even though active completion is the primary outcome.",
+    "new": "Readiness and opening speech precede reveal and are deliberately excluded from active search time. The system will also retain the interval from opening-cue onset to selection, preserving the opening instruction and subsequent search within a broader timing measure. This record permits examination of differences in opening-clip duration across voices, while active completion time remains the primary outcome.",
+    "reason": "Replaces the editorial contrast 'intentional outcome boundary, not missing task time' with 'deliberately excluded' and untangles an overloaded sentence.",
+    "group": "methods",
+    "index": 26,
+    "claude_new": "Readiness and opening speech precede reveal and are deliberately excluded from active search time. The system will nonetheless retain a broader interval from opening-cue onset to selection, which describes the time spent receiving the initial instruction. This record matters because prepared opening clips can differ in duration across voices, even though active completion time remains the primary outcome.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/05-measurement.tex",
+    "old": "Similarly, a late-arriving file in the viewer reflects a transfer delay, not necessarily a delay in the headset event, which is why source timestamps and receive timestamps are kept distinct.",
+    "new": "Source and receipt timestamps are likewise kept distinct, because a file that arrives late in the viewer reflects a transfer delay rather than necessarily a delay in the headset event.",
+    "reason": "Leads with the measurement rule and gives the reason after it, replacing the trailing 'which is why' construction.",
+    "group": "methods",
+    "index": 27,
+    "claude_new": "Source and receipt timestamps are likewise kept distinct, because a file that arrives late in the viewer reflects a transfer delay rather than necessarily a delay in the headset event.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/05-measurement.tex",
+    "old": "Recent conversational AR research illustrates why this definition should be stated explicitly. Madritsch et al. distinguish overall task-completion time from active working time in an assistant-supported procedural task~\\cite{madritsch2026assistance}; the present clock is not assumed to correspond to theirs.",
+    "new": "Recent conversational AR research shows why the definition must be explicit: Madritsch et al. distinguish overall task-completion time from active working time in an assistant-supported procedural task~\\cite{madritsch2026assistance}, and their active measure is not assumed to correspond to the present clock.",
+    "reason": "Joins the motivation with the evidence; the citation key and AR terminology for the cited paper are preserved.",
+    "group": "methods",
+    "index": 28,
+    "claude_new": "Recent conversational AR research shows why the definition must be explicit: Madritsch et al. distinguish overall task-completion time from active working time in an assistant-supported procedural task~\\cite{madritsch2026assistance}, and their active measure is not assumed to correspond to the present clock.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/05-measurement.tex",
+    "old": "Vicinity qualification is an interaction rule. In the documented system, a target can be acknowledged after 100 ms of valid qualifying evidence, with overlapping regions resolved to a single closest candidate. The rule trades exact collider intersection for a tolerance intended to make feedback usable, so that tolerance must be logged and piloted. The study-release tolerance remains to be frozen, and the default ring in the synthetic viewer screenshot is not a validated study setting. A very large region can produce premature acknowledgment even when its timing is correct.",
+    "new": "Vicinity qualification is an interaction rule rather than a fixation classifier. In the documented system, a target can be acknowledged after 100 ms of valid qualifying evidence, with overlapping regions resolved to a single closest candidate. The rule trades exact collider intersection for a tolerance intended to make feedback usable, but an overly large region can produce premature acknowledgment even when the timing gate behaves correctly. The tolerance must therefore be logged and piloted; its study-release value has not been frozen, and the default ring in the synthetic viewer screenshot is not a validated study setting.",
+    "reason": "Moves the risk (overly large region) next to the tradeoff it qualifies and turns a terse opening into an informative contrast consistent with Chapter 2. The 100 ms gate and open status are unchanged.",
+    "group": "methods",
+    "index": 29,
+    "claude_new": "Vicinity qualification is an interaction rule rather than a fixation classifier. In the documented system, a target can be acknowledged after 100 ms of valid qualifying evidence, with overlapping regions resolved to a single closest candidate. The rule trades exact collider intersection for a tolerance intended to make feedback usable, but an overly large region can produce premature acknowledgment even when the timing gate behaves correctly. The tolerance must therefore be logged and piloted; its study-release value has not been frozen, and the default ring in the synthetic viewer screenshot is not a validated study setting.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/05-measurement.tex",
+    "old": "without falsely saying the hold has qualified.",
+    "new": "without announcing that the hold has qualified.",
+    "reason": "'Falsely saying' is casual; the meaning is preserved.",
+    "group": "methods",
+    "index": 30,
+    "claude_new": "without announcing that the hold has qualified.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/05-measurement.tex",
+    "old": "Figure~\\ref{fig:evidence-events} contrasts the three feedback and completion events. The example utterances communicate their meanings and are not asserted to be verbatim clips in every voice library.",
+    "new": "Figure~\\ref{fig:evidence-events} contrasts the two acknowledgment events with trial completion. Its example utterances illustrate what each event communicates and are not presented as verbatim clips from every voice library.",
+    "reason": "Clarifies the vague 'three feedback and completion events' and smooths the stilted 'not asserted to be'.",
+    "group": "methods",
+    "index": 31,
+    "claude_new": "Figure~\\ref{fig:evidence-events} contrasts the two acknowledgment events with trial completion. Its example utterances illustrate what each event communicates and are not presented as verbatim clips from every voice library.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/05-measurement.tex",
+    "old": "These intervals may overlap. They should not be added mechanically unless represented as a nonoverlapping partition of the critical path.",
+    "new": "Because these intervals may overlap, they will not be summed unless they are represented as a nonoverlapping partition of the critical path.",
+    "reason": "Joins two choppy sentences and replaces the vague 'added mechanically'.",
+    "group": "methods",
+    "index": 32,
+    "claude_new": "Because these intervals may overlap, they will not be summed unless they are represented as a nonoverlapping partition of the critical path.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/05-measurement.tex",
+    "old": "Table~\\ref{tab:latency-contract} keeps the principal timing variables separate. In particular, the onset of an audio clip is a software event; neither a candidate phrase nor a successful provider response proves that the participant heard it.",
+    "new": "Table~\\ref{tab:latency-contract} lists the principal timing variables with their endpoints and interpretive limits. Audio-clip onset is a software event: neither a candidate phrase nor a successful provider response shows that the participant heard the cue.",
+    "reason": "Describes what the table actually contains and gives 'it' a clear referent.",
+    "group": "methods",
+    "index": 33,
+    "claude_new": "Table~\\ref{tab:latency-contract} lists the principal timing variables with their endpoints and interpretive limits. Audio-clip onset is a software event: neither a candidate phrase nor a successful provider response shows that the participant heard the cue.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/05-measurement.tex",
+    "old": "A convenience export may repeat a block-level workload score on every trial row. That does not create 40 independent workload observations.",
+    "new": "A convenience export may repeat a block-level workload score on every trial row, but this repetition does not create 40 independent workload observations.",
+    "reason": "Joins two choppy sentences.",
+    "group": "methods",
+    "index": 34,
+    "claude_new": "A convenience export may repeat a block-level workload score on every trial row, but this repetition does not create 40 independent workload observations.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/05-measurement.tex",
+    "old": "and unknown legacy performance anchors cannot be repaired by guessing their direction.",
+    "new": "and legacy responses whose performance anchors are unknown cannot be scored by guessing their direction.",
+    "reason": "'Repaired' was an unnatural verb for anchors; restated precisely.",
+    "group": "methods",
+    "index": 35,
+    "claude_new": "and legacy responses whose performance anchors are unknown cannot be scored by guessing their direction.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "The analysis asks whether the two voice configurations differ in efficiency and experience, while allowing those answers to diverge. Active completion time is the primary outcome, workload and motivation are secondary, and agent experience, reliance, and debrief responses are exploratory. The repeated-measures design connects those outcomes to the same participants under both voices. Guidance diagnostics describe exposure and technical context. Because Jev and gaze contingency are shared by both conditions, the statistical comparison concerns voice configuration rather than their independent value.",
+    "new": "The analysis asks whether the two voice configurations differ in efficiency and experience, without assuming that both answers will point in the same direction. Active completion time is the primary outcome, workload and motivation are secondary, and agent experience, reliance, and debrief responses are exploratory. Because each participant experiences both voices, these outcomes are compared within participants, while guidance diagnostics describe exposure and technical context. Jev and gaze contingency are shared by both conditions, so the statistical comparison concerns voice configuration rather than the independent value of those components.",
+    "reason": "Joins choppy standalone sentences, clarifies 'allowing those answers to diverge', and fixes the ambiguous 'their independent value'.",
+    "group": "methods",
+    "index": 36,
+    "claude_new": "The analysis asks whether the two voice configurations differ in efficiency and experience, without assuming that both answers will point in the same direction. Active completion time is the primary outcome, workload and motivation are secondary, and agent experience, reliance, and debrief responses are exploratory. Because each participant experiences both voices, these outcomes are compared within participants, while guidance diagnostics describe exposure and technical context. Jev and gaze contingency are shared by both conditions, so the statistical comparison concerns voice configuration rather than the independent value of those components.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "Table~\\ref{tab:analysis-scope} summarizes the proposed outcome hierarchy. It is an analysis plan rather than a results table; final contrasts, missing-data handling, and multiplicity families require preregistration.",
+    "new": "Table~\\ref{tab:analysis-scope} summarizes the proposed outcome hierarchy and units of analysis. Final contrasts, missing-data handling, and multiplicity families remain to be specified in the preregistration.",
+    "reason": "Removes a redundant rhetorical disclaimer; the caption and section title already mark the table as planned.",
+    "group": "methods",
+    "index": 37,
+    "claude_new": "Table~\\ref{tab:analysis-scope} summarizes the proposed outcome hierarchy and units of analysis. Final contrasts, missing-data handling, and multiplicity families remain to be specified in the preregistration.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "The exact pre-cue angle requires the snapshot described in Chapter~\\ref{ch:measurement}, which remains an implementation gap. This model cannot be fitted as specified using nominal wall angles relabeled as exact measurements.",
+    "new": "The exact pre-cue angle depends on the snapshot described in Chapter~\\ref{ch:measurement}, which has not yet been implemented; until it is, the model cannot be fitted as specified, and nominal wall angles must not be relabeled as exact measurements to fill that gap.",
+    "reason": "Joins two choppy sentences into one connected constraint; the implementation-gap status is kept.",
+    "group": "methods",
+    "index": 38,
+    "claude_new": "The exact pre-cue angle depends on the snapshot described in Chapter~\\ref{ch:measurement}, which has not yet been implemented; until it is, the model cannot be fitted as specified, and nominal wall angles must not be relabeled as exact measurements to fill that gap.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "The final random-effects structure is an open decision, informed by the experimental design and simulation rather than selected to obtain significance~\\cite{barr2013random}.",
+    "new": "The final random-effects structure remains open; it will be chosen on the basis of the experimental design and simulation rather than to obtain significance~\\cite{barr2013random}.",
+    "reason": "Fixes the awkward participial construction ('an open decision, informed by\u2026').",
+    "group": "methods",
+    "index": 39,
+    "claude_new": "The final random-effects structure remains open; it will be chosen on the basis of the experimental design and simulation rather than to obtain significance~\\cite{barr2013random}.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "Predictions on the original seconds scale require an explicit retransformation procedure and uncertainty estimate. No fitted coefficient is available in this first pass.",
+    "new": "Predictions on the original seconds scale require an explicit retransformation procedure and uncertainty estimate.",
+    "reason": "Removes a repeated pending-results caveat; the chapter is explicitly a plan.",
+    "group": "methods",
+    "index": 40,
+    "claude_new": "Predictions on the original seconds scale require an explicit retransformation procedure and uncertainty estimate.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "The report will describe this limitation rather than claim that adding an order term removes all carryover.",
+    "new": "Period and order terms therefore address these influences only partially, and the report will describe residual carryover as a limitation.",
+    "reason": "Replaces a defensive 'rather than claim' construction with a direct methodological statement.",
+    "group": "methods",
+    "index": 41,
+    "claude_new": "Period and order terms therefore address these influences only partially, and the report will describe residual carryover as a limitation.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "Forty trials per block increases within-participant information, but does not turn one participant into 80 independent people.",
+    "new": "Forty trials per block increase the information available within each participant, but one participant's 80 trials remain correlated observations rather than a substitute for additional participants.",
+    "reason": "Replaces a glib, chatty contrast ('80 independent people') with precise statistical language; also fixes subject\u2013verb agreement.",
+    "group": "methods",
+    "index": 42,
+    "claude_new": "Forty trials per block increase the information available within each participant, but one participant's 80 trials remain correlated observations rather than a substitute for additional participants.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "An old calculation for a different number of conditions cannot justify this design.",
+    "new": "A calculation prepared for an earlier design with a different number of conditions cannot justify the present one.",
+    "reason": "'An old calculation' is casual.",
+    "group": "methods",
+    "index": 43,
+    "claude_new": "A calculation prepared for an earlier design with a different number of conditions cannot justify the present one.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "Voice similarity will serve as a manipulation check, while custom experience ratings and self-reported guidance use will also be analyzed individually. Multiplicity families and secondary contrasts will be specified before confirmatory analysis.",
+    "new": "Voice similarity will serve as a manipulation check, while custom experience ratings and self-reported guidance use will also be analyzed individually.",
+    "reason": "Removes the first of two statements about multiplicity families in the same section; the content is merged into the later statement below.",
+    "group": "methods",
+    "index": 44,
+    "claude_new": "Voice similarity will serve as a manipulation check, while custom experience ratings and self-reported guidance use will also be analyzed individually.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "Reporting only the items with favorable differences would distort the battery's intended scope.",
+    "new": "Selectively reporting items with favorable differences would misrepresent the scope of the battery.",
+    "reason": "Smoother and more precise wording.",
+    "group": "methods",
+    "index": 45,
+    "claude_new": "Selectively reporting items with favorable differences would misrepresent the scope of the battery.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "Multiplicity families and adjustment rules remain to be finalized.",
+    "new": "Multiplicity families, secondary contrasts, and adjustment rules will be specified before confirmatory analysis.",
+    "reason": "Combines the duplicated multiplicity statements into a single commitment.",
+    "group": "methods",
+    "index": 46,
+    "claude_new": "Multiplicity families, secondary contrasts, and adjustment rules will be specified before confirmatory analysis.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "Voice similarity is a manipulation check. Failure to recognize the clone is informative about the manipulation and will not automatically remove a participant. Likewise, low liking is an outcome, not a reason to exclude an inconvenient response. Sensitivity analyses may investigate synthesis quality or recognition, but conditioning on post-assignment experience changes the interpretation and must be stated.",
+    "new": "A participant who does not recognize the clone provides information about the strength of the manipulation and will not be excluded solely on that basis; similarly, low liking of either voice is an outcome rather than grounds for exclusion. Sensitivity analyses may examine synthesis quality or recognition, but conditioning on experience that follows assignment changes the interpretation of the contrast, and that change will be stated.",
+    "reason": "Removes a repeated 'manipulation check' sentence and the glib 'inconvenient response'. The no-exclusion rule is integrated into connected prose.",
+    "group": "methods",
+    "index": 47,
+    "claude_new": "A participant who does not recognize the clone provides information about the strength of the manipulation and will not be removed on that basis; similarly, low liking of either voice is an outcome rather than grounds for exclusion. Sensitivity analyses may examine synthesis quality or recognition, but conditioning on experience that follows assignment changes the interpretation of the contrast, and that change will be stated.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "A complete-case time model estimates completion times among observed successful trials under its assumptions. It may not describe all assigned trials when incomplete outcomes differ by voice. The final plan must define a complementary completion-probability or time-to-event analysis if incompletion is consequential. A timeout threshold has not been frozen in the source protocol and is not invented here.",
+    "new": "A complete-case time model estimates completion times among observed successful trials under its assumptions, and it may not describe all assigned trials if incomplete outcomes differ by voice. The final plan must therefore also define a complementary completion-probability or time-to-event analysis for use if incompletion is consequential. The source protocol does not yet specify a timeout threshold, and none is assumed here.",
+    "reason": "Joins choppy sentences and replaces the editorial 'is not invented here' with a neutral status statement.",
+    "group": "methods",
+    "index": 48,
+    "claude_new": "A complete-case time model estimates completion times among observed successful trials under its assumptions, and it may not describe all assigned trials if incomplete outcomes differ by voice. The final plan must therefore also define a complementary completion-probability or time-to-event analysis for use if incompletion is consequential. The source protocol does not yet specify a timeout threshold, and none is assumed here.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "Missing responses will not be replaced with zero; questionnaire scores will instead follow the complete-subscale rule, with item-level missingness reported. Disliking or failing to recognize a cloned voice will not by itself exclude a participant.",
+    "new": "Missing responses will not be replaced with zero; questionnaire scores will instead follow the complete-subscale rule, with item-level missingness reported.",
+    "reason": "Removes the third repetition of the no-exclusion rule; it is stated once, in full, in the secondary-outcomes section.",
+    "group": "methods",
+    "index": 49,
+    "claude_new": "Missing responses will not be replaced with zero; questionnaire scores will instead follow the complete-subscale rule, with item-level missingness reported.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "Perceived performance, voice comfort, reliance, and possible own-voice use cases will be interpreted alongside, but not substituted for, measured task performance.",
+    "new": "Self-reports of perceived performance, voice comfort, reliance, and possible uses for one's own synthetic voice will therefore complement measured task performance rather than substitute for it.",
+    "reason": "An orphan one-sentence paragraph with clipped phrasing ('own-voice use cases'); now framed as a conclusion from the preceding discussion.",
+    "group": "methods",
+    "index": 50,
+    "claude_new": "Self-reports of perceived performance, voice comfort, reliance, and possible uses for one's own synthetic voice will therefore complement measured task performance rather than substitute for it.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "This draft does not invent a numerical exclusion or stopping cutoff, but the operational stopping procedure must be frozen before participant collection.",
+    "new": "No numerical exclusion or stopping cutoff has yet been specified, and the operational stopping procedure must be frozen before participant collection.",
+    "reason": "Replaces editorial meta-commentary ('This draft does not invent') with a neutral status statement.",
+    "group": "methods",
+    "index": 51,
+    "claude_new": "No numerical exclusion or stopping cutoff has yet been specified, and the operational stopping procedure must be frozen before participant collection.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/06-analysis.tex",
+    "old": "remain open preregistration decisions. The study will not classify an individual as invalid merely because the clone is not recognized.",
+    "new": "remain open preregistration decisions.",
+    "reason": "Removes another repetition of the no-exclusion rule already stated in the secondary-outcomes section.",
+    "group": "methods",
+    "index": 52,
+    "claude_new": "remain open preregistration decisions.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/07-evaluation.tex",
+    "old": "The completed results chapter will follow the same question introduced at the start of the thesis: what changes when guidance sounds like the participant rather than a voice they prefer? It will establish the delivered comparison, report search efficiency, and then examine workload, motivation, and exploratory experience. No confirmatory participant outcomes are available in this draft. The reporting framework below keeps those unanswered questions visible and separates them from the engineering evidence available for the apparatus.",
+    "new": "The completed results chapter will return to the question posed in the introduction: does guidance spoken in a synthetic version of the participant's own voice differ, in efficiency or experience, from guidance spoken in the neutral voice the participant selected? The chapter will first establish that the intended comparison was delivered, then report search efficiency, and finally examine workload, motivation, and exploratory measures of voice experience. Because no confirmatory participant outcomes are available in this draft, the sections below describe how each result will be reported and distinguish those pending results from the engineering evidence that currently supports the apparatus.",
+    "reason": "Replaces a glib rhetorical question and meta-commentary ('keeps those unanswered questions visible') with a precise statement of the focal comparison and the chapter's structure.",
+    "group": "synthesis",
+    "index": 0,
+    "claude_new": "The completed results chapter will return to the question posed in the introduction: does guidance spoken in a synthetic version of the participant's own voice differ, in efficiency or experience, from guidance spoken in the neutral voice the participant selected? The chapter will first establish that the intended comparison was delivered, then report search efficiency, and finally examine workload, motivation, and exploratory measures of voice experience. Because no confirmatory participant outcomes are available in this draft, the sections below describe how each result will be reported and distinguish those pending results from the engineering evidence that currently supports the apparatus.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/07-evaluation.tex",
+    "old": "\\section{Participant Results to Be Added}",
+    "new": "\\section{Planned Reporting of Participant Results}",
+    "reason": "The heading read like a placeholder note; the new heading describes the section's content.",
+    "group": "synthesis",
+    "index": 1,
+    "claude_new": "\\section{Planned Reporting of Participant Results}",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/07-evaluation.tex",
+    "old": "Tables will identify missing observations rather than silently change denominators.",
+    "new": "Each table will state its denominator and identify missing observations, so that changes in the analyzed sample remain visible.",
+    "reason": "Rewords a terse, informal commitment as a positive reporting rule.",
+    "group": "synthesis",
+    "index": 2,
+    "claude_new": "Each table will state its denominator and identify missing observations, so that changes in the analyzed sample remain visible.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/07-evaluation.tex",
+    "old": "\\centering\\caption{Planned empirical results, not observed findings.}",
+    "new": "\\centering\\caption{Planned result families and their current status. No confirmatory participant outcomes are reported in this draft.}",
+    "reason": "The caption was telegraphic; this version describes what the table shows and keeps the status boundary.",
+    "group": "synthesis",
+    "index": 3,
+    "claude_new": "\\centering\\caption{Planned result families and their current status. No participant data have yet been collected.}",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/07-evaluation.tex",
+    "old": "The completed results chapter will report the voice-similarity manipulation check before the outcome contrasts. RQ1 will use the marginal time contrast standardized over a common starting-difficulty distribution, as defined in Chapter~\\ref{ch:analysis}; this is not a standardized effect-size label. Its uncertainty, eligible participant/trial counts, and model diagnostics will accompany the estimate, using the analysis plan finalized before confirmatory recruitment. RQ2 will report the paired workload and separate IMI outcomes with multiplicity families to be finalized in the analysis plan. RQ3 will report exploratory agent-perception and custom ratings alongside debrief themes and valid search measures. A missing or inconclusive contrast will be identified as such rather than omitted.",
+    "new": "Following the manipulation check, each research question will be answered in turn. For RQ1, the estimate will be the marginal time contrast standardized over a common starting-difficulty distribution, as defined in Chapter~\\ref{ch:analysis}; here, \\emph{standardized} refers to that common distribution rather than to a standardized effect size. The estimate will be accompanied by its uncertainty, the eligible participant and trial counts, and model diagnostics, following the analysis plan finalized before confirmatory recruitment. RQ2 will report the paired workload outcomes and the separate IMI subscales, using multiplicity families that the analysis plan has yet to fix. RQ3 will present exploratory agent-perception and custom ratings alongside debrief themes and valid search measures. A contrast that cannot be estimated or proves inconclusive will be reported as such rather than omitted.",
+    "reason": "Removes a sentence repeated from the previous section. Also replaces the awkward note 'this is not a standardized effect-size label' with an explanation of what 'standardized' means here.",
+    "group": "synthesis",
+    "index": 4,
+    "claude_new": "Following the manipulation check, each research question will be answered in turn. For RQ1, the estimate will be the marginal time contrast standardized over a common starting-difficulty distribution, as defined in Chapter~\\ref{ch:analysis}; here, \\emph{standardized} refers to that common distribution rather than to a standardized effect size. The estimate will be accompanied by its uncertainty, the eligible participant and trial counts, and model diagnostics, following the analysis plan finalized before confirmatory recruitment. RQ2 will report the paired workload outcomes and the separate IMI subscales, using multiplicity families that the analysis plan has yet to fix. RQ3 will present exploratory agent-perception and custom ratings alongside debrief themes and valid search measures. A contrast that cannot be estimated or proves inconclusive will be reported as such rather than omitted.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/07-evaluation.tex",
+    "old": "EQ1 will be reported separately through sequence coverage, qualification-to-playback delay, provider reliability, and categorized faults. A clean engineering test does not answer a voice-effect research question. Conversely, a voice-condition difference does not by itself show that the guidance mechanism was correct. This separation follows the evidence map in Table~\\ref{tab:rq-map} and prevents a successful build or a favorable judge rating from becoming an empirical conclusion.",
+    "new": "EQ1 will be reported separately through sequence coverage, qualification-to-playback delay, provider reliability, and categorized faults. These engineering measures assess the delivery of guidance, while the participant study evaluates differences between voices. As summarized in Table~\\ref{tab:rq-map}, neither a passing software test nor a favorable model rating establishes an effect on participants; likewise, a voice-condition difference does not verify that every instruction was delivered correctly.",
+    "reason": "Joins a choppy run of caveats into one argument and keeps the two-way limit on what each kind of evidence can show.",
+    "group": "synthesis",
+    "index": 5,
+    "claude_new": "EQ1 will be reported separately, through sequence coverage, qualification-to-playback delay, provider reliability, and categorized faults. The two kinds of evidence answer different questions: a passing engineering test says nothing about whether the voices differ for participants, and a voice-condition difference does not show that the guidance mechanism behaved correctly. Keeping them apart, as in the evidence map of Table~\\ref{tab:rq-map}, ensures that a successful build or a favorable judge rating is not read as an empirical finding about the voices.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/07-evaluation.tex",
+    "old": "This chapter separates existing engineering records from participant results that have not yet been collected. The October 20 alignment audit documents software checks, analysis tests, and an Android build/install/launch. These records support specific implementation claims, but they do not establish a treatment effect, a naturalness rating, eye-tracker accuracy, or acoustic response latency.",
+    "new": "The evidence currently available consists of engineering records rather than participant data. The October 20 alignment audit documents software checks, analysis tests, and a successful Android build, installation, and launch. These records support specific implementation claims; they do not bear on a treatment effect, perceived naturalness, eye-tracker accuracy, or acoustic response latency.",
+    "reason": "Removes meta-commentary and the slash shorthand; keeps the limits on what these records can show.",
+    "group": "synthesis",
+    "index": 6,
+    "claude_new": "The evidence currently available consists of engineering records rather than participant data. The October 20 alignment audit documents software checks, analysis tests, and a successful Android build, installation, and launch. These records support specific implementation claims; they do not bear on a treatment effect, perceived naturalness, eye-tracker accuracy, or acoustic response latency.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/07-evaluation.tex",
+    "old": "These counts describe the audit's test run rather than a newly executed suite for this manuscript. The verification record should therefore accompany any later thesis statement so that the tested revision remains identifiable.",
+    "new": "These counts describe the audit's own test run, not a suite re-executed for this manuscript, so any later claim based on them should cite the verification record and the revision it tested.",
+    "reason": "Clarifies the vague phrase 'any later thesis statement' and merges two sentences that read like a lab note.",
+    "group": "synthesis",
+    "index": 7,
+    "claude_new": "These counts describe the audit's own test run, not a suite re-executed for this manuscript, so any later claim based on them should cite the verification record and the revision it tested.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/07-evaluation.tex",
+    "old": "This account will help identify whether a condition was affected by a technical delivery problem. It will not automatically adjust away behavior-dependent hint counts or waiting time: these arise after voice assignment, may themselves depend on voice condition, and are not interchangeable with baseline difficulty, as discussed in Chapter~\\ref{ch:analysis}.",
+    "new": "This account will help assess whether technical delivery problems affected one condition more than the other. The voice contrast will not automatically be adjusted for behavior-dependent hint counts or waiting time: these quantities arise after voice assignment, may themselves depend on voice condition, and cannot be treated as baseline difficulty (Chapter~\\ref{ch:analysis}).",
+    "reason": "Replaces the colloquial 'adjust away' and states the reason for not adjusting more precisely. The covariate rule is unchanged.",
+    "group": "synthesis",
+    "index": 8,
+    "claude_new": "This account will show whether technical delivery problems affected one condition more than the other. It will not, however, be used to adjust the voice contrast for hint counts or waiting time: these quantities arise after voice assignment, may themselves depend on the voice condition, and therefore cannot be treated as baseline difficulty (Chapter~\\ref{ch:analysis}).",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/07-evaluation.tex",
+    "old": "Gaze acknowledgment, controller acknowledgment, and correct trigger selection remain separate events. Their sequence records can establish what feedback was delivered, while participant ratings and debriefing address how that feedback was experienced. An advisory model judge cannot supply the latter evidence. Detailed policy pilots, episode definitions, failure categories, and the investigation of two-second delays are retained in Appendix~\\ref{app:guidance-support}; their purpose is to qualify the apparatus before interpreting a self-similar voice effect.",
+    "new": "Gaze acknowledgment, controller acknowledgment, and correct trigger selection remain separate events. Their sequence records document feedback delivery, whereas participant ratings and debriefing address how that feedback was experienced. Advisory model judgments cannot substitute for those participant reports. Appendix~\\ref{app:guidance-support} describes the policy pilots, episode definitions, failure categories, and investigation of two-second delays that support assessment of the apparatus before interpreting differences between voices.",
+    "reason": "Integrates a dangling caveat and keeps the distinction between engineering and perception evidence. Avoids presupposing a 'self-similar voice effect'.",
+    "group": "synthesis",
+    "index": 9,
+    "claude_new": "Gaze acknowledgment, controller acknowledgment, and correct trigger selection will be reported as separate events. Their sequence records establish what feedback was delivered; only participant ratings and debriefing can indicate how that feedback was experienced, and an advisory model judge cannot substitute for that evidence. Appendix~\\ref{app:guidance-support} retains the detailed policy pilots, episode definitions, failure categories, and the investigation of two-second delays, which together qualify the apparatus before any difference between the voices is interpreted.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "The practical question is how to choose a voice for immersive assistance. Follow My Voice addresses one part of that decision: whether a synthetic voice resembling the listener changes search efficiency or experience relative to an already preferred alternative. This chapter sets out how the planned findings could answer that question, connect with prior voice research, and inform comparable applications. Because participant results remain pending, the interpretations are conditional rather than claims that either voice has proved better.",
+    "new": "Designers of immersive assistance must decide how an assistant should sound. Follow My Voice addresses one part of that decision: whether a synthetic voice resembling the listener changes search efficiency or experience relative to a neutral voice the listener has already chosen. This chapter considers how the planned findings could answer that question, how they would relate to prior voice research, and what they could imply for comparable applications. Because participant results are pending, each interpretation is stated conditionally, as a reading the data could support rather than a conclusion about which voice is better.",
+    "reason": "Smoother opening; names the neutral comparator and joins the conditional framing to the argument instead of a closing disclaimer.",
+    "group": "synthesis",
+    "index": 10,
+    "claude_new": "Designers of immersive assistance must decide how an assistant should sound. Follow My Voice addresses one part of that decision: whether a synthetic voice resembling the listener changes search efficiency or experience relative to a neutral voice the listener has already chosen. This chapter considers how the planned findings could answer that question, how they would relate to prior voice research, and what they could imply for comparable applications. Because participant results are pending, each interpretation is stated conditionally, as a reading the data could support rather than a conclusion about which voice is better.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "The discussion will distinguish three levels of evidence. RQ1 concerns measured efficiency; RQ2 concerns workload and motivation; RQ3 explores how participants describe and evaluate the voices and their reliance on guidance. Agreement among these outcomes could strengthen a design interpretation, while disagreement could reveal a useful tradeoff. Recorded speech and interaction provide the technical context for each interpretation, but cannot establish why a participant welcomed or ignored the voice.",
+    "new": "The discussion distinguishes three kinds of evidence. RQ1 concerns measured efficiency, RQ2 concerns workload and motivation, and RQ3 explores participants' evaluations of the voices and their reported reliance on guidance. Agreement among these outcomes could strengthen a design interpretation, whereas disagreement could reveal a tradeoff that a single outcome would conceal. Speech and interaction records provide technical context but cannot explain why a participant welcomed or ignored the voice.",
+    "reason": "'Levels' wrongly implied a hierarchy. Also replaces the vague 'useful tradeoff' with what disagreement would show.",
+    "group": "synthesis",
+    "index": 11,
+    "claude_new": "The discussion distinguishes three kinds of evidence. RQ1 concerns measured efficiency, RQ2 concerns workload and motivation, and RQ3 explores how participants describe and evaluate the voices and how far they relied on guidance. Agreement among these outcomes would strengthen a design interpretation, whereas disagreement could reveal a tradeoff that a single outcome would conceal. Records of speech and interaction provide the technical context for each interpretation, but they cannot explain why a participant welcomed or ignored the voice.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "If self-similar voice produces faster active completion with acceptable uncertainty, the interpretation will still depend on the manipulation check and guidance quality.",
+    "new": "Interpretation of a completion-time difference favoring the self-similar voice will consider the estimate's uncertainty together with the manipulation check and guidance quality.",
+    "reason": "'Acceptable uncertainty' is vague; the new wording expresses the conditional claim more naturally without adding a decision criterion.",
+    "group": "synthesis",
+    "index": 12,
+    "claude_new": "Should the self-similar voice yield faster active completion with a reasonably precise estimate, the interpretation would still depend on the manipulation check and on guidance quality.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "If the neutral voice produces faster completion, that would be consistent with a selected external voice being easier to follow, or with intelligibility or delivery problems in the cloned condition; delivery records and acoustic-quality reporting could help distinguish these readings, but the study would not establish the mechanism without further evidence. Liking, naturalness, and reliance ratings may help describe the experience. They should not be treated as proven mediators solely because they correlate with performance.",
+    "new": "Faster completion with the neutral voice would be consistent with a chosen external voice being easier to follow, but also with intelligibility or delivery problems in the cloned condition. Delivery records and acoustic-quality reporting could help distinguish these readings, although the study could not establish the mechanism without further evidence. Liking, naturalness, and reliance ratings may help characterize the experience in either case, but a correlation between such ratings and performance would not show that they mediate the voice effect.",
+    "reason": "Splits an overloaded sentence and joins the choppy mediator caveat to the argument; keeps both rival explanations and the limit on inferring mediation.",
+    "group": "synthesis",
+    "index": 13,
+    "claude_new": "Faster completion with the neutral voice would be consistent with a chosen external voice being easier to follow, but also with intelligibility or delivery problems in the cloned condition. Delivery records and acoustic-quality reporting could help distinguish these readings, although the study could not establish the mechanism without further evidence. Liking, naturalness, and reliance ratings may help characterize the experience in either case, but a correlation between such ratings and performance would not show that they mediate the voice effect.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "Experience and performance may diverge. Participants may prefer their cloned voice while searching no faster, or may find it eerie while completing efficiently. Such outcomes would be substantively useful because they distinguish usability, affect, and speed. The battery is designed to retain these differences rather than force a single ranking.",
+    "new": "A preference for self-similar speech may occur without a detectable improvement in completion time, while efficient search may coexist with discomfort. Separate performance and experience measures allow these patterns to be examined without assuming that acceptance and efficiency change together. The battery therefore retains workload, motivation, and agent experience as distinct outcomes rather than combining them into a single ranking of the voices.",
+    "reason": "This passage closely echoes the introduction sentence you objected to: telegraphic contrasts and the vague 'substantively useful'. The rewrite makes it connected argument.",
+    "group": "synthesis",
+    "index": 14,
+    "claude_new": "Experience and performance may also diverge. Participants might prefer their cloned voice without searching any faster, or might find it eerie while still completing trials efficiently. Such patterns would be informative in their own right, because they would show that a voice's acceptability and its effect on speed can be separated. For this reason the battery retains workload, motivation, and agent-experience measures as distinct outcomes rather than combining them into a single ranking of the voices.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "The present study isolates a voice-choice question within that interaction. It does not test",
+    "new": "The present study examines a voice-choice question within that interaction; it does not test",
+    "reason": "'Isolates' overstates the design, which does not isolate resemblance; it also joins a choppy sentence.",
+    "group": "synthesis",
+    "index": 15,
+    "claude_new": "The present study examines a voice-choice question within that interaction; it does not test",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "Its practical value will depend on the combination of outcomes. Faster search with acceptable workload and comfortable voice experience would support considering self-similar guidance for comparable tasks. Favorable experience without a detected speed difference could still motivate offering the clone as an optional voice, but would not justify claiming an efficiency benefit. Discomfort, intelligibility problems, or a preference for the neutral voice would instead identify limits to that option. These are conditional design implications to revisit after data collection, not recommendations established by the current draft.",
+    "new": "The practical value of the study will depend on how its outcomes combine. Faster search accompanied by acceptable workload and a comfortable voice experience would support considering self-similar guidance for comparable tasks. A favorable experience without a detected speed difference could still motivate offering the clone as an optional voice, though not claiming that it makes search more efficient. Discomfort, intelligibility problems, or a preference for the neutral voice would instead mark limits to that option. Which of these implications applies can be judged only once the data are collected.",
+    "reason": "Replaces the vague 'efficiency benefit' wording and the rhetorical closing disclaimer with a concise statement of what remains open.",
+    "group": "synthesis",
+    "index": 16,
+    "claude_new": "The practical value of the study will depend on how its outcomes combine. Faster search accompanied by acceptable workload and a comfortable voice experience would support considering self-similar guidance for comparable tasks. A favorable experience without a detected speed difference could still motivate offering the clone as an optional voice, though not claiming that it makes search more efficient. Discomfort, intelligibility problems, or a preference for the neutral voice would instead mark limits to that option. Which of these implications applies can be judged only once the data are collected.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "Voice condition is more than a nominal label. The self-similar voice depends on recording quality and synthesis, whereas the neutral voice comes from a heterogeneous catalog, and the two may differ",
+    "new": "The voice conditions may differ in acoustic properties as well as perceived resemblance. The self-similar voice depends on recording quality and synthesis, whereas the neutral voice comes from a heterogeneous catalog, and the two may differ",
+    "reason": "Replaces a glib opening line with a precise topic sentence about possible confounds.",
+    "group": "synthesis",
+    "index": 17,
+    "claude_new": "The two voice conditions differ in more than their resemblance to the participant. The self-similar voice depends on recording quality and synthesis, whereas the neutral voice comes from a heterogeneous catalog, and the two may differ",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "Participant choice is intentional heterogeneity. Requiring every participant to use the same neutral voice would answer a different question. The analysis should retain",
+    "new": "The variety of chosen neutral voices is a deliberate consequence of the design: requiring every participant to hear the same neutral voice would replace the comparison with a preferred alternative by a comparison with a fixed one. The analysis should retain",
+    "reason": "Expands a telegraphic abstraction ('intentional heterogeneity') and spells out the 'different question'.",
+    "group": "synthesis",
+    "index": 18,
+    "claude_new": "The variety of chosen neutral voices is a deliberate consequence of the design: requiring every participant to hear the same neutral voice would replace the comparison with a preferred alternative by a comparison with a fixed one. The analysis should retain",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "No extra pitch, panning, or inner-thought treatment is part of the current self-similar manipulation. Earlier attempts to make cloned speech sound like an internal monologue are development history. Reintroducing such an effect in only one condition would change the manipulation and require a revised rationale and analysis.",
+    "new": "The current self-similar manipulation applies no additional pitch shift, panning, or inner-thought treatment. Earlier development attempts to make cloned speech sound like an internal monologue are not part of the study, and reintroducing such an effect in only one condition would change the manipulation and require a revised rationale and analysis.",
+    "reason": "Joins three choppy sentences and replaces the lab-note phrase 'are development history'.",
+    "group": "synthesis",
+    "index": 19,
+    "claude_new": "The current self-similar manipulation applies no additional pitch shift, panning, or inner-thought treatment. Earlier development attempts to make cloned speech sound like an internal monologue are not part of the study, and reintroducing such an effect in only one condition would change the manipulation and require a revised rationale and analysis.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "The central state machine improves auditability by giving one local owner to guidance evidence and transitions. It does not guarantee perfect guidance. Calibration error can produce an incorrect observation; an unclear reference frame can produce an unhelpful phrase; a stale response can escape an incomplete check. A defensible report describes the safeguards and measured failures rather than implying that architectural separation proves correctness.",
+    "new": "The central state machine improves auditability by assigning guidance evidence and transitions to a single local component, but it cannot guarantee correct guidance. Calibration error can produce an incorrect observation, an unclear reference frame can produce an unhelpful phrase, and a stale response can pass an incomplete check. The completed report will therefore describe both the safeguards and the failures actually measured, rather than treating the architecture itself as evidence of correctness.",
+    "reason": "Joins choppy caveats and turns the reviewer-style instruction ('A defensible report...') into a statement of the thesis's reporting commitment.",
+    "group": "synthesis",
+    "index": 20,
+    "claude_new": "The central state machine improves auditability by assigning guidance evidence and transitions to a single local component, but it cannot guarantee correct guidance. Calibration error can produce an incorrect observation, an unclear reference frame can produce an unhelpful phrase, and a stale response can pass an incomplete check. The completed report will therefore describe both the safeguards and the failures actually measured, rather than treating the architecture itself as evidence of correctness.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "Completion time, missingness, and comprehension require pilot measurement. A participant who is tired or symptomatic should first receive the immediate post-exposure safety check. The survey's breadth is a current design decision, not evidence that every item is necessary or equally interpretable.",
+    "new": "Its completion time, missingness, and comprehension therefore require pilot measurement. Because participants may be tired or symptomatic after exposure, the post-exposure safety check precedes the retrospective sets. The breadth of the battery reflects a current design decision; it does not demonstrate that every item is necessary or equally interpretable.",
+    "reason": "The middle sentence read as a casual instruction and could imply the check applies only to some participants. It now matches the protocol, where every participant completes the SSQ first.",
+    "group": "synthesis",
+    "index": 21,
+    "claude_new": "Its completion time, missingness, and comprehension therefore require pilot measurement. Because participants may be tired or symptomatic after exposure, the post-exposure safety check precedes the retrospective sets. The breadth of the battery reflects a current design decision; it does not demonstrate that every item is necessary or equally interpretable.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "This coupling complicates interpretation: lower gaze availability is not merely a missing column if it also suspends guidance. Coverage and technical events must be considered alongside performance without automatically treating them as pre-existing participant traits.",
+    "new": "This coupling complicates interpretation, because reduced gaze availability can both reduce measurement coverage and suspend guidance. Coverage and technical events will therefore be considered alongside performance without automatically being treated as pre-existing participant characteristics.",
+    "reason": "Replaces the informal 'missing column' and the directive 'must be considered' with scholarly wording.",
+    "group": "synthesis",
+    "index": 22,
+    "claude_new": "This coupling complicates interpretation, because reduced gaze availability is not simply missing data when it also suspends guidance. Coverage and technical events will therefore be considered alongside performance, without being treated as pre-existing characteristics of the participant.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "The proposed validity-aware stream and independent calibration checks address these risks, but headset-specific spatial performance and distinct acquisition rate remain empirical questions. The report must not borrow a Vive Pro Eye validation result and label it Focus Vision performance. Nor should it infer cognition from a convenient interaction threshold.",
+    "new": "The proposed validity-aware stream and independent calibration checks address these risks, but headset-specific spatial performance and the rate of distinct gaze observations remain empirical questions. Validation results for the Vive Pro Eye cannot substitute for Focus Vision measurements, and an interaction threshold chosen for usability does not establish a validated measure of cognition.",
+    "reason": "Turns two casual reviewer instructions into scholarly statements of the same methodological limits.",
+    "group": "synthesis",
+    "index": 23,
+    "claude_new": "The proposed validity-aware stream and independent calibration checks address these risks, but headset-specific spatial performance and the distinct acquisition rate remain empirical questions. Validation results for the Vive Pro Eye cannot stand in for Focus Vision performance, and an interaction threshold chosen for usability does not license inferences about cognition.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "A coded participant identifier does not make a voice recording anonymous. Natural and synthesized speech can remain recognizable. The consent",
+    "new": "Coding participant identifiers does not make voice recordings anonymous, because both natural and synthesized speech can remain recognizable. The consent",
+    "reason": "Joins two choppy sentences into one causal statement.",
+    "group": "synthesis",
+    "index": 24,
+    "claude_new": "Coding participant identifiers does not make voice recordings anonymous, because both natural and synthesized speech can remain recognizable. The consent",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "makes alternative providers testable. It does not eliminate the need to report provider changes.",
+    "new": "makes alternative providers testable; neither removes the need to report provider changes.",
+    "reason": "The trailing 'It' had an ambiguous referent; this joins the caveat to the sentence before.",
+    "group": "synthesis",
+    "index": 25,
+    "claude_new": "makes alternative providers testable; neither removes the need to report provider changes.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "Manipulating resemblance while controlling other acoustic properties would address a narrower causal question than the present comparison with a participant-selected neutral voice. These remain research directions, not conclusions from this study.",
+    "new": "Manipulating resemblance while controlling other acoustic properties would address a narrower causal question than the present comparison with a participant-selected neutral voice.",
+    "reason": "Removes a redundant disclaimer; the section heading and conditional wording already mark these as future directions.",
+    "group": "synthesis",
+    "index": 26,
+    "claude_new": "Manipulating resemblance while controlling other acoustic properties would address a narrower causal question than the present comparison with a participant-selected neutral voice.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/08-discussion.tex",
+    "old": "The current seated task supplies a specific context for evaluating self-similar assistance, not a universal claim about its value.",
+    "new": "The current seated task provides one specific context for evaluating self-similar assistance, and its findings will not by themselves establish the value of such assistance elsewhere.",
+    "reason": "The contrast was awkward: a task is not a claim. The rewording states the transfer limit directly.",
+    "group": "synthesis",
+    "index": 27,
+    "claude_new": "The current seated task provides one specific context for evaluating self-similar assistance, and its findings will not by themselves establish the value of such assistance elsewhere.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/09-conclusion.tex",
+    "old": "Resemblance, liking, and usefulness need not coincide. The study is designed to examine that distinction through a task in which spoken guidance progressively reveals the intended object.",
+    "new": "Because resemblance, liking, and usefulness need not coincide, the study examines them separately, in a task where spoken guidance progressively reveals the intended object.",
+    "reason": "Joins a terse claim and its consequence into one connected sentence.",
+    "group": "synthesis",
+    "index": 28,
+    "claude_new": "Because resemblance, liking, and usefulness need not coincide, the study examines them separately, in a task where spoken guidance progressively reveals the intended object.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "chapters/09-conclusion.tex",
+    "old": "Perceived similarity will be checked separately, so recognition of the cloned voice will not itself be presented as a performance benefit.",
+    "new": "Perceived-similarity ratings will assess whether the synthesized voice achieves the intended resemblance, while completion-time measures will evaluate search performance.",
+    "reason": "This echoes the introduction sentence you objected to, with the same vague 'performance benefit'. The new wording states what the manipulation check does and does not show.",
+    "group": "synthesis",
+    "index": 29,
+    "claude_new": "Perceived similarity serves as a manipulation check: it indicates whether participants heard the clone as resembling their own voice, not whether that voice helped them search.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "chapters/09-conclusion.tex",
+    "old": "The separate October 23 working-file inspection in Appendix~\\ref{app:decision-contract} documents request, validation, and memory behavior without establishing deployment. It does not establish a held-out guidance error rate or prove that all delayed confirmations have been removed. These checks qualify the supporting apparatus; they do not establish whether self-similar voice is more effective or more welcome than the preferred alternative.",
+    "new": "The separate October 23 working-file inspection in Appendix~\\ref{app:decision-contract} documents request, validation, and memory behavior in files whose deployment it does not confirm. Neither record provides a held-out guidance error rate or shows that all delayed confirmations have been removed. Together, these checks qualify the supporting apparatus, while the question of whether the self-similar voice is more effective or more welcome than the neutral alternative remains for the participant study.",
+    "reason": "Removes three repetitions of 'does not establish' and keeps each limit: deployment, held-out error rate, delay removal and the voice question.",
+    "group": "synthesis",
+    "index": 30,
+    "claude_new": "The separate October 23 working-file inspection in Appendix~\\ref{app:decision-contract} documents request, validation, and memory behavior in files whose deployment it does not confirm. Neither record provides a held-out guidance error rate or shows that all delayed confirmations have been removed. Together, these checks qualify the supporting apparatus, while the question of whether the self-similar voice is more effective or more welcome than the neutral alternative remains for the participant study.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "appendices/a-instruments.tex",
+    "old": "This appendix preserves the current Overleaf instrument wording. Administration remains proposed, with Qualtrics synchronization on hold. The two retrospective block references do not imply questionnaires between blocks. Source attribution and scoring rules are described in the methodology chapter.",
+    "new": "This appendix reproduces the instrument wording from the current Overleaf project. The administration procedure is proposed rather than final, and synchronization with Qualtrics is on hold. Although each condition-specific set refers to one block, both sets are completed in the final survey; no questionnaire is administered between blocks. Source attribution and scoring rules appear in Chapter~\\ref{ch:methodology} and Appendix~\\ref{app:data}.",
+    "reason": "Telegraphic status notes become connected prose. The block-reference explanation is clearer, and cross-references replace 'the methodology chapter'.",
+    "group": "synthesis",
+    "index": 31,
+    "claude_new": "This appendix reproduces the instrument wording from the current Overleaf project. The administration procedure is proposed rather than final, and synchronization with Qualtrics is on hold. Although each condition-specific set refers to one block, both sets are completed in the final survey; no questionnaire is administered between blocks. Source attribution and scoring rules appear in Chapter~\\ref{ch:methodology} and Appendix~\\ref{app:data}.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "appendices/a-instruments.tex",
+    "old": "No questionnaires will be administered between blocks. The break and immediate comfort/tracking checks will remain. Surveys and rest breaks will occur outside active-search timing.",
+    "new": "The break between blocks will include immediate comfort and tracking checks but no questionnaire, and both surveys and rest breaks will fall outside active-search timing.",
+    "reason": "Joins three choppy sentences; 'will remain' read like a revision note.",
+    "group": "synthesis",
+    "index": 32,
+    "claude_new": "The break between blocks will include immediate comfort and tracking checks but no questionnaire, and both surveys and rest breaks will fall outside active-search timing.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "appendices/a-instruments.tex",
+    "old": "Its object names are recording material and do not reveal the targets of measured trials. Participants will read in their usual speaking voice without a requested whisper or inner-thought performance.",
+    "new": "The objects named in the passage serve only as recording material and do not identify the targets of measured trials. Participants will read in their usual speaking voice, without a request to whisper or imitate an inner monologue.",
+    "reason": "Replaces the unnatural phrase 'without a requested whisper or inner-thought performance'. The passage text itself is unchanged.",
+    "group": "synthesis",
+    "index": 33,
+    "claude_new": "The objects it names serve only as recording material and do not identify the targets of measured trials. Participants will be asked to read in their usual speaking voice, without whispering or adopting an inner-thought style.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "appendices/b-data-dictionary.tex",
+    "old": "The following dictionary specifies semantic requirements. Names shown here are descriptive contract labels and must be mapped to the versioned exporter schema before collection. They do not assert that every field already exists in the current build.",
+    "new": "The following dictionary specifies what each recorded field must mean. The names shown are descriptive labels rather than exporter field names; they must be mapped to the versioned exporter schema before collection, and their inclusion here does not imply that every field already exists in the current build.",
+    "reason": "Replaces jargon ('semantic requirements', 'contract labels') and the odd claim that names 'assert' something.",
+    "group": "synthesis",
+    "index": 34,
+    "claude_new": "The following dictionary specifies what each recorded field must mean. The names shown are descriptive labels rather than exporter field names; they must be mapped to the versioned exporter schema before collection, and their inclusion here does not imply that every field already exists in the current build.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "appendices/b-data-dictionary.tex",
+    "old": "Unknown fields remain unavailable rather than receiving plausible-looking defaults.",
+    "new": "Fields whose values are unknown remain marked unavailable rather than being filled with plausible defaults.",
+    "reason": "Clarifies that it is values, not fields, that are unknown, and smooths the wording.",
+    "group": "synthesis",
+    "index": 35,
+    "claude_new": "Fields whose values are unknown remain marked unavailable rather than being filled with plausible defaults.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "appendices/c-scenarios.tex",
+    "old": "Tests use the same trajectories across policies. The expected behavior below is an acceptance specification, not a claim that a wearer experienced the scenario successfully.",
+    "new": "The same trajectories are used to test every policy. The expected behavior in the table defines acceptance criteria; it does not report that any wearer has experienced the scenario as specified.",
+    "reason": "More precise, less clipped statement of the same scope limit.",
+    "group": "synthesis",
+    "index": 36,
+    "claude_new": "The same trajectories are used to test every policy. The expected behavior in the table defines acceptance criteria; it does not report that any wearer has experienced the scenario as specified.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "appendices/d-readiness.tex",
+    "old": "These statuses must be rechecked against the final release rather than inferred from the presence of future-tense method text.",
+    "new": "Each status must be rechecked against the final release; the use of the future tense in the method chapters does not indicate whether a feature has been implemented.",
+    "reason": "Rewrites an awkward abstraction ('presence of future-tense method text') as a clear statement.",
+    "group": "synthesis",
+    "index": 37,
+    "claude_new": "Each status must be rechecked against the final release; the use of the future tense in the method chapters does not indicate whether a feature has been implemented.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "appendices/d-readiness.tex",
+    "old": "The later user clarification assigns practice",
+    "new": "A later clarification from the author assigns practice",
+    "reason": "'User clarification' is a tooling-log phrase; the author is the source.",
+    "group": "synthesis",
+    "index": 38,
+    "claude_new": "A later clarification from the author assigns practice",
+    "synthesis_modified": false
+  },
+  {
+    "file": "appendices/d-readiness.tex",
+    "old": "The current audit describes 168 spawned objects, 21 per wall; the eight trials per nominal theta category are a different quantity.",
+    "new": "The audit describes 168 spawned objects, with 21 per wall. Separately, the trial schedule allocates eight trials to each nominal theta category.",
+    "reason": "Makes the clipped contrast explicit. The numbers are unchanged.",
+    "group": "synthesis",
+    "index": 39,
+    "claude_new": "The current audit describes 168 spawned objects, 21 per wall; this per-wall object count should not be confused with the eight scheduled trials in each nominal theta category.",
+    "synthesis_modified": true
+  },
+  {
+    "file": "appendices/e-decision-contract.tex",
+    "old": "These files include work outside the main-branch documentation checkpoint; inspection is not proof of deployment or release validation.",
+    "new": "These files include work beyond the main-branch documentation checkpoint, so their inspection documents source behavior without establishing deployment or release validation.",
+    "reason": "Joins the caveat to its reason; same scientific boundary.",
+    "group": "synthesis",
+    "index": 40,
+    "claude_new": "These files include work beyond the main-branch documentation checkpoint, so their inspection documents source behavior without establishing deployment or release validation.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "appendices/e-decision-contract.tex",
+    "old": "Factoring is intended to reduce duplication while preserving candidate semantics; retained serialized requests should confirm this. The exact serialized request should be retained when testing whether a change in representation alters response time or choice quality.",
+    "new": "Factoring is intended to reduce duplication without changing candidate semantics, which the retained serialized requests should confirm. The exact serialized request should likewise be kept whenever a test examines whether a change in representation alters response time or choice quality.",
+    "reason": "Removes the awkward 'should confirm this' fragment and the repeated 'retained'.",
+    "group": "synthesis",
+    "index": 41,
+    "claude_new": "Factoring is intended to reduce duplication without changing candidate semantics, which the retained serialized requests should confirm. The exact serialized request should likewise be kept whenever a test examines whether a change in representation alters response time or choice quality.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "appendices/f-guidance-support.tex",
+    "old": "Implemented behavior, proposed checks, and missing evidence retain the status stated in each section.",
+    "new": "Each section states whether the behavior it describes is implemented, proposed, or not yet supported by evidence.",
+    "reason": "Replaces unclear meta-commentary with a plain statement of how statuses are marked.",
+    "group": "synthesis",
+    "index": 42,
+    "claude_new": "Each section states whether the behavior it describes is implemented, proposed, or not yet supported by evidence.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "appendices/f-guidance-support.tex",
+    "old": "No best-performing provider or autonomous policy is established by this manuscript. The offline comparison described below is a route to testing such alternatives. It must preserve the distinction between deciding what a model would say on a replayed trajectory and observing how a participant responds to that speech.",
+    "new": "This manuscript does not identify a best-performing provider or autonomous policy. The offline comparison described below offers a way to test such alternatives, provided it preserves the distinction between deciding what a model would say on a replayed trajectory and observing how a participant responds to that speech.",
+    "reason": "Active voice and connected argument; the replay-versus-participant distinction is kept.",
+    "group": "synthesis",
+    "index": 43,
+    "claude_new": "This manuscript does not identify a best-performing provider or autonomous policy. The offline comparison described below offers a way to test such alternatives, provided it preserves the distinction between deciding what a model would say on a replayed trajectory and observing how a participant responds to that speech.",
+    "synthesis_modified": false
+  },
+  {
+    "file": "appendices/f-guidance-support.tex",
+    "old": "\\textbf{Protocol proposal.} The engineering evaluation will maintain three",
+    "new": "As a protocol proposal, the engineering evaluation will maintain three",
+    "reason": "The bold run-in label read like a lab note; the status now sits inside the sentence.",
+    "group": "synthesis",
+    "index": 44,
+    "claude_new": "As a protocol proposal, the engineering evaluation will maintain three",
+    "synthesis_modified": false
+  }
+]

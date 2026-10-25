@@ -1,6 +1,10 @@
-# Follow My Voice — thesis first pass
+# Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent in Virtual Reality
 
 Advisor-review draft revised October 23, 2026. The editable document is `main.tex`; the compiled deliverable is `follow-my-voice-thesis-first-pass.pdf`.
+
+## Overleaf visual editing copy
+
+The October 23 thesis was imported into [the full-thesis Overleaf project](https://www.overleaf.com/project/6adbf46b3f96e54f5b3cc805) for prose editing in Visual Editor. It uses `main.tex`, LuaLaTeX, TeX Live 2026, and automatic compilation. The original protocol project below is unchanged. The active Codex automation **Sync Overleaf thesis to local** checks every 10 minutes and pulls changes into this checkout. It updates sources and figures, then automatically rebuilds the local PDF when the source content changes. A failed compile preserves the last good PDF and is retried on the next check. It does not push local changes to Overleaf or commit/push GitHub changes. See [sync workflow](overleaf-sync.md) for conflict handling and a manual pull.
 
 ## October 23 milestone
 
@@ -8,9 +12,9 @@ The author identifies this as the October 23 format-review draft; solid particip
 
 ## What this draft contains
 
-Nine chapters: introduction, literature, shared experimental platform, proposed voice-comparison methodology, outcome measurement/data provenance, planned analysis, voice-results framework and readiness, discussion, and conclusion. Six appendices preserve questionnaire wording, data/scoring definitions, sequence-test scenarios, study-readiness decisions, the code-inspected decision contract, and supporting guidance implementation/validation. Fourteen numbered figures match the reference thesis’s figure count: three reused project figures, ten new editable vector diagrams, and one actual Trial Review screenshot of its explicitly synthetic demonstration. No figure presents invented participant results. Sixteen numbered tables cover research-question traceability, related work, allocation, system ownership, questionnaire scoring, timing, analysis scope, policy comparisons, failure categories, evidence status, data definitions, sequence checks, remaining decisions, and reproduction requirements.
+Six chapters: Introduction, Literature Review, Methodology, Results, Discussion, and Conclusion. Methodology contains application design, experimental design, procedure, data collection, measures/scoring, and planned statistical analysis. Source files 04-method, 05-measurement, 03-measures-scoring and 06-analysis are included sections of Chapter 3, not standalone chapters. The six appendices preserve detailed instruments, definitions, tests, readiness decisions and implementation evidence. Existing figures and tables are retained, with the recorded scene caption shortened and a condensed-CSV table added. Participant results remain pending; development recordings are not participant-study results.
 
-The literature chapter draws on the project's bibliography. All 65 entries are retained in `references.bib`; the printed reference list includes only cited entries. Quantitative participant findings, a final sample size, a power result, and a claim of superior voice performance have not been invented. Engineering audit results are attributed to the October 20 record rather than presented as tests run while writing this draft.
+The literature chapter draws on the project's bibliography. All 69 entries are retained in `references.bib`; the printed reference list includes only cited entries. Quantitative participant findings, a final sample size, a power result, and a claim of superior voice performance have not been invented. Engineering audit results are attributed to the October 20 record rather than presented as tests run while writing this draft.
 
 ## Research focus
 
@@ -28,7 +32,7 @@ RippleVision is included as abstract-supported visual-guidance context; full-tex
 - Retrieved revision: `f9f49e450c7b64b34c319a557114f1fa4393f003`.
 - `source-snapshot/` preserves the retrieved files unchanged. The live Overleaf working tree and manuscript were not overwritten.
 - The latest full protocol handoff, the subsequent practice-voice clarification, and the October 20 implementation alignment audit informed status reconciliation.
-- The October 23 working-file inspection is separately identified in Appendix E and `review/implementation-contract-inspection.json`; it does not establish deployment or supersede the release audit.
+- The October 23 working-file inspection is retained in `review/implementation-contract-inspection.json`; it does not establish deployment or supersede the release audit.
 - Formatting base: the user's `Template_for_University_of_Central_Florida_ETD___LauLaTex_Modernization` download.
 - Presentation reference: Hoang Bao Truong, *Using Inferences from Natural Language Narratives to Improve Video Question Answering*, UCF, 2026, https://stars.library.ucf.edu/gradstudies_etd_2026/199/ . Its prose and results were not used as evidence for this experiment.
 
@@ -56,7 +60,7 @@ The PDF is tagged. The October 23 accessibility pass uses veraPDF 1.30.3 against
 
 ## Review and remaining work
 
-Claude performed separate language and methods reviews. A further verified Opus 5.5 pass produced 99 synthesized paragraph revisions and three source-grounded literature additions; see `review/opus55-language-synthesis-20261023.md`. That language-review snapshot contained 148 pages. The subsequent voice-focus revision reorganizes the same figures and tables and moves detailed engineering material to Appendix F; see `review/voice-focus-and-navigation-context-20261023.md` and the current verification record. `review/review-resolution.md` records applied changes, rejected false positives, and open design decisions. The raw review reports are included. `review/truong-gap-audit.md` records the reference-comparison additions and elements that remain author-dependent or require empirical evidence. The reviews are assistance, not author or committee approval.
+Claude performed separate language and methods reviews. A further verified Opus 5.5 pass produced 99 synthesized paragraph revisions and three source-grounded literature additions; see `review/opus55-language-synthesis-20261023.md`. That language-review snapshot contained 148 pages. The subsequent voice-focus revision reorganized figures and tables and moved engineering material to a supporting appendix; Appendices D–F are now excluded from the manuscript at the author’s request; see `review/voice-focus-and-navigation-context-20261023.md` and the current verification record. `review/review-resolution.md` records applied changes, rejected false positives, and open design decisions. The raw review reports are included. `review/truong-gap-audit.md` records the reference-comparison additions and elements that remain author-dependent or require empirical evidence. The reviews are assistance, not author or committee approval.
 
 Before submission: confirm author/degree/term/advisor metadata; finish power and analysis preregistration; reconcile consent with actual cloud services; validate hardware, timing, scoring, and the complete study flow; collect and analyze participant data; replace the results framework with observed findings; perform a complete source-to-claim citation audit; finalize AI disclosure and ETD/accessibility review. All pending items remain visible in the text.
 
@@ -69,3 +73,11 @@ The [Claude narrative review](review/claude-narrative-review-20261023.md) record
 The condition labels are **neutral voice** and **self-similar voice**. Participants select the neutral voice from the supplied catalog. This label does not imply flat emotional delivery or no individual preference. Historical Overleaf snapshots retain their original wording.
 
 The supplied UCF Manuscript Submission Checklist was included in review. Confirmed table-header, chapter-heading and longtable-caption structure issues were fixed, and the bibliography count was reconciled. See `review/pdf-structure-check-20261023.json`, `review/accessibility-validation-20261023.md`, and `review/verification.md`. The independent full CE review and formal automated PDF/UA validation are recorded separately from institutional acceptance.
+
+## Latest full-paper language pass — October 23, 2026
+
+[Claude Opus 5.5 review](review/claude-full-language-summary-20261023.md) covers all current chapters and appendices against the approved abstract. The 174-page PDF includes the accepted wording improvements and passes the recorded build, preservation, structural and automated PDF/UA-2 checks. [Exact verification](review/claude-full-language-verification-20261023.json) identifies this artifact.
+
+## Recorded development results
+
+The Results chapter now includes four plots from actual headset Runs 20–28: search durations, software speech delivery, a recorded delayed gaze-confirmation sequence, and application-reported gaze usability. These development observations remain separate from the pending self-similar/neutral voice comparison. [Data provenance and reproduction](development-results/README.md).

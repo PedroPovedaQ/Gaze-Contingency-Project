@@ -1,0 +1,63 @@
+diff --git a/chapters/02-literature.tex b/chapters/02-literature.tex
+index d042ee8..40a9340 100644
+--- a/chapters/02-literature.tex
++++ b/chapters/02-literature.tex
+@@ -45,6 +45,8 @@ Because self-resemblance may be both welcome and uncomfortable, the choice of ou
+ 
+ Zagermann et al. discuss eye tracking as a means of investigating cognitive load in visual computing~\cite{zagermann2016workload}. This work motivates considering gaze-derived measures but does not justify interpreting an unvalidated count of ray hits as workload. The confirmatory plan therefore relies on subjective workload dimensions and task performance, and pupil, fixation, and saccade analyses remain contingent on separate acquisition and event-validation work.
+ 
++Nerella et al. investigate gaze-based cognitive-load prediction during an AR color-matching task with interrupting alerts, using 31 participants and Magic Leap 2 eye tracking at 60 Hz~\cite{nerella2026gaze}. Their group XGBoost model achieves a reported test AUC-ROC of 0.85. Positive labels are tied to participants' reports of overload in response to alerts, and the authors report no significant correlation between high-load report frequency and NASA-TLX. The study supports investigating gaze alongside subjective workload while preserving the distinction between momentary reports and retrospective ratings. It does not establish that voice resemblance reduces workload.
++
+ NASA-TLX supplies six workload dimensions~\cite{hart1988nasatlx}; the project's 0--10 response range and unweighted complete mean are documented adaptations. The Intrinsic Motivation Inventory distinguishes interest/enjoyment from related subscales such as effort, pressure, and value~\cite{ryan1982control,mcauley1989imi,csdtIMI}, and reporting the subscales separately preserves that distinction. The instrument appendix specifies the current wording and reverse keys so that scoring can be reproduced.
+ 
+ The agent-perception measures are taken from Guo et al., who attribute them to their original sources~\cite{guo2024doppelganger,biocca2001networked,moussawi2019perception}. Co-presence, perceived intelligence, and anthropomorphism describe participants' attributions, so a high rating does not indicate sentience or correct decisions. Conversely, deterministic validity checks cannot show that a participant found the agent natural. The design therefore requires both kinds of evidence and keeps their meanings distinct.
+diff --git a/chapters/08-discussion.tex b/chapters/08-discussion.tex
+index d358d18..c482763 100644
+--- a/chapters/08-discussion.tex
++++ b/chapters/08-discussion.tex
+@@ -72,6 +72,9 @@ Other extensions could examine a visible agent body, a known-target search task,
+ 
+ Memory, provider autonomy, and gaze-guidance policy could also be varied in separate systems studies. Those comparisons would concern the supporting mechanism and must not be inferred from the present voice contrast. Similarly, eye-event or pupil analyses should be added only when validated measurements answer a defined question about task demands or voice experience.
+ 
++\subsection{Gaze-Informed Adaptation of Spoken Assistance}
++Nerella et al.'s gaze-based prediction study also motivates testing whether momentary task demands can inform when an agent speaks~\cite{nerella2026gaze}. For Follow My Voice, such an extension requires task-specific labels, evaluation on unseen participants, and a separate test of adaptive hint timing. The cited work leaves real-time deployment evaluation open; its classification result does not establish that adapting spoken guidance improves search. Keeping this extension separate preserves self-similar voice as the experimental factor in the present study.
++
+ \subsection{Complementing Behavioral Measures with Brain Signals}
+ A future extension could combine electroencephalography (EEG) with gaze, task performance, and questionnaires to investigate the attentional demands of receiving self-similar and neutral spoken guidance. Yang et al.'s \emph{Synchronizing with Attentional Sampling} provides a relevant precedent: the authors use EEG in immersive VR to investigate attentional sampling during gaze and hand--eye interaction as part of a study of visual flicker guidance~\cite{yang2026attentional}. This work motivates examining neural activity alongside observable search behavior, although its visual-guidance findings do not establish how voice resemblance affects attention or how frequently spoken hints should occur.
+ 
+diff --git a/main.tex b/main.tex
+index 17b457b..27db378 100644
+--- a/main.tex
++++ b/main.tex
+@@ -67,7 +67,7 @@
+ \raggedbottom
+ \newcommand{\qid}[1]{\par\smallskip\textbf{\texttt{#1}}\par}
+ \newcommand{\draftnote}[1]{\par\noindent\textbf{Draft status.} #1\par}
+-\title{FOLLOW MY VOICE: SELF-SIMILAR AND NEUTRAL VOICES FOR GAZE-CONTINGENT OBJECT SEARCH IN VIRTUAL REALITY}
++\title{Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent}
+ \author{PEDRO POVEDA QUEVEDO}
+ % Previous degree and major professor supplied by the author during review.
+ \prevdegreei{B.Sc. in Computer Science}
+diff --git a/references.bib b/references.bib
+index 320b43c..c0def98 100644
+--- a/references.bib
++++ b/references.bib
+@@ -761,3 +761,18 @@
+   doi = {10.1145/3225153.3225157},
+   url = {https://www.eecs.ucf.edu/isuelab/publications/pubs/SAP2018.pdf}
+ }
++
++@article{nerella2026gaze,
++  author = {Nerella, Greeshma and Gan, Daisy and David-John, Brendan and Alghofaili, Rawan},
++  title = {Gaze-based Prediction of Cognitive Load in Augmented Reality},
++  journal = {Proceedings of the ACM on Human-Computer Interaction},
++  year = {2026},
++  volume = {10},
++  number = {3},
++  month = may,
++  articleno = {ETRA026},
++  numpages = {18},
++  doi = {10.1145/3806040},
++  url = {https://doi.org/10.1145/3806040},
++  note = {Article ETRA026. \href{https://doi.org/10.1145/3806040}{doi: 10.1145/3806040}}
++}

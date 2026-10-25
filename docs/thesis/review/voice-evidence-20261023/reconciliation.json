@@ -1,0 +1,10 @@
+{
+  "base_overleaf_revision": "8dbfa76529e6023d5dc46f10f07ace9f40889c0d",
+  "files": [
+    "chapters/01-introduction.tex",
+    "chapters/02-literature.tex",
+    "references.bib"
+  ],
+  "state": "Local revision; not uploaded. Preserve concurrent browser changes; compare against base/ and this patch before reconciliation.",
+  "project": "https://www.overleaf.com/project/6adbf46b3f96e54f5b3cc805"
+}

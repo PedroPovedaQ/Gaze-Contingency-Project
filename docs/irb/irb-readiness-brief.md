@@ -1,4 +1,4 @@
-# IRB-readiness brief: Follow My Voice—Gaze-Contingent XR Search with a Self-Similar Agent
+# IRB-readiness brief: Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent in Virtual Reality
 
 Version: decision-frozen draft, 2026-08-14
 

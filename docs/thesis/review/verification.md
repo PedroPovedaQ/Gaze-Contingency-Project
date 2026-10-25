@@ -1,6 +1,6 @@
 # Delivery verification — October 23, 2026 (self-similar voice focus)
 
-Current verification: **163 pages; PDF/UA-2 automated validation passes with 431,298 passed checks, zero failures and zero parser warnings.** See [exact-artifact accessibility record](accessibility-validation-20261023.md). Entries below are chronological provenance; earlier page counts and pending-check statements describe their historical snapshots.
+Current local build: **191 pages; Jev final-playback-gate figure, recorded development distributions and Astra survey-layout changes integrated.** Compilation succeeds with no unresolved references/citations, missing glyphs or overfull boxes in the final pass. Actual-source hashes, trial counts and speech-stage arithmetic pass the development-data checks. The new Figure 3.4 was visually checked on PDF page 61 (printed page 39); prior development-figure and survey checks refer to the preceding 190-page snapshot. Performance displays 0 = Failure and 10 = Perfect, with an explicit single reversal for its workload contribution. See [current build and inspection evidence](development-results-20261023/) and [survey review](astra-survey-format-review-20261023.md). No new full PDF/UA conformance audit is claimed for this artifact. The 174-page full-paper Claude review and its accessibility check are historical; their exact artifact is recorded in [that verification](claude-full-language-verification-20261023.json). Entries below describe earlier snapshots.
 
 - Built with LuaLaTeX/BibTeX and repeated LuaLaTeX passes after chapter reorganization: 159 letter-size pages, tagged PDF.
 - No unresolved references/citations, LaTeX warnings, or overfull boxes in the final log. All listed fonts embedded. Non-fatal underfull-box/PDF-structure diagnostics do not constitute formal accessibility validation.
@@ -72,3 +72,20 @@ Participant results, sample-size/power justification, frozen release validation,
 - All 14 figures have alternatives and all 17 table structures have headers. The three font-only repairs preserved 120-dpi renders exactly, and repeated normalization left all twelve vector PDFs unchanged. Contrast changes are intentional.
 - Formal automated checks and sampled manual checks are complete for this artifact; no Acrobat-checker pass or exhaustive screen-reader usability certification is claimed. UCF approval, author-dependent metadata, participant results, final study validation and complete source-to-claim audit remain separate.
 - Requested local thesis checkpoint includes the accumulated manuscript revisions, PDF, editable figure sources and review evidence. No runtime, live Overleaf or Qualtrics changes.
+
+
+## Problem statement and EEG extension — October 23, 2026
+
+- 68 bibliography entries, 48 cited keys, zero missing or duplicate keys; 20 existing uncited entries and 12 existing DOI-display hints retained.
+- Inspected revised introduction pages 27–28, discussion pages 104–105, and references 164–171. Checked structural tags and internal destinations. Added EEG to the abbreviations list.
+- PDF SHA-256: `7f7bcb191486fbb9b5c5ae68eec8e128de1292fe7a534a9b56e82ef23b1c4901`. PDF/UA-2 validation and structural reports saved beside this record.
+- Evidence scope and full-text access limits recorded in `yang2026-eeg-and-problem-statement.md`. No directional hypothesis, participant result, or runtime change introduced.
+
+
+## Methodology restructure — October 23, 2026
+
+- Consolidated prior platform/method/measurement/analysis chapters into six numbered methodology sections; preserved detailed definitions and source snapshots. Updated chapter/section references and thesis overview.
+- Citation audit: 69 entries, 50 cited keys, zero missing/duplicate keys and zero cited entries without DOI/URL. Existing 19 uncited entries and 12 DOI-display hints retained.
+- Inspected contents, literature additions, methodology opening, apparatus, Figure 3.2, experiment/procedure, condensed CSV table, scoring and Results pages. Widened figure-list number column for 3.10–3.12 and rechecked it. No missing internal destinations.
+- PDF SHA-256: `c95b36cbfe77d08cd028a194557f0487c0f260bdf34aff84d78e3e45e8317de6`. Automated PDF/UA-2 passed; this does not substitute for manual assistive-technology review.
+- No new participant or pilot results generated. Qualtrics and live Overleaf unchanged.

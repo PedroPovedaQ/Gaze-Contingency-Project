@@ -1,0 +1,69 @@
+diff --git a/appendices/b-data-dictionary.tex b/appendices/b-data-dictionary.tex
+index cc458ca..d563bbb 100644
+--- a/appendices/b-data-dictionary.tex
++++ b/appendices/b-data-dictionary.tex
+@@ -31,6 +31,7 @@ Quantity & Unit/reference & Required interpretation \\\midrule\endfirsthead
+ Nominal angle & Degrees; wall schedule & Allocation category; not exact target bearing.\\
+ Exact starting theta & Degrees; pre-cue cross & Signed horizontal angle from saved origin-to-cross toward origin-to-target; currently a readiness gap.\\
+ Height difference & Metres; cross center & Target Y minus cross Y; intended and realized sign stored separately.\\
++Replay wall bounds & Metres; recording-local frame & Implemented for new rotational-search snapshots: wall bottom, height, and availability flag. Legacy bounds are estimated from objects; saved positions are not rescaled.\\
+ Target distance & Metres; first tracked head after reveal & Three-dimensional distance with observation timestamp.\\
+ Reveal & Session clock & Object visibility and active-search onset event.\\
+ First gaze contact & Active clock & First valid target collider intersection; missing if absent.\\
+diff --git a/chapters/03-system.tex b/chapters/03-system.tex
+index 132d5a4..79beebb 100644
+--- a/chapters/03-system.tex
++++ b/chapters/03-system.tex
+@@ -11,7 +11,11 @@ The application presents a virtual setup menu before the search task. Participan
+ The application is developed in Unity 6 (6000.3.10f1) using the Unity OpenXR Plugin (1.16.1), HTC VIVE OpenXR integration (2.5.1), and Unity XR Interaction Toolkit (3.3.1). It is deployed as a standalone Android ARM64 application on the HTC VIVE Focus Vision head-mounted display, with rendering performed locally on the headset using the Universal Render Pipeline (17.3.0). The study uses the headset's virtual-reality configuration, in which the headset supplies head-pose and eye-gaze tracking and the tracked right-hand controller supplies pointing and trigger input. Network access supports cloud-based agent decisions and voice preparation; it is not used to stream rendered frames from a host computer. HTC specifies 2448 $\times$ 2448 pixels per eye, a 90-Hz standalone display refresh rate, and a field of view of up to 120 degrees~\cite{htc2026focusvision}. The separately advertised 120-Hz binocular gaze output is a sensor specification, not proof of the application's effective acquisition rate. Actual rendering and gaze-delivery rates require measurement on the study build.
+ 
+ \subsection{Objects, Planes, and Selection}
+-The search task takes place in a neutral virtual room. Seated participants interact using the right controller, while colored geometric objects hang on eight vertical planes arranged around them; Figure~\ref{fig:scene} shows the layout from above. Because the application knows the target identity but withholds it from the opening instructions, participants must rely on voice guidance to locate the target, which they select by pointing the controller ray at it and pressing the trigger. Stimulus density, spatial bounds, and the virtual-room and passthrough settings will be verified and frozen for the study release after seated-comfort and ray-selection pilots. The current stimulus generator includes six shapes---sphere, cube, pyramid, cylinder, capsule, and star---in red, blue, yellow, and green. Eight vertical planes surround the seated origin at 45-degree intervals. The inspected development configuration contains 168 objects, or 21 per plane; final density and spacing remain subject to the study-release checks. These object counts are separate from the eight target trials assigned to each absolute nominal angle category in a 40-trial block. Objects vary in height and horizontal position within their assigned plane, so search requires both coarse orientation toward a plane and finer search within it. For each trial, the system logs object positions, layout seed, wall assignment, and target identity.
++The search task takes place in a neutral virtual room. Seated participants interact using the right controller, while colored geometric objects hang on eight vertical planes arranged around them; Figure~\ref{fig:scene} shows the layout from above. Because the application knows the target identity but withholds it from the opening instructions, participants must rely on voice guidance to locate the target, which they select by pointing the controller ray at it and pressing the trigger. The current stimulus generator includes six shapes---sphere, cube, pyramid, cylinder, capsule, and star---in red, blue, yellow, and green. Eight vertical planes surround the seated origin at 45-degree intervals. The current development configuration contains 168 objects, or 21 per plane, at a default plane radius of 1.5~m from the seated origin. These object counts are separate from the eight target trials assigned to each absolute nominal angle category in a 40-trial block. Objects vary in height and horizontal position within their assigned plane, so search requires both coarse orientation toward a plane and finer search within it. For each trial, the system logs object positions, layout seed, wall assignment, and target identity.
++
++The October 23, 2026 layout revision reduces the full wall height by 30\%, from 3.148~m to 2.2036~m (approximately 2.20~m). Object centers occupy heights from 0.10~m to 2.1036~m above the floor, leaving a 0.10-m margin above the highest permitted center. The generator redistributes the same number of objects within this shorter vertical range while retaining the horizontal bounds, object sizes, and minimum three-dimensional center-to-center separation of 0.20~m. Thus, the denser arrangement results from vertical compaction rather than additional objects or smaller shapes. Layouts are generated deterministically from a saved seed within the revised bounds; earlier layouts are not simply scaled downward.
++
++Both voice conditions use the same layout version and spatial constraints. The shorter walls are an implemented design change, not evidence of improved comfort or search performance. Seated-comfort, visibility, ray-selection, and realized height-allocation checks remain necessary before these parameters are frozen for participant collection.
+ 
+ \begin{figure}[htbp]\centering
+ \includegraphics[width=0.70\linewidth,alt={Overhead scene illustration showing a seated headset wearer, surrounding vertical object panels, and gaze and controller rays.}]{figures/image.png}
+@@ -19,11 +23,11 @@ The search task takes place in a neutral virtual room. Seated participants inter
+ \label{fig:scene}
+ \end{figure}
+ 
+-Figure~\ref{fig:recorded-search-scene} complements the schematic with a reconstruction from an actual headset development recording. It shows the first-person view, surrounding layout, and recorded shape types. This earlier 168-object layout documents the platform during development; it does not fix the stimulus density for the participant study.
++Figure~\ref{fig:recorded-search-scene} complements the schematic with a reconstruction from an actual headset development recording. It shows the first-person view, surrounding layout, and recorded shape types. This recording predates the October 23 vertical compaction: its 168-object layout retains the earlier wall geometry. It documents the platform during development rather than the dimensions of the revised layout.
+ 
+ \begin{figure}[p]\centering
+ \includegraphics[width=0.92\linewidth,alt={Three-panel reconstruction of the search environment: the recorded first-person view of colored objects on vertical planes; an overhead view of eight surrounding planes and the central wearer avatar; and zoomed cube, sphere, pyramid, cylinder, capsule and star examples.}]{figures/recorded-search-scene.pdf}
+-\caption[Search environment and object examples]{(a) First-person view of colored objects on surrounding vertical planes. (b) Overhead view of the eight-plane arrangement. (c) Enlarged examples of the six shape types at independent scales. Images are reconstructed from a recorded headset development session, not participant-study results.}
++\caption[Search environment and object examples]{(a) First-person view of colored objects on surrounding vertical planes. (b) Overhead view of the eight-plane arrangement. (c) Enlarged examples of the six shape types at independent scales. Images are reconstructed from a recorded headset development session before the wall-height reduction; they are not participant-study results or a rendering of the revised dimensions.}
+ \label{fig:recorded-search-scene}
+ \end{figure}
+ 
+diff --git a/chapters/04-method.tex b/chapters/04-method.tex
+index d2bc3fd..c84f822 100644
+--- a/chapters/04-method.tex
++++ b/chapters/04-method.tex
+@@ -26,7 +26,7 @@ Selection & Right-controller ray and a trigger press \\\bottomrule
+ \end{tabularx}
+ \end{table}
+ 
+-Objects will vary in within-plane position, so the exact starting angle and target height will be recorded in addition to the assigned wall. The vertical allocation will use target-center height relative to the readiness cross, not the participant's seated eye height. Feasible height ranges and realized quotas will be checked in pilot schedules before the study release is frozen.
++Objects vary in within-plane position within the shared compact layout described above, so the exact starting angle and target height must accompany the assigned wall. The proposed vertical allocation uses target-center height relative to the readiness cross, not the participant's seated eye height. Reducing wall height does not itself enforce the proposed 20-above/20-below quota. Feasible height ranges and realized quotas therefore remain subject to checks in pilot schedules before the study release is frozen.
+ 
+ \begin{figure}[htbp]\centering
+ \IfFileExists{figures/study-procedure-current.pdf}{\includegraphics[width=\linewidth,alt={Setup and one practice trial precede two counterbalanced forty-trial blocks and final retrospective questionnaires; each trial separates opening cue, reveal, and trigger selection.}]{figures/study-procedure-current.pdf}}{\fbox{\parbox{0.94\linewidth}{Consent and setup $\rightarrow$ calibration and practice $\rightarrow$ 40-trial voice block $\rightarrow$ break $\rightarrow$ 40-trial voice block $\rightarrow$ survey and debrief. Within each trial: readiness cross $\rightarrow$ opening cue $\rightarrow$ object reveal and active search $\rightarrow$ correct trigger selection.}}}
+diff --git a/chapters/05-measurement.tex b/chapters/05-measurement.tex
+index 10244a4..b0ff9e4 100644
+--- a/chapters/05-measurement.tex
++++ b/chapters/05-measurement.tex
+@@ -6,6 +6,8 @@ Measuring the voice comparison involves three questions: whether participants pe
+ \subsection{Frame-Level Records and the Condensed Trial CSV}
+ The recording separates time-varying observations from trial summaries. Frame records retain application time, gaze origin and direction with tracking validity, head pose, available controller poses and input state, and the gaze/controller object-intersection evidence used by guidance. Object identities and transforms provide the scene needed for reconstruction; guidance transitions, agent decisions, actual speech playback, trigger selections, and pauses are recorded as events. A rendered frame can reuse a sensor observation, so frame count must not be reported as the number of independent eye-tracking samples.
+ 
++For new rotational-search recordings, the trial replay snapshot additionally stores the wall bottom in recording-local coordinates, the wall height in metres, and a flag indicating that these bounds are available. Trial Review uses those recorded bounds to reconstruct the shorter walls. Earlier recordings without explicit bounds retain object-derived wall estimates and their original object positions; they are not rescaled to the current layout. These replay fields supplement the layout version and saved transforms and are distinct from the columns in the condensed CSV. Analyses that include recordings from both layouts must retain that provenance rather than treat the geometry as unchanged.
++
+ Trial Review generates an Excel-compatible \texttt{trials\_condensed.csv} from the fuller \texttt{trials.csv}. Each compact row corresponds to a source trial row and groups columns for performance and subjective review (Table~\ref{tab:condensed-fields}). The compact file supports inspection and analysis preparation; the full export retains outcome, practice, provenance, and quality fields needed to decide which rows belong in an analysis.
+ 
+ \begin{table}[htbp]\centering

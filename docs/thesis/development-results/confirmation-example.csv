@@ -1,0 +1,12 @@
+time_s,kind,decision_id,text,outcome,gaze_qualified,controller_qualified
+321.42598591900014,guidance_decision,11cedbb48da44863aa63adc2e2b5f422,You've got it!,,,
+321.4397325340001,transmission_state,11cedbb48da44863aa63adc2e2b5f422,You've got it!,,True,False
+321.7434099300001,transmission_decision,11cedbb48da44863aa63adc2e2b5f422,You've got it!,wait,,
+322.35727144,guidance_decision,f9e639bb3a254badb0a8f35ebcd1f609,You've got it!,,,
+322.3693914400001,transmission_state,f9e639bb3a254badb0a8f35ebcd1f609,You've got it!,,True,False
+322.6568235750001,transmission_decision,f9e639bb3a254badb0a8f35ebcd1f609,You've got it!,wait,,
+323.26387232499997,guidance_decision,ff0455e157cf4e71b9b6b99b239fe83f,You've got it!,,,
+323.2770498770001,transmission_state,ff0455e157cf4e71b9b6b99b239fe83f,You've got it!,,True,False
+323.581145762,transmission_decision,ff0455e157cf4e71b9b6b99b239fe83f,You've got it!,speak,,
+323.6156699810001,audio_playback_start,ff0455e157cf4e71b9b6b99b239fe83f,You've got it!,,,
+324.6384183140001,audio_playback_end,ff0455e157cf4e71b9b6b99b239fe83f,You've got it!,,,

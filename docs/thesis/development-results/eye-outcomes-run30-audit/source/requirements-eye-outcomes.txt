@@ -1,0 +1,5 @@
+# Optional offline candidate-eye analysis; does not change the Unity build.
+numpy>=2.0,<3
+scipy>=1.14,<2
+PyWavelets>=1.8,<2
+matplotlib>=3.9,<4

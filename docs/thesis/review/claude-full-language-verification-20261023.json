@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-23",
+  "model": "claude-opus-5-5",
+  "reviewed_source_files": 18,
+  "accepted_claude_suggestions": 47,
+  "rejected_suggestions": 5,
+  "additional_synthesis_edits": 4,
+  "changed_manuscript_files": 15,
+  "pdf_sha256": "fe58df0a039801b29f6f64c17a43bd91b5e3b810eedb0d8a55e8fd02a606c126",
+  "pages": 174,
+  "build_warning_matches": [],
+  "automated_pdf_ua2": {
+    "details": {
+      "passedRules": 1728,
+      "failedRules": 0,
+      "passedChecks": 483477,
+      "failedChecks": 0,
+      "ruleSummaries": []
+    },
+    "jobEndStatus": "normal",
+    "profileName": "PDF/UA-2 + Tagged PDF validation profile",
+    "statement": "PDF file is compliant with Validation Profile requirements.",
+    "compliant": true
+  },
+  "protected_content_violations": [],
+  "citation_missing_keys": 0,
+  "citation_duplicate_keys": 0,
+  "cited_keys": 50,
+  "bibliography_entries": 69,
+  "figures_with_alt": 15,
+  "tables_with_headers": 18,
+  "missing_internal_destinations": [],
+  "visual_spot_check_pdf_pages": [
+    28,
+    49,
+    105,
+    132
+  ],
+  "scope": "Language review and automated plus sampled visual verification; not source-to-claim scientific validation, institutional approval, or exhaustive assistive-technology usability review."
+}

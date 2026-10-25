@@ -1,0 +1,66 @@
+--- a/chapters/01-introduction.tex
++++ b/chapters/01-introduction.tex
+@@ -23,16 +23,18 @@
+ 
+ Follow My Voice applies this principle through short spoken directions that first orient the participant toward a target region and then refine the search within it. Because the agent knows the target while the participant initially does not know which object to select, speech plays an ongoing instructional role, progressively connecting a direction with the intended object. The participant therefore hears the guiding voice repeatedly during search, which raises a further question: does hearing that guidance in a voice resembling one's own change the experience or effectiveness of receiving help?
+ 
+-\subsection{Self-Similar Voice and the Doppelg\"anger Connection}
+-A spatial instruction conveys both a direction and a voice identity. The words ``look to your right'' specify an action, while the voice delivering them may be familiar, appealing, or uncomfortable. Self-similar synthesis uses recorded speech to produce a voice resembling the participant. Its relevance to guidance therefore extends beyond whether the instruction is intelligible: the resemblance may change how the participant experiences the agent giving that instruction.
++\subsection{Self-Similar Voice and the Doppelgänger Connection}
++The voice delivering an instruction can influence how users experience an interaction as well as how they engage with a task. Studies of self-similar voices have reported differences in game performance, immersion, and perceptions of a virtual collaborator~\cite{kao2021selfsimilar,guo2024doppelganger}. These findings motivate considering who a guiding voice sounds like alongside what it says. In Follow My Voice, self-similar synthesis creates a cloned voice resembling the participant, allowing the study to examine whether that resemblance changes the experience or effectiveness of receiving spatial instructions.
+ 
+-Guo et al.'s \emph{Collaborating with my Doppelg\"anger} provides a direct motivation for investigating this possibility~\cite{guo2024doppelganger}. Their 25-participant VR study crossed self-similar appearance and voice during a jigsaw puzzle co-solving task with a virtual character. Self-similar voices increased likability and believability ratings while also increasing eeriness; believability additionally depended on the interaction between appearance and voice. These findings indicate that favorable impressions and discomfort should be measured separately, although they do not show that self-similar speech improves object-search speed or that the same responses will occur when the guide has no visible body.
++Kao et al. provide evidence that voice resemblance can affect both behavior and experience~\cite{kao2021selfsimilar}. In an online programming game with 657 analyzed participants, players assigned a self-similar avatar voice completed more puzzles and played for longer than those assigned a dissimilar voice. They also reported greater similarity identification, competence, relatedness, and immersion, although direct differences in the measured intrinsic-motivation subscales were not significant. Performance in that study meant the number of puzzles completed during voluntary play, rather than faster completion of a fixed task. Its findings therefore motivate measuring search performance and experience separately in the present study, without assuming that a self-similar voice necessarily reduces search time.
+ 
+-The present study carries that question from an embodied collaborator to a voice serving as a spatial guide. In the puzzle task, participants interacted with a visible character; here, they will receive directions toward an initially unnamed object from an agent without a visible body. This change in role matters because the participant must use the speech to determine where to look and what to select. Whether self-resemblance makes those instructions easier to follow, more welcome, or more uncomfortable remains an empirical question. Research on self-similar avatar voices in an educational game adds further motivation: self-similar voice was associated with several engagement and identification outcomes but not with every measure, which suggests that effects depend on the task and on what is measured~\cite{kao2021selfsimilar}.
++Guo et al.'s \emph{Collaborating with my Doppelgänger} brings this question into immersive VR~\cite{guo2024doppelganger}. Their 25-participant study crossed self-similar appearance and voice while participants solved a jigsaw puzzle with a virtual character. Self-similar voices increased the character's likability and believability, but also elicited greater eeriness; believability additionally depended on the combination of appearance and voice. This combination of favorable impressions and discomfort is particularly relevant to a guide that speaks repeatedly throughout a task. A familiar-sounding voice may be welcome to one participant and unsettling to another, making both responses important to the evaluation of self-similar assistance.
+ 
+-For designers, the comparison of interest is whether self-similar synthesis offers value beyond a voice the user already likes. Follow My Voice therefore compares a self-similar synthetic voice with a neutral voice selected by the participant from a supplied catalog. Throughout this thesis, \emph{neutral voice} names the comparison condition: an existing voice that is not cloned from the participant. The label does not imply an emotionally flat delivery, a lack of preference, or verified absence of perceived resemblance. Selecting a voice and cloning one are both practical ways to personalize an assistant, but they work differently: selection accommodates preference, whereas cloning introduces resemblance to the participant. The study therefore asks what self-resemblance contributes when the alternative already reflects the user's choice. Because the voices can differ in acoustic properties as well as resemblance, the comparison concerns these two voice configurations rather than an isolated causal effect of similarity.
++Evidence from voice listening also connects resemblance with social judgments. Jaggy et al. found that recordings of other speakers whose voices were more similar to a listener's own tended to receive higher likability and trustworthiness ratings~\cite{jaggy2025similarity}. Because this experiment used recorded human voices rather than cloned agents delivering instructions, it supports a possible link between vocal resemblance and agent impressions, rather than demonstrating improved task assistance. Together with the VR findings, it motivates examining how participants perceive the guiding voice alongside how efficiently they find the target.
+ 
+-Perceived voice-similarity ratings will assess whether participants experience the intended resemblance, providing a manipulation check for the self-similar condition. Search completion time, workload, motivation, and agent experience will be evaluated separately, because a voice can be appealing or unsettling without a corresponding change in task performance. This distinction follows the Doppelg\"anger findings, which showed favorable impressions alongside eeriness, and allows the study to examine both the effectiveness and acceptability of self-similar guidance without assuming an advantage for either voice.
++Voice choice offers a related, but distinct, form of personalization. In \emph{Audio Matters Too}, Kao et al. found that choosing an avatar's voice improved identification and perceived autonomy when participants could also choose its visual appearance; those benefits were not observed without visual choice~\cite{kao2022audiomatters}. This result highlights the importance of the interaction setting and of distinguishing choice from resemblance. Follow My Voice compares a self-similar cloned voice with a neutral voice selected by the participant from the available options. Here, \emph{neutral voice} denotes an existing voice not cloned from the participant; it does not imply emotionally flat speech or an absence of preference. The comparison asks whether self-similar synthesis offers value beyond a voice the user has already chosen, while recognizing that the two voices can differ in naturalness and other acoustic properties as well as resemblance.
++
++The present study extends this literature from an avatar or embodied collaborator to a voice that guides search for an initially unnamed object. Participants use its spatial instructions to determine where to look and what to select, while the agent has no visible body. Perceived voice-similarity ratings assess the intended resemblance; search completion time, workload, motivation, and agent experience address the consequences of receiving guidance in each voice. This design investigates whether self-similar assistance changes the effectiveness or experience of guided search, without presuming an advantage for either condition.
+ 
+ \subsection{A Controlled Setting for Self-Similar Assistance}
+ Follow My Voice examines this comparison through seated object search in virtual reality. Colored geometric objects are distributed across eight vertical planes around the participant. Some targets initially lie outside the participant's field of view. The application knows which object is the target, while the participant is not given its color or shape at the start. Spoken directions first guide orientation toward the relevant wall and then refine the search within it. The participant aims a right-controller ray and presses the trigger to select the inferred target; gaze itself does not select an object.
+--- a/chapters/02-literature.tex
++++ b/chapters/02-literature.tex
+@@ -15,6 +15,8 @@
+ In this project, personalization takes two forms. In the neutral condition, the participant chooses among existing voices in the supplied catalog; in the self-similar condition, recorded speech is used to create a synthetic voice resembling that participant. Both forms may produce familiarity or liking, but through different routes: preference is expressed directly when the neutral voice is chosen, whereas resemblance is introduced by synthesis and must be confirmed through participants' perceptions. For this reason, the manipulation is better described as a comparison between two forms of personalization than as personalized versus generic voice.
+ 
+ Research on customizing voice-assistant personality has also examined similarity between assistant and user~\cite{snyder2023onevoice}. Personality similarity, however, is conceptually different from acoustic self-resemblance: a listener can prefer a speaking style without hearing it as their own voice, and a close acoustic resemblance can be experienced as uncomfortable. The planned manipulation check therefore asks about perceived voice similarity, while the experience battery separately asks about liking, naturalness, familiarity, and uncanniness.
++
++Voice choice has also been studied experimentally. In a programming game, Kao et al. independently varied whether participants could choose their avatar's visual appearance and voice~\cite{kao2022audiomatters}. Voice choice increased avatar identification and perceived autonomy when visual choice was also available, but did not produce those benefits when visual appearance was assigned. This conditional effect is relevant to the participant-selected neutral voice used here: choosing a voice is itself a design decision, although an avatar-customization result does not establish the same effect for a guide without a visible body.
+ 
+ \section{Self-Similar Voice and Embodied Collaboration}
+ Self-similar voice provides the empirical motivation for this study, while auditory guidance supplies the setting in which that voice is encountered. Two particularly relevant studies examine resemblance in different roles: an avatar speaking as the player and a virtual collaborator speaking to the participant. The present study extends this question to a guiding voice without a visible agent body.
+--- a/references.bib
++++ b/references.bib
+@@ -541,7 +541,8 @@
+   volume = {20},
+   number = {3},
+   pages = {e0318890},
+-  doi = {10.1371/journal.pone.0318890}
++  doi = {10.1371/journal.pone.0318890},
++  note = {\href{https://doi.org/10.1371/journal.pone.0318890}{doi: 10.1371/journal.pone.0318890}}
+ }
+ 
+ @article{mcgettigan2025cloned,
+@@ -728,3 +729,15 @@
+   howpublished = {\url{https://www.vive.com/us/product/vive-focus-vision/overview/}},
+   note = {Manufacturer specifications; accessed October 23, 2026}
+ }
++
++
++@inproceedings{kao2022audiomatters,
++  author = {Dominic Kao and Rabindra Ratan and Christos Mousas and Amogh Joshi and Edward F. Melcer},
++  title = {{Audio Matters Too: How Audial Avatar Customization Enhances Visual Avatar Customization}},
++  booktitle = {Proceedings of the 2022 CHI Conference on Human Factors in Computing Systems},
++  year = {2022},
++  pages = {1--27},
++  doi = {10.1145/3491102.3501848},
++  url = {https://people.csail.mit.edu/dkao/pdf/kao2022chi.pdf},
++  note = {\href{https://doi.org/10.1145/3491102.3501848}{doi: 10.1145/3491102.3501848}}
++}

@@ -1,0 +1,63 @@
+{
+  "status": "passed",
+  "source_checks": [
+    {
+      "run": 20,
+      "hash_verified": true,
+      "starts_and_selections_verified": true,
+      "row_counts_verified": true
+    },
+    {
+      "run": 21,
+      "hash_verified": true,
+      "starts_and_selections_verified": true,
+      "row_counts_verified": true
+    },
+    {
+      "run": 22,
+      "hash_verified": true,
+      "starts_and_selections_verified": true,
+      "row_counts_verified": true
+    },
+    {
+      "run": 23,
+      "hash_verified": true,
+      "starts_and_selections_verified": true,
+      "row_counts_verified": true
+    },
+    {
+      "run": 24,
+      "hash_verified": true,
+      "starts_and_selections_verified": true,
+      "row_counts_verified": true
+    },
+    {
+      "run": 25,
+      "hash_verified": true,
+      "starts_and_selections_verified": true,
+      "row_counts_verified": true
+    },
+    {
+      "run": 26,
+      "hash_verified": true,
+      "starts_and_selections_verified": true,
+      "row_counts_verified": true
+    },
+    {
+      "run": 27,
+      "hash_verified": true,
+      "starts_and_selections_verified": true,
+      "row_counts_verified": true
+    },
+    {
+      "run": 28,
+      "hash_verified": true,
+      "starts_and_selections_verified": true,
+      "row_counts_verified": true
+    }
+  ],
+  "exact_join_stage_arithmetic": true,
+  "companion_summary_checks": 20,
+  "synthetic_rows_used": 0,
+  "scope": "Observed-source and arithmetic checks; not hardware accuracy, acoustic validation or study inference."
+}

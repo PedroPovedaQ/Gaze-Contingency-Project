@@ -1,0 +1,18 @@
+{
+  "status": "published",
+  "parent": "abce4b6dac1ead1f5ac39bdacb1b03623f9b87bc",
+  "commit": "804cf4ca6551fa2d6167da536b43b0d5e097a1c1",
+  "verified": "804cf4ca6551fa2d6167da536b43b0d5e097a1c1",
+  "folder": "/var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/overleaf-present-tense-trial-csv-3c2j__z7",
+  "files": [
+    "chapters/01-introduction.tex",
+    "chapters/02-literature.tex",
+    "chapters/03-measures-scoring.tex",
+    "chapters/04-method.tex",
+    "chapters/05-measurement.tex",
+    "chapters/06-analysis.tex",
+    "chapters/07-evaluation.tex",
+    "chapters/08-discussion.tex",
+    "chapters/09-conclusion.tex"
+  ]
+}

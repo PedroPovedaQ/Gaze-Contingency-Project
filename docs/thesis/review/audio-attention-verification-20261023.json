@@ -1,0 +1,9 @@
+{
+  "pages": 165,
+  "pdf_sha256": "c86cdf48fce60953a4c4ab1bba7bb988f7dc97044c4965356ef2978a55953bdb",
+  "validation": "LuaLaTeX/BibTeX and final reference pass clean; no missing keys, duplicates, undefined references or overfull boxes; structural PDF check passed. Inspected abstract, edited chapter pages, and all seven bibliography pages.",
+  "citation_keys": 46,
+  "bibliography_entries": 66,
+  "unused_inventory_entries": 20,
+  "pdf_ua": "Earlier PDF/UA reports apply to their recorded artifact hashes; full conformance not re-run for this prose-only change."
+}

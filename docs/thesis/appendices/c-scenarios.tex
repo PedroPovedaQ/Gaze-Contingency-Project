@@ -2,7 +2,7 @@
 \label{app:scenarios}
 \newpage
 \section{Controlled Scenario Matrix}
-Each scenario must save input observations, policy/configuration, eligible actions, provider behavior, playback occupancy, and actual admitted speech. Tests use the same trajectories across policies. The expected behavior below is an acceptance specification, not a claim that a wearer experienced the scenario successfully.
+Each scenario must save input observations, policy/configuration, eligible actions, provider behavior, playback occupancy, and actual admitted speech. The same trajectories are used to test every policy. The expected behavior in the table defines acceptance criteria; it does not report that any wearer has experienced the scenario as specified.
 
 \begingroup
 \thesislongtablecaption{Sequence scenarios and acceptance criteria.}
@@ -32,7 +32,7 @@ Correct trigger & Trial ends only on correct selection; success feedback uses co
 \section{Deterministic Labels}
 A wrong-direction label requires supported geometry showing that the delivered cue moves the user away from the intended target relation under the cue's reference frame. A stale label requires evidence that the relevant state changed before playback. Contradictory ordering requires a delivered sequence inconsistent with valid current evidence, such as an away-direction during a target controller hit. When the trace lacks the needed observation, the label is unknown.
 
-Confirmation metrics use distinct event definitions. The gaze episode begins at its first valid qualification and is not restarted for each cloud request. The controller episode uses its own hold and gaze requirements. A completion event requires correct trigger selection. The evaluator records missed acknowledgment, delayed acknowledgment, or disqualification separately rather than classifying every silent interval as failure.
+Confirmation metrics distinguish gaze acknowledgment, controller acknowledgment, and trial completion. A gaze episode begins at its first valid qualification and is not restarted for each cloud request; a controller episode uses its own hold and gaze requirements, while completion requires correct trigger selection. The evaluator records missed acknowledgment, delayed acknowledgment, or disqualification separately rather than classifying every silent interval as failure.
 
 \section{Advisory Model Review}
 The offline judge receives a bounded sequence containing current and recent state, candidate and chosen actions, actual playback, timing, and provenance. It evaluates whether the wording was useful, whether timing supported the task, whether repetition was unnecessary, and whether interruption preserved intelligibility. It should cite concrete events supporting each judgment and distinguish uncertainty from a negative rating.

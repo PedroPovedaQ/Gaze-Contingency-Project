@@ -1,14 +1,16 @@
-\chapter{VOICE-COMPARISON RESULTS FRAMEWORK AND STUDY READINESS}
+\chapter{RESULTS}
 \label{ch:evaluation}
-The completed results chapter will follow the same question introduced at the start of the thesis: what changes when guidance sounds like the participant rather than a voice they prefer? It will establish the delivered comparison, report search efficiency, and then examine workload, motivation, and exploratory experience. No confirmatory participant outcomes are available in this draft. The reporting framework below keeps those unanswered questions visible and separates them from the engineering evidence available for the apparatus.
+The results chapter returns to the question posed in the introduction: does guidance spoken in a synthetic version of the participant's own voice differ, in efficiency or experience, from guidance spoken in the neutral voice the participant selected? Its reporting framework first establishes how the comparison is delivered, then addresses search efficiency, workload, motivation, and exploratory measures of voice experience. Because no confirmatory participant outcomes are available in this draft, the sections below describe the reporting structure for each result and distinguish those pending results from the engineering evidence that currently supports the apparatus.
 
-\section{Participant Results to Be Added}
-The completed empirical chapter will first report participant flow, exclusions, incomplete sessions, and data coverage by condition and order. It will then describe realized starting geometry and the similarity manipulation check before presenting the primary voice contrast. This order allows readers to assess whether the intended comparison was delivered and measured.
+\input{chapters/07-development-results}
 
-The primary result will include the fitted time contrast, its uncertainty, the analyzed participant and trial counts, and model diagnostics. Secondary sections will then report workload and IMI subscales at participant-by-block level, followed by exploratory sections on agent perception, voice experience, guidance behavior, and debrief themes. Tables will identify missing observations rather than silently change denominators.
+\section{Planned Reporting of Participant Results}
+The participant-results framework first covers participant flow, exclusions, incomplete sessions, and data coverage by condition and order. It then describes realized starting geometry and the similarity manipulation check before presenting the primary voice contrast.
+
+The primary result includes the fitted time contrast, its uncertainty, the analyzed participant and trial counts, and model diagnostics. Secondary reporting covers workload and IMI subscales at participant-by-block level, followed by exploratory sections on agent perception, voice experience, guidance behavior, and debrief themes. Each table states its denominator and identifies missing observations.
 
 \begin{table}[htbp]
-\centering\caption{Planned empirical results, not observed findings.}
+\centering\caption{Planned result families and their current status. No confirmatory participant outcomes are reported in this draft.}
 \small\tagpdfsetup{table/header-rows={1}}
 \begin{tabularx}{\linewidth}{@{}p{0.27\linewidth}XX@{}}\toprule
 Result family & Required evidence & Present status \\\midrule
@@ -17,21 +19,27 @@ Manipulation check & Similarity by voice with paired scope & Not available \\
 Primary performance & Adjusted time contrast and uncertainty & Not estimated \\
 Workload and IMI & Versioned raw items and complete subscales & Not collected for this report \\
 Agent experience & Individual and construct-specific ratings & Not collected for this report \\
-Guidance quality & Sequence-level playback and evidence & Evaluation design specified \\
+Guidance quality & Sequence-level playback and evidence & Development traces reported; study comparison pending \\
 Debrief themes & Recorded responses and coding audit & Not available \\\bottomrule
 \end{tabularx}
 \end{table}
 
 
 \subsection{Results Organized by Research Question}
-The completed results chapter will report the voice-similarity manipulation check before the outcome contrasts. RQ1 will use the marginal time contrast standardized over a common starting-difficulty distribution, as defined in Chapter~\ref{ch:analysis}; this is not a standardized effect-size label. Its uncertainty, eligible participant/trial counts, and model diagnostics will accompany the estimate, using the analysis plan finalized before confirmatory recruitment. RQ2 will report the paired workload and separate IMI outcomes with multiplicity families to be finalized in the analysis plan. RQ3 will report exploratory agent-perception and custom ratings alongside debrief themes and valid search measures. A missing or inconclusive contrast will be identified as such rather than omitted.
+Following the manipulation check, the reporting framework addresses each research question in turn. For the primary question, the estimand is the marginal time contrast standardized over a common starting-difficulty distribution, as defined in Section~\ref{ch:analysis}; here, \emph{standardized} refers to that common distribution rather than to a standardized effect size. The estimate is accompanied by its uncertainty, the eligible participant and trial counts, and model diagnostics, following the analysis plan finalized before confirmatory recruitment. The secondary reporting framework covers the paired workload outcomes and the separate IMI subscales, using multiplicity families that the analysis plan has yet to fix. The exploratory reporting framework presents exploratory agent-perception and custom ratings alongside debrief themes and valid search measures. A contrast that cannot be estimated or proves inconclusive is reported as such rather than omitted.
 
-EQ1 will be reported separately through sequence coverage, qualification-to-playback delay, provider reliability, and categorized faults. A clean engineering test does not answer a voice-effect research question. Conversely, a voice-condition difference does not by itself show that the guidance mechanism was correct. This separation follows the evidence map in Table~\ref{tab:rq-map} and prevents a successful build or a favorable judge rating from becoming an empirical conclusion.
+Guidance delivery is reported separately through sequence coverage, qualification-to-playback delay, provider reliability, and categorized faults. Neither a passing software test nor a favorable model rating establishes an effect on participants; likewise, a voice-condition difference does not verify that every instruction was delivered correctly.
+
+\section{User Performance}
+Participant-study estimates are not yet available; this section is reserved for active search-completion time, incorrect trigger selections, and valid gaze/controller contact latencies by voice condition. Reporting includes paired participant summaries and the planned adjusted contrast, with sample counts and uncertainty.
+
+\section{User Experience}
+Participant ratings are not yet available; this section is reserved for condition-referenced workload, the separate motivation subscales, agent experience, voice liking and similarity, and debrief responses. No questionnaire response or preference distribution is generated from synthetic trials.
 
 \section{Evidence Available for This Draft}
-This chapter separates existing engineering records from participant results that have not yet been collected. The October 20 alignment audit documents software checks, analysis tests, and an Android build/install/launch. These records support specific implementation claims, but they do not establish a treatment effect, a naturalness rating, eye-tracker accuracy, or acoustic response latency.
+Alongside the recorded development results in Section~\ref{sec:development-results}, engineering verification records document the apparatus. The October 20 alignment audit documents software checks, analysis tests, and a successful Android build, installation, and launch.
 
-The audit reports passing schedule and voice-isolation checks, including one practice trial in the first assigned voice, two measured blocks, and nominal-angle quotas, and it records 38 trial-export tests and seven workload scoring/plot tests. These counts describe the audit's test run rather than a newly executed suite for this manuscript. The verification record should therefore accompany any later thesis statement so that the tested revision remains identifiable.
+The audit reports passing schedule and voice-isolation checks, including one practice trial in the first assigned voice, two measured blocks, and nominal-angle quotas, and it records 38 trial-export tests and seven workload scoring/plot tests. These counts describe the audit's own test run, not a suite re-executed for this manuscript, so any later claim based on them should cite the verification record and the revision it tested.
 
 \begin{table}[htbp]
 \centering\caption{Evidence status at the documented implementation checkpoint.}
@@ -50,6 +58,6 @@ Voice-condition outcomes & No confirmatory dataset reported & No performance or 
 
 
 \section{Guidance Quality Supporting the Voice Contrast}
-The completed report will describe gaze availability, actual speech exposure, delayed acknowledgments, interruptions, and unhelpful cues by voice condition and session. This account will help identify whether a condition was affected by a technical delivery problem. It will not automatically adjust away behavior-dependent hint counts or waiting time: these arise after voice assignment, may themselves depend on voice condition, and are not interchangeable with baseline difficulty, as discussed in Chapter~\ref{ch:analysis}.
+The reporting framework describes gaze availability, actual speech exposure, delayed acknowledgments, interruptions, and unhelpful cues by voice condition and session. This account helps assess whether technical delivery problems affected one condition more than the other. The voice contrast is not automatically adjusted for behavior-dependent hint counts or waiting time: these quantities arise after voice assignment, may themselves depend on voice condition, and cannot be treated as baseline difficulty (Section~\ref{ch:analysis}).
 
-Gaze acknowledgment, controller acknowledgment, and correct trigger selection remain separate events. Their sequence records can establish what feedback was delivered, while participant ratings and debriefing address how that feedback was experienced. An advisory model judge cannot supply the latter evidence. Detailed policy pilots, episode definitions, failure categories, and the investigation of two-second delays are retained in Appendix~\ref{app:guidance-support}; their purpose is to qualify the apparatus before interpreting a self-similar voice effect.
+Gaze acknowledgment, controller acknowledgment, and correct trigger selection remain separate events. Their sequence records document feedback delivery, whereas participant ratings and debriefing address how that feedback was experienced. Appendix~\ref{app:scenarios} defines sequence tests and evaluation criteria for assessing the apparatus before interpreting differences between voices.

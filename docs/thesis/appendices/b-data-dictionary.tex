@@ -2,7 +2,7 @@
 \label{app:data}
 \newpage
 \section{Record Identity and Provenance}
-The following dictionary specifies semantic requirements. Names shown here are descriptive contract labels and must be mapped to the versioned exporter schema before collection. They do not assert that every field already exists in the current build.
+The following dictionary specifies what each recorded field must mean. The names shown are descriptive labels rather than exporter field names; they must be mapped to the versioned exporter schema before collection, and their inclusion here does not imply that every field already exists in the current build.
 
 \begingroup
 \thesislongtablecaption{Required record identity and scope.}
@@ -31,6 +31,7 @@ Quantity & Unit/reference & Required interpretation \\\midrule\endfirsthead
 Nominal angle & Degrees; wall schedule & Allocation category; not exact target bearing.\\
 Exact starting theta & Degrees; pre-cue cross & Signed horizontal angle from saved origin-to-cross toward origin-to-target; currently a readiness gap.\\
 Height difference & Metres; cross center & Target Y minus cross Y; intended and realized sign stored separately.\\
+Replay wall bounds & Metres; recording-local frame & Implemented for new rotational-search snapshots: wall bottom, height, and availability flag. Legacy bounds are estimated from objects; saved positions are not rescaled.\\
 Target distance & Metres; first tracked head after reveal & Three-dimensional distance with observation timestamp.\\
 Reveal & Session clock & Object visibility and active-search onset event.\\
 First gaze contact & Active clock & First valid target collider intersection; missing if absent.\\
@@ -47,10 +48,10 @@ Instruction onset & Session clock & Actual software playback start, phrase and e
 \section{Raw Observation Requirements}
 Gaze records should retain available source time or sequence, application time, validity, source identity, origin, direction, and sample age. Per-eye data must be labeled as such when available; combined gaze must not be described as independent left and right observations. A head-direction fallback must not silently replace eye gaze in an eye-derived outcome.
 
-Motion records should retain head and right-controller poses, tracking state, trigger state, and the time basis needed for reconstruction. Object records should retain stable identifiers, shape/color metadata, transforms, target designation, wall assignment, and layout version. Event records should identify state transitions, eligible actions, model requests and responses, cancellations, playback, interruptions, and trial outcomes. Unknown fields remain unavailable rather than receiving plausible-looking defaults.
+Motion records should retain head and right-controller poses, tracking state, trigger state, and the time basis needed for reconstruction. Object records should retain stable identifiers, shape/color metadata, transforms, target designation, wall assignment, and layout version. Event records should identify state transitions, eligible actions, model requests and responses, cancellations, playback, interruptions, and trial outcomes. Fields whose values are unknown remain marked unavailable rather than being filled with plausible defaults.
 
 \section{Scoring Contract}
-NASA-TLX will retain six raw values on the documented 0--10 scale. Performance runs from Perfect to Failure, so larger values have the same adverse direction as greater demand, effort, and frustration. The unweighted mean requires all six. A normalized 0--100 field, if exported, must be named separately and calculated from explicit bounds. Legacy data without known bounds or performance direction remain unscored.
+NASA-TLX will retain six raw values on the documented 0--10 scale. The positively phrased Performance question runs from 0 = Failure to 10 = Perfect, so larger raw values indicate better perceived performance. This direction deliberately differs from the NASA form. Demand, effort and frustration retain their adverse direction. Preserve the raw Performance response and calculate a separate workload-oriented value as $10-r_{\mathrm{Performance}}$, exactly once. The unweighted workload mean uses this reversed Performance value and the other five raw ratings, and is calculated only when all six ratings are present; higher means indicate greater workload or poorer perceived performance. Do not reverse any of the other five dimensions. A normalized 0--100 field, if exported, must be named separately and calculated from explicit bounds, with its raw or workload-oriented direction identified. Legacy data without known bounds or performance direction remain unscored; the present reversal must not be applied automatically to earlier Perfect-to-Failure responses.
 
 IMI scoring uses separate complete subscale means: interest/enjoyment (7), effort/importance (5), pressure/tension (5), and value/usefulness (7). On the 1--7 response scale, reverse-coded values use $8-r$. Within-subscale reverse positions are enjoyment 3 and 4, effort 2 and 5, pressure 1 and 3, and none for value. There is no overall IMI total.
 

@@ -53,6 +53,9 @@
   \setlength{\LTpre}{0pt}% Caption supplies the preceding spacing.
   \nopagebreak
 }
+% Consolidated methodology contains double-digit figure numbers.
+\renewcommand*\l@figure{\@dottedtocline{1}{1.5em}{5.5em}}
+\let\l@table\l@figure
 \makeatother
 \graphicspath{{figures/}}
 \emergencystretch=2em
@@ -64,7 +67,7 @@
 \raggedbottom
 \newcommand{\qid}[1]{\par\smallskip\textbf{\texttt{#1}}\par}
 \newcommand{\draftnote}[1]{\par\noindent\textbf{Draft status.} #1\par}
-\title{FOLLOW MY VOICE: SELF-SIMILAR AND NEUTRAL VOICES FOR GAZE-CONTINGENT OBJECT SEARCH IN VIRTUAL REALITY}
+\title{Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent in Virtual Reality}
 \author{PEDRO POVEDA QUEVEDO}
 % Previous degree and major professor supplied by the author during review.
 \prevdegreei{B.Sc. in Computer Science}
@@ -79,25 +82,20 @@
 \frontmatter
 \maketitle
 \copyrightpage{~Pedro Poveda Quevedo}
-\begin{aidisclosure}
-This first-pass manuscript was prepared with assistance from OpenAI Codex for source organization, drafting, implementation-to-protocol reconciliation, and LaTeX production. Claude performed separate language and methods reviews; their findings and the changes made in response are recorded with the source project. The author must review the manuscript, verify its citations and claims, and approve the final disclosure before submission. This working disclosure does not assert that author validation or committee approval has already occurred.
-\end{aidisclosure}
+
 \begin{abstract}
-Directing users' attention to objects of interest has long been a concern in virtual reality, particularly when relevant objects lie outside the user's current field of view~\cite{grogorick2017subtle,lange2020hivefive}. Research in augmented reality has shown that auditory guidance, including verbal hints, can support object search~\cite{zhang2023seehear}. Spoken assistance can connect spatial instructions with objects in the surrounding environment, guiding users toward a region and then the intended object. The experience of receiving assistance can also be influenced by the tone and voice identity of spoken instructions. Research on virtual collaboration has found that self-similar voices can increase likability and believability while also eliciting greater eeriness~\cite{guo2024doppelganger}. As interactive agents take on a more active role in guiding users through virtual environments, the experience of receiving their assistance becomes an important design consideration. These findings motivate examining how self-similarity affects users when the voice serves as a spatial guide. This thesis compares gaze-contingent guidance spoken in a synthetic voice resembling the participant's own (self-similar) with guidance spoken in a neutral voice selected by the participant from a supplied catalog.
+Directing users' attention to objects of interest has long been a concern in virtual reality (VR), particularly when relevant objects lie outside the user's current field of view~\cite{grogorick2017subtle,lange2020hivefive}. Beyond visual cues, researchers have investigated audio alerts for visual targets in VR~\cite{sabouni2025guidance}, spatialized sound for out-of-view targets in augmented reality (AR)~\cite{binetti2021outofview}, and spoken hints for AR object search~\cite{zhang2023seehear}. Spoken assistance can connect spatial instructions with objects in the surrounding environment, guiding users toward a region and then the intended object. Such guidance also has accessibility applications: verbal directions have helped blind users locate points of interest on physical objects~\cite{coughlan2020spatial}. The experience of receiving assistance can also be influenced by the tone and voice identity of spoken instructions. Research on virtual collaboration has found that self-similar voices can increase likability and believability but can also elicit greater eeriness~\cite{guo2024doppelganger}. As interactive agents take on a more active role in guiding users through virtual environments, the experience of receiving their assistance becomes an important design consideration. These findings motivate examining how self-similarity affects users when the voice serves as a spatial guide. This thesis compares gaze-contingent guidance spoken in a synthetic cloned voice resembling the participant's own (self-similar) with guidance spoken in a neutral voice selected by the participant from a supplied catalog.
 
-Follow My Voice will investigate this comparison in a within-participant virtual-reality user study. Participants will complete one practice trial in their first assigned voice and two counterbalanced blocks of 40 measured trials. Seated participants will search colored geometric objects on eight surrounding vertical planes, including locations initially outside their field of view. Initially, participants will not be informed of which object they should find. Instead, an agent that uses the participant's gaze data as context will guide them toward it. Participants will select the target by pointing the right controller at the object and pressing the trigger. Both trial conditions will use the same hint guidance to help participants find the object.
+Follow My Voice investigates this comparison in a within-participant virtual-reality user study. Participants complete one practice trial in their first assigned voice and two counterbalanced blocks of 40 measured trials. Seated participants search for colored geometric objects arranged on eight vertical planes around them in a virtual environment, including locations initially outside their field of view. Initially, participants are not informed of which object they should find. Instead, an agent that uses the participant's gaze data as context guides them toward it with spatial hints such as ``turn to the left'' or ``look up.'' Participants select the target by pointing the right controller at the object and pressing the trigger. Both trial conditions use the same hint guidance to help participants find the object.
 
-The study will compare active search-completion time, perceived workload, motivation, and agent experience. Condition-specific questionnaires will be administered after both blocks.
+The study compares performance in terms of active search-completion time, alongside perceived workload, motivation, and agent experience. Condition-specific questionnaires are administered after both blocks.
 \end{abstract}
 \begin{acknowledgments}
-I would like to thank Dr. Roshan Venkatakrishnan for his guidance and support throughout the development of this thesis. I also extend special thanks to Merav for his help throughout the Institutional Review Board approval process.
+I would like to thank Dr. Roshan Venkatakrishnan for his guidance and support throughout the development of this thesis. I also extend special thanks to Rohith Venkatakrishnan for his support as well.
+
+
 \end{acknowledgments}
-\chapter*{PREFACE}
-This is an advisor-review draft revised October 23, 2026. It expands the project's current Overleaf manuscript and bibliography into a thesis using the supplied UCF ETD LuaLaTeX template. It is not a completed empirical report. Present-tense system descriptions refer to the documented implementation snapshot; future-tense methods describe the proposed study. Engineering checks, planned measurements, and participant outcomes are kept separate.
 
-The source snapshot is Overleaf revision \texttt{f9f49e4}. The runtime alignment audit dated October 20 is the accompanying implementation record. Appendix~\ref{app:decision-contract} separately documents an October 23 inspection of three working implementation files, with their hashes and uncommitted status retained. That inspection does not update the deployment claims of the October 20 audit. Later software changes require a new reconciliation before submission. Exact pre-cue geometry, balanced vertical allocation, final sample size, and pilot acceptance rules remain explicit readiness requirements. Qualtrics synchronization remains on hold. The author has supplied the previous degree, B.Sc. in Computer Science, and identified Dr. Roshan Venkatakrishnan as major professor. The degree-granting institution and year, any remaining administrative details, and the final AI disclosure still require author confirmation before submission.
-
-The structural reference is Hoang Bao Truong's 2026 UCF thesis, \emph{Using Inferences from Natural Language Narratives to Improve Video Question Answering}. Its chapter hierarchy, front matter, detailed methods, diagnostic discussion, and appendices inform presentation only. Its prose, experiments, and findings are not evidence for this study.
 \tableofcontents
 \listoffigures
 \listoftables
@@ -108,6 +106,7 @@ The structural reference is Hoang Bao Truong's 2026 UCF thesis, \emph{Using Infe
 \input{chapters/03-system}
 \input{chapters/04-method}
 \input{chapters/05-measurement}
+\input{chapters/03-measures-scoring}
 \input{chapters/06-analysis}
 \input{chapters/07-evaluation}
 \input{chapters/08-discussion}
@@ -116,9 +115,6 @@ The structural reference is Hoang Bao Truong's 2026 UCF thesis, \emph{Using Infe
 \input{appendices/a-instruments}
 \input{appendices/b-data-dictionary}
 \input{appendices/c-scenarios}
-\input{appendices/d-readiness}
-\input{appendices/e-decision-contract}
-\input{appendices/f-guidance-support}
 \backmatter
 \bibliographystyle{plain}
 \bibliography{references}

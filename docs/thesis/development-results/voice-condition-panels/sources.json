@@ -1,0 +1,10 @@
+{
+  "summary": {
+    "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_030_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-23_21-28-09/trial_summary.json",
+    "sha256": "0b55186a43ff7a275165b69e24148ce58a0fe610b38ab4e571601d448d2e148c"
+  },
+  "eyes": {
+    "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/docs/thesis/development-results/eye-outcomes-run30-audit/eye_metrics.csv",
+    "sha256": "15a5f22969f52b6aed69becd33a903fae085151a340ccc0638ab219e6e616332"
+  }
+}

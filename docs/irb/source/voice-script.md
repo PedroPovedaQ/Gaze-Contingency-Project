@@ -2,7 +2,7 @@
 
 **Current protocol decision:** Use this script only after UCF approves the offline local-processing path, exact script, workstation, and deletion procedure.
 
-Study: **Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent**
+Study: **Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent in Virtual Reality**
 
 ## Researcher Setup
 

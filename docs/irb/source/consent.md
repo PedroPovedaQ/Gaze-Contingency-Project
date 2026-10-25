@@ -4,7 +4,7 @@
 
 **Protocol proposal:** This draft describes the current intended participant experience. It must not be used until the administrative fields are completed, the implementation is verified, and UCF approves the study and consent form.
 
-Study title: **Follow My Voice: Gaze-Contingent XR Search with a Self-Similar Agent** \
+Study title: **Follow My Voice: Assisted Gaze-Contingent Search with a Self-Similar Agent in Virtual Reality** \
 Principal Investigator: **Dr. Roshan Venkatakrishnan, Computer Science, College of Engineering and Computer Science, roshan.venkatakrishnan@ucf.edu, 407-823-3957** \
 Student Investigator: **Pedro Poveda, pe011248@ucf.edu** \
 Version/date: **Version 1 / 2026-08-18**

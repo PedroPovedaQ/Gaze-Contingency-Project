@@ -1,0 +1,166 @@
+{
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "files_reviewed": [
+    "docs/thesis/main.tex",
+    "docs/thesis/chapters/03-system.tex",
+    "docs/thesis/chapters/04-method.tex",
+    "docs/thesis/chapters/05-measurement.tex",
+    "docs/thesis/chapters/03-measures-scoring.tex",
+    "docs/thesis/chapters/06-analysis.tex"
+  ],
+  "edits": [
+    {
+      "file": "docs/thesis/chapters/03-system.tex",
+      "before": "The application is developed in Unity for the HTC VIVE Focus Vision headset. Each participant completes one practice trial",
+      "after": "The application runs on the HTC VIVE Focus Vision headset. Each participant completes one practice trial",
+      "reason": "Avoids repeating the Apparatus subsection's opening sentence ('The application is developed in Unity 6...'). The Unity version detail is kept there.",
+      "accepted_after": "The application runs on the HTC VIVE Focus Vision headset. Each participant completes one practice trial",
+      "synthesis": null
+    },
+    {
+      "file": "docs/thesis/chapters/03-system.tex",
+      "before": "The headset supplies head-pose and eye-gaze tracking, while the tracked right-hand controller supplies pointing and trigger input. The study uses the virtual-reality configuration.",
+      "after": "The study uses the headset's virtual-reality configuration, in which the headset supplies head-pose and eye-gaze tracking and the tracked right-hand controller supplies pointing and trigger input.",
+      "reason": "Merges a short, isolated sentence into the description of the sensing setup it belongs to. The technical content is unchanged.",
+      "accepted_after": "The study uses the headset's virtual-reality configuration, in which the headset supplies head-pose and eye-gaze tracking and the tracked right-hand controller supplies pointing and trigger input.",
+      "synthesis": null
+    },
+    {
+      "file": "docs/thesis/chapters/03-system.tex",
+      "before": "The search task will take place in a neutral virtual room. Participants will sit on a swivel chair and interact using the right controller, while virtual colored geometric objects hang on eight vertical planes arranged around the participant; Figure~\\ref{fig:scene} shows the layout from above. Because the application holds the target identity and withholds it from the opening instructions,",
+      "after": "The search task takes place in a neutral virtual room. Seated participants interact using the right controller, while colored geometric objects hang on eight vertical planes arranged around them; Figure~\\ref{fig:scene} shows the layout from above. Because the application knows the target identity but withholds it from the opening instructions,",
+      "reason": "Uses present tense for the system description, consistent with the rest of the chapter. Removes the swivel-chair detail already given under Application Design and the redundant 'virtual'. Replaces the awkward 'holds ... and withholds' with 'knows ... but withholds'. Pending stimulus checks still use future tense later in the paragraph.",
+      "accepted_after": "The search task takes place in a neutral virtual room. Seated participants interact using the right controller, while colored geometric objects hang on eight vertical planes arranged around them; Figure~\\ref{fig:scene} shows the layout from above. Because the application knows the target identity but withholds it from the opening instructions,",
+      "synthesis": null
+    },
+    {
+      "file": "docs/thesis/chapters/03-system.tex",
+      "before": "Objects vary in height and horizontal position within their assigned plane, providing both coarse orientation and fine search demands.",
+      "after": "Objects vary in height and horizontal position within their assigned plane, so search requires both coarse orientation toward a plane and finer search within it.",
+      "reason": "Replaces the compressed phrase 'coarse orientation and fine search demands' with a clear statement of what the variation requires of participants.",
+      "accepted_after": "Objects vary in height and horizontal position within their assigned plane, so search requires both coarse orientation toward a plane and finer search within it.",
+      "synthesis": null
+    },
+    {
+      "file": "docs/thesis/chapters/03-system.tex",
+      "before": "Its demonstration explicitly marks state history as missing and highlights as reconstructed, a distinction that matters when reviewing legacy records because the viewer",
+      "after": "Its demonstration explicitly marks state history as missing and highlights as reconstructed. This labeling matters when reviewing legacy records, because the viewer",
+      "reason": "Splits a run-on sentence whose trailing clause hid the reasoning. The meaning is unchanged.",
+      "accepted_after": "Its demonstration explicitly marks state history as missing and highlights as reconstructed. This labeling matters when reviewing legacy records, because the viewer",
+      "synthesis": null
+    },
+    {
+      "file": "docs/thesis/chapters/03-system.tex",
+      "before": "The system uses evidence of the participant's progress to update spoken directions. The same sensing and state logic serves both voice conditions, allowing instructions to shift from orientation toward a wall to refinement around an object.",
+      "after": "The system updates spoken directions from evidence of the participant's progress, so that instructions can shift from orientation toward a wall to refinement around an object. The same sensing and state logic serves both voice conditions.",
+      "reason": "Fixes a misattached clause. The shift from orientation to refinement comes from progress-based updating, not from sharing logic across conditions.",
+      "accepted_after": "The system updates spoken directions from evidence of the participant's progress, so that instructions can shift from orientation toward a wall to refinement around an object. The same sensing and state logic serves both voice conditions.",
+      "synthesis": null
+    },
+    {
+      "file": "docs/thesis/chapters/03-system.tex",
+      "before": "Qualified gaze and controller acknowledgments and eligible turn-progress milestones can use local handling and are played from prepared phrases without waiting for a new cloud decision, subject to the same checks.",
+      "after": "Qualified gaze and controller acknowledgments, together with eligible turn-progress milestones, can be handled locally and played from prepared phrases without waiting for a new cloud decision; they remain subject to the same checks.",
+      "reason": "Replaces the engineering shorthand 'can use local handling' and untangles the stacked 'and ... and' subject. The behavior described is unchanged.",
+      "accepted_after": "Qualified gaze and controller acknowledgments, together with eligible turn-progress milestones, can be handled locally and played from prepared phrases without waiting for a new cloud decision; they remain subject to the same checks.",
+      "synthesis": null
+    },
+    {
+      "file": "docs/thesis/chapters/03-system.tex",
+      "before": "the participant evidence needed to evaluate self-similar voice.",
+      "after": "the participant evidence needed to evaluate the self-similar voice.",
+      "reason": "Adds a missing article. Without it, the phrase reads as clipped shorthand.",
+      "accepted_after": "the participant evidence needed to evaluate the self-similar voice.",
+      "synthesis": null
+    },
+    {
+      "file": "docs/thesis/chapters/04-method.tex",
+      "before": "The preferred alternative makes the question relevant to a design choice a user could face,",
+      "after": "Letting participants choose the neutral alternative ties the comparison to a design choice a user could face,",
+      "reason": "'The preferred alternative' is ambiguous and could suggest a preference finding. The new wording names the participant-selected neutral voice explicitly.",
+      "accepted_after": "Letting participants choose the neutral alternative ties the comparison to a design choice a user could face,",
+      "synthesis": null
+    },
+    {
+      "file": "docs/thesis/chapters/04-method.tex",
+      "before": "Although the application will know the target identity, the participant will not receive",
+      "after": "Although the application knows the target identity, the participant will not receive",
+      "reason": "Uses present tense for the system's behavior and keeps future tense for participant procedure, as the manuscript's tense convention requires.",
+      "accepted_after": "Although the application knows the target identity, the participant will not receive",
+      "synthesis": null
+    },
+    {
+      "file": "docs/thesis/chapters/05-measurement.tex",
+      "before": "groups the columns requested for performance and subjective review",
+      "after": "groups the columns used for performance and subjective review",
+      "reason": "'Requested' refers to an unstated request from development history. 'Used' describes the export's purpose without that implied backstory.",
+      "accepted_after": "groups columns for performance and subjective review",
+      "synthesis": "Avoid implying all reserved subjective fields already contain data."
+    },
+    {
+      "file": "docs/thesis/chapters/05-measurement.tex",
+      "before": "Figure~\\ref{fig:data-provenance} shows how a compact trial CSV remains linked to the underlying observations. The link is necessary because statistical analysis and trial reconstruction impose different requirements on the exported data.",
+      "after": "Figure~\\ref{fig:data-provenance} shows how a compact trial CSV remains linked to the underlying observations, so that values prepared for statistical analysis can still be traced to the records needed for trial reconstruction.",
+      "reason": "The second sentence repeated the reconstruction-versus-analysis point from two paragraphs earlier. The merged sentence states what the link achieves instead.",
+      "accepted_after": "Figure~\\ref{fig:data-provenance} shows how a compact trial CSV remains linked to the underlying observations, so that values prepared for statistical analysis can still be traced to the records needed for trial reconstruction.",
+      "synthesis": null
+    },
+    {
+      "file": "docs/thesis/chapters/05-measurement.tex",
+      "before": "so a sequence can contain several Jev waits without creating several independent missed confirmations.",
+      "after": "so a sequence can include several waits for Jev decisions without creating several independent missed confirmations.",
+      "reason": "Replaces the shorthand 'Jev waits' with a precise description of what is being waited for.",
+      "accepted_after": "so a sequence can include several decisions by Jev to wait without creating several independent missed confirmations.",
+      "synthesis": "Preserve provider wait decisions, distinct from network response latency."
+    },
+    {
+      "file": "docs/thesis/chapters/03-measures-scoring.tex",
+      "before": "The primary analysis will adjust for $|\\theta_0|$ rather than divide completion time by degrees, and nominal wall-angle assignment, exact pre-cue theta and head-to-target error observed after reveal will remain separate variables.",
+      "after": "The primary analysis will adjust for $|\\theta_0|$ rather than divide completion time by degrees. Nominal wall-angle assignment, exact pre-cue theta and post-reveal head-to-target error will remain separate variables.",
+      "reason": "Splits a long sentence that joined two unrelated commitments, so each commitment is easier to read. The content is unchanged.",
+      "accepted_after": "The primary analysis will adjust for $|\\theta_0|$ rather than divide completion time by degrees. Nominal wall-angle assignment, exact pre-cue theta and post-reveal head-to-target error will remain separate variables.",
+      "synthesis": null
+    },
+    {
+      "file": "docs/thesis/chapters/03-measures-scoring.tex",
+      "before": "Incorrect selections will be counted as trigger selections of non-target objects.",
+      "after": "Incorrect selections will be counted as trigger presses on non-target objects.",
+      "reason": "Avoids defining 'selection' in terms of 'selection' and names the physical action plainly.",
+      "accepted_after": "Incorrect selections will be counted as trigger presses that select non-target objects.",
+      "synthesis": "Count actual non-target selections, not every trigger press."
+    }
+  ],
+  "rejected": [
+    {
+      "file": "docs/thesis/chapters/04-method.tex",
+      "before": "This wall-center reference is distinct from the proposed exact cross-to-target bearing defined below.",
+      "after": "This wall-center reference is distinct from the proposed exact cross-to-target bearing defined in Section~\\ref{ch:measurement}.",
+      "reason": "'Below' is unclear because the next subsection is Participants. The bearing is defined in Data Collection, so the sentence now points there with an existing label.",
+      "rejection": "Retain the existing cross-reference inventory or methodological commitment in this wording-only pass."
+    },
+    {
+      "file": "docs/thesis/chapters/04-method.tex",
+      "before": "using power analysis for the theta-adjusted repeated-measures outcome,",
+      "after": "using a simulation-based power analysis for the theta-adjusted repeated-measures outcome (Section~\\ref{ch:analysis}),",
+      "reason": "Aligns with the simulation workflow already planned in the analysis section and cross-references it. No new claim is added.",
+      "rejection": "Retain the existing cross-reference inventory or methodological commitment in this wording-only pass."
+    },
+    {
+      "file": "docs/thesis/chapters/05-measurement.tex",
+      "before": "Precision and bias should be considered separately, since",
+      "after": "Precision and bias will be considered separately, since",
+      "reason": "Matches the surrounding planned-method wording ('will compare', 'will be computed') rather than switching to an advisory 'should'.",
+      "rejection": "Retain the existing cross-reference inventory or methodological commitment in this wording-only pass."
+    }
+  ],
+  "remaining_concerns": [
+    "03-system.tex: the paragraph beginning 'The Trial Review application aligns gaze and controller state...' sits under 'Voice Preparation and Audio' but discusses data alignment and gaze sampling. The section hierarchy is protected, so it was not moved; the author may want to move it to the Trial Review Interface subsection.",
+    "The phrase 'when speech is admitted' (03-system Sensing; 05-measurement Gaze Contact) is internal scheduler shorthand. Its exact meaning could not be confirmed from the source, so it was left; the author should gloss it once (for example, 'when the scheduler permits speech').",
+    "03-measures-scoring.tex repeats much of 05-measurement.tex: instruction-count categories, timing distinctions, head-motion accumulation and gaze-contact definitions. This may be intentional, but the scoring section could point back to Data Collection instead of restating it.",
+    "Input order puts 05-measurement (Data Collection) before 03-measures-scoring (Measures and Scoring), despite the file prefixes. Cross-references currently resolve correctly, but the file naming may confuse later editing.",
+    "The Objects subsection still mixes the present-tense layout description with future-tense pending checks (stimulus density, passthrough settings). This split is deliberate and was preserved; the reference to passthrough settings next to the stated virtual-reality configuration may need author clarification.",
+    "04-method uses 'below' and 'defined in the same table' cross-references in places. A final check of reference targets after compilation is advisable."
+  ]
+}
