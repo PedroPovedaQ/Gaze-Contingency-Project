@@ -1,0 +1,758 @@
+{
+  "schema": 1,
+  "checkpoint": "76d7cda",
+  "model": "sentence-transformers/all-MiniLM-L6-v2",
+  "base_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+  "device": "mps",
+  "parameters": 22715141,
+  "weight_bytes": 90872572,
+  "weights_sha256": "037790e9d1661e3227a9279a8e1216f72d88896245cb5790a762bd3490218751",
+  "training_seconds": 255.35352179198526,
+  "epochs": [
+    {
+      "epoch": 1,
+      "loss": 1.3681997287273406,
+      "validation_accuracy": 0.7333333333333333,
+      "elapsed_seconds": 40.118734500021674
+    },
+    {
+      "epoch": 2,
+      "loss": 0.8725034177303315,
+      "validation_accuracy": 0.7541666666666667,
+      "elapsed_seconds": 80.64879329199903
+    },
+    {
+      "epoch": 3,
+      "loss": 0.6809744220972062,
+      "validation_accuracy": 0.8,
+      "elapsed_seconds": 120.84838545799721
+    },
+    {
+      "epoch": 4,
+      "loss": 0.561951088309288,
+      "validation_accuracy": 0.8166666666666667,
+      "elapsed_seconds": 163.4968632920063
+    },
+    {
+      "epoch": 5,
+      "loss": 0.5102732637524605,
+      "validation_accuracy": 0.8166666666666667,
+      "elapsed_seconds": 208.38290425000014
+    },
+    {
+      "epoch": 6,
+      "loss": 0.4994950273633003,
+      "validation_accuracy": 0.7958333333333333,
+      "elapsed_seconds": 248.83218383300118
+    }
+  ],
+  "stopped_by_cap": false,
+  "untrained_head_validation": 0.2,
+  "input_tokens": {
+    "train": 151,
+    "valid": 151
+  },
+  "dataset": {
+    "schema": 1,
+    "seed": 20261025,
+    "split": "cardinal train/validation; diagonal paraphrases and combined failures test",
+    "labels": "Authored instructions, not subjective human helpfulness or unfiltered teacher outputs",
+    "files": {
+      "train": {
+        "count": 1200,
+        "labels": {
+          "wait": 240,
+          "orient": 240,
+          "refine": 240,
+          "correct": 240,
+          "encourage": 240
+        },
+        "sha256": "c2d83c4d11ef0a332b2422f7a6da906f5ef438ae887e8f76a0fdbbf866de4e3a"
+      },
+      "valid": {
+        "count": 240,
+        "labels": {
+          "wait": 48,
+          "orient": 48,
+          "refine": 48,
+          "correct": 48,
+          "encourage": 48
+        },
+        "sha256": "5a969ec60534e1166c54a10a91142ee6740b4057e5a4e766b1fd39fe3647125b"
+      },
+      "test": {
+        "count": 320,
+        "labels": {
+          "wait": 80,
+          "orient": 0,
+          "refine": 80,
+          "correct": 80,
+          "encourage": 80
+        },
+        "sha256": "7d757de8327a5e7db15d066b179c593d69de9cbb2a54eb15cd5690dc50fac2a4"
+      },
+      "production": {
+        "count": 10,
+        "sha256": "e89dfb23a2b2f449b8ca902b0c6e916521a1712d8cb9ecf2db5e8e60ae4807f4"
+      }
+    },
+    "phrase_source_sha256": "b43c30089fd6df00573f3f599f78e400f87719d30a48b0e96df0fd7267a20a6f",
+    "production_source_sha256": "62544bac190802582ef976ab5217f7690f32e8df0c56690c158ed8efc84beab3"
+  },
+  "caveats": [
+    "Synthetic authored policy labels, not validated participant helpfulness.",
+    "Only navigation_action; no phrase-choice, interruption or encouragement-summary replacement.",
+    "Mandatory Unity playback revalidation must remain in place; no study runtime changed."
+  ],
+  "results": {
+    "valid": {
+      "n": 240,
+      "raw_accuracy": 0.8166666666666667,
+      "masked_accuracy": 0.8166666666666667,
+      "acceptable_accuracy": 0.8166666666666667,
+      "guarded_accuracy": 0.9125,
+      "raw_unoffered": 0,
+      "model_gate_violations": 23,
+      "confusion": {
+        "refine->refine": 32,
+        "encourage->encourage": 48,
+        "correct->correct": 48,
+        "refine->wait": 16,
+        "wait->refine": 3,
+        "wait->wait": 20,
+        "wait->orient": 9,
+        "orient->orient": 48,
+        "wait->correct": 8,
+        "wait->encourage": 8
+      }
+    },
+    "test": {
+      "n": 320,
+      "raw_accuracy": 0.65,
+      "masked_accuracy": 0.684375,
+      "acceptable_accuracy": 0.684375,
+      "guarded_accuracy": 0.778125,
+      "raw_unoffered": 50,
+      "model_gate_violations": 30,
+      "confusion": {
+        "refine->wait": 48,
+        "correct->correct": 66,
+        "encourage->encourage": 80,
+        "wait->wait": 41,
+        "wait->refine": 13,
+        "refine->refine": 32,
+        "correct->wait": 14,
+        "wait->correct": 19,
+        "wait->encourage": 7
+      }
+    },
+    "production": {
+      "n": 10,
+      "raw_accuracy": 0.7,
+      "masked_accuracy": 0.7,
+      "acceptable_accuracy": 0.7,
+      "guarded_accuracy": 0.7,
+      "raw_unoffered": 1,
+      "model_gate_violations": 0,
+      "confusion": {
+        "encourage->encourage": 5,
+        "correct->wait": 1,
+        "orient->orient": 1,
+        "wait->orient": 1,
+        "refine->wait": 1,
+        "correct->correct": 1
+      }
+    }
+  },
+  "production_predictions": [
+    {
+      "id": "right_progress",
+      "expected": "encourage",
+      "raw": "encourage",
+      "masked": "encourage",
+      "guarded": "encourage"
+    },
+    {
+      "id": "left_progress",
+      "expected": "encourage",
+      "raw": "encourage",
+      "masked": "encourage",
+      "guarded": "encourage"
+    },
+    {
+      "id": "up_progress",
+      "expected": "encourage",
+      "raw": "encourage",
+      "masked": "encourage",
+      "guarded": "encourage"
+    },
+    {
+      "id": "down_progress",
+      "expected": "encourage",
+      "raw": "encourage",
+      "masked": "encourage",
+      "guarded": "encourage"
+    },
+    {
+      "id": "diagonal_progress",
+      "expected": "encourage",
+      "raw": "encourage",
+      "masked": "encourage",
+      "guarded": "encourage"
+    },
+    {
+      "id": "return_after_ack",
+      "expected": "correct",
+      "raw": "wait",
+      "masked": "wait",
+      "guarded": "wait"
+    },
+    {
+      "id": "stationary",
+      "expected": "orient",
+      "raw": "orient",
+      "masked": "orient",
+      "guarded": "orient"
+    },
+    {
+      "id": "recent_repeat",
+      "expected": "wait",
+      "raw": "orient",
+      "masked": "orient",
+      "guarded": "orient"
+    },
+    {
+      "id": "left_stationary_inside",
+      "expected": "refine",
+      "raw": "correct",
+      "masked": "wait",
+      "guarded": "wait"
+    },
+    {
+      "id": "return_up_right",
+      "expected": "correct",
+      "raw": "correct",
+      "masked": "correct",
+      "guarded": "correct"
+    }
+  ],
+  "benchmark": {
+    "measurement": "Mac local inference/loopback HTTP vs stored and optionally fresh Mac-to-Jev HTTP. No headset or acoustic measurement.",
+    "devices": {
+      "cpu": {
+        "load_ms": 182.85199999809265,
+        "cold_request_ms": 43.90233301091939,
+        "warm_request": {
+          "n": 100,
+          "median_ms": 30.008229019585997,
+          "p95_ms": 54.569060791982324,
+          "min_ms": 25.76262503862381,
+          "max_ms": 83.84316699812189
+        },
+        "exact_agreement": 0.7
+      },
+      "mps": {
+        "load_ms": 300.6267919554375,
+        "cold_request_ms": 2010.1364590227604,
+        "warm_request": {
+          "n": 100,
+          "median_ms": 20.262770500266925,
+          "p95_ms": 29.40540651616174,
+          "min_ms": 9.32412495603785,
+          "max_ms": 40.21329199895263
+        },
+        "exact_agreement": 0.7
+      }
+    },
+    "http_rows": [
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "right_progress",
+        "repeat": 0,
+        "arm": "jev",
+        "elapsed_ms": 909.3500419985503
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "right_progress",
+        "repeat": 0,
+        "arm": "local",
+        "elapsed_ms": 17.550208023749292
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "left_progress",
+        "repeat": 0,
+        "arm": "local",
+        "elapsed_ms": 19.672500027809292
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "left_progress",
+        "repeat": 0,
+        "arm": "jev",
+        "elapsed_ms": 269.28579196101055
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "up_progress",
+        "repeat": 0,
+        "arm": "jev",
+        "elapsed_ms": 290.4046250041574
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "up_progress",
+        "repeat": 0,
+        "arm": "local",
+        "elapsed_ms": 16.88333397032693
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "down_progress",
+        "repeat": 0,
+        "arm": "local",
+        "elapsed_ms": 15.610957983881235
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "down_progress",
+        "repeat": 0,
+        "arm": "jev",
+        "elapsed_ms": 297.37120802747086
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "diagonal_progress",
+        "repeat": 0,
+        "arm": "jev",
+        "elapsed_ms": 207.26125000510365
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "diagonal_progress",
+        "repeat": 0,
+        "arm": "local",
+        "elapsed_ms": 25.083000015001744
+      },
+      {
+        "choice": "wait",
+        "status": "ok",
+        "exact": false,
+        "acceptable": false,
+        "case": "return_after_ack",
+        "repeat": 0,
+        "arm": "local",
+        "elapsed_ms": 17.064749961718917
+      },
+      {
+        "choice": "wait",
+        "status": "ok",
+        "exact": false,
+        "acceptable": false,
+        "case": "return_after_ack",
+        "repeat": 0,
+        "arm": "jev",
+        "elapsed_ms": 206.3583749695681
+      },
+      {
+        "choice": "orient",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "stationary",
+        "repeat": 0,
+        "arm": "jev",
+        "elapsed_ms": 204.16762499371544
+      },
+      {
+        "choice": "orient",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "stationary",
+        "repeat": 0,
+        "arm": "local",
+        "elapsed_ms": 20.463542023207992
+      },
+      {
+        "choice": "orient",
+        "status": "ok",
+        "exact": false,
+        "acceptable": false,
+        "case": "recent_repeat",
+        "repeat": 0,
+        "arm": "local",
+        "elapsed_ms": 19.398999982513487
+      },
+      {
+        "choice": "wait",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "recent_repeat",
+        "repeat": 0,
+        "arm": "jev",
+        "elapsed_ms": 250.64716703491285
+      },
+      {
+        "choice": "refine",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "left_stationary_inside",
+        "repeat": 0,
+        "arm": "jev",
+        "elapsed_ms": 173.56262501562014
+      },
+      {
+        "choice": "wait",
+        "status": "ok",
+        "exact": false,
+        "acceptable": false,
+        "case": "left_stationary_inside",
+        "repeat": 0,
+        "arm": "local",
+        "elapsed_ms": 21.502000046893954
+      },
+      {
+        "choice": "correct",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "return_up_right",
+        "repeat": 0,
+        "arm": "local",
+        "elapsed_ms": 16.93095895461738
+      },
+      {
+        "choice": "wait",
+        "status": "ok",
+        "exact": false,
+        "acceptable": false,
+        "case": "return_up_right",
+        "repeat": 0,
+        "arm": "jev",
+        "elapsed_ms": 212.10566605441272
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "right_progress",
+        "repeat": 1,
+        "arm": "local",
+        "elapsed_ms": 20.65204200334847
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "right_progress",
+        "repeat": 1,
+        "arm": "jev",
+        "elapsed_ms": 214.49770801700652
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "left_progress",
+        "repeat": 1,
+        "arm": "jev",
+        "elapsed_ms": 255.71879098424688
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "left_progress",
+        "repeat": 1,
+        "arm": "local",
+        "elapsed_ms": 21.52529201703146
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "up_progress",
+        "repeat": 1,
+        "arm": "local",
+        "elapsed_ms": 19.179374969098717
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "up_progress",
+        "repeat": 1,
+        "arm": "jev",
+        "elapsed_ms": 456.4497089595534
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "down_progress",
+        "repeat": 1,
+        "arm": "jev",
+        "elapsed_ms": 397.8642909787595
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "down_progress",
+        "repeat": 1,
+        "arm": "local",
+        "elapsed_ms": 16.513624985236675
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "diagonal_progress",
+        "repeat": 1,
+        "arm": "local",
+        "elapsed_ms": 15.177374996710569
+      },
+      {
+        "choice": "encourage",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "diagonal_progress",
+        "repeat": 1,
+        "arm": "jev",
+        "elapsed_ms": 245.12462498387322
+      },
+      {
+        "choice": "wait",
+        "status": "ok",
+        "exact": false,
+        "acceptable": false,
+        "case": "return_after_ack",
+        "repeat": 1,
+        "arm": "jev",
+        "elapsed_ms": 193.0993749992922
+      },
+      {
+        "choice": "wait",
+        "status": "ok",
+        "exact": false,
+        "acceptable": false,
+        "case": "return_after_ack",
+        "repeat": 1,
+        "arm": "local",
+        "elapsed_ms": 18.84958299342543
+      },
+      {
+        "choice": "orient",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "stationary",
+        "repeat": 1,
+        "arm": "local",
+        "elapsed_ms": 15.173209016211331
+      },
+      {
+        "choice": "orient",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "stationary",
+        "repeat": 1,
+        "arm": "jev",
+        "elapsed_ms": 577.9190419707447
+      },
+      {
+        "choice": "wait",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "recent_repeat",
+        "repeat": 1,
+        "arm": "jev",
+        "elapsed_ms": 966.5863339905627
+      },
+      {
+        "choice": "orient",
+        "status": "ok",
+        "exact": false,
+        "acceptable": false,
+        "case": "recent_repeat",
+        "repeat": 1,
+        "arm": "local",
+        "elapsed_ms": 67.25491594988853
+      },
+      {
+        "choice": "wait",
+        "status": "ok",
+        "exact": false,
+        "acceptable": false,
+        "case": "left_stationary_inside",
+        "repeat": 1,
+        "arm": "local",
+        "elapsed_ms": 20.452249969821423
+      },
+      {
+        "choice": "refine",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "left_stationary_inside",
+        "repeat": 1,
+        "arm": "jev",
+        "elapsed_ms": 191.32804201217368
+      },
+      {
+        "choice": "wait",
+        "status": "ok",
+        "exact": false,
+        "acceptable": false,
+        "case": "return_up_right",
+        "repeat": 1,
+        "arm": "jev",
+        "elapsed_ms": 186.4731250097975
+      },
+      {
+        "choice": "correct",
+        "status": "ok",
+        "exact": true,
+        "acceptable": true,
+        "case": "return_up_right",
+        "repeat": 1,
+        "arm": "local",
+        "elapsed_ms": 23.22970802197233
+      }
+    ],
+    "http": {
+      "jev": {
+        "attempt_latency": {
+          "n": 20,
+          "median_ms": 247.88589600939304,
+          "p95_ms": 912.2118565981509,
+          "min_ms": 173.56262501562014,
+          "max_ms": 966.5863339905627
+        },
+        "success_latency": {
+          "n": 20,
+          "median_ms": 247.88589600939304,
+          "p95_ms": 912.2118565981509,
+          "min_ms": 173.56262501562014,
+          "max_ms": 966.5863339905627
+        },
+        "failures": 0,
+        "exact": 16,
+        "acceptable": 16
+      },
+      "local": {
+        "attempt_latency": {
+          "n": 20,
+          "median_ms": 19.289187475806102,
+          "p95_ms": 27.19159581174611,
+          "min_ms": 15.173209016211331,
+          "max_ms": 67.25491594988853
+        },
+        "success_latency": {
+          "n": 20,
+          "median_ms": 19.289187475806102,
+          "p95_ms": 27.19159581174611,
+          "min_ms": 15.173209016211331,
+          "max_ms": 67.25491594988853
+        },
+        "failures": 0,
+        "exact": 14,
+        "acceptable": 14
+      }
+    },
+    "historical_jev_oct20": {
+      "n": 20,
+      "median_ms": 179.47410000000002,
+      "p95_ms": 245.95781500000004,
+      "min_ms": 123.2488,
+      "max_ms": 273.2763
+    },
+    "authored_rule_baseline": {
+      "latency": {
+        "n": 1000,
+        "median_ms": 0.004791014362126589,
+        "p95_ms": 0.005041016265749931,
+        "min_ms": 0.004208006430417299,
+        "max_ms": 0.05062500713393092
+      },
+      "unique_cases": 10,
+      "exact": 10,
+      "acceptable": 10
+    },
+    "selected_local_device": "mps"
+  },
+  "provenance": {
+    "checkpoint": "76d7cda",
+    "machine": "macOS-15.6-arm64-arm-64bit",
+    "architecture": "arm64",
+    "python": "3.11.14",
+    "code_sha256": {
+      "tools/local-jev/benchmark.py": "08b77c99370bb2d875982f1b62b58b42a7fc4da1e942113f96729c33a0b3a607",
+      "tools/local-jev/data.py": "1ad828f1bfcc7ec307daeefdb845bba510c315c4e7919028df9c3d4098b88342",
+      "tools/local-jev/model.py": "f5ae78fe1f55f629e1c156e5cbaab9d158e5ca97797448def5d4a13f815b49d6",
+      "tools/local-jev/serve.py": "7778b592b6c5f7b16dbaca1eec7f356872bb015896acd23fffe9491124c4c6bd",
+      "tools/local-jev/test_data.py": "c1f86f5ec900b7c1df3e1b8d31f8ae477dd2907af5a2d159d1ee867f3dcd2d33",
+      "tools/local-jev/test_server.py": "08572c6a8057ce2dbb94fdd44630e4aa97db438b1d6bf1b47fec74dd14f6be43",
+      "tools/local-jev/train.py": "746734cc12ca208bd9ad1ef8b5faa547c69ae778ff0856257786a02f408ffa03"
+    },
+    "superseded_runs": {
+      "v1": "Stopped before holdout evaluation: non-library synthetic wording and exact-only repetition labels corrected.",
+      "v2": "Stopped before holdout evaluation: removed direction constants absent from prepared phrase library."
+    },
+    "review": "Independent subagent review completed; success/failure timing, malformed response handling, partial evidence persistence, and rule-baseline quality reporting corrected. Final review found no material blocker for isolated experiment."
+  },
+  "local_artifacts": "/Users/pedro.poveda/.local/share/follow-my-voice-models/20261025-minilm-action-v3",
+  "evidence_sha256": {
+    "report.json": "2594cfb47dd0ce0c7a637b2be62819123168c647963beae43ca8ab367bbd5a30",
+    "benchmark.json": "a8b522bdbf10624e7e1fdd24674ee8512453a209d7f9a4878bf8667fad7bc2fd",
+    "benchmark-requests.jsonl": "14899156714c1b2a5458d39c5fa59249d9b0a43728ff8be336f1dcc117a926bf",
+    "environment.txt": "e62614356b93192a153163c71e7162f30f6c0d2e52c6989424cdb402b365e629",
+    "data/manifest.json": "481f4ae114ee3a3d215d4d6ff56603769f0c29c36d627406cc2b54b7c9a101a6"
+  }
+}

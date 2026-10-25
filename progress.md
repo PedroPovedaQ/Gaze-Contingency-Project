@@ -1,3 +1,9 @@
+## 2026-10-25 — Local Jev action-model experiment and checkpoint
+
+Implemented an isolated, reproducible MiniLM action-classifier fine-tune after saving study work as `76d7cda` (voice worker fix remains in `1e47031`). Trained 22.7M parameters on 1,200 synthetic authored-policy examples with actual library phrases; validation-only selection, separate diagonal and production-C# holdouts, local loopback server and paired current-Jev latency benchmark. Ten tests and independent review pass. No Unity runtime or headset change.
+
+Measured local HTTP median 19.3 ms versus current Jev 247.9 ms (12.85× faster), but expected-action agreement was only 7/10 unique production cases versus Jev 8/10; unseen synthetic masked agreement was 68.4%. External gates improve safety but do not fix repeat/helpfulness errors. Authored rules matched all 10 production cases with 0.0048 ms median direct-call cost. Keep the learned model experimental; local rules are the stronger next candidate for this narrow action policy. No participant helpfulness, headset FPS or acoustic latency claim. Full evidence and remaining decisions: `docs/testing/2026-10-25-local-jev.md`; weights/data retained outside Git in `~/.local/share/follow-my-voice-models/20261025-minilm-action-v3/`.
+
 ## 2026-10-25 — Live Trial Review headset wall controls
 
 Implemented a separate live Headset controls row for wall outlines and degree labels; Viewer walls remains local to the desktop. The existing ADB receiver sends explicit session-bound, short-lived requests and the headset publishes actual state and acknowledgments. Saved review, legacy builds, disconnected/stale connections and sleeping headsets disable the control. Requests expire across pause/focus boundaries. Changes retain a standalone audit and appear in active replay events, without modifying trial geometry, targets or timing.
