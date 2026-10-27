@@ -261,11 +261,15 @@ public static class ControllerSelectionChecks
             ((Dictionary<UnityEngine.XR.Interaction.Toolkit.UI.BodyUI.HandMenu,bool>)Read(controls,"m_Menus"))[menu] = false;
             ((Dictionary<Transform,Vector3>)Read(controls,"m_SettingsScales"))[settingsContent.transform] = settingsContent.transform.localScale;
             Set(controls,"m_Game",game);Set(controls,"m_Panel",controlsPanel);
-            foreach(string field in new[]{"m_SettingsButton","m_PauseButton","m_RepeatButton"})
+            foreach(string field in new[]{"m_SettingsButton","m_PauseButton","m_RepeatButton","m_EyeDotButton"})
             {
                 var button=new GameObject(field,typeof(RectTransform),typeof(UnityEngine.UI.Button));
                 button.transform.SetParent(controlsPanel.transform,false);Set(controls,field,button.GetComponent<UnityEngine.UI.Button>());
             }
+            Set(controls,"m_EyeDot",host.AddComponent<EyeDot>());
+            var eyeDotLabel = new GameObject("EyeDotLabel",typeof(RectTransform),typeof(TMPro.TextMeshProUGUI));
+            eyeDotLabel.transform.SetParent(controlsPanel.transform,false);
+            Set(controls,"m_EyeDotLabel",eyeDotLabel.GetComponent<TMPro.TextMeshProUGUI>());
             var vicinity=new GameObject("HiddenVicinityControls");vicinity.transform.SetParent(controlsPanel.transform);
             Set(controls,"m_VicinityControls",vicinity);
             Call(controls,"LateUpdate");var controlsPose=PoseOf(controlsPanel);

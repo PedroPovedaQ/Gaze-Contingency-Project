@@ -6,6 +6,15 @@ public static class TrialReviewGuidanceStateChecks
     static void Assert(bool value,string message){if(!value)throw new Exception("Guidance state: "+message);}
     public static void Run(TrialReplayTimeline timeline)
     {
+        var diagnostic = new AssistanceRuntimeSnapshot { mode="adaptive", provider="local_minilm",
+            modelVersion=AssistanceRuntimeSnapshot.LocalModelVersion, connection="ready", capturedAtSeconds=12,
+            lastDecisionId="0123456789abcdef0123456789abcdef", lastDecisionProvider="local_minilm",
+            lastStrategy="observe_4s", lastOutcome="observing", lastDecisionAtSeconds=10 };
+        var restored = JsonUtility.FromJson<GuidanceStateSnapshot>(JsonUtility.ToJson(new GuidanceStateSnapshot { phase="Refining", assistance=diagnostic }));
+        Assert(restored.assistance.provider=="local_minilm" && restored.assistance.lastStrategy=="observe_4s" &&
+            restored.assistance.LastDecisionLabel.Contains("2.0s ago"), "provider and accepted observation survive recording with cursor-relative age");
+        Assert(new AssistanceRuntimeSnapshot().SelectionLabel=="Not recorded" && new AssistanceRuntimeSnapshot().LastDecisionLabel=="No accepted model decision",
+            "legacy/default diagnostic object never invents a model or decision");
         timeline.Seek(1);
         var sample=timeline.State.Sample;
         var original=sample.guidanceState;

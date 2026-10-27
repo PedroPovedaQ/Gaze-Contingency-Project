@@ -228,6 +228,48 @@ partial class VoiceIsolationChecks
         Set(synth,"m_VerifyAudio",new Func<string,byte[],string,Action<VoiceAudioVerification.Result>,IEnumerator>(VerifiedFixture));
         Drain(Download(MakeJobs(expected)));
         Check(VoiceAudioVerification.HasReceipt(auditedFile,expected),"Legacy cache earns a receipt when verification recovers");
-        Console.WriteLine("PASS: five concurrent downloads, out-of-order completion, cancellation, failures, deduplication, voice-scoped caching, bounded retries and content validation.");
+        SessionConfig.ValidateVoiceTranscript = false;
+        SessionConfig.ConfigureCloneQuickTest("download-clone");
+        Check(!SessionConfig.ValidateVoiceTranscript, "Provider trust applies to quick tests");
+        Set(synth,"m_VerifyAudio",new Func<string,byte[],string,Action<VoiceAudioVerification.Result>,IEnumerator>(Unavailable));
+        checks=0;
+        var bypassJobs = MakeJobs("More, more.");
+        Drain(Download(bypassJobs));
+        foreach (var job in (IList)bypassJobs)
+        {
+            string path = (string)job.GetType().GetField("path").GetValue(job);
+            Check(File.Exists(path) && !File.Exists(path+".verified.json"), "Bypass publishes audio without fabricating a verification receipt");
+        }
+        Drain(Download(MakeJobs("More, more.")));
+        Check(checks==0, "New and cached bypassed audio never call ASR");
+        UnityWebRequest.ContentType="application/json";
+        var invalidBypassJobs = MakeJobs("Invalid bypass download.");
+        Drain(Download(invalidBypassJobs));
+        var invalidJob = ((IList)invalidBypassJobs)[0];
+        Check(((string)invalidJob.GetType().GetField("error").GetValue(invalidJob)).Contains("non-audio"),
+            "Bypassing transcription still rejects non-audio provider responses");
+        UnityWebRequest.ContentType="audio/mpeg";
+        Set(synth,"m_Preparing",true);
+        var speak = (IEnumerator)typeof(VoiceSynthesizer).GetMethod("SpeakCoroutine",BindingFlags.Instance|BindingFlags.NonPublic)
+            .Invoke(synth,new object[] {"More, more.",false,(VoiceCondition?)VoiceCondition.SelfSimilar,true,null});
+        Drain(speak);
+        Check(synth.LastError==null, "Bypass also passes foreground admission and PCM decode gates");
+        var audits = (IList)typeof(VoiceSynthesizer).GetField("m_Audit",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(synth);
+        var bypassAudit = audits[audits.Count-1];
+        Check((string)bypassAudit.GetType().GetField("verification_version").GetValue(bypassAudit)=="provider-trusted-v1",
+            "Manifest explicitly records bypass rather than verified audio");
+        string bypassPath = (string)((IList)bypassJobs)[1].GetType().GetField("path").GetValue(((IList)bypassJobs)[1]);
+        SessionConfig.ResetForNewParticipant();
+        Check(!SessionConfig.ValidateVoiceTranscript, "Study session retains provider trust");
+        SessionConfig.ValidateVoiceTranscript = true;
+        Drain((IEnumerator)typeof(VoiceSynthesizer).GetMethod("PlayFromFile",BindingFlags.Instance|BindingFlags.NonPublic)
+            .Invoke(synth,new object[] {bypassPath,true,"download-clone",true}));
+        Check(synth.LastError.Contains("fresh validated preparation"), "Previously bypassed memory clips cannot play in study mode");
+        SessionConfig.ConfigureCloneQuickTest("download-clone");
+        Check(SessionConfig.ValidateVoiceTranscript, "True feature flag re-enables quick-test validation");
+        checks=0;Drain(Download(MakeJobs("More, more.")));
+        Check(checks==2, "Re-enabled validation checks both unverified caches again");
+        SessionConfig.ResetForNewParticipant();
+        Console.WriteLine("PASS: concurrent downloads, failures, validation, development bypass and study isolation.");
     }
 }

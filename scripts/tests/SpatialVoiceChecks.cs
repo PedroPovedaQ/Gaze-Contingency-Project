@@ -25,8 +25,15 @@ partial class SpatialVoiceChecks
             Run().GetAwaiter().GetResult();
             CheckSpeechMemory();
             CheckActionMenu();
+            CheckAdaptiveGuidance();
+            CheckAdaptiveTransport().GetAwaiter().GetResult();
+            CheckLocalAdaptiveTransport().GetAwaiter().GetResult();
             CheckActionTransport().GetAwaiter().GetResult();
             if (args.Length == 0) { }
+            else if (args.Length == 1 && args[0] == "--live-local-adaptive") LiveLocalAdaptive().GetAwaiter().GetResult();
+            else if (args.Length == 3 && args[0] == "--live-adaptive") LiveAdaptive(args[1],args[2]).GetAwaiter().GetResult();
+            else if (args.Length == 4 && args[0] == "--replay-adaptive") ReplayAdaptive(args[1],args[2],args[3]).GetAwaiter().GetResult();
+            else if (args.Length == 3 && args[0] == "--export-adaptive") ExportAdaptive(args[1],args[2]);
             else if (args.Length == 3 && args[0] == "--benchmark-actions") BenchmarkActions(args[1],args[2]).GetAwaiter().GetResult();
             else if (args.Length == 2 && args[0] == "--live") Live(args[1]).GetAwaiter().GetResult();
             else if (args.Length == 2 && args[0] == "--export-memory-probes") ExportMemoryProbes(args[1]);

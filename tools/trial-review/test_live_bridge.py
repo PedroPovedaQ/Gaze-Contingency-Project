@@ -7,7 +7,7 @@ import threading
 import unittest
 from unittest.mock import patch
 
-from live_bridge import Mirror, Receiver, safe_relative, main, LINK_SCAN_CHUNK, Adb, validate_headset_state, validate_control, atomic_json
+from live_bridge import Mirror, Receiver, safe_relative, main, LINK_SCAN_CHUNK, Adb, validate_headset_state, validate_control, atomic_json, validate_assistance_status
 
 
 class Remote:
@@ -33,6 +33,22 @@ class Remote:
 
 
 class LiveBridgeTests(unittest.TestCase):
+    def test_assistance_status_is_explicit_bounded_and_not_inferred(self):
+        self.assertIsNone(validate_assistance_status(None))
+        state = dict(mode='adaptive', provider='local_minilm', modelVersion='20261026-minilm-adaptive-v2',
+                     policy='jev_adaptive_assistance_v2', connection='ready', capturedAtSeconds=30,
+                     lastDecisionId='a'*32, lastDecisionProvider='local_minilm', lastStrategy='observe_4s',
+                     lastOutcome='observing', lastDecisionAtSeconds=29, private_extra='not exported')
+        result = validate_assistance_status(state)
+        self.assertEqual(result['lastStrategy'], 'observe_4s')
+        self.assertNotIn('private_extra', result)
+        for change in ({'provider':'jev'}, {'lastDecisionProvider':'jev'}, {'lastDecisionAtSeconds':31},
+                       {'capturedAtSeconds':float('nan')}, {'connection':'probably_online'}, {'lastOutcome':'played'},
+                       {'modelVersion':'<script>'}, {'mode':'baseline'}, {'lastDecisionId':'x'*1000}):
+            self.assertIsNone(validate_assistance_status(dict(state, **change)))
+        selected = dict(state, lastDecisionId=None, connection='unavailable')
+        self.assertNotIn('lastStrategy', validate_assistance_status(selected))
+
     def test_remote_controls_validate_session_age_capability_and_types(self):
         state = dict(schema=1, sessionId='current', revision=12, wallControlAvailable=True, phase='ready', updatedUtc=300)
         command = dict(schema=1, id='a'*32, sessionId='current', observedRevision=10, observedUtc=299,

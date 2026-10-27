@@ -39,20 +39,20 @@ public sealed partial class TrialReviewApp
             var color=JevColor(d);
             if(d.Discarded) { Fill(marker,color); Fill(new Rect(marker.x+2,marker.y+2,marker.width-4,marker.height-4),m_TrackBackground); }
             else Fill(marker,color);
-            if(GUI.Button(marker,new GUIContent("",$"Jev · {d.Kind}\n{d.Summary}\nClick for state, alternatives, response and playback."),GUIStyle.none))SelectJev(d);
+            if(GUI.Button(marker,new GUIContent("",$"{d.Provider} · {d.Kind}\n{d.Summary}\nClick for state, alternatives, response and playback."),GUIStyle.none))SelectJev(d);
         }
     }
     void JevInspector(TrialReplayRecord trial)
     {
         m_JevScroll=GUILayout.BeginScrollView(m_JevScroll);
         var decisions=m_Tracks.Jev.Decisions.Where(d=>d.TrialId==trial?.trialId).ToList();
-        GUILayout.Label("JEV DECISIONS",m_Heading);
+        GUILayout.Label("MODEL DECISIONS",m_Heading);
         GUILayout.Label($"{decisions.Count(d=>!d.Legacy)} recorded requests · {decisions.Count(d=>d.Legacy)} legacy events",m_MutedLabel);
         GUILayout.Label("Recorded history, including outcomes after the cursor. Select a request to inspect the scene when it was sent.",m_MutedLabel);
         foreach(var d in decisions)
         {
             string timing=d.Response?["elapsed_ms"] != null ? $" · {(double)d.Response["elapsed_ms"]:0} ms" : "";
-            if(GUILayout.Button(new GUIContent($"{Clock(d.Time-(trial?.time??0))} · {d.Summary}{timing}",d.Kind+"\nClick to inspect the recorded request."),m_SelectedJev==d.Id?m_ActiveRow:m_Row))SelectJev(d);
+            if(GUILayout.Button(new GUIContent($"{Clock(d.Time-(trial?.time??0))} · {d.Provider} · {d.Summary}{timing}",d.Kind+"\nClick to inspect the recorded request."),m_SelectedJev==d.Id?m_ActiveRow:m_Row))SelectJev(d);
         }
         var selected=decisions.FirstOrDefault(d=>d.Id==m_SelectedJev);
         if(selected==null && decisions.Count>0)
@@ -66,12 +66,20 @@ public sealed partial class TrialReviewApp
         if(selected.Legacy)
         { GUILayout.Label("Candidates and probabilities: not recorded in this version.",m_Label);GUILayout.Label(selected.Application??"No details",m_Code);GUILayout.EndScrollView();return; }
         GUILayout.Label("PROVIDER AND PLAYBACK",m_Heading);
-        GUILayout.Label("Provider: "+selected.Status,m_Label);
+        GUILayout.Label("Provider: "+selected.Provider+" · "+selected.Status,m_Label);
         GUILayout.Label("Unity: "+(selected.Application??"No application outcome recorded"),m_Label);
+        GUILayout.Label("Model version: " + ((string)selected.Response?["model_version"] ?? (string)selected.Request?["model_version"] ?? "Not recorded"),m_Label);
+        if (selected.Response?["probability_semantics"] != null)
+            GUILayout.Label("Probability semantics: " + (string)selected.Response["probability_semantics"],m_MutedLabel);
         var playback=selected.PlaybackRecord;
         GUILayout.Label(playback==null?"Playback start not recorded for this request.":$"Playback started {Clock(playback.time-(trial?.time??0))}\n{playback.text}\nRequest to playback: {(playback.time-selected.Time)*1000:0} ms",m_Label);
-        GUILayout.Label("Playback is a recorded software onset, not proof the participant heard it. A timeout can still produce local fallback audio.",m_MutedLabel);
         var payload=selected.Request?["payload"] as JObject;
+        bool adaptive = payload?["questions"]?["assistance"] != null;
+        GUILayout.Label(adaptive
+            ? "Adaptive policy: observation stays silent; unavailable advice is retried without an automatic search cue. Playback marks software onset."
+            : "Playback is a recorded software onset, not proof the participant heard it. A timeout can still produce local fallback audio.",m_MutedLabel);
+        if (adaptive && selected.ApplicationRecord != null)
+            GUILayout.Label(TrialReviewJev.Detail(selected.ApplicationRecord)?.ToString(Formatting.Indented) ?? selected.Application, m_Code);
         var questions=payload?["questions"] as JObject;
         var answers=selected.Response?["answers"] as JObject;
         if(questions!=null)foreach(var q in questions.Properties())
@@ -89,7 +97,7 @@ public sealed partial class TrialReviewApp
                 if(numeric) { var bar=GUILayoutUtility.GetRect(20,5,GUILayout.ExpandWidth(true));Fill(bar,m_TrackBackground);Fill(new Rect(bar.x,bar.y,bar.width*(float)value,bar.height),m_Accent); }
             }
         }
-        GUILayout.Space(10);GUILayout.Label("STATE SENT TO JEV",m_Heading);
+        GUILayout.Space(10);GUILayout.Label("STATE SENT TO MODEL",m_Heading);
         GUILayout.Label(new GUIContent(payload?["state"]?.ToString(Formatting.Indented)??"Not recorded","Frozen state at request time, not the current playback cursor. Null means unavailable."),m_Code);
         GUILayout.Label("Model probabilities describe the supplied alternatives; they are not validated measures of navigation correctness.",m_MutedLabel);
         GUILayout.EndScrollView();

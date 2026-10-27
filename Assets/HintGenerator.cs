@@ -54,9 +54,12 @@ public partial class HintGenerator : MonoBehaviour
     public void OnNewObjective(bool resumed = false)
     {
         m_Voice?.ClearGuidanceEvidence();
+        m_AdaptiveHistory.BeginTrial(SessionConfig.ParticipantId + "|" + SessionConfig.CurrentRunFolder, m_GameManager != null ? m_GameManager.CurrentObjectiveIndex : 0,
+            Time.realtimeSinceStartupAsDouble, resumed);
+        m_AdaptiveSchedule.Reset(); m_ActionPolicyEpoch++;
         if (resumed) m_State.ResumeSearch(Time.realtimeSinceStartupAsDouble);
         else m_State.BeginSearch(Time.realtimeSinceStartupAsDouble, m_OpeningTurn);
-        m_OpeningTurn = null; m_ProgressVariant = 0; m_ActionProgress.Reset();
+        m_OpeningTurn = null; m_ProgressVariant = 0;
         m_InvalidGazeSince = -1;
         m_CurrentHint = m_ReturnDirection = null;
         m_LastDirection = null; m_ContinuationUsed = false;
@@ -66,12 +69,12 @@ public partial class HintGenerator : MonoBehaviour
         m_LastTipTime = Time.time; m_TipsSuppressed = false;
         PublishState(false);
     }
-    public void OnWrongCapture() { }
+    public void OnWrongCapture() { m_AdaptiveHistory.WrongSelection(); }
     public void CancelPending()
     {
         m_Voice?.ClearGuidanceEvidence();
         m_Navigation?.Cancel();
-        m_OpeningTurn = null; m_TipsSuppressed = true; m_ActionProgress.Reset();
+        m_OpeningTurn = null; m_TipsSuppressed = true; m_AdaptiveHistory.BreakObservation();
         // Correct capture/pause/stop already publish their distinct lifecycle.
         if (m_State.Phase != GuidancePhase.Completed && m_State.Phase != GuidancePhase.Paused && m_State.Phase != GuidancePhase.Stopped && m_State.Phase != GuidancePhase.TimedOut)
             SetLifecycle(GuidancePhase.Inactive, "guidance_cancelled");
@@ -105,8 +108,8 @@ public partial class HintGenerator : MonoBehaviour
             return m_State.AllowsPlayback(revision, action, m_ControllerEvidenceValid, m_ControllerOnTarget);
         }
         UpdateSpeechEvidence(valid, inside, looking);
-        m_ActionProgress.Observe(valid && !looking && !(m_ControllerEvidenceValid && m_ControllerOnTarget), desired,
-            DirectionalHintPolicy.DirectionError(desired, m_YawError, m_PitchError), Time.realtimeSinceStartupAsDouble);
+        m_AdaptiveHistory.Observe(Time.realtimeSinceStartupAsDouble, valid,
+            System.Math.Sqrt(m_YawError*m_YawError + m_PitchError*m_PitchError), desired);
         if (m_ControllerEvidenceValid && m_ControllerOnTarget)
             m_Voice.SuppressSearchGuidanceForControllerTarget();
         if (!valid)
@@ -186,7 +189,7 @@ public partial class HintGenerator : MonoBehaviour
             }
             return; // Let the person hold gaze within the target region without nudging it away.
         }
-        if (TryDevelopmentAction(desired, valid, inside, far, looking, Allows)) return;
+        if (TryAdaptiveGuidance(desired, valid, inside, far, looking, Allows)) return;
         // Remember a qualified target visit, even though the narrow crossing
         // history is cleared by confirmation. A blink cannot manufacture a departure.
         if (m_State.Allows(GuidanceAction.ReturnTarget) && CanCorrect(stable))
@@ -347,7 +350,6 @@ public partial class HintGenerator : MonoBehaviour
     {
         if (direction != m_LastDirection) m_ContinuationUsed = false;
         m_LastDirection = direction;
-        m_ActionProgress.MarkSpoken(direction, 0, Time.realtimeSinceStartupAsDouble);
         m_LastVerticalBand = DirectionalHintPolicy.VerticalBand(m_VerticalFraction);
         m_LastDirectionError = DirectionalHintPolicy.DirectionError(direction, m_YawError, m_PitchError);
     }

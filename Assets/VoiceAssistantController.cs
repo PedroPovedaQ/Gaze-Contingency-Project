@@ -20,7 +20,7 @@ public partial class VoiceAssistantController : MonoBehaviour
         "Thank you for your participation in this experiment, please remove the headset now and have a great day";
     const string k_RotationalIntroLine = k_IntroLine +
         " Objects will surround you. The agent will guide you to the right area, then help you look up or down. " +
-        "Your first two trials will be practice.";
+        "Your first trial will be practice.";
     static string StudyIntroLine => FindObjectOfType<FindObjectGameManager>()?.RotationalBetaEnabled == true
         ? k_RotationalIntroLine : k_IntroLine;
     public void PlayStudyIntroduction() => HandleInitialStartPressed();
@@ -168,7 +168,11 @@ public partial class VoiceAssistantController : MonoBehaviour
 
     const string k_CompletionLine = "The search task is complete. Please wait for the researcher to guide you through the next steps.";
     public const string AudioCheckLine = VoicePromptText.AudioLevelCheck;
+    public const string AgentIntroduction =
+        "Hi, I'm your search guide. I'll guide you towards the object, then help you narrow it down. " +
+        "When you've found it, point your right controller at it and press the trigger to select it. ";
     public static string RoundPhrase(int round, string color, string shape, bool isPractice = false) =>
+        (round == 0 && (isPractice || SessionConfig.DevelopmentQuickTest) ? AgentIntroduction : "") +
         (isPractice ? "This is a practice round. It does not count toward the study. " : "") +
         DirectionalHintPolicy.ReadinessPrompt(round);
     public static string[] PhraseLibrary()

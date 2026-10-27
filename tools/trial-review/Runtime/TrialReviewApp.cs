@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 
-/// <summary>Read-only desktop inspection. This project contains no study scene or recorder.</summary>
+/// <summary>Desktop replay inspection and participant intake; no study scene runs here.</summary>
 public sealed partial class TrialReviewApp : MonoBehaviour
 {
     TrialReplayTimeline m_Timeline;
@@ -120,6 +120,7 @@ public sealed partial class TrialReviewApp : MonoBehaviour
     void Update()
     {
         if (m_LiveOutput != null) PollLive();
+        PollIntake();
         m_Tracks.Refresh(m_Timeline);
         UpdateRunExport();
         UpdateEvaluation();
@@ -137,7 +138,7 @@ public sealed partial class TrialReviewApp : MonoBehaviour
         m_Renderer.Prepare(m_Timeline, m_Time, maxSequence: sequence); Sync(true);
     }
     void Sync(bool force) => m_Audio?.Sync(m_Time,
-        TrialReviewLiveFollow.AudioEnabled(m_Playing, m_FollowLive, m_LiveSignalActive), m_Speed, m_Sequence, force);
+        !m_IntakeOpen && TrialReviewLiveFollow.AudioEnabled(m_Playing, m_FollowLive, m_LiveSignalActive), m_Speed, m_Sequence, force);
     void Step(int direction)
     {
         m_Playing = false;
@@ -163,6 +164,7 @@ public sealed partial class TrialReviewApp : MonoBehaviour
     {
         if(m_GazeDotTexture!=null)Destroy(m_GazeDotTexture);
         m_WaitingPyramid?.Dispose();
+        StopIntake();
         StopRunExport();
         StopReceiver(); m_LiveStream?.Dispose(); m_Vicinity.Dispose(); m_Environment?.Dispose(); m_Actors?.Dispose(); m_Audio?.Dispose(); m_Renderer?.Dispose();
         foreach(var texture in new[]{m_Panel,m_ButtonTexture,m_SelectedTexture,m_HoverTexture})if(texture!=null)Destroy(texture);

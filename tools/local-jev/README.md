@@ -1,13 +1,157 @@
-# Local Jev action-policy experiment
+# Local Jev policy experiments
 
-Fine-tunes a pretrained MiniLM encoder to choose `wait`, `orient`, `refine`,
-`correct`, or `encourage` from the app's offered actions. This is a five-class
-policy classifier, not Jev weights or a general language model. No Unity endpoint,
-voice generation, playback, trial geometry or study condition is changed.
+## Active headset comparison (October 26)
 
-Latest results: [continued model evaluation](../../docs/testing/2026-10-25-local-jev-continuation.md).
+**Implemented:** quick-test headset Settings now has an Adaptive/Baseline control and a separate **Model: Jev / Local MiniLM** button. `python3 tools/local-jev/headset.py` starts/reuses the adaptive-v2 model and connects headset loopback through USB or Wi-Fi ADB. Keep the Mac awake. See [headset comparison and verification](../../docs/testing/2026-10-26-headset-model-toggle.md) for scope, reconnecting, telemetry and failure behavior. Local mode is now active assistance; the historical shadow workflow below remains read-only.
 
-The endpoint supports **only `navigation_action`** with structured
+
+Fine-tunes a pretrained MiniLM encoder for bounded assistance choices. The new
+adaptive checkpoint has nine strategies; the preserved v4 checkpoint has five
+legacy navigation actions. These are policy classifiers, not Jev weights or a
+general language model. Study sessions continue using Jev; development quick tests
+can actively select MiniLM. Both can also be compared on recorded requests.
+
+Latest results: [adaptive v2 comparison](../../docs/testing/2026-10-26-local-adaptive.md).
+Earlier results: [five-action continuation](../../docs/testing/2026-10-25-local-jev-continuation.md).
+
+
+## Adaptive v2 comparison (October 26)
+
+**Implemented:** a separate MiniLM checkpoint now uses the active Jev `assistance`
+contract, with nine classes: `observe_1s`, `observe_2s`, `observe_4s`,
+`orient_brief`, `orient_explicit`, `refine_brief`, `refine_explicit`, `correct`,
+`encourage`. The older v4 checkpoint still accepts only `navigation_action`.
+This is a classifier with uncalibrated probabilities, not a general LLM.
+
+`train_adaptive.py` transfers the v4 encoder and corresponding classifier rows,
+expands the head to nine outputs and fine-tunes all weights. Supervision is an
+explicit authored approximation of Jev v2's instructions: prioritize recent
+movement, help unresolved stalls, distinguish historical confirmation from current
+target acquisition and correct a verified departure. Jev responses are not labels.
+The deterministic reference is also reported; matching these synthetic labels does
+not establish an ML advantage over those rules or participant helpfulness.
+
+Input features summarize the latest four seconds (reduction, span, largest gap,
+improving fraction), keep older net progress separate, and include current gates,
+available capabilities, cue history and previous outcomes. The trend bands match
+Unity's 3-degree/four-second trend helper. Additional authored training conventions
+include a 75% improving-step sustained-progress band and a 60-degree far band;
+these are development policy choices, not validated human thresholds. The text
+encoder gets measured summaries, not a computed final strategy, participant identity,
+Jev's answer or future behavior. It consumes the same request as Jev but compresses
+that request; it is not an architecture-controlled comparison.
+
+Train/validation/test have 2,700/540/540 balanced synthetic rows with distinct seeds
+and deduplicated feature strings. Test uses different sample cadences and triple
+guard conflicts. This is limited structural holdout, not independent participant
+data. The six recorded/synthetic device replay probes are excluded from training
+and selection and are regression evidence. Checkpoint selection uses validation
+only, freezes before test evaluation and preserves the parent checkpoint. The
+first adaptive candidate missed recorded departures despite strong synthetic
+departure scores. The revised corpus independently crosses departure events with
+all trajectory patterns; the unchanged device probes are regression checks after
+that correction. They are not untouched final holdouts.
+
+```sh
+~/.local/share/follow-my-voice-models/venv/bin/python tools/local-jev/train_adaptive.py \
+  --parent ~/.local/share/follow-my-voice-models/20261025-minilm-action-v4 \
+  --output /absolute/path/to/new-adaptive-run
+~/.local/share/follow-my-voice-models/venv/bin/python tools/local-jev/compare_adaptive.py \
+  --run ~/.local/share/follow-my-voice-models/20261026-minilm-adaptive-v2 \
+  --output /absolute/path/to/new-comparison --live-jev
+```
+
+The saved v2 candidate continues the preserved adaptive v1 checkpoint for four
+passes, using a 0.00002 encoder learning rate and a 0.0002 head learning rate:
+
+```sh
+~/.local/share/follow-my-voice-models/venv/bin/python tools/local-jev/train_adaptive.py \
+  --parent ~/.local/share/follow-my-voice-models/20261026-minilm-adaptive-v1 \
+  --output /absolute/path/to/new-adaptive-continuation \
+  --epochs 4 --head-learning-rate 0.0002 --max-seconds 600
+```
+
+The comparison uses the exact production C# strategy descriptions and instructions
+and identical JSON inputs for both models. It sends at most 30 Jev requests: two
+repeats of six device regression probes and the first held-out test example of each
+class. Raw, offered-choice-masked and externally guarded decisions are separate.
+HTTP timings compare a warmed CPU loopback service with Mac-to-cloud Jev, including
+network overhead. They do not measure headset Wi-Fi, FPS or acoustic onset. Loading
+and cold/warm direct calls are reported separately. Servers close on completion.
+
+For live comparison, keep Trial Viewer **Live** mirroring recordings and the
+headset on **Adaptive**. The observer below handles v2 `assistance` requests;
+v1 requests and unrelated question types are counted as unsupported. It never
+controls the headset. Do not change the device to Baseline for this comparison.
+
+```sh
+~/.local/share/follow-my-voice-models/venv/bin/python tools/local-jev/shadow.py \
+  --model ~/.local/share/follow-my-voice-models/20261026-minilm-adaptive-v2/model \
+  --source "$HOME/Documents/Trial Review Live/data" \
+  --output "$HOME/.local/share/follow-my-voice-models/shadow-adaptive-v2-20261026"
+```
+
+`summary.json` reports agreement and latency; `decisions.json` retains individual
+choices/probabilities and exact request evidence. Gates returning a one-hot silence
+answer are labeled `deterministic_guard`, not model confidence. Model/adapter
+fingerprints prevent mixing outputs across implementations. Use a new output path
+for old observer folders after this update. Create `stop-request` in the observer's
+output folder to stop it. All measurements and model files remain outside Git.
+
+To inspect the loopback endpoint, use `serve.py --model` with the new model path;
+`/health` reports `scope: assistance`. The old checkpoint reports
+`scope: navigation_action`. Neither supports all Jev question types. Unity's
+freshness, identity, geometry, prepared-clip and final playback checks must remain
+in the active local-provider integration described above.
+
+## Legacy five-action shadow comparison
+
+`shadow.py` observes the existing Trial Viewer live archive on the Mac. Jev still
+controls guidance. The observer has no ADB, cloud client, command writer or audio
+output: it runs the saved classifier on the **exact recorded request**, then joins
+Jev's response by recording path and request ID. Replay transfer may delay this
+comparison; it is an asynchronous shadow of recorded inputs, not a simultaneous
+headset inference benchmark.
+
+1. Connect Trial Viewer **Live** so the receiver is mirroring recordings.
+2. Run the command below. Existing mirrored bytes are skipped on a new live run;
+   new files and appended records are consumed. Newly downloaded archive backlog
+   can also arrive after startup, so inspect recording IDs before treating data as
+   a new session. Use a separate output plus `--from-start --once` for backfill.
+3. This older checkpoint supports archived `navigation_action` requests only.
+   The current Adaptive runtime emits `assistance`; use the new checkpoint above
+   for new runs. The observer does not switch guidance modes or start trials.
+4. Inspect `summary.json` and `decisions.json` in the output folder.
+
+```sh
+~/.local/share/follow-my-voice-models/venv/bin/python tools/local-jev/shadow.py \
+  --model ~/.local/share/follow-my-voice-models/20261025-minilm-action-v4/model \
+  --source "$HOME/Documents/Trial Review Live/data" \
+  --output "$HOME/.local/share/follow-my-voice-models/shadow-live-20261025"
+```
+
+The default CPU backend avoids competing with the desktop viewer's GPU. The
+summary separates raw, offered-action-masked and rule-gated agreement, failures,
+pending/orphan responses, discarded requests and observed playback. Decisions
+retain the original request for disagreement inspection; no Jev answer or later
+trajectory enters inference. **Agreement is not correctness or helpfulness.**
+Mac compute time includes tokenization/inference and external gates but excludes
+transfer delay; recorded Jev time includes headset/network overhead. First-call
+cost is included; these are not paired end-to-end or acoustic timings.
+
+Offsets and decisions commit together in SQLite. Restarting with the same output
+resumes; model fingerprint, device or source changes require a new output folder.
+Duplicate requests do not rerun inference. Incomplete final lines wait for more
+bytes; source truncation stops the observer instead of mixing identities. Local
+inference failures are recorded, never substituted into guidance. Output files
+are private and must be outside the source archive. No retraining happens here.
+
+Stop with Ctrl-C or create `stop-request` in the output folder. Remove that marker
+before restarting. Keep the viewer's Live receiver running for new data. If it
+stops or disconnects, shadow results simply stop advancing; they do not certify
+that the headset is connected. The runner PID is in the summary.
+
+With the legacy v4 checkpoint, the endpoint supports **only `navigation_action`** with structured
 `development-action-v1` state. It rejects the normal joint `navigation_phrase` /
 `transmit` request, interruption requests and round summaries. Never substitute
 this server for all Jev calls.

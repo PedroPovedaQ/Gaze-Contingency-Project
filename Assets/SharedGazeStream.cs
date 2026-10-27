@@ -282,6 +282,7 @@ public sealed class SharedGazeStream : MonoBehaviour
     // manager's next-objective counter can already point at another block or 80.
     public static void FillTrialContext(GazeObservation sample, FindObjectGameManager game)
     {
+        sample.eyeDotEnabled = game.TryGetComponent<EyeDot>(out var eyeDot) && eyeDot.Visible;
         sample.round = game.PresentedRoundIndex;
         sample.practice = game.PresentedRoundIsPractice;
         if (sample.round >= 0) sample.voice = game.PresentedVoiceTag;
@@ -290,6 +291,12 @@ public sealed class SharedGazeStream : MonoBehaviour
             game.CurrentState == FindObjectGameManager.GameState.Completed ? "post_run" : "setup_or_transition";
         sample.sourceTrialId = sample.run > 0 && !sample.practice && sample.round >= 0
             ? $"{sample.participant}_run{sample.run:D3}_r{sample.round:D2}" : "";
+        if (game.TryGetComponent<ActivationExercise>(out var activation) && activation.Active)
+        {
+            sample.phase = "activation_exercise";
+            sample.activationStep = activation.Step;
+            sample.sourceTrialId = "";
+        }
     }
     void CaptureHtc(GazeObservation s)
     {

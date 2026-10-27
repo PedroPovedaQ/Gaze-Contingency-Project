@@ -207,6 +207,7 @@ public sealed partial class TrialReviewApp
         public int observedRevision;
         public double createdUtc, observedUtc;
         public bool wallsVisible;
+        public ParticipantSessionAssignment assignment;
     }
     HeadsetCommand m_HeadsetCommand;
     string m_ControlError;
@@ -233,7 +234,17 @@ public sealed partial class TrialReviewApp
         else if (!state.wallControlAvailable) feedback = "Headset build does not support remote walls";
         else if (state.phase == "paused") feedback = "Wake the headset to change its settings";
         if (!string.IsNullOrEmpty(m_ControlError)) feedback = m_ControlError;
+        if (fresh && m_FollowLive && !m_DetachedReview)
+        {
+            var assistance = state.assistance;
+            bool recorded = assistance != null && !string.IsNullOrEmpty(assistance.provider);
+            GUILayout.Label(new GUIContent(recorded ? "Headset selected: " + assistance.SelectionLabel + " · " + assistance.ConnectionLabel : "Headset assistance: not recorded",
+                recorded ? "Model: " + (assistance.modelVersion ?? "not used") + "\nPolicy: " + assistance.policy + "\nConfigured does not guarantee cloud reachability." : "Older headset build has no provider status"), m_Heading);
+            GUILayout.Label(recorded ? "Last accepted: " + assistance.LastDecisionLabel + " · Queued does not confirm playback" : "No model decision recorded", m_MutedLabel);
+        }
+        else GUILayout.Label("Headset assistance: waiting for a fresh live status", m_MutedLabel);
         GUILayout.BeginHorizontal();
+        if (Button("New participant session", GUILayout.Width(190))) OpenIntake();
         GUILayout.Label("Headset controls", m_Heading, GUILayout.Width(150));
         bool wasEnabled = GUI.enabled;
         GUI.enabled = wasEnabled && available && !pending;
@@ -258,7 +269,7 @@ public sealed partial class TrialReviewApp
 
     void LiveControls(float width)
     {
-        GUILayout.BeginArea(new Rect(22, 73, width - 44, m_FollowLive ? 132 : 86));
+        GUILayout.BeginArea(new Rect(22, 73, width - 44, m_FollowLive ? 182 : 86));
         GUILayout.BeginHorizontal();
         GUILayout.Label("Headset Wi-Fi IP", m_Label, GUILayout.Width(125));
         GUI.SetNextControlName("text:wifi-endpoint");
@@ -292,7 +303,10 @@ public sealed partial class TrialReviewApp
 [Serializable]
 public sealed class TrialReviewHeadsetState
 {
+    public AssistanceRuntimeSnapshot assistance;
     public int schema, revision;
+    public bool intakeAvailable;
+    public string participantSessionId, participantCode, configuration, assignmentState, nextParticipantCode;
     public string sessionId, phase;
     public bool progressKnown, wallControlAvailable, wallsVisible;
     public string commandId, commandResult;

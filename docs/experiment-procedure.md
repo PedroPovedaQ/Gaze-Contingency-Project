@@ -1,5 +1,7 @@
 # Experiment Procedure: Gaze-Contingent Guidance and Self-Similar Voice
 
+**Implemented locally — October 25, hardware rehearsal pending:** Trial Viewer Live mode now offers a participant-answer-only spoken intake with River (a voice outside the study catalog), background desktop cloning, and a minimal participant assignment sent to the headset for wearer confirmation. **Configuration A = self-similar first; Configuration B = neutral first.** These explicit desktop configuration labels supersede older A/B wording below; existing saved participant orders are preserved. Calibration uses horizontal head orientation at eye height. Synthesized-audio transcript/content validation is bypassed by default, with provider-trusted provenance. See [setup, architecture, recovery and protocol status](guide/08-participant-intake.md).
+
 **Implemented locally (October 23; hardware acceptance pending):** after voice setup, select Start calibration. Three dots each show a centered 3–2–1 countdown, then reveal the red fixation center for timed gaze sampling. A single brief white halo attracts attention when each countdown ends; a soft gold outward glow shows collection progress. Their three mean offsets are averaged before applying the unchanged 5-degree candidate limit. Three separate shapes then preview/check the candidate, and the participant confirms that highlighting follows gaze with OK. Skip/Retry remain available. Fixation during timed sampling is instructed and recorded as assumed, not inferred from proximity. This does not replace HTC calibration or task-wide validation. See [entry calibration details](guide/03-gaze-agent-and-telemetry.md#automatic-entry-eye-alignment--october-23-2026).
 
 ## Current protocol decision — October 20, 2026
@@ -328,3 +330,12 @@ official contacts and roles, lab/room, funding and gift-card mechanism, dates,
 Huron number, risk/review classification, required ancillary reviews, and final
 institution-approved workstation/storage configuration. Implementation gaps listed
 above must be closed before participant collection.
+
+
+### Post-calibration activation exercise
+
+**Implemented (2026-10-25):** after accepting or skipping entry calibration, three objects appear at eye height in front of the participant: a red cube, blue sphere and yellow capsule. In prompted order, look at the object until the study's gaze-vicinity highlighting responds, keep looking, point with the right controller and pull the trigger. A continuous 0.35-second response qualifies the gaze step; it is a familiarization debounce, not a fixation detector or research accuracy threshold. Wrong-object selections, ambiguous/unavailable gaze, interruptions and stale observation gaps do not advance. Each next object requires a new gaze qualification and trigger release/press.
+
+All three checks must complete before Continue enables centering and the existing uncounted practice trial. Recalibrate returns to the entry procedure and then starts a fresh exercise. The exercise does not change calibration offsets, trial order, trial clocks or scores. Settings/focus interruptions hide the exercise objects and clear gaze qualification.
+
+Separate `EyeMeasurements/activation_<id>.json` reports retain participant/run, alignment and eye-recording identifiers, intended/gaze/selected object indices, attempts, completed count and outcome. Eye rows use `phase=activation_exercise`, `activationStep`, and an empty trial ID. **Open decision:** this central three-object functional rehearsal does not establish whole-field eye-tracking accuracy or replace held-out validation.

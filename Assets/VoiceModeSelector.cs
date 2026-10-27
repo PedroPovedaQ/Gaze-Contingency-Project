@@ -37,7 +37,7 @@ public class VoiceModeSelector : MonoBehaviour
     public event System.Action SelectionCompleted;
     public bool IsComplete => m_Phase == Phase.Done;
 
-    enum Phase { WaitingToStart, Choosing, ChoosingNeutral, ChoosingNeutralVoice, Enrolling, EnrollmentFailed, Preparing, PreparationFailed, PreparingQuickTest, QuickTestFailed, CheckingNeutral, CheckingSelf, Cancelled, Done }
+    enum Phase { ConfirmDesktop, WaitingToStart, Choosing, ChoosingNeutral, ChoosingNeutralVoice, Enrolling, EnrollmentFailed, Preparing, PreparationFailed, PreparingQuickTest, QuickTestFailed, CheckingNeutral, CheckingSelf, Cancelled, Done }
     NeutralVoiceProfile m_ChosenGender;
     Phase m_Phase = Phase.WaitingToStart;
 
@@ -52,6 +52,51 @@ public class VoiceModeSelector : MonoBehaviour
     TextMeshProUGUI m_LoadingPercent;
     Button m_FinishRecordingButton;
     TextMeshProUGUI m_ActionLabel;
+    ParticipantSessionAssignment m_DesktopAssignment;
+    public string DesktopAssignmentId => m_DesktopAssignment?.id ?? "";
+    public string DesktopAssignmentCode => m_DesktopAssignment?.participantCode ?? "";
+    public string DesktopConfiguration => m_DesktopAssignment?.configuration ?? "";
+    public string DesktopAssignmentState => m_DesktopAssignment == null ? "none" :
+        m_Phase == Phase.ConfirmDesktop ? "awaiting_confirmation" : IsComplete ? "active" :
+        m_Phase == Phase.PreparationFailed ? "error" : "preparing";
+    public bool CanStageDesktopSession => m_Phase == Phase.WaitingToStart || m_Phase == Phase.ConfirmDesktop ||
+        GetComponent<FindObjectGameManager>()?.CurrentState == FindObjectGameManager.GameState.Completed;
+    static string DesktopTicketPath => System.IO.Path.Combine(Application.persistentDataPath, "PreparationLogs", "participant-session.json");
+    public bool StageDesktopSession(ParticipantSessionAssignment assignment)
+    {
+        assignment.Validate();
+        if (m_DesktopAssignment?.id == assignment.id) return true;
+        if (!CanStageDesktopSession) return false;
+        System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(DesktopTicketPath));
+        string json = JsonUtility.ToJson(assignment);
+        System.IO.File.WriteAllText(DesktopTicketPath + ".tmp", json);
+        if (System.IO.File.Exists(DesktopTicketPath)) System.IO.File.Replace(DesktopTicketPath + ".tmp", DesktopTicketPath, null);
+        else System.IO.File.Move(DesktopTicketPath + ".tmp", DesktopTicketPath);
+        if (GetComponent<FindObjectGameManager>()?.CurrentState == FindObjectGameManager.GameState.Completed)
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+            return true;
+        }
+        m_DesktopAssignment = assignment; m_Phase = Phase.ConfirmDesktop;
+        m_FinishRecordingButton.gameObject.SetActive(false);
+        SetText($"<b>Confirm your session</b>\nParticipant {assignment.participantCode} · Configuration {assignment.configuration}\n" +
+            (assignment.NeutralFirst ? "Neutral voice first, then your voice." : "Your voice first, then neutral voice.") +
+            "\nConfirm the code with the researcher before continuing.");
+        RefreshChoices();
+        return true;
+    }
+    public void ConfirmDesktopSession()
+    {
+        if (m_Phase != Phase.ConfirmDesktop || !Application.isFocused || m_Synth == null) return;
+        try
+        {
+            SessionConfig.ConfigureDesktopSession(m_DesktopAssignment);
+            System.IO.File.WriteAllText(DesktopTicketPath + ".accepted", m_DesktopAssignment.id);
+            m_Synth.ResetVoicePreparation();
+            StartCoroutine(PrepareVoices());
+        }
+        catch (System.Exception e) { SetText("<b>Session could not be confirmed</b>\n" + e.Message.Replace("<", "‹")); }
+    }
     bool m_StartArmed;
     float m_StartReleasedAt = -1f;
     float m_SetupInputAfter;
@@ -77,6 +122,16 @@ public class VoiceModeSelector : MonoBehaviour
         BuildPanel();
         m_Phase = Phase.WaitingToStart;
         SetText("<b>Begin your session</b>\nClose any headset notices, then select Start setup.\nFor development trials, select Quick test.");
+        try
+        {
+            if (System.IO.File.Exists(DesktopTicketPath))
+            {
+                var ticket = JsonUtility.FromJson<ParticipantSessionAssignment>(System.IO.File.ReadAllText(DesktopTicketPath));
+                if (!System.IO.File.Exists(DesktopTicketPath + ".accepted") || System.IO.File.ReadAllText(DesktopTicketPath + ".accepted") != ticket.id)
+                    StageDesktopSession(ticket);
+            }
+        }
+        catch (System.Exception e) { Debug.LogWarning("[ParticipantSession] Cannot restore assignment: " + e.GetType().Name); }
     }
 
     public void StartSetup()
@@ -364,6 +419,9 @@ public class VoiceModeSelector : MonoBehaviour
         }
         switch (m_Phase)
         {
+            case Phase.ConfirmDesktop:
+                Choice("Confirm session", ConfirmDesktopSession, 0, -90, 580);
+                break;
             case Phase.WaitingToStart:
                 Choice("Quick test — neutral voice", StartNeutralQuickTest, 0, -15, 580);
                 Choice("Quick test — last cloned voice", StartCloneQuickTest, 0, -90, 580);

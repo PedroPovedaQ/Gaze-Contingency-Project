@@ -21,6 +21,15 @@ public static class TrialReviewJevChecks
     public static void Run()
     {
         var index=new TrialReviewJev();
+        index.Observe(new TrialReplayRecord {kind="jev_trace",trialId="trial-adaptive",time=0,
+            detail="{\"request_id\":\"adaptive\",\"stage\":\"request\",\"payload\":{\"questions\":{\"assistance\":{\"type\":\"choice\",\"criteria\":{\"observe_4s\":\"Observe\",\"refine_explicit\":\"Explicit cue\"}}}}}"});
+        index.Observe(new TrialReplayRecord {kind="jev_trace",time=.2,
+            detail="{\"request_id\":\"adaptive\",\"stage\":\"response\",\"status\":\"ok\",\"answers\":{\"assistance\":{\"type\":\"choice\",\"choice\":\"observe_4s\",\"probabilities\":{\"observe_4s\":0.8,\"refine_explicit\":0.2}}}}"});
+        index.Observe(new TrialReplayRecord {kind="jev_trace",time=.21,
+            detail="{\"request_id\":\"adaptive\",\"stage\":\"application\",\"outcome\":\"observing\",\"reassess_after_seconds\":4}"});
+        Check(index.Decisions[0].Summary=="observe_4s" && index.Decisions[0].Application=="observing" &&
+            index.Decisions[0].PlaybackRecord==null,"adaptive observation and probabilities never imply audio playback");
+        index.Clear();
         var request=Fixture("a","trial-a",false,1); index.Observe(request);index.Observe(request);
         Check(index.Decisions.Count==1 && index.Decisions[0].Status=="pending","request deduplicated, pending not success");
         index.Observe(Fixture("a","trial-b",true,1.224));
@@ -42,6 +51,17 @@ public static class TrialReviewJevChecks
         index.Observe(new TrialReplayRecord {kind="jev_trace",detail="jev;{\"request_id\":\"c\",\"stage\":\"response\",\"status\":\"timeout\",\"elapsed_ms\":450}"});
         Check(index.Decisions[3].Status=="timeout" && index.Decisions[3].PlaybackRecord==null,"timeout is not speech");
         index.Clear();Check(index.Decisions.Count==0,"switching run clears index");
+        var localRequest=Fixture("local","trial-local",false,4);
+        var localData=TrialReviewJev.Detail(localRequest); localData["provider"]="local_minilm";
+        localData["model_version"]="20261026-minilm-adaptive-v2";
+        localRequest.detail=localData.ToString(); index.Observe(localRequest);
+        Check(index.Decisions[0].Provider=="local_minilm", "pending local request never labeled Jev");
+        var localResponse=Fixture("local","trial-local",true,4.03);
+        localData=TrialReviewJev.Detail(localResponse); localData["provider"]="local_minilm";
+        localData["probability_semantics"]="uncalibrated_offered_choice_softmax";
+        localResponse.detail=localData.ToString(); index.Observe(localResponse);
+        Check(index.Decisions[0].Provider=="local_minilm" && (string)index.Decisions[0].Response["probability_semantics"]=="uncalibrated_offered_choice_softmax",
+            "local model probabilities and provider retained together");
         Debug.Log("TRIAL_REVIEW_JEV_PASS candidate/probability preservation, playback IDs, legacy, malformed, stale and late responses");
     }
 }

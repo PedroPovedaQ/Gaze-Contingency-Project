@@ -228,6 +228,31 @@ partial class VoiceIsolationChecks
         synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"catalog_turn","joint-speak",true,"jev");
         Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==0,"Joint approval waits for playback before consumption");Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==1,"Joint approval skips the second API call");
         Begin();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"adaptive_assistance","adaptive-speak",true,"jev_adaptive");
+        Drain(MonoBehaviour.LastRoutine); Check(calls==0 && commits==0,"Adaptive advice queues without second model call");
+        Drain(MonoBehaviour.LastRoutine); Check(calls==0 && commits==1,"Adaptive advice commits once at actual onset");
+        Begin();
+        synth.GuidanceEvidence.guidanceState = new GuidanceStateSnapshot { phase="Turning", newGuidanceAllowed=true,
+            assistance=new AssistanceRuntimeSnapshot { mode="adaptive", provider="local_minilm", lastStrategy="correct" } };
+        var cleanContext=Newtonsoft.Json.Linq.JObject.Parse(synth.CaptureDecisionContext());
+        Check(cleanContext["evidence"]["guidanceState"]["assistance"]==null &&
+            synth.GuidanceEvidence.guidanceState.assistance.provider=="local_minilm",
+            "Display provenance stays in telemetry without leaking model identity or previous labels into policy input");
+        string localOutcome = null;
+        synth.Telemetry += (kind,channel,text,detail) => {
+            if(kind == "transmission_decision") {
+                var value=Newtonsoft.Json.Linq.JObject.Parse(detail);
+                if((string)value["decision_id"] == "local-adaptive-speak") localOutcome=(string)value["outcome"];
+            }
+        };
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"adaptive_assistance","local-adaptive-speak",true,"local_minilm_adaptive");
+        Drain(MonoBehaviour.LastRoutine); Drain(MonoBehaviour.LastRoutine);
+        Check(calls==0 && commits==1 && localOutcome=="speak", "Local adaptive advice plays without cloud call and is not mislabeled fallback");
+        Begin();
+        synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"adaptive_assistance","adaptive-stale",true,"jev_adaptive");
+        Drain(MonoBehaviour.LastRoutine); relevant=false; Drain(MonoBehaviour.LastRoutine);
+        Check(commits==0,"Adaptive queued audio is cancelled by changed evidence before onset");
+        Begin();
         synth.TryGuidanceTransmission(phrase,()=>relevant,()=>commits++,"catalog_turn","joint-wait",false,"jev");
         Drain(MonoBehaviour.LastRoutine);Check(calls==0 && commits==0,"Joint wait stays silent");
         Check(!synth.CanRequestGuidance("catalog_turn"),"Joint wait prevents another catalog request during cooldown");
@@ -491,6 +516,8 @@ partial class VoiceIsolationChecks
     }
     static void Main()
     {
+        Check(!SessionConfig.ValidateVoiceTranscript, "Provider trust is the default");
+        SessionConfig.ValidateVoiceTranscript = true;
         string root = Path.Combine(Path.GetTempPath(), "gaze-voice-tests-" + Guid.NewGuid());
         Directory.CreateDirectory(root);
         try
@@ -1281,6 +1308,10 @@ partial class VoiceIsolationChecks
             Drain(synth.PrepareLibraries(new[] { "Fresh clone guidance." }, null, ok=>prepared=ok, onlyVoice: VoiceCondition.SelfSimilar));
             Check(!prepared && !synth.LibraryReady && provider.Calls == 0,
                 "Fresh-clone quick test cannot prepare stale saved audio before enrollment");
+            Check(SessionConfig.TrySetLocalAdaptiveModel(true) && SessionConfig.LocalAdaptiveModel,
+                "Development quick test can select local adaptive provider");
+            Check(SessionConfig.TrySetJevLedGuidance(false) && SessionConfig.AssistanceProvider == "baseline_rules",
+                "Baseline mode does not claim local or cloud model decisions");
             Check(SessionConfig.TrySetJevLedGuidance(true) && SessionConfig.JevLedGuidance,
                 "Action policy can be enabled explicitly in clone development mode");
             SessionConfig.SelfSimilarVoiceId = "newly-recorded-dev-clone";
@@ -1297,8 +1328,10 @@ partial class VoiceIsolationChecks
             Check(!SessionConfig.DevelopmentQuickTest && !SessionConfig.NewCloneQuickTest && SessionConfig.SelfSimilarVoiceId=="" &&
                 ChallengeSet.RoundCount == 80 && SessionConfig.ParticipantId == "",
                 "new participant restores the full study schedule and disables shortcut");
-            Check(!SessionConfig.JevLedGuidance && !SessionConfig.TrySetJevLedGuidance(true),
-                "New participant reset clears development policy and study cannot enable it");
+            Check(!SessionConfig.LocalAdaptiveModel && !SessionConfig.TrySetLocalAdaptiveModel(true) && SessionConfig.AssistanceProvider == "jev",
+                "New participant resets model selection and study cannot select development model");
+            Check(SessionConfig.JevLedGuidance && SessionConfig.GuidancePolicy == "jev_adaptive_assistance_v2" && !SessionConfig.TrySetJevLedGuidance(false),
+                "New participant uses active adaptive guidance; baseline override is development-only");
             SessionConfig.ParticipantId = "DEV_NEUTRAL"; // Same seed: mode must still invalidate cached geometry.
             var studyPlan = ChallengeSet.Rounds;
             Check(studyPlan[0].startPlane == ChallengeSet.PracticeRound(0).targetPlane,
@@ -1313,6 +1346,31 @@ partial class VoiceIsolationChecks
             SessionConfig.ConfigureNeutralQuickTest();
             Check(ChallengeSet.Rounds[0].startPlane == 0, "re-entering quick test resets cached starting geometry");
             SessionConfig.ResetForNewParticipant();
+            SessionConfig.ConfigureNeutralQuickTest();
+            SessionConfig.ValidateVoiceTranscript = false;
+            DownloadHandlerAudioClip.Quiet = true;
+            Drain(synth.PrepareLibraries(new[] { "Provider trusted quiet sample." }, null, ok => prepared = ok, neutralOnly: true));
+            Check(prepared && synth.LibraryReady, "Provider trust does not reject a decoded quiet library");
+            DownloadHandlerAudioClip.Quiet = false;
+            SessionConfig.ResetForNewParticipant();
+            var desktop = new ParticipantSessionAssignment { id = Guid.NewGuid().ToString("N"), participantCode = "P991",
+                configuration = "A", neutralGender = "Male", neutralOption = 1, cloneVoiceId = "desktop_clone_id" };
+            SessionConfig.ConfigureDesktopSession(desktop);
+            Check(SessionConfig.VoiceForRound(0) == VoiceCondition.SelfSimilar && SessionConfig.VoiceForRound(40) == VoiceCondition.Generic,
+                "Configuration A overrides odd participant parity and starts self-similar");
+            Check(SessionConfig.SelfSimilarVoiceId == desktop.cloneVoiceId && SessionConfig.DesktopSessionId == desktop.id,
+                "Desktop clone and session identity transfer together");
+            string desktopRun = SessionConfig.BeginRun();
+            Check(File.ReadAllText(Path.Combine(desktopRun, "desktop-session-id.txt")) == desktop.id, "Run links back to desktop intake");
+            SessionConfig.ConfigureDesktopSession(desktop);
+            desktop.configuration = "B";
+            bool conflict = false; try { SessionConfig.ConfigureDesktopSession(desktop); } catch (InvalidOperationException) { conflict = true; }
+            Check(conflict && SessionConfig.VoiceOrder == "selfsimilar_then_neutral", "Conflicting order cannot overwrite participant assignment");
+            desktop.id = Guid.NewGuid().ToString("N"); desktop.participantCode = "P992";
+            SessionConfig.ConfigureDesktopSession(desktop);
+            Check(SessionConfig.VoiceForRound(0) == VoiceCondition.Generic, "Configuration B overrides even participant parity");
+            SessionConfig.ResetForNewParticipant();
+            Check(SessionConfig.DesktopSessionId == "", "Participant reset clears desktop identity");
             Console.WriteLine("PASS: voice isolation, cache, audio failures, neutral quick-test preparation, development identity and schedule/reset.");
         }
         finally { Directory.Delete(root, true); }

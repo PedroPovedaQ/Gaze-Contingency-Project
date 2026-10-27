@@ -21,6 +21,7 @@ public static class TrialReviewBuild
         PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Standalone,"org.gazestudy.trialreview");
         PlayerSettings.defaultScreenWidth=1440;PlayerSettings.defaultScreenHeight=900;
         PlayerSettings.fullScreenMode=FullScreenMode.Windowed;PlayerSettings.resizableWindow=true;
+        PlayerSettings.iOS.microphoneUsageDescription="Record participant answers for the interview and participant-authorized voice cloning.";
         PlayerSettings.runInBackground=true;PlayerSettings.SetArchitecture(UnityEditor.Build.NamedBuildTarget.Standalone, 2);
         PlayerSettings.SetScriptingBackend(UnityEditor.Build.NamedBuildTarget.Standalone,ScriptingImplementation.Mono2x);
         // The copied replay renderer chooses this built-in fallback in the isolated project.

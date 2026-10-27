@@ -16,6 +16,7 @@ public partial class VoiceSynthesizer
     {
         public string text, voiceId, path, error, transcript;
         public bool clone;
+        public bool validateTranscript = SessionConfig.ValidateVoiceTranscript;
     }
 
     // Capture identity, formatted wording and path before any request starts. Downloads never
@@ -32,7 +33,7 @@ public partial class VoiceSynthesizer
             string path = GetCachePath(text, clone ? $"el-clone-{id}" : $"el-{id}");
             if (!paths.Add(path)) continue;
             jobs.Add(new DownloadJob { text = text, voiceId = id, path = path, clone = clone,
-                error = VoiceAudioIntegrity.HasForbiddenFiller(text) ? "Script contains a prohibited filler." :
+                error = SessionConfig.ValidateVoiceTranscript && VoiceAudioIntegrity.HasForbiddenFiller(text) ? "Script contains a prohibited filler." :
                     clone && (SessionConfig.SelfSimilarEnrollmentPending || string.IsNullOrEmpty(id))
                     ? "Self-similar voice unavailable." : string.IsNullOrEmpty(id) ? "Neutral voice unavailable." : null });
         }
@@ -68,8 +69,9 @@ public partial class VoiceSynthesizer
     {
         int generation = m_PreparationGeneration;
         if (job.error != null) yield break;
-        if (VoiceAudioIntegrity.UsableCache(job.path))
+        if (job.validateTranscript ? VoiceAudioIntegrity.UsableCache(job.path) : File.Exists(job.path))
         {
+            if (!job.validateTranscript) yield break;
             if (VoiceAudioVerification.HasReceipt(job.path, job.text)) yield break;
             // Legacy caches must earn a receipt too; their existing PCM/RMS checks did not prove wording.
             byte[] cached = File.ReadAllBytes(job.path);
@@ -114,8 +116,8 @@ public partial class VoiceSynthesizer
                 }
             }
             if (job.error == null && (audio == null || audio.Length < 100)) job.error = "Synthesis returned empty or truncated audio.";
-            if (job.error == null && VoiceAudioIntegrity.IsRejectedAudio(audio)) job.error = "Synthesis returned a quarantined audio clip.";
-            if (job.error == null)
+            if (job.error == null && job.validateTranscript && VoiceAudioIntegrity.IsRejectedAudio(audio)) job.error = "Synthesis returned a quarantined audio clip.";
+            if (job.error == null && job.validateTranscript)
             {
                 VoiceAudioVerification.Result verification = null;
                 yield return m_VerifyAudio(m_ApiKey, audio, job.text, r => verification = r);
@@ -145,8 +147,16 @@ public partial class VoiceSynthesizer
                     File.WriteAllBytes(temp, audio);
                     if (File.Exists(job.path)) File.Delete(job.path);
                     File.Move(temp, job.path);
-                    VoiceAudioVerification.SaveReceipt(job.path, job.text, audio, job.transcript);
-                    AudioTelemetry("audio_verification_passed", "verification", Path.GetFileNameWithoutExtension(job.path), VoiceAudioVerification.Version);
+                    if (job.validateTranscript)
+                    {
+                        VoiceAudioVerification.SaveReceipt(job.path, job.text, audio, job.transcript);
+                        AudioTelemetry("audio_verification_passed", "verification", Path.GetFileNameWithoutExtension(job.path), VoiceAudioVerification.Version);
+                    }
+                    else
+                    {
+                        File.Delete(job.path + ".verified.json");
+                        AudioTelemetry("audio_verification_bypassed", "verification", Path.GetFileNameWithoutExtension(job.path), "provider_trusted_content");
+                    }
                 }
                 catch (Exception e) { job.error = "Could not save audio: " + e.GetType().Name; }
                 finally { if (File.Exists(temp)) File.Delete(temp); }

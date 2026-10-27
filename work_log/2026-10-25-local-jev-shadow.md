@@ -1,0 +1,13 @@
+# Local Jev shadow observer verification
+
+Scope: `tools/local-jev/shadow.py`, `test_shadow.py`, README and recorded verification. Existing participant-intake changes were preserved. Native inline implementation followed the project task mapping; no independent subagent review is claimed. Nothing was committed or pushed.
+
+The test-first run failed with missing `shadow` module after correcting a fixture import. Nine new observer tests now cover request/response ordering and deduplication, partial append/restart and recording identity, unsupported contracts, closed external gates, timeout/discard accounting, inference failure, from-now startup, model mismatch/source shrink, late playback, private exports, read-only source and orphan responses. The full local-model suite has 22 passing tests. Python compilation and `git diff --check` pass.
+
+Sequential simplification/review inspected read-only source boundaries, inference isolation from Jev answers, exact joins, crash/offset transactions, process locking, model/source/device provenance, missing-data denominators and private local evidence. Reused the existing input validator, external gates and saved Policy; removed duplicate export reads. Added source/output separation and backend identity so evidence cannot write into the source or silently mix CPU/MPS timing. No UI or headset runtime source was changed. The dedicated CE independent-review path was not completed under the project's inline task mapping; this is local review and test evidence, not a multi-agent review receipt.
+
+Actual saved v4 inference processed all 20 stored C# development fixture requests with no errors, matching recorded Jev choices 20/20. Details: `docs/testing/2026-10-25-local-jev-shadow-smoke.json`. These are old synthetic/development requests wrapped as replay events; this does not establish live participant performance. No fresh cloud call was made.
+
+Required project build command ran successfully. Unity reported Android build success in 16.6 seconds and successful Wi-Fi install/launch at 192.168.1.208:5555. This rebuild did not embed the local model; inference stays on the Mac.
+
+The observer was started on CPU as PID 39700, reading `~/Documents/Trial Review Live/data`, writing `~/.local/share/follow-my-voice-models/shadow-live-20261025`. At verification it was running with zero new requests. The live receiver was connected; no active wearer sequence was observed. For collection, start a development quick test and select Settings -> DEV guidance: Jev-led. Keep Trial Viewer Live mirroring. Normal study requests remain unsupported. Stop/resume commands are documented in `tools/local-jev/README.md`.

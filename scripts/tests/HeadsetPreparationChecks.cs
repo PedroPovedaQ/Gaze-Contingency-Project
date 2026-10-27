@@ -32,6 +32,21 @@ public class FindObjectGameManager
     public event Action<string> OnSessionStopped;
     public event Action<float> OnGameCompleted;
 }
+public class VoiceModeSelector
+{
+    public bool CanStageDesktopSession => true;
+    public string DesktopAssignmentId => "";
+    public string DesktopAssignmentCode => "";
+    public string DesktopConfiguration => "";
+    public string DesktopAssignmentState => "none";
+    public bool StageDesktopSession(ParticipantSessionAssignment value) { value.Validate(); return true; }
+}
+public static class SessionConfig {
+    public static string SuggestedParticipantId => "P001";
+    public static AssistanceRuntimeSnapshot CaptureAssistanceSelection() => new AssistanceRuntimeSnapshot {
+        mode="adaptive", provider="jev", modelVersion="typesafe-ai/jev", connection="not_checked" };
+}
+public class HintGenerator { public AssistanceRuntimeSnapshot CaptureAssistanceStatus() => SessionConfig.CaptureAssistanceSelection(); }
 public class TrialReplayRecorder { public void RecordHeadsetControl(string detail) {} }
 static class HeadsetPreparationChecks
 {
@@ -52,6 +67,9 @@ static class HeadsetPreparationChecks
             Call(status, "Awake");
             var first = Read(path);
             Require((string)first["phase"] == "ready", "Initial setup must not claim a trial or loading");
+            var assistance = (Dictionary<string,object>)first["assistance"];
+            Require((string)assistance["provider"]=="jev" && (string)assistance["connection"]=="not_checked" && assistance["lastDecisionId"]==null,
+                "Pretrial status reports selected provider without inventing a successful decision");
             status.Set("preparing", "Preparing experiment", true, .4f);
             UnityEngine.Time.realtimeSinceStartupAsDouble = .11;
             Call(status, "Update");

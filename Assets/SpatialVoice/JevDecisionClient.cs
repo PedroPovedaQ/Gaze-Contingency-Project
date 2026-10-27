@@ -23,6 +23,9 @@ namespace SpatialVoice
     public sealed partial class JevDecisionClient : INavigationDecisionProvider
     {
         public const string Endpoint = "https://ai-gateway.vercel.sh/typesafe/v1/systemone";
+        public const string LocalEndpoint = "http://127.0.0.1:8766/typesafe/v1/systemone";
+        public const string LocalModelVersion = AssistanceRuntimeSnapshot.LocalModelVersion;
+        readonly bool m_Local;
         static readonly HttpClient Client = new HttpClient();
         readonly string m_Key;
         readonly SynchronizationContext m_Context = SynchronizationContext.Current;
@@ -30,15 +33,37 @@ namespace SpatialVoice
         public event Action<string> Trace;
         void Emit(JObject value)
         {
+            value["provider"] = Name;
+            value["model_version"] = m_Local ? LocalModelVersion : "typesafe-ai/jev";
             string json = value.ToString(Formatting.None);
             void Deliver() { try { Trace?.Invoke(json); } catch { /* Diagnostics cannot break guidance. */ } }
             if (m_Context != null && SynchronizationContext.Current != m_Context) m_Context.Post(_ => Deliver(), null);
             else Deliver();
         }
         readonly HttpClient m_Client;
-        public string Name => "jev";
-        public bool Available => !string.IsNullOrWhiteSpace(m_Key);
+        public string Name => m_Local ? "local_minilm" : "jev";
+        public bool Available => m_Local || !string.IsNullOrWhiteSpace(m_Key);
         public JevDecisionClient(string apiKey, HttpClient client = null) { m_Key = apiKey; m_Client = client ?? Client; }
+
+        // Separate client instance: only assistance requests may use the loopback transport.
+        public static JevDecisionClient CreateLocalAdaptive(HttpClient client = null) => new JevDecisionClient(client);
+        JevDecisionClient(HttpClient client) { m_Local = true; m_Client = client ?? Client; }
+        public async Task CheckLocalConnectionAsync(CancellationToken cancellation)
+        {
+            if (!m_Local) throw new InvalidOperationException("Local connection check requires local client");
+            using (var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellation))
+            {
+                timeout.CancelAfter(AdaptiveDeadlineMilliseconds);
+                using (var response = await m_Client.GetAsync("http://127.0.0.1:8766/health", timeout.Token).ConfigureAwait(false))
+                {
+                    response.EnsureSuccessStatusCode();
+                    var health = JObject.Parse(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+                    if ((string)health["status"] != "ready" || (string)health["scope"] != "assistance" ||
+                        (string)health["model_version"] != LocalModelVersion)
+                        throw new FormatException("Local adaptive checkpoint mismatch");
+                }
+            }
+        }
 
         public static string Payload(string state, IReadOnlyList<NavigationPhrase> choices)
         {
@@ -219,6 +244,9 @@ namespace SpatialVoice
         async Task<string> RequestAsync(string payload, CancellationToken cancellation, int timeoutMilliseconds)
         {
             var request = JObject.Parse(payload);
+            if (m_Local && (request["questions"] is JObject questions) &&
+                (questions.Count != 1 || questions["assistance"] == null))
+                throw new InvalidOperationException("Local model supports assistance only");
             var state = request["state"];
             string id = state is JObject ? (string)state["decision_id"] : null;
             id = id ?? Guid.NewGuid().ToString("N");
@@ -229,6 +257,8 @@ namespace SpatialVoice
             {
                 string json = await SendAsync(payload, cancellation, timeoutMilliseconds).ConfigureAwait(false);
                 var response = JObject.Parse(json);
+                if (m_Local && ((string)response["model_version"] != LocalModelVersion || (string)response["decision_id"] != id))
+                    throw new FormatException("Local model or decision identity mismatch");
                 // Validate before labeling this an accepted provider response.
                 foreach (var question in ((JObject)request["questions"]).Properties())
                 {
@@ -239,7 +269,9 @@ namespace SpatialVoice
                 }
                 Emit(new JObject { ["schema"] = "jev-trace-v1", ["request_id"] = id,
                     ["stage"] = "response", ["status"] = "ok", ["elapsed_ms"] = timer.Elapsed.TotalMilliseconds,
-                    ["answers"] = response["answers"], ["usage"] = response["usage"] });
+                    ["answers"] = response["answers"], ["usage"] = response["usage"],
+                    ["source"] = response["source"], ["probability_semantics"] = response["probability_semantics"],
+                    ["checkpoint_sha256"] = response["checkpoint_sha256"] });
                 return json;
             }
             catch (Exception e)
@@ -255,10 +287,10 @@ namespace SpatialVoice
         {
             if (!Available) throw new InvalidOperationException("Vercel Jev key is not configured.");
             using (var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellation))
-            using (var request = new HttpRequestMessage(HttpMethod.Post, Endpoint))
+            using (var request = new HttpRequestMessage(HttpMethod.Post, m_Local ? LocalEndpoint : Endpoint))
             {
                 timeout.CancelAfter(timeoutMilliseconds);
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", m_Key);
+                if (!m_Local) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", m_Key);
                 request.Content = new StringContent(payload, Encoding.UTF8, "application/json");
                 using (var response = await m_Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token).ConfigureAwait(false))
                 {

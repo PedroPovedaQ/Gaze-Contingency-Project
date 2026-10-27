@@ -1,3 +1,91 @@
+## 2026-10-26
+
+- Saved the current runtime, viewer, participant intake, activation/eye-dot tools, adaptive provider comparison, and research analysis/reporting as a local code checkpoint at the user's request. Existing build/test receipts remain in the linked work logs; fresh wearer verification remains open. No push requested.
+
+## 2026-10-26
+
+- Android assistance-status build succeeded (44.9 s), installed and launched over Wi-Fi. The updated viewer is running in Live mode. Headset is asleep and retains its old paused sidecar; fresh diagnostic receipt and wearer verification await wake.
+- **Implemented — visible assistance provenance:** added selected mode/model, connection state and latest accepted strategy/decision age to development headset controls, Trial Viewer Live, and recorded Guidance State. The optional diagnostic snapshot accompanies replay samples/events and pretrial heartbeat. Receiver validates and bounds it; legacy recordings remain unknown. Provider/policy switches reset accepted-decision labels and immediately record the new selection. Diagnostics are excluded from model inputs. Headset status, voice isolation, spatial/adaptive/lifecycle checks, 89 viewer Python tests and standalone viewer build passed. See `work_log/2026-10-26-assistance-status.md` for deployment receipts and remaining wearer checks.
+
+## 2026-10-26
+
+- **Implemented — headset adaptive-provider toggle:** quick-test Settings switches active assistance between Jev and MiniLM adaptive v2, independently of Adaptive/Baseline. Switching while paused cancels pending guidance; responses must match provider, checkpoint and request. Added loopback-only Mac service/ADB tunnel helper, visible connection status, truthful per-request provider/model/hash/probability telemetry, and provider-aware Trial Viewer inspector. Normal participant runs retain Jev. Network/session tests and actual C# model calls passed; a synthetic request from the Wi-Fi-connected headset returned the expected correction. Final Android build passed (78.9 s), installed/launched over Wi-Fi; updated standalone Trial Viewer build passed. Wearer testing remains open. See `docs/testing/2026-10-26-headset-model-toggle.md` and the session work log for final build receipts.
+
+## 2026-10-26
+
+- Updated local MiniLM for the active nine-choice adaptive v2 contract. Preserved v4 and both adaptive candidates; trained on authored synthetic histories, then corrected an identified departure/trajectory coverage gap. Selected continuation epoch 2 using validation only. Fresh synthetic agreement: 539/540 learned, 540/540 after external guards; these are authored-policy checks, not participant validation.
+- Final identical-request desktop comparison: both local and Jev passed 12/12 repeated device regression expectations, including post-confirmation corrections. Local median loopback response 30.0 ms versus Jev cloud 181.7 ms; neither is headset FPS or acoustic onset. Added probability outputs, strict contract/version checks, old-model compatibility and a read-only adaptive comparison reader. Headset guidance stays on Jev.
+- 30 Python tests, production C# request parity/spatial checks and 540 saved-model inference checks passed. Parent hashes unchanged. Android build/install/launch over Wi-Fi passed (38.0 s). Results and methodology: `docs/testing/2026-10-26-local-adaptive.md`. Live comparison output: `~/.local/share/follow-my-voice-models/shadow-adaptive-v2-20261026`; create `stop-request` there to stop it. No commits, pushes or thesis synchronization.
+
+## 2026-10-26
+
+- Added an agent self-introduction and selection explanation to first practice readiness and the first development quick-test trial, in the assigned voice. Existing direction-to-target opening follows before object reveal/timing. Corrected study introduction to one practice trial. Unity introduction/opening checks and gaze-quality/guidance-state regression suites passed; diff checks passed. Android build succeeded (96.7 s), installed and launched over Wi-Fi. Wearer playback remains to be checked.
+
+## 2026-10-26
+
+- Diagnosed Adaptive silence in neutral development runs 33/34: successful Jev requests repeatedly chose observation during unresolved/receding searches; run 34 also recorded two silent responses after confirmed-target departure before a wrong selection. Updated assistance policy to v2 with recent-trajectory priority and explicit current-vs-historical target semantics. Frozen live replay improved from 6/12 to 12/12 pilot expectations, including unchanged healthy-progress silence. Added reproducible replay fixture/runner/evidence and explicit assistance_policy summary field. Android v2 build succeeded (97.9 s), installed and launched over Wi-Fi. Wearer retest remains pending; no participant-benefit claim.
+
+## 2026-10-26
+
+- Updated the existing controller-on-target selection reminder to: “Almost! Don't forget to press the right trigger to select the object.” Updated the exported phrase semantics and adaptive guidance documentation. Existing shared Adaptive/Baseline timing, once-per-objective limit, active-voice preparation and final evidence checks are retained. Gaze-quality, guidance-state and spatial/adaptive voice checks passed; git diff --check passed. Android build succeeded in 200.7 s and installed/launched over Wi-Fi. New phrase audio will be generated by normal voice preparation; wearer playback remains to be checked.
+
+## 2026-10-26
+
+- Prepared a conductor handoff for the new research plots, provenance, missing measurements, eye dot, and activation exercise. Handoff is machine-local temporary storage; existing shared worktree changes remain uncommitted.
+- Re-ran spatial/adaptive contract, voice isolation, guidance lifecycle, and Trial Viewer tests (88 Python tests): passed. Four fresh synthetic production Jev calls chose observe_4s for independent progress twice and orient_explicit after stalled brief guidance twice; 172–649 ms desktop request latency. Evidence: `docs/testing/2026-10-26-adaptive-jev-live.json`. No participant or audio playback validation in this check.
+- Confirmed Focus Vision connected via Wi-Fi ADB at 192.168.1.208:5555. Wearer validation remains open. MiniLM v4 still implements the legacy navigation_action contract, not the new active assistance policy.
+
+## 2026-10-25
+
+- **Implemented — post-calibration activation exercise:** after calibration acceptance or skip, complete three unscored look-and-right-trigger checks before centering/practice. Uses the study gaze-vicinity resolver and controller selector. Wrong selections and unavailable gaze do not advance; Recalibrate returns to calibration. Saves separate activation reports and tags eye rows as activation exercise. Pure state, Unity activation integration, controller-selection and entry-calibration checks passed; rendered preview inspected. Final Android build passed (226.6 s), installed and launched over Wi-Fi. Wearer verification remains open.
+
+## 2026-10-25
+
+- **Implemented — Eye dot:** added an off-by-default headset Settings toggle. A cyan marker projects the same fresh, aligned gaze used by guidance onto the nearest bounded object plane; hidden during pauses/readiness/transitions or unavailable tracking. Independent of wall outlines and ray visibility, with no selection collider. Raw gaze observations record `eyeDotEnabled`. Unity eye-dot and gaze-quality checks passed. Android build succeeded (291.3 s), installed and launched over Wi-Fi; wearer visual verification remains open.
+
+## 2026-10-25
+
+- Added reproducible raw-eye four-panel reporting and a coverage audit for the neutral/self-similar comparison. Inputs, code, detector settings, source integrity and dependency versions are recorded; missing measures stay unavailable. Legacy ray visits/transitions are retained as proxies and cannot populate physiological outcome columns.
+- Generated development figures from the newest copied search recordings: neutral run 32 and clone runs 1/2. Research validation remains open: no held-out spatial checks in these files, incomplete recording receipts, unvalidated event detector, no validated target-AOI join and no TLX responses. See `docs/research-eye-measures.md`.
+
+## 2026-10-25
+
+- Implemented active `jev_adaptive_assistance_v1` for new sessions in both voice conditions. Jev chooses observation duration or an assistance strategy from measured participant/run history; prepared clips and current geometry remain enforced locally.
+- Added participant/run isolation, observed cue responses, stale decision/onset cancellation, direction-reversal fade, and Trial Viewer assistance/probability/history display. Observation never falls through to the legacy forced cue.
+- Spatial voice, voice isolation, guidance lifecycle and 88 Trial Viewer Python checks pass. Four live synthetic Jev requests distinguish progress (`observe_4s`) from stalled-after-brief (`orient_explicit`). These are engineering checks, not evidence of participant benefit.
+- Final Android build passed (117.6 seconds), installed and launched over Wi-Fi. Updated Trial Viewer built and opened successfully.
+- Documented behavior and open pilot validation in `docs/guide/09-adaptive-assistance.md`. MiniLM remains on its older contract.
+
+## 2026-10-25
+
+- **Implemented — model wiki documentation:** Published [How we fine-tuned the local navigation model](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/wiki/Fine-tuning-the-local-navigation-model) and initialized the wiki Home index. Retained the article source in `docs/wiki/Fine-tuning-the-local-navigation-model.md`.
+- Documented MiniLM architecture, synthetic data provenance and splits, v3/v4 full fine-tuning recipes, checkpoint selection, raw/masked/gated evaluation, latency comparisons, deterministic baseline, reproduction commands and read-only shadow observation. Distinguished measured synthetic results from open participant validation and Jev replacement decisions.
+- Verified the published article renders on GitHub; wiki commit `510dceb`. Training/runtime branch and unrelated working changes were not pushed. Documentation-only change; no Unity rebuild required.
+
+## 2026-10-25 — Local model shadow observation
+
+- **Implemented:** added `tools/local-jev/shadow.py`, a Mac-only observer of the existing Trial Viewer live replay mirror. Jev retains all guidance authority; the observer cannot send headset commands, start trials, synthesize audio or retrain weights.
+- Exact `navigation_action` requests feed the saved v4 model before comparison with recorded Jev responses. Recording path plus request ID joins results; reports distinguish raw/masked/gated agreement, local failures, Jev timeouts, unsupported requests, discarded decisions and observed playback. SQLite commits read offsets with decisions for restart/deduplication. Output is private and outside the source archive.
+- **Scope:** only development quick tests with **DEV guidance: Jev-led** emit the supported contract. Normal study phrase/transmit requests are counted as unsupported. Mirrored records arrive asynchronously; reported Mac compute excludes transfer delay, while Jev elapsed includes headset/network time. Agreement is not human correctness or acoustic performance.
+- **Verification:** 22 local-model tests passed (9 new observer checks), Python compilation and diff checks passed. The actual saved model processed 20 stored production-C# fixture traces without errors and matched their recorded Jev actions 20/20. This is regression/integration evidence, not new participant validation. Android Build And Run also passed (16.6 seconds), installed and launched over Wi-Fi; no headset runtime code changed in this task.
+- Observer started on CPU against `~/Documents/Trial Review Live/data`, output `~/.local/share/follow-my-voice-models/shadow-live-20261025`. At activation it had zero new decisions. Existing archive contained only unsupported request types; wearer-run Jev-led quick-test collection remains pending. Full setup/stop/resume instructions are in `tools/local-jev/README.md`.
+
+## 2026-10-25
+
+- Added desktop participant intake to Trial Viewer Live mode: explicit A/B order, neutral study voice selection, participant-answer-only microphone capture, four spoken core prompts using River, and bounded adaptive experience follow-ups via Mistral.
+- Added local Python worker with private session persistence, concurrent answer-only cloning, duplicate-answer retry protection, explicit uncertain-clone retry and minimal headset assignment. No interview answers or names enter replay exports. API keys stay outside the desktop bundle.
+- Headset asks wearer to confirm code/order before preparing existing study voices; rejects active-session replacement and conflicting participant assignments. Session UUID links intake to recorded runs.
+- Calibration panel and target frame now ignore downward pitch/roll and remain at eye height. Unity alignment checks passed.
+- Supersedes earlier development-only transcript bypass: provider trust now defaults on for study and quick tests, bypassing transcript/filler/quarantine/loudness admission while retaining transport/decode requirements, normalization and truthful audit provenance.
+- Verification: 88 desktop/bridge/Python tests, voice isolation and assignment checks, headset heartbeat checks, desktop Unity verification/build and Android APK build passed. River prompt synthesis and Mistral response checked against live providers using generic/synthetic text; no participant recording was made for this verification.
+- Android build succeeded (59.0 s, 1163.7 MB), installed successfully over Wi-Fi at 192.168.1.208:5555 (device update time 14:06:20 EDT), and Android accepted launch (PID 8051). The activity immediately paused before Unity initialization; the saved heartbeat is from the previous run, so new runtime controls are not yet verified on-device. Full microphone/clone quality, wearer confirmation and hardware calibration rehearsal remain pending. Interview questions and data handling are a protocol proposal, not an assertion of IRB approval.
+
+## 2026-10-25 — Development transcript-validation feature flag
+
+- **Implemented:** `GazeData/development-transcript-validation.txt` controls transcript validation in development quick tests. Explicit `false` bypasses ASR and transcript receipt admission; `true`, missing, malformed or unreadable files retain validation. The flag is loaded at quick-test selection; select a new quick test after changing it. Normal study sessions always validate.
+- Bypassed clips retain download, quarantined-audio, decoding, silence and waveform checks. No verification receipts are fabricated. Manifests use `bypassed-development-v1`, and telemetry records `audio_verification_bypassed`. Prepared development audio cannot leak into study playback; validated preparation is required again.
+- Voice-isolation/download regression suite passes, including cached/generated bypass, unavailable ASR, manifest evidence, feature-flag defaults, session snapshot and study isolation. Android Build And Run succeeded in 275.4 seconds (1163.6 MB), installed over USB at 12:59:22 EDT and relaunched (PID 15797). Device flag confirmed `false`; app reports ready at Voice setup, awaiting selection of Test last cloned voice. Build emitted VIVE package editor preprocessing NullReferenceExceptions but completed successfully; diagnostics are in `~/Library/Logs/Unity/Editor.log`. Regression output: `/tmp/voice-transcript-feature-flag-tests.log`.
+
 ## 2026-10-25 — Cloned-audio verification recovery
 
 - **Implemented:** fixed an observed on-headset setup failure where Scribe transcribed “Keep looking up and right” and “Go back up and right” as “...up and write” on all three attempts. Canonicalization now recognizes this acoustically identical spelling only in the up/down-and-right context; wrong directions, omitted words and fillers still fail.

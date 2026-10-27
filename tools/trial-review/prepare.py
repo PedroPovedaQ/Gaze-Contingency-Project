@@ -38,7 +38,7 @@ def prepare(project):
     for name in ['TrialReplayData', 'TrialReplayGaze', 'TrialReplayState', 'TrialReplayFile', 'TrialReplayAudio']:
         (shared / (name + '.cs')).write_text(source('Assets/Replay/' + name + '.cs'))
     # Pure data/policy dependencies only; no recorders, bootstraps, credentials or XR.
-    for name in ['GuidanceDecision', 'GuidanceStateSnapshot', 'GazeObservation', 'GazeQuickAlignment', 'GazeTargetHistory', 'DirectionalHintPolicy']:
+    for name in ['GuidanceDecision', 'GuidanceStateSnapshot', 'GazeObservation', 'GazeQuickAlignment', 'GazeTargetHistory', 'DirectionalHintPolicy', 'ParticipantSessionAssignment']:
         (shared / (name + '.cs')).write_text(source('Assets/' + name + '.cs'))
 
     # Reuse the live angular policy and collider recipe, without session/XR dependencies.
@@ -124,6 +124,7 @@ def prepare(project):
     shutil.copyfile(htc / 'LICENSE.txt', destination / 'LICENSE.txt')
     (assets / 'StreamingAssets').mkdir(exist_ok=True)
     shutil.copyfile(HERE / 'live_bridge.py', assets / 'StreamingAssets/live_bridge.py')
+    shutil.copyfile(HERE / 'participant_intake.py', assets / 'StreamingAssets/participant_intake.py')
     shutil.copyfile(HERE / 'export_run.py', assets / 'StreamingAssets/export_run.py')
     analysis = assets / 'StreamingAssets/Analysis'
     analysis.mkdir(exist_ok=True)
@@ -138,7 +139,7 @@ def prepare(project):
     (project / 'Packages').mkdir(exist_ok=True)
     (project / 'Packages/manifest.json').write_text(json.dumps({'dependencies': {
         'com.unity.nuget.newtonsoft-json': '3.2.2',
-        'com.unity.modules.audio': '1.0.0', 'com.unity.modules.animation': '1.0.0', 'com.unity.modules.imgui': '1.0.0',
+        'com.unity.modules.audio': '1.0.0', 'com.unity.modules.unitywebrequestaudio': '1.0.0', 'com.unity.modules.unitywebrequest': '1.0.0', 'com.unity.modules.animation': '1.0.0', 'com.unity.modules.imgui': '1.0.0',
         'com.unity.modules.jsonserialize': '1.0.0', 'com.unity.modules.imageconversion': '1.0.0',
         'com.unity.modules.physics': '1.0.0', 'com.unity.modules.screencapture': '1.0.0'}}, indent=2))
     (project / 'ProjectSettings').mkdir(exist_ok=True)

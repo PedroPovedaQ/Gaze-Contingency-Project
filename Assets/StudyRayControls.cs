@@ -22,9 +22,12 @@ public sealed class StudyRayControls : MonoBehaviour
     readonly Dictionary<Transform, Vector3> m_SettingsScales = new();
     public bool SettingsOpen => m_SettingsOpen;
     Button m_SettingsButton, m_PauseButton, m_RepeatButton;
-    TextMeshProUGUI m_SettingsLabel;
+    TextMeshProUGUI m_SettingsLabel, m_FollowingLabel;
+    Button m_EyeDotButton;
+    TextMeshProUGUI m_EyeDotLabel;
+    EyeDot m_EyeDot;
     GameObject m_VicinityControls;
-    TextMeshProUGUI m_RingLabel, m_RadiusLabel, m_ActionPolicyLabel;
+    TextMeshProUGUI m_RingLabel, m_RadiusLabel, m_ActionPolicyLabel, m_ProviderLabel;
     readonly Dictionary<NearFarInteractor, (bool near, bool far, bool ui)> m_Rays = new();
     readonly Dictionary<XRRayInteractor, bool> m_LegacyRays = new();
     readonly Dictionary<XRPokeInteractor, bool> m_Pokes = new();
@@ -35,6 +38,7 @@ public sealed class StudyRayControls : MonoBehaviour
     void Start()
     {
         m_Game = GetComponent<FindObjectGameManager>();
+        m_EyeDot = GetComponent<EyeDot>() ?? gameObject.AddComponent<EyeDot>();
         ConfigureRays();
         // Stop the palm follower from requiring another hand while the right hand points.
         foreach (var menu in FindObjectsByType<HandMenu>(FindObjectsInactive.Include, FindObjectsSortMode.None))
@@ -57,6 +61,10 @@ public sealed class StudyRayControls : MonoBehaviour
         m_SettingsLabel = m_SettingsButton.GetComponentInChildren<TextMeshProUGUI>();
         m_PauseButton = RayMenuFeedback.CreateButton(m_Panel.transform,"Pause",Vector2.zero,new Vector2(230,64),()=>m_Game.PauseSession());
         m_RepeatButton = RayMenuFeedback.CreateButton(m_Panel.transform,"Repeat guidance",new Vector2(0,-75),new Vector2(230,64),()=>GetComponent<HintGenerator>()?.RequestRepeat());
+        m_EyeDotButton = RayMenuFeedback.CreateButton(m_Panel.transform, "Eye dot: Off", new Vector2(0,150),
+            new Vector2(230,64), () => m_EyeDot.SetVisible(!m_EyeDot.Visible));
+        m_EyeDotLabel = m_EyeDotButton.GetComponentInChildren<TextMeshProUGUI>();
+        m_EyeDotButton.gameObject.SetActive(false);
         m_VicinityControls = new GameObject("Development gaze vicinity controls", typeof(RectTransform));
         m_VicinityControls.transform.SetParent(m_Panel.transform, false);
         var ring = RayMenuFeedback.CreateButton(m_VicinityControls.transform, "Target ring: Off", new Vector2(0,-155), new Vector2(290,64), () => {
@@ -74,9 +82,19 @@ public sealed class StudyRayControls : MonoBehaviour
         m_RadiusLabel.rectTransform.sizeDelta = new Vector2(320,65);
         m_RadiusLabel.rectTransform.anchoredPosition = new Vector2(0,-295);
         StudyPromptCard.StyleText(m_RadiusLabel, 22);
-        m_ActionPolicyLabel = RayMenuFeedback.CreateButton(m_VicinityControls.transform, "DEV guidance: baseline",
+        m_ActionPolicyLabel = RayMenuFeedback.CreateButton(m_VicinityControls.transform, "DEV guidance: adaptive",
             new Vector2(0,-365), new Vector2(320,64),
             () => GetComponent<HintGenerator>()?.ToggleDevelopmentGuidancePolicy()).GetComponentInChildren<TextMeshProUGUI>();
+        m_ProviderLabel = RayMenuFeedback.CreateButton(m_VicinityControls.transform, "Model: Jev",
+            new Vector2(340,-365), new Vector2(320,90),
+            () => GetComponent<HintGenerator>()?.ToggleDevelopmentAssistanceProvider()).GetComponentInChildren<TextMeshProUGUI>();
+        var following = new GameObject("Active assistance status", typeof(RectTransform), typeof(TextMeshProUGUI));
+        following.transform.SetParent(m_Panel.transform, false);
+        m_FollowingLabel = following.GetComponent<TextMeshProUGUI>();
+        m_FollowingLabel.rectTransform.sizeDelta = new Vector2(570,130);
+        m_FollowingLabel.rectTransform.anchoredPosition = new Vector2(145,265);
+        StudyPromptCard.StyleText(m_FollowingLabel, 20);
+        m_FollowingLabel.raycastTarget = false;
         m_VicinityControls.SetActive(false);
         m_DismissPanel = new GameObject("Dismiss settings", typeof(RectTransform), typeof(Canvas), typeof(TrackedDeviceGraphicRaycaster));
         m_DismissPanel.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
@@ -181,10 +199,25 @@ public sealed class StudyRayControls : MonoBehaviour
         m_PauseButton.interactable = !m_SettingsOpen && !m_Game.ResearcherPaused &&
             (m_Game.SearchActive || m_Game.Readiness?.Active == true);
         m_RepeatButton.interactable = !m_SettingsOpen && m_Game.SearchActive;
+        m_EyeDotButton.gameObject.SetActive(m_SettingsOpen);
+        m_EyeDotButton.interactable = m_Game.RotationalBetaEnabled;
+        m_EyeDotLabel.text = "Eye dot: " + (m_EyeDot.Visible ? "On" : "Off");
+        m_FollowingLabel.gameObject.SetActive(SessionConfig.DevelopmentQuickTest);
+        if (SessionConfig.DevelopmentQuickTest)
+        {
+            var following = GetComponent<HintGenerator>()?.CaptureAssistanceStatus() ?? SessionConfig.CaptureAssistanceSelection();
+            m_FollowingLabel.text = "Selected: " + following.SelectionLabel + "\nConnection: " + following.ConnectionLabel +
+                "\nLast accepted: " + following.LastDecisionLabel;
+        }
         m_VicinityControls.SetActive(m_SettingsOpen && SessionConfig.DevelopmentQuickTest);
         if (m_VicinityControls.activeSelf)
         {
-            m_ActionPolicyLabel.text = "DEV guidance: " + (SessionConfig.JevLedGuidance ? "Jev-led" : "baseline");
+            m_ActionPolicyLabel.text = "DEV guidance: " + (SessionConfig.JevLedGuidance ? "adaptive" : "baseline");
+            m_ProviderLabel.text = !SessionConfig.JevLedGuidance ? "Model: unused in baseline" : SessionConfig.LocalAdaptiveModel
+                ? "Model: Local MiniLM\n" + (GetComponent<SpatialVoice.StudyNavigationVoiceBridge>()?.LocalModelStatus ?? "Connect Mac")
+                : "Model: Jev\nTap to use Local MiniLM";
+            m_ProviderLabel.GetComponentInParent<Button>().interactable = SessionConfig.JevLedGuidance &&
+                (!m_Game.SearchActive || m_Game.ResearcherPaused);
             var vicinity = GetComponent<HintGenerator>()?.Vicinity;
             m_RingLabel.text = "DEV target ring: " + (vicinity != null && vicinity.RingVisible ? "On" : "Off");
             m_RadiusLabel.text = $"Gaze radius: object + {(vicinity != null ? vicinity.PaddingDegrees : GazeTargetVicinity.DefaultPaddingDegrees):0}°";

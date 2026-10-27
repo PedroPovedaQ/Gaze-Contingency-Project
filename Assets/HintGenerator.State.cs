@@ -88,6 +88,9 @@ public partial class HintGenerator
 
     public void SetLifecycle(GuidancePhase phase, string reason)
     {
+        if (phase == GuidancePhase.Completed || phase == GuidancePhase.TimedOut || phase == GuidancePhase.Stopped)
+            m_AdaptiveHistory.EndTrial(phase.ToString());
+        if (phase == GuidancePhase.Paused) m_AdaptiveHistory.BreakObservation();
         m_State.SetLifecycle(phase, reason, Time.realtimeSinceStartupAsDouble);
         m_GazeHitObjectId = null; m_ClosestVicinityObject = null; m_EvaluatedTarget = null;
         PublishState(false);
@@ -106,9 +109,13 @@ public partial class HintGenerator
                 captured.gazeValid, captured.controllerValid, captured.gazeHitObjectId,
                 captured.vicinityWinnerObjectId, captured.controllerHitObjectId, captured.targetObjectId);
             CurrentStateSnapshot.guidancePolicy = SessionConfig.GuidancePolicy;
+            CurrentStateSnapshot.assistance = CaptureAssistanceStatus();
             if (m_Voice != null) m_Voice.GuidanceEvidence.guidanceState = CurrentStateSnapshot;
         }
     }
+
+    public AssistanceRuntimeSnapshot CaptureAssistanceStatus() =>
+        GetComponent<SpatialVoice.StudyNavigationVoiceBridge>()?.CaptureAssistanceStatus() ?? SessionConfig.CaptureAssistanceSelection();
 
     void PublishState(bool valid)
     {
@@ -120,6 +127,7 @@ public partial class HintGenerator
             m_ClosestVicinityObject?.GetComponent<SpawnableObjectInfo>()?.objectId,
             controllerHit?.GetComponent<SpawnableObjectInfo>()?.objectId, m_EvaluatedTarget?.objectId);
         CurrentStateSnapshot.guidancePolicy = SessionConfig.GuidancePolicy;
+        CurrentStateSnapshot.assistance = CaptureAssistanceStatus();
         if (m_PublishedRevision != m_State.Revision)
         {
             m_PublishedRevision = m_State.Revision;

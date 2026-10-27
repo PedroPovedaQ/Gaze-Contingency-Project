@@ -174,6 +174,7 @@ public class FindObjectGameManager : MonoBehaviour
         m_SearchClock.Pause(Time.timeAsDouble);
         m_TechnicallyStopped = true; SearchActive = false;
         m_EntryAlignment?.Abort();
+        GetComponent<ActivationExercise>()?.Abort();
         GetComponent<HintGenerator>()?.SetLifecycle(GuidancePhase.Stopped, reason);
         GetComponent<VoiceAssistantController>()?.CancelSearchOpening();
         m_Readiness?.Cancel();
@@ -268,6 +269,26 @@ public class FindObjectGameManager : MonoBehaviour
     float m_FloorHeight;
     public float SearchPlaneHeight => m_MaxObjectHeight + RotationalSearchLayout.TopMargin;
     public float SearchPlaneFloorY => m_FloorHeight;
+
+    // Nearest bounded object face, independent of wall-outline visibility.
+    public bool TryEyeDotPoint(Vector3 origin, Vector3 direction, out Vector3 point, out int plane)
+    {
+        point = default; plane = -1;
+        if (!m_UseRotationalLayout || !float.IsFinite(origin.sqrMagnitude) ||
+            !float.IsFinite(direction.sqrMagnitude) || direction.sqrMagnitude < .0001f) return false;
+        var ray = new Ray(origin, direction.normalized);
+        float nearest = float.PositiveInfinity;
+        for (int i = 0; i < RotationalSearchLayout.PlaneCount; i++)
+        {
+            Vector3 normal = m_SeatedRotation * Quaternion.Euler(0, i * RotationalSearchLayout.PlaneAngleDegrees, 0) * Vector3.forward;
+            var face = new Plane(normal, m_SpawnCenter + normal * m_RotationalRadius);
+            if (!face.Raycast(ray, out float distance) || distance <= 0 || distance >= nearest) continue;
+            Vector3 candidate = ray.GetPoint(distance);
+            if (!IsInsideSearchPlane(candidate, i)) continue;
+            nearest = distance; point = candidate; plane = i;
+        }
+        return plane >= 0;
+    }
 
     // Intersect the eye ray with the target wall's object plane, even above or
     // below its outline. Clamping would understate a large vertical correction.
@@ -484,8 +505,16 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_TechnicallyStopped) yield break;
         m_EntryAlignment = GetComponent<EntryGazeAlignment>();
         if (m_EntryAlignment == null) m_EntryAlignment = gameObject.AddComponent<EntryGazeAlignment>();
-        yield return m_EntryAlignment.Run();
-        if (m_TechnicallyStopped || !m_EntryAlignment.Completed) yield break;
+        var activation = GetComponent<ActivationExercise>() ?? gameObject.AddComponent<ActivationExercise>();
+        do
+        {
+            yield return m_EntryAlignment.Run();
+            if (m_TechnicallyStopped || !m_EntryAlignment.Completed) yield break;
+            yield return activation.Run();
+            if (m_TechnicallyStopped) yield break;
+            if (activation.RecalibrationRequested) m_EntryAlignment.ResetForRetry();
+        } while (activation.RecalibrationRequested);
+        if (!activation.Completed) yield break;
         if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
         while (!m_CenterAccepted && !m_TechnicallyStopped)
         {
@@ -502,6 +531,7 @@ public class FindObjectGameManager : MonoBehaviour
     public bool StartCenteredSession()
     {
         if (m_EntryAlignment == null || !m_EntryAlignment.Completed) return false;
+        if (GetComponent<ActivationExercise>()?.Completed != true) return false;
         if (!m_UseRotationalLayout || m_CenterAccepted || m_State != GameState.Idle || !Application.isFocused || Camera.main == null) return false;
         var selector = GetComponent<VoiceModeSelector>();
         var voice = GetComponent<VoiceAssistantController>();
@@ -529,6 +559,7 @@ public class FindObjectGameManager : MonoBehaviour
 
     void OnDisable()
     {
+        GetComponent<ActivationExercise>()?.Abort();
         ChallengeSet.DebugRoundCountOverride = 0;
         if (m_Spawner != null) m_Spawner.objectSpawned -= OnObjectSpawned;
         if (m_ControllerSelector != null) m_ControllerSelector.OnObjectCaptured -= OnObjectCaptured;

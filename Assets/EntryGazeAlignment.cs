@@ -75,10 +75,11 @@ public sealed class EntryGazeAlignment : MonoBehaviour
         m_Ok.interactable = false;
         AnchorPanel();
     }
+    public static Quaternion HorizontalFacing(Quaternion rotation) => Quaternion.Euler(0, rotation.eulerAngles.y, 0);
     void AnchorPanel()
     {
         var head = Camera.main.transform;
-        m_Panel.transform.SetPositionAndRotation(head.TransformPoint(new Vector3(0, -.6f, 1.5f)), head.rotation);
+        m_Panel.transform.SetPositionAndRotation(head.position + HorizontalFacing(head.rotation) * new Vector3(0, -.28f, 1.7f), HorizontalFacing(head.rotation));
     }
     public void StartCalibration()
     {
@@ -92,7 +93,7 @@ public sealed class EntryGazeAlignment : MonoBehaviour
         m_Ok.interactable = false; m_Start.interactable = false;
         m_Start.GetComponentInChildren<TMP_Text>().text = "Retry calibration";
         AnchorPanel();
-        m_Stream.QuickAlignment.BeginGuided(Camera.main.transform.position, Camera.main.transform.rotation, Time.realtimeSinceStartupAsDouble);
+        m_Stream.QuickAlignment.BeginGuided(Camera.main.transform.position, HorizontalFacing(Camera.main.transform.rotation), Time.realtimeSinceStartupAsDouble);
         CreateDots(); SetValidationTarget(); UpdateTargetPresentation(0, 3, 0);
     }
     void Update()
@@ -225,7 +226,7 @@ public sealed class EntryGazeAlignment : MonoBehaviour
         {
             var dot = new GameObject("Calibration dot " + (i + 1), typeof(RectTransform), typeof(Canvas));
             dot.transform.SetParent(m_TargetRoot.transform, false);
-            dot.transform.SetPositionAndRotation(m_Stream.QuickAlignment.TargetAt(i), Camera.main.transform.rotation);
+            dot.transform.SetPositionAndRotation(m_Stream.QuickAlignment.TargetAt(i), HorizontalFacing(Camera.main.transform.rotation));
             dot.transform.localScale = Vector3.one * .001f; dot.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
             m_Targets[i] = dot.transform;
             var glow = Disc(dot.transform, "Progress glow", 160, new Color(1, .788f, .016f, 0));
@@ -247,7 +248,7 @@ public sealed class EntryGazeAlignment : MonoBehaviour
         for (int i = 0; i < 3; i++)
         {
             var go = GameObject.CreatePrimitive(types[i]); go.name = "Check shape " + (i + 1); go.transform.SetParent(m_TargetRoot.transform);
-            go.transform.SetPositionAndRotation(m_Stream.QuickAlignment.TargetAt(i + 3), Camera.main.transform.rotation);
+            go.transform.SetPositionAndRotation(m_Stream.QuickAlignment.TargetAt(i + 3), HorizontalFacing(Camera.main.transform.rotation));
             go.transform.localScale = Vector3.one * .13f;
             m_Targets[i] = go.transform; m_Hitboxes[i] = go.GetComponent<Collider>(); m_Shapes[i] = go.GetComponent<Renderer>();
             m_Shapes[i].sharedMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
@@ -322,6 +323,12 @@ public sealed class EntryGazeAlignment : MonoBehaviour
     {
         if (Active) { m_Stream?.ClearQuickAlignment("Entry calibration interrupted."); Outcome = "interrupted"; SaveOutcome(); }
         Active = false; ClearTargets(); if (m_Panel != null) m_Panel.SetActive(false);
+    }
+    public void ResetForRetry()
+    {
+        Abort(); Completed = false; m_Started = false; Outcome = "not_started";
+        if (m_Panel != null) DestroyOwned(m_Panel);
+        m_Panel = null;
     }
     void OnDisable() => Abort();
     void OnDestroy() { if (m_Panel != null) DestroyOwned(m_Panel); if (Instance == this) Instance = null; }

@@ -10,6 +10,7 @@ public sealed class TrialReviewJev
         public string Id, Kind, Application;
         public TrialReplayRecord RequestRecord, ResponseRecord, PlaybackRecord, ApplicationRecord;
         public JObject Request, Response;
+        public string Provider => (string)Response?["provider"] ?? (string)Request?["provider"] ?? "jev";
         public bool Legacy;
         public double Time => RequestRecord.time;
         public string TrialId => RequestRecord.trialId;
@@ -23,7 +24,7 @@ public sealed class TrialReviewJev
                 if (Discarded) return "Discarded · state changed";
                 if (Status != "ok") return Status;
                 var answers = Response?["answers"] as JObject;
-                return (string)answers?["navigation_action"]?["choice"] ?? (string)answers?["transmit"]?["choice"] ?? (string)answers?["speech_action"]?["choice"] ?? "phrase selected";
+                return (string)answers?["assistance"]?["choice"] ?? (string)answers?["navigation_action"]?["choice"] ?? (string)answers?["transmit"]?["choice"] ?? (string)answers?["speech_action"]?["choice"] ?? "phrase selected";
             }
         }
     }

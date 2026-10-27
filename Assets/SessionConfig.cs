@@ -140,9 +140,50 @@ public static class SessionConfig
     public static bool CloneQuickTest { get; private set; }
     public static bool NewCloneQuickTest { get; private set; }
     public static bool DevelopmentQuickTest => NeutralQuickTest || CloneQuickTest;
-    static bool s_JevLedGuidance;
-    public static bool JevLedGuidance => DevelopmentQuickTest && s_JevLedGuidance;
-    public static string GuidancePolicy => JevLedGuidance ? "jev_actions_overrides_v2_target_fast" : "baseline_local_priority_v2_target_fast";
+    // User-directed provider trust: no transcript, filler or content-integrity admission gates.
+    public static bool ValidateVoiceTranscript { get; set; } = false;
+    public static string DesktopSessionId { get; private set; } = "";
+    public static string SuggestedParticipantId => FindNextParticipantId();
+    public static void ConfigureDesktopSession(ParticipantSessionAssignment assignment)
+    {
+        assignment.Validate();
+        string directory = Path.Combine(RootPath, assignment.participantCode);
+        string orderPath = Path.Combine(directory, "voice-order-v1.txt");
+        string sessionPath = Path.Combine(directory, "desktop-session-id.txt");
+        if (Directory.Exists(directory) && !File.Exists(sessionPath))
+            throw new System.InvalidOperationException("This participant code already has headset data. Use a new code.");
+        if (File.Exists(orderPath) && File.ReadAllText(orderPath).Trim() != assignment.Order)
+            throw new System.InvalidOperationException("This participant already has a different condition order.");
+        if (File.Exists(sessionPath) && File.ReadAllText(sessionPath).Trim() != assignment.id)
+            throw new System.InvalidOperationException("This participant code belongs to another desktop session.");
+        ResetForNewParticipant();
+        ParticipantId = assignment.participantCode;
+        DesktopSessionId = assignment.id;
+        SelectNeutralVoice((NeutralVoiceProfile)System.Enum.Parse(typeof(NeutralVoiceProfile), assignment.neutralGender), assignment.neutralOption);
+        SelfSimilarVoiceId = assignment.cloneVoiceId;
+        TrySetPerspective(VoicePerspective.External);
+        Directory.CreateDirectory(directory);
+        if (!File.Exists(orderPath)) File.WriteAllText(orderPath, assignment.Order);
+        File.WriteAllText(sessionPath, assignment.id);
+        ConfigureVoiceBlocks(replaceNeutralSelection: true);
+    }
+    static bool s_JevLedGuidance = true;
+    static bool s_LocalAdaptiveModel;
+    public static bool LocalAdaptiveModel => DevelopmentQuickTest && s_LocalAdaptiveModel;
+    public static string AssistanceProvider => !JevLedGuidance ? "baseline_rules" : LocalAdaptiveModel ? "local_minilm" : "jev";
+    public static AssistanceRuntimeSnapshot CaptureAssistanceSelection() => new AssistanceRuntimeSnapshot {
+        mode = JevLedGuidance ? "adaptive" : "baseline", provider = AssistanceProvider,
+        modelVersion = !JevLedGuidance ? null : LocalAdaptiveModel ? AssistanceRuntimeSnapshot.LocalModelVersion : "typesafe-ai/jev",
+        policy = GuidancePolicy, connection = JevLedGuidance ? "not_checked" : "not_required"
+    };
+    public static bool TrySetLocalAdaptiveModel(bool enabled)
+    {
+        if (!DevelopmentQuickTest) return false;
+        s_LocalAdaptiveModel = enabled;
+        return true;
+    }
+    public static bool JevLedGuidance => s_JevLedGuidance;
+    public static string GuidancePolicy => JevLedGuidance ? "jev_adaptive_assistance_v2" : "baseline_local_priority_v2_target_fast";
     public static bool TrySetJevLedGuidance(bool enabled)
     {
         if (!DevelopmentQuickTest) return false;
@@ -337,6 +378,8 @@ public static class SessionConfig
         Directory.CreateDirectory(CurrentRunFolder);
         File.WriteAllText(Path.Combine(CurrentRunFolder, "session-mode-v1.txt"),
             "mode=" + SessionMode + "\n" + (DevelopmentQuickTest ? "study_data=false\n" : ""));
+        if (!string.IsNullOrEmpty(DesktopSessionId))
+            File.WriteAllText(Path.Combine(CurrentRunFolder, "desktop-session-id.txt"), DesktopSessionId);
         using (var catalog = new StreamWriter(Path.Combine(CurrentRunFolder, "neutral-catalog-v1.json")))
             WriteNeutralCatalog(catalog);
 
@@ -371,7 +414,9 @@ public static class SessionConfig
     /// </summary>
     public static void ResetForNewParticipant()
     {
-        s_JevLedGuidance = false;
+        DesktopSessionId = "";
+        s_JevLedGuidance = true;
+        s_LocalAdaptiveModel = false;
         Debug.Log($"{k_Tag} Resetting session state for a new participant");
         VoiceBlocksEnabled = false;
         NeutralQuickTest = false;

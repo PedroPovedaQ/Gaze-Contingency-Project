@@ -37,6 +37,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
     public float PreparationProgress { get; private set; }
     public bool LibraryReady { get; private set; }
     bool m_Preparing;
+    readonly HashSet<string> m_TranscriptBypassedClips = new HashSet<string>();
     VoiceCondition[] m_LibraryVoices = { VoiceCondition.Generic, VoiceCondition.SelfSimilar };
     HashSet<string> m_OnDemandPhrases;
     float m_MatchedRms;
@@ -105,6 +106,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         m_Audit.Clear();
         foreach (var clip in m_PreparedClips.Values) Destroy(clip);
         m_PreparedClips.Clear();
+        m_TranscriptBypassedClips.Clear();
         LastError = null;
         var lines = new List<KeyValuePair<VoiceCondition, string>>();
         foreach (var voice in m_LibraryVoices)
@@ -189,19 +191,22 @@ public partial class VoiceSynthesizer : MonoBehaviour
     bool MatchLibraryLevels()
     {
         float target = 0.1f;
-        foreach (var item in m_Audit) target = Math.Min(target, item.rms * item.gain);
-        if (target < 0.02f) { Fail("Audio library has insufficient level/headroom; regenerate it."); return false; }
+        foreach (var item in m_Audit)
+            if (SessionConfig.ValidateVoiceTranscript || item.rms * item.gain > 0) target = Math.Min(target, item.rms * item.gain);
+        if (SessionConfig.ValidateVoiceTranscript && target < 0.02f) { Fail("Audio library has insufficient level/headroom; regenerate it."); return false; }
         foreach (var item in m_Audit)
         {
             var clip = m_PreparedClips[Path.Combine(m_CacheDir, item.clip_id + ".mp3")];
             var samples = new float[clip.samples * clip.channels];
             if (!clip.GetData(samples, 0)) { Fail("Cannot inspect matched audio."); return false; }
+            if (!SessionConfig.ValidateVoiceTranscript && item.rms * item.gain <= 0)
+            { item.achieved_rms = 0; item.requested_rms = target; item.level_limited = true; continue; }
             float adjustment = target / (item.rms * item.gain);
             int speech = Math.Min(samples.Length, item.speech_samples);
             double sum = 0;
             for (int i = 0; i < samples.Length; i++) { samples[i] *= adjustment; if (i < speech) sum += samples[i] * samples[i]; }
             item.achieved_rms = (float)Math.Sqrt(sum / Math.Max(1, speech));
-            if (Math.Abs(item.achieved_rms - target) > target * 0.01f || !clip.SetData(samples, 0))
+            if ((SessionConfig.ValidateVoiceTranscript && Math.Abs(item.achieved_rms - target) > target * 0.01f) || !clip.SetData(samples, 0))
             { Fail("Could not match voice library levels."); return false; }
             item.gain *= adjustment;
             item.requested_rms = target;
@@ -360,6 +365,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         Stop();
         foreach (var clip in m_PreparedClips.Values) Destroy(clip);
         m_PreparedClips.Clear();
+        m_TranscriptBypassedClips.Clear();
     }
 
     void OnDisable() => Stop();
@@ -389,6 +395,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         m_Audit.Clear();
         foreach (var clip in m_PreparedClips.Values) Destroy(clip);
         m_PreparedClips.Clear();
+        m_TranscriptBypassedClips.Clear();
     }
 
     public void PreviewNeutralVoice(NeutralVoiceProfile gender, int option, Action<bool> completed)
@@ -539,7 +546,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         GuidanceScheduler.CancelPlayback();
     }
 
-    public void InterruptIfAbout(string context, bool immediate = false)
+    public void InterruptIfAbout(string context, bool immediate = false, string reason = "gaze_unavailable")
     {
         if (string.IsNullOrEmpty(m_CurrentContext) || !m_CurrentContext.Equals(context, StringComparison.OrdinalIgnoreCase)) return;
         if (immediate || (context != "tip" && context != "guidance_repeat") || !IsSpeaking) { Stop(); return; }
@@ -548,7 +555,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         m_DropCorrection = true;
         CancelInterruptionAdvice();
         if (m_InterruptionCoroutine == null)
-            m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(null, null, null, "gaze_unavailable", null));
+            m_InterruptionCoroutine = StartCoroutine(FadeToAreaCorrection(null, null, null, reason, null));
     }
 
     public IEnumerator SpeakRecordingIntroduction() => SpeakSetupAnnouncement(
@@ -585,7 +592,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         bool wantSelfSimilar = (requestedVoice ?? SessionConfig.Voice) == VoiceCondition.SelfSimilar;
         var actualPerspective = VoicePromptText.PerspectiveForVoice(requestedVoice ?? SessionConfig.Voice);
         if (!setupAnnouncement) text = VoicePromptText.Format(text, actualPerspective);
-        if (VoiceAudioIntegrity.HasForbiddenFiller(text))
+        if (SessionConfig.ValidateVoiceTranscript && VoiceAudioIntegrity.HasForbiddenFiller(text))
         { Fail("Script contains a prohibited filler."); m_SpeakCoroutine = null; yield break; }
         m_PreparingText = text;
         string voiceId = requestedVoiceId ?? (wantSelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId);
@@ -623,7 +630,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         var job = new DownloadJob { text = text, voiceId = voiceId, path = cachePath, clone = wantSelfSimilar };
         yield return DownloadLine(job);
         if (generation != m_PreparationGeneration) yield break;
-        if (job.error != null || !VoiceAudioVerification.HasReceipt(cachePath, text))
+        if (job.error != null || (SessionConfig.ValidateVoiceTranscript && !VoiceAudioVerification.HasReceipt(cachePath, text)))
         {
             Fail(job.error ?? "Audio has no valid verification receipt.");
             m_SpeakCoroutine = null; m_CurrentContext = null;
@@ -649,9 +656,12 @@ public partial class VoiceSynthesizer : MonoBehaviour
         int generation = m_PreparationGeneration;
         var actualPerspective = wantSelfSimilar ? VoicePerspective.FirstPerson : VoicePerspective.External;
         AudioClip clip;
+        if (SessionConfig.ValidateVoiceTranscript && m_TranscriptBypassedClips.Contains(filePath))
+        { Fail("Unverified audio requires a fresh validated preparation when validation is enabled."); yield break; }
         if (!m_PreparedClips.TryGetValue(filePath, out clip))
         {
-            if (!VoiceAudioVerification.HasReceipt(filePath, m_PreparingText))
+            bool validateTranscript = SessionConfig.ValidateVoiceTranscript;
+            if (validateTranscript && !VoiceAudioVerification.HasReceipt(filePath, m_PreparingText))
             { Fail("Unverified audio cannot enter the playable library."); yield break; }
             using (var request = UnityWebRequestMultimedia.GetAudioClip("file://" + filePath, AudioType.MPEG))
             {
@@ -729,16 +739,21 @@ public partial class VoiceSynthesizer : MonoBehaviour
                 peak = Math.Max(peak, Math.Abs(samples[i]));
             }
             float rms = (float)Math.Sqrt(sum / Math.Max(1, treated.SpeechSamples));
-            if (rms < 0.00001f) { RejectClip(clip, filePath, "Audio is silent."); yield break; }
+            if (SessionConfig.ValidateVoiceTranscript && rms < 0.00001f) { RejectClip(clip, filePath, "Audio is silent."); yield break; }
             // Keep accepted starter RMS as the target, without exceeding safe gain/headroom.
             // Later phrases can have different crest factors; record the shortfall, not a trial failure.
             float requestedRms = LibraryReady && m_MatchedRms > 0 ? m_MatchedRms : 0.1f;
-            float requestedGain = requestedRms / rms;
+            float requestedGain = rms > 0 ? requestedRms / rms : 1;
             float gain = Math.Min(requestedGain, Math.Min(4f, 0.9f / peak));
             bool levelLimited = gain < requestedGain;
             for (int i = 0; i < samples.Length; i++) samples[i] *= gain;
             if (!clip.SetData(samples, 0)) { RejectClip(clip, filePath, "Could not normalize decoded audio."); yield break; }
             m_PreparedClips[filePath] = clip;
+            if (!validateTranscript)
+            {
+                m_TranscriptBypassedClips.Add(filePath);
+                AudioTelemetry("audio_verification_bypassed", "verification", Path.GetFileNameWithoutExtension(filePath), "provider_trusted_content");
+            }
             m_Audit.Add(new ClipAudit { clip_id = Path.GetFileNameWithoutExtension(filePath),
                 voice_id = voiceId,
                 provider = "elevenlabs",
@@ -748,7 +763,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
                 perspective = m_SetupAnnouncement ? "setup" : actualPerspective.ToString(),
                 perspective_version = VoicePromptText.Version,
                 effect_profile = InnerThoughtVoice.Profile(wantSelfSimilar),
-                verification_version = VoiceAudioVerification.Version,
+                verification_version = validateTranscript ? VoiceAudioVerification.Version : "provider-trusted-v1",
                 source_audio_sha256 = VoiceAudioVerification.Hash(File.ReadAllBytes(filePath)),
                 duration_seconds = clip.length, rms = rms, peak = peak, gain = gain, achieved_rms = rms * gain,
                 requested_rms = requestedRms, speech_samples = treated.SpeechSamples, level_limited = levelLimited });

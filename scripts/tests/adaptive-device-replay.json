@@ -1,0 +1,1804 @@
+[
+  {
+    "name": "stalled_after_encouragement",
+    "source": "run_033",
+    "elapsed": 18.331,
+    "state": {
+      "schema": "adaptive-assistance-v1",
+      "policy": "jev_adaptive_assistance_v1",
+      "decision_id": "e915f52d81fd4b498e063fb5055e1124",
+      "runtime": {
+        "captured_at_seconds": 223.1625325758012,
+        "guidance_policy": "jev_adaptive_assistance_v1",
+        "evidence": {
+          "guidanceState": {
+            "version": "guidance-state-v2",
+            "guidancePolicy": "jev_adaptive_assistance_v1",
+            "phase": "Turning",
+            "previousPhase": "Suspended",
+            "transitionReason": "coarse_direction_needed",
+            "allowedAction": "Direction",
+            "revision": 3,
+            "observationSequence": 36444,
+            "enteredAtSeconds": 210.02105606978313,
+            "capturedAtSeconds": 223.16233668979277,
+            "gazeValid": true,
+            "controllerValid": true,
+            "newGuidanceAllowed": true,
+            "gazeHitObjectId": null,
+            "vicinityWinnerObjectId": "r00_o22",
+            "controllerHitObjectId": null,
+            "targetObjectId": "r00_o97"
+          },
+          "valid": true,
+          "insideTargetWall": false,
+          "targetGazeQualified": false,
+          "controllerOnTarget": false,
+          "geometryAvailable": true,
+          "verticalMeasured": false,
+          "wallEntryQualified": false,
+          "gazeWithinTargetVicinity": false,
+          "controllerEvidenceValid": true,
+          "controllerTargetHoldQualified": false,
+          "vicinityAmbiguous": false,
+          "targetAcknowledged": false,
+          "targetReturnPending": false,
+          "continuationUsed": false,
+          "phase": "Turning",
+          "gazeRayHit": "none",
+          "controllerRayHit": "none",
+          "previousDirection": "Look right.",
+          "controllerTriggerHeld": 0,
+          "vicinityCandidateCount": 2,
+          "snapshotTimeSeconds": 223.16237450279897,
+          "gazeAgeSeconds": 0.00954224480102539,
+          "gazeReceiptAgeSeconds": 0.0040159900090657175,
+          "controllerAgeSeconds": 0.0006452090165112168,
+          "lastTargetSeenAgeSeconds": null,
+          "yawErrorDegrees": 137.4817,
+          "pitchErrorDegrees": 2.28867912,
+          "verticalPlaneFraction": null,
+          "vicinityErrorDegrees": 122.295372,
+          "vicinityRadiusDegrees": 10.7353973,
+          "vicinityMeasured": true,
+          "visualReferenceObjectId": null,
+          "visualReferenceSuppressionReason": null,
+          "visualReferenceVerticalDeltaMetres": null,
+          "visualReferencePitchDeltaDegrees": null,
+          "visualReferenceVerticalSuppressed": false,
+          "qualification_thresholds_seconds": {
+            "target_gaze": 0.1,
+            "controller_target": 1.0,
+            "target_wall": 0.25
+          }
+        },
+        "playback": {
+          "captured_at_seconds": 223.1627926797899,
+          "is_speaking": false,
+          "is_busy": false,
+          "transmission_decision_pending": false,
+          "current_phrase": null,
+          "pending_phrase": null,
+          "last_spoken_phrase": "Keep going to the right.",
+          "recent_history": {
+            "schema": "speech-memory-v1",
+            "scope": "since_guidance_reset",
+            "window_seconds": 15.0,
+            "speech": [
+              {
+                "text": "Keep going to the right.",
+                "context": "tip",
+                "phase": "Turning",
+                "action": "Direction",
+                "outcome": "completed",
+                "age_seconds": 10.609,
+                "ended_age_seconds": 9.275
+              },
+              {
+                "text": "Keep going to the right.",
+                "context": "tip",
+                "phase": "Turning",
+                "action": "Progress",
+                "outcome": "completed",
+                "age_seconds": 8.739,
+                "ended_age_seconds": 7.389
+              }
+            ],
+            "transitions": [
+              {
+                "phase": "Suspended",
+                "previousPhase": "Opening",
+                "reason": "search_started_awaiting_evidence",
+                "age_seconds": 13.151
+              },
+              {
+                "phase": "Turning",
+                "previousPhase": "Suspended",
+                "reason": "coarse_direction_needed",
+                "age_seconds": 13.142
+              }
+            ]
+          },
+          "context": null,
+          "started_in_stage": null,
+          "elapsed_seconds": null,
+          "speech_remaining_seconds": null,
+          "word_boundary_known": false,
+          "fade_in_progress": false,
+          "semantics": {
+            "intent": "unknown",
+            "horizontal": "none",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [],
+            "canBeSupersededBy": []
+          }
+        },
+        "seconds_since_speech_ended": 7.389988695009379,
+        "locally_qualified": true
+      },
+      "behavior": {
+        "schema": "adaptive-behavior-v1",
+        "trial_index": 0,
+        "active_search_seconds": 13.15,
+        "wrong_selections": 0,
+        "recent": {
+          "samples": [
+            {
+              "age_seconds": 11.59,
+              "angular_error_degrees": 157.48,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 11.07,
+              "angular_error_degrees": 136.99,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 10.55,
+              "angular_error_degrees": 142.22,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 10.02,
+              "angular_error_degrees": 137.18,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 9.51,
+              "angular_error_degrees": 134.79,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 8.99,
+              "angular_error_degrees": 133.64,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 8.49,
+              "angular_error_degrees": 125.22,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 7.98,
+              "angular_error_degrees": 125.57,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 7.48,
+              "angular_error_degrees": 125.08,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 6.98,
+              "angular_error_degrees": 125.38,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 6.47,
+              "angular_error_degrees": 125.79,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 5.97,
+              "angular_error_degrees": 126.33,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 5.46,
+              "angular_error_degrees": 127.25,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 4.96,
+              "angular_error_degrees": 128.39,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 4.45,
+              "angular_error_degrees": 129.6,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 3.92,
+              "angular_error_degrees": 130.61,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 3.41,
+              "angular_error_degrees": 131.59,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 2.9,
+              "angular_error_degrees": 132.55,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 2.4,
+              "angular_error_degrees": 133.11,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 1.89,
+              "angular_error_degrees": 133.84,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 1.37,
+              "angular_error_degrees": 136.06,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 0.87,
+              "angular_error_degrees": 136.2,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 0.37,
+              "angular_error_degrees": 136.97,
+              "direction": "Look right."
+            }
+          ],
+          "direction_changes": 0,
+          "window_seconds": 11.22,
+          "error_reduction_degrees": 20.51
+        },
+        "interventions": [
+          {
+            "decision_id": "1228a895621a45c5b8cd4d6e633fde1b",
+            "strategy": "encourage",
+            "at_seconds": 212.55425554778213,
+            "error_at_onset": 142.13185037360557,
+            "error_reduction_after_3s": null,
+            "response_status": "unavailable_overlapping_intervention"
+          },
+          {
+            "decision_id": "05396b1c712642319fadb80ad1551ad7",
+            "strategy": "encourage",
+            "at_seconds": 214.42384856778682,
+            "error_at_onset": 126.49446859818615,
+            "error_reduction_after_3s": -0.75,
+            "response_status": "observed_not_causal"
+          }
+        ],
+        "previous_trials": []
+      }
+    },
+    "capabilities": [
+      "orient_brief",
+      "orient_explicit"
+    ],
+    "expected": [
+      "orient_brief",
+      "orient_explicit"
+    ]
+  },
+  {
+    "name": "area_search_receding",
+    "source": "run_033",
+    "elapsed": 55.2114,
+    "state": {
+      "schema": "adaptive-assistance-v1",
+      "policy": "jev_adaptive_assistance_v1",
+      "decision_id": "874450b562434beaa5f80e1179c9a3b1",
+      "runtime": {
+        "captured_at_seconds": 260.05699651978813,
+        "guidance_policy": "jev_adaptive_assistance_v1",
+        "evidence": {
+          "guidanceState": {
+            "version": "guidance-state-v2",
+            "guidancePolicy": "jev_adaptive_assistance_v1",
+            "phase": "Refining",
+            "previousPhase": "Turning",
+            "transitionReason": "target_wall_entered",
+            "allowedAction": "Arrival",
+            "revision": 8,
+            "observationSequence": 41652,
+            "enteredAtSeconds": 250.212140481797,
+            "capturedAtSeconds": 260.0539121967975,
+            "gazeValid": true,
+            "controllerValid": true,
+            "newGuidanceAllowed": true,
+            "gazeHitObjectId": "r01_o138",
+            "vicinityWinnerObjectId": "r01_o138",
+            "controllerHitObjectId": "r01_o132",
+            "targetObjectId": "r01_o137"
+          },
+          "valid": true,
+          "insideTargetWall": true,
+          "targetGazeQualified": false,
+          "controllerOnTarget": false,
+          "geometryAvailable": true,
+          "verticalMeasured": true,
+          "wallEntryQualified": true,
+          "gazeWithinTargetVicinity": false,
+          "controllerEvidenceValid": true,
+          "controllerTargetHoldQualified": false,
+          "vicinityAmbiguous": false,
+          "targetAcknowledged": false,
+          "targetReturnPending": false,
+          "continuationUsed": false,
+          "phase": "Refining",
+          "gazeRayHit": "distractor",
+          "controllerRayHit": "distractor",
+          "previousDirection": "Look right.",
+          "controllerTriggerHeld": 0,
+          "vicinityCandidateCount": 1,
+          "snapshotTimeSeconds": 260.0539718317976,
+          "gazeAgeSeconds": 0.011440420779592841,
+          "gazeReceiptAgeSeconds": 0.0036555200058501214,
+          "controllerAgeSeconds": 0.0022774480166845024,
+          "lastTargetSeenAgeSeconds": null,
+          "yawErrorDegrees": -8.516991,
+          "pitchErrorDegrees": -40.7414932,
+          "verticalPlaneFraction": -0.5053003,
+          "vicinityErrorDegrees": 41.40772,
+          "vicinityRadiusDegrees": 10.3276615,
+          "vicinityMeasured": true,
+          "visualReferenceObjectId": "r01_o138",
+          "visualReferenceSuppressionReason": null,
+          "visualReferenceVerticalDeltaMetres": -1.15026963,
+          "visualReferencePitchDeltaDegrees": -42.23379,
+          "visualReferenceVerticalSuppressed": false,
+          "qualification_thresholds_seconds": {
+            "target_gaze": 0.1,
+            "controller_target": 1.0,
+            "target_wall": 0.25
+          }
+        },
+        "playback": {
+          "captured_at_seconds": 260.05764771779087,
+          "is_speaking": false,
+          "is_busy": false,
+          "transmission_decision_pending": false,
+          "current_phrase": null,
+          "pending_phrase": null,
+          "last_spoken_phrase": "Keep going to the right.",
+          "recent_history": {
+            "schema": "speech-memory-v1",
+            "scope": "since_guidance_reset",
+            "window_seconds": 15.0,
+            "speech": [
+              {
+                "text": "Keep going to the right.",
+                "context": "tip",
+                "phase": "Turning",
+                "action": "Direction",
+                "outcome": "completed",
+                "age_seconds": 12.07,
+                "ended_age_seconds": 10.704
+              },
+              {
+                "text": "Keep going to the right.",
+                "context": "tip",
+                "phase": "Turning",
+                "action": "Direction",
+                "outcome": "completed",
+                "age_seconds": 10.192,
+                "ended_age_seconds": 8.835
+              }
+            ],
+            "transitions": [
+              {
+                "phase": "Suspended",
+                "previousPhase": "Opening",
+                "reason": "search_started_awaiting_evidence",
+                "age_seconds": 14.105
+              },
+              {
+                "phase": "Turning",
+                "previousPhase": "Suspended",
+                "reason": "coarse_direction_needed",
+                "age_seconds": 14.071
+              },
+              {
+                "phase": "Refining",
+                "previousPhase": "Turning",
+                "reason": "target_wall_entered",
+                "age_seconds": 9.846
+              }
+            ]
+          },
+          "context": null,
+          "started_in_stage": null,
+          "elapsed_seconds": null,
+          "speech_remaining_seconds": null,
+          "word_boundary_known": false,
+          "fade_in_progress": false,
+          "semantics": {
+            "intent": "unknown",
+            "horizontal": "none",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [],
+            "canBeSupersededBy": []
+          }
+        },
+        "seconds_since_speech_ended": 8.83693301700987,
+        "locally_qualified": true
+      },
+      "behavior": {
+        "schema": "adaptive-behavior-v1",
+        "trial_index": 1,
+        "active_search_seconds": 14.1,
+        "wrong_selections": 0,
+        "recent": {
+          "samples": [
+            {
+              "age_seconds": 11.52,
+              "angular_error_degrees": 73.91,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 11.01,
+              "angular_error_degrees": 73.17,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 10.51,
+              "angular_error_degrees": 67.11,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 9.99,
+              "angular_error_degrees": 66.48,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 9.48,
+              "angular_error_degrees": 55.91,
+              "direction": "Look down and a little to your right."
+            },
+            {
+              "age_seconds": 8.98,
+              "angular_error_degrees": 52.53,
+              "direction": "Look down."
+            },
+            {
+              "age_seconds": 8.46,
+              "angular_error_degrees": 47.79,
+              "direction": "Look down and a little to your left."
+            },
+            {
+              "age_seconds": 7.95,
+              "angular_error_degrees": 46.89,
+              "direction": "Look down and a little to your left."
+            },
+            {
+              "age_seconds": 7.45,
+              "angular_error_degrees": 47.19,
+              "direction": "Look down and a little to your left."
+            },
+            {
+              "age_seconds": 6.94,
+              "angular_error_degrees": 47.03,
+              "direction": "Look down and a little to your left."
+            },
+            {
+              "age_seconds": 6.43,
+              "angular_error_degrees": 47.28,
+              "direction": "Look down and a little to your left."
+            },
+            {
+              "age_seconds": 5.93,
+              "angular_error_degrees": 45.44,
+              "direction": "Look down and a little to your left."
+            },
+            {
+              "age_seconds": 5.42,
+              "angular_error_degrees": 44.51,
+              "direction": "Look down and a little to your left."
+            },
+            {
+              "age_seconds": 4.92,
+              "angular_error_degrees": 42.59,
+              "direction": "Look down and a little to your left."
+            },
+            {
+              "age_seconds": 4.42,
+              "angular_error_degrees": 42.74,
+              "direction": "Look down and a little to your left."
+            },
+            {
+              "age_seconds": 3.9,
+              "angular_error_degrees": 42.52,
+              "direction": "Look down and a little to your left."
+            },
+            {
+              "age_seconds": 3.4,
+              "angular_error_degrees": 42.91,
+              "direction": "Look down and a little to your left."
+            },
+            {
+              "age_seconds": 2.88,
+              "angular_error_degrees": 39.75,
+              "direction": "Look down."
+            },
+            {
+              "age_seconds": 2.37,
+              "angular_error_degrees": 38.32,
+              "direction": "Look down."
+            },
+            {
+              "age_seconds": 1.86,
+              "angular_error_degrees": 5.25,
+              "direction": "Look down."
+            },
+            {
+              "age_seconds": 1.35,
+              "angular_error_degrees": 17.48,
+              "direction": "Look down and a little to your right."
+            },
+            {
+              "age_seconds": 0.84,
+              "angular_error_degrees": 29.64,
+              "direction": "Look down."
+            },
+            {
+              "age_seconds": 0.33,
+              "angular_error_degrees": 41.21,
+              "direction": "Look down and a little to your left."
+            }
+          ],
+          "direction_changes": 7,
+          "window_seconds": 11.19,
+          "error_reduction_degrees": 32.69
+        },
+        "interventions": [
+          {
+            "decision_id": "c4f7f48583734cb9bca693ee74109026",
+            "strategy": "encourage",
+            "at_seconds": 247.98841652378343,
+            "error_at_onset": 62.97502682735633,
+            "error_reduction_after_3s": null,
+            "response_status": "unavailable_overlapping_intervention"
+          },
+          {
+            "decision_id": "eb709bf4b337421aa745ee4dd04b2cc4",
+            "strategy": "encourage",
+            "at_seconds": 249.8657882947826,
+            "error_at_onset": 66.83332521560632,
+            "error_reduction_after_3s": 19.8,
+            "response_status": "observed_not_causal"
+          }
+        ],
+        "previous_trials": [
+          {
+            "trial_index": 0,
+            "outcome": "TimedOut",
+            "active_search_seconds": 25.0,
+            "wrong_selections": 0,
+            "adaptive_cues_started": 3,
+            "interventions": [
+              {
+                "decision_id": "1228a895621a45c5b8cd4d6e633fde1b",
+                "strategy": "encourage",
+                "at_seconds": 212.55425554778213,
+                "error_at_onset": 142.13185037360557,
+                "error_reduction_after_3s": null,
+                "response_status": "unavailable_overlapping_intervention"
+              },
+              {
+                "decision_id": "05396b1c712642319fadb80ad1551ad7",
+                "strategy": "encourage",
+                "at_seconds": 214.42384856778682,
+                "error_at_onset": 126.49446859818615,
+                "error_reduction_after_3s": -0.75,
+                "response_status": "observed_not_causal"
+              },
+              {
+                "decision_id": "27f51231da8d457983f82e950cae4441",
+                "strategy": "orient_explicit",
+                "at_seconds": 226.11607658478334,
+                "error_at_onset": 135.35720248891448,
+                "error_reduction_after_3s": 18.99,
+                "response_status": "observed_not_causal"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "capabilities": [
+      "refine_brief",
+      "refine_explicit"
+    ],
+    "expected": [
+      "refine_brief",
+      "refine_explicit"
+    ]
+  },
+  {
+    "name": "departed_after_confirmation",
+    "source": "run_034",
+    "elapsed": 20.1402,
+    "state": {
+      "schema": "adaptive-assistance-v1",
+      "policy": "jev_adaptive_assistance_v1",
+      "decision_id": "55b7d98b0c024fd0bf76da39d898387d",
+      "runtime": {
+        "captured_at_seconds": 117.29939735478209,
+        "guidance_policy": "jev_adaptive_assistance_v1",
+        "evidence": {
+          "guidanceState": {
+            "version": "guidance-state-v2",
+            "guidancePolicy": "jev_adaptive_assistance_v1",
+            "phase": "Refining",
+            "previousPhase": "Acquired",
+            "transitionReason": "target_wall_entered",
+            "allowedAction": "ReturnTarget",
+            "revision": 7,
+            "observationSequence": 17319,
+            "enteredAtSeconds": 116.95649751078989,
+            "capturedAtSeconds": 117.2980506357965,
+            "gazeValid": true,
+            "controllerValid": true,
+            "newGuidanceAllowed": true,
+            "gazeHitObjectId": null,
+            "vicinityWinnerObjectId": "r00_o100",
+            "controllerHitObjectId": "r00_o100",
+            "targetObjectId": "r00_o97"
+          },
+          "valid": true,
+          "insideTargetWall": true,
+          "targetGazeQualified": false,
+          "controllerOnTarget": false,
+          "geometryAvailable": true,
+          "verticalMeasured": true,
+          "wallEntryQualified": true,
+          "gazeWithinTargetVicinity": false,
+          "controllerEvidenceValid": true,
+          "controllerTargetHoldQualified": false,
+          "vicinityAmbiguous": false,
+          "targetAcknowledged": true,
+          "targetReturnPending": true,
+          "continuationUsed": false,
+          "phase": "Refining",
+          "gazeRayHit": "none",
+          "controllerRayHit": "distractor",
+          "previousDirection": null,
+          "controllerTriggerHeld": 0,
+          "vicinityCandidateCount": 2,
+          "snapshotTimeSeconds": 117.29808454277762,
+          "gazeAgeSeconds": 0.005635577789036006,
+          "gazeReceiptAgeSeconds": 0.002141823002602905,
+          "controllerAgeSeconds": 0.0005318229959812015,
+          "lastTargetSeenAgeSeconds": 0.3704529170063324,
+          "yawErrorDegrees": 4.108026,
+          "pitchErrorDegrees": 3.38767815,
+          "verticalPlaneFraction": 0.03856612,
+          "vicinityErrorDegrees": 5.256429,
+          "vicinityRadiusDegrees": 10.9956894,
+          "vicinityMeasured": true,
+          "visualReferenceObjectId": "r00_o100",
+          "visualReferenceSuppressionReason": null,
+          "visualReferenceVerticalDeltaMetres": 0.166386008,
+          "visualReferencePitchDeltaDegrees": 6.706459,
+          "visualReferenceVerticalSuppressed": false,
+          "qualification_thresholds_seconds": {
+            "target_gaze": 0.1,
+            "controller_target": 1.0,
+            "target_wall": 0.25
+          }
+        },
+        "playback": {
+          "captured_at_seconds": 117.2996443857958,
+          "is_speaking": false,
+          "is_busy": false,
+          "transmission_decision_pending": false,
+          "current_phrase": null,
+          "pending_phrase": null,
+          "last_spoken_phrase": "Yep, that's it!",
+          "recent_history": {
+            "schema": "speech-memory-v1",
+            "scope": "since_guidance_reset",
+            "window_seconds": 15.0,
+            "speech": [
+              {
+                "text": "Turn way right.",
+                "context": "tip",
+                "phase": "Turning",
+                "action": "Direction",
+                "outcome": "completed",
+                "age_seconds": 11.597,
+                "ended_age_seconds": 10.537
+              },
+              {
+                "text": "Keep going to the right.",
+                "context": "tip",
+                "phase": "Turning",
+                "action": "Progress",
+                "outcome": "completed",
+                "age_seconds": 9.179,
+                "ended_age_seconds": 7.827
+              },
+              {
+                "text": "Keep going to the right.",
+                "context": "tip",
+                "phase": "Turning",
+                "action": "Progress",
+                "outcome": "completed",
+                "age_seconds": 7.249,
+                "ended_age_seconds": 5.91
+              },
+              {
+                "text": "Yep, that's it!",
+                "context": "tip",
+                "phase": "Acquired",
+                "action": "ConfirmGaze",
+                "outcome": "completed",
+                "age_seconds": 1.029,
+                "ended_age_seconds": 0.107
+              }
+            ],
+            "transitions": [
+              {
+                "phase": "Refining",
+                "previousPhase": "Turning",
+                "reason": "target_wall_entered",
+                "age_seconds": 2.514
+              },
+              {
+                "phase": "AcquiringTarget",
+                "previousPhase": "Refining",
+                "reason": "target_vicinity_entered",
+                "age_seconds": 1.216
+              },
+              {
+                "phase": "Acquired",
+                "previousPhase": "AcquiringTarget",
+                "reason": "target_gaze_qualified",
+                "age_seconds": 1.099
+              },
+              {
+                "phase": "Refining",
+                "previousPhase": "Acquired",
+                "reason": "target_wall_entered",
+                "age_seconds": 0.343
+              }
+            ]
+          },
+          "context": null,
+          "started_in_stage": null,
+          "elapsed_seconds": null,
+          "speech_remaining_seconds": null,
+          "word_boundary_known": false,
+          "fade_in_progress": false,
+          "semantics": {
+            "intent": "unknown",
+            "horizontal": "none",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [],
+            "canBeSupersededBy": []
+          }
+        },
+        "seconds_since_speech_ended": 0.10729687500861473,
+        "locally_qualified": true
+      },
+      "behavior": {
+        "schema": "adaptive-behavior-v1",
+        "trial_index": 0,
+        "active_search_seconds": 15.03,
+        "wrong_selections": 0,
+        "recent": {
+          "samples": [
+            {
+              "age_seconds": 11.95,
+              "angular_error_degrees": 180.01,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 11.44,
+              "angular_error_degrees": 169.6,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 10.92,
+              "angular_error_degrees": 165.43,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 10.42,
+              "angular_error_degrees": 157.45,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 9.91,
+              "angular_error_degrees": 135.45,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 9.4,
+              "angular_error_degrees": 129.98,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 8.88,
+              "angular_error_degrees": 109.72,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 8.37,
+              "angular_error_degrees": 92.12,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 7.86,
+              "angular_error_degrees": 78.95,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 7.36,
+              "angular_error_degrees": 56.89,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 6.86,
+              "angular_error_degrees": 45.72,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 6.35,
+              "angular_error_degrees": 60.99,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 5.84,
+              "angular_error_degrees": 88.49,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 5.33,
+              "angular_error_degrees": 79.83,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 4.82,
+              "angular_error_degrees": 118.91,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 4.3,
+              "angular_error_degrees": 152.68,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 3.79,
+              "angular_error_degrees": 71.53,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 3.28,
+              "angular_error_degrees": 45.74,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 2.77,
+              "angular_error_degrees": 46.03,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 2.26,
+              "angular_error_degrees": 17.24,
+              "direction": "Look up and a little to your right."
+            },
+            {
+              "age_seconds": 1.75,
+              "angular_error_degrees": 9.81,
+              "direction": "Look up and a little to your right."
+            },
+            {
+              "age_seconds": 1.25,
+              "angular_error_degrees": 5.05,
+              "direction": "Look up and a little to your right."
+            },
+            {
+              "age_seconds": 0.74,
+              "angular_error_degrees": 4.39,
+              "direction": "Look up and a little to your right."
+            },
+            {
+              "age_seconds": 0.24,
+              "angular_error_degrees": 5.31,
+              "direction": "Look up and a little to your right."
+            }
+          ],
+          "direction_changes": 1,
+          "window_seconds": 11.72,
+          "error_reduction_degrees": 174.7
+        },
+        "interventions": [
+          {
+            "decision_id": "ab31223a3e6e4f719a1366078d4a23cf",
+            "strategy": "orient_explicit",
+            "at_seconds": 105.70286381778376,
+            "error_at_onset": 171.0535711955468,
+            "error_reduction_after_3s": null,
+            "response_status": "unavailable_overlapping_intervention"
+          },
+          {
+            "decision_id": "5e1d79e70b22414986daffd65de62be3",
+            "strategy": "encourage",
+            "at_seconds": 108.12100605577533,
+            "error_at_onset": 122.15475504329538,
+            "error_reduction_after_3s": null,
+            "response_status": "unavailable_overlapping_intervention"
+          },
+          {
+            "decision_id": "122a72da63394568a4650ae9ccccaf02",
+            "strategy": "encourage",
+            "at_seconds": 110.05131647178158,
+            "error_at_onset": 53.08367188414084,
+            "error_reduction_after_3s": -18.45,
+            "response_status": "observed_not_causal"
+          }
+        ],
+        "previous_trials": []
+      }
+    },
+    "capabilities": [
+      "refine_brief",
+      "refine_explicit",
+      "correct"
+    ],
+    "expected": [
+      "correct"
+    ]
+  },
+  {
+    "name": "departure_still_unanswered",
+    "source": "run_034",
+    "elapsed": 21.379,
+    "state": {
+      "schema": "adaptive-assistance-v1",
+      "policy": "jev_adaptive_assistance_v1",
+      "decision_id": "0d7f135e7d194f1ea59f7aa63b0a5fe9",
+      "runtime": {
+        "captured_at_seconds": 118.53849719777307,
+        "guidance_policy": "jev_adaptive_assistance_v1",
+        "evidence": {
+          "guidanceState": {
+            "version": "guidance-state-v2",
+            "guidancePolicy": "jev_adaptive_assistance_v1",
+            "phase": "Refining",
+            "previousPhase": "Acquired",
+            "transitionReason": "target_wall_entered",
+            "allowedAction": "ReturnTarget",
+            "revision": 7,
+            "observationSequence": 17511,
+            "enteredAtSeconds": 116.95649751078989,
+            "capturedAtSeconds": 118.53813230177573,
+            "gazeValid": true,
+            "controllerValid": true,
+            "newGuidanceAllowed": true,
+            "gazeHitObjectId": "r00_o100",
+            "vicinityWinnerObjectId": "r00_o100",
+            "controllerHitObjectId": "r00_o100",
+            "targetObjectId": "r00_o97"
+          },
+          "valid": true,
+          "insideTargetWall": true,
+          "targetGazeQualified": false,
+          "controllerOnTarget": false,
+          "geometryAvailable": true,
+          "verticalMeasured": true,
+          "wallEntryQualified": true,
+          "gazeWithinTargetVicinity": false,
+          "controllerEvidenceValid": true,
+          "controllerTargetHoldQualified": false,
+          "vicinityAmbiguous": false,
+          "targetAcknowledged": true,
+          "targetReturnPending": true,
+          "continuationUsed": false,
+          "phase": "Refining",
+          "gazeRayHit": "distractor",
+          "controllerRayHit": "distractor",
+          "previousDirection": null,
+          "controllerTriggerHeld": 0,
+          "vicinityCandidateCount": 2,
+          "snapshotTimeSeconds": 118.53820808378467,
+          "gazeAgeSeconds": 0.006491306802018926,
+          "gazeReceiptAgeSeconds": 0.003234531992347911,
+          "controllerAgeSeconds": 0.0011378650087863207,
+          "lastTargetSeenAgeSeconds": 1.6105764580133837,
+          "yawErrorDegrees": 6.00060463,
+          "pitchErrorDegrees": 4.11541367,
+          "verticalPlaneFraction": 0.04575806,
+          "vicinityErrorDegrees": 7.10323954,
+          "vicinityRadiusDegrees": 10.99951,
+          "vicinityMeasured": true,
+          "visualReferenceObjectId": "r00_o100",
+          "visualReferenceSuppressionReason": null,
+          "visualReferenceVerticalDeltaMetres": 0.166386008,
+          "visualReferencePitchDeltaDegrees": 6.709984,
+          "visualReferenceVerticalSuppressed": false,
+          "qualification_thresholds_seconds": {
+            "target_gaze": 0.1,
+            "controller_target": 1.0,
+            "target_wall": 0.25
+          }
+        },
+        "playback": {
+          "captured_at_seconds": 118.53875657279812,
+          "is_speaking": false,
+          "is_busy": false,
+          "transmission_decision_pending": false,
+          "current_phrase": null,
+          "pending_phrase": null,
+          "last_spoken_phrase": "Yep, that's it!",
+          "recent_history": {
+            "schema": "speech-memory-v1",
+            "scope": "since_guidance_reset",
+            "window_seconds": 15.0,
+            "speech": [
+              {
+                "text": "Turn way right.",
+                "context": "tip",
+                "phase": "Turning",
+                "action": "Direction",
+                "outcome": "completed",
+                "age_seconds": 12.836,
+                "ended_age_seconds": 11.776
+              },
+              {
+                "text": "Keep going to the right.",
+                "context": "tip",
+                "phase": "Turning",
+                "action": "Progress",
+                "outcome": "completed",
+                "age_seconds": 10.418,
+                "ended_age_seconds": 9.066
+              },
+              {
+                "text": "Keep going to the right.",
+                "context": "tip",
+                "phase": "Turning",
+                "action": "Progress",
+                "outcome": "completed",
+                "age_seconds": 8.488,
+                "ended_age_seconds": 7.149
+              },
+              {
+                "text": "Yep, that's it!",
+                "context": "tip",
+                "phase": "Acquired",
+                "action": "ConfirmGaze",
+                "outcome": "completed",
+                "age_seconds": 2.268,
+                "ended_age_seconds": 1.346
+              }
+            ],
+            "transitions": [
+              {
+                "phase": "Refining",
+                "previousPhase": "Turning",
+                "reason": "target_wall_entered",
+                "age_seconds": 3.753
+              },
+              {
+                "phase": "AcquiringTarget",
+                "previousPhase": "Refining",
+                "reason": "target_vicinity_entered",
+                "age_seconds": 2.455
+              },
+              {
+                "phase": "Acquired",
+                "previousPhase": "AcquiringTarget",
+                "reason": "target_gaze_qualified",
+                "age_seconds": 2.338
+              },
+              {
+                "phase": "Refining",
+                "previousPhase": "Acquired",
+                "reason": "target_wall_entered",
+                "age_seconds": 1.582
+              }
+            ]
+          },
+          "context": null,
+          "started_in_stage": null,
+          "elapsed_seconds": null,
+          "speech_remaining_seconds": null,
+          "word_boundary_known": false,
+          "fade_in_progress": false,
+          "semantics": {
+            "intent": "unknown",
+            "horizontal": "none",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [],
+            "canBeSupersededBy": []
+          }
+        },
+        "seconds_since_speech_ended": 1.3466246349853463,
+        "locally_qualified": true
+      },
+      "behavior": {
+        "schema": "adaptive-behavior-v1",
+        "trial_index": 0,
+        "active_search_seconds": 16.27,
+        "wrong_selections": 0,
+        "recent": {
+          "samples": [
+            {
+              "age_seconds": 11.66,
+              "angular_error_degrees": 157.45,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 11.15,
+              "angular_error_degrees": 135.45,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 10.64,
+              "angular_error_degrees": 129.98,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 10.12,
+              "angular_error_degrees": 109.72,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 9.61,
+              "angular_error_degrees": 92.12,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 9.1,
+              "angular_error_degrees": 78.95,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 8.6,
+              "angular_error_degrees": 56.89,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 8.1,
+              "angular_error_degrees": 45.72,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 7.59,
+              "angular_error_degrees": 60.99,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 7.08,
+              "angular_error_degrees": 88.49,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 6.56,
+              "angular_error_degrees": 79.83,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 6.05,
+              "angular_error_degrees": 118.91,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 5.54,
+              "angular_error_degrees": 152.68,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 5.03,
+              "angular_error_degrees": 71.53,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 4.52,
+              "angular_error_degrees": 45.74,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 4.01,
+              "angular_error_degrees": 46.03,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 3.5,
+              "angular_error_degrees": 17.24,
+              "direction": "Look up and a little to your right."
+            },
+            {
+              "age_seconds": 2.99,
+              "angular_error_degrees": 9.81,
+              "direction": "Look up and a little to your right."
+            },
+            {
+              "age_seconds": 2.49,
+              "angular_error_degrees": 5.05,
+              "direction": "Look up and a little to your right."
+            },
+            {
+              "age_seconds": 1.98,
+              "angular_error_degrees": 4.39,
+              "direction": "Look up and a little to your right."
+            },
+            {
+              "age_seconds": 1.47,
+              "angular_error_degrees": 5.31,
+              "direction": "Look up and a little to your right."
+            },
+            {
+              "age_seconds": 0.97,
+              "angular_error_degrees": 5.51,
+              "direction": "Look up and a little to your right."
+            },
+            {
+              "age_seconds": 0.47,
+              "angular_error_degrees": 6.45,
+              "direction": "Look up and a little to your right."
+            }
+          ],
+          "direction_changes": 1,
+          "window_seconds": 11.19,
+          "error_reduction_degrees": 151.01
+        },
+        "interventions": [
+          {
+            "decision_id": "ab31223a3e6e4f719a1366078d4a23cf",
+            "strategy": "orient_explicit",
+            "at_seconds": 105.70286381778376,
+            "error_at_onset": 171.0535711955468,
+            "error_reduction_after_3s": null,
+            "response_status": "unavailable_overlapping_intervention"
+          },
+          {
+            "decision_id": "5e1d79e70b22414986daffd65de62be3",
+            "strategy": "encourage",
+            "at_seconds": 108.12100605577533,
+            "error_at_onset": 122.15475504329538,
+            "error_reduction_after_3s": null,
+            "response_status": "unavailable_overlapping_intervention"
+          },
+          {
+            "decision_id": "122a72da63394568a4650ae9ccccaf02",
+            "strategy": "encourage",
+            "at_seconds": 110.05131647178158,
+            "error_at_onset": 53.08367188414084,
+            "error_reduction_after_3s": -18.45,
+            "response_status": "observed_not_causal"
+          }
+        ],
+        "previous_trials": []
+      }
+    },
+    "capabilities": [
+      "refine_brief",
+      "refine_explicit",
+      "correct"
+    ],
+    "expected": [
+      "correct"
+    ]
+  },
+  {
+    "name": "moving_away_after_silence",
+    "source": "run_034",
+    "elapsed": 135.0927,
+    "state": {
+      "schema": "adaptive-assistance-v1",
+      "policy": "jev_adaptive_assistance_v1",
+      "decision_id": "886c1f7456b74f848ee36f4ea05bc5b4",
+      "runtime": {
+        "captured_at_seconds": 232.2518269997784,
+        "guidance_policy": "jev_adaptive_assistance_v1",
+        "evidence": {
+          "guidanceState": {
+            "version": "guidance-state-v2",
+            "guidancePolicy": "jev_adaptive_assistance_v1",
+            "phase": "Turning",
+            "previousPhase": "Suspended",
+            "transitionReason": "coarse_direction_needed",
+            "allowedAction": "Direction",
+            "revision": 20,
+            "observationSequence": 35073,
+            "enteredAtSeconds": 218.338533358776,
+            "capturedAtSeconds": 232.25152658276446,
+            "gazeValid": true,
+            "controllerValid": true,
+            "newGuidanceAllowed": true,
+            "gazeHitObjectId": null,
+            "vicinityWinnerObjectId": "r01_o92",
+            "controllerHitObjectId": "r01_o123",
+            "targetObjectId": "r01_o137"
+          },
+          "valid": true,
+          "insideTargetWall": false,
+          "targetGazeQualified": false,
+          "controllerOnTarget": false,
+          "geometryAvailable": true,
+          "verticalMeasured": false,
+          "wallEntryQualified": false,
+          "gazeWithinTargetVicinity": false,
+          "controllerEvidenceValid": true,
+          "controllerTargetHoldQualified": false,
+          "vicinityAmbiguous": false,
+          "targetAcknowledged": false,
+          "targetReturnPending": false,
+          "continuationUsed": false,
+          "phase": "Turning",
+          "gazeRayHit": "none",
+          "controllerRayHit": "distractor",
+          "previousDirection": "Look right.",
+          "controllerTriggerHeld": 0,
+          "vicinityCandidateCount": 4,
+          "snapshotTimeSeconds": 232.25158153076725,
+          "gazeAgeSeconds": 0.009078963787288785,
+          "gazeReceiptAgeSeconds": 0.0055030210060067475,
+          "controllerAgeSeconds": 0.001999947999138385,
+          "lastTargetSeenAgeSeconds": null,
+          "yawErrorDegrees": 90.30642,
+          "pitchErrorDegrees": -57.6770859,
+          "verticalPlaneFraction": null,
+          "vicinityErrorDegrees": 103.4347,
+          "vicinityRadiusDegrees": 10.2291431,
+          "vicinityMeasured": true,
+          "visualReferenceObjectId": null,
+          "visualReferenceSuppressionReason": null,
+          "visualReferenceVerticalDeltaMetres": null,
+          "visualReferencePitchDeltaDegrees": null,
+          "visualReferenceVerticalSuppressed": false,
+          "qualification_thresholds_seconds": {
+            "target_gaze": 0.1,
+            "controller_target": 1.0,
+            "target_wall": 0.25
+          }
+        },
+        "playback": {
+          "captured_at_seconds": 232.25203897877898,
+          "is_speaking": false,
+          "is_busy": false,
+          "transmission_decision_pending": false,
+          "current_phrase": null,
+          "pending_phrase": null,
+          "last_spoken_phrase": "The object is to the right.",
+          "recent_history": {
+            "schema": "speech-memory-v1",
+            "scope": "since_guidance_reset",
+            "window_seconds": 15.0,
+            "speech": [
+              {
+                "text": "Look right.",
+                "context": "tip",
+                "phase": "Turning",
+                "action": "Direction",
+                "outcome": "completed",
+                "age_seconds": 13.248,
+                "ended_age_seconds": 12.436
+              },
+              {
+                "text": "The object is to the right.",
+                "context": "tip",
+                "phase": "Turning",
+                "action": "Direction",
+                "outcome": "completed",
+                "age_seconds": 11.178,
+                "ended_age_seconds": 9.611
+              }
+            ],
+            "transitions": [
+              {
+                "phase": "Suspended",
+                "previousPhase": "Opening",
+                "reason": "search_started_awaiting_evidence",
+                "age_seconds": 13.922
+              },
+              {
+                "phase": "Turning",
+                "previousPhase": "Suspended",
+                "reason": "coarse_direction_needed",
+                "age_seconds": 13.914
+              }
+            ]
+          },
+          "context": null,
+          "started_in_stage": null,
+          "elapsed_seconds": null,
+          "speech_remaining_seconds": null,
+          "word_boundary_known": false,
+          "fade_in_progress": false,
+          "semantics": {
+            "intent": "unknown",
+            "horizontal": "none",
+            "vertical": "none",
+            "magnitude": "unspecified",
+            "stage": "search",
+            "interruptPolicy": "finish",
+            "requires": [],
+            "canBeSupersededBy": []
+          }
+        },
+        "seconds_since_speech_ended": 9.61162666301243,
+        "locally_qualified": true
+      },
+      "behavior": {
+        "schema": "adaptive-behavior-v1",
+        "trial_index": 1,
+        "active_search_seconds": 13.92,
+        "wrong_selections": 0,
+        "recent": {
+          "samples": [
+            {
+              "age_seconds": 11.9,
+              "angular_error_degrees": 64.77,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 11.4,
+              "angular_error_degrees": 67.04,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 10.88,
+              "angular_error_degrees": 67.42,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 10.37,
+              "angular_error_degrees": 61.91,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 9.85,
+              "angular_error_degrees": 58.98,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 9.32,
+              "angular_error_degrees": 56.07,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 8.8,
+              "angular_error_degrees": 54.95,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 8.28,
+              "angular_error_degrees": 54.68,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 7.77,
+              "angular_error_degrees": 58.66,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 7.26,
+              "angular_error_degrees": 67.54,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 6.76,
+              "angular_error_degrees": 68.11,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 6.24,
+              "angular_error_degrees": 86.67,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 5.74,
+              "angular_error_degrees": 87.86,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 5.23,
+              "angular_error_degrees": 88.53,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 4.73,
+              "angular_error_degrees": 84.62,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 4.22,
+              "angular_error_degrees": 84.6,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 3.7,
+              "angular_error_degrees": 88.06,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 3.2,
+              "angular_error_degrees": 95.23,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 2.68,
+              "angular_error_degrees": 98.95,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 2.18,
+              "angular_error_degrees": 105.19,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 1.68,
+              "angular_error_degrees": 104.94,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 1.16,
+              "angular_error_degrees": 105.9,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 0.66,
+              "angular_error_degrees": 106.46,
+              "direction": "Look right."
+            },
+            {
+              "age_seconds": 0.16,
+              "angular_error_degrees": 107.03,
+              "direction": "Look right."
+            }
+          ],
+          "direction_changes": 0,
+          "window_seconds": 11.75,
+          "error_reduction_degrees": -42.26
+        },
+        "interventions": [
+          {
+            "decision_id": "0a65222a834e43f5922d34cf2c55f19a",
+            "strategy": "orient_brief",
+            "at_seconds": 219.00399143177154,
+            "error_at_onset": 62.00788681566039,
+            "error_reduction_after_3s": null,
+            "response_status": "unavailable_overlapping_intervention"
+          },
+          {
+            "decision_id": "3aa0d2dacc6a4f8ba446de29c777fcd3",
+            "strategy": "orient_explicit",
+            "at_seconds": 221.07435054478654,
+            "error_at_onset": 66.61936025027747,
+            "error_reduction_after_3s": 7.96,
+            "response_status": "observed_not_causal"
+          }
+        ],
+        "previous_trials": [
+          {
+            "trial_index": 0,
+            "outcome": "TimedOut",
+            "active_search_seconds": 24.98,
+            "wrong_selections": 1,
+            "adaptive_cues_started": 3,
+            "interventions": [
+              {
+                "decision_id": "ab31223a3e6e4f719a1366078d4a23cf",
+                "strategy": "orient_explicit",
+                "at_seconds": 105.70286381778376,
+                "error_at_onset": 171.0535711955468,
+                "error_reduction_after_3s": null,
+                "response_status": "unavailable_overlapping_intervention"
+              },
+              {
+                "decision_id": "5e1d79e70b22414986daffd65de62be3",
+                "strategy": "encourage",
+                "at_seconds": 108.12100605577533,
+                "error_at_onset": 122.15475504329538,
+                "error_reduction_after_3s": null,
+                "response_status": "unavailable_overlapping_intervention"
+              },
+              {
+                "decision_id": "122a72da63394568a4650ae9ccccaf02",
+                "strategy": "encourage",
+                "at_seconds": 110.05131647178158,
+                "error_at_onset": 53.08367188414084,
+                "error_reduction_after_3s": -18.45,
+                "response_status": "observed_not_causal"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "capabilities": [
+      "orient_brief",
+      "orient_explicit"
+    ],
+    "expected": [
+      "orient_brief",
+      "orient_explicit"
+    ]
+  },
+  {
+    "name": "independent_progress_control",
+    "source": "synthetic",
+    "state": {
+      "schema": "adaptive-assistance-v1",
+      "policy": "jev_adaptive_assistance_v1",
+      "decision_id": "synthetic-progress-0",
+      "runtime": {
+        "evidence": {
+          "valid": true,
+          "geometryAvailable": true,
+          "insideTargetWall": false,
+          "yawErrorDegrees": 30,
+          "pitchErrorDegrees": 0,
+          "controllerOnTarget": false,
+          "targetGazeQualified": false,
+          "guidanceState": {
+            "newGuidanceAllowed": true
+          }
+        },
+        "playback": {
+          "is_speaking": false,
+          "is_busy": false
+        },
+        "seconds_since_speech_ended": null
+      },
+      "behavior": {
+        "schema": "adaptive-behavior-v1",
+        "trial_index": 0,
+        "active_search_seconds": 10.0,
+        "wrong_selections": 0,
+        "recent": {
+          "samples": [
+            {
+              "age_seconds": 10.0,
+              "angular_error_degrees": 80.0,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 9.5,
+              "angular_error_degrees": 77.5,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 9.0,
+              "angular_error_degrees": 75.0,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 8.5,
+              "angular_error_degrees": 72.5,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 8.0,
+              "angular_error_degrees": 70.0,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 7.5,
+              "angular_error_degrees": 67.5,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 7.0,
+              "angular_error_degrees": 65.0,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 6.5,
+              "angular_error_degrees": 62.5,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 6.0,
+              "angular_error_degrees": 60.0,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 5.5,
+              "angular_error_degrees": 57.5,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 5.0,
+              "angular_error_degrees": 55.0,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 4.5,
+              "angular_error_degrees": 52.5,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 4.0,
+              "angular_error_degrees": 50.0,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 3.5,
+              "angular_error_degrees": 47.5,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 3.0,
+              "angular_error_degrees": 45.0,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 2.5,
+              "angular_error_degrees": 42.5,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 2.0,
+              "angular_error_degrees": 40.0,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 1.5,
+              "angular_error_degrees": 37.5,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 1.0,
+              "angular_error_degrees": 35.0,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 0.5,
+              "angular_error_degrees": 32.5,
+              "direction": "right"
+            },
+            {
+              "age_seconds": 0.0,
+              "angular_error_degrees": 30.0,
+              "direction": "right"
+            }
+          ],
+          "direction_changes": 0,
+          "window_seconds": 10.0,
+          "error_reduction_degrees": 50.0
+        },
+        "interventions": [],
+        "previous_trials": []
+      }
+    },
+    "capabilities": [
+      "orient_brief",
+      "orient_explicit"
+    ],
+    "expected": [
+      "observe_1s",
+      "observe_2s",
+      "observe_4s"
+    ]
+  }
+]

@@ -24,6 +24,7 @@ public static class GazeQualityChecks
             var again=GazeCoordinates.InputPoseToWorld(local,Quaternion.identity,go.transform,true);
             Check(again.origin==flipped.origin,"No cumulative flip between reads");
             Check(VoiceAssistantController.RoundPhrase(1,"Red","Cube")==VoiceAssistantController.RoundPhrase(1,"Blue","Sphere"),"Round speech cannot reveal target identity");
+            CheckAgentIntroduction();
             foreach(var phrase in DirectionalHintPolicy.AllPhrases())
                 Check(VoicePromptText.FormatForVoice(phrase,VoiceCondition.Generic)==VoicePromptText.FormatForVoice(phrase,VoiceCondition.SelfSimilar),"Shared voice wording");
             CheckNativeReadinessFallback();
@@ -38,6 +39,28 @@ public static class GazeQualityChecks
             Debug.Log("[GazeQualityChecks] PASS: coordinates, idempotent diagnostic flip, hidden target, shared wording, shared-stream CSV validity and append safety. Hardware accuracy/rate NOT validated.");
         }
         finally{UnityEngine.Object.DestroyImmediate(go);}
+    }
+    static void CheckAgentIntroduction()
+    {
+        var neutral = typeof(SessionConfig).GetProperty("NeutralQuickTest");
+        var clone = typeof(SessionConfig).GetProperty("CloneQuickTest");
+        bool wasNeutral = SessionConfig.NeutralQuickTest, wasClone = SessionConfig.CloneQuickTest;
+        try
+        {
+            neutral.SetValue(null,false); clone.SetValue(null,false);
+            string practice = VoiceAssistantController.RoundPhrase(0,"Red","Cube",true);
+            Check(practice.StartsWith(VoiceAssistantController.AgentIntroduction),"Practice introduces the guide");
+            Check(!VoiceAssistantController.RoundPhrase(0,"Red","Cube").StartsWith(VoiceAssistantController.AgentIntroduction),"Measured study block does not repeat practice introduction");
+            Check(practice == VoiceAssistantController.RoundPhrase(0,"Blue","Sphere",true),"Introduction does not disclose target identity");
+            foreach (var voice in new[] { VoiceCondition.Generic, VoiceCondition.SelfSimilar })
+                Check(VoicePromptText.FormatForVoice(practice,voice)==practice,"Introduction wording is shared between voices");
+            neutral.SetValue(null,true);
+            string first = VoiceAssistantController.RoundPhrase(0,"Red","Cube");
+            Check(first.StartsWith(VoiceAssistantController.AgentIntroduction),"Quick test introduces the guide despite skipping study onboarding");
+            Check(Array.IndexOf(VoiceAssistantController.PhraseLibrary(),first)>=0,"Quick-test introduction is prepared for playback");
+            Check(!VoiceAssistantController.RoundPhrase(1,"Red","Cube").StartsWith(VoiceAssistantController.AgentIntroduction),"Later trials do not repeat the greeting");
+        }
+        finally { neutral.SetValue(null,wasNeutral); clone.SetValue(null,wasClone); }
     }
     static void CheckSameWallOpening()
     {

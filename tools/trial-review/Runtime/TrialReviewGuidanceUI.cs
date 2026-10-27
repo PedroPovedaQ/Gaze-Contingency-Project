@@ -14,6 +14,7 @@ public sealed partial class TrialReviewApp
         var state=m_GuidanceState.Current;
         if(state==null){GUILayout.Label(m_GuidanceState.Availability,m_MutedLabel);return;}
         Metric("Policy",string.IsNullOrEmpty(state.guidancePolicy)?"Not recorded":state.guidancePolicy);
+        AssistanceInspector(state.assistance);
         Metric("Stage",state.phase);Metric("Allowed action",state.allowedAction);
         Metric("New guidance",state.version=="guidance-state-v2" ?
             (state.newGuidanceAllowed?"Allowed by state":"Blocked by state"):"Not recorded");
@@ -23,6 +24,21 @@ public sealed partial class TrialReviewApp
         Metric("Vicinity winner",TrialReviewGuidanceState.Hit(state.vicinityWinnerObjectId,state.gazeValid));
         Metric("Right ray hit",TrialReviewGuidanceState.Hit(state.controllerHitObjectId,state.controllerValid));
         GUILayout.Label("Orange: direct gaze · Gold: recorded vicinity winner · Blue: right controller. Intersections are not fixations.",m_MutedLabel);
+    }
+
+    void AssistanceInspector(AssistanceRuntimeSnapshot state)
+    {
+        if (state == null || string.IsNullOrEmpty(state.provider)) { Metric("Assistance source", "Not recorded"); return; }
+        Metric("Selected", state.SelectionLabel);
+        Metric("Model version", string.IsNullOrEmpty(state.modelVersion) ? "Not used" : state.modelVersion);
+        Metric("Connection", state.ConnectionLabel);
+        Metric("Last accepted", state.LastDecisionLabel);
+        if (!string.IsNullOrEmpty(state.lastDecisionId))
+        {
+            Metric("Decision provider", state.lastDecisionProvider ?? "Not recorded");
+            Metric("Decision ID", state.lastDecisionId);
+        }
+        GUILayout.Label("Selected is configuration. Queued means accepted for scheduling, not proof of playback; inspect the linked model decision for audio onset. Configured does not mean the cloud is reachable.", m_MutedLabel);
     }
 
     void DrawStateMarkers()

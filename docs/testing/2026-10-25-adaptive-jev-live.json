@@ -1,0 +1,759 @@
+{
+  "measurement": "Synthetic production C# requests; no participant or audio playback",
+  "rows": [
+    {
+      "case": "independent_progress",
+      "state": {
+        "schema": "adaptive-assistance-v1",
+        "policy": "jev_adaptive_assistance_v1",
+        "decision_id": "synthetic-progress-0",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "geometryAvailable": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": 30,
+            "pitchErrorDegrees": 0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "guidanceState": {
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false
+          },
+          "seconds_since_speech_ended": null
+        },
+        "behavior": {
+          "schema": "adaptive-behavior-v1",
+          "trial_index": 0,
+          "active_search_seconds": 10.0,
+          "wrong_selections": 0,
+          "recent": {
+            "samples": [
+              {
+                "age_seconds": 10.0,
+                "angular_error_degrees": 80.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 9.5,
+                "angular_error_degrees": 77.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 9.0,
+                "angular_error_degrees": 75.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 8.5,
+                "angular_error_degrees": 72.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 8.0,
+                "angular_error_degrees": 70.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 7.5,
+                "angular_error_degrees": 67.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 7.0,
+                "angular_error_degrees": 65.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 6.5,
+                "angular_error_degrees": 62.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 6.0,
+                "angular_error_degrees": 60.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 5.5,
+                "angular_error_degrees": 57.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 5.0,
+                "angular_error_degrees": 55.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 4.5,
+                "angular_error_degrees": 52.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 4.0,
+                "angular_error_degrees": 50.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 3.5,
+                "angular_error_degrees": 47.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 3.0,
+                "angular_error_degrees": 45.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 2.5,
+                "angular_error_degrees": 42.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 2.0,
+                "angular_error_degrees": 40.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 1.5,
+                "angular_error_degrees": 37.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 1.0,
+                "angular_error_degrees": 35.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 0.5,
+                "angular_error_degrees": 32.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 0.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              }
+            ],
+            "direction_changes": 0,
+            "window_seconds": 10.0,
+            "error_reduction_degrees": 50.0
+          },
+          "interventions": [],
+          "previous_trials": []
+        }
+      },
+      "strategy": "observe_4s",
+      "response": {
+        "schema": "jev-trace-v1",
+        "request_id": "synthetic-progress-0",
+        "stage": "response",
+        "status": "ok",
+        "elapsed_ms": 539.75880000000006,
+        "answers": {
+          "assistance": {
+            "type": "choice",
+            "choice": "observe_4s",
+            "confidence": 0.3,
+            "probabilities": {
+              "observe_1s": 0.28,
+              "observe_2s": 0.23,
+              "observe_4s": 0.44,
+              "orient_brief": 0.03,
+              "orient_explicit": 0.02
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 1555,
+          "output_tokens": 70
+        }
+      },
+      "elapsed_ms": 540.2165
+    },
+    {
+      "case": "stalled_after_brief",
+      "state": {
+        "schema": "adaptive-assistance-v1",
+        "policy": "jev_adaptive_assistance_v1",
+        "decision_id": "synthetic-stalled-0",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "geometryAvailable": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": 30,
+            "pitchErrorDegrees": 0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "guidanceState": {
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false
+          },
+          "seconds_since_speech_ended": 3
+        },
+        "behavior": {
+          "schema": "adaptive-behavior-v1",
+          "trial_index": 0,
+          "active_search_seconds": 14.0,
+          "wrong_selections": 2,
+          "recent": {
+            "samples": [
+              {
+                "age_seconds": 12.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 11.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 11.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 10.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 10.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 9.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 9.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 8.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 8.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 7.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 7.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 6.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 6.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 5.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 5.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 4.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 4.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 3.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 3.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 2.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 2.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 1.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 1.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 0.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 0.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              }
+            ],
+            "direction_changes": 0,
+            "window_seconds": 12.0,
+            "error_reduction_degrees": 0.0
+          },
+          "interventions": [
+            {
+              "decision_id": "fixture-cue",
+              "strategy": "orient_brief",
+              "at_seconds": 10.0,
+              "error_at_onset": 30.0,
+              "error_reduction_after_3s": 0.0,
+              "response_status": "observed_not_causal"
+            }
+          ],
+          "previous_trials": []
+        }
+      },
+      "strategy": "orient_explicit",
+      "response": {
+        "schema": "jev-trace-v1",
+        "request_id": "synthetic-stalled-0",
+        "stage": "response",
+        "status": "ok",
+        "elapsed_ms": 142.55970000000002,
+        "answers": {
+          "assistance": {
+            "type": "choice",
+            "choice": "orient_explicit",
+            "confidence": 0.94,
+            "probabilities": {
+              "observe_1s": 0.01,
+              "observe_2s": 0.02,
+              "observe_4s": 0.02,
+              "orient_brief": 0,
+              "orient_explicit": 0.95
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 1719,
+          "output_tokens": 69
+        }
+      },
+      "elapsed_ms": 143.2101
+    },
+    {
+      "case": "independent_progress",
+      "state": {
+        "schema": "adaptive-assistance-v1",
+        "policy": "jev_adaptive_assistance_v1",
+        "decision_id": "synthetic-progress-1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "geometryAvailable": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": 30,
+            "pitchErrorDegrees": 0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "guidanceState": {
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false
+          },
+          "seconds_since_speech_ended": null
+        },
+        "behavior": {
+          "schema": "adaptive-behavior-v1",
+          "trial_index": 0,
+          "active_search_seconds": 10.0,
+          "wrong_selections": 0,
+          "recent": {
+            "samples": [
+              {
+                "age_seconds": 10.0,
+                "angular_error_degrees": 80.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 9.5,
+                "angular_error_degrees": 77.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 9.0,
+                "angular_error_degrees": 75.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 8.5,
+                "angular_error_degrees": 72.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 8.0,
+                "angular_error_degrees": 70.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 7.5,
+                "angular_error_degrees": 67.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 7.0,
+                "angular_error_degrees": 65.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 6.5,
+                "angular_error_degrees": 62.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 6.0,
+                "angular_error_degrees": 60.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 5.5,
+                "angular_error_degrees": 57.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 5.0,
+                "angular_error_degrees": 55.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 4.5,
+                "angular_error_degrees": 52.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 4.0,
+                "angular_error_degrees": 50.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 3.5,
+                "angular_error_degrees": 47.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 3.0,
+                "angular_error_degrees": 45.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 2.5,
+                "angular_error_degrees": 42.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 2.0,
+                "angular_error_degrees": 40.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 1.5,
+                "angular_error_degrees": 37.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 1.0,
+                "angular_error_degrees": 35.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 0.5,
+                "angular_error_degrees": 32.5,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 0.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              }
+            ],
+            "direction_changes": 0,
+            "window_seconds": 10.0,
+            "error_reduction_degrees": 50.0
+          },
+          "interventions": [],
+          "previous_trials": []
+        }
+      },
+      "strategy": "observe_4s",
+      "response": {
+        "schema": "jev-trace-v1",
+        "request_id": "synthetic-progress-1",
+        "stage": "response",
+        "status": "ok",
+        "elapsed_ms": 220.5412,
+        "answers": {
+          "assistance": {
+            "type": "choice",
+            "choice": "observe_4s",
+            "confidence": 0.35,
+            "probabilities": {
+              "observe_1s": 0.24,
+              "observe_2s": 0.22,
+              "observe_4s": 0.48,
+              "orient_brief": 0.04,
+              "orient_explicit": 0.02
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 1555,
+          "output_tokens": 70
+        }
+      },
+      "elapsed_ms": 221.2761
+    },
+    {
+      "case": "stalled_after_brief",
+      "state": {
+        "schema": "adaptive-assistance-v1",
+        "policy": "jev_adaptive_assistance_v1",
+        "decision_id": "synthetic-stalled-1",
+        "runtime": {
+          "evidence": {
+            "valid": true,
+            "geometryAvailable": true,
+            "insideTargetWall": false,
+            "yawErrorDegrees": 30,
+            "pitchErrorDegrees": 0,
+            "controllerOnTarget": false,
+            "targetGazeQualified": false,
+            "guidanceState": {
+              "newGuidanceAllowed": true
+            }
+          },
+          "playback": {
+            "is_speaking": false,
+            "is_busy": false
+          },
+          "seconds_since_speech_ended": 3
+        },
+        "behavior": {
+          "schema": "adaptive-behavior-v1",
+          "trial_index": 0,
+          "active_search_seconds": 14.0,
+          "wrong_selections": 2,
+          "recent": {
+            "samples": [
+              {
+                "age_seconds": 12.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 11.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 11.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 10.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 10.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 9.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 9.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 8.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 8.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 7.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 7.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 6.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 6.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 5.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 5.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 4.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 4.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 3.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 3.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 2.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 2.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 1.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 1.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 0.5,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              },
+              {
+                "age_seconds": 0.0,
+                "angular_error_degrees": 30.0,
+                "direction": "right"
+              }
+            ],
+            "direction_changes": 0,
+            "window_seconds": 12.0,
+            "error_reduction_degrees": 0.0
+          },
+          "interventions": [
+            {
+              "decision_id": "fixture-cue",
+              "strategy": "orient_brief",
+              "at_seconds": 10.0,
+              "error_at_onset": 30.0,
+              "error_reduction_after_3s": 0.0,
+              "response_status": "observed_not_causal"
+            }
+          ],
+          "previous_trials": []
+        }
+      },
+      "strategy": "orient_explicit",
+      "response": {
+        "schema": "jev-trace-v1",
+        "request_id": "synthetic-stalled-1",
+        "stage": "response",
+        "status": "ok",
+        "elapsed_ms": 161.21,
+        "answers": {
+          "assistance": {
+            "type": "choice",
+            "choice": "orient_explicit",
+            "confidence": 0.92,
+            "probabilities": {
+              "observe_1s": 0.01,
+              "observe_2s": 0.02,
+              "observe_4s": 0.03,
+              "orient_brief": 0,
+              "orient_explicit": 0.94
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 1719,
+          "output_tokens": 69
+        }
+      },
+      "elapsed_ms": 161.8051
+    }
+  ]
+}

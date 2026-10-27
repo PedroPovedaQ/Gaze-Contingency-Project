@@ -66,11 +66,17 @@ public partial class VoiceSynthesizer
     }
 
     // Freeze values on Unity's thread before an asynchronous provider call.
-    public string CaptureDecisionContext() => new Newtonsoft.Json.Linq.JObject {
-        ["captured_at_seconds"] = Time.realtimeSinceStartupAsDouble,
-        ["guidance_policy"] = SessionConfig.GuidancePolicy,
-        ["evidence"] = GuidanceEvidence.Snapshot(), ["playback"] = CapturePlaybackState()
-    }.ToString(Newtonsoft.Json.Formatting.None);
+    public string CaptureDecisionContext()
+    {
+        var evidence = GuidanceEvidence.Snapshot();
+        // Provider provenance is for replay/UI only; do not alter either model's observations.
+        (evidence["guidanceState"] as Newtonsoft.Json.Linq.JObject)?.Remove("assistance");
+        return new Newtonsoft.Json.Linq.JObject {
+            ["captured_at_seconds"] = Time.realtimeSinceStartupAsDouble,
+            ["guidance_policy"] = SessionConfig.GuidancePolicy,
+            ["evidence"] = evidence, ["playback"] = CapturePlaybackState()
+        }.ToString(Newtonsoft.Json.Formatting.None);
+    }
     long m_PlaybackGeneration, m_AdviceAttemptGeneration = -1;
     double m_LastSmoothInterruption = -100, m_AdviceStarted;
     bool m_DropCorrection;

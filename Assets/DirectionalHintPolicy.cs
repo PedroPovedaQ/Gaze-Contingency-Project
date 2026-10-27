@@ -16,7 +16,7 @@ public static class DirectionalHintPolicy
     public const string PointingPhrase = "You're on it!";
     public const string LookingPhrase = "Yep, that's it!";
     public const string SelectionReminderPhrase = "Aim at it with your right controller and press the trigger.";
-    public const string TriggerReminderPhrase = "Press the right trigger to select it.";
+    public const string TriggerReminderPhrase = "Almost! Don't forget to press the right trigger to select the object.";
     public static string SelectionReminder(bool controllerOnTarget) => controllerOnTarget ? TriggerReminderPhrase : SelectionReminderPhrase;
     public static bool IsSelectionReminder(string phrase) => phrase == SelectionReminderPhrase || phrase == TriggerReminderPhrase;
     public const double LookingHoldSeconds = .1;

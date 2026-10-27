@@ -1,0 +1,252 @@
+{
+  "policy": "jev_adaptive_assistance_v2",
+  "measurement": "Frozen desktop request replay; not headset audio timing or participant benefit",
+  "fixture": "scripts/tests/adaptive-device-replay.json",
+  "fixture_sha256": "4e96b93563b5956e21d97341ce2fecff5c10af2705144d953562f7bb3c47a052",
+  "before": {
+    "policy": "jev_adaptive_assistance_v1",
+    "measurement": "Desktop decision replay; no headset playback or participant benefit measured",
+    "failures": 6,
+    "rows": [
+      {
+        "case": "stalled_after_encouragement",
+        "repeat": 0,
+        "strategy": "observe_4s",
+        "matched": false,
+        "elapsed_ms": 593.7863
+      },
+      {
+        "case": "area_search_receding",
+        "repeat": 0,
+        "strategy": "observe_2s",
+        "matched": false,
+        "elapsed_ms": 165.5714
+      },
+      {
+        "case": "departed_after_confirmation",
+        "repeat": 0,
+        "strategy": "correct",
+        "matched": true,
+        "elapsed_ms": 176.45090000000002
+      },
+      {
+        "case": "departure_still_unanswered",
+        "repeat": 0,
+        "strategy": "correct",
+        "matched": true,
+        "elapsed_ms": 224.66680000000002
+      },
+      {
+        "case": "moving_away_after_silence",
+        "repeat": 0,
+        "strategy": "observe_4s",
+        "matched": false,
+        "elapsed_ms": 163.26770000000002
+      },
+      {
+        "case": "independent_progress_control",
+        "repeat": 0,
+        "strategy": "observe_4s",
+        "matched": true,
+        "elapsed_ms": 157.55030000000002
+      },
+      {
+        "case": "stalled_after_encouragement",
+        "repeat": 1,
+        "strategy": "observe_4s",
+        "matched": false,
+        "elapsed_ms": 162.6019
+      },
+      {
+        "case": "area_search_receding",
+        "repeat": 1,
+        "strategy": "observe_2s",
+        "matched": false,
+        "elapsed_ms": 145.2439
+      },
+      {
+        "case": "departed_after_confirmation",
+        "repeat": 1,
+        "strategy": "correct",
+        "matched": true,
+        "elapsed_ms": 164.9327
+      },
+      {
+        "case": "departure_still_unanswered",
+        "repeat": 1,
+        "strategy": "correct",
+        "matched": true,
+        "elapsed_ms": 193.65990000000002
+      },
+      {
+        "case": "moving_away_after_silence",
+        "repeat": 1,
+        "strategy": "observe_4s",
+        "matched": false,
+        "elapsed_ms": 165.7622
+      },
+      {
+        "case": "independent_progress_control",
+        "repeat": 1,
+        "strategy": "observe_4s",
+        "matched": true,
+        "elapsed_ms": 175.2661
+      }
+    ]
+  },
+  "after": {
+    "policy": "jev_adaptive_assistance_v2",
+    "measurement": "Desktop decision replay; no headset playback or participant benefit measured",
+    "failures": 0,
+    "rows": [
+      {
+        "case": "stalled_after_encouragement",
+        "repeat": 0,
+        "strategy": "orient_explicit",
+        "matched": true,
+        "elapsed_ms": 554.0731000000001
+      },
+      {
+        "case": "area_search_receding",
+        "repeat": 0,
+        "strategy": "refine_explicit",
+        "matched": true,
+        "elapsed_ms": 199.6945
+      },
+      {
+        "case": "departed_after_confirmation",
+        "repeat": 0,
+        "strategy": "correct",
+        "matched": true,
+        "elapsed_ms": 182.9042
+      },
+      {
+        "case": "departure_still_unanswered",
+        "repeat": 0,
+        "strategy": "correct",
+        "matched": true,
+        "elapsed_ms": 183.9368
+      },
+      {
+        "case": "moving_away_after_silence",
+        "repeat": 0,
+        "strategy": "orient_explicit",
+        "matched": true,
+        "elapsed_ms": 169.99630000000002
+      },
+      {
+        "case": "independent_progress_control",
+        "repeat": 0,
+        "strategy": "observe_4s",
+        "matched": true,
+        "elapsed_ms": 157.577
+      },
+      {
+        "case": "stalled_after_encouragement",
+        "repeat": 1,
+        "strategy": "orient_explicit",
+        "matched": true,
+        "elapsed_ms": 148.3834
+      },
+      {
+        "case": "area_search_receding",
+        "repeat": 1,
+        "strategy": "refine_explicit",
+        "matched": true,
+        "elapsed_ms": 198.9999
+      },
+      {
+        "case": "departed_after_confirmation",
+        "repeat": 1,
+        "strategy": "correct",
+        "matched": true,
+        "elapsed_ms": 168.72490000000002
+      },
+      {
+        "case": "departure_still_unanswered",
+        "repeat": 1,
+        "strategy": "correct",
+        "matched": true,
+        "elapsed_ms": 155.2319
+      },
+      {
+        "case": "moving_away_after_silence",
+        "repeat": 1,
+        "strategy": "orient_explicit",
+        "matched": true,
+        "elapsed_ms": 199.9609
+      },
+      {
+        "case": "independent_progress_control",
+        "repeat": 1,
+        "strategy": "observe_4s",
+        "matched": true,
+        "elapsed_ms": 145.4233
+      }
+    ]
+  },
+  "additional_model_only_controls": {
+    "policy": "jev_adaptive_assistance_v2",
+    "measurement": "Desktop decision replay; no headset playback or participant benefit measured",
+    "failures": 7,
+    "rows": [
+      {
+        "case": "tracking_unavailable",
+        "repeat": 0,
+        "strategy": "orient_explicit",
+        "matched": false,
+        "elapsed_ms": 524.9753000000001
+      },
+      {
+        "case": "current_target_gaze",
+        "repeat": 0,
+        "strategy": "orient_explicit",
+        "matched": false,
+        "elapsed_ms": 169.1879
+      },
+      {
+        "case": "controller_on_target",
+        "repeat": 0,
+        "strategy": "orient_explicit",
+        "matched": false,
+        "elapsed_ms": 143.87300000000002
+      },
+      {
+        "case": "audio_busy",
+        "repeat": 0,
+        "strategy": "orient_explicit",
+        "matched": false,
+        "elapsed_ms": 156.9984
+      },
+      {
+        "case": "tracking_unavailable",
+        "repeat": 1,
+        "strategy": "orient_explicit",
+        "matched": false,
+        "elapsed_ms": 207.1019
+      },
+      {
+        "case": "current_target_gaze",
+        "repeat": 1,
+        "strategy": "orient_explicit",
+        "matched": false,
+        "elapsed_ms": 182.7324
+      },
+      {
+        "case": "controller_on_target",
+        "repeat": 1,
+        "strategy": "orient_explicit",
+        "matched": false,
+        "elapsed_ms": 146.0478
+      },
+      {
+        "case": "audio_busy",
+        "repeat": 1,
+        "strategy": "observe_1s",
+        "matched": true,
+        "elapsed_ms": 165.3717
+      }
+    ],
+    "interpretation": "Deliberately changed single flags in otherwise unchanged historical snapshots. Seven of eight model replies selected speech despite contradictory guard flags. Production does not dispatch these requests: local valid gaze, current target/controller, lifecycle and audio-readiness gates remain authoritative and recheck before playback. Prompt instructions alone are not an enforcement mechanism."
+  }
+}

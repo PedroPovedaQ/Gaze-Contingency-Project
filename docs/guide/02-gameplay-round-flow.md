@@ -15,6 +15,8 @@ After loading, select **Center and begin** while seated and facing forward. This
 
 ## Session setup and practice
 
+**Implemented — October 26:** the first practice instruction introduces the agent: “Hi, I'm your search guide. I'll guide you towards the object, then help you narrow it down.” It also explains right-controller trigger selection. Development quick tests include this greeting on their first trial even though they skip the longer study introduction. The greeting uses the assigned trial voice with identical wording across conditions and Adaptive/Baseline modes; later trials use ordinary readiness instructions. It runs before the geometry-derived opening direction, object reveal and active-search timer. An explicit readiness repeat can replay the greeting. Target identity remains hidden.
+
 **Implemented development shortcut — October 20:** the startup panel now also offers **Quick test — new cloned voice**, alongside neutral and last-clone options. It records a fresh microphone sample through the existing tone/reading/Finish recording flow, creates a new ElevenLabs clone, prepares only that clone's verified phrase library, then enters the same Center and begin / 40-trial development path. It does not reuse a saved voice or create a study block assignment. Enrollment failure offers Record again / Cancel; preparation failure offers Retry audio / Cancel and does not start trials. Fresh-clone runs use `DEV_CLONE`, `session_mode=new_clone_quick_test`, and `study_data=false`. The successfully created clone remains available to the explicit last-clone shortcut later. The fresh shortcut skips study voice selection, sample acceptance and practice, just like the existing quick tests; it does not fabricate study audio-readiness acceptance. Normal participant setup is unchanged.
 
 The active scene is `GazeContingencyStudyScene`. `VoiceModeSelector` handles presentation and preferred-voice choice: six candidates in each offered gender category, hover preview, selection and confirmation. Natural-voice enrollment prepares the self-similar condition. `VoiceAssistantController` and `VoiceSynthesizer` coordinate preparation and accepted playback levels for the assigned voices; failures must not silently replace a condition.
@@ -70,3 +72,12 @@ Use [study QA](../voice-study-qa.md), [measurement validation](../gaze-measureme
 The original template Coaching UI and its Relaunch Coaching wrist control are disabled in the study scene to avoid duplicate startup instructions. The shared study setup card owns participant instructions.
 
 **Implemented:** the current eight-wall study requires no surface selection. Voice setup proceeds to seated **Center and begin**, then the existing introduction/readiness/trial sequence. Room-floor tracking and gaze-readiness checks still apply.
+
+
+### Post-calibration activation exercise
+
+**Implemented (2026-10-25):** after accepting or skipping entry calibration, three objects appear at eye height in front of the participant: a red cube, blue sphere and yellow capsule. In prompted order, look at the object until the study's gaze-vicinity highlighting responds, keep looking, point with the right controller and pull the trigger. A continuous 0.35-second response qualifies the gaze step; it is a familiarization debounce, not a fixation detector or research accuracy threshold. Wrong-object selections, ambiguous/unavailable gaze, interruptions and stale observation gaps do not advance. Each next object requires a new gaze qualification and trigger release/press.
+
+All three checks must complete before Continue enables centering and the existing uncounted practice trial. Recalibrate returns to the entry procedure and then starts a fresh exercise. The exercise does not change calibration offsets, trial order, trial clocks or scores. Settings/focus interruptions hide the exercise objects and clear gaze qualification.
+
+Separate `EyeMeasurements/activation_<id>.json` reports retain participant/run, alignment and eye-recording identifiers, intended/gaze/selected object indices, attempts, completed count and outcome. Eye rows use `phase=activation_exercise`, `activationStep`, and an empty trial ID. **Open decision:** this central three-object functional rehearsal does not establish whole-field eye-tracking accuracy or replace held-out validation.

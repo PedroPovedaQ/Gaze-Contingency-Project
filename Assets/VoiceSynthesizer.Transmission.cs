@@ -88,7 +88,7 @@ public partial class VoiceSynthesizer
             else if (selectedSpeak.HasValue)
             {
                 speak = selectedSpeak.Value;
-                outcome = selectionSource == "jev" ? (speak ? "speak" : "wait") : "local_fallback_catalog";
+                outcome = selectionSource == "jev" || selectionSource == "jev_adaptive" || selectionSource == "local_minilm_adaptive" ? (speak ? "speak" : "wait") : "local_fallback_catalog";
             }
             else try { if (TransmissionAdvisor != null) advice = TransmissionAdvisor(state, cancellation.Token);
                 else outcome = "local_no_advisor"; }

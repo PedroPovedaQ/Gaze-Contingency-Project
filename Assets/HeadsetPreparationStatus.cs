@@ -4,7 +4,7 @@ using UnityEngine;
 
 /// <summary>
 /// Small live-status sidecar available before replay has a trial header.
-/// Never starts a trial, changes its clock, or writes participant/voice identifiers.
+/// Never starts a trial, changes its clock, or includes interview answers or names.
 /// </summary>
 public sealed class HeadsetPreparationStatus : MonoBehaviour
 {
@@ -21,6 +21,9 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
         public double updatedUtc;
         public bool wallControlAvailable, wallsVisible;
         public string commandId, commandResult;
+        public AssistanceRuntimeSnapshot assistance;
+        public bool intakeAvailable;
+        public string participantSessionId, participantCode, configuration, assignmentState, nextParticipantCode;
     }
 
     [Serializable]
@@ -31,6 +34,7 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
         public long observedRevision;
         public double observedUtc;
         public bool wallsVisible;
+        public ParticipantSessionAssignment assignment;
     }
 
     [Serializable]
@@ -100,11 +104,19 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
             // Use the headset heartbeat revision, never a comparison of Mac/headset clocks.
             m_Status.commandId = command.id;
             m_Status.commandResult = "rejected";
-            if (command.action != "set_walls" || m_Game == null || m_Paused || m_Unfocused ||
+            if (m_Game == null || m_Paused || m_Unfocused ||
                 command.observedRevision <= 0 || command.observedRevision < m_MinCommandRevision || command.observedRevision > m_Status.revision ||
                 m_Status.revision - command.observedRevision > 20 ||
                 double.IsNaN(command.observedUtc) || double.IsInfinity(command.observedUtc) ||
                 UtcSeconds - command.observedUtc < 0 || UtcSeconds - command.observedUtc > 10) return;
+            if (command.action == "assign_session")
+            {
+                var selector = GetComponent<VoiceModeSelector>();
+                if (command.assignment != null && selector != null && selector.StageDesktopSession(command.assignment))
+                    m_Status.commandResult = "applied";
+                return;
+            }
+            if (command.action != "set_walls") return;
             var audit = new ControlAudit { utc = DateTime.UtcNow.ToString("O"), sessionId = m_Status.sessionId,
                 commandId = command.id, before = m_Game.DegreeGuidesVisible, after = command.wallsVisible,
                 round = m_Game.CurrentObjectiveIndex, phase = m_Status.phase };
@@ -147,6 +159,15 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
                 m_Status.message = "Headset app paused";
                 m_Status.progressKnown = false;
             }
+            var selector = GetComponent<VoiceModeSelector>();
+            m_Status.intakeAvailable = selector != null && selector.CanStageDesktopSession;
+            m_Status.participantSessionId = selector?.DesktopAssignmentId ?? "";
+            m_Status.participantCode = selector?.DesktopAssignmentCode ?? "";
+            m_Status.configuration = selector?.DesktopConfiguration ?? "";
+            m_Status.assignmentState = selector?.DesktopAssignmentState ?? "none";
+            if (string.IsNullOrEmpty(m_Status.nextParticipantCode) || m_Status.participantCode == m_Status.nextParticipantCode)
+                m_Status.nextParticipantCode = SessionConfig.SuggestedParticipantId;
+            m_Status.assistance = GetComponent<HintGenerator>()?.CaptureAssistanceStatus() ?? SessionConfig.CaptureAssistanceSelection();
             m_Status.wallControlAvailable = m_Game != null;
             m_Status.wallsVisible = m_Game != null && m_Game.DegreeGuidesVisible;
             m_Status.revision++;

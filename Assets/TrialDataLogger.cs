@@ -542,6 +542,7 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine("{");
         sb.AppendLine(FormattableString.Invariant($"  \"active_search_limit_seconds\": {StudyTrialClock.SearchLimitSeconds},"));
         sb.AppendLine(FormattableString.Invariant($"  \"participant_id\": \"{SessionConfig.ParticipantId}\","));
+        sb.AppendLine(FormattableString.Invariant($"  \"desktop_session_id\": \"{SessionConfig.DesktopSessionId}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"run_number\": {SessionConfig.RunNumber},"));
         sb.AppendLine(FormattableString.Invariant($"  \"condition\": \"{SessionConfig.ConditionLabel}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"voice_condition\": \"{(SessionConfig.VoiceBlocksEnabled ? "counterbalanced" : SessionConfig.VoiceTag)}\","));
@@ -567,6 +568,8 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine($"  \"voice_perspective\": \"shared_participant_directed_imperative\", \"perspective_version\": \"{VoicePromptText.Version}\",");
         sb.AppendLine("  \"eye_event_measurement\": \"ray_intersection_proxy_not_validated_fixation\",");
         sb.AppendLine($"  \"guidance_policy\": \"{DirectionalHintPolicy.Version}\",");
+        sb.AppendLine($"  \"assistance_policy\": \"{SessionConfig.GuidancePolicy}\",");
+        sb.AppendLine($"  \"assistance_provider_at_summary\": \"{SessionConfig.AssistanceProvider}\",");
         sb.AppendLine($"  \"guidance_audit_version\": \"{SessionConfig.GuidanceAuditVersion}\",");
         sb.AppendLine($"  \"interaction_policy\": \"{SessionConfig.InteractionPolicy}\", \"repeat_event_version\": \"{SessionConfig.RepeatEventVersion}\",");
         sb.AppendLine(FormattableString.Invariant($"  \"total_rounds\": {ChallengeSet.RoundCount},"));

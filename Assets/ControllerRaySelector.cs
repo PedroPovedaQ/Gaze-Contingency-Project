@@ -33,6 +33,10 @@ public class ControllerRaySelector : MonoBehaviour
     int m_LastCaptureFrame = -1;
 
     public bool ThroughWallSearch { get; set; }
+    public ActivationExercise Exercise { get; set; }
+    bool InteractionActive => Application.isFocused &&
+        (Exercise != null && Exercise.Active ? Exercise.AcceptingInput : m_Game != null && m_Game.SearchActive);
+    IReadOnlyList<GameObject> InteractionObjects => Exercise != null && Exercise.Active ? Exercise.Objects : m_Game?.SpawnedObjects;
     public event Action<GameObject> OnObjectCaptured;
 
     // A snapshot of the same physical rays used for selection, in world coordinates.
@@ -112,7 +116,7 @@ public class ControllerRaySelector : MonoBehaviour
     {
         // Apply before the physics step, so XRI queries and rendered geometry
         // share the collider pose even with Physics.autoSyncTransforms disabled.
-        bool rotating = m_Game != null && m_Game.SearchActive && GazeTargetVicinity.ControllerCurrent(RightTelemetry,
+        bool rotating = InteractionActive && GazeTargetVicinity.ControllerCurrent(RightTelemetry,
             TelemetryFrame, TelemetryTime, Time.frameCount, Time.realtimeSinceStartupAsDouble);
         RotateHoveredObject(RightTelemetry.target, rotating, Time.fixedDeltaTime);
     }
@@ -120,7 +124,7 @@ public class ControllerRaySelector : MonoBehaviour
     void Update()
     {
         // Set masks before the next XRI cast; restore normal room/UI behavior outside search.
-        bool search = m_Game != null && m_Game.SearchActive;
+        bool search = InteractionActive;
         foreach (var ray in m_Rays)
         {
             if (ray == null || !m_OriginalMasks.TryGetValue(ray, out int mask)) continue;
@@ -138,7 +142,7 @@ public class ControllerRaySelector : MonoBehaviour
     {
         ClearGazeShine();
         ClearHighlights();
-        bool search = m_Game != null && m_Game.SearchActive;
+        bool search = InteractionActive;
         bool rightPress = ReadPress(XRNode.RightHand, search, ref m_RightArmed);
         // Sample both hands before a capture callback can reset or destroy the trial.
         LeftTelemetry = ReadTelemetry(InteractorHandedness.Left, search);
@@ -157,6 +161,7 @@ public class ControllerRaySelector : MonoBehaviour
                 continue;
             }
             var target = RayTarget(ray);
+            if (Exercise != null && Exercise.Active && !Exercise.Contains(target)) target = null;
             m_LastRayTargets.TryGetValue(ray, out var previousTarget);
             m_LastRayTargets[ray] = target;
             if (target == null) continue;
@@ -168,7 +173,11 @@ public class ControllerRaySelector : MonoBehaviour
             {
                 m_LastCaptureFrame = Time.frameCount;
                 SelectingHand = "right";
-                try { OnObjectCaptured?.Invoke(target); }
+                try
+                {
+                    if (Exercise != null && Exercise.Active) Exercise.Capture(target);
+                    else OnObjectCaptured?.Invoke(target);
+                }
                 finally { SelectingHand = null; }
                 // Capture callbacks may destroy objects or pause/end the trial.
                 return;
@@ -192,7 +201,7 @@ public class ControllerRaySelector : MonoBehaviour
         if (SharedGazeStream.Instance == null || !SharedGazeStream.Instance.TryGetValid(out var gaze)) return;
         if (m_Vicinity == null) m_Vicinity = GetComponent<GazeTargetVicinity>();
         var winner = GazeTargetVicinity.ClosestObject(gaze.worldOrigin, gaze.worldDirection,
-            m_Game.SpawnedObjects, m_Vicinity != null ? m_Vicinity.PaddingDegrees : GazeTargetVicinity.DefaultPaddingDegrees,
+            InteractionObjects, m_Vicinity != null ? m_Vicinity.PaddingDegrees : GazeTargetVicinity.DefaultPaddingDegrees,
             out _, out _, out _);
         Shine(winner);
     }

@@ -1,0 +1,29 @@
+{
+  "scope": "Synthetic HTTP from actual headset shell over Wi-Fi ADB reverse, not wearer/app-audio validation",
+  "device": "HTC Vive Focus Vision",
+  "response": {
+    "model": "local-jev-minilm-experiment",
+    "decision_id": "headset-loopback-synthetic-smoke",
+    "answers": {
+      "assistance": {
+        "type": "choice",
+        "choice": "correct",
+        "probabilities": {
+          "observe_1s": 0.016275040805339813,
+          "observe_2s": 8.007666474441066e-05,
+          "observe_4s": 0.01802644692361355,
+          "orient_brief": 0.0012200218625366688,
+          "orient_explicit": 0.005269084591418505,
+          "correct": 0.9588988423347473,
+          "encourage": 0.00023048371076583862
+        }
+      }
+    },
+    "probability_semantics": "uncalibrated_offered_choice_softmax",
+    "elapsed_ms": 233.15145797096193,
+    "source": "model",
+    "raw_choice": "correct",
+    "model_version": "20261026-minilm-adaptive-v2",
+    "checkpoint_sha256": "66895733262426fb8b5ae1e26e53e87dd599d443e389013c0281fd6890d5d5fc"
+  }
+}

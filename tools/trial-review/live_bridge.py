@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Wireless ADB receiver. Copies evidence and sends explicit, session-bound wall display commands. Never starts trials."""
+"""Wireless ADB receiver. Copies evidence and sends session-bound wall/participant assignments. Never starts timed trials."""
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 import fcntl
@@ -183,6 +183,33 @@ class Adb:
         return result
 
 
+def validate_assistance_status(value):
+    """Optional diagnostic data; malformed status never becomes a confident provider label."""
+    if not isinstance(value, dict): return None
+    mode, provider = value.get('mode'), value.get('provider')
+    if (mode, provider) not in (('adaptive', 'jev'), ('adaptive', 'local_minilm'), ('baseline', 'baseline_rules')): return None
+    if value.get('connection') not in ('not_checked', 'not_required', 'checking', 'ready', 'unavailable', 'configured', 'not_configured'): return None
+    result = {key: value[key] for key in ('mode', 'provider', 'connection')}
+    for key in ('modelVersion', 'policy'):
+        field = value.get(key)
+        if field is not None and (not isinstance(field, str) or not re.fullmatch(r'[A-Za-z0-9_.:/-]{1,128}', field)): return None
+        result[key] = field
+    captured = value.get('capturedAtSeconds')
+    if type(captured) not in (int, float) or not math.isfinite(captured) or captured < 0: return None
+    result['capturedAtSeconds'] = captured
+    decision = value.get('lastDecisionId')
+    if decision:
+        if mode != 'adaptive' or not isinstance(decision, str) or not re.fullmatch(r'[0-9a-f]{32}', decision): return None
+        if value.get('lastDecisionProvider') != provider: return None
+        if value.get('lastStrategy') not in ('observe_1s', 'observe_2s', 'observe_4s', 'orient_brief', 'orient_explicit', 'refine_brief', 'refine_explicit', 'correct', 'encourage'): return None
+        if value.get('lastOutcome') not in ('observing', 'queued'): return None
+        at = value.get('lastDecisionAtSeconds')
+        if type(at) not in (int, float) or not math.isfinite(at) or not 0 <= at <= captured: return None
+        for key in ('lastDecisionId', 'lastDecisionProvider', 'lastStrategy', 'lastOutcome', 'lastDecisionAtSeconds'):
+            result[key] = value[key]
+    return result
+
+
 def validate_headset_state(value):
     if not isinstance(value, dict) or value.get('schema') != 1:
         raise ValueError('Unsupported headset state')
@@ -201,11 +228,28 @@ def validate_headset_state(value):
                   wallsVisible=value.get('wallsVisible') is True,
                   commandId=value.get('commandId') if isinstance(value.get('commandId'), str) else '',
                   commandResult=value.get('commandResult') if value.get('commandResult') in ('applied', 'rejected') else '')
+    result['assistance'] = validate_assistance_status(value.get('assistance'))
+    result.update(intakeAvailable=value.get('intakeAvailable') is True)
+    for key in ('participantSessionId', 'participantCode', 'configuration', 'assignmentState', 'nextParticipantCode'):
+        result[key] = value.get(key, '') if isinstance(value.get(key, ''), str) else ''
     return result
 
 
+def validate_assignment(value):
+    if not isinstance(value, dict) or value.get('schema') != 1:
+        raise ValueError('Invalid participant assignment')
+    for key, pattern in [('id', r'[0-9a-f]{32}'), ('participantCode', r'P[0-9]{3,12}'), ('cloneVoiceId', r'[A-Za-z0-9_-]{8,128}')]:
+        if not isinstance(value.get(key), str) or not re.fullmatch(pattern, value[key]):
+            raise ValueError('Invalid participant assignment field: '+key)
+    if value.get('configuration') not in ('A','B') or value.get('neutralGender') not in ('Male','Female') or type(value.get('neutralOption')) is not int or not 0 <= value['neutralOption'] < 6:
+        raise ValueError('Invalid condition or neutral voice choice')
+    if set(value) != {'schema','id','participantCode','configuration','neutralGender','neutralOption','cloneVoiceId'}:
+        raise ValueError('Assignment must not contain interview data')
+    return value
+
+
 def validate_control(command, state, now):
-    if not isinstance(command, dict) or command.get('schema') != 1 or command.get('action') != 'set_walls':
+    if not isinstance(command, dict) or command.get('schema') != 1 or command.get('action') not in ('set_walls', 'assign_session'):
         raise ValueError('Unsupported headset control')
     if not isinstance(command.get('id'), str) or not re.fullmatch(r'[0-9a-f]{32}', command['id']):
         raise ValueError('Invalid control ID')
@@ -216,11 +260,18 @@ def validate_control(command, state, now):
     if type(observed) not in (float, int) or not math.isfinite(observed):
         raise ValueError('Invalid headset observation time')
     revision = command.get('observedRevision')
-    if (not state or state.get('wallControlAvailable') is not True or state.get('phase') == 'paused' or
-            command.get('sessionId') != state.get('sessionId') or type(command.get('wallsVisible')) is not bool or
+    if (not state or state.get('phase') == 'paused' or
+            command.get('sessionId') != state.get('sessionId') or
             type(revision) is not int or type(state.get('revision')) is not int or
             revision <= 0 or not 0 <= state['revision']-revision <= 20):
         raise ValueError('Headset session unavailable or changed')
+    if command['action'] == 'set_walls':
+        if state.get('wallControlAvailable') is not True or type(command.get('wallsVisible')) is not bool:
+            raise ValueError('Walls unavailable')
+    else:
+        assignment = validate_assignment(command.get('assignment'))
+        if state.get('intakeAvailable') is not True and state.get('participantSessionId') != assignment['id']:
+            raise ValueError('Headset is busy with another session')
     return command
 
 

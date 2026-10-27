@@ -1,0 +1,39 @@
+{
+  "schema": "local-jev-shadow-v1",
+  "updated_utc": 1792957900.500851,
+  "identity": {
+    "device": "cpu",
+    "model": "88d676d6ce031b49fa95b37193d3ebd704ec2ae45a6c28e1cf419492049cb892",
+    "schema": 1,
+    "source": "/private/tmp/local-jev-shadow-smoke-20261025/input"
+  },
+  "mode": "backfill",
+  "requests": 20,
+  "supported": 20,
+  "unsupported": 0,
+  "orphan_responses": 0,
+  "local_errors": 0,
+  "jev_statuses": {
+    "ok": 20
+  },
+  "comparable": 20,
+  "local_compute_ms": {
+    "n": 20,
+    "median": 10.344812500989065,
+    "p95": 17.238540982361883
+  },
+  "jev_latency_ms": {
+    "n": 20,
+    "median": 179.47410000000002,
+    "p95": 244.52
+  },
+  "discarded": 0,
+  "playback_observed": 0,
+  "interpretation": "Agreement with Jev, not accuracy. Mac compute excludes replay-transfer delay; Jev elapsed includes headset/network. Neither measures acoustic onset. No playback authority.",
+  "raw_matches": 20,
+  "masked_matches": 20,
+  "gated_matches": 20,
+  "status": "stopped",
+  "runner_pid": 42058,
+  "evidence": "Stored October 20 production-C# development fixtures wrapped as replay traces; not live participant data or fresh Jev calls."
+}

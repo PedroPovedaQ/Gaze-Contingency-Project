@@ -36,6 +36,7 @@ namespace SpatialVoice
         [Serializable] struct CatalogEvent { public string stage, status; public double time; }
         void Update()
         {
+            UpdateLocalConnection();
             if (!m_WarmupStarted && m_Voice != null && m_Voice.LibraryReady && m_Decisions != null && m_Decisions.Available)
             { m_WarmupStarted = true; WarmConnection(); }
             if (m_Pending != null && (m_Relevant == null || !m_Relevant())) Cancel();

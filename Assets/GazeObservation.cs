@@ -18,6 +18,8 @@ public sealed class GazeObservation
     public Vector3 unalignedWorldOrigin, unalignedWorldDirection;
     public string alignmentId, alignmentStatus = "none";
     public bool alignmentApplied;
+    public bool eyeDotEnabled;
+    public int activationStep = -1;
     public float alignmentYawDegrees, alignmentPitchDegrees;
     public double receiptTime, inputEventTime, ageSeconds, htcQueryReceiptTime;
     public bool sourceCaptureTimeKnown, sourceSequenceKnown, newInputUpdate, deviceAvailable,

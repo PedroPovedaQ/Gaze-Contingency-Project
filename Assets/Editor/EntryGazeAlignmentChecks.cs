@@ -27,6 +27,8 @@ public static class EntryGazeAlignmentChecks
         {
             if (previous != null) previous.tag = "Untagged";
             camera.tag = "MainCamera";
+            camera.transform.position = new Vector3(0, 1.7f, 0);
+            camera.transform.rotation = Quaternion.Euler(65, 30, 20);
             var game = host.AddComponent<FindObjectGameManager>();
             Check(!game.StartCenteredSession(), "Cannot start trials before entry acceptance");
             var stream = host.AddComponent<SharedGazeStream>();
@@ -37,6 +39,10 @@ public static class EntryGazeAlignmentChecks
             Check(Read<Button>(entry, "m_Start").interactable && !Read<Button>(entry, "m_Ok").interactable,
                 "Start available; OK unavailable before checks");
             var anchored = Read<GameObject>(entry, "m_Panel").transform.position;
+            Check(Mathf.Abs(anchored.y - 1.42f) < .02f, "Downward head pitch cannot place calibration panel on the floor");
+            Check(Mathf.Abs((EntryGazeAlignment.HorizontalFacing(camera.transform.rotation) * Vector3.forward).y) < .001f,
+                "Calibration targets use horizontal head facing");
+            camera.transform.position = Vector3.zero;
             camera.transform.rotation = Quaternion.Euler(0, 50, 0);
             Check(Read<GameObject>(entry, "m_Panel").transform.position == anchored, "Panel stays still");
             camera.transform.rotation = Quaternion.identity;

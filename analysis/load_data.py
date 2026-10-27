@@ -11,6 +11,18 @@ import re
 from tlx_scoring import score_tlx
 
 
+EYE_PROXY_FIELDS = {
+    "fixation_time_on_target": "fixation_time_on_target_seconds",
+    "fixation_time_on_distractors": "fixation_time_on_distractors_seconds",
+    "fixation_count_total": "fixation_count_total",
+    "fixation_count_on_target": "fixation_count_on_target",
+    "fixation_count_on_distractors": "fixation_count_on_distractors",
+    "avg_fixation_duration": "avg_fixation_duration_seconds",
+    "saccade_count": "saccade_count",
+    "saccade_frequency_hz": "saccade_frequency_hz",
+    "avg_saccade_amplitude_deg": "avg_saccade_amplitude_deg",
+}
+
 SUMMARY_COLUMNS = [
     "voice_condition", "voice_order", "trial_id", "outcome", "session_outcome", "search_started_at", "objects_ready_at", "capture_at", "schema_version",
     "participant_id", "run_number", "condition", "run_condition", "round_schedule", "block", "round_index",
@@ -20,7 +32,8 @@ SUMMARY_COLUMNS = [
     "fixation_count_total", "fixation_count_on_target", "fixation_count_on_distractors",
     "avg_fixation_duration", "saccade_count", "saccade_frequency_hz",
     "avg_saccade_amplitude_deg", "first_try_correct",
-    "run_total_blinks", "run_blinks_per_minute",
+    "run_total_blinks", "run_blinks_per_minute", "eye_measurement_status",
+    *["proxy_" + key for key in EYE_PROXY_FIELDS],
 ]
 
 
@@ -213,15 +226,11 @@ def load_all_summaries(data_dir: Path) -> pd.DataFrame:
                 "completed": r.get("completed", False),
                 "time_to_find": r.get("time_to_find_seconds", -1),
                 "wrong_captures": r.get("wrong_captures", 0),
-                "fixation_time_on_target": r.get("fixation_time_on_target_seconds", 0),
-                "fixation_time_on_distractors": r.get("fixation_time_on_distractors_seconds", 0),
-                "fixation_count_total": r.get("fixation_count_total", 0),
-                "fixation_count_on_target": r.get("fixation_count_on_target", 0),
-                "fixation_count_on_distractors": r.get("fixation_count_on_distractors", 0),
-                "avg_fixation_duration": r.get("avg_fixation_duration_seconds", 0),
-                "saccade_count": r.get("saccade_count", 0),
-                "saccade_frequency_hz": r.get("saccade_frequency_hz", 0),
-                "avg_saccade_amplitude_deg": r.get("avg_saccade_amplitude_deg", 0),
+                # TrialDataLogger's historical counters are ray visits/transitions.
+                # A string in a summary cannot certify a physiological detector.
+                **{key: float("nan") for key in EYE_PROXY_FIELDS},
+                **{"proxy_"+key: r.get(source) for key, source in EYE_PROXY_FIELDS.items()},
+                "eye_measurement_status": "interaction_proxy_not_validated_eye_event",
                 "first_try_correct": r.get("completed", False) and r.get("wrong_captures", 0) == 0,
                 "run_total_blinks": total_blinks,
                 "run_blinks_per_minute": blinks_per_minute,
@@ -279,11 +288,9 @@ def load_event_logs(data_dir: Path) -> pd.DataFrame:
 
 def compute_last_fixation_durations(events_df: pd.DataFrame) -> pd.DataFrame:
     """
-    For each (participant, run, round), find the last fixation_end event
-    where is_target=1 and return its duration. This is the "last fixation
-    duration on target before trial ends" metric (Chiossi et al. 2024).
-
-    Returns columns: participant_id, condition, round_index, last_fix_on_target_s
+    Retain the last target ray visit in last_target_visit_s for diagnostics.
+    The compatibility last_fix_on_target_s column stays unavailable: historical
+    fixation_end event names do not establish physiological fixations.
     """
     if events_df.empty:
         return pd.DataFrame()
@@ -310,6 +317,10 @@ def compute_last_fixation_durations(events_df: pd.DataFrame) -> pd.DataFrame:
         "objective_index": "round_index",
         "dwell_duration": "last_fix_on_target_s",
     })
+    # Keep the observed target visit for diagnostics; never promote it to fixation.
+    result["last_target_visit_s"] = result["last_fix_on_target_s"]
+    result["last_fix_on_target_s"] = float("nan")
+    result["eye_measurement_status"] = "interaction_proxy_not_validated_eye_event"
     return result
 
 

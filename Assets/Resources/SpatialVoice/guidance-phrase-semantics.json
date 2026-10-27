@@ -4210,7 +4210,7 @@
       }
     },
     {
-      "text": "Press the right trigger to select it.",
+      "text": "Almost! Don't forget to press the right trigger to select the object.",
       "semantics": {
         "intent": "selection_reminder",
         "horizontal": "none",
