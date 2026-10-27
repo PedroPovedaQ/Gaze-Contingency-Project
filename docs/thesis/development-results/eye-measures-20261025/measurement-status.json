@@ -1,0 +1,158 @@
+{
+  "version": "voice-eye-measures-v1",
+  "detector_version": "htc-query-eye-candidates-v2-auditable-screening",
+  "config": {
+    "max_gap_s": 0.025,
+    "fixation_min_s": 0.083,
+    "dispersion_deg": 1.8,
+    "saccade_speed_deg_s": 60.0,
+    "saccade_min_s": 0.02,
+    "saccade_max_s": 0.1,
+    "head_speed_max_deg_s": 20.0,
+    "invalid_padding_s": 0.2,
+    "pupil_min_segment_s": 2.0,
+    "pupil_min_hz": 60.0,
+    "pupil_max_p95_relative_jitter": 0.5
+  },
+  "command": [
+    "/tmp/gaze-eye-measures-20261025/bin/python",
+    "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/analysis/research_measures.py",
+    "--out",
+    "docs/reports/eye-measures-20261025-final",
+    "--summary",
+    "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_032_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-25_12-20-34/trial_summary.json",
+    "--summary",
+    "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_CLONE/run_001_dev_quick_test_gaze_aware_voice-selfsimilar_2026-10-25_10-54-39/trial_summary.json",
+    "--summary",
+    "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_CLONE/run_002_dev_quick_test_gaze_aware_voice-selfsimilar_2026-10-25_12-34-27/trial_summary.json",
+    "--eye",
+    "/Users/pedro.poveda/Documents/Trial Review Live/data/EyeMeasurements/20261025T144831_42f02b7ae7834df895c5b1f0e477b237/gaze_observations.jsonl",
+    "--eye",
+    "/Users/pedro.poveda/Documents/Trial Review Live/data/EyeMeasurements/20261025T161627_a2ee36a33a3c471a837d768861b5c8a9/gaze_observations.jsonl",
+    "--eye",
+    "/Users/pedro.poveda/Documents/Trial Review Live/data/EyeMeasurements/20261025T162740_db56c43c5f4645f59607fbe1a3379949/gaze_observations.jsonl"
+  ],
+  "eye_research_ready": false,
+  "eye_gate_reasons": [
+    "independent_detector_validation_not_established",
+    "task_wide_spatial_accuracy_and_drift_acceptance_not_established",
+    "sensor_capture_clock_and_sampling_independence_not_established",
+    "prespecified_trial_coverage_and_exclusion_policy_not_established"
+  ],
+  "last_target_fixation_status": "unavailable_no_validated_target_AOI_event_join",
+  "tlx_scored_blocks": 0,
+  "inputs": [
+    {
+      "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_NEUTRAL/run_032_dev_quick_test_gaze_aware_voice-neutral-male_2026-10-25_12-20-34/trial_summary.json",
+      "sha256": "655e5a45454967d69845d8f27abba65417385f847f1755b59da72ea0d904be71",
+      "bytes": 55306
+    },
+    {
+      "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_CLONE/run_001_dev_quick_test_gaze_aware_voice-selfsimilar_2026-10-25_10-54-39/trial_summary.json",
+      "sha256": "516f05bd6259d37000b83e8530e0779b013168d72bb741d118ebe8a0b1b5c77d",
+      "bytes": 50867
+    },
+    {
+      "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/GazeData/DEV_CLONE/run_002_dev_quick_test_gaze_aware_voice-selfsimilar_2026-10-25_12-34-27/trial_summary.json",
+      "sha256": "218cc73f84c97f0bb1ededebbc9c0603ebc1a1f618f848513c2057c0004bd1ce",
+      "bytes": 47446
+    },
+    {
+      "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/EyeMeasurements/20261025T144831_42f02b7ae7834df895c5b1f0e477b237/gaze_observations.jsonl",
+      "sha256": "56ea087b1e1b98749cf60565ebc3b0b4b2cbbfc3791b5dea3b26b2b279fd8f91",
+      "bytes": 138484837
+    },
+    {
+      "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/EyeMeasurements/20261025T161627_a2ee36a33a3c471a837d768861b5c8a9/gaze_observations.jsonl",
+      "sha256": "c7a6b05978063eed468ca22e6db39742354a3f014e8c31408368f57cb52bc8fb",
+      "bytes": 213034911
+    },
+    {
+      "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/EyeMeasurements/20261025T162740_db56c43c5f4645f59607fbe1a3379949/gaze_observations.jsonl",
+      "sha256": "ce04ea6735ac225c70c274d8b6f1591c60dcd7a39d8582693f45b9a9659e2ac0",
+      "bytes": 222483139
+    }
+  ],
+  "recordings": [
+    {
+      "recording_id": "42f02b7ae7834df895c5b1f0e477b237",
+      "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/EyeMeasurements/20261025T144831_42f02b7ae7834df895c5b1f0e477b237/gaze_observations.jsonl",
+      "rows": 41167,
+      "warnings": [],
+      "integrity": {
+        "complete": false,
+        "reason": "No clean-close receipt; recording may be active or interrupted"
+      },
+      "validated": false
+    },
+    {
+      "recording_id": "a2ee36a33a3c471a837d768861b5c8a9",
+      "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/EyeMeasurements/20261025T161627_a2ee36a33a3c471a837d768861b5c8a9/gaze_observations.jsonl",
+      "rows": 62647,
+      "warnings": [
+        "Interrupted final JSON line omitted; retained prefix only."
+      ],
+      "integrity": {
+        "complete": false,
+        "reason": "Recovered prefix or row-count mismatch"
+      },
+      "validated": false
+    },
+    {
+      "recording_id": "db56c43c5f4645f59607fbe1a3379949",
+      "path": "/Users/pedro.poveda/Documents/Trial Review Live/data/EyeMeasurements/20261025T162740_db56c43c5f4645f59607fbe1a3379949/gaze_observations.jsonl",
+      "rows": 65468,
+      "warnings": [
+        "Interrupted final JSON line omitted; retained prefix only."
+      ],
+      "integrity": {
+        "complete": false,
+        "reason": "Recovered prefix or row-count mismatch"
+      },
+      "validated": false
+    }
+  ],
+  "spatial_diagnostic_rows": 0,
+  "target_validation_sets": [],
+  "trial_count": 22,
+  "resolved_trials": 22,
+  "nonresolved_or_inconsistent_trials": [],
+  "unmatched_eye_trial_ids": [],
+  "interpretation": "Development diagnostics only. Eyes and trials are not independent participants. No voice-effect inference.",
+  "last_fixation_definition": "Pending: last independently detected fixation intersecting the recorded target AOI before controller selection, excluding pause/gap boundaries and reporting censored events separately.",
+  "coverage_definition": "Per-eye eligible interval seconds / recorded active search seconds; minimum of the two eyes. No extrapolation or automatic acceptance threshold.",
+  "source_clock": "HTC query receipt, not verified sensor capture; summary exposure is a duration, not a timestamp join.",
+  "code": [
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/analysis/research_measures.py",
+      "sha256": "002c68b691e69c2e30f510a8ffee5ceb112f442e63ff73771ce14f7c45044d93",
+      "bytes": 19460
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/analysis/eye_outcomes.py",
+      "sha256": "774806b525ad4f24b6814f27ee852768053d4524344a3c0a21538a59d430cf12",
+      "bytes": 22647
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/analysis/eye_quality.py",
+      "sha256": "9a648706cc7e54e867fb9208c4b6be8c3bdd292ae83e6eef5742135dc3019879",
+      "bytes": 28865
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/analysis/tlx_scoring.py",
+      "sha256": "abf7317c30e3c891a8d0d60bdbf80410512b28cf6b293cf5bb2adc6a60ff4b88",
+      "bytes": 1915
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/analysis/thesis_voice_condition_plots.py",
+      "sha256": "ebe1e5fbe8495a0a54493e6c3acd5c8240f927d6ec5e12e543192e5d0c169db1",
+      "bytes": 10148
+    }
+  ],
+  "versions": {
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "PyWavelets": "1.10.0",
+    "matplotlib": "3.11.2"
+  }
+}
