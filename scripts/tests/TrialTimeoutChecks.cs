@@ -23,6 +23,13 @@ class TrialTimeoutChecks
         }
         Check(VoicePromptText.TimeoutPhrase(3,true,true)==VoicePromptText.TimeoutFinal,"Final takes priority");
         Check(VoicePromptText.TimeoutPhrase(1,false,true)==VoicePromptText.TimeoutBlockBreak,"Block break wording");
+        Check(VoicePromptText.TimeoutPhrase(0,false,false,true)==VoicePromptText.TimeoutAlmost, "Missed selection gets explicit expired-time reminder");
+        Check(VoicePromptText.TimeoutPhrase(0,false,true,true)==VoicePromptText.TimeoutAlmostBlockBreak, "Reminder preserves block break");
+        Check(VoicePromptText.TimeoutPhrase(0,true,true,true)==VoicePromptText.TimeoutAlmostFinal, "Reminder preserves final trial priority");
+        foreach (var line in VoicePromptText.TimeoutSelectionPhrases) {
+            Check(line.StartsWith("Time up. Almost!") && line.Contains("right trigger"), "Reminder states time expired and the missing action");
+            Check(VoicePromptText.FormatForVoice(line,VoiceCondition.Generic)==VoicePromptText.FormatForVoice(line,VoiceCondition.SelfSimilar), "Timeout selection reminder has identical semantics in both voices");
+        }
         Console.WriteLine("PASS: 25s clock, inclusive deadline, pauses, reset, wording variation and boundary/voice parity.");
     }
 }

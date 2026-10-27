@@ -180,7 +180,7 @@ public partial class VoiceAssistantController : MonoBehaviour
         var phrases = new System.Collections.Generic.HashSet<string>(HintGenerator.AllPhrases());
         phrases.UnionWith(SpatialVoice.StudyNavigationVoiceBridge.Phrases());
         phrases.Add(k_CompletionLine); phrases.Add(StudyIntroLine); phrases.Add(k_ClosingLine); phrases.Add(AudioCheckLine); phrases.UnionWith(k_SuccessPhrases);
-        phrases.UnionWith(VoicePromptText.TimeoutPhrases); phrases.Add(VoicePromptText.TimeoutBlockBreak); phrases.Add(VoicePromptText.TimeoutFinal);
+        phrases.UnionWith(VoicePromptText.TimeoutSelectionPhrases); phrases.UnionWith(VoicePromptText.TimeoutPhrases); phrases.Add(VoicePromptText.TimeoutBlockBreak); phrases.Add(VoicePromptText.TimeoutFinal);
         foreach (var round in ChallengeSet.Rounds)
         {
             phrases.Add(RoundPhrase(round.roundIndex, round.target.color, round.target.shape));
@@ -200,7 +200,7 @@ public partial class VoiceAssistantController : MonoBehaviour
         var practice = ChallengeSet.PracticeRound(0);
         var phrases = new System.Collections.Generic.List<string>(HintGenerator.AllPhrases());
         phrases.AddRange(k_SuccessPhrases);
-        phrases.AddRange(VoicePromptText.TimeoutPhrases); phrases.Add(VoicePromptText.TimeoutBlockBreak); phrases.Add(VoicePromptText.TimeoutFinal);
+        phrases.AddRange(VoicePromptText.TimeoutSelectionPhrases); phrases.AddRange(VoicePromptText.TimeoutPhrases); phrases.Add(VoicePromptText.TimeoutBlockBreak); phrases.Add(VoicePromptText.TimeoutFinal);
         phrases.AddRange(new[] { AudioCheckLine, StudyIntroLine,
             RoundPhrase(practice.roundIndex, practice.target.color, practice.target.shape, true),
             VoicePromptText.WrongSelectionPhrase(practice.target.color, practice.target.shape) });
@@ -335,15 +335,15 @@ public partial class VoiceAssistantController : MonoBehaviour
         CancelSuccessFeedback();
         m_HintGenerator?.CancelPending(); m_VoiceSynthesizer?.Stop();
         if (m_EncouragementSessionStopped || !isActiveAndEnabled) return;
-        m_SuccessRoutine = StartCoroutine(TimeoutFeedback(round));
+        m_SuccessRoutine = StartCoroutine(TimeoutFeedback(round, m_GameManager.TimedOutAwaitingSelection));
     }
-    IEnumerator TimeoutFeedback(int round)
+    IEnumerator TimeoutFeedback(int round, bool awaitingSelection)
     {
         SuccessFeedbackBusy = true; // Shared round-feedback barrier also protects voice switches.
         bool study = !m_GameManager.PresentedRoundIsPractice;
         string phrase = VoicePromptText.TimeoutPhrase(m_TimeoutFeedbackCount++,
             study && round + 1 >= m_GameManager.TotalRounds,
-            study && SessionConfig.VoiceBlocksEnabled && round + 1 == ChallengeSet.RoundsPerBlock);
+            study && SessionConfig.VoiceBlocksEnabled && round + 1 == ChallengeSet.RoundsPerBlock, awaitingSelection);
         // Prepared for both voices before trials; no provider decision or success claim.
         if (m_VoiceSynthesizer != null) m_VoiceSynthesizer.Speak(phrase, "trial_timeout", SessionConfig.Voice);
         while (m_VoiceSynthesizer != null && m_VoiceSynthesizer.IsBusy) yield return null;

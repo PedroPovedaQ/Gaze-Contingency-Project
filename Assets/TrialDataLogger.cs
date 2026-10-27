@@ -298,7 +298,7 @@ public class TrialDataLogger : MonoBehaviour
         rec.outcome = "timeout"; rec.completed = false;
         rec.searchSeconds = m_GameManager.CurrentSearchSeconds;
         m_ObjectiveRecords[index] = rec; m_HasLastFixation = false;
-        WriteEvent("trial_timeout", "", "", "", -1, false, rec.searchSeconds, FormattableString.Invariant($"active_search_limit_seconds={StudyTrialClock.SearchLimitSeconds}"));
+        WriteEvent("trial_timeout", "", "", "", -1, false, rec.searchSeconds, FormattableString.Invariant($"active_search_limit_seconds={StudyTrialClock.SearchLimitSeconds};awaiting_selection={m_GameManager.TimedOutAwaitingSelection}"));
         WriteSummary(Time.time - m_GameManager.GameStartTime);
     }
 

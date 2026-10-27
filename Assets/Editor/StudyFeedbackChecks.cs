@@ -114,6 +114,11 @@ public static class StudyFeedbackChecks
             Check(!(bool)expire.Invoke(game, null), "Paused clock cannot expire.");
             Set(game, "<SearchActive>k__BackingField", false);
             Check(!(bool)expire.Invoke(game, null), "Readiness/feedback cannot expire.");
+            Check(!game.TimedOutAwaitingSelection, "Missing current gaze/controller evidence uses ordinary timeout feedback.");
+            foreach (var line in VoicePromptText.TimeoutSelectionPhrases)
+                Check(Array.IndexOf(VoiceAssistantController.StarterPhrases(), line) >= 0 &&
+                    Array.IndexOf(VoiceAssistantController.PhraseLibrary(), line) >= 0,
+                    "Timeout-only selection reminders are prepared in both quick and full paths.");
             foreach (var line in VoicePromptText.TimeoutPhrases)
                 Check(Array.IndexOf(VoiceAssistantController.StarterPhrases(), line) >= 0 &&
                     Array.IndexOf(VoiceAssistantController.PhraseLibrary(), line) >= 0,

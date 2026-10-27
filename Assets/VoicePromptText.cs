@@ -21,7 +21,12 @@ public static class VoicePromptText
     };
     public const string TimeoutBlockBreak = "Time up. Let's shake that one off. Take a break before the next block.";
     public const string TimeoutFinal = "Time up. Thank you for your effort. That's the last round.";
-    public static string TimeoutPhrase(int variation, bool finalTrial, bool blockBreak) =>
+    public const string TimeoutAlmost = "Time up. Almost! Don't forget to press the right trigger to select the object. Let's try the next round.";
+    public const string TimeoutAlmostBlockBreak = "Time up. Almost! Don't forget to press the right trigger to select the object. Take a break before the next block.";
+    public const string TimeoutAlmostFinal = "Time up. Almost! Don't forget to press the right trigger to select the object. That's the last round.";
+    public static readonly string[] TimeoutSelectionPhrases = { TimeoutAlmost, TimeoutAlmostBlockBreak, TimeoutAlmostFinal };
+    public static string TimeoutPhrase(int variation, bool finalTrial, bool blockBreak, bool awaitingSelection = false) =>
+        awaitingSelection ? (finalTrial ? TimeoutAlmostFinal : blockBreak ? TimeoutAlmostBlockBreak : TimeoutAlmost) :
         finalTrial ? TimeoutFinal : blockBreak ? TimeoutBlockBreak : TimeoutPhrases[Math.Abs(variation % TimeoutPhrases.Length)];
 
     public const string AudioLevelCheck = "Hover your controller over Accept Audio and press the trigger to confirm this is an acceptable audio level.";

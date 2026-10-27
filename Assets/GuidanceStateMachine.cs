@@ -23,7 +23,6 @@ public sealed class GuidanceStateMachine
     readonly GazeZoneEntryGate m_Pointing = new GazeZoneEntryGate(0, 1);
     readonly GazeZoneEntryGate m_Looking = new GazeZoneEntryGate(0, DirectionalHintPolicy.LookingHoldSeconds, DirectionalHintPolicy.LookingExitSeconds);
     readonly GazeReturnCueGate m_Revisit = new GazeReturnCueGate(), m_Return = new GazeReturnCueGate();
-    readonly StudyPromptDelay m_Reminder = new StudyPromptDelay(3);
     public GuidancePhase Phase { get; private set; } = GuidancePhase.Inactive;
     public GuidancePhase PreviousPhase { get; private set; } = GuidancePhase.Inactive;
     public GuidanceAction Action { get; private set; }
@@ -46,6 +45,9 @@ public sealed class GuidanceStateMachine
         string direction = TargetHistory.PendingDirection(now);
         return suppressVertical && DirectionalHintPolicy.HasVertical(direction) ? null : direction;
     }
+    // Retain SelectionReminder in the enum for old replay data, but never schedule it during search.
+    public bool ShouldRemindOnTimeout(bool deadlineReached, bool looking, bool pointing, bool triggerReleased) =>
+        deadlineReached && TargetAcknowledged && PointingStable && looking && pointing && triggerReleased;
     public bool RevisitPending(double now) => m_Revisit.IsPending(now);
     public bool WallReturnPending(double now) => m_Return.IsPending(now);
     public bool Allows(GuidanceAction action) => Action == action && action != GuidanceAction.None;
@@ -73,24 +75,23 @@ public sealed class GuidanceStateMachine
     }
     public void BeginSearch(double now, string openingDirection = null)
     {
-        ResetSpatial(); m_Reminder.Reset(); TargetAcknowledged = false; Turn.Prime(openingDirection);
+        ResetSpatial(); TargetAcknowledged = false; Turn.Prime(openingDirection);
         Transition(GuidancePhase.Suspended, "search_started_awaiting_evidence", now, true);
     }
     public void ResumeSearch(double now)
     {
-        ResetSpatial(); m_Reminder.Step(false, 0);
+        ResetSpatial();
         Transition(GuidancePhase.Suspended, "search_resumed_awaiting_evidence", now, true);
     }
     public void SetLifecycle(GuidancePhase phase, string reason, double now)
     {
-        ResetSpatial(); m_Reminder.Step(false, 0); Transition(phase, reason, now);
+        ResetSpatial(); Transition(phase, reason, now);
     }
     public void Step(Input input)
     {
         Turn.Observe(input.valid && !input.inside, input.direction, input.remainingTurn, input.now);
         bool looking = input.valid && input.looking;
         bool revisit = m_Revisit.Update(input.valid, looking, input.now);
-        bool reminder = m_Reminder.Step(looking && TargetAcknowledged, input.deltaSeconds);
         bool lookEntry = m_Looking.Update(input.valid, looking, input.now);
         // Controller hold continues through eye blinks, but cannot authorize speech alone.
         bool pointEntry = m_Pointing.Update(input.controllerValid, input.controllerOnTarget, input.now);
@@ -116,7 +117,6 @@ public sealed class GuidanceStateMachine
         {
             if (input.controllerValid && input.controllerOnTarget && pointEntry) Action = GuidanceAction.ConfirmPointing;
             else if (lookEntry) Action = GuidanceAction.ConfirmGaze;
-            else if (reminder) Action = GuidanceAction.SelectionReminder;
             return; // Never nudge away from the target while qualifying/holding gaze.
         }
         // Suppress search even when the eyes have not reached the winning target
@@ -164,7 +164,6 @@ public sealed class GuidanceStateMachine
                 m_Looking.MarkSpoken(now); TargetAcknowledged = true;
                 // Looking confirmation does not consume the independent pointing hold.
                 if (inside) m_Wall.MarkSpoken(now); TargetHistory.Clear(); m_Return.MarkSpoken(now); break;
-            case GuidanceAction.SelectionReminder: m_Reminder.MarkSpoken(); break;
             case GuidanceAction.ReturnTarget: m_Revisit.MarkSpoken(now); TargetHistory.Clear(); m_Return.MarkSpoken(now); break;
             case GuidanceAction.ReturnBearing: TargetHistory.MarkSpoken(now); m_Return.MarkSpoken(now); if (inside) m_Wall.MarkSpoken(now); break;
             case GuidanceAction.Arrival: m_Wall.MarkSpoken(now); break;

@@ -1,5 +1,9 @@
 ## 2026-10-26
 
+- Corrected the “Almost” selection reminder to run only as expired-trial feedback when fresh gaze/controller evidence shows an acknowledged, qualified target hold with the trigger released. Removed the three-second mid-search reminder. Ordinary timeouts, target confirmations, the 25-second deadline and success scoring remain intact. Added timeout evidence logging and prepared next-round/block/final wording for both voices. Regression, voice-isolation, model-interface and Unity feedback checks passed. Android build succeeded (68.8 s), installed and launched over Wi-Fi; Local MiniLM tunnel restored. Wearer verification remains open. See `work_log/2026-10-26-timeout-selection-reminder.md`.
+
+## 2026-10-26
+
 - Saved the current runtime, viewer, participant intake, activation/eye-dot tools, adaptive provider comparison, and research analysis/reporting as a local code checkpoint at the user's request. Existing build/test receipts remain in the linked work logs; fresh wearer verification remains open. No push requested.
 
 ## 2026-10-26

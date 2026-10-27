@@ -35,6 +35,7 @@ public class FindObjectGameManager : MonoBehaviour
     public event System.Action<int, string, string> OnRoundTransitionStarted; // next round, color, shape
 
     public event System.Action<int> OnRoundTimedOut;
+    public bool TimedOutAwaitingSelection { get; private set; }
     public event System.Action<int> OnSearchStarted;
     public event System.Action<string> OnSessionStopped;
     public event System.Action<string> OnCheckpoint;
@@ -160,6 +161,7 @@ public class FindObjectGameManager : MonoBehaviour
             if (obj != null && obj.TryGetComponent<MeshRenderer>(out var renderer)) renderer.enabled = true;
         m_Readiness.Finish();
         SearchActive = true;
+        TimedOutAwaitingSelection = false;
         m_SearchClock.Begin(Time.timeAsDouble);
         m_UI.ShowRoundAudioWait(false);
         m_ControllerSelector?.ResetSelection();
@@ -980,6 +982,8 @@ public class FindObjectGameManager : MonoBehaviour
     bool TryExpireRound()
     {
         if (m_State != GameState.Playing || !SearchActive || !m_SearchClock.DeadlineReached(Time.timeAsDouble)) return false;
+        // Capture fresh evidence while the target, controller and gaze state still exist.
+        TimedOutAwaitingSelection = GetComponent<HintGenerator>()?.CaptureTimeoutSelectionReminder(true) == true;
         m_SearchClock.Expire();
         SearchActive = false;
         GetComponent<HintGenerator>()?.SetLifecycle(GuidancePhase.TimedOut, "search_deadline_reached");

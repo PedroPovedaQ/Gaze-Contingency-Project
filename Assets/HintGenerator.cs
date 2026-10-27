@@ -135,8 +135,7 @@ public partial class HintGenerator : MonoBehaviour
         // Jev advice; approval still needs fresh evidence before and after the fade.
         // Exact right-controller hit + nearby valid gaze outranks search directions.
         // Recheck after the short audio fade; no announcement can survive a lost hit.
-        if ((m_CurrentHint == DirectionalHintPolicy.LookingPhrase ||
-            DirectionalHintPolicy.IsSelectionReminder(m_CurrentHint)) && m_Voice.IsBusy) return;
+        if (m_CurrentHint == DirectionalHintPolicy.LookingPhrase && m_Voice.IsBusy) return;
         if (m_State.Allows(GuidanceAction.ConfirmPointing))
         {
             string phrase = DirectionalHintPolicy.PointingPhrase;
@@ -171,21 +170,6 @@ public partial class HintGenerator : MonoBehaviour
                         m_LastTipTime = Time.time; m_LastDirection = null;
                     }, "gaze_target_vicinity_hold", decision.decisionId))
                 { Record(decision); m_CurrentHint = category; }
-            }
-            else if (m_State.Allows(GuidanceAction.SelectionReminder) && !m_Voice.IsBusy)
-            {
-                string phrase = DirectionalHintPolicy.SelectionReminder(m_ControllerEvidenceValid && m_ControllerOnTarget);
-                var decision = Decision("requested", "sustained_target_selection_reminder", phrase, phrase, true, inside, far, true);
-                if (m_Voice.TryAreaCorrection(phrase,
-                    () => { Evaluate(out bool v, out _, out _); EvaluatePointing(v); return Allows(GuidanceAction.SelectionReminder) && Active() && EvaluateLooking(v) &&
-                        phrase == DirectionalHintPolicy.SelectionReminder(m_ControllerEvidenceValid && m_ControllerOnTarget); },
-                    () => {
-                        Commit(GuidanceAction.SelectionReminder, inside);
-                        Record(Decision("committed", "selection_reminder_revalidated", phrase, phrase,
-                            true, inside, far, true, decision.decisionId));
-                        m_LastTipTime = Time.time;
-                    }, "sustained_target_selection_reminder", decision.decisionId))
-                { Record(decision); m_CurrentHint = phrase; }
             }
             return; // Let the person hold gaze within the target region without nudging it away.
         }

@@ -7,6 +7,19 @@ public partial class HintGenerator
     float m_VisualReferenceVerticalDelta, m_VisualReferencePitchDelta;
     bool m_VisualReferenceVerticalSuppressed;
 
+    public bool CaptureTimeoutSelectionReminder(bool deadlineReached)
+    {
+        if (!deadlineReached || !Active()) return false;
+        Evaluate(out bool valid, out bool inside, out bool far);
+        bool pointing = EvaluatePointing(valid);
+        bool looking = EvaluateLooking(valid);
+        bool remind = m_State.ShouldRemindOnTimeout(deadlineReached, looking, pointing,
+            m_ControllerEvidenceValid && m_Controller.RightTelemetry.triggerHeld == 0);
+        Record(Decision("timeout_evidence", remind ? "target_held_without_selection_at_deadline" : "ordinary_timeout",
+            "trial_timeout", "", valid, inside, far, m_State.PointingStable));
+        return remind;
+    }
+
     bool EvaluateLooking(bool valid)
     {
         m_GazeOnTarget = false; m_GazeRayHit = "unavailable"; m_GazeHitObjectId = null;
