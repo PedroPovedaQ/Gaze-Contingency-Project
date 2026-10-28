@@ -9,7 +9,7 @@ public sealed partial class TrialReviewApp
 {
     bool m_CaptureMode;
     bool m_CaptureCheckInputs;
-    string m_CaptureDirectory;
+    string m_CaptureDirectory,m_CaptureIntakeActivity;
     void Awake()
     {
         var args = Environment.GetCommandLineArgs();
@@ -41,8 +41,11 @@ public sealed partial class TrialReviewApp
                 new IntakeAnswer{question="Can you safely remain seated, turn, point and use the right-controller trigger?",transcript="Yes."}
             }
         };
+        if(phase=="awaiting_consent"||phase=="select_voice"){state.answers=Array.Empty<IntakeAnswer>();state.recordedSeconds=state.speechSeconds=0;state.sampleWords=0;}
+        state.selectedVoiceConfirmed=phase!="awaiting_consent"&&phase!="select_voice";
+        state.eligible=phase=="interview";
         if(phase!="awaiting_consent")state.consent=new IntakeConsent{id="fixture",sessionId=state.id,participantCode=state.participantCode,study=true,voiceCloud=true};
-        if(phase=="interview_complete") {state.eligible=true;state.cloneState="ready";state.cacheState="preparing";state.cacheCompleted=420;state.speechSeconds=34;state.sampleWords=72;}
+        if(phase=="interview_complete") {state.eligible=true;state.cloneState="ready";state.cacheState="preparing";state.cacheCompleted=420;state.speechSeconds=34;state.recordedSeconds=42;state.sampleWords=72;}
         return state;
     }
     void RunCaptureInputChecks()
@@ -85,13 +88,13 @@ public sealed partial class TrialReviewApp
         m_Dataset=m_Catalog.Register(m_Path,"synthetic-desktop-demo","SYNTHETIC","");
         m_DatasetDraft="Synthetic development demo";m_IdDraft="SYNTHETIC";
         m_IntakeMic="Development microphone (inactive)";
-        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu","layers","trial-search","cursor-details","cursor-collapsed","shortcuts","jev-alternatives"};
+        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu","layers","trial-search","cursor-details","cursor-collapsed","shortcuts","jev-alternatives","light-intake-consent","light-intake-interview","intake-clone-error","intake-screening-stopped","intake-withdrawn","intake-historical","intake-recording","intake-submitting","intake-prompt-playing"};
         var timeline=m_Timeline;
         for(int i=0;i<states.Length;i++)
         {
             string state=states[i];
             m_Timeline=timeline; m_Playing=false; m_Tab=0; m_CameraMode=0; m_RunTimeline=true;
-            m_JevScroll=Vector2.zero;m_InspectScroll=Vector2.zero; m_IntakeScroll=Vector2.zero; m_IntakeOpen=false; m_Intake=null; m_IntakeFolder=null;
+            m_JevScroll=Vector2.zero;m_InspectScroll=Vector2.zero; m_IntakeScroll=Vector2.zero; m_CaptureIntakeActivity=null;m_IntakeOpen=false; m_Intake=null; m_IntakeFolder=null;
             m_TrialQuery=state=="trial-search"?"02":"";m_LayersOpen=state=="layers";m_FileMenu=state=="file-menu";m_Browser=false;m_DatasetPanel=false;m_Loading=false;m_Ready=false;m_LightTheme=state.StartsWith("light-");
             m_ShortcutsOpen=state=="shortcuts";m_CollapsedCards.Clear();
             if(state=="cursor-details")m_InspectScroll=new Vector2(0,500);
@@ -112,12 +115,20 @@ public sealed partial class TrialReviewApp
             if(state=="dataset"){m_DatasetPanel=true;m_CatalogTab=0;}
             if(state=="empty")m_Timeline=null;
             if(state=="loading")m_Loading=true;
-            if(state.StartsWith("intake-"))
+            string intakeState=state.StartsWith("light-")?state.Substring(6):state;
+            if(intakeState.StartsWith("intake-"))
             {
                 m_IntakeOpen=true;m_IntakeDevelopment=true;m_IntakeCode="P003";
-                string phase=state=="intake-consent"?"awaiting_consent":state=="intake-voice"?"select_voice":state=="intake-eligibility"?"eligibility_review":state=="intake-cache"||state=="intake-ready"?"interview_complete":"interview";
-                if(state!="intake-reserve")m_Intake=CaptureIntake(phase);
-                if(state=="intake-ready"){m_Intake.cacheState="ready";m_Intake.cacheCompleted=1132;}
+                string phase=intakeState=="intake-consent"?"awaiting_consent":intakeState=="intake-voice"?"select_voice":intakeState=="intake-eligibility"?"eligibility_review":intakeState=="intake-cache"||intakeState=="intake-ready"||intakeState=="intake-clone-error"?"interview_complete":"interview";
+                if(intakeState!="intake-reserve")m_Intake=CaptureIntake(phase);
+                if(intakeState=="intake-ready"){m_Intake.cacheState="ready";m_Intake.cacheCompleted=1132;}
+                if(intakeState=="intake-clone-error"){m_Intake.cloneState="uncertain";m_Intake.cacheState="not_started";m_Intake.cacheCompleted=0;m_Intake.cloneError="Development fixture: interrupted clone request. Review the provider result before retrying.";}
+                if(intakeState=="intake-screening-stopped"){m_Intake.phase="screening_stopped";m_Intake.eligible=false;}
+                if(intakeState=="intake-withdrawn"){m_Intake.phase="withdrawn";m_Intake.withdrawnUtc=1;}
+                if(intakeState=="intake-historical")m_Intake.protocol="historical-fixture";
+                if(intakeState=="intake-recording")m_CaptureIntakeActivity="Recording ● 00:12";
+                if(intakeState=="intake-submitting")m_CaptureIntakeActivity="Submitting";
+                if(intakeState=="intake-prompt-playing")m_CaptureIntakeActivity="Prompt playing";
                 m_QuestionHeardRevision=1;
             }
             for(int frame=0;frame<3;frame++)yield return null;

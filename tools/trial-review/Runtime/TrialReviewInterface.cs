@@ -60,6 +60,8 @@ public sealed partial class TrialReviewApp
         m_Button.hover.background=m_HoverTexture;m_Button.hover.textColor=text;
         m_Button.active.background=m_SelectedTexture;m_Button.active.textColor=Color.black;
         m_Button.focused.background=m_HoverTexture;m_Button.focused.textColor=text;
+        foreach(var state in new[]{m_Button.onNormal,m_Button.onHover,m_Button.onActive,m_Button.onFocused})
+        {state.background=m_SelectedTexture;state.textColor=Color.black;}
         m_Chip=new GUIStyle(m_Button){fontSize=13,padding=new RectOffset(8,8,8,8)};
         m_ActiveChip=new GUIStyle(m_Chip);m_ActiveChip.normal.background=m_SelectedTexture;m_ActiveChip.normal.textColor=Color.black;
         m_ActiveChip.hover.background=m_SelectedTexture;m_ActiveChip.hover.textColor=Color.black;
