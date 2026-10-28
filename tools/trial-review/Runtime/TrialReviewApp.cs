@@ -173,6 +173,8 @@ public sealed partial class TrialReviewApp : MonoBehaviour
     void OnDestroy()
     {
         if(m_GazeDotTexture!=null)Destroy(m_GazeDotTexture);
+        if(m_CardTexture!=null)Destroy(m_CardTexture);
+        if(m_MonoFont!=null)Destroy(m_MonoFont);
         m_WaitingPyramid?.Dispose();
         StopIntake();
         StopRunExport();

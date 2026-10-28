@@ -14,7 +14,7 @@ public sealed partial class TrialReviewApp
     string m_EvaluationError="", m_JudgeStatus="", m_JudgeFolder="",m_EvaluationFolder="";
     bool m_JudgeRunning,m_JudgeRequested,m_EvaluationGenerating;
     float m_NextJudgePoll,m_EvaluationContentWidth;
-    bool SuppressAutomaticEvaluation => Array.IndexOf(Environment.GetCommandLineArgs(),"--no-auto-evaluation")>=0;
+    bool SuppressAutomaticEvaluation => m_CaptureMode || Array.IndexOf(Environment.GetCommandLineArgs(),"--no-auto-evaluation")>=0;
 
     void LoadEvaluation(string folder)
     {

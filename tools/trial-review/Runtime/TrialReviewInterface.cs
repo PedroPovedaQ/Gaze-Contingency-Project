@@ -41,26 +41,26 @@ public sealed partial class TrialReviewApp
         m_Background=m_LightTheme?new Color(.94f,.94f,.92f):new Color(.045f,.045f,.045f);
         m_Surface=m_LightTheme?new Color(.99f,.985f,.97f):new Color(.085f,.085f,.08f);
         m_Border=m_LightTheme?new Color(.76f,.75f,.71f):new Color(.25f,.24f,.20f);
-        m_HeadingColor=m_LightTheme?new Color(.38f,.28f,.02f):m_Accent;
+        m_HeadingColor=m_LightTheme?new Color(.35f,.34f,.31f):new Color(.70f,.69f,.64f);
         m_TrackBackground=m_LightTheme?new Color(.89f,.88f,.84f):new Color(.065f,.065f,.06f);
         m_SpeechBackground=m_LightTheme?new Color(.90f,.79f,.44f):new Color(.34f,.28f,.10f);
         Color text=m_LightTheme?new Color(.09f,.09f,.08f):new Color(.95f,.95f,.93f);
         Color muted=m_LightTheme?new Color(.35f,.34f,.31f):new Color(.70f,.69f,.64f);
-        m_Panel=Solid(m_Surface);m_ButtonTexture=Solid(m_LightTheme?new Color(.89f,.88f,.84f):new Color(.14f,.14f,.125f));
-        m_SelectedTexture=Solid(m_Accent);m_HoverTexture=Solid(m_LightTheme?new Color(.93f,.86f,.65f):new Color(.25f,.22f,.13f));
-        m_Label=new GUIStyle(GUI.skin.label){fontSize=15,wordWrap=true,richText=false,normal={textColor=text}};
+        m_Panel=Solid(m_Surface);m_ButtonTexture=Rounded(m_LightTheme?new Color(.89f,.88f,.84f):new Color(.14f,.14f,.125f));
+        m_SelectedTexture=Rounded(m_Accent);m_HoverTexture=Rounded(m_LightTheme?new Color(.93f,.93f,.91f):new Color(.18f,.18f,.17f));
+        m_Label=new GUIStyle(GUI.skin.label){fontSize=14,wordWrap=true,richText=false,normal={textColor=text}};
         m_MutedLabel=new GUIStyle(m_Label){fontSize=12,normal={textColor=muted}};
         m_Subtitle=new GUIStyle(m_Label){fontSize=22,alignment=TextAnchor.MiddleCenter,normal={textColor=Color.white}};
-        m_Title=new GUIStyle(m_Label){fontSize=23,fontStyle=FontStyle.Bold};
-        m_Heading=new GUIStyle(m_Label){fontSize=13,fontStyle=FontStyle.Bold,normal={textColor=m_HeadingColor}};
+        m_Title=new GUIStyle(m_Label){fontSize=20,fontStyle=FontStyle.Bold};
+        m_Heading=new GUIStyle(m_Label){fontSize=11,fontStyle=FontStyle.Bold,normal={textColor=m_HeadingColor}};
         m_Center=new GUIStyle(m_Label){alignment=TextAnchor.MiddleCenter,wordWrap=false};
         m_Small=new GUIStyle(m_MutedLabel){alignment=TextAnchor.MiddleLeft,wordWrap=false,clipping=TextClipping.Clip};
-        m_Button=new GUIStyle(GUI.skin.button){fontSize=14,richText=false,alignment=TextAnchor.MiddleCenter,padding=new RectOffset(12,12,9,9),border=new RectOffset(0,0,0,0)};
+        m_Button=new GUIStyle(GUI.skin.button){fontSize=14,richText=false,alignment=TextAnchor.MiddleCenter,padding=new RectOffset(12,12,8,8),border=new RectOffset(6,6,6,6)};
         m_Button.normal.background=m_ButtonTexture;m_Button.normal.textColor=m_Label.normal.textColor;
         m_Button.hover.background=m_HoverTexture;m_Button.hover.textColor=text;
         m_Button.active.background=m_SelectedTexture;m_Button.active.textColor=Color.black;
         m_Button.focused.background=m_HoverTexture;m_Button.focused.textColor=text;
-        m_Chip=new GUIStyle(m_Button){fontSize=13,padding=new RectOffset(8,8,7,7)};
+        m_Chip=new GUIStyle(m_Button){fontSize=13,padding=new RectOffset(8,8,8,8)};
         m_ActiveChip=new GUIStyle(m_Chip);m_ActiveChip.normal.background=m_SelectedTexture;m_ActiveChip.normal.textColor=Color.black;
         m_ActiveChip.hover.background=m_SelectedTexture;m_ActiveChip.hover.textColor=Color.black;
         m_ActiveChip.focused.background=m_SelectedTexture;m_ActiveChip.focused.textColor=Color.black;
@@ -69,17 +69,18 @@ public sealed partial class TrialReviewApp
         foreach(var state in new[]{m_ViewToggleOff.normal,m_ViewToggleOff.hover,m_ViewToggleOff.active,m_ViewToggleOff.focused})
         {state.background=m_ButtonTexture;state.textColor=text;}
         m_ViewToggleOn=new GUIStyle(m_ViewToggleOff){fontStyle=FontStyle.Bold};
-        m_Row=new GUIStyle(m_Button){alignment=TextAnchor.MiddleLeft,wordWrap=true,fontSize=14,padding=new RectOffset(12,10,9,9)};
+        m_Row=new GUIStyle(m_Button){alignment=TextAnchor.MiddleLeft,wordWrap=true,fontSize=14,padding=new RectOffset(12,12,8,8)};
         m_ActiveRow=new GUIStyle(m_Row);m_ActiveRow.normal.background=m_HoverTexture;m_ActiveRow.normal.textColor=m_HeadingColor;
-        m_Field=new GUIStyle(GUI.skin.textField){fontSize=14,padding=new RectOffset(9,9,9,9),normal={textColor=text,background=m_ButtonTexture}};
+        m_Field=new GUIStyle(GUI.skin.textField){fontSize=14,padding=new RectOffset(8,8,8,8),border=new RectOffset(6,6,6,6),normal={textColor=text,background=m_ButtonTexture}};
         m_Field.focused.background=m_HoverTexture;m_Field.focused.textColor=text;
         m_Field.hover.background=m_ButtonTexture;m_Field.hover.textColor=text;
         m_Field.active.background=m_HoverTexture;m_Field.active.textColor=text;
         m_Code=new GUIStyle(m_MutedLabel){fontSize=11,wordWrap=true};
         m_WaitingTitle=new GUIStyle(m_Heading){alignment=TextAnchor.MiddleCenter};
         m_DegreeLabel=new GUIStyle(m_Heading){fontSize=13,alignment=TextAnchor.MiddleCenter,wordWrap=false};
-        m_DegreeLabel.normal.textColor=m_Accent; // Scene labels always sit on a dark backing.
+        m_DegreeLabel.normal.textColor=new Color(.9f,.92f,.94f); // Scene labels always sit on a dark backing.
         GUI.skin.settings.cursorColor=text;GUI.skin.settings.selectionColor=new Color(.70f,.55f,.10f,.65f);
+        DesignTokens();
         AudioListener.volume=m_Muted?0:m_Volume;
     }
     void SetViewerAudio(float volume, bool muted)

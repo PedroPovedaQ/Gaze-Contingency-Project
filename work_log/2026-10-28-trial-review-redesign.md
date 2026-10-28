@@ -11,3 +11,9 @@ Baseline: `before/01-first-person.png` through `before/24-intake-ready.png`. Aft
 Existing 121 Python tests passed. New Unity capture isolation check passed alongside all existing build verification suites. Screenshots replace unit tests for styling/layout. Synthetic speech exists at 1.2s, not 3s, so the subtitles capture uses that actual saved interval without altering the fixture recording.
 
 Local Vikunja service unavailable (connection refused); coordination board is the task progress record.
+
+## Step 1
+
+Rounded 9-slice controls, semantic colors, muted section labels, 14px body/20px titles and shared monospace styles. Capture evaluation toggle now visibly follows no-auto-evaluation semantics as well as bypassing workers.
+
+Built and ran captures at 1440×900 and 1280×800; inspected dark/light screenshots. Existing Unity build verification suites passed. Screenshot files: `after/step1/01-first-person.png` through `24-intake-ready.png`, plus `1280/`.
