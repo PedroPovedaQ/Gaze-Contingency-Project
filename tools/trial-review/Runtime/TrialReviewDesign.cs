@@ -24,7 +24,7 @@ public sealed partial class TrialReviewApp
         m_Warn=m_LightTheme?new Color32(163,84,0,255):new Color32(255,159,67,255);
         m_ErrorColor=m_LightTheme?new Color32(180,35,24,255):new Color32(255,93,93,255);
         m_Raised=new Color(Mathf.Min(1,m_Surface.r+.03f),Mathf.Min(1,m_Surface.g+.03f),Mathf.Min(1,m_Surface.b+.03f));
-        if(m_MonoFont==null)m_MonoFont=Font.CreateDynamicFontFromOSFont(new[]{"SF Mono","Menlo","Monaco"},14);
+        if(m_MonoFont==null)m_MonoFont=Font.CreateDynamicFontFromOSFont(new[]{"Menlo","Monaco"},14);
         m_Mono=new GUIStyle(m_Label){font=m_MonoFont,wordWrap=false};
         m_Clock=new GUIStyle(m_Mono){fontSize=20};
         m_Unavailable=new GUIStyle(m_MutedLabel){fontStyle=FontStyle.Italic};

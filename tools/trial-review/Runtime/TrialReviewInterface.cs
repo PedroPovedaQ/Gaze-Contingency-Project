@@ -126,7 +126,7 @@ public sealed partial class TrialReviewApp
         Panel(new Rect(0,top,rail,bottom-top));Panel(new Rect(width-inspector,top,inspector,bottom-top));
         float left=rail+14,viewWidth=width-inspector-14-left;
         m_OptionColumns=Mathf.Clamp(Mathf.FloorToInt(viewWidth/145),3,8);
-        float optionsHeight=Mathf.Ceil(11f/m_OptionColumns)*42+26;
+        float optionsHeight=8;
         m_Viewport=new Rect(left,top+48,viewWidth,bottom-top-48-optionsHeight);
         CameraControls(new Rect(left,top,viewWidth,40));
         if(m_Timeline!=null)
@@ -247,14 +247,25 @@ public sealed partial class TrialReviewApp
         var thumb=new Rect(m_FollowLive?track.xMax-21:track.x+3,track.y+3,18,18);
         GUI.DrawTexture(thumb,Texture2D.whiteTexture,ScaleMode.StretchToFill,false,0,m_FollowLive?Color.black:m_Label.normal.textColor,0,9);
     }
+    bool m_LayersOpen;
+    Rect m_LayersRect;
     void CameraControls(Rect rect)
     {
-        GUI.Label(new Rect(rect.x,rect.y+10,145,25),"3D reconstruction",m_Label);
-        float buttonWidth=(rect.width-247)/3;
         string[] names={"First person","Third person","Overhead"};
-        for(int i=0;i<3;i++)if(Action(new Rect(rect.x+150+i*(buttonWidth+4),rect.y,buttonWidth,38),names[i],m_CameraMode==i))m_CameraMode=i;
-        if(Action(new Rect(rect.xMax-81,rect.y,81,38),"Reset view"))
-        {ResetCamera();}
+        for(int i=0;i<3;i++)
+        {
+            var segment=new Rect(rect.x+i*124,rect.y,120,36);
+            bool fallback=i==0&&m_CameraMode==0&&m_Renderer!=null&&!m_Renderer.UsingRecordedHead;
+            if(fallback)
+            {
+                StatusChip(segment,names[i],m_Warn,true);
+                if(GUI.Button(segment,new GUIContent("",Help(names[i])+" Head pose unavailable · overview shown"),GUIStyle.none))m_CameraMode=i;
+            }
+            else if(Action(segment,names[i],m_CameraMode==i))m_CameraMode=i;
+        }
+        if(Action(new Rect(rect.xMax-252,rect.y,92,36),"Reset view"))ResetCamera();
+        int count=new[]{m_ShowEyeRay,m_Renderer?.ShowControllers??false,m_ShowBody,m_ShowWalls,m_ShowDegrees,m_ShowRoom,m_Renderer?.ShowTarget??false,m_Renderer?.ShowGaze??false,m_ShowDetectionRing,m_ShowSubtitles,m_ShowStateMarkers}.Count(value=>value);
+        if(Action(new Rect(rect.xMax-152,rect.y,152,36),$"Layers · {count} on",m_LayersOpen))m_LayersOpen=!m_LayersOpen;
     }
     void ResetCamera()
     {
@@ -325,22 +336,20 @@ public sealed partial class TrialReviewApp
         DrawDegrees();
         DrawStateMarkers();
         DrawSubtitles();
-        if(m_Renderer.RecordedHead&&!m_Renderer.UsingRecordedHead)GUI.Label(new Rect(m_Viewport.x+12,m_Viewport.y+12,m_Viewport.width-24,30),"Head pose unavailable · overview shown",m_Heading);
-        m_ShowEyeRay=ViewToggle(0,m_ShowEyeRay,recordedGaze?"Eye gaze":m_Correction.Supported?"Corrected gaze":"Eye ray (display)");
-        m_Renderer.ShowControllers=ViewToggle(1,m_Renderer.ShowControllers,"Controllers");
-        m_ShowBody=ViewToggle(2,m_ShowBody,"Human model");
-        m_ShowWalls=ViewToggle(3,m_ShowWalls,"Viewer walls");
-        m_ShowDegrees=ViewToggle(4,m_ShowDegrees,"Degrees");
-        m_ShowRoom=ViewToggle(5,m_ShowRoom,"Room");
-        m_Renderer.ShowTarget=ViewToggle(6,m_Renderer.ShowTarget,"Reveal target");
-        m_Renderer.ShowGaze=ViewToggle(7,m_Renderer.ShowGaze,recordedGaze?"Before alignment":"Raw gaze");
-        m_ShowDetectionRing=ViewToggle(8,m_ShowDetectionRing,"Detection ring");
-        m_ShowSubtitles=ViewToggle(9,m_ShowSubtitles,"Subtitles");
-        m_ShowStateMarkers=ViewToggle(10,m_ShowStateMarkers,"State markers");
-        GUI.Label(new Rect(m_Viewport.x,m_Viewport.yMax+8+Mathf.Ceil(11f/m_OptionColumns)*42,m_Viewport.width,20),
-            $"{(m_Vicinity.RecordedWinner?"Recorded highlight":"Reconstructed highlight (not recorded)")} · ring estimated · padding {m_Vicinity.Padding:0.#}° ({(m_Vicinity.RecordedPadding?"recorded":"default")})",m_MutedLabel);
+        if(m_Renderer.RecordedHead&&!m_Renderer.UsingRecordedHead)
+        {
+            var banner=new Rect(m_Viewport.x+12,m_Viewport.y+12,Mathf.Min(460,m_Viewport.width-24),60);
+            Fill(banner,new Color(.15f,.09f,.025f,.94f));
+            GUI.Label(new Rect(banner.x+12,banner.y+8,banner.width-24,24),"Head pose unavailable · overview shown",new GUIStyle(m_Label){normal={textColor=new Color32(255,159,67,255)}});
+            GUI.Label(new Rect(banner.x+12,banner.y+32,banner.width-24,20),"at Study "+Clock(m_Time),new GUIStyle(m_Mono){fontSize=12,normal={textColor=new Color(.85f,.85f,.85f)}});
+        }
+        var caption=new Rect(m_Viewport.x,m_Viewport.yMax-30,m_Viewport.width,30);
+        Fill(caption,new Color(.025f,.03f,.035f,.9f));
+        GUI.Label(new Rect(caption.x+12,caption.y+4,caption.width-24,24),
+            $"{(m_Vicinity.RecordedWinner?"Recorded highlight":"Reconstructed highlight (not recorded)")} · ring estimated · padding {m_Vicinity.Padding:0.#}° ({(m_Vicinity.RecordedPadding?"recorded":"default")})",new GUIStyle(m_Small){normal={textColor=new Color(.8f,.8f,.77f)}});
+        DrawLayers(recordedGaze);
         var e=Event.current;
-        if(GUI.enabled&&m_Viewport.Contains(e.mousePosition)&&!m_Renderer.RecordedHead&&!WaitingForHeadset)
+        if(GUI.enabled&&m_Viewport.Contains(e.mousePosition)&&!(m_LayersOpen&&m_LayersRect.Contains(e.mousePosition))&&!m_Renderer.RecordedHead&&!WaitingForHeadset)
         {
             if(e.type==EventType.MouseDrag&&e.button==1){m_Renderer.Yaw+=e.delta.x;m_Renderer.Pitch=Mathf.Clamp(m_Renderer.Pitch+e.delta.y,-85,85);e.Use();}
             if(e.type==EventType.ScrollWheel){m_Renderer.Distance=Mathf.Clamp(m_Renderer.Distance+e.delta.y*.2f,.3f,30);e.Use();}
@@ -355,7 +364,7 @@ public sealed partial class TrialReviewApp
         m_Subtitle.fontSize=Mathf.RoundToInt(Mathf.Clamp(width/28,16,24));
         var content=new GUIContent(text);
         float height=m_Subtitle.CalcHeight(content,width-28)+20;
-        var box=new Rect(m_Viewport.center.x-width/2,m_Viewport.yMax-height-14,width,height);
+        var box=new Rect(m_Viewport.center.x-width/2,m_Viewport.yMax-height-42,width,height);
         Fill(box,new Color(0,0,0,.86f));
         GUI.Label(new Rect(box.x+14,box.y+10,box.width-28,box.height-20),content,m_Subtitle);
     }
@@ -377,13 +386,32 @@ public sealed partial class TrialReviewApp
         GUI.color=new Color(1,.65f,.12f);GUI.DrawTexture(new Rect(xPos-5,yPos-5,10,10),m_GazeDotTexture);
         GUI.color=previous;
     }
-    bool ViewToggle(int index,bool value,string label)
+    void DrawLayers(bool recordedGaze)
     {
-        float width=(m_Viewport.width-(m_OptionColumns-1)*6)/m_OptionColumns;
-        var rect=new Rect(m_Viewport.x+(index%m_OptionColumns)*(width+6),m_Viewport.yMax+7+(index/m_OptionColumns)*42,width,35);
-        // Double the indicator size without enlarging the label or changing the hit area.
-        if(GUI.Button(rect,new GUIContent("<size=26>"+(value?"◉":"○")+"</size>  "+label,Help(label)),value?m_ViewToggleOn:m_ViewToggleOff))value=!value;
-        return value;
+        if(!m_LayersOpen)return;
+        m_LayersRect=new Rect(m_Viewport.xMax-272,m_Viewport.y+4,268,Mathf.Min(468,m_Viewport.height-38));
+        Panel(m_LayersRect);
+        GUILayout.BeginArea(new Rect(m_LayersRect.x+12,m_LayersRect.y+12,m_LayersRect.width-24,m_LayersRect.height-24));
+        GUILayout.Label(new GUIContent("PARTICIPANT","3D reconstruction"),m_Heading);
+        m_ShowEyeRay=LayerSwitch(m_ShowEyeRay,recordedGaze?"Eye gaze":m_Correction.Supported?"Corrected gaze":"Eye ray (display)");
+        m_Renderer.ShowGaze=LayerSwitch(m_Renderer.ShowGaze,recordedGaze?"Before alignment":"Raw gaze");
+        m_Renderer.ShowControllers=LayerSwitch(m_Renderer.ShowControllers,"Controllers");
+        m_ShowBody=LayerSwitch(m_ShowBody,"Human model");
+        GUILayout.Space(8);GUILayout.Label("SCENE",m_Heading);
+        m_ShowWalls=LayerSwitch(m_ShowWalls,"Viewer walls");
+        m_ShowRoom=LayerSwitch(m_ShowRoom,"Room");
+        m_ShowDegrees=LayerSwitch(m_ShowDegrees,"Degrees");
+        m_Renderer.ShowTarget=LayerSwitch(m_Renderer.ShowTarget,"Reveal target");
+        GUILayout.Space(8);GUILayout.Label("OVERLAYS",m_Heading);
+        m_ShowDetectionRing=LayerSwitch(m_ShowDetectionRing,"Detection ring");
+        m_ShowSubtitles=LayerSwitch(m_ShowSubtitles,"Subtitles");
+        m_ShowStateMarkers=LayerSwitch(m_ShowStateMarkers,"State markers");
+        GUILayout.EndArea();
+    }
+    bool LayerSwitch(bool value,string label)
+    {
+        var style=new GUIStyle(m_Chip){alignment=TextAnchor.MiddleLeft,padding=new RectOffset(8,8,4,4)};
+        return GUILayout.Button(new GUIContent((value?"☑  ":"☐  ")+label,Help(label)),style,GUILayout.Height(28))?!value:value;
     }
     void Metric(string label,string value)
     {

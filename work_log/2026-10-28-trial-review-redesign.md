@@ -23,3 +23,9 @@ Built and ran captures at 1440×900 and 1280×800; inspected dark/light screensh
 Header now offers the existing OpenIntake entry directly, warning-outlined provenance, dataset breadcrumb, semantic status pill, File menu, and theme icon. Existing live/detached actions retained. Added 25-file-menu.png to captures.
 
 Built and ran captures at 1440×900 and 1280×800; inspected dark/light screenshots. Existing Unity build verification suites passed. Screenshot files: `after/step2/01-first-person.png` through `24-intake-ready.png`, plus `1280/`.
+
+## Step 3
+
+Compact camera segment, Layers checkbox drawer (26-layers.png), timestamped missing-pose banner, and anchored provenance caption. Verified Menlo after SF Mono failed to render; no font errors in recapture. Read thesis Step 1/2 feedback; header icon/status/menu and scrollbars will be refined with the next layout step.
+
+Built and ran captures at 1440×900 and 1280×800; inspected dark/light screenshots. Existing Unity build verification suites passed. Screenshot files: `after/step3/01-first-person.png` through `24-intake-ready.png`, plus `1280/`.
