@@ -166,7 +166,7 @@ public sealed partial class TrialReviewApp
     static GUIContent HelpContent(string label) => new GUIContent(label,Help(label));
     void DrawHoverHelp(float width,float height)
     {
-        if(string.IsNullOrEmpty(GUI.tooltip))return;
+        if(m_CaptureMode||string.IsNullOrEmpty(GUI.tooltip))return;
         var content=new GUIContent(GUI.tooltip);
         float w=360,h=Mathf.Min(260,m_Label.CalcHeight(content,w-24)+20);
         var mouse=Event.current.mousePosition;

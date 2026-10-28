@@ -587,3 +587,16 @@ ABBA/BAAB arithmetic order. Live status shows the exercise and remaining time.
 Begin, answer/rating and stop commands are bound to the current headset session
 and validation revision. Raw recordings sync in `EyeMeasurements`; see
 [the protocol and first-device test](../../docs/testing/eye-validation-exercises.md).
+
+## Development screenshots
+
+Run the installed desktop bundle with an absolute destination directory:
+
+```sh
+open -n "$HOME/Applications/Trial Review Redesign 20261028.app" --args \
+  --capture /tmp/trial-review-shots \
+  -screen-width 1440 -screen-height 900 -screen-fullscreen 0 \
+  -logFile /tmp/trial-review-capture.log
+```
+
+Capture forces the bundled synthetic demo and in-memory development intake/catalog fixtures. It bypasses live initialization, ADB/receiver launch, polling, microphone access, audio playback/workers, intake jobs, exports and automatic evaluation. Other launch modes are ignored; real UI input is ignored during capture. The output is numbered PNGs plus Unity's log, and the app exits after `TRIAL_REVIEW_CAPTURE_PASS`. `TRIAL_REVIEW_CAPTURE_INPUT_PASS` confirms the existing keyboard and timeline handlers passed synthetic GUI-event checks. Use 1280 × 800 for the small-window pass. These captures verify presentation, not real consent, recording, cloning or headset operation.

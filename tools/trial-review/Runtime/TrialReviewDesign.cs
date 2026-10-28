@@ -60,4 +60,46 @@ public sealed partial class TrialReviewApp
     }
     void EndInspectorCard()=>GUILayout.EndVertical();
 
+    bool SelectionCard(string label,bool selected,float height)
+    {
+        var rect=GUILayoutUtility.GetRect(new GUIContent(label),m_Button,GUILayout.Height(height),GUILayout.ExpandWidth(true));
+        if(selected)
+        {
+            GUI.DrawTexture(rect,Texture2D.whiteTexture,ScaleMode.StretchToFill,false,0,m_Accent,0,6);
+            GUI.DrawTexture(new Rect(rect.x+2,rect.y+2,rect.width-4,rect.height-4),Texture2D.whiteTexture,ScaleMode.StretchToFill,false,0,m_Raised,0,4);
+        }
+        var style=new GUIStyle(m_Button){padding=new RectOffset(28,8,8,8)};
+        if(selected)foreach(var state in new[]{style.normal,style.hover,style.active,style.focused}){state.background=null;state.textColor=m_Label.normal.textColor;}
+        bool clicked=GUI.Button(rect,HelpContent(label),style);
+        GUI.DrawTexture(new Rect(rect.x+12,rect.center.y-4,8,8),Texture2D.whiteTexture,ScaleMode.StretchToFill,false,0,selected?m_Accent:m_Border,0,4);
+        return clicked;
+    }
+
+    bool WithdrawalButton(string label)
+    {
+        var rect=GUILayoutUtility.GetRect(HelpContent(label),m_Button,GUILayout.Height(38));
+        GUI.DrawTexture(rect,Texture2D.whiteTexture,ScaleMode.StretchToFill,false,0,m_ErrorColor,0,6);
+        GUI.DrawTexture(new Rect(rect.x+1,rect.y+1,rect.width-2,rect.height-2),Texture2D.whiteTexture,ScaleMode.StretchToFill,false,0,m_Surface,0,5);
+        var style=new GUIStyle(m_Button);
+        foreach(var state in new[]{style.normal,style.hover,style.active,style.focused}){state.background=null;state.textColor=m_ErrorColor;}
+        return GUI.Button(rect,HelpContent(label),style);
+    }
+
+    void DrawLoading(float width,float height)
+    {
+        var card=new Rect(width/2-216,height/2-68,432,136);
+        GUI.Box(card,GUIContent.none,m_Card);
+        Vector2 center=new Vector2(card.x+52,card.center.y);
+        float phase=m_CaptureMode?2:Time.realtimeSinceStartup*8;
+        for(int i=0;i<12;i++)
+        {
+            float angle=i*Mathf.PI/6;
+            var color=m_Info;color.a=.2f+.8f*Mathf.Repeat(i/12f-phase/12f,1);
+            var dot=new Rect(center.x+18*Mathf.Cos(angle)-3,center.y+18*Mathf.Sin(angle)-3,6,6);
+            GUI.DrawTexture(dot,Texture2D.whiteTexture,ScaleMode.StretchToFill,false,0,color,0,3);
+        }
+        GUI.Label(new Rect(card.x+96,card.y+32,card.width-120,32),"Trial Review",m_Title);
+        GUI.Label(new Rect(card.x+96,card.y+72,card.width-120,28),"Loading recording…",m_Label);
+    }
+
 }

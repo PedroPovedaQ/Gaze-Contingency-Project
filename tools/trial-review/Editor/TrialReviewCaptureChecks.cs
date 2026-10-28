@@ -25,7 +25,7 @@ public static class TrialReviewCaptureChecks
             call("StartIntakeJob",new object[]{"clone",null,false});
             call("StartParticipantAudio",new object[]{"prepare"});
             call("InitializeLive",new object[]{new[]{"--live","--endpoint","fixture.invalid"}});
-            foreach(string name in new[]{"PollIntake","PollParticipantAudio","ConnectLive","PollLive","SendIntake","InitializeRunExport","UpdateRunExport","UpdateEvaluation","InitializeCatalog"})call(name,null);
+            foreach(string name in new[]{"PollIntake","PollParticipantAudio","ConnectLive","PollLive","SendIntake","InitializeRunExport","UpdateRunExport","UpdateEvaluation","InitializeCatalog","NeutralAudioControls"})call(name,null);
             foreach(string name in new[]{"m_IntakeFolder","m_IntakeJob","m_CloneJob","m_IntakeAudioJob","m_Bridge","m_LiveOutput","m_RunCsvProcess","m_Catalog","m_IntakeError"})
                 if(typeof(TrialReviewApp).GetField(name,flags).GetValue(app)!=null)throw new Exception("Capture started work: "+name);
             var answer=(System.Collections.IEnumerator)typeof(TrialReviewApp).GetMethod("StartAnswer",flags).Invoke(app,null);

@@ -107,7 +107,7 @@ public sealed partial class TrialReviewApp
     void DrawIntakeWithdrawal()
     {
         GUI.enabled = m_IntakeJob == null && !m_IntakeStarting && Consented;
-        if (Button("Stop intake / record withdrawal (no further answer upload)"))
+        if (WithdrawalButton("Stop intake / record withdrawal (no further answer upload)"))
         {
             m_InterviewSpeaker?.Stop();
             if (m_AnswerClip != null) StopAnswer(false);

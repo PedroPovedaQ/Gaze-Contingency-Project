@@ -88,14 +88,14 @@ public sealed partial class TrialReviewApp
         m_Dataset=m_Catalog.Register(m_Path,"synthetic-desktop-demo","SYNTHETIC","");
         m_DatasetDraft="Synthetic development demo";m_IdDraft="SYNTHETIC";
         m_IntakeMic="Development microphone (inactive)";
-        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu","layers","trial-search","cursor-details","cursor-collapsed","shortcuts","jev-alternatives","light-intake-consent","light-intake-interview","intake-clone-error","intake-screening-stopped","intake-withdrawn","intake-historical","intake-recording","intake-submitting","intake-prompt-playing"};
+        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu","layers","trial-search","cursor-details","cursor-collapsed","shortcuts","jev-alternatives","light-intake-consent","light-intake-interview","intake-clone-error","intake-screening-stopped","intake-withdrawn","intake-historical","intake-recording","intake-submitting","intake-prompt-playing","startup","layers-wifi-panel"};
         var timeline=m_Timeline;
         for(int i=0;i<states.Length;i++)
         {
             string state=states[i];
             m_Timeline=timeline; m_Playing=false; m_Tab=0; m_CameraMode=0; m_RunTimeline=true;
             m_JevScroll=Vector2.zero;m_InspectScroll=Vector2.zero; m_IntakeScroll=Vector2.zero; m_CaptureIntakeActivity=null;m_IntakeOpen=false; m_Intake=null; m_IntakeFolder=null;
-            m_TrialQuery=state=="trial-search"?"02":"";m_LayersOpen=state=="layers";m_FileMenu=state=="file-menu";m_Browser=false;m_DatasetPanel=false;m_Loading=false;m_Ready=false;m_LightTheme=state.StartsWith("light-");
+            m_TrialQuery=state=="trial-search"?"02":"";m_LivePanel=state=="layers-wifi-panel";m_LayersScroll=m_LivePanel?new Vector2(0,400):Vector2.zero;m_LayersOpen=state=="layers"||m_LivePanel;m_FileMenu=state=="file-menu";m_Browser=false;m_DatasetPanel=false;m_Loading=false;m_Ready=false;m_LightTheme=state.StartsWith("light-");
             m_ShortcutsOpen=state=="shortcuts";m_CollapsedCards.Clear();
             if(state=="cursor-details")m_InspectScroll=new Vector2(0,500);
             if(state=="cursor-collapsed")foreach(string card in new[]{"Agent speech","Guidance state","Tracking"})m_CollapsedCards[card]=true;
@@ -115,6 +115,7 @@ public sealed partial class TrialReviewApp
             if(state=="dataset"){m_DatasetPanel=true;m_CatalogTab=0;}
             if(state=="empty")m_Timeline=null;
             if(state=="loading")m_Loading=true;
+            if(state=="startup"){m_Timeline=null;m_Loading=true;}
             string intakeState=state.StartsWith("light-")?state.Substring(6):state;
             if(intakeState.StartsWith("intake-"))
             {

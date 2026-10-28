@@ -30,7 +30,6 @@ public sealed partial class TrialReviewApp : MonoBehaviour
     Vector2 m_TrialScroll, m_InspectScroll, m_EventScroll, m_BrowseScroll;
     int m_Tab;
     GUIStyle m_Title, m_Label, m_MutedLabel, m_Button, m_Field, m_Heading, m_Code, m_WaitingTitle, m_DegreeLabel;
-    int m_OptionColumns;
     Texture2D m_Panel;
     Rect m_Viewport;
     bool m_Ready;

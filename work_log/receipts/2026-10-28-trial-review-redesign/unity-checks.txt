@@ -1,0 +1,24 @@
+TRIAL_REVIEW_SUBTITLES_PASS start, cancellation, overlap, pause, rewind, run reset, no WAV dependency
+TRIAL_REVIEW_LIVE_PASS speech catch-up fences, delayed/missing WAVs, snapshot isolation, partial tails, no duplicates, exact records, new meshes/trials, rewind, late WAV, uninterrupted speech, cancellation, malformed input
+TRIAL_REVIEW_VICINITY_PASS overlap, ambiguity, invalid/stale gaze, ring toggle, controller rim, backward seek, immutable source
+TRIAL_REVIEW_GUIDANCE_STATE_PASS legacy, validity, sequence, gaps, disconnect, seek, recorded precedence
+TRIAL_REVIEW_EVALUATION_PASS recording identity, exact joins, unknown and failure states
+TRIAL_REVIEW_CATALOG_PASS names, assignment audit, file links, reload, copies, write conflict, unchanged source, cross-trial seeks
+TRIAL_REVIEW_GAZE_LINE_PASS near-plane clipping, unchanged ray/endpoint, constant screen width, rotated camera, viewport sizes, behind-camera
+TRIAL_REVIEW_INTERFACE_PASS trial search/filter, gaps, event navigation data, cursor math, CSV export identity and provenance
+TRIAL_REVIEW_INTAKE_STEPPER_PASS existing phases, eligibility return to audio intake, capture microphone bypass
+TRIAL_REVIEW_CAPTURE_ISOLATION_PASS no jobs, polling, live, catalog or intake folder
+TRIAL_REVIEW_THETA_PASS exact snapshot, cursor boundaries, rewind, finalized transforms, legacy absence, export and parser guards
+TRIAL_REVIEW_JEV_PASS candidate/probability preservation, playback IDs, legacy, malformed, stale and late responses
+TRIAL_REVIEW_RIGHT_RAY_ONLY_PASS both tracked, left hidden, right retained, data preserved
+TRIAL_REVIEW_CORRECTION_MATH_PASS translation, rotation, round trip, unknown-profile rejection
+TRIAL_REVIEW_QUICK_ALIGNMENT_PASS live fit -> capture -> JSON -> first/third person, exact origin, pre-alignment toggle, backwards seek, clearing and gaps
+TRIAL_REVIEW_READINESS_EYE_PASS zero/partial charge, paused/invalid/stale tracking, recovery, transitions, toggle and rewind
+TRIAL_REVIEW_ENVIRONMENT_PASS toggles, eight walls, layout radius, origin, rotation, trial switch, rewind, unknown layout, no data mutation
+TRIAL_REVIEW_FORWARD_ELBOW_PASS close chest, raised, lateral, torso turns, rewind, grip contact
+TRIAL_REVIEW_HAND_EYE_PASS right grip position/orientation, resting left arm, bounds, rewind, tracking, gaps, eye origin/direction, raw preservation
+TRIAL_REVIEW_RESTING_LEFT_ARM_PASS quarter/half turns, rewind, tracked unused controller, raw preservation
+TRIAL_REVIEW_TORSO_PASS head-only turns, coupled torso/seat, bounded turn rate, deterministic rewind
+TRIAL_REVIEW_ACTORS_PASS body anchor/rotation, controller pose, first person, gaps, tracking and toggles
+TRIAL_REVIEW_VERIFY_PASS camera, gaps, pause, rewind, trial switch, sequence, audio, CSV and identity
+TRIAL_REVIEW_BUILD_PASS /private/tmp/Trial Review Redesign Step8-release.app

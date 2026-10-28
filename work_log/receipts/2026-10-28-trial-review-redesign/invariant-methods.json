@@ -1,0 +1,19 @@
+{
+  "TrialReviewIntake.cs:PollIntake": "unchanged except capture guard",
+  "TrialReviewIntake.cs:StartIntakeJob": "unchanged except capture guard",
+  "TrialReviewIntake.cs:StartAnswer": "unchanged except capture guard",
+  "TrialReviewIntake.cs:StopAnswer": "unchanged except capture guard",
+  "TrialReviewIntake.cs:SendIntake": "unchanged except capture guard",
+  "TrialReviewIntakeFlow.cs:PlayIntakeFile": "unchanged except capture guard",
+  "TrialReviewIntakeFlow.cs:StartParticipantAudio": "unchanged except capture guard",
+  "TrialReviewIntakeFlow.cs:PollParticipantAudio": "unchanged except capture guard",
+  "TrialReviewInterface.cs:HandlePlaybackKeyboard": "unchanged except capture guard",
+  "TrialReviewInterface.cs:HandleTimelinePointer": "unchanged except capture guard",
+  "TrialReviewInterface.cs:JumpEvent": "unchanged except capture guard",
+  "TrialReviewInterface.cs:TogglePlayback": "unchanged except capture guard",
+  "TrialReviewApp.cs:Seek": "unchanged except capture guard",
+  "TrialReviewLive.cs:InitializeLive": "unchanged except capture guard",
+  "TrialReviewLive.cs:ConnectLive": "unchanged except capture guard",
+  "TrialReviewLive.cs:PollLive": "unchanged except capture guard",
+  "TrialReviewApp.cs:Sync, Step, Seek": "byte-identical to 650c202"
+}

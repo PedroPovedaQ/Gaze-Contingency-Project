@@ -19,6 +19,7 @@ public static class TrialReviewBuild
         EditorSceneManager.SaveScene(scene,"Assets/TrialReview.unity");
         PlayerSettings.companyName="Research Tools"; PlayerSettings.productName="Trial Review";
         PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Standalone,"org.gazestudy.trialreview");
+        PlayerSettings.SplashScreen.show=false;
         PlayerSettings.defaultScreenWidth=1440;PlayerSettings.defaultScreenHeight=900;
         PlayerSettings.fullScreenMode=FullScreenMode.Windowed;PlayerSettings.resizableWindow=true;
         PlayerSettings.iOS.microphoneUsageDescription="Record participant answers for the interview and participant-authorized voice cloning.";

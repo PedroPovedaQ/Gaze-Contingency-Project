@@ -243,10 +243,22 @@ public sealed partial class TrialReviewApp
     }
     bool m_MicMenu;
     string m_IntakeRenderedPhase;
-    int IntakeStep => m_Intake==null?0:m_Intake.phase=="awaiting_consent"?1:m_Intake.phase=="select_voice"?2:
-        m_Intake.phase=="eligibility_review"||m_Intake.phase=="screening_stopped"?4:
-        m_Intake.phase=="interview"||m_Intake.phase=="fallback"?3:
-        m_Intake.phase=="interview_complete"?(m_Intake.cacheState=="ready"||m_Intake.cacheState=="transferred"?6:5):-1;
+    int IntakeStep
+    {
+        get
+        {
+            if(m_Intake==null)return 0;
+            switch(m_Intake.phase)
+            {
+                case "awaiting_consent":return 1;
+                case "select_voice":return 2;
+                case "interview":case "fallback":return 3;
+                case "eligibility_review":case "screening_stopped":return 4;
+                case "interview_complete":return m_Intake.cacheState=="ready"||m_Intake.cacheState=="transferred"?6:5;
+                default:return -1;
+            }
+        }
+    }
     bool PrimaryButton(string label,params GUILayoutOption[] options)=>GUILayout.Button(HelpContent(label),m_ActiveChip,options);
     void IntakeStepper()
     {
@@ -265,6 +277,7 @@ public sealed partial class TrialReviewApp
     void DrawIntake(float width, float height)
     {
         if (!m_IntakeOpen) return;
+        Fill(new Rect(0,0,width,height),new Color(0,0,0,.70f));
         string phase=m_Intake?.phase??"reserve";
         if(m_IntakeRenderedPhase!=phase){m_IntakeRenderedPhase=phase;m_IntakeScroll=Vector2.zero;m_MicMenu=false;}
         var rect = new Rect(width / 2 - 520, 40, 1040, height - 80);
@@ -277,8 +290,11 @@ public sealed partial class TrialReviewApp
         {var ribbon=GUILayoutUtility.GetRect(144,28,GUILayout.Width(144));StatusChip(ribbon,"DEVELOPMENT",m_Warn,true);}
         GUILayout.EndHorizontal();GUILayout.Space(16);IntakeStepper();
         m_IntakeScroll=GUILayout.BeginScrollView(m_IntakeScroll);
-        GUILayout.Label("Consent first. Hear each question, then select Record. Speak after the tone; select Stop when finished. Use headphones to prevent speaker spill.",m_MutedLabel);
-        GUILayout.Space(12);
+        if(phase=="interview"||phase=="fallback")
+        {
+            GUILayout.Label("Consent first. Hear each question, then select Record. Speak after the tone; select Stop when finished. Use headphones to prevent speaker spill.",m_MutedLabel);
+            GUILayout.Space(12);
+        }
         if(m_Intake==null)DrawIntakeReserve();
         else
         {
@@ -310,11 +326,11 @@ public sealed partial class TrialReviewApp
         GUILayout.EndScrollView();GUILayout.Space(8);
         if(m_Intake!=null)
         {
-            GUILayout.BeginHorizontal();DrawIntakeWithdrawal();
+            GUILayout.BeginHorizontal();DrawIntakeWithdrawal();GUILayout.FlexibleSpace();
             DrawIntakeFinish(m_IntakeJob!=null||m_IntakeStarting||m_CaptureMode&&(m_CaptureIntakeActivity=="Submitting"||m_CaptureIntakeActivity?.StartsWith("Recording")==true));GUILayout.EndHorizontal();
         }
         GUI.enabled=m_AnswerClip==null&&!m_IntakeStarting&&!(m_CaptureMode&&m_CaptureIntakeActivity?.StartsWith("Recording")==true);
-        if(Button("Close interview panel")){m_IntakeOpen=false;m_InterviewSpeaker?.Stop();}
+        if(GUILayout.Button(HelpContent("Close interview panel"),new GUIStyle(m_MutedLabel){alignment=TextAnchor.MiddleCenter},GUILayout.Height(32))){m_IntakeOpen=false;m_InterviewSpeaker?.Stop();}
         GUI.enabled=true;GUILayout.EndArea();
     }
     bool IntakeCheck(bool value,string label,bool warning=false)
@@ -329,14 +345,20 @@ public sealed partial class TrialReviewApp
         GUILayout.Label("Participant code",m_Label);m_IntakeCode=GUILayout.TextField(m_IntakeCode,m_Field);
         GUILayout.Label("Participant binocular distance IPD (mm) · blank = not recorded",m_Label);
         m_IntakeIpd=GUILayout.TextField(m_IntakeIpd,m_Field);
-        m_IntakeIpdSource=GUILayout.SelectionGrid(m_IntakeIpdSource,new[]{"Not recorded","Pupillometer","Ruler","Participant report"},2,m_Button);
+        string[] sources={"Not recorded","Pupillometer","Ruler","Participant report"};
+        for(int row=0;row<2;row++)
+        {
+            GUILayout.BeginHorizontal();
+            for(int col=0;col<2;col++){int i=row*2+col;if(SelectionCard(sources[i],m_IntakeIpdSource==i,40))m_IntakeIpdSource=i;}
+            GUILayout.EndHorizontal();
+        }
         GUILayout.Label("Headset lens spacing (mm) · optional, entered separately",m_Label);
         m_IntakeHeadsetIpd=GUILayout.TextField(m_IntakeHeadsetIpd,m_Field);
         GUILayout.Label("Confirm these measurements before beginning. They are saved with this session; eye tracking does not measure them automatically.",m_MutedLabel);
         GUILayout.EndVertical();GUILayout.Space(16);GUILayout.BeginVertical(m_Card);
         GUILayout.Label("COUNTERBALANCE",m_Heading);
         string[] orders={"A · Self-Similar first","B · Selected Voice first"};
-        for(int i=0;i<2;i++)if(GUILayout.Button((m_IntakeConfiguration==i?"●  ":"○  ")+orders[i],m_IntakeConfiguration==i?m_ActiveChip:m_Button,GUILayout.Height(56)))m_IntakeConfiguration=i;
+        for(int i=0;i<2;i++)if(SelectionCard(orders[i],m_IntakeConfiguration==i,56))m_IntakeConfiguration=i;
         GUILayout.Label("Use the assigned counterbalance order. Do not choose based on participant preferences.",m_MutedLabel);GUILayout.Space(24);
         m_IntakeDevelopment=IntakeCheck(m_IntakeDevelopment,"Development rehearsal — exclude from study data",true);
         GUILayout.EndVertical();GUILayout.EndHorizontal();GUILayout.Space(16);
@@ -366,19 +388,19 @@ public sealed partial class TrialReviewApp
             if(Button("Microphone: "+selected+" ▾"))m_MicMenu=!m_MicMenu;
             if(m_MicMenu)foreach(string device in devices)if(Button(device)){m_IntakeMic=device;m_MicMenu=false;}
         }
-                GUI.enabled = !busy && !m_PromptPlaying && Consented && m_QuestionHeardRevision == m_Intake.promptRevision && m_QuestionHeardRevision > 0;
-                if(m_CaptureMode&&(activity=="Submitting"||activity=="Prompt playing"))GUI.enabled=false;
-                GUILayout.BeginHorizontal();GUILayout.FlexibleSpace();
-                if (PrimaryButton(m_AnswerClip != null || m_CaptureMode&&activity.StartsWith("Recording") ? "Stop and submit answer" : "Record participant answer"))
-                { if (m_AnswerClip != null) StopAnswer(); else { m_CaptureName = "answer-"+Guid.NewGuid().ToString("N")+".wav"; m_IntakeJob = StartIntakeJob("authorize_recording",m_CaptureName); } }
-                GUILayout.EndHorizontal();
-                GUI.enabled = !busy && m_AnswerClip == null && !m_PromptPlaying && Consented;
-                if(m_CaptureMode&&(activity=="Submitting"||activity=="Prompt playing"||activity.StartsWith("Recording")))GUI.enabled=false;
-                GUILayout.BeginHorizontal();
-                if (Button("Skip this question")) { m_InterviewSpeaker?.Stop(); m_IntakeJob = StartIntakeJob("answer", skip: true); }
-                if (Button("Retry spoken prompt")) m_IntakeJob = StartIntakeJob("prompt");
-                if (m_PendingAnswer != null && Button("Retry saved answer")) m_IntakeJob = StartIntakeJob("answer", m_PendingAnswer);
-                GUILayout.EndHorizontal();GUI.enabled = true;
+        GUI.enabled = !busy && !m_PromptPlaying && Consented && m_QuestionHeardRevision == m_Intake.promptRevision && m_QuestionHeardRevision > 0;
+        if(m_CaptureMode&&(activity=="Submitting"||activity=="Prompt playing"))GUI.enabled=false;
+        GUILayout.BeginHorizontal();GUILayout.FlexibleSpace();
+        if (PrimaryButton(m_AnswerClip != null || m_CaptureMode&&activity.StartsWith("Recording") ? "Stop and submit answer" : "Record participant answer"))
+        { if (m_AnswerClip != null) StopAnswer(); else { m_CaptureName = "answer-"+Guid.NewGuid().ToString("N")+".wav"; m_IntakeJob = StartIntakeJob("authorize_recording",m_CaptureName); } }
+        GUILayout.EndHorizontal();
+        GUI.enabled = !busy && m_AnswerClip == null && !m_PromptPlaying && Consented;
+        if(m_CaptureMode&&(activity=="Submitting"||activity=="Prompt playing"||activity.StartsWith("Recording")))GUI.enabled=false;
+        GUILayout.BeginHorizontal();
+        if (Button("Skip this question")) { m_InterviewSpeaker?.Stop(); m_IntakeJob = StartIntakeJob("answer", skip: true); }
+        if (Button("Retry spoken prompt")) m_IntakeJob = StartIntakeJob("prompt");
+        if (m_PendingAnswer != null && Button("Retry saved answer")) m_IntakeJob = StartIntakeJob("answer", m_PendingAnswer);
+        GUILayout.EndHorizontal();GUI.enabled = true;
 
         if(busy)GUILayout.Label("Preparing the next question…",m_MutedLabel);
         GUILayout.EndVertical();

@@ -12,6 +12,7 @@ public sealed partial class TrialReviewApp
     string NeutralAudioStatusPath => Path.Combine(m_LiveOutput, "neutral-audio-status.json");
     void NeutralAudioControls()
     {
+        if(m_CaptureMode) return;
         bool running = m_NeutralAudioJob != null && !m_NeutralAudioJob.HasExited;
         if (Time.realtimeSinceStartupAsDouble > m_NeutralAudioPoll)
         {
