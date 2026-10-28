@@ -1,5 +1,22 @@
 # Qualtrics draft surveys
 
+## Current final survey (2026-10-28): side-by-side voice ratings
+
+| Survey | Qualtrics | Source |
+|---|---|---|
+| **Final survey — side-by-side, with draft ARQ (current)** | `SV_cvbB1qoHtFoenDE` — [open builder](https://ucf.yul1.qualtrics.com/survey-builder/SV_cvbB1qoHtFoenDE/edit) | [`04-final-side-by-side.qsf`](04-final-side-by-side.qsf), item map [`04-final-side-by-side.item-map.csv`](04-final-side-by-side.item-map.csv) |
+
+Every condition-specific item is one Qualtrics *Side by side* question with two columns, **Selected Voice** and **Self-Similar Voice** (NASA-TLX 0–10, 24 IMI, 21 Guo, 5 draft ARQ, 12 custom items, plus per-voice liking, reliance and gender-presentation questions; technical checks; voice preference and debrief). Item wording is generated from the thesis appendix `docs/thesis/appendices/a-instruments.tex`, so the survey and the thesis cannot drift:
+
+```bash
+python3 scripts/qualtrics/build_final_survey_qsf.py   # uses final-survey-sbs-template.qsf (exported from UCF Qualtrics)
+```
+
+Import the regenerated QSF as a **new** survey (Tools → Import/Export → Import survey); never overwrite a survey with responses. The baseline questionnaire is now the in-headset **audio intake** (see the thesis Methods and the runtime docs), so it is no longer a Qualtrics survey.
+
+Superseded/working copies left in the account (no responses; safe for the owner to delete): `SV_0NhnsoYbpb72eYC` (side-by-side template stub), `SV_8HUANgpYbdf8jPM` (first import, superseded by `SV_cvbB1qoHtFoenDE`). The three 2026-09-19 drafts below predate the final-survey decision (they still contain the SSQ and per-block administration) and are kept only for history.
+
+
 These files are the reproducible **Advanced TXT** imports for the current questionnaire battery. They are drafts for protocol and pilot review; they are not an IRB approval or a published participant link.
 
 | Draft | Qualtrics survey | Administration | Source file |
