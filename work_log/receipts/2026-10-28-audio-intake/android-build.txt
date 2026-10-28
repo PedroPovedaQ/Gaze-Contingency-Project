@@ -1,0 +1,14 @@
+[CodexBuild] Building Android player to Builds/CodexAndroid/codex_build.apk; launch on device: True.
+NullReferenceException: Object reference not set to an instance of an object
+  at VIVE.OpenXR.VIVEFocus3Feature.GetOpenXrExtensionInfo (UnityEditor.BuildTargetGroup& buildTargetGroup, System.Collections.Generic.List`1[VIVE.OpenXR.VIVEFocus3Feature+OpenXrExtension]& myExtensionList, System.Boolean isRecordEnableOnly) [0x0004d] in ./Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab/Runtime/VIVEFocus3Feature.cs:364 
+NullReferenceException: Object reference not set to an instance of an object
+  at VIVE.OpenXR.VIVEFocus3Feature.GetOpenXrExtensionInfo (UnityEditor.BuildTargetGroup& buildTargetGroup, System.Collections.Generic.List`1[VIVE.OpenXR.VIVEFocus3Feature+OpenXrExtension]& myExtensionList, System.Boolean isRecordEnableOnly) [0x0004d] in ./Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab/Runtime/VIVEFocus3Feature.cs:364 
+NullReferenceException: Object reference not set to an instance of an object
+  at VIVE.OpenXR.Editor.ModifyAndroidManifest+AndroidManifest.AddOpenXRFeatures () [0x000cf] in ./Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab/Editor/AndroidManifestProcess.cs:294 
+  at VIVE.OpenXR.Editor.ModifyAndroidManifest.OnPostGenerateGradleAndroidProjectExt (System.String path) [0x00028] in ./Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab/Editor/AndroidManifestProcess.cs:44 
+Build Finished, Result: Success.
+[CodexBuild] Build succeeded in 96.1s, size 1167.9 MB
+[CodexBuild] Selected VIVE Focus Vision: 192.168.1.208:5555
+Success
+Local MiniLM ready; headset connection restored.
+Status: ok

@@ -1,0 +1,28 @@
+{
+  "development": true,
+  "checkedUtc": "2026-10-28T04:43:35.729250+00:00",
+  "implementationCommit": "85bcd02",
+  "serial": "192.168.1.208:5555",
+  "model": "VIVE Focus Vision",
+  "lastUpdateTime": "2026-10-28 00:41:52",
+  "pid": "11512",
+  "phase": "paused",
+  "intakeAvailable": true,
+  "templateSha256": "a497a76e69b14ab848c2ab246915f68448faa496d84c88a10af5c75aa9178317",
+  "phraseCount": 566,
+  "catalogVoices": 12,
+  "reverse": "host-26 tcp:8766 tcp:8766",
+  "modelHealth": {
+    "status": "ready",
+    "scope": "assistance",
+    "device": "cpu",
+    "model_version": "20261026-minilm-reassurance-v8",
+    "stages": [
+      "assistance",
+      "assistance_phrase"
+    ]
+  },
+  "wearerValidation": false,
+  "apkSha256": "59585bee44f98e0f56d250b2147fff58cffee8488acc28e3b7179285a270f3b3",
+  "headsetLoopbackHealth": "HTTP/1.0 200 OK\nServer: BaseHTTP/0.6 Python/3.11.14\nDate: Wed, 28 Oct 2026 04:44:39 GMT\nContent-Type: application/json\nContent-Length: 157\n\n{\"status\": \"ready\", \"scope\": \"assistance\", \"device\": \"cpu\", \"model_version\": \"20261026-minilm-reassurance-v8\", \"stages\": [\"assistance\", \"assistance_phrase\"]}"
+}

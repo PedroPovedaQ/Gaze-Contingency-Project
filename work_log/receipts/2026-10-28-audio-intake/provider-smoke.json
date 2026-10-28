@@ -1,0 +1,14 @@
+{
+  "development": true,
+  "participantAudioUploaded": false,
+  "voiceId": "SAz9YHcvj6GT2YYXdXww",
+  "providerName": "River - Relaxed, Neutral, Informative",
+  "category": "premade",
+  "bytes": 76111,
+  "sha256": "6b0b7542742023a7153076ba50f5a785255c2dfe510fbad2dc6f4ae1e21d5202",
+  "probe": {
+    "format": {
+      "duration": "4.690431"
+    }
+  }
+}

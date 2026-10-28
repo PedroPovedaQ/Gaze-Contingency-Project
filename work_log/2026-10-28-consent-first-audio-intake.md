@@ -21,8 +21,17 @@ The supplied final survey is `SV_3retnpdBMwBx5bw`, `v2026-10-28c DRAFT`, unpubli
 - Desktop Unity build: `TRIAL_REVIEW_BUILD_PASS`, output `~/Applications/Follow My Voice Study Intake.app`; built-in replay verification passes. Inspected the actual `--intake` screen. This verifies rendering; it does not claim a completed microphone/participant interaction.
 - Live provider smoke: River metadata retrieved and one generic question synthesized (4.690431 s, 76,111 bytes, SHA256 `6b0b7542742023a7153076ba50f5a785255c2dfe510fbad2dc6f4ae1e21d5202`). **No participant audio uploaded or voice cloned.**
 - Initial APK built/installed/launched over Wi-Fi on VIVE Focus Vision, MiniLM reconnect succeeded. Runtime template observed: 566 phrases, 12 catalog voices, River excluded, 1,132 two-voice cache jobs; SHA256 `a497a76e69b14ab848c2ab246915f68448faa496d84c88a10af5c75aa9178317`.
-- Final Android deployment details are appended below after completion. Required `./scripts/refocus-unity-and-build-device.sh` invoked; it selected Wi-Fi `192.168.1.208:5555` and dispatched the Unity menu. Earlier menu dispatch failures were resolved through the native Unity menu; no ADB server reset.
+- Final Android: **Build Result Success**, 96.1 s, 1,167.9 MB; wireless install **Success**, launch **Status: ok**, package update `2026-10-28 00:41:52`, live PID 11512. MiniLM service reports ready and reverse `tcp:8766 → tcp:8766` is present. Device is unworn/paused, intake available. Required `./scripts/refocus-unity-and-build-device.sh` invoked; it selected Wi-Fi `192.168.1.208:5555` and dispatched the Unity menu. Earlier menu dispatch failures were resolved through the native Unity menu; no ADB server reset.
 
 ## Remaining participant-facing validation
 
 **Open decision / validation:** approved consent wording/version and retention handling; a consented wearer rehearsal covering microphone onset/clarity, ASR review, actual provider clone quality, full 1,132-clip generation/transfer, two-voice acceptance, gaze Retry/Skip and full practice/80-trial completion; and publication/verification of the supplied Qualtrics draft. No wearer was available overnight and no new wearer accuracy, cloning adequacy, questionnaire responses or study-readiness approval is claimed. The headset may pause when unworn; Mac wake and ADB remain necessary for MiniLM.
+
+## Final artifacts and commits
+
+- `03c5a14`: preserved inherited standard gaze/guidance/telemetry/MiniLM work.
+- `85bcd02`: consent-first audio intake, cache/transfer, MiniLM study lock and final-survey handoff.
+- [Deployment receipt](receipts/2026-10-28-audio-intake/headset-release.json), [filtered Android build log](receipts/2026-10-28-audio-intake/android-build.txt), [desktop test receipt](receipts/2026-10-28-audio-intake/desktop-tests.txt), [generic River synthesis receipt](receipts/2026-10-28-audio-intake/provider-smoke.json).
+- APK SHA256 `59585bee44f98e0f56d250b2147fff58cffee8488acc28e3b7179285a270f3b3`; `Builds/CodexAndroid/codex_build.apk` (ignored build artifact). Desktop app: `~/Applications/Follow My Voice Study Intake.app`.
+- Build diagnostics are **not warning-free**: VIVE OpenXR package callbacks report `GetOpenXrExtensionInfo` and `ModifyAndroidManifest.AddOpenXRFeatures` NullReferenceExceptions; the build nevertheless succeeds and installs/launches. These package callbacks also occur in prior builds. No new C# compiler error or intake-check failure remains.
+- No real participant voice cloned; full-library generation/transfer is tested with fake provider/remote fixtures, exact real runtime template keys and integrity failures. Actual provider smoke covers only the generic intake voice. No participant/ASR/voice-quality validation is inferred from these checks.
