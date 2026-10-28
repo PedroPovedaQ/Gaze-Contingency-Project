@@ -211,10 +211,10 @@ public sealed class StudyRayControls : MonoBehaviour
                 "\nLast accepted: " + following.LastDecisionLabel;
         }
         m_ProviderLabel.GetComponentInParent<Button>(true).gameObject.SetActive(m_SettingsOpen);
-        m_ProviderLabel.text = !SessionConfig.JevLedGuidance ? "Model: unused in baseline" : SessionConfig.LocalAdaptiveModel
+        m_ProviderLabel.text = SessionConfig.StudyModelLocked ? "Study model: Local MiniLM\n" + (GetComponent<SpatialVoice.StudyNavigationVoiceBridge>()?.LocalModelStatus ?? "Connect Mac") : !SessionConfig.JevLedGuidance ? "Model: unused in baseline" : SessionConfig.LocalAdaptiveModel
             ? "Model: Local MiniLM\n" + (GetComponent<SpatialVoice.StudyNavigationVoiceBridge>()?.LocalModelStatus ?? "Connect Mac") + "\nTap to use Jev"
             : "Model: Jev\nTap to use Local MiniLM";
-        m_ProviderLabel.GetComponentInParent<Button>(true).interactable = SessionConfig.JevLedGuidance &&
+        m_ProviderLabel.GetComponentInParent<Button>(true).interactable = !SessionConfig.StudyModelLocked && SessionConfig.JevLedGuidance &&
             (!m_Game.SearchActive || m_Game.ResearcherPaused);
         m_VicinityControls.SetActive(m_SettingsOpen && SessionConfig.DevelopmentQuickTest);
         if (m_VicinityControls.activeSelf)

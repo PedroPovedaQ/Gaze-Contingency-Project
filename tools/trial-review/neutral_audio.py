@@ -66,12 +66,12 @@ def decode(source, ffmpeg):
     return True
 
 
-def synthesize(job, source, keys):
+def synthesize(job, source, keys, voice=VOICE):
     if source.exists(): return False
     key = json.loads(keys.read_text()).get('elevenlabs_key')
     if not key: raise ValueError('Add the ElevenLabs key to ~/.config/follow-my-voice/api_keys.json')
     for attempt in range(3):
-        request = urllib.request.Request('https://api.elevenlabs.io/v1/text-to-speech/' + VOICE,
+        request = urllib.request.Request('https://api.elevenlabs.io/v1/text-to-speech/' + voice,
             data=job['request'].encode(), headers={'xi-api-key': key, 'Content-Type': 'application/json', 'Accept': 'audio/mpeg'})
         try:
             with urllib.request.urlopen(request, timeout=45) as response:

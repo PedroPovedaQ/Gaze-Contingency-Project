@@ -72,6 +72,7 @@ public sealed partial class TrialReviewApp : MonoBehaviour
         }
         if(Array.IndexOf(args,"--evaluation")>=0)m_Tab=4;
         InitializeLive(args);
+        if (!m_DetachedReview && Array.IndexOf(args,"--intake") >= 0) OpenIntake();
         if(m_DetachedReview && index<0)Browse(false);
         if(!m_DetachedReview && Array.IndexOf(args,"--detach-review")>=0)
         {

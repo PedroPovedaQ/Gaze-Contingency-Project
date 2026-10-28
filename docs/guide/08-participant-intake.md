@@ -1,5 +1,7 @@
 # Participant intake from Trial Viewer
 
+**Historical October 25 prototype, superseded October 28:** use [Consent-first audio intake and study setup](10-audio-intake.md) for the current operator flow, consent gates, nine fixed questions, speech adequacy fallback, participant-bound cache transfer and final-survey handoff. The older four-question/Mistral/check-box-only flow below is retained as design history, not current study instructions.
+
 **Implemented (2026-10-25):** Live mode → New participant session opens the desktop interview. This creates a participant session; it does not start a timed search trial.
 
 1. Enter an unused coded participant ID. A connected headset suggests its next available code. Choose **A: self-similar first** or **B: neutral first**, and the neutral study voice.

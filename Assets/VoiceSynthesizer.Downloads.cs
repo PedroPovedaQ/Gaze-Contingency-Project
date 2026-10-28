@@ -17,7 +17,7 @@ public partial class VoiceSynthesizer
             string voice = SessionConfig.NeutralId(NeutralVoiceProfile.Male, 0);
             var entries = new Newtonsoft.Json.Linq.JArray();
             var seen = new HashSet<string>();
-            foreach (string phrase in phrases)
+            foreach (string phrase in new SortedSet<string>(phrases, StringComparer.Ordinal))
             {
                 string text = VoicePromptText.FormatForVoice(phrase, VoiceCondition.Generic);
                 string name = Path.GetFileName(CachePathForPerspective(text, "el-" + voice, VoicePerspective.External));
@@ -30,6 +30,19 @@ public partial class VoiceSynthesizer
             File.WriteAllText(path + ".tmp", new Newtonsoft.Json.Linq.JObject {
                 ["schema"] = 1, ["voiceId"] = voice, ["model"] = k_Model,
                 ["contentVersion"] = ContentVersion, ["phrases"] = entries }.ToString());
+            if (File.Exists(path)) File.Delete(path);
+            File.Move(path + ".tmp", path);
+            // Template carries the exact runtime wording and cache namespace for both voices.
+            var voices = new Newtonsoft.Json.Linq.JArray();
+            foreach (var profile in new[] { NeutralVoiceProfile.Male, NeutralVoiceProfile.Female })
+                for (int option = 0; option < SessionConfig.NeutralVoiceCount; option++)
+                    voices.Add(new Newtonsoft.Json.Linq.JObject { ["gender"] = profile.ToString(), ["option"] = option,
+                        ["name"] = SessionConfig.NeutralName(profile, option), ["voiceId"] = SessionConfig.NeutralId(profile, option) });
+            path = Path.Combine(folder, "study-audio-template.json");
+            File.WriteAllText(path + ".tmp", new Newtonsoft.Json.Linq.JObject {
+                ["schema"] = 1, ["model"] = k_Model, ["contentVersion"] = ContentVersion,
+                ["keyPrefix"] = ContentVersion + "|" + VoicePromptText.Version + "|External|" + k_Model + "|",
+                ["phrases"] = entries.DeepClone(), ["voices"] = voices }.ToString());
             if (File.Exists(path)) File.Delete(path);
             File.Move(path + ".tmp", path);
         }

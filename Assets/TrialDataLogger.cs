@@ -350,14 +350,42 @@ public class TrialDataLogger : MonoBehaviour
 
         WriteEvent("game_end", "", "", "", -1, false, elapsedSeconds,
             $"total_time={elapsedSeconds:F2}s,found={m_GameManager.FoundCount}");
-        WriteEvent("nasa_tlx_prompt_shown", "", "", "", -1, false, 0f,
-            "prompted_after_run_completion=1");
+        WriteEvent(SessionConfig.DevelopmentQuickTest ? "nasa_tlx_prompt_shown" : "final_survey_handoff", "", "", "", -1, false, 0f,
+            SessionConfig.DevelopmentQuickTest ? "prompted_after_run_completion=1" : "external_survey=1;labels=Selected Voice|Self-Similar Voice;responses_collected=0");
 
         // Write summary JSON
         WriteSummary(elapsedSeconds);
+        if (!SessionConfig.DevelopmentQuickTest && !string.IsNullOrEmpty(SessionConfig.CurrentRunFolder))
+        {
+            string handoffId=System.Guid.NewGuid().ToString("N");
+            var handoff = new Newtonsoft.Json.Linq.JObject {
+                ["schema"] = 1, ["participantCode"] = SessionConfig.ParticipantId,
+                ["desktopSessionId"] = SessionConfig.DesktopSessionId, ["runFolder"] = System.IO.Path.GetFileName(SessionConfig.CurrentRunFolder),
+                ["createdUtc"] = System.DateTime.UtcNow.ToString("O"), ["studyData"] = !SessionConfig.DevelopmentIntake,
+                ["block1"] = SessionConfig.NeutralFirst ? "Selected Voice" : "Self-Similar Voice",
+                ["block2"] = SessionConfig.NeutralFirst ? "Self-Similar Voice" : "Selected Voice",
+                ["selectedVoiceName"] = SessionConfig.NeutralVoiceName, ["status"] = "awaiting_external_survey",
+                ["handoffId"] = handoffId, ["surveyId"] = "SV_3retnpdBMwBx5bw", ["surveyPublished"] = false,
+                ["surveyVersion"] = "v2026-10-28c DRAFT", ["conditionOrder"] = SessionConfig.NeutralFirst ? "B" : "A",
+                ["surveyUrl"] = BuildFinalSurveyUrl(SessionConfig.ParticipantId,SessionConfig.DesktopSessionId,
+                    System.IO.Path.GetFileName(SessionConfig.CurrentRunFolder),SessionConfig.NeutralFirst,SessionConfig.NeutralVoiceName,handoffId),
+                ["responsesCollected"] = false, ["nextStep"] = "Remove headset with researcher; immediate comfort/symptom check; final comparison survey." };
+            string path = System.IO.Path.Combine(SessionConfig.CurrentRunFolder,"final-survey-handoff-"+handoffId+".json");
+            System.IO.File.WriteAllText(path,handoff.ToString());
+        }
         m_LastRunStatsText = BuildParticipantStatsText(elapsedSeconds);
 
         StartCoroutine(CloseAfterFinalFeedback());
+    }
+
+    static string BuildFinalSurveyUrl(string participant, string session, string run, bool selectedFirst, string voice, string id)
+    {
+        var fields=new[] {"participant_id",participant,"session_id",session,"run_id",run,"condition_order",selectedFirst ? "B" : "A",
+            "selected_voice_block",selectedFirst ? "1" : "2","self_similar_voice_block",selectedFirst ? "2" : "1",
+            "selected_voice_name",voice,"handoff_id",id};
+        var query=new StringBuilder("https://ucf.yul1.qualtrics.com/jfe/form/SV_3retnpdBMwBx5bw?");
+        for(int i=0;i<fields.Length;i+=2) { if(i>0) query.Append('&');query.Append(fields[i]).Append('=').Append(Uri.EscapeDataString(fields[i+1] ?? "")); }
+        return query.ToString();
     }
 
     System.Collections.IEnumerator CloseAfterFinalFeedback()
@@ -543,6 +571,8 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine(FormattableString.Invariant($"  \"active_search_limit_seconds\": {StudyTrialClock.SearchLimitSeconds},"));
         sb.AppendLine(FormattableString.Invariant($"  \"participant_id\": \"{SessionConfig.ParticipantId}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"desktop_session_id\": \"{SessionConfig.DesktopSessionId}\","));
+        sb.AppendLine("  \"study_data\": " + (!(SessionConfig.DevelopmentQuickTest || SessionConfig.DevelopmentIntake) ? "true" : "false") + ",");
+        sb.AppendLine("  \"intake_assignment\": " + (SessionConfig.DesktopIntake == null ? "null" : JsonUtility.ToJson(SessionConfig.DesktopIntake)) + ",");
         sb.AppendLine("  \"participant_fit\": " + JsonUtility.ToJson(SessionConfig.ParticipantFit) + ",");
         sb.AppendLine(FormattableString.Invariant($"  \"run_number\": {SessionConfig.RunNumber},"));
         sb.AppendLine(FormattableString.Invariant($"  \"condition\": \"{SessionConfig.ConditionLabel}\","));

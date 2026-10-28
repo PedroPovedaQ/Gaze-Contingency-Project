@@ -1,10 +1,13 @@
 import io
+import math
+import struct
 import tempfile
 import unittest
 import uuid
 import wave
 from pathlib import Path
-from participant_intake import create, load, answer, clone_answers, patch, ticket, validate_fit, INTERVIEW_VOICE
+from participant_intake import (create, load, answer, clone_answers, patch, ticket, validate_fit, INTERVIEW_VOICE,
+    record_consent, authorize_recording, review_eligibility, ELIGIBILITY, QUESTIONS, sample_quality)
 from live_bridge import validate_control
 
 class Provider:
@@ -13,7 +16,7 @@ class Provider:
         self.prompts.append(text)
         if self.fail_speech: raise RuntimeError('speech unavailable')
         return b'prompt mp3'
-    def transcribe(self, data): return 'I use VR weekly.'
+    def transcribe(self, data): return 'I use VR weekly. I enjoy exploring different environments and listening to spoken instructions when learning how the controls work.'
     def followup(self, topic, text):
         if topic in ('vr', 'experience'): self.followups+=1; return 'What do you use it for?'
         return ''
@@ -24,25 +27,36 @@ class IntakeTests(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
         self.folder=Path(self.temp.name)/uuid.uuid4().hex
         create(self.folder,'P101','A'); self.provider=Provider()
+        record_consent(self.folder,'TEST','development synthetic consent',True,True)
+        patch(self.folder,phase='interview',selectedVoiceConfirmed=True)
     def recording(self, value=123):
         name='answer-'+uuid.uuid4().hex+'.wav'
+        authorize_recording(self.folder,name)
         with wave.open(str(self.folder/name),'wb') as out:
             out.setnchannels(1);out.setsampwidth(2);out.setframerate(24000)
-            out.writeframes(value.to_bytes(2,'little',signed=True)*24000)
+            out.writeframes(b''.join(struct.pack('<h',int(5000*math.sin(i*2*math.pi*220/24000))) for i in range(24000*4)))
         return name
+    def eligibility(self):
+        for _ in range(4): answer(self.folder,self.provider,self.recording())
+        review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
+    def completed(self):
+        self.eligibility()
+        for _ in QUESTIONS[4:]: answer(self.folder,self.provider,self.recording())
+        clone_answers(self.folder,self.provider)
+        return patch(self.folder,cacheState='transferred',cacheManifestSha256='a'*64)
     def test_answers_only_clone_snapshot_and_duplicate_prevention(self):
-        first=self.recording(); answer(self.folder,self.provider,first)
+        self.completed()
         (self.folder/'prompt-extra.mp3').write_bytes(b'not participant audio')
         clone_answers(self.folder,self.provider); clone_answers(self.folder,self.provider)
         self.assertEqual(len(self.provider.clones),1)
-        with wave.open(io.BytesIO(self.provider.clones[0][1])) as wav: self.assertEqual(wav.getnframes(),24000)
-        self.assertEqual(load(self.folder)['cloneAnswerCount'],1)
+        with wave.open(io.BytesIO(self.provider.clones[0][1])) as wav: self.assertEqual(wav.getnframes(),24000*4*len(QUESTIONS))
+        self.assertEqual(load(self.folder)['cloneAnswerCount'],len(QUESTIONS))
     def test_one_followup_per_topic_and_minimal_handoff(self):
-        for _ in range(6): answer(self.folder,self.provider,self.recording())
+        self.completed()
         state=load(self.folder);self.assertEqual(state['phase'],'interview_complete')
-        self.assertEqual(self.provider.followups,2)
+        self.assertEqual(self.provider.followups,0)
         clone_answers(self.folder,self.provider); assignment=ticket(load(self.folder))
-        self.assertEqual(set(assignment),{'schema','id','participantCode','configuration','neutralGender','neutralOption','cloneVoiceId','fit'})
+        self.assertEqual(set(assignment),{'schema','id','participantCode','configuration','neutralGender','neutralOption','cloneVoiceId','fit','consentId','intakeProtocol','eligibilityReviewed','cacheManifestSha256','development'})
         self.assertNotEqual(INTERVIEW_VOICE,assignment['cloneVoiceId'])
     def test_prompt_failure_retry_does_not_advance_answer_twice(self):
         name=self.recording();self.provider.fail_speech=True
@@ -57,7 +71,8 @@ class IntakeTests(unittest.TestCase):
         with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
         with self.assertRaises(ValueError): ticket(load(self.folder))
     def test_uncertain_clone_is_not_automatically_repeated(self):
-        answer(self.folder,self.provider,self.recording())
+        self.eligibility()
+        for _ in QUESTIONS[4:]: answer(self.folder,self.provider,self.recording())
         calls=[]
         def failure(*args): calls.append(1);raise RuntimeError('lost response')
         self.provider.clone=failure
@@ -82,7 +97,8 @@ class IntakeTests(unittest.TestCase):
         fit = dict(ipdRecorded=True, participantIpdMm=63.5, ipdSource='pupillometer', headsetIpdRecorded=True, headsetIpdMm=64)
         folder = self.folder / uuid.uuid4().hex
         create(folder, 'P102', 'B', fit=fit)
-        state = patch(folder, phase='interview_complete', cloneState='ready', cloneVoiceId='fixture_voice_id')
+        record_consent(folder,'TEST','synthetic consent',True,True)
+        state = patch(folder, phase='interview_complete', eligible=True, selectedVoiceConfirmed=True, cloneState='ready', cloneVoiceId='fixture_voice_id',cacheState='transferred',cacheManifestSha256='a'*64)
         self.assertEqual(load(folder)['fit'], fit)
         from live_bridge import validate_assignment
         self.assertEqual(validate_assignment(ticket(state))['fit'], fit)
@@ -98,5 +114,55 @@ class IntakeTests(unittest.TestCase):
         for fit in (dict(base, participantIpdMm=63), dict(base, ipdRecorded=True, participantIpdMm=63),
                     dict(base, name='private'), dict(base, headsetIpdRecorded=True, headsetIpdMm=0)):
             with self.assertRaises(ValueError): validate_fit(fit)
+
+    def test_no_capture_transcription_clone_or_ticket_before_consent(self):
+        folder=self.folder.parent/uuid.uuid4().hex; create(folder,'P102','B')
+        with self.assertRaises(ValueError): authorize_recording(folder,'answer-'+uuid.uuid4().hex+'.wav')
+        with self.assertRaises(ValueError): answer(folder,self.provider,skip=True)
+        with self.assertRaises(ValueError): clone_answers(folder,self.provider)
+        with self.assertRaises(ValueError): ticket(load(folder))
+
+    def test_consent_cannot_be_backdated_or_replaced(self):
+        with self.assertRaises(ValueError): record_consent(self.folder,'TEST','replacement',True,True)
+        self.assertEqual(len(list(self.folder.glob('consent-*.json'))),1)
+
+    def test_consent_bound_to_exact_participant(self):
+        patch(self.folder,participantCode='P999')
+        with self.assertRaises(ValueError): self.recording()
+
+    def test_withdrawal_blocks_new_capture_and_clone(self):
+        patch(self.folder,withdrawnUtc=1)
+        with self.assertRaises(ValueError): self.recording()
+        with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
+
+    def test_no_unclear_or_negative_eligibility_pass(self):
+        for _ in range(4): answer(self.folder,self.provider,self.recording())
+        review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'unclear'),'TEST')
+        self.assertEqual(load(self.folder)['phase'],'screening_stopped')
+        with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
+
+    def test_skipped_eligibility_cannot_be_overridden(self):
+        for _ in range(4): answer(self.folder,self.provider,skip=True)
+        review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
+        self.assertFalse(load(self.folder)['eligible'])
+
+    def test_duplicate_participant_reservation_rejected(self):
+        with self.assertRaises(ValueError): create(self.folder.parent/uuid.uuid4().hex,'P101','A')
+
+    def test_duration_without_speech_does_not_qualify(self):
+        name=self.recording()
+        with wave.open(str(self.folder/name),'wb') as out:
+            out.setnchannels(1);out.setsampwidth(2);out.setframerate(24000);out.writeframes(b'\0\0'*24000*31)
+        answer(self.folder,self.provider,name)
+        self.assertEqual(load(self.folder)['speechSeconds'],0)
+        with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
+
+    def test_cache_transfer_required_for_ticket(self):
+        self.completed();patch(self.folder,cacheState='ready')
+        with self.assertRaises(ValueError): ticket(load(self.folder))
+
+    def test_recording_authorization_is_question_specific(self):
+        name=self.recording(); answer(self.folder,self.provider,skip=True)
+        with self.assertRaises(ValueError): answer(self.folder,self.provider,name)
 
 if __name__=='__main__': unittest.main()

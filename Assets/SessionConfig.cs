@@ -152,6 +152,9 @@ public static class SessionConfig
     // User-directed provider trust: no transcript, filler or content-integrity admission gates.
     public static bool ValidateVoiceTranscript { get; set; } = false;
     public static string DesktopSessionId { get; private set; } = "";
+    public static ParticipantSessionAssignment DesktopIntake { get; private set; }
+    public static bool DevelopmentIntake => DesktopIntake != null && DesktopIntake.development;
+    public static bool StudyModelLocked => DesktopIntake != null && !DesktopIntake.development;
     public static ParticipantFitMeasurements ParticipantFit { get; private set; } = new ParticipantFitMeasurements();
     public static string SuggestedParticipantId => FindNextParticipantId();
     public static void ConfigureDesktopSession(ParticipantSessionAssignment assignment)
@@ -169,6 +172,7 @@ public static class SessionConfig
         ResetForNewParticipant();
         ParticipantId = assignment.participantCode;
         DesktopSessionId = assignment.id;
+        DesktopIntake = assignment;
         ParticipantFit = assignment.fit?.Copy() ?? new ParticipantFitMeasurements();
         SelectNeutralVoice((NeutralVoiceProfile)System.Enum.Parse(typeof(NeutralVoiceProfile), assignment.neutralGender), assignment.neutralOption);
         SelfSimilarVoiceId = assignment.cloneVoiceId;
@@ -176,6 +180,7 @@ public static class SessionConfig
         Directory.CreateDirectory(directory);
         if (!File.Exists(orderPath)) File.WriteAllText(orderPath, assignment.Order);
         File.WriteAllText(sessionPath, assignment.id);
+        File.WriteAllText(Path.Combine(directory, "intake-assignment-v2.json"), JsonUtility.ToJson(assignment, true));
         File.WriteAllText(Path.Combine(directory, "participant-fit-v1.json"), JsonUtility.ToJson(ParticipantFit, true));
         ConfigureVoiceBlocks(replaceNeutralSelection: true);
     }
@@ -190,6 +195,7 @@ public static class SessionConfig
     };
     public static bool TrySetLocalAdaptiveModel(bool enabled)
     {
+        if (StudyModelLocked && !enabled) return false;
         s_LocalAdaptiveModel = enabled;
         return true;
     }
@@ -201,7 +207,7 @@ public static class SessionConfig
         s_JevLedGuidance = enabled;
         return true;
     }
-    public static string SessionMode => NewCloneQuickTest ? "new_clone_quick_test" : CloneQuickTest ? "clone_quick_test" : NeutralQuickTest ? "neutral_quick_test" : "study";
+    public static string SessionMode => DevelopmentIntake ? "development_intake" : NewCloneQuickTest ? "new_clone_quick_test" : CloneQuickTest ? "clone_quick_test" : NeutralQuickTest ? "neutral_quick_test" : "study";
     public static string QuickTestTitle => CloneQuickTest ? "CLONED VOICE QUICK TEST" : "NEUTRAL QUICK TEST";
 
     // Explicit development shortcut only. Normal participant setup never reads this.
@@ -389,7 +395,9 @@ public static class SessionConfig
         Directory.CreateDirectory(CurrentRunFolder);
         File.WriteAllText(Path.Combine(CurrentRunFolder, "participant-fit-v1.json"), JsonUtility.ToJson(ParticipantFit, true));
         File.WriteAllText(Path.Combine(CurrentRunFolder, "session-mode-v1.txt"),
-            "mode=" + SessionMode + "\n" + (DevelopmentQuickTest ? "study_data=false\n" : ""));
+            "mode=" + SessionMode + "\n" + (DevelopmentQuickTest || DevelopmentIntake ? "study_data=false\n" : ""));
+        if (DesktopIntake != null)
+            File.WriteAllText(Path.Combine(CurrentRunFolder, "intake-assignment-v2.json"), JsonUtility.ToJson(DesktopIntake, true));
         if (!string.IsNullOrEmpty(DesktopSessionId))
             File.WriteAllText(Path.Combine(CurrentRunFolder, "desktop-session-id.txt"), DesktopSessionId);
         using (var catalog = new StreamWriter(Path.Combine(CurrentRunFolder, "neutral-catalog-v1.json")))
@@ -427,6 +435,7 @@ public static class SessionConfig
     public static void ResetForNewParticipant()
     {
         DesktopSessionId = "";
+        DesktopIntake = null;
         ParticipantFit = new ParticipantFitMeasurements();
         s_JevLedGuidance = true;
         s_LocalAdaptiveModel = true;

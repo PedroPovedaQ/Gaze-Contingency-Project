@@ -672,7 +672,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
             { Fail("Unverified audio cannot enter the playable library."); yield break; }
             float[] cachedPcm = null; int cachedChannels = 0, cachedFrequency = 0;
             bool decodedHit = false;
-            if (!wantSelfSimilar && NeutralDecodedAudio.TryLoad(filePath, out cachedPcm, out cachedChannels, out cachedFrequency))
+            if (NeutralDecodedAudio.TryLoad(filePath, out cachedPcm, out cachedChannels, out cachedFrequency))
             {
                 decodedHit = true;
                 clip = AudioClip.Create(Path.GetFileNameWithoutExtension(filePath), cachedPcm.Length / cachedChannels,
@@ -701,7 +701,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
             }
             var samples = new float[clip.samples * clip.channels];
             if (!clip.GetData(samples, 0)) { RejectClip(clip, filePath, "Could not read decoded audio samples."); yield break; }
-            if (!wantSelfSimilar && !decodedHit)
+            if (!decodedHit)
             {
                 try { NeutralDecodedAudio.Save(filePath, samples, clip.channels, clip.frequency); }
                 catch (Exception e) { Debug.LogWarning(k_Tag + " Optional decoded cache: " + e.GetType().Name); }

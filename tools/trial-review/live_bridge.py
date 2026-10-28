@@ -249,15 +249,21 @@ def validate_headset_state(value):
 
 
 def validate_assignment(value):
-    if not isinstance(value, dict) or value.get('schema') != 1:
+    if not isinstance(value, dict) or value.get('schema') not in (1, 2):
         raise ValueError('Invalid participant assignment')
     for key, pattern in [('id', r'[0-9a-f]{32}'), ('participantCode', r'P[0-9]{3,12}'), ('cloneVoiceId', r'[A-Za-z0-9_-]{8,128}')]:
         if not isinstance(value.get(key), str) or not re.fullmatch(pattern, value[key]):
             raise ValueError('Invalid participant assignment field: '+key)
     if value.get('configuration') not in ('A','B') or value.get('neutralGender') not in ('Male','Female') or type(value.get('neutralOption')) is not int or not 0 <= value['neutralOption'] < 6:
         raise ValueError('Invalid condition or neutral voice choice')
-    if set(value) - {'fit'} != {'schema','id','participantCode','configuration','neutralGender','neutralOption','cloneVoiceId'}:
+    extra = {'consentId','intakeProtocol','eligibilityReviewed','cacheManifestSha256','development'} if value['schema'] == 2 else set()
+    if set(value) - {'fit'} - extra != {'schema','id','participantCode','configuration','neutralGender','neutralOption','cloneVoiceId'}:
         raise ValueError('Assignment must not contain interview data')
+    if value['schema'] == 2 and (value.get('intakeProtocol') != 'audio-intake-v2-20261028' or
+            value.get('eligibilityReviewed') is not True or type(value.get('development')) is not bool or
+            not re.fullmatch('[a-f0-9]{32}', str(value.get('consentId', ''))) or
+            not re.fullmatch('[a-f0-9]{64}', str(value.get('cacheManifestSha256', '')))):
+        raise ValueError('Missing consent, eligibility or audio transfer receipt')
     validate_fit(value.get('fit'))
     return value
 

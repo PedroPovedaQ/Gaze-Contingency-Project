@@ -65,6 +65,7 @@ public class VoiceModeSelector : MonoBehaviour
     public bool StageDesktopSession(ParticipantSessionAssignment assignment)
     {
         assignment.Validate();
+        ValidateIntakeAudio(assignment);
         if (m_DesktopAssignment?.id == assignment.id) return true;
         if (!CanStageDesktopSession) return false;
         System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(DesktopTicketPath));
@@ -80,7 +81,7 @@ public class VoiceModeSelector : MonoBehaviour
         m_DesktopAssignment = assignment; m_Phase = Phase.ConfirmDesktop;
         m_FinishRecordingButton.gameObject.SetActive(false);
         SetText($"<b>Confirm your session</b>\nParticipant {assignment.participantCode} · Configuration {assignment.configuration}\n" +
-            (assignment.NeutralFirst ? "Neutral voice first, then your voice." : "Your voice first, then neutral voice.") +
+            (assignment.NeutralFirst ? "Selected Voice first, then Self-Similar Voice." : "Self-Similar Voice first, then Selected Voice.") +
             "\nConfirm the code with the researcher before continuing.");
         RefreshChoices();
         return true;
@@ -90,12 +91,58 @@ public class VoiceModeSelector : MonoBehaviour
         if (m_Phase != Phase.ConfirmDesktop || !Application.isFocused || m_Synth == null) return;
         try
         {
+            ValidateIntakeAudio(m_DesktopAssignment);
             SessionConfig.ConfigureDesktopSession(m_DesktopAssignment);
             System.IO.File.WriteAllText(DesktopTicketPath + ".accepted", m_DesktopAssignment.id);
             m_Synth.ResetVoicePreparation();
             StartCoroutine(PrepareVoices());
         }
         catch (System.Exception e) { SetText("<b>Session could not be confirmed</b>\n" + e.Message.Replace("<", "‹")); }
+    }
+    static void ValidateIntakeAudio(ParticipantSessionAssignment assignment)
+        => ValidateIntakeAudioAt(assignment, Application.persistentDataPath);
+    static void ValidateIntakeAudioAt(ParticipantSessionAssignment assignment, string root)
+    {
+        if (assignment.schema != 2) throw new System.InvalidOperationException("Use the consent-first Trial Viewer intake for a new participant.");
+        string folder = System.IO.Path.Combine(root, "PreparationLogs");
+        string path = System.IO.Path.Combine(folder, "intake-audio-" + assignment.id + ".json");
+        using (var sha = System.Security.Cryptography.SHA256.Create())
+        {
+            string hash = System.BitConverter.ToString(sha.ComputeHash(System.IO.File.ReadAllBytes(path))).Replace("-", "").ToLowerInvariant();
+            if (hash != assignment.cacheManifestSha256) throw new System.InvalidOperationException("Participant audio receipt is missing or changed. Transfer it again.");
+            var manifest = Newtonsoft.Json.Linq.JObject.Parse(System.IO.File.ReadAllText(path));
+            string templateHash = System.BitConverter.ToString(sha.ComputeHash(System.IO.File.ReadAllBytes(System.IO.Path.Combine(folder,"study-audio-template.json")))).Replace("-", "").ToLowerInvariant();
+            if ((string)manifest["id"] != assignment.id || (string)manifest["participantCode"] != assignment.participantCode ||
+                (string)manifest["consentId"] != assignment.consentId || (string)manifest["cloneVoiceId"] != assignment.cloneVoiceId ||
+                (string)manifest["neutralGender"] != assignment.neutralGender || (int)manifest["neutralOption"] != assignment.neutralOption ||
+                (bool)manifest["development"] != assignment.development || (string)manifest["templateSha256"] != templateHash)
+                throw new System.InvalidOperationException("Audio library belongs to another participant or app version.");
+            if (!(manifest["entries"] is Newtonsoft.Json.Linq.JArray entries) || entries.Count == 0)
+                throw new System.InvalidOperationException("Participant audio library is empty.");
+            var template = Newtonsoft.Json.Linq.JObject.Parse(System.IO.File.ReadAllText(System.IO.Path.Combine(folder,"study-audio-template.json")));
+            var expected = new HashSet<string>();
+            string selectedId = SessionConfig.NeutralId((NeutralVoiceProfile)System.Enum.Parse(typeof(NeutralVoiceProfile),assignment.neutralGender),assignment.neutralOption);
+            foreach (var phrase in template["phrases"])
+            {
+                string text = (string)Newtonsoft.Json.Linq.JObject.Parse((string)phrase["request"])["text"];
+                foreach (string scope in new[] { "el-" + selectedId, "el-clone-" + assignment.cloneVoiceId })
+                {
+                    string key = (string)template["keyPrefix"] + scope + "|" + text;
+                    expected.Add("tts_" + System.BitConverter.ToString(sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(key))).Replace("-", "").ToLowerInvariant() + ".mp3");
+                }
+            }
+            if (entries.Count != expected.Count) throw new System.InvalidOperationException("Participant audio library is incomplete.");
+            foreach (var entry in entries)
+            {
+                string name = (string)entry["file"];
+                if (!System.Text.RegularExpressions.Regex.IsMatch(name ?? "", @"^tts_[a-f0-9]{64}\.mp3$"))
+                    throw new System.InvalidOperationException("Invalid audio manifest path.");
+                if (!expected.Remove(name)) throw new System.InvalidOperationException("Audio manifest contains an unexpected or duplicate phrase.");
+                string audio = System.IO.Path.Combine(root,"tts_cache",name);
+                if (!System.IO.File.Exists(audio) || !System.IO.File.Exists(audio + NeutralDecodedAudio.Suffix))
+                    throw new System.InvalidOperationException("Participant audio transfer is incomplete.");
+            }
+        }
     }
     bool m_StartArmed;
     float m_StartReleasedAt = -1f;
@@ -140,18 +187,7 @@ public class VoiceModeSelector : MonoBehaviour
     public void StartSetup()
     {
         if (m_Phase != Phase.WaitingToStart || !m_StartArmed || !Application.isFocused) return;
-        m_StartArmed = false;
-        m_Phase = Phase.Choosing;
-        m_SetupInputAfter = Time.realtimeSinceStartup + 0.75f;
-        m_FinishRecordingButton.gameObject.SetActive(false);
-        // Wording is fixed by voice condition: external vs first-person singular.
-        if (!SessionConfig.TrySetPerspective(VoicePerspective.External))
-        {
-            SetText("<b>Wording already locked</b>\nReset the session before starting a new setup.");
-            return;
-        }
-        m_PerspectiveChosen = true;
-        BeginVoiceSelection();
+        SetText("<b>Participant intake on Trial Viewer</b>\nThe researcher records consent, runs the audio intake, and transfers your prepared voices.\nWait here for your participant confirmation. Development quick tests remain below.");
     }
 
     /// <summary>One-session development shortcut. No clone or participant assignment is reused.</summary>
