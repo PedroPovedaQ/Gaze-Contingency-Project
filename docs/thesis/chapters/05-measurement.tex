@@ -156,7 +156,7 @@ L_{\mathrm{software}}=t_p-t_q.
 \end{equation}
 This quantity excludes acoustic latency at the participant's ear, since audio-device buffering and the physical sound path require separate measurement. Gaze and controller acknowledgments are each measured from their own qualification time, because measuring a controller acknowledgment from first gaze contact would inflate or misattribute its delay.
 
-Repeated requests about one continuously qualified event form a single episode, so a sequence can include several decisions by Jev to wait without creating several independent missed confirmations. An episode ends with playback, disqualification, trial termination, or a defined reset. The evaluation reports how those endpoints were assigned and marks incomplete evidence as unknown.
+Repeated requests about one continuously qualified event form a single episode, so a sequence can include several decisions by the model to wait without creating several independent missed confirmations. An episode ends with playback, disqualification, trial termination, or a defined reset. The evaluation reports how those endpoints were assigned and marks incomplete evidence as unknown.
 
 Where logs support attribution, waiting is divided into model response, explicit model deferral, scheduling, existing speech, and audio readiness. Because these intervals may overlap, they are not summed unless they are represented as a nonoverlapping partition of the critical path. The full event timeline remains the authority when aggregate attribution is ambiguous.
 
@@ -184,7 +184,7 @@ Quantity & Endpoints & Interpretation limit \\\midrule
 Active completion & Reveal to correct trigger, less union of pauses & Excludes readiness and opening cue; unfinished trials remain unfinished. \\
 First gaze contact & Reveal to first valid target-ray hit on active clock & Intersection, not fixation or vicinity acknowledgment. \\
 First pointing contact & Reveal to first tracked right-ray hit on active clock & Not the one-second hold or trigger selection. \\
-Jev response latency & Request dispatch to response receipt & A response can be deferred, canceled, or stale. \\
+Model response latency & Request dispatch to response receipt & A response can be deferred, canceled, or stale. \\
 Confirmation delivery & Qualified evidence to matching actual software playback & Separate gaze and pointing episodes; not acoustic latency. \\
 Live transfer lag & Source event to viewer receipt, if clocks are mapped & Describes transport, not headset decision delay. \\\bottomrule
 \end{tabularx}

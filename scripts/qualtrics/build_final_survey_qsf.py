@@ -19,6 +19,9 @@ ROOT = Path(__file__).resolve().parents[2]
 APPENDIX = ROOT / "docs/thesis/appendices/a-instruments.tex"
 OUTDIR = ROOT / "resources/surveys/qualtrics"
 COLUMNS = ["Selected Voice", "Self-Similar Voice"]
+# Set from the survey URL query string by the study runtime (final-survey-handoff JSON).
+EMBEDDED_FIELDS = ["participant_id", "session_id", "run_id", "condition_order", "selected_voice_block",
+                   "self_similar_voice_block", "selected_voice_name", "handoff_id"]
 
 
 def clean(tex: str) -> str:
@@ -98,8 +101,8 @@ class Builder:
     def te(self, tag, text, essay=False):
         self.add(self._base(self.qid(), tag, text, "TE", "ESTB" if essay else "SL"))
 
-    def mc(self, tag, text, choices):
-        p = self._base(self.qid(), tag, text, "MC", "SAVR", "TX")
+    def mc(self, tag, text, choices, multiple=False):
+        p = self._base(self.qid(), tag, text, "MC", "MAVR" if multiple else "SAVR", "TX")
         p["Choices"] = {str(i + 1): {"Display": c} for i, c in enumerate(choices)}
         p["ChoiceOrder"] = [str(i + 1) for i in range(len(choices))]
         p["NextChoiceId"] = len(choices) + 1
@@ -132,12 +135,15 @@ class Builder:
 
     def qsf(self):
         out = copy.deepcopy(self.t)
-        out["SurveyEntry"]["SurveyName"] = "Follow My Voice \u2014 Final Survey (Side-by-Side, ARQ) v2026-10-28b DRAFT"
+        out["SurveyEntry"]["SurveyName"] = "Follow My Voice \u2014 Final Survey (Side-by-Side, ARQ) v2026-10-28c DRAFT"
         els = [e for e in out["SurveyElements"] if e["Element"] not in ("SQ", "BL", "FL", "QC")]
         trash = {"Type": "Trash", "Description": "Trash / Unused Questions", "ID": "BL_fmvtrash000001"}
         els.append({"SurveyID": self.sid, "Element": "BL", "PrimaryAttribute": "Survey Blocks",
                     "SecondaryAttribute": None, "TertiaryAttribute": None, "Payload": self.blocks + [trash]})
-        flow = [{"ID": b["ID"], "Type": "Block", "FlowID": f"FL_{i+2}"} for i, b in enumerate(self.blocks)]
+        ed = [{"Description": f, "Type": "Recipient", "Field": f, "VariableType": "String", "DataVisibility": [], "AnalyzeText": False}
+              for f in EMBEDDED_FIELDS]
+        flow = [{"Type": "EmbeddedData", "FlowID": "FL_2", "EmbeddedData": ed}]
+        flow += [{"ID": b["ID"], "Type": "Block", "FlowID": f"FL_{i+3}"} for i, b in enumerate(self.blocks)]
         els.append({"SurveyID": self.sid, "Element": "FL", "PrimaryAttribute": "Survey Flow", "SecondaryAttribute": None,
                     "TertiaryAttribute": None, "Payload": {"Flow": flow, "Properties": {"Count": len(flow) + 1},
                                                            "FlowID": "FL_1", "Type": "Root"}})
@@ -211,6 +217,11 @@ def main():
           ["Yes", "No", "Unsure"], "Technical and comfort checks")
     b.te("CHECKS_DETAIL", "If you answered Yes to a problem above, please describe it (optional).", essay=True)
     b.te("CHECKS_OTHER", "Is there anything else you would like to share about either voice? (optional)", essay=True)
+
+    b.block("Demographics")
+    b.mc("AGE_RANGE", "Age range:", ["18\u201324", "25\u201334", "35\u201344", "45\u201354", "55\u201364", "65+", "Prefer not to answer"])
+    b.mc("GENDER", "Gender identity (select all that apply):", ["Woman", "Man", "Nonbinary", "Another identity", "Prefer not to answer"], multiple=True)
+    b.te("GENDER_DESC", "If you selected another identity, you may describe it here (optional).")
 
     b.block("Voice comparison and debrief")
     b.mc("PREF", "Which voice did you prefer?", ["The Selected Voice", "The Self-Similar Voice", "No preference", "Unsure"])

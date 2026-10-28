@@ -32,59 +32,47 @@ Participants will complete one practice trial in the first assigned voice, follo
 \tagpdfsetup{table/header-rows={1}}
 \begin{tabularx}{\linewidth}{@{}p{0.27\linewidth}X@{}}\toprule
 Stage & Measures \\\midrule
-After consent & Audio intake survey: eligibility, demographics and experience, spoken by a generic intake agent; answers also supply voice-cloning samples \\
-Voice setup & Audition ratings and voice choice \\
+After consent & Selected Voice audition ratings and choice \\
+Audio intake & Four researcher-reviewed eligibility questions and five background questions spoken by a generic intake agent; answers supply voice-cloning samples \\
 Between voice blocks & Rest break, immediate comfort and tracking checks; no questionnaire \\
-Final survey after both blocks & One side-by-side set rated for each voice (6 workload, 24 IMI, 21 agent-perception, 5 ARQ and 14 voice/assistance ratings per voice), technical checks, optional comments, voice comparison and debrief \\\bottomrule
+Final survey after both blocks & One side-by-side set rated for each voice (6 workload, 24 IMI, 21 agent-perception, 5 ARQ and 14 voice/assistance ratings per voice), technical checks, optional comments, demographics, voice comparison and debrief \\\bottomrule
 \end{tabularx}
 Each voice column in the final survey contains 70 numeric responses (140 across both columns) before technical checks and optional text. Setup will include a separate liking rating for each auditioned voice, including the self-similar voice.
 
 \section{Audio Intake Survey}
-A generic intake agent, whose voice is not part of the neutral-voice catalog, reads each question aloud. A short tone signals when the participant should answer, and the researcher or system codes the spoken answer into the options shown. The participant's spoken answers also supply the speech samples used to clone the self-similar voice. An unanswered item remains missing.
-
-\subsection*{Eligibility}
-\par\medskip\noindent
-Are you 18 years of age or older?
-\par\nopagebreak \surveychoice{Yes}\surveychoice{No}
-\par\medskip\noindent
-Can you hear spoken instructions clearly through the headset audio?
-\par\nopagebreak \surveychoice{Yes}\surveychoice{No}\surveychoice{Unsure}
-\par\medskip\noindent
-Can you see clearly, using glasses or contact lenses if you normally wear them?
-\par\nopagebreak \surveychoice{Yes}\surveychoice{No}\surveychoice{Unsure}
-\par\medskip\noindent
-Are you able to sit on a swivel chair, turn around, and use a handheld controller with your right hand?
-\par\nopagebreak \surveychoice{Yes}\surveychoice{No}\surveychoice{Unsure}
-
-\subsection*{Background and experience}
+After the signed-consent attestation and the choice of the Selected Voice, a generic intake agent (the ElevenLabs voice River, which is not part of the neutral-voice catalog and cannot be assigned to either condition) reads nine fixed questions aloud. After each question, the researcher starts the recording and a 180-ms, 880-Hz tone cues the participant to answer; capture begins after the tone and is limited to 120 seconds per answer. The researcher codes each spoken answer into the options shown. The four eligibility answers are reviewed and recorded as Yes, No, or Unclear with the reviewer's initials; all four must be Yes, otherwise screening stops without cloning. Baseline items may be skipped and remain missing. Once the eligible answers contain at least 30 seconds of estimated speech and 50 transcribed words, cloning starts from a frozen, hashed snapshot of those answers; the fallback passage at the end of this appendix is read only if that threshold is not reached.
 
 \par\medskip\noindent
 Study code (assigned by the researcher; not asked aloud):
-\textit{Response:} Coded identifier; no name or contact details.\surveywrite
-\par\medskip\noindent
-Age range:
-\par\nopagebreak \surveychoice{18--24}\surveychoice{25--34}\surveychoice{35--44}\surveychoice{45--54}\surveychoice{55--64}\surveychoice{65+}\surveychoice{Prefer not to answer}
-\par\medskip\noindent
-Gender identity (select all that apply):
-\par\nopagebreak \surveychoice{Woman}\surveychoice{Man}\surveychoice{Nonbinary}\par\nopagebreak\noindent\surveychoice{Another identity (optional description)}\surveychoice{Prefer not to answer}\par Optional description:\surveywrite
-\par\medskip\noindent
-Which hand do you usually use for everyday tasks?
-\par\nopagebreak \surveychoice{Right}\surveychoice{Left}\surveychoice{Both equally}\surveychoice{Prefer not to answer}
-\par\medskip\noindent
-Do you use glasses or contact lenses?
-\par\nopagebreak \surveychoice{Neither}\surveychoice{Glasses}\surveychoice{Contact lenses}\surveychoice{Both}\surveychoice{Prefer not to answer}
-\par\medskip\noindent
-How often have you used virtual- or mixed-reality headsets?
-\par\nopagebreak \surveychoice{Never}\surveychoice{Once or twice}\surveychoice{Several times}\surveychoice{Monthly}\surveychoice{Weekly or more}
-\par\medskip\noindent
-Have you used eye-tracking technology before?
-\par\nopagebreak \surveychoice{No}\surveychoice{Yes}\surveychoice{Unsure}
-\par\medskip\noindent
-Have you used a synthetic or cloned version of your own voice before?
-\par\nopagebreak \surveychoice{No}\surveychoice{Yes}\surveychoice{Unsure}
-\par\medskip\noindent
-How familiar are you with AI voice assistants?
-\surveyseven{Not at all familiar}{}{Extremely familiar}
+\textit{Response:} Coded identifier (P\#\#\#); no name or contact details.\surveywrite
+
+\subsection*{Eligibility (researcher-reviewed)}
+\begin{enumerate}
+\item Are you 18 years of age or older? Please answer yes or no after the tone.
+\par\nopagebreak \surveychoice{Yes}\surveychoice{No}\surveychoice{Unclear}
+\item Can you hear and understand this spoken guidance at a comfortable volume? Please answer yes or no after the tone.
+\par\nopagebreak \surveychoice{Yes}\surveychoice{No}\surveychoice{Unclear}
+\item With your usual glasses or contact lenses if needed, can you see the scene clearly? Please answer yes, no, or not sure after the tone.
+\par\nopagebreak \surveychoice{Yes}\surveychoice{No}\surveychoice{Unclear}
+\item Can you safely remain seated, turn in the chair, and point and press the trigger with the right controller? Please answer yes, no, or not sure after the tone. You do not need to give medical details.
+\par\nopagebreak \surveychoice{Yes}\surveychoice{No}\surveychoice{Unclear}
+\end{enumerate}
+
+\subsection*{Background and experience}
+\begin{enumerate}\setcounter{enumi}{4}
+\item How often have you used virtual reality: never, less than monthly, monthly, weekly, or daily? After the tone, describe what you have tried and how comfortable you felt using it.
+\par\nopagebreak \surveychoice{Never}\surveychoice{Less than monthly}\surveychoice{Monthly}\surveychoice{Weekly}\surveychoice{Daily}
+\item How often do you use voice assistants: never, less than monthly, monthly, weekly, or daily? After the tone, describe what you use them for and your experience following spoken instructions.
+\par\nopagebreak \surveychoice{Never}\surveychoice{Less than monthly}\surveychoice{Monthly}\surveychoice{Weekly}\surveychoice{Daily}
+\item Have you used eye tracking before? After the tone, describe your experience, or say that you have not used it.
+\par\nopagebreak \surveychoice{No}\surveychoice{Yes}\surveychoice{Unclear}
+\item Which hand do you usually prefer for everyday tasks: right, left, or both equally? Answer after the tone.
+\par\nopagebreak \surveychoice{Right}\surveychoice{Left}\surveychoice{Both equally}
+\item Are you using no visual correction, glasses, contact lenses, or another correction for this session? Answer after the tone. No prescription details are needed.
+\par\nopagebreak \surveychoice{None}\surveychoice{Glasses}\surveychoice{Contact lenses}\surveychoice{Other}
+\end{enumerate}
+The narrative parts of answers 5--7 are kept as transcripts. Age range and gender identity are collected separately in the final survey.
+
 \section{Voice setup}
 \par\medskip\noindent
 How much do you like this voice?
@@ -437,6 +425,13 @@ Did you take an unplanned break or experience an interruption?
 Is there anything else you would like to share about either voice?
 \textit{Response:} Optional free text.\surveywrite
 \section{Final survey: comparison and debrief}
+\subsection{Demographics}
+\par\medskip\noindent
+Age range:
+\par\nopagebreak \surveychoice{18--24}\surveychoice{25--34}\surveychoice{35--44}\surveychoice{45--54}\surveychoice{55--64}\surveychoice{65+}\surveychoice{Prefer not to answer}
+\par\medskip\noindent
+Gender identity (select all that apply):
+\par\nopagebreak \surveychoice{Woman}\surveychoice{Man}\surveychoice{Nonbinary}\par\nopagebreak\noindent\surveychoice{Another identity (optional description)}\surveychoice{Prefer not to answer}\par Optional description:\surveywrite
 \subsection{Voice comparison and debrief}
 \par\medskip\noindent
 Which voice did you prefer?

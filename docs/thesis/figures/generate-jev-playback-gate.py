@@ -21,12 +21,12 @@ def arrow(a,b,label=None,at=None):
 box(.35,8.55,8.85,1.15,'1  UNITY: observe and update state',
     'Target geometry; gaze validity and object hits; controller aim; trial state\nRecent spoken phrases and transitions; audio playback status')
 box(.35,6.55,4.15,1.35,'2  Filter eligible choices',
-    'Keep directions valid for this state.\nSend a snapshot and recent history.\nOrdinary request: 2–5 phrase options.')
+    'Keep directions valid for this state.\nSend a snapshot and recent history.\nOffer only valid strategies and phrases.')
 box(5.05,6.55,4.15,1.35,'Qualified local feedback',
-    'Gaze / pointing acknowledgments\nand eligible turn milestones can\nbypass a new Jev request.',fill='#eff3ed')
+    'Gaze / pointing acknowledgments\nand eligible turn milestones can\nbypass a new model request.',fill='#eff3ed')
 arrow((2.4,8.55),(2.4,7.9));arrow((7.1,8.55),(7.1,7.9))
-box(.35,4.55,4.15,1.4,'3  JEV: advise asynchronously',
-    'Choose wording and speak / wait.\nDevelopment mode can also choose\nan eligible action. Wait is bounded.')
+box(.35,4.55,4.15,1.4,'3  MiniLM: decide strategy and wording',
+    'Choose a strategy, or observe;\nthen rank the offered phrases.\nRequests are paced and bounded.')
 arrow((2.4,6.55),(2.4,5.95))
 ax.text(7.1,5.2,'No new model request\ndoes not bypass the gate.',ha='center',va='center',fontsize=11,color=ink,
         bbox=dict(facecolor='white',edgecolor='none',pad=4))
