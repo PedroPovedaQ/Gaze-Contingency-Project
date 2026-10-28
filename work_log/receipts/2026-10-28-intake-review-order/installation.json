@@ -1,0 +1,11 @@
+{
+  "installed": "/Users/pedro.poveda/Applications/Follow My Voice Study Intake.app",
+  "new_bundle": "/Users/pedro.poveda/Applications/Follow My Voice Intake Order 20261028.app",
+  "backup": "/Users/pedro.poveda/Applications/Follow My Voice Study Intake Backup 20261028b.app",
+  "verified_build": "/tmp/Follow My Voice Intake Order 20261028-final.app",
+  "new_file_count": 169,
+  "backup_file_count": 169,
+  "new_bundle_manifest_sha256": "24c1c2644f605c901d6f52e9b1aa2a354180aa8f1dc8ac25eacd659dd880ce66",
+  "old_bundle_manifest_sha256": "49ed5a3380d4b56812151d8bc4a1b4c2ab5aefe41978720700e7eab18d743993",
+  "verification": "All file hashes and symlink targets match: build == new bundle == installed; original == backup. New bundle captured before main-app replacement. No app launched outside --capture."
+}

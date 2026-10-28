@@ -9,6 +9,7 @@ public sealed partial class TrialReviewApp
 {
     [Serializable] sealed class IntakeAnswer { public string question, transcript, audio, topic; public float seconds; public bool skipped; }
     [Serializable] sealed class IntakeConsent { public string id, participantCode, sessionId; public bool study, voiceCloud; }
+    [Serializable] sealed class IntakeEligibility { public string id; }
     [Serializable] sealed class IntakeCapture { public string prompt, consentId; }
     [Serializable] sealed class IntakeState
     {
@@ -18,6 +19,7 @@ public sealed partial class TrialReviewApp
         public bool eligible, selectedVoiceConfirmed, development;
         public double withdrawnUtc, previewRevision;
         public IntakeConsent consent;
+        public IntakeEligibility eligibility;
         public int neutralOption, promptRevision;
         public float recordedSeconds, speechSeconds;
         public int sampleWords;
@@ -128,9 +130,9 @@ public sealed partial class TrialReviewApp
         ReloadIntake();
         if (m_Intake == null) return;
         PollParticipantAudio();
-        if (Consented && m_Intake.eligible && m_Intake.speechSeconds >= 30 && m_Intake.sampleWords >= 50 && m_Intake.cloneState == "not_started" && m_CloneJob == null)
+        if (CanCloneIntake && m_Intake.cloneState == "not_started" && m_CloneJob == null)
             m_CloneJob = StartIntakeJob("clone");
-        if (Consented && m_Intake.cloneState == "ready" && m_Intake.cacheState == "not_started" && string.IsNullOrEmpty(m_Intake.cacheError) && m_IntakeAudioJob == null)
+        if (CanCacheIntake && m_Intake.cacheState == "not_started" && string.IsNullOrEmpty(m_Intake.cacheError) && m_IntakeAudioJob == null)
             StartParticipantAudio("prepare");
         if (m_IntakeOpen && m_IntakeJob == null && (m_Intake.phase == "interview" || m_Intake.phase == "fallback") && m_Intake.promptRevision > m_IntakePlayedRevision && !string.IsNullOrEmpty(m_Intake.promptAudio))
         { m_IntakePlayedRevision = m_Intake.promptRevision; StartCoroutine(PlayInterviewPrompt()); }
@@ -148,7 +150,7 @@ public sealed partial class TrialReviewApp
             if (done.action == "create")
             { PlayerPrefs.SetString("ParticipantIntakeFolder", m_IntakeFolder); PlayerPrefs.Save(); }
             if (done.action == "authorize_recording") StartCoroutine(StartAnswer());
-            if (done.action == "select_voice" || done.action == "fallback" || (done.action == "review" && m_Intake.eligible))
+            if (done.action == "select_voice" || done.action == "fallback")
                 m_IntakeJob = StartIntakeJob("prompt");
             if (done.action == "ticket") SendIntake();
         }
@@ -252,7 +254,7 @@ public sealed partial class TrialReviewApp
             {
                 case "awaiting_consent":return 1;
                 case "select_voice":return 2;
-                case "interview":case "fallback":return 3;
+                case "interview":case "fallback":case "fallback_available":return 3;
                 case "eligibility_review":case "screening_stopped":return 4;
                 case "interview_complete":return m_Intake.cacheState=="ready"||m_Intake.cacheState=="transferred"?6:5;
                 default:return -1;
@@ -263,7 +265,7 @@ public sealed partial class TrialReviewApp
     void IntakeStepper()
     {
         string[] steps={"Reserve","Consent","Selected Voice","Audio intake","Eligibility review","Clone & cache","Send to headset"};
-        bool[] complete={m_Intake!=null,Consented,m_Intake?.selectedVoiceConfirmed==true,m_Intake?.phase=="interview_complete",
+        bool[] complete={m_Intake!=null,Consented,m_Intake?.selectedVoiceConfirmed==true,AudioIntakeComplete,
             m_Intake?.eligible==true,m_Intake?.cloneState=="ready"&&(m_Intake.cacheState=="ready"||m_Intake.cacheState=="transferred"),false};
         GUILayout.BeginHorizontal();
         for(int i=0;i<steps.Length;i++)
@@ -299,12 +301,20 @@ public sealed partial class TrialReviewApp
         else
         {
             bool busy=m_IntakeJob!=null||m_IntakeStarting||m_CaptureMode&&m_CaptureIntakeActivity=="Submitting";
-            if(phase!="interview"&&phase!="fallback"&&phase!="interview_complete"||m_Intake.protocol!="audio-intake-v2-20261028")
+            if(phase!="interview"&&phase!="fallback"&&phase!="fallback_available"&&phase!="interview_complete"||m_Intake.protocol!="audio-intake-v2-20261028")
             {GUILayout.BeginVertical(m_Card);DrawIntakeConsentAndReview();GUILayout.EndVertical();}
             if(phase=="interview"||phase=="fallback")DrawIntakeQuestion(busy);
+            if(phase=="fallback_available")
+            {
+                GUILayout.Label("All nine questions are complete. Speech is below the cloning threshold. Read the optional fallback, or continue to researcher review; cloning stays disabled below the threshold.",m_Label);
+                GUI.enabled=!busy&&Consented;
+                if(PrimaryButton("Read fallback passage / add more speech"))m_IntakeJob=StartIntakeJob("fallback");
+                if(Button("Continue to eligibility review"))m_IntakeJob=StartIntakeJob("finish_audio");
+                GUI.enabled=true;
+            }
             if(IntakeStep>=3)DrawIntakeReadiness();
             else if(!string.IsNullOrEmpty(m_Intake.cloneError))IntakeErrorCard(m_Intake.cloneError);
-            if(phase=="interview_complete"||m_Intake.cloneState!="not_started"||Consented&&m_Intake.eligible&&m_Intake.speechSeconds>=30&&m_Intake.sampleWords>=50)
+            if(phase=="interview_complete"||m_Intake.cloneState!="not_started")
             {
                 GUILayout.BeginVertical(m_Card);GUILayout.Label(IntakeStep==6?"SEND TO HEADSET":"CLONE & CACHE",m_Heading);
                 if(IntakeStep==6)
@@ -407,11 +417,9 @@ public sealed partial class TrialReviewApp
     }
     void DrawIntakeCloneControls(bool busy)
     {
-        GUI.enabled = !busy && Consented && m_Intake.phase == "interview_complete" && m_Intake.cloneState == "not_started";
-        if (m_Intake.phase=="interview_complete" && m_Intake.cloneState=="not_started" && Button("Read fallback passage / add more speech")) m_IntakeJob = StartIntakeJob("fallback");
-        GUI.enabled = Consented && m_Intake.eligible && m_CloneJob == null && m_Intake.cloneState == "not_started" && m_Intake.speechSeconds >= 30 && m_Intake.sampleWords >= 50;
+        GUI.enabled = CanCloneIntake && m_CloneJob == null && m_Intake.cloneState == "not_started";
         if (m_Intake.cloneState=="not_started" && Button("Prepare voice from recorded answers")) m_CloneJob = StartIntakeJob("clone");
-        GUI.enabled = Consented && m_CloneJob == null && m_Intake.cloneState == "uncertain";
+        GUI.enabled = CanCloneIntake && m_CloneJob == null && m_Intake.cloneState == "uncertain";
         if (m_Intake.cloneState=="uncertain" && Button("Retry failed cloning (may create a duplicate provider voice)")) m_CloneJob = StartIntakeJob("retry_clone");
         GUI.enabled = Consented && !busy && m_CloneJob == null && m_Intake.cloneState == "cloning";
         if (m_Intake.cloneState=="cloning" && Button("Check interrupted clone worker")) m_IntakeJob = StartIntakeJob("recover_clone");

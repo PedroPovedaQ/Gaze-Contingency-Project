@@ -15,7 +15,7 @@ import tarfile
 import time
 import uuid
 
-from participant_intake import load, patch, atomic, require_consent, INTERVIEW_VOICE
+from participant_intake import load, patch, atomic, require_consent, require_reviewed_eligibility, enough_speech, INTERVIEW_VOICE
 from neutral_audio import synthesize, decode, decoded_valid, MODEL, SUFFIX
 from live_bridge import Adb, wireless_endpoint
 
@@ -68,6 +68,8 @@ def jobs_for(template, state):
 
 def prepare(folder, remote, keys, ffmpeg):
     state = load(folder); consent = require_consent(state)
+    require_reviewed_eligibility(state)
+    if not enough_speech(state): raise ValueError('Collect at least 30 seconds of usable speech and 50 transcript words before caching.')
     if not state.get('eligible') or not state.get('selectedVoiceConfirmed') or state['cloneState'] != 'ready': raise ValueError('Eligibility, Selected Voice and clone must be ready.')
     raw = remote.command('exec-out', 'cat ' + shlex.quote(remote.root+'PreparationLogs/study-audio-template.json'))
     template = json.loads(raw); jobs = jobs_for(template, state)

@@ -80,14 +80,15 @@ def authorize_recording(folder, filename):
 def review_eligibility(folder, values, operator):
     with locked(folder):
         state = load(folder); require_consent(state)
-        if state['phase'] != 'eligibility_review' or set(values) != set(ELIGIBILITY) or not operator.strip():
+        if (state['phase'] != 'eligibility_review' or len(state['answers']) < len(QUESTIONS) or
+                state.get('eligibility') or set(values) != set(ELIGIBILITY) or not operator.strip()):
             raise ValueError('Review all four eligibility answers and enter researcher initials.')
         if any(v not in ('yes', 'no', 'unclear') for v in values.values()): raise ValueError('Invalid eligibility response.')
         review = dict(id=uuid.uuid4().hex, values=values, operator=operator.strip(), recordedUtc=time.time(),
                       source='researcher_review_of_audio_and_transcript', answerIds=[x['id'] for x in state['answers']])
         atomic(folder / ('eligibility-' + review['id'] + '.json'), review)
         eligible = all(v == 'yes' for v in values.values()) and all(not x['skipped'] for x in state['answers'][:4])
-        state.update(eligibility=review, eligible=eligible, phase='interview' if eligible else 'screening_stopped')
+        state.update(eligibility=review, eligible=eligible, phase='interview_complete' if eligible else 'screening_stopped')
         atomic(folder / 'session.json', state)
     return state
 
@@ -113,6 +114,29 @@ def sample_quality(data, transcript):
 
 def enough_speech(state):
     return state.get('speechSeconds', 0) >= MIN_SPEECH_SECONDS and state.get('sampleWords', 0) >= MIN_WORDS
+
+
+def require_reviewed_eligibility(state):
+    review = state.get('eligibility') or {}
+    if (state['phase'] != 'interview_complete' or not state.get('eligible') or not review.get('id') or
+            len(state['answers']) < len(QUESTIONS) or
+            any(review.get('values', {}).get(key) != 'yes' for key in ELIGIBILITY)):
+        raise ValueError('Complete all nine intake questions and the researcher eligibility review first.')
+
+
+def finish_audio_intake(folder, use_fallback):
+    with locked(folder):
+        state = load(folder); require_consent(state)
+        if state['phase'] != 'fallback_available' or state.get('eligibility'):
+            raise ValueError('Finish all nine questions before choosing the optional reading fallback.')
+        if use_fallback:
+            state.update(phase='fallback', questionIndex=len(QUESTIONS),
+                         promptAudio='', promptRevision=state['promptRevision']+1,
+                         prompt='Read the following passage in your natural voice after the tone. '+READING_PASSAGE)
+        else:
+            state.update(phase='eligibility_review')
+        atomic(folder / 'session.json', state)
+    return state
 
 
 def atomic(path, value):
@@ -274,11 +298,14 @@ def answer(folder, provider, filename=None, skip=False):
                     structuredValue='unreviewed', protocol=PROTOCOL)
     atomic(folder / ('answer-' + response['id'] + '.json'), response)
     next_index = index + 1
-    next_prompt = QUESTIONS[next_index][1] if next_index < len(QUESTIONS) else 'Intake complete. Please wait while your study audio is prepared.'
-    phase = 'eligibility_review' if next_index == 4 else 'interview' if next_index < len(QUESTIONS) else 'interview_complete'
+    next_prompt = QUESTIONS[next_index][1] if next_index < len(QUESTIONS) else 'Audio intake complete. Please wait for the researcher eligibility review.'
+    totals = dict(speechSeconds=state['speechSeconds']+quality['speechSeconds'], sampleWords=state['sampleWords']+quality['words'])
+    phase = ('interview' if next_index < len(QUESTIONS) else
+             'fallback_available' if not enough_speech(totals) else 'eligibility_review')
     state = patch(folder, answers=state['answers']+[response], recordedSeconds=state['recordedSeconds']+seconds,
                   speechSeconds=state['speechSeconds']+quality['speechSeconds'], sampleWords=state['sampleWords']+quality['words'],
-                  questionIndex=next_index, followup=False, prompt=next_prompt, phase=phase, error='')
+                  questionIndex=next_index, followup=False, prompt=next_prompt, promptAudio='',
+                  promptRevision=state['promptRevision']+1, phase=phase, error='')
     if state['phase']=='interview': return speak_prompt(folder,provider)
     return state
 
@@ -287,6 +314,7 @@ def clone_answers(folder, provider):
     with locked(folder):
         state=load(folder)
         require_consent(state)
+        require_reviewed_eligibility(state)
         if not state.get('eligible') or not enough_speech(state):
             raise ValueError('Confirm eligibility and collect at least 30 seconds of usable speech and 50 transcript words; use the reading fallback if needed.')
         if state['cloneVoiceId'] or state['cloneState'] in ('cloning','uncertain'): return state
@@ -347,9 +375,8 @@ def main():
             except ProcessLookupError: patch(folder,cloneState='uncertain',cloneError='Worker exited without a definitive provider result. Check the provider account before retrying.')
             else: raise ValueError('The original clone worker is still running; wait for it to finish.')
         elif action=='fallback':
-            state=load(folder);require_consent(state)
-            if state['phase']!='interview_complete' or not state.get('eligible'): raise ValueError('Complete intake before using the fallback.')
-            patch(folder,phase='fallback',questionIndex=len(QUESTIONS),prompt='Read the following passage in your natural voice after the tone. '+READING_PASSAGE)
+            finish_audio_intake(folder, use_fallback=True)
+        elif action=='finish_audio': finish_audio_intake(folder, use_fallback=False)
         elif action=='ticket': atomic(folder/'assignment.json',ticket(load(folder)))
         elif action=='prompt': speak_prompt(folder,provider)
         elif action=='answer': answer(folder,provider,req.get('audio'),req.get('skip',False))

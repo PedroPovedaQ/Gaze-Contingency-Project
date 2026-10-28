@@ -7,7 +7,7 @@ import uuid
 import wave
 from pathlib import Path
 from participant_intake import (create, load, answer, clone_answers, patch, ticket, validate_fit, INTERVIEW_VOICE,
-    record_consent, authorize_recording, review_eligibility, ELIGIBILITY, QUESTIONS, sample_quality)
+    record_consent, authorize_recording, review_eligibility, ELIGIBILITY, QUESTIONS, sample_quality, finish_audio_intake)
 from live_bridge import validate_control
 
 class Provider:
@@ -37,11 +37,10 @@ class IntakeTests(unittest.TestCase):
             out.writeframes(b''.join(struct.pack('<h',int(5000*math.sin(i*2*math.pi*220/24000))) for i in range(24000*4)))
         return name
     def eligibility(self):
-        for _ in range(4): answer(self.folder,self.provider,self.recording())
+        for _ in QUESTIONS: answer(self.folder,self.provider,self.recording())
         review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
     def completed(self):
         self.eligibility()
-        for _ in QUESTIONS[4:]: answer(self.folder,self.provider,self.recording())
         clone_answers(self.folder,self.provider)
         return patch(self.folder,cacheState='transferred',cacheManifestSha256='a'*64)
     def test_answers_only_clone_snapshot_and_duplicate_prevention(self):
@@ -59,9 +58,12 @@ class IntakeTests(unittest.TestCase):
         self.assertEqual(set(assignment),{'schema','id','participantCode','configuration','neutralGender','neutralOption','cloneVoiceId','fit','consentId','intakeProtocol','eligibilityReviewed','cacheManifestSha256','development'})
         self.assertNotEqual(INTERVIEW_VOICE,assignment['cloneVoiceId'])
     def test_prompt_failure_retry_does_not_advance_answer_twice(self):
+        patch(self.folder,promptRevision=4,promptAudio='previous-question.mp3')
         name=self.recording();self.provider.fail_speech=True
         with self.assertRaises(RuntimeError): answer(self.folder,self.provider,name)
         self.assertEqual(len(load(self.folder)['answers']),1)
+        self.assertGreater(load(self.folder)['promptRevision'],4)
+        self.assertEqual(load(self.folder)['promptAudio'],'')
         self.provider.fail_speech=False;answer(self.folder,self.provider,name)
         self.assertEqual(len(load(self.folder)['answers']),1)
         self.assertEqual(load(self.folder)['questionIndex'],1)
@@ -72,7 +74,6 @@ class IntakeTests(unittest.TestCase):
         with self.assertRaises(ValueError): ticket(load(self.folder))
     def test_uncertain_clone_is_not_automatically_repeated(self):
         self.eligibility()
-        for _ in QUESTIONS[4:]: answer(self.folder,self.provider,self.recording())
         calls=[]
         def failure(*args): calls.append(1);raise RuntimeError('lost response')
         self.provider.clone=failure
@@ -135,16 +136,97 @@ class IntakeTests(unittest.TestCase):
         with self.assertRaises(ValueError): self.recording()
         with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
 
-    def test_no_unclear_or_negative_eligibility_pass(self):
-        for _ in range(4): answer(self.folder,self.provider,self.recording())
+    def test_unclear_eligibility_after_nine_answers_stops_screening(self):
+        for _ in QUESTIONS: answer(self.folder,self.provider,self.recording())
         review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'unclear'),'TEST')
         self.assertEqual(load(self.folder)['phase'],'screening_stopped')
         with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
+        self.assertEqual(len(load(self.folder)['answers']),9)
+        self.assertEqual(load(self.folder)['cacheState'],'not_started')
+        self.assertEqual(self.provider.clones,[])
 
     def test_skipped_eligibility_cannot_be_overridden(self):
-        for _ in range(4): answer(self.folder,self.provider,skip=True)
+        for _ in QUESTIONS: answer(self.folder,self.provider,skip=True)
+        finish_audio_intake(self.folder, use_fallback=False)
         review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
         self.assertFalse(load(self.folder)['eligible'])
+
+    def test_all_nine_answers_precede_review_and_clone(self):
+        for index in range(9):
+            state=answer(self.folder,self.provider,self.recording())
+            self.assertEqual(state['phase'],'interview' if index < 8 else 'eligibility_review')
+            with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
+            if index < 8:
+                with self.assertRaises(ValueError): review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
+        self.assertEqual(self.provider.prompts,[prompt for _,prompt in QUESTIONS[1:]])
+        self.assertEqual(self.provider.clones,[])
+        state=review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
+        self.assertEqual(state['phase'],'interview_complete')
+        self.assertEqual(len(state['eligibility']['answerIds']),9)
+        with self.assertRaises(ValueError): review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
+        clone_answers(self.folder,self.provider)
+        self.assertEqual(len(self.provider.clones),1)
+        self.assertEqual(load(self.folder)['cloneAnswerCount'],9)
+
+    def test_negative_review_retains_all_nine_answers_without_clone_or_cache(self):
+        for _ in QUESTIONS: answer(self.folder,self.provider,self.recording())
+        before=load(self.folder)['answers']
+        values=dict.fromkeys(ELIGIBILITY,'yes');values['adult']='no'
+        state=review_eligibility(self.folder,values,'TEST')
+        self.assertEqual(state['phase'],'screening_stopped')
+        self.assertFalse(state['eligible'])
+        self.assertEqual(state['answers'],before)
+        self.assertTrue(all((self.folder/item['audio']).exists() for item in before))
+        for action in (lambda: clone_answers(self.folder,self.provider), lambda: self.recording(),
+                       lambda: answer(self.folder,self.provider,skip=True), lambda: ticket(load(self.folder))):
+            with self.assertRaises(ValueError): action()
+        self.assertEqual(state['cloneState'],'not_started')
+        self.assertEqual(state['cacheState'],'not_started')
+        self.assertEqual(self.provider.clones,[])
+
+    def test_optional_fallback_finishes_before_single_review(self):
+        for _ in QUESTIONS: answer(self.folder,self.provider,self.recording())
+        # Simulate quieter answers falling short of the same speech gate.
+        patch(self.folder,phase='fallback_available',speechSeconds=28,sampleWords=49)
+        with self.assertRaises(ValueError): review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
+        heard_revision=load(self.folder)['promptRevision']
+        state=finish_audio_intake(self.folder,use_fallback=True)
+        self.assertGreater(state['promptRevision'],heard_revision)
+        self.assertEqual(state['promptAudio'],'')
+        with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
+        state=answer(self.folder,self.provider,self.recording())
+        self.assertEqual(state['phase'],'eligibility_review')
+        self.assertEqual(state['answers'][-1]['topic'],'reading_fallback')
+        self.assertEqual(len(state['answers']),10)
+        with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
+        review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
+        clone_answers(self.folder,self.provider)
+        self.assertEqual(load(self.folder)['cloneAnswerCount'],10)
+        with self.assertRaises(ValueError): finish_audio_intake(self.folder,use_fallback=True)
+
+    def test_insufficient_speech_offers_fallback_before_review(self):
+        for _ in range(4): answer(self.folder,self.provider,self.recording())
+        for _ in QUESTIONS[4:]: answer(self.folder,self.provider,skip=True)
+        self.assertEqual(load(self.folder)['phase'],'fallback_available')
+        finish_audio_intake(self.folder,use_fallback=True)
+        answer(self.folder,self.provider,skip=True)
+        self.assertEqual(load(self.folder)['phase'],'fallback_available')
+        finish_audio_intake(self.folder,use_fallback=False)
+        review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
+        self.assertTrue(load(self.folder)['eligible'])
+        with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
+        self.assertEqual(self.provider.clones,[])
+
+    def test_withdrawal_blocks_every_intake_phase(self):
+        for phase in ('interview','fallback_available','fallback','eligibility_review','interview_complete'):
+            with self.subTest(phase=phase):
+                patch(self.folder,phase=phase,withdrawnUtc=1)
+                for action in (lambda: self.recording(), lambda: answer(self.folder,self.provider,skip=True),
+                               lambda: finish_audio_intake(self.folder,use_fallback=True),
+                               lambda: review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST'),
+                               lambda: clone_answers(self.folder,self.provider)):
+                    with self.assertRaises(ValueError): action()
+        self.assertEqual(self.provider.clones,[])
 
     def test_duplicate_participant_reservation_rejected(self):
         with self.assertRaises(ValueError): create(self.folder.parent/uuid.uuid4().hex,'P101','A')

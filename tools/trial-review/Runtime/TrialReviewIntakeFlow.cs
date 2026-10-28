@@ -48,6 +48,12 @@ public sealed partial class TrialReviewApp
     bool Consented => m_Intake != null && m_Intake.protocol == "audio-intake-v2-20261028" &&
         m_Intake.withdrawnUtc == 0 && m_Intake.consent != null && m_Intake.consent.study && m_Intake.consent.voiceCloud &&
         m_Intake.consent.sessionId == m_Intake.id && m_Intake.consent.participantCode == m_Intake.participantCode;
+    bool AudioIntakeComplete => m_Intake != null && (m_Intake.phase == "eligibility_review" ||
+        m_Intake.phase == "screening_stopped" || m_Intake.phase == "interview_complete");
+    bool ReviewedIntake => Consented && m_Intake.phase == "interview_complete" && m_Intake.eligible &&
+        !string.IsNullOrEmpty(m_Intake.eligibility?.id) && m_Intake.answers != null && m_Intake.answers.Length >= 9;
+    bool CanCloneIntake => ReviewedIntake && m_Intake.speechSeconds >= 30 && m_Intake.sampleWords >= 50;
+    bool CanCacheIntake => CanCloneIntake && m_Intake.cloneState == "ready";
 
     void DrawIntakeConsentAndReview()
     {
@@ -175,7 +181,7 @@ public sealed partial class TrialReviewApp
         GUILayout.Label($"Study audio: {m_Intake.cacheState} · {m_Intake.cacheCompleted}/{m_Intake.cacheTotal}",m_Label);
         if (!string.IsNullOrEmpty(m_Intake.cacheError)) IntakeErrorCard(m_Intake.cacheError);
         bool idle=m_IntakeAudioJob==null && m_IntakeJob==null && m_AnswerClip==null && !m_IntakeStarting;
-        GUI.enabled=idle && Consented && m_Intake.cloneState=="ready";
+        GUI.enabled=idle && CanCacheIntake;
         if (Button("Prepare / resume participant audio cache")) StartParticipantAudio("prepare");
         GUI.enabled=idle && Consented && (m_Intake.cacheState=="ready" || m_Intake.cacheState=="transferred") && m_Intake.phase=="interview_complete";
         if (m_Intake.cacheState=="ready" ? PrimaryButton("Transfer and verify study audio on headset") : Button("Transfer and verify study audio on headset")) StartParticipantAudio("transfer");

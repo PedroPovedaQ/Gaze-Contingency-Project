@@ -43,9 +43,21 @@ public sealed partial class TrialReviewApp
         };
         if(phase=="awaiting_consent"||phase=="select_voice"){state.answers=Array.Empty<IntakeAnswer>();state.recordedSeconds=state.speechSeconds=0;state.sampleWords=0;}
         state.selectedVoiceConfirmed=phase!="awaiting_consent"&&phase!="select_voice";
-        state.eligible=phase=="interview";
+        state.eligible=false;
+        if(phase=="eligibility_review"||phase=="screening_stopped"||phase=="interview_complete"||phase=="fallback_available"||phase=="fallback")
+        {
+            state.answers=state.answers.Concat(new[]{
+                new IntakeAnswer{question="How often have you used virtual reality?",transcript="Weekly, mostly seated experiences."},
+                new IntakeAnswer{question="How often do you use voice assistants?",transcript="Daily, for reminders."},
+                new IntakeAnswer{question="Have you used eye tracking before?",transcript="No."},
+                new IntakeAnswer{question="Which hand do you usually prefer?",transcript="Right."},
+                new IntakeAnswer{question="What visual correction are you using?",transcript="Glasses."}
+            }).ToArray();
+            if(phase!="fallback_available"&&phase!="fallback"){state.speechSeconds=34;state.sampleWords=72;state.recordedSeconds=42;}
+        }
+        if(phase=="fallback")state.prompt="Read the following passage in your natural voice after the tone. Locate the red sphere. Look toward the upper shelf. Move your gaze slowly to the right.";
         if(phase!="awaiting_consent")state.consent=new IntakeConsent{id="fixture",sessionId=state.id,participantCode=state.participantCode,study=true,voiceCloud=true};
-        if(phase=="interview_complete") {state.eligible=true;state.cloneState="ready";state.cacheState="preparing";state.cacheCompleted=420;state.speechSeconds=34;state.recordedSeconds=42;state.sampleWords=72;}
+        if(phase=="interview_complete") {state.eligible=true;state.eligibility=new IntakeEligibility{id="fixture-review"};state.cloneState="ready";state.cacheState="preparing";state.cacheCompleted=420;}
         return state;
     }
     void RunCaptureInputChecks()
@@ -88,7 +100,7 @@ public sealed partial class TrialReviewApp
         m_Dataset=m_Catalog.Register(m_Path,"synthetic-desktop-demo","SYNTHETIC","");
         m_DatasetDraft="Synthetic development demo";m_IdDraft="SYNTHETIC";
         m_IntakeMic="Development microphone (inactive)";
-        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu","layers","trial-search","cursor-details","cursor-collapsed","shortcuts","jev-alternatives","light-intake-consent","light-intake-interview","intake-clone-error","intake-screening-stopped","intake-withdrawn","intake-historical","intake-recording","intake-submitting","intake-prompt-playing","startup","layers-wifi-panel"};
+        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu","layers","trial-search","cursor-details","cursor-collapsed","shortcuts","jev-alternatives","light-intake-consent","light-intake-interview","intake-clone-error","intake-screening-stopped","intake-withdrawn","intake-historical","intake-recording","intake-submitting","intake-prompt-playing","startup","layers-wifi-panel","intake-fallback-available","intake-fallback","light-intake-eligibility","intake-reviewed-awaiting-clone"};
         var timeline=m_Timeline;
         for(int i=0;i<states.Length;i++)
         {
@@ -121,7 +133,12 @@ public sealed partial class TrialReviewApp
             {
                 m_IntakeOpen=true;m_IntakeDevelopment=true;m_IntakeCode="P003";
                 string phase=intakeState=="intake-consent"?"awaiting_consent":intakeState=="intake-voice"?"select_voice":intakeState=="intake-eligibility"?"eligibility_review":intakeState=="intake-cache"||intakeState=="intake-ready"||intakeState=="intake-clone-error"?"interview_complete":"interview";
+                if(intakeState=="intake-screening-stopped")phase="screening_stopped";
+                if(intakeState=="intake-fallback-available")phase="fallback_available";
+                if(intakeState=="intake-fallback")phase="fallback";
+                if(intakeState=="intake-reviewed-awaiting-clone")phase="interview_complete";
                 if(intakeState!="intake-reserve")m_Intake=CaptureIntake(phase);
+                if(intakeState=="intake-reviewed-awaiting-clone"){m_Intake.cloneState="not_started";m_Intake.cacheState="not_started";m_Intake.cacheCompleted=0;}
                 if(intakeState=="intake-ready"){m_Intake.cacheState="ready";m_Intake.cacheCompleted=1132;}
                 if(intakeState=="intake-clone-error"){m_Intake.cloneState="uncertain";m_Intake.cacheState="not_started";m_Intake.cacheCompleted=0;m_Intake.cloneError="Development fixture: interrupted clone request. Review the provider result before retrying.";}
                 if(intakeState=="intake-screening-stopped"){m_Intake.phase="screening_stopped";m_Intake.eligible=false;}

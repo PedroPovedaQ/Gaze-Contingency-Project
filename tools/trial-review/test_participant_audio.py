@@ -10,7 +10,7 @@ from unittest.mock import patch
 import uuid
 
 import participant_audio as audio
-from participant_intake import create, record_consent, load, patch as update, ticket
+from participant_intake import create, record_consent, load, patch as update, ticket, ELIGIBILITY
 
 
 class ParticipantAudioTests(unittest.TestCase):
@@ -19,7 +19,7 @@ class ParticipantAudioTests(unittest.TestCase):
         self.folder=Path(self.temp.name)/uuid.uuid4().hex
         create(self.folder,'P999','A',development=True)
         record_consent(self.folder,'TEST','synthetic consent fixture',True,True)
-        update(self.folder,eligible=True,selectedVoiceConfirmed=True,cloneState='ready',cloneVoiceId='synthetic_clone',phase='interview_complete')
+        update(self.folder,answers=[{} for _ in range(9)],eligibility=dict(id='fixture-review',values=dict.fromkeys(ELIGIBILITY,'yes')),speechSeconds=30,sampleWords=50,eligible=True,selectedVoiceConfirmed=True,cloneState='ready',cloneVoiceId='synthetic_clone',phase='interview_complete')
         self.template=dict(schema=1,model=audio.MODEL,contentVersion='matched-voice-v3',
             keyPrefix='matched-voice-v3|perspective-v9-shared-imperative|External|eleven_turbo_v2_5|',
             voices=[dict(gender='Male',option=0,voiceId='synthetic_selected',name='Fixture')],
@@ -52,6 +52,19 @@ class ParticipantAudioTests(unittest.TestCase):
                 hashlib.sha256(source.read_bytes()).digest()+hashlib.sha256(pcm).digest()+pcm)
         with patch.object(audio,'synthesize',side_effect=synthesize),patch.object(audio,'decode',side_effect=decode):
             return audio.prepare(self.folder,self.remote,Path('unused'),'unused')
+
+    def test_cache_requires_completed_positive_review_and_speech_thresholds(self):
+        original=load(self.folder)
+        cases=[dict(phase='interview'),dict(phase='eligibility_review'),dict(phase='fallback'),
+               dict(phase='screening_stopped',eligible=False),dict(eligibility=None),
+               dict(answers=[{} for _ in range(4)]),dict(speechSeconds=29.9),dict(sampleWords=49)]
+        for change in cases:
+            with self.subTest(change=change):
+                update(self.folder,**dict(original,**change))
+                with patch.object(self.remote,'command',side_effect=AssertionError('No remote work before review')):
+                    with self.assertRaises(ValueError): self.prepare()
+                self.assertEqual(load(self.folder)['cacheState'],'not_started')
+                self.assertFalse((self.folder/'audio-cache').exists())
 
     def test_keys_separate_voices_and_match_runtime_contract(self):
         jobs=audio.jobs_for(self.template,load(self.folder))

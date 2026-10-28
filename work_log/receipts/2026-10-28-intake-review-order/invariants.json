@@ -1,0 +1,18 @@
+{
+  "require_consent": "unchanged",
+  "record_consent": "unchanged",
+  "authorize_recording": "unchanged",
+  "sample_quality": "unchanged",
+  "enough_speech": "unchanged",
+  "QUESTIONS": "unchanged",
+  "READING_PASSAGE": "unchanged",
+  "MIN_SPEECH_SECONDS": "unchanged",
+  "MIN_WORDS": "unchanged",
+  "INTERVIEW_VOICE": "unchanged",
+  "PROTOCOL": "unchanged",
+  "StartAnswer": "unchanged",
+  "StopAnswer": "unchanged",
+  "PlayInterviewPrompt": "unchanged",
+  "DrawIntakeWithdrawal": "unchanged",
+  "PlayIntakeFile": "unchanged"
+}
