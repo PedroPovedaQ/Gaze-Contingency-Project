@@ -51,14 +51,14 @@ public sealed partial class TrialReviewApp
         m_Dataset=m_Catalog.Register(m_Path,"synthetic-desktop-demo","SYNTHETIC","");
         m_DatasetDraft="Synthetic development demo";m_IdDraft="SYNTHETIC";
         m_IntakeMic="Development microphone (inactive)";
-        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready"};
+        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu"};
         var timeline=m_Timeline;
         for(int i=0;i<states.Length;i++)
         {
             string state=states[i];
             m_Timeline=timeline; m_Playing=false; m_Tab=0; m_CameraMode=0; m_RunTimeline=true;
             m_InspectScroll=Vector2.zero; m_IntakeScroll=Vector2.zero; m_IntakeOpen=false; m_Intake=null; m_IntakeFolder=null;
-            m_Browser=false;m_DatasetPanel=false;m_Loading=false;m_Ready=false;m_LightTheme=state.StartsWith("light-");
+            m_FileMenu=state=="file-menu";m_Browser=false;m_DatasetPanel=false;m_Loading=false;m_Ready=false;m_LightTheme=state.StartsWith("light-");
             Seek(0);
             if(state=="playing-subtitles"){Seek(1.2);m_Playing=true;}
             if(state=="missing-pose")Seek(8.35);
@@ -94,7 +94,7 @@ public sealed partial class TrialReviewApp
         m_Vicinity.Dispose();m_Environment?.Dispose();m_Environment=null;
         m_Actors?.Dispose();m_Actors=null;m_Audio?.Dispose();m_Audio=null;m_Renderer?.Dispose();m_Renderer=null;
         enabled=false;
-        Debug.Log("TRIAL_REVIEW_CAPTURE_PASS 24 states; no services or participant folders");
+        Debug.Log("TRIAL_REVIEW_CAPTURE_PASS "+states.Length+" states; no services or participant folders");
         Application.Quit();
     }
 }

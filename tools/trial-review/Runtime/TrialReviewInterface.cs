@@ -157,6 +157,7 @@ public sealed partial class TrialReviewApp
             Panel(new Rect(left,top+50,viewWidth,64));
             GUI.Label(new Rect(left+12,top+56,viewWidth-24,52),m_Error,m_Label);
         }
+        HeaderMenu(width);
         GUI.enabled=true;
         if(m_Loading){Panel(new Rect(width/2-190,height/2-40,380,80));GUI.Label(new Rect(width/2-180,height/2-30,360,60),"Loading recording…",m_Center);}
         if(m_Browser)Browser(new Rect(width/2-380,80,760,height-160));
@@ -193,29 +194,46 @@ public sealed partial class TrialReviewApp
         m_UcfLogo??=Resources.Load<Texture2D>("UcfLogo");
         if(m_UcfLogo!=null)GUI.DrawTexture(new Rect(m_Viewport.xMax-102,m_Viewport.yMax-70,84,56),m_UcfLogo,ScaleMode.ScaleToFit,true);
     }
+    bool m_FileMenu;
     void Header(float width)
     {
-        Panel(new Rect(0,0,width,64));Fill(new Rect(0,62,width,2),m_Accent);
-        GUI.Label(new Rect(20,17,180,32),"Trial Review",m_Title);
+        Panel(new Rect(0,0,width,64));Fill(new Rect(0,63,width,1),m_Border);
         string participant=AssignedParticipantId;
         if(string.IsNullOrEmpty(participant))participant=m_Timeline?.State.Trial?.participantCode;
         if(!string.IsNullOrEmpty(m_ParticipantName))participant=m_ParticipantName;
         int run=m_Timeline?.State.Trial?.runNumber??m_Timeline?.Header.runNumber??0;
-        string name=m_Timeline==null?"Choose a session":$"{(string.IsNullOrEmpty(participant)?"Recorded session":participant)} / {(run>0?$"Run {run}":"Session")}";
+        string name=m_Timeline==null?"Choose a session":$"{(string.IsNullOrEmpty(participant)?"Recorded session":participant)} · {(run>0?$"Run {run}":"Session")}";
         if(!string.IsNullOrEmpty(DatasetName))name=DatasetName;
-        if(Action(new Rect(222,14,192,36),name))OpenDatasetPanel(2);
-        if(Action(new Rect(420,14,94,36),"Dataset"))OpenDatasetPanel();
+        string source=m_Timeline?.Header.sourceType??"";
+        string provenance=source.IndexOf("synthetic",StringComparison.OrdinalIgnoreCase)>=0?"SYNTHETIC":source.IndexOf("development",StringComparison.OrdinalIgnoreCase)>=0?"DEVELOPMENT":null;
+        float left=16;
+        if(provenance!=null){StatusChip(new Rect(left,18,112,28),provenance,m_Warn,true);left+=120;}
+        var breadcrumb=new Rect(left,14,232,36);
+        if(GUI.Button(breadcrumb,new GUIContent(name+" ▾",name+" · Participants & datasets"),m_Chip))OpenDatasetPanel();
         string status=m_FollowLive?(WaitingForHeadset?"Waiting for signal":m_DrainingLive?"Buffered replay":"Following live"):m_ViewLive?"Reviewing archive":"Saved replay";
-        GUI.Label(new Rect(526,20,165,24),status,m_Heading);
-        if(Action(new Rect(width-666,14,118,36),m_LightTheme?"Dark mode":"Light mode"))ToggleTheme();
-        if(Action(new Rect(width-540,14,124,36),"Open run…"))Browse(false);
-        if(Action(new Rect(width-408,14,76,36),"Demo"))StartCoroutine(Open(Path.Combine(Application.streamingAssetsPath,"Demo/recording.jsonl")));
-        if(m_DetachedReview)GUI.Label(new Rect(width-324,20,310,30),"Detached review · live stays in main window",m_MutedLabel);
+        Color stateColor=m_FollowLive?(WaitingForHeadset?m_MutedLabel.normal.textColor:m_DrainingLive?m_Warn:m_Ok):m_ViewLive?m_Info:m_MutedLabel.normal.textColor;
+        if(WaitingForHeadset)stateColor.a=.55f+.45f*Mathf.Abs(Mathf.Sin(Time.unscaledTime*2));
+        StatusChip(new Rect(left+244,18,154,28),"●  "+status,stateColor);
+        float right=width-688;
+        bool enabled=GUI.enabled;GUI.enabled=enabled&&!m_DetachedReview;
+        if(Action(new Rect(right,14,208,36),"New participant session",true))OpenIntake();
+        GUI.enabled=enabled;
+        if(Action(new Rect(right+216,14,76,36),"File ▾",m_FileMenu))m_FileMenu=!m_FileMenu;
+        if(m_DetachedReview)GUI.Label(new Rect(right+304,14,312,36),"Detached review · live stays in main window",m_MutedLabel);
         else
         {
-            if(Action(new Rect(width-324,14,144,36),"Wi-Fi settings",m_LivePanel))m_LivePanel=!m_LivePanel;
-            LiveModeSwitch(new Rect(width-172,14,152,36));
+            if(Action(new Rect(right+300,14,148,36),"Wi-Fi settings",m_LivePanel))m_LivePanel=!m_LivePanel;
+            LiveModeSwitch(new Rect(right+456,14,160,36));
         }
+        if(GUI.Button(new Rect(width-56,14,40,36),new GUIContent(m_LightTheme?"☾":"☀",m_LightTheme?"Dark mode":"Light mode"),m_Chip))ToggleTheme();
+    }
+    void HeaderMenu(float width)
+    {
+        if(!m_FileMenu)return;
+        var rect=new Rect(width-472,58,208,100);Panel(rect);
+        if(Action(new Rect(rect.x+8,rect.y+8,192,36),"Open run…")){m_FileMenu=false;Browse(false);}
+        if(Action(new Rect(rect.x+8,rect.y+52,192,36),"Demo")){m_FileMenu=false;StartCoroutine(Open(Path.Combine(Application.streamingAssetsPath,"Demo/recording.jsonl")));}
+        if(Event.current.type==EventType.MouseDown&&!rect.Contains(Event.current.mousePosition)&&Event.current.mousePosition.y>64)m_FileMenu=false;
     }
     void LiveModeSwitch(Rect rect)
     {

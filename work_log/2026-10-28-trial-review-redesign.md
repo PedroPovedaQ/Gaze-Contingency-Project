@@ -17,3 +17,9 @@ Local Vikunja service unavailable (connection refused); coordination board is th
 Rounded 9-slice controls, semantic colors, muted section labels, 14px body/20px titles and shared monospace styles. Capture evaluation toggle now visibly follows no-auto-evaluation semantics as well as bypassing workers.
 
 Built and ran captures at 1440×900 and 1280×800; inspected dark/light screenshots. Existing Unity build verification suites passed. Screenshot files: `after/step1/01-first-person.png` through `24-intake-ready.png`, plus `1280/`.
+
+## Step 2
+
+Header now offers the existing OpenIntake entry directly, warning-outlined provenance, dataset breadcrumb, semantic status pill, File menu, and theme icon. Existing live/detached actions retained. Added 25-file-menu.png to captures.
+
+Built and ran captures at 1440×900 and 1280×800; inspected dark/light screenshots. Existing Unity build verification suites passed. Screenshot files: `after/step2/01-first-person.png` through `24-intake-ready.png`, plus `1280/`.
