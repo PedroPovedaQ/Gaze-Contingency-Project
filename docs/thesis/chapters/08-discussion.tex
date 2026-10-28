@@ -1,20 +1,28 @@
-\chapter{DISCUSSION AND LIMITATIONS}
+\chapter{DISCUSSION}
 \label{ch:discussion}
-\section{What the Study Can Explain}
+\section{Interpreting the Research Questions}
 Follow My Voice asks whether a synthetic voice resembling the listener changes search efficiency or experience compared with a neutral voice the listener has already chosen. Participant results are still pending, so the interpretations below are conditional. They describe what the data could support, not which voice is better.
 
-The discussion separates three kinds of evidence. The primary question concerns measured search efficiency. The secondary questions concern workload and motivation, and the exploratory questions examine how participants evaluate the voices and how much they report relying on the guidance. Agreement among these outcomes could strengthen a design interpretation, whereas disagreement could reveal a tradeoff that a single outcome would conceal.
+The discussion follows the three research questions. RQ1 concerns measured search performance and perceived workload, RQ2 concerns eye-tracking indicators of workload and search efficiency, and RQ3 concerns engagement. The central hypothesis links them: a self-similar voice that is more engaging (RQ3) would improve performance (RQ1) and make search more efficient (RQ2). Agreement among these outcomes would support that account, whereas disagreement could reveal a tradeoff that a single outcome would conceal.
 
-\section{Interpreting Efficiency and Experience Together}
+\subsection{RQ1: Performance and Perceived Workload}
 A completion-time advantage for the self-similar voice would have to be read alongside the uncertainty of the estimate, the manipulation check, and guidance quality. If the neutral condition showed systematic intelligibility or delivery problems, the difference could reflect those problems rather than anything specific to self-similarity. If both conditions have comparable delivery quality and participants recognize the clone, the result would more directly support a voice-condition effect in this task. Even then, resemblance would remain confounded with other differences between the chosen and synthesized voices.
 
 Faster completion with the neutral voice would be consistent with a chosen external voice being easier to follow, but also with intelligibility or delivery problems in the cloned condition. Delivery records and acoustic-quality reporting could help distinguish these readings, although the study could not establish the mechanism without further evidence. Liking, naturalness, and reliance ratings may help characterize the experience in either case. A correlation between such ratings and performance, however, would not establish that they mediate the voice effect.
 
 If completion times are similar, the width of the uncertainty interval becomes central. A wide interval would leave practically important differences unresolved, whereas a narrow interval near the null could constrain the size of a plausible effect under the tested conditions. A nonsignificant test does not establish equivalence. The analysis plan includes no equivalence test, which would require a meaningful bound and procedure specified before the result is examined.
 
+Perceived workload is read alongside completion time. Lower NASA-TLX workload with the self-similar voice would fit H1, whereas faster search with unchanged or higher workload would suggest that participants worked harder rather than that the guidance was easier to follow.
+
+\subsection{RQ2: Eye-Tracking Indicators}
+If the eye-event detectors are validated, fewer fixations and saccades and lower pupillary activity with the self-similar voice would indicate more efficient visual search under that voice, consistent with H2. These indicators depend on coverage, so a difference must be read against the eligible time in each condition; unequal coverage alone can produce different counts, as the development recordings illustrate (Section~\ref{sec:development-eye-measures}). If the detectors cannot be validated, RQ2 remains unanswered rather than being answered with interaction proxies such as ray hits.
+
+\subsection{RQ3: Engagement and the Central Hypothesis}
 Efficiency and experience may also diverge. A preference for self-similar speech may occur without a detectable improvement in completion time, while efficient search may coexist with discomfort. Vocal uncanniness is best explained by deviation from typical organic voices~\cite{diel2024uncanny}, so discomfort with either synthetic voice could arise from synthesis as well as from resemblance.
 
 Prior studies place a self-similar voice in different roles. Kao et al. examine an avatar voice in a setting where continued voluntary play can reflect engagement, whereas Guo et al. report favorable impressions alongside eeriness in virtual collaboration~\cite{kao2021selfsimilar,guo2024doppelganger}. Aymerich-Franch et al. found that hearing one's own voice, rather than another participant's, while giving a speech through an avatar in VR increased self-presence and social presence~\cite{aymerich2012voicesimilarity}. In Follow My Voice, the voice instead instructs the listener through a fixed search task. Faster completion therefore addresses efficiency, while enjoyment, discomfort, and debrief responses address the experience of following it.
+
+If the self-similar voice is rated more engaging and also yields faster search, the result would fit the central hypothesis. Because both outcomes follow voice assignment, however, their co-occurrence would not show that engagement causes the performance difference.
 
 \section{Practical Relevance and Transfer to Other Search Tasks}
 The applications that motivate this work indicate where guided search could be useful, but this experiment does not validate guidance in those domains. Locating task-relevant items in maintenance or training, finding a book, and noticing relevant VR content share a need to connect assistance with something in the environment~\cite{binetti2021outofview,zhang2023seehear,lange2020hivefive}. The present study addresses a voice-choice question within that interaction. It does not test industrial task completion, learning transfer, navigation safety, or narrative comprehension.
@@ -23,7 +31,10 @@ The practical value of the study depends on how its outcomes combine. Faster sea
 
 Transfer also depends on how much information users already have. In Follow My Voice, the participant must use spatial guidance to infer an initially unnamed target, whereas in Zhang et al.'s book task the target title was supplied~\cite{zhang2023seehear}. A known-target task may allow people to continue independently and encounter the voice less often. Real work can additionally require recognizing meaningful parts, remembering procedural steps, moving through space, or coordinating with another person. Replication in those contexts would need to establish both the quality of guidance and the effect of voice choice.
 
-\section{Voice Identity and Acoustic Confounds}
+\section{Limitations}
+The study design and apparatus carry several limitations that bound what the results can show.
+
+\subsection{Voice Identity and Acoustic Confounds}
 The voice conditions may differ in acoustic properties as well as in perceived resemblance. The self-similar voice depends on recording quality and synthesis, whereas the neutral voice comes from a heterogeneous catalog, and the two may differ in pitch, prosody, speaking rate, pronunciation, and clip duration. Identical wording and a shared provider do not guarantee matched acoustics. The study therefore documents these properties and the intelligibility observed in pilot sessions at comfortable playback levels, without assuming exact equivalence. Such differences can matter for experience as well as intelligibility: in a study of virtual health assistants, voice naturalness was the strongest driver of perceived realism~\cite{maxim2025realism}.
 
 Participants may also judge the clone differently because the voice it imitates is their own. Rosi et al. found that listeners familiar with a speaker rated that speaker's cloned voice the same as or less favorably than the recording, whereas unfamiliar listeners rated clones higher, and clones closer to the original speaker were rated higher on all traits~\cite{mcgettigan2025cloned}. Because every participant is highly familiar with their own voice, ratings of the self-similar voice may depend on how faithfully the clone reproduces it.
@@ -32,7 +43,7 @@ The variety of chosen neutral voices is a deliberate consequence of the design. 
 
 The self-similar manipulation applies no additional pitch shift, panning, or inner-thought treatment. Processing that makes cloned speech sound like an internal monologue is outside the scope of this study. Applying such an effect in only one condition would change the manipulation and require a revised rationale and analysis.
 
-\section{Adaptive Guidance as a Shared Mechanism}
+\subsection{Adaptive Guidance as a Shared Mechanism}
 Gaze-dependent sonification, staged spatial cues, and audiovisual assistance investigate different ways to connect a cue with a search target~\cite{losing2014guiding,kwok2022twostep,binetti2021outofview,tanaka2026coarse}, and visual cueing has also aided search for multiple targets in a 360-degree VR environment~\cite{kelley2025cueing}. Follow My Voice adapts these precedents into spoken orientation and refinement, so the assigned voice participates throughout the task. Because the participant design compares only voices, a difference between conditions would not show that speech outperforms those techniques or that Jev improves search.
 
 A shared policy does not produce identical spoken sequences. Participants turn, pause, look, and point differently, so the policy supplies different directions and can emit different numbers of hints.
@@ -41,26 +52,26 @@ Policy drift, however, would threaten the comparison. Changes to phrases, timers
 
 Centralizing guidance evidence and transitions in a single local state machine makes guidance auditable, but it does not guarantee that guidance is correct. Calibration error can produce an incorrect observation, an unclear reference frame can produce an unhelpful phrase, and a stale response can pass an incomplete check.
 
-\section{Practice, Learning, and Order}
+\subsection{Practice, Learning, and Order}
 One practice trial reduces setup burden but provides limited exposure to a complex interaction. The participant must learn to hold gaze on the readiness cross, follow speech, use the chair comfortably, aim the right controller, and press the trigger to select. A single trial cannot ensure that all participants acquire these skills equally, and a practice-proficiency criterion will be established in pilot sessions.
 
 Practice uses the first assigned voice. This aligns initial exposure with the first block but also couples practice familiarity with period. Counterbalancing helps distribute this coupling across voice conditions~\cite{williams1949residual}, but it does not prevent fatigue, learning, novelty, or asymmetric carryover. These are reported with period and order effects and any relevant sensitivity analysis.
 
-\section{Retrospective Questionnaires and Burden}
+\subsection{Retrospective Questionnaires and Burden}
 A single final survey avoids interrupting the two-block search sequence with a long questionnaire, but it also requires participants to recall Block 1 after completing Block 2. Ratings may therefore reflect recency, contrast, or imperfect recall. Each rating set identifies the block it refers to, and the reminder linking that block to its voice will be piloted. Such reminders may aid recall but cannot guarantee its accuracy.
 
 The condition-specific battery contains 130 numeric responses across both blocks, in addition to setup ratings, comparison questions, and debrief. Pilot sessions will therefore measure its completion time, missingness, and comprehension. Because participants may be tired or uncomfortable after exposure, researchers check whether they are comfortable continuing before administering the retrospective sets.
 
 Adapting an embodied-agent measure to a voice agent can alter its meaning. Co-presence or anthropomorphism items may be understood differently without a visible character. The thesis documents source attribution and wording changes, reports the adaptation, and makes no claim of new psychometric validation from a small experimental sample. Eeriness, for example, is rated with a single item rather than with multi-item indices such as those refined by Ho and MacDorman~\cite{homacdorman2017eeriness}. Custom reliance and naturalness items remain individual exploratory measures.
 
-\section{Gaze Quality and Feedback Coupling}
+\subsection{Gaze Quality and Feedback Coupling}
 Gaze serves both as an input to assistance and as a recorded behavioral signal. Tracking gaps can therefore change the participant's experience and reduce measurement coverage at the same time, affecting both the outcome being measured and the evidence available to interpret it. Coverage and technical events are interpreted alongside performance rather than treated automatically as pre-existing participant characteristics.
 
 A highlighted vicinity candidate can help indicate what the system currently attends to, but it can also suggest a reference object that differs from the mathematical gaze ray. For example, an instruction to look lower can be consistent with a gaze ray above the target yet confusing if the target appears higher than a highlighted neighbor. Cues are therefore evaluated in their visible interaction context, not solely against the sign of a geometric delta. Development-only rings and diagnostic markers will be excluded from the participant condition.
 
 The proposed validity-aware stream and independent calibration checks address these risks, but headset-specific spatial performance and the rate of distinct gaze observations remain empirical questions. Validation results for the Vive Pro Eye cannot be assumed to hold for the Focus Vision, and an interaction threshold chosen for usability is not a validated measure of cognition.
 
-\section{Privacy, Consent, and Reproducibility}
+\subsection{Privacy, Consent, and Reproducibility}
 Coding participant identifiers does not make voice recordings anonymous, because both natural and synthesized speech can remain recognizable. Before participant use, the consent and data-management documents will be revised to describe recording, synthesis, cloud processing by ElevenLabs and Jev, storage, access, and deletion.
 
 The thesis reports the relevant processing stages without including credentials or identifiable recordings. A reproducibility package can provide code, versioned schemas, example synthetic records, and de-identified summaries where authorized. Consent to participate does not extend to distributing cloned voices or raw participant audio, which would require a separate basis.

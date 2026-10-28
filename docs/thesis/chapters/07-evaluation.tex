@@ -1,13 +1,9 @@
 \chapter{RESULTS}
 \label{ch:evaluation}
-This chapter returns to the question posed in the introduction: does guidance spoken in a synthetic version of the participant's own voice differ, in efficiency or experience, from guidance spoken in the neutral voice the participant selected? The chapter first establishes how the comparison is delivered. It then addresses search efficiency, workload, motivation, and exploratory measures of voice experience. Confirmatory participant data have not yet been collected. The sections below therefore describe the reporting structure for each result and keep those pending results separate from the development evidence available for the apparatus.
+This chapter is organized around the three research questions introduced in Section~\ref{sec:research-questions}. Each section states what will be reported for its question and how that evidence tests the corresponding hypothesis. Participant data have not yet been collected, so no voice-condition results are reported here; the development evidence that supports the apparatus appears in Section~\ref{sec:development-evaluation}.
 
-\input{chapters/07-development-results}
-
-\section{Planned Reporting of Participant Results}
-Participant reporting begins with participant flow, exclusions, incomplete sessions, and data coverage by condition and order. It then describes realized starting geometry and the similarity manipulation check before presenting the primary voice contrast.
-
-The primary result includes the fitted time contrast, its uncertainty, the analyzed participant and trial counts, and model diagnostics. Secondary reporting covers workload and IMI subscales at participant-by-block level, followed by exploratory sections on agent perception, voice experience, guidance behavior, and debrief themes. Each table states its denominator and identifies missing observations.
+\section{Participant Flow and Manipulation Check}
+Participant reporting begins with participant flow, exclusions, incomplete sessions, and data coverage by condition and order. It then describes the realized starting geometry and the similarity manipulation check, which shows whether participants heard the self-similar voice as resembling their own, before any research question is answered. Each table states its denominator and identifies missing observations.
 
 \begin{table}[htbp]
 \centering\caption{Planned result families and their status. No confirmatory participant outcomes are reported here.}
@@ -16,45 +12,29 @@ The primary result includes the fitted time contrast, its uncertainty, the analy
 Result family & Required evidence & Present status \\\midrule
 Participant flow & Consented, started, completed, stopped; reasons & Not available \\
 Manipulation check & Similarity by voice with paired scope & Not available \\
-Primary performance & Adjusted time contrast and uncertainty & Not estimated \\
-Workload and IMI & Versioned raw items and complete subscales & Not collected for this report \\
+RQ1: performance and perceived workload & Adjusted time contrast, missed targets, NASA-TLX & Not estimated \\
+RQ2: eye-tracking indicators & IPA, fixation count, saccade frequency after detector validation & Development pipeline only (Section~\ref{sec:development-eye-measures}) \\
+RQ3: engagement & IMI interest/enjoyment & Not collected for this report \\
+Other IMI subscales & Complete subscale scores & Not collected for this report \\
 Agent experience & Individual and construct-specific ratings & Not collected for this report \\
 Guidance quality & Sequence-level playback and evidence & Development traces reported; study comparison pending \\
 Debrief themes & Recorded responses and coding audit & Not available \\\bottomrule
 \end{tabularx}
 \end{table}
 
+\section{RQ1: Performance and Perceived Workload}
+RQ1 asks whether voice self-similarity impacts performance and perceived workload. The primary result is the adjusted contrast in active search-completion time. Its estimand is the marginal time contrast standardized over a common starting-difficulty distribution, as defined in Section~\ref{ch:analysis}; here, \emph{standardized} refers to that common distribution rather than to a standardized effect size. The estimate is reported with its uncertainty, the eligible participant and trial counts, and model diagnostics, following the analysis plan finalized before confirmatory recruitment. Missed targets, incorrect trigger selections, and valid gaze and controller contact latencies are reported by voice condition alongside paired participant summaries. Perceived workload is reported from the six NASA-TLX dimensions and their unweighted mean~\cite{hart1988nasatlx} at the participant-by-block level. Together, these results test H1: that the self-similar voice improves search performance and lowers perceived workload.
 
-\subsection{Results Organized by Research Question}
-Following the manipulation check, the reporting framework addresses each research question in turn. For the primary question, the estimand is the marginal time contrast standardized over a common starting-difficulty distribution, as defined in Section~\ref{ch:analysis}. Here, \emph{standardized} refers to that common distribution rather than to a standardized effect size. The estimate is reported with its uncertainty, the eligible participant and trial counts, and model diagnostics, following the analysis plan finalized before confirmatory recruitment. Secondary reporting covers the paired workload outcomes~\cite{hart1988nasatlx} and the separate IMI subscales~\cite{mcauley1989imi}, using multiplicity families to be defined in the analysis plan. Exploratory reporting presents agent-perception and custom ratings alongside debrief themes and valid search measures. A contrast that cannot be estimated or proves inconclusive is reported as such rather than omitted.
+\section{RQ2: Eye-Tracking Indicators of Workload and Search Efficiency}
+RQ2 asks whether voice self-similarity impacts eye-tracking indicators of workload and visual-search efficiency. Following Chiossi et al., who combined search outcomes with fixation and pupil-based measures~\cite{chiossi2024searching}, this section will report the Index of Pupillary Activity~\cite{duchowski2018ipa} as an indicator of workload, and candidate fixation counts and saccade frequency as indicators of search efficiency, each by voice condition and participant with its coverage and denominators. These measures enter the voice comparison only after the detector validation described in Section~\ref{ch:measurement}; until then they remain exploratory, and the development pipeline in Section~\ref{sec:development-eye-measures} shows what the reported values and coverage will look like. These results test H2: that the self-similar voice yields more efficient search, with fewer fixations and saccades and lower pupillary activity.
 
-Guidance delivery is reported separately through sequence coverage, qualification-to-playback delay, provider reliability, and categorized faults. Software tests and language-model ratings characterize the apparatus, not its effects on participants. Conversely, a voice-condition difference does not show that every instruction was delivered correctly.
+\section{RQ3: Engagement in the Search Task}
+RQ3 asks whether voice self-similarity impacts engagement in the object-search task. Engagement is reported from the interest/enjoyment subscale of the Intrinsic Motivation Inventory~\cite{mcauley1989imi}, with the effort/importance, pressure/tension, and value/usefulness subscales reported separately, using multiplicity families defined in the analysis plan. This result tests H3: that the self-similar voice makes the search more engaging. Read together with RQ1, it also shows whether higher engagement and better performance occur in the same condition, as the thesis's central hypothesis proposes; because both outcomes follow voice assignment, their co-occurrence does not by itself establish that engagement causes the performance difference.
 
-\section{User Performance}
-Once participant data are collected, this section will report active search-completion time, incorrect trigger selections, and valid gaze/controller contact latencies by voice condition. Reporting includes paired participant summaries and the planned adjusted contrast, with sample counts and uncertainty.
+\section{Exploratory Agent and Voice Experience}
+Once participant ratings are collected, this section will report agent perception (co-presence, perceived intelligence, anthropomorphism, and the appealing, eerie, and familiar items), custom voice-experience ratings such as liking, trust, reliance, and naturalness, and debrief themes. These outcomes are exploratory and are not tied to a hypothesis. No questionnaire responses or preference distributions are simulated. A contrast that cannot be estimated or proves inconclusive is reported as such rather than omitted.
 
-\section{User Experience}
-Once participant ratings are collected, this section will report condition-referenced workload, the separate motivation subscales, agent experience, voice liking and similarity, and debrief responses. No questionnaire responses or preference distributions are simulated.
-
-\section{Apparatus Verification}
-Software verification records document the apparatus alongside the development recordings in Section~\ref{sec:development-results}. A verification run on October 20, 2026 passed schedule and voice-isolation checks confirming one practice trial in the first assigned voice, two measured blocks, and the nominal-angle quotas. The same run passed 38 trial-export tests and seven workload scoring and plotting tests, and the Android application was built, installed, and launched successfully. These test counts come from that run and were not re-executed for this manuscript. The current software version, dated October 25, 2026, includes the pre-cue snapshot and balanced direction and height allocation. Its schedule checks pass across 50 participant identifiers and both voice orders, and its geometry checks pass across every starting wall and angle category.
-\begin{table}[htbp]
-\centering\caption{Apparatus verification and outstanding validation.}
-\small\tagpdfsetup{table/header-rows={1}}
-\begin{tabularx}{\linewidth}{@{}p{0.28\linewidth}XX@{}}\toprule
-Component & What was verified & Not yet established \\\midrule
-Schedule and voice checks & One practice trial and nominal allocation of 40 trials in each of two blocks pass automated checks & Wearer completion of a full session \\
-Trial export and TLX tests & Declared scales and retrospective joins are correct in tested cases & Validation of all questionnaires \\
-Unity integration checks & Listed state and interaction cases pass & Robustness to all timing races \\
-Android build/install/launch & Application built, installed, and started & Acceptance in a participant session \\
-Exact pre-cue theta & Snapshot saved at readiness completion; geometry checks pass & Observation in a complete wearer session \\
-Vertical allocation & 20/20 and per-angle height quotas pass schedule checks & Target visibility and seated comfort \\
-Voice-condition outcomes & None; no confirmatory dataset reported & Any performance or preference conclusion \\\bottomrule
-\end{tabularx}
-\end{table}
-
-
-\section{Guidance Quality Supporting the Voice Contrast}
+\section{Guidance Delivery Across Voice Conditions}
 A fair voice comparison depends on both voices receiving comparable guidance. Reporting therefore describes gaze availability, actual speech exposure, delayed acknowledgments, interruptions, and unhelpful cues by voice condition and session. This account helps assess whether technical delivery problems affected one condition more than the other. The voice contrast is not automatically adjusted for behavior-dependent hint counts or waiting time. These quantities arise after voice assignment, may themselves depend on voice condition, and cannot be treated as baseline difficulty (Section~\ref{ch:analysis}).
 
 Gaze acknowledgment, controller acknowledgment, and correct trigger selection remain separate events. Their sequence records document feedback delivery, whereas participant ratings and debriefing address how that feedback was experienced. Appendix~\ref{app:scenarios} defines sequence tests and evaluation criteria for assessing the apparatus before interpreting differences between voices.

@@ -1,18 +1,17 @@
-\chapter{METHODOLOGY}
+\chapter{THE FOLLOW MY VOICE SYSTEM}
 \label{ch:system}
-This chapter describes the application, experimental design, procedure, and data collection used to examine self-similar spoken assistance in virtual reality. Follow My Voice compares performance, perceived workload, motivation, and agent experience across self-similar and neutral voices within the same gaze-contingent search task. Voice condition is the experimental factor. Gaze sensing, spoken spatial guidance, and right-controller selection remain common to both conditions.
+This chapter describes Follow My Voice, the virtual-reality application built for this thesis. It covers the search scene, the gaze-contingent guidance and the agent that decides when and how to speak, voice preparation, and the tools that record and review each session. The same system serves both voice conditions; only the voice that delivers the guidance changes. The chapter closes with development evidence showing how the system behaves on the headset (Section~\ref{sec:development-evaluation}), and Chapter~\ref{ch:study} describes the user study that uses it.
 
 The application runs on the HTC VIVE Focus Vision headset. Each participant completes one practice trial and 80 measured trials, divided into two counterbalanced blocks of 40 trials, one per voice condition. The project source is available at \href{https://github.com/PedroPovedaQ/Gaze-Contingency-Project}{the Gaze Contingency Project GitHub repository}.
 
-The methodology draws on Chiossi et al.'s visual-search study, which combines search outcomes with eye-tracking measures~\cite{chiossi2024searching}. This study keeps that separation between task performance and visual behavior but changes the research question to voice identity, initially withholds the target identity, and uses a researcher-selected 25-second search limit. Complementary work by Pfeil et al. at UCF compares eye--head coordination in virtual and physical viewing~\cite{pfeil2018eyehead}. That work motivates retaining head motion alongside eye direction when interpreting gaze in this application.
 
-\section{Application Design}
+\section{Application Overview}
 The application presents a virtual setup menu before the search task. Participants choose a neutral voice from the supplied options, record a standard passage for their self-similar voice, and confirm that both voices are clear and comfortable to hear. Voice preparation and eye-tracking setup precede practice. During search, participants remain seated on a swivel chair, inspect the surrounding scene, and use only the right controller for pointing and selection.
 
-\subsection{Apparatus}
+\section{Apparatus}
 The application is developed in Unity 6 (6000.3.10f1) using the Unity OpenXR Plugin (1.16.1), HTC VIVE OpenXR integration (2.5.1), and Unity XR Interaction Toolkit (3.3.1). It is deployed as a standalone Android ARM64 application on the HTC VIVE Focus Vision head-mounted display, with rendering performed locally on the headset using the Universal Render Pipeline (17.3.0). The study uses the headset's virtual-reality configuration, in which the headset supplies head-pose and eye-gaze tracking and the tracked right-hand controller supplies pointing and trigger input. Network access supports cloud-based agent decisions and voice preparation. It is not used to stream rendered frames from a host computer. HTC specifies 2448 $\times$ 2448 pixels per eye, a 90-Hz standalone display refresh rate, and a field of view of up to 120 degrees~\cite{htc2026focusvision}. The advertised 120-Hz binocular gaze output is a sensor specification, so the application's effective rendering and gaze-delivery rates will be measured on the study build.
 
-\subsection{Objects, Planes, and Selection}
+\section{Objects, Planes, and Selection}
 The search task takes place in a neutral virtual room. Eight vertical planes surround the seated origin at 45-degree intervals, and colored geometric objects hang on each plane. Figure~\ref{fig:scene} shows the layout from above. The stimulus generator includes six shapes---sphere, cube, pyramid, cylinder, capsule, and star---in red, blue, yellow, and green. The development configuration contains 168 objects, or 21 per plane, at a default plane radius of 1.5~m from the seated origin. These object counts are unrelated to the eight trials assigned to each absolute nominal angle in a 40-trial block. Objects vary in height and horizontal position within their assigned plane, so search requires both coarse orientation toward a plane and finer search within it. The application knows the target identity but withholds it from the opening instructions, so participants rely on voice guidance to locate the target. They select it by pointing the right-controller ray at it and pressing the trigger. For each trial, the system logs object positions, layout seed, wall assignment, and target identity.
 
 Each wall is 2.2036~m high (approximately 2.20~m), 30\% lower than the 3.148-m walls of earlier development layouts. Object centers occupy heights from 0.10~m to 2.1036~m above the floor, leaving a 0.10-m margin above the highest permitted center, and are separated by a minimum three-dimensional center-to-center distance of 0.20~m. Layouts are generated from a saved seed; for measured trials, final positions also depend on the eye origin saved at readiness completion.
@@ -33,19 +32,19 @@ Figure~\ref{fig:recorded-search-scene} complements the schematic with a reconstr
 \label{fig:recorded-search-scene}
 \end{figure}
 
-\subsection{Voice Preparation and Audio}
+\section{Voice Preparation and Audio}
 Voice cloning, which replicates a speaker's voice from a short reference recording, has become practical with recent instant-cloning methods~\cite{qin2023openvoice}. In this study, all voice audio is pre-synthesized with the commercial ElevenLabs service, which supplies both the neutral voice and the self-similar voice. To support the self-similar condition, each participant records the same standard passage in their usual speaking voice. Both conditions share the semantic phrase library, guidance policy, and playback routing, so voice is the intended manipulation. Because guidance responds to behavior, however, the wording and number of hints can differ between blocks, and the synthesized clips can differ acoustically. The preparation pipeline automatically checks wording and library readiness, but these checks do not assess perceptual equivalence. Pilot sessions will therefore verify per-voice intelligibility, loudness, and acoustic comparability. No pitch or spatial effects are applied to the self-similar voice. The system logs the provider, model, voice ID, library version, and synthesis settings.
 
 The Trial Review application aligns gaze and controller state, guidance transitions, agent decisions, and playback events with trial geometry on a common timeline. Trial-level aggregates are stored separately from the raw gaze, motion, and event streams. The effective gaze sampling rate will be determined from distinct source timestamps on the study headset build rather than from the nominal specification or the application polling rate. The analysis will report ray intersections as gaze hits, which approximate, but are not equivalent to, fixations identified by a validated event classifier~\cite{salvucci2000fixations}.
 
-\subsection{Sensing and Guidance State}
+\section{Sensing and Guidance State}
 Prior guidance systems combine initial orientation with finer guidance toward the target~\cite{kwok2022twostep,tanaka2026coarse}. Spoken directions in Follow My Voice follow a similar progression. The system updates them from evidence of the participant's progress, so that instructions can shift from orientation toward a wall to refinement around an object. The same sensing and state logic serves both voice conditions.
 
 The system continuously collects eye-gaze origin, direction, and validity; head pose; right-controller pose; and ray-object intersections. A local state machine combines these observations with the target geometry to track the participant's progress through the search: turning toward the target wall, refining within the wall, acquiring the target with gaze, pointing with the controller, and becoming ready to select. Additional states cover suspended or paused operation. Each state transition is logged with its cause.
 
 The state machine issues new gaze-dependent guidance only when gaze data are valid and recent. Gaze ray hits, gaze-vicinity candidates, and controller hits are treated as separate observations; when gaze-vicinity regions overlap, the closest object is chosen as the vicinity candidate. A controller ray hit on the target immediately suppresses contradictory directional cues. The spoken pointing acknowledgment, by contrast, requires a one-second controller hold with valid nearby gaze and plays only when the speech scheduler permits it. Gaze confirmation, controller confirmation, and trigger selection are recorded as distinct events.
 
-\subsection{Agent Decisions and Playback Control}
+\section{Agent Decisions and Playback Control}
 Jev, the cloud decision agent shared by both voice conditions, selects from a constrained set of options rather than generating free-form instructions. Local geometry and state rules first filter the phrase library to candidates that are valid in the current situation. Each request to Jev then contains a state snapshot, recent memory, playback status, and two to five eligible phrases. From these, Jev chooses the wording and whether to speak now or wait, while target definition and geometric reasoning remain local. Eligibility filtering and playback revalidation are designed to keep the guidance spatially grounded. An instruction plays only if it remains consistent with the participant's current gaze and the target's position, which reduces spatially incorrect or stale guidance.
 
 Because cloud responses arrive asynchronously, the participant's state may change before a decision returns. A local speech scheduler therefore revalidates each decision against the current state, evidence, pacing, and object intersections before playback, and discards decisions that are stale or conflict with the current situation. Qualified gaze and controller acknowledgments, together with eligible turn-progress milestones, can be handled locally and played from prepared phrases without waiting for a new cloud decision. These local cues remain subject to the same checks. When a qualified target acknowledgment would replace misleading search speech, a local fast path avoids waiting for interruption advice. This path protects the first 0.35 seconds and final 0.5 seconds of the current phrase, retains a 2.5-second interruption cooldown, and fades the audio over 150 ms. The fast path keeps the separate gaze and controller hold requirements, and fresh evidence is checked before the fade, after it, and at playback. Setup, completion feedback, and existing acknowledgments are protected from interruption. Each completed or interrupted utterance updates both the memory and the event log. Model latency, deferral, cancellation, fallback, and playback onset are logged separately to support delay attribution. When a trace lacks the required events, the source of a delay is recorded as unknown rather than inferred from the spoken phrase alone.
@@ -65,7 +64,7 @@ Figure~\ref{fig:jev-final-gate} shows the final playback gate. Jev's response is
 \label{fig:jev-final-gate}
 \end{figure}
 
-\subsection{Trial Review Interface}
+\section{Trial Review Interface}
 Figure~\ref{fig:trial-review-synthetic-demo} shows the standalone Trial Review application with its bundled synthetic demonstration. The scene and inspector share a timeline with speech, gaze, events, and decision tracks. The application can also receive headset records for live review. Transfer and receipt times are kept separate from source event times, so late arrival in the viewer does not indicate delayed guidance on the headset. The capture illustrates the interface, not a participant recording or performance result, and the demonstration explicitly marks missing state history and reconstructed highlights.
 
 \begin{figure}[htbp]
@@ -77,8 +76,30 @@ Figure~\ref{fig:trial-review-synthetic-demo} shows the standalone Trial Review a
 
 
 
-\subsection{Delivery Quality as an Experimental Requirement}
+\section{Delivery Quality as an Experimental Requirement}
 Both voice conditions use the same versioned guidance mechanism, although delivered sequences depend on participant behavior and clips may differ acoustically. Voice identity, library metadata, playback onset, and delivery faults are therefore recorded so that each can be traced to its condition.
 
 This record matters because a delayed or confusing cue could alter search performance or a participant's judgment of the voice and then be mistaken for an effect of voice condition. Appendix~\ref{app:scenarios} defines guidance sequence tests and an evaluation rubric for checking the implementation.
 
+\section{Development Evaluation}
+\label{sec:development-evaluation}
+Before participant data collection, the system was evaluated in two ways: automated software verification and recorded development sessions on the headset. Both describe how the apparatus behaves; neither provides participant results or a voice-condition effect.
+
+\subsection{Software Verification}
+Software verification records document the apparatus alongside the development recordings in Section~\ref{sec:development-results}. A verification run on October 20, 2026 passed schedule and voice-isolation checks confirming one practice trial in the first assigned voice, two measured blocks, and the nominal-angle quotas. The same run passed 38 trial-export tests and seven workload scoring and plotting tests, and the Android application was built, installed, and launched successfully. These test counts come from that run and were not re-executed for this manuscript. The current software version, dated October 25, 2026, includes the pre-cue snapshot and balanced direction and height allocation. Its schedule checks pass across 50 participant identifiers and both voice orders, and its geometry checks pass across every starting wall and angle category.
+\begin{table}[htbp]
+\centering\caption{Apparatus verification and outstanding validation.}
+\small\tagpdfsetup{table/header-rows={1}}
+\begin{tabularx}{\linewidth}{@{}p{0.28\linewidth}XX@{}}\toprule
+Component & What was verified & Not yet established \\\midrule
+Schedule and voice checks & One practice trial and nominal allocation of 40 trials in each of two blocks pass automated checks & Wearer completion of a full session \\
+Trial export and TLX tests & Declared scales and retrospective joins are correct in tested cases & Validation of all questionnaires \\
+Unity integration checks & Listed state and interaction cases pass & Robustness to all timing races \\
+Android build/install/launch & Application built, installed, and started & Acceptance in a participant session \\
+Exact pre-cue theta & Snapshot saved at readiness completion; geometry checks pass & Observation in a complete wearer session \\
+Vertical allocation & 20/20 and per-angle height quotas pass schedule checks & Target visibility and seated comfort \\
+Voice-condition outcomes & None; no confirmatory dataset reported & Any performance or preference conclusion \\\bottomrule
+\end{tabularx}
+\end{table}
+
+\input{chapters/07-development-results}

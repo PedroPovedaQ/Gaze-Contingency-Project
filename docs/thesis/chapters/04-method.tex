@@ -1,3 +1,9 @@
+\chapter{USER STUDY METHODOLOGY}
+\label{ch:study}
+This chapter describes the within-participant user study that uses Follow My Voice to answer the research questions in Section~\ref{sec:research-questions}. It covers the experimental design and participants, the procedure, the data the system records, how each measure is scored, and the planned statistical analysis.
+
+The study design draws on Chiossi et al.'s visual-search study, which combines search outcomes with eye-tracking measures~\cite{chiossi2024searching}. This study keeps that separation between task performance and visual behavior but changes the research question to voice identity, initially withholds the target identity, and uses a researcher-selected 25-second search limit. Complementary work by Pfeil et al. at UCF compares eye--head coordination in virtual and physical viewing~\cite{pfeil2018eyehead}. That work motivates retaining head motion alongside eye direction when interpreting gaze in this application.
+
 \section{Experimental Design}
 \label{ch:methodology}
 \draftnote{This section specifies the proposed confirmatory procedure. The implemented snapshot supports one practice trial, two 40-trial blocks, and a final questionnaire handoff. It also records pre-cue starting geometry and balances target direction and height within each block. Sample size and pilot acceptance rules remain unresolved.}
@@ -41,8 +47,8 @@ Nominal angle steps are defined relative to the readiness (start) wall, which is
 \subsection{Participants}
 Eligible participants are consenting adults able to understand the task, hear the guidance, view the scene with usual correction and safely use the seated setup and right controller. Handedness, visual correction and prior XR and voice-assistant experience are recorded. Sample size and the enrollment ceiling will be determined before recruitment by a power analysis for the theta-adjusted repeated-measures outcome that accounts for plausible within-participant variation and incomplete observations.
 
-\subsection{Research Questions}
-The primary question is whether self-similar and neutral voices differ in active completion time after accounting for absolute starting theta and repeated observations within participants. Secondary questions concern workload, measured with an adaptation of NASA-TLX~\cite{hart1988nasatlx}, and the four Intrinsic Motivation Inventory (IMI) subscales~\cite{ryan1982control,mcauley1989imi}. Exploratory questions concern agent perception, eeriness, voice experience, reliance, search behavior and variation in the voice contrast with starting angle. The primary voice contrast is two-sided because no directional advantage for self-similarity is assumed. Repeated trials are treated as within-participant observations, not as independent participants.
+\subsection{Research Questions and Outcomes}
+Each research question in Section~\ref{sec:research-questions} maps onto specific outcomes. RQ1 uses active completion time as the primary outcome, with missed targets and perceived workload, measured with an adaptation of NASA-TLX~\cite{hart1988nasatlx}, as secondary outcomes. RQ2 uses the Index of Pupillary Activity~\cite{duchowski2018ipa}, fixation count, and saccade frequency, which remain exploratory until the eye-event detectors are validated on the headset. RQ3 uses the interest/enjoyment subscale of the Intrinsic Motivation Inventory (IMI)~\cite{ryan1982control,mcauley1989imi}, with the other three IMI subscales reported alongside it. Agent perception, eeriness, voice experience, reliance, search behavior, and variation in the voice contrast with starting angle are exploratory. The hypotheses are directional, favoring the self-similar voice, but the voice contrasts are tested two-sided so that an advantage for the neutral voice would also be detected. Repeated trials are treated as within-participant observations, not as independent participants.
 
 
 \section{Procedure}
