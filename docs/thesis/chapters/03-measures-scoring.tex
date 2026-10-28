@@ -23,17 +23,19 @@ Distinct walls visited, wall transitions and revisits summarize search coverage 
 
 \paragraph{Agent perception.} Twenty-one items from \href{https://doi.org/10.1145/3651288}{Guo et al. (2024), Appendix A, Table A1}~\cite{guo2024doppelganger} assess co-presence (Q1--6), perceived intelligence (Q13--18), appealing/eerie/familiar impressions (Q20--22), and perceived anthropomorphism (Q37--42). ``Virtual character'' is adapted to ``voice agent.'' Responses range from 1 = Very strongly disagree to 7 = Very strongly agree. The three six-item constructs have separate complete-scale means. Q20--22 are analyzed individually rather than combined into a multi-item eeriness index of the kind refined in uncanny-valley research~\cite{homacdorman2017eeriness}.
 
+\paragraph{Agent rating.} Five draft items adapt the Agent Rating Questionnaire (ARQ)~\cite{wang2020terrible}, as used by Venkatakrishnan et al. for a task-guiding agent in VR~\cite{venkatakrishnan2026clarifying}, with one item per dimension: helpfulness, relatability, appropriate behavior, likeability, and willingness to interact again. Responses range from 1 = Very strongly disagree to 7 = Very strongly agree. The items are analyzed individually as exploratory measures of agent perception.
+
 \paragraph{Voice experience and reliance.} Twelve custom 1--7 agreement items assess voice similarity, responsiveness, helpfulness, distraction, familiarity, trust, comfort, uncanniness, reliance, naturalness, willingness to follow and motivation to act without guidance. Voice similarity serves as a manipulation check. Voice liking and retrospective percentage of guidance use each use 0--100 responses with separate unable-to-answer options. These 14 numeric items are analyzed individually, as they do not form a validated scale. Liking during voice audition remains separate from condition-specific liking collected at the end.
 
 \paragraph{Debrief.} Open debrief questions explore perceived performance, guidance experience, own-voice comfort, possible use cases and voice preference. Broad experience questions precede specific eeriness or inner-dialogue probes.
 
-Each condition-specific set in the final survey contains 65 numeric responses (130 across both sets): six workload ratings, 24 IMI items, 21 Guo items and 14 custom ratings. Technical checks and optional text are additional. Questionnaire observations have participant-by-block scope even when repeated across the 40 trial summaries of a block, and missing answers remain missing rather than zero.
+In the final survey, each item is answered side by side for the Selected Voice and the Self-Similar Voice. Each voice column contains 70 numeric responses (140 in total): six workload ratings, 24 IMI items, 21 Guo items, five ARQ items, and 14 custom ratings. Technical checks and optional text are additional. Questionnaire observations have participant-by-block scope even when repeated across the 40 trial summaries of a block, and missing answers remain missing rather than zero.
 
 
-Table~\ref{tab:battery} summarizes the condition-specific battery. Counts refer to numeric items in one block-referenced set, not independent scales. Exact wording and reverse-key positions are preserved in Appendices~\ref{app:instruments} and~\ref{app:data}.
+Table~\ref{tab:battery} summarizes the condition-specific battery. Counts refer to numeric items in one voice column, not independent scales. Exact wording and reverse-key positions are preserved in Appendices~\ref{app:instruments} and~\ref{app:data}.
 \begin{table}[htbp]
 \centering
-\caption[Condition-specific questionnaire battery]{Proposed final questionnaire battery for each referenced voice block. These ratings are administered after both blocks; setup voice ratings are separate.}
+\caption[Condition-specific questionnaire battery]{Proposed final questionnaire battery, answered side by side for the Selected Voice and the Self-Similar Voice after both blocks; setup voice ratings are separate.}
 \label{tab:battery}
 \small
 \tagpdfsetup{table/header-rows={1}}
@@ -43,6 +45,7 @@ Measure & Items & Scoring and interpretation \\\midrule
 NASA-TLX adaptation & 6 & Six 0--10 dimensions; complete unweighted mean after reversing only raw Performance as $10-r$. Preserve raw responses and explicit bounds. \\
 IMI & 24 & Separate interest/enjoyment (7), effort/importance (5), pressure/tension (5), and value/usefulness (7) means. No overall total. \\
 Agent perception & 21 & Three six-item means: co-presence, intelligence, anthropomorphism. Appealing, eerie, and familiar remain three single items. \\
+Agent rating (ARQ) & 5 & Five single items, one per dimension: helpfulness, relatability, appropriate behavior, likeability, and willingness to interact again. \\
 Custom voice and assistance & 14 & Individual ratings of voice and guidance experience. No unvalidated combined score. \\\midrule
 Total per block reference & 65 & 130 numeric ratings across two references, before technical checks and optional text. \\\bottomrule
 \end{tabularx}

@@ -17,7 +17,8 @@ Voice condition & Neutral or self-similar; actual voice ID, provider, synthesis 
 Assigned order & Neutral-first or self-similar-first; practice uses the first assigned voice.\\
 Build and policy & Application revision, configuration, state-machine policy, phrase semantics, and library version.\\
 Schedule & Seed, schedule version, nominal wall assignment, direction and height assignment, realized geometry, and attempt status.\\
-Survey scope & Administration phase and timestamp, recorded separately from the referenced participant, block, and voice.\\\bottomrule
+Survey scope & Administration phase and timestamp, recorded separately from the referenced participant, block, and voice; each side-by-side rating carries its voice column (Selected Voice or Self-Similar Voice).\\
+Intake & Audio intake answers (eligibility and background), the intake agent voice ID, and the identifiers of the speech samples used for cloning, linked to the participant's study ID.\\\bottomrule
 \end{longtable}
 \endgroup
 
@@ -55,7 +56,7 @@ NASA-TLX~\cite{hart1988nasatlx} scoring retains the six raw values on the 0--10 
 
 IMI~\cite{ryan1982control,mcauley1989imi} scoring uses separate complete subscale means: interest/enjoyment (7), effort/importance (5), pressure/tension (5), and value/usefulness (7). On the 1--7 response scale, reverse-coded values use $8-r$. Within-subscale reverse positions are enjoyment 3 and 4, effort 2 and 5, pressure 1 and 3, and none for value. There is no overall IMI total.
 
-The agent-perception battery selected from Guo et al.~\cite{guo2024doppelganger} retains source identifiers. Co-presence Q1--6, perceived intelligence Q13--18, and anthropomorphism Q37--42 are separate six-item means when complete. Q20 appealing, Q21 eerie, and Q22 familiar are individual ratings in their original directions. There is no 21-item or combined eeriness total. Custom voice/assistance items likewise remain individual outcomes.
+The agent-perception battery selected from Guo et al.~\cite{guo2024doppelganger} retains source identifiers. Co-presence Q1--6, perceived intelligence Q13--18, and anthropomorphism Q37--42 are separate six-item means when complete. Q20 appealing, Q21 eerie, and Q22 familiar are individual ratings in their original directions. There is no 21-item or combined eeriness total. Custom voice/assistance items likewise remain individual outcomes. The five draft ARQ items~\cite{wang2020terrible} (helpfulness, relatability, appropriate behavior, likeability, willingness to interact again) are individual 1--7 ratings with no composite score.
 
 \section{Export Validation}
 Before analysis, automated checks will reject duplicate trial keys, unknown voice/block joins, negative active intervals, selection before reveal, and scores outside declared bounds, while preserving incomplete outcomes, missing contacts, absent questionnaire items, and old records with insufficient provenance. Joined tables will be checked for exactly one survey observation per participant and referenced block before survey values are repeated on trial rows. Exports will be reproducible from raw records and a versioned analysis configuration.

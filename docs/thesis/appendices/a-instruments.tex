@@ -1,6 +1,6 @@
 \chapter{QUESTIONNAIRE WORDING AND ADMINISTRATION}\label{app:instruments}
 \newpage
-This appendix reproduces the proposed questionnaire wording, response ranges, and administration procedure. The condition-specific sets adapt NASA-TLX~\cite{hart1988nasatlx}, the Intrinsic Motivation Inventory~\cite{ryan1982control,mcauley1989imi}, and agent-perception items from Guo et al.~\cite{guo2024doppelganger}. The 0--10 NASA-TLX format and the task-specific wording are documented adaptations, and the Performance prompt asks about success and runs from Failure to Perfect. Synchronization of these forms with Qualtrics is on hold. Each condition-specific set refers to one block, but both sets are completed in the final survey, and no questionnaire is administered between blocks. Section~\ref{ch:methodology} and Appendix~\ref{app:data} give source attribution and scoring rules.
+This appendix reproduces the proposed questionnaire wording, response ranges, and administration procedure. The condition-specific sets adapt NASA-TLX~\cite{hart1988nasatlx}, the Intrinsic Motivation Inventory~\cite{ryan1982control,mcauley1989imi}, agent-perception items from Guo et al.~\cite{guo2024doppelganger}, and draft Agent Rating Questionnaire items~\cite{wang2020terrible,venkatakrishnan2026clarifying}. The 0--10 NASA-TLX format and the task-specific wording are documented adaptations, and the Performance prompt asks about success and runs from Failure to Perfect. Synchronization of these forms with Qualtrics is on hold. Each condition-specific set refers to one block, but both sets are completed in the final survey, and no questionnaire is administered between blocks. Section~\ref{ch:methodology} and Appendix~\ref{app:data} give source attribution and scoring rules.
 
 
 % Print-only response marks; every numeric choice remains explicit.
@@ -18,26 +18,48 @@ This appendix reproduces the proposed questionnaire wording, response ranges, an
   \surveybubble\ 6\hfill\surveybubble\ 7\hfill\surveybubble\ 8\hfill
   \surveybubble\ 9\hfill\surveybubble\ 10\par
   \noindent #1\hfill #2\par}}
+\newcommand{\surveysevenpair}[3]{%
+  \par\nopagebreak\smallskip{\small\noindent\textit{Selected Voice}\par}\nopagebreak\surveyseven{#1}{#2}{#3}%
+  \nopagebreak{\small\noindent\textit{Self-Similar Voice}\par}\nopagebreak\surveyseven{#1}{#2}{#3}}
+\newcommand{\surveytlxpair}[2]{%
+  \par\nopagebreak\smallskip{\small\noindent\textit{Selected Voice}\par}\nopagebreak\surveytlx{#1}{#2}%
+  \nopagebreak{\small\noindent\textit{Self-Similar Voice}\par}\nopagebreak\surveytlx{#1}{#2}}
 \newcommand{\surveywrite}{\par\nopagebreak\noindent\rule{\linewidth}{0.3pt}\par}
 
 \section{Administration}
-Participants will complete one practice trial in the first assigned voice, followed by two counterbalanced voice blocks of 40 measured trials each. The final survey will administer two separately labelled retrospective questionnaire sets, one for each voice block, with identical item wording and order. The break between blocks will include immediate comfort and tracking checks but no questionnaire. Survey administration and rest breaks both fall outside active-search timing.
+Participants will complete one practice trial in the first assigned voice, followed by two counterbalanced voice blocks of 40 measured trials each. Before the headset, an audio intake survey covers eligibility and background. The final survey presents each condition-specific item once, with side-by-side response columns for the Selected Voice and the Self-Similar Voice. The break between blocks will include immediate comfort and tracking checks but no questionnaire. Survey administration and rest breaks both fall outside active-search timing.
 
 \tagpdfsetup{table/header-rows={1}}
 \begin{tabularx}{\linewidth}{@{}p{0.27\linewidth}X@{}}\toprule
 Stage & Measures \\\midrule
-Before headset exposure & Demographics and experience \\
+After consent & Audio intake survey: eligibility, demographics and experience, spoken by a generic intake agent; answers also supply voice-cloning samples \\
 Voice setup & Audition ratings and voice choice \\
 Between voice blocks & Rest break, immediate comfort and tracking checks; no questionnaire \\
-Final survey after both blocks & Two condition-specific sets (6 workload, 24 IMI, 21 agent-perception and 14 voice/assistance ratings each), technical checks, optional comments, voice comparison and debrief \\\bottomrule
+Final survey after both blocks & One side-by-side set rated for each voice (6 workload, 24 IMI, 21 agent-perception, 5 ARQ and 14 voice/assistance ratings per voice), technical checks, optional comments, voice comparison and debrief \\\bottomrule
 \end{tabularx}
-Each condition-specific set in the final survey contains 65 numeric responses (130 across both sets) before technical checks and optional text. Setup will include a separate liking rating for each auditioned voice, including the self-similar voice.
+Each voice column in the final survey contains 70 numeric responses (140 across both columns) before technical checks and optional text. Setup will include a separate liking rating for each auditioned voice, including the self-similar voice.
 
-\section{Baseline}
-Fill one circle per question unless instructed to select all that apply. Write numeric or text responses on the lines provided. An unanswered item remains missing.
+\section{Audio Intake Survey}
+A generic intake agent, whose voice is not part of the neutral-voice catalog, reads each question aloud. A short tone signals when the participant should answer, and the researcher or system codes the spoken answer into the options shown. The participant's spoken answers also supply the speech samples used to clone the self-similar voice. An unanswered item remains missing.
+
+\subsection*{Eligibility}
+\par\medskip\noindent
+Are you 18 years of age or older?
+\par\nopagebreak \surveychoice{Yes}\surveychoice{No}
+\par\medskip\noindent
+Can you hear spoken instructions clearly through the headset audio?
+\par\nopagebreak \surveychoice{Yes}\surveychoice{No}\surveychoice{Unsure}
+\par\medskip\noindent
+Can you see clearly, using glasses or contact lenses if you normally wear them?
+\par\nopagebreak \surveychoice{Yes}\surveychoice{No}\surveychoice{Unsure}
+\par\medskip\noindent
+Are you able to sit on a swivel chair, turn around, and use a handheld controller with your right hand?
+\par\nopagebreak \surveychoice{Yes}\surveychoice{No}\surveychoice{Unsure}
+
+\subsection*{Background and experience}
 
 \par\medskip\noindent
-Study code (assigned by the researcher):
+Study code (assigned by the researcher; not asked aloud):
 \textit{Response:} Coded identifier; no name or contact details.\surveywrite
 \par\medskip\noindent
 Age range:
@@ -74,307 +96,331 @@ Which of these voices would you prefer to use for the task?
 Can you hear the voice clearly and at a comfortable volume?
 \par\nopagebreak \surveychoice{Yes}\surveychoice{No} Resolve volume or audibility problems before continuing.
 Record the offered voice set/version, voice IDs, audition order and selected voice. Demographic gender and perceived voice gender are distinct variables; voice choice is recorded directly rather than inferred from demographic gender.
-\clearpage\section{Final survey: condition-specific questionnaire sets}
-Complete this set twice during the final survey, first for Block 1 and then for Block 2. Display the referenced block number and actual voice condition before each set. Please answer only about that indicated block. There are no right or wrong answers. You may leave an item unanswered if you cannot answer it.
-Each response will be linked to participant, session and block IDs, actual voice condition/ID, condition order, survey version and actual administration timestamp, with administration phase recorded as final and reference scope as participant-by-block.
+\clearpage\section{Final survey: side-by-side voice ratings}
+Each item is shown once with two response columns side by side: the \emph{Selected Voice} (the voice you chose) and the \emph{Self-Similar Voice} (the synthetic version of your own voice). Rate each voice by thinking about the block in which you heard it. There are no right or wrong answers. You may leave an item unanswered if you cannot answer it.
+Each response will be linked to participant, session and block IDs, actual voice condition/ID, condition order, survey version and actual administration timestamp, with administration phase recorded as final and reference scope as participant-by-block; the block for each voice column is recovered from the saved counterbalanced order.
 \subsection{Workload}
-Rate each aspect of the indicated block. Fill one circle per row. This 0--10 adaptation of NASA-TLX takes its positive Performance prompt from the \href{https://human-factors.arc.nasa.gov/groups/TLX/downloads/TLXScale.pdf}{NASA rating form} but reverses its response direction to run from Failure to Perfect.
+Rate each aspect for each voice, thinking about the block in which you heard it. Fill one circle per row. This 0--10 adaptation of NASA-TLX takes its positive Performance prompt from the \href{https://human-factors.arc.nasa.gov/groups/TLX/downloads/TLXScale.pdf}{NASA rating form} but reverses its response direction to run from Failure to Perfect.
 \begin{enumerate}
 \item \begin{minipage}[t]{\linewidth}
 Mental Demand -- How mentally demanding was this block?
-\surveytlx{0 = Very low}{10 = Very high}
+\surveytlxpair{0 = Very low}{10 = Very high}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 Physical Demand -- How physically demanding was this block?
-\surveytlx{0 = Very low}{10 = Very high}
+\surveytlxpair{0 = Very low}{10 = Very high}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 Temporal Demand -- How hurried or rushed did you feel during this block?
-\surveytlx{0 = Very low}{10 = Very high}
+\surveytlxpair{0 = Very low}{10 = Very high}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 Performance -- How successful were you in accomplishing what you were asked to do?
-\surveytlx{0 = Failure}{10 = Perfect}
+\surveytlxpair{0 = Failure}{10 = Perfect}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 Effort -- How hard did you have to work to achieve your level of performance?
-\surveytlx{0 = Very low}{10 = Very high}
+\surveytlxpair{0 = Very low}{10 = Very high}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 Frustration -- How insecure, discouraged, irritated, stressed, or annoyed did you feel?
-\surveytlx{0 = Very low}{10 = Very high}
+\surveytlxpair{0 = Very low}{10 = Very high}
 \end{minipage}
 \end{enumerate}
 \textit{Response:} Integer ratings from 0 to 10. For demand, effort and frustration: 0 = Very low; 10 = Very high. For performance: 0 = Failure; 10 = Perfect. Intermediate values are numbered without additional anchors.
 \subsection{Activity experience: IMI}
-Rate each statement about the search activity in the indicated block. Use 1 = Not at all true, 4 = Somewhat true, and 7 = Very true; the other numbered points are available.
+Rate each statement about the search activity for each voice. Use 1 = Not at all true, 4 = Somewhat true, and 7 = Very true; the other numbered points are available.
 \subsubsection*{Interest/enjoyment}\label{imi1}
 \begin{enumerate}
 \item \begin{minipage}[t]{\linewidth}
 I enjoyed doing this activity very much.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 This activity was fun to do.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I thought this was a boring activity.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 This activity did not hold my attention at all.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I would describe this activity as very interesting.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I thought this activity was quite enjoyable.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 While I was doing this activity, I was thinking about how much I enjoyed it.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \end{enumerate}
 \subsubsection*{Effort/importance}\label{imi2}
 \begin{enumerate}
 \item \begin{minipage}[t]{\linewidth}
 I put a lot of effort into this.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I didn't try very hard to do well at this activity.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I tried very hard on this activity.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 It was important to me to do well at this task.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I didn't put much energy into this.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \end{enumerate}
 \subsubsection*{Pressure/tension}\label{imi3}
 \begin{enumerate}
 \item \begin{minipage}[t]{\linewidth}
 I did not feel nervous at all while doing this.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I felt very tense while doing this activity.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I was very relaxed in doing this.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I was anxious while working on this task.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I felt pressured while doing this activity.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \end{enumerate}
 \subsubsection*{Value/usefulness}\label{imi4}
 \begin{enumerate}
 \item \begin{minipage}[t]{\linewidth}
 I believe this activity could be of some value to me.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I think that doing this activity is useful for practicing visual search.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I think this is important to do because it can improve my search performance.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I would be willing to do this again because it has some value to me.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I think doing this activity could help me to search for targets.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I believe doing this activity could be beneficial to me.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I think this is an important activity.
-\surveyseven{Not at all true}{Somewhat true}{Very true}
+\surveysevenpair{Not at all true}{Somewhat true}{Very true}
 \end{minipage}
 \end{enumerate}
 \subsection{Agent perception}
-Rate the voice agent you experienced in the indicated block. Use 1 = Very strongly disagree and 7 = Very strongly agree; intermediate points are numbered 2--6.
+Rate each voice agent you experienced. Use 1 = Very strongly disagree and 7 = Very strongly agree; intermediate points are numbered 2--6.
 \subsubsection*{Co-presence}
 \begin{enumerate}
 \item[Q1.] \begin{minipage}[t]{\linewidth}
 I noticed the voice agent.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q2.] \begin{minipage}[t]{\linewidth}
 The voice agent noticed me.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q3.] \begin{minipage}[t]{\linewidth}
 The voice agent's presence was obvious to me.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q4.] \begin{minipage}[t]{\linewidth}
 My presence was obvious to the voice agent.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q5.] \begin{minipage}[t]{\linewidth}
 The voice agent caught my attention.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q6.] \begin{minipage}[t]{\linewidth}
 I caught the voice agent's attention.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \end{enumerate}
 \subsubsection*{Perceived intelligence}
 \begin{enumerate}
 \item[Q13.] \begin{minipage}[t]{\linewidth}
 The voice agent was able to operate without my intervention.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q14.] \begin{minipage}[t]{\linewidth}
 The voice agent was aware of the virtual environment.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q15.] \begin{minipage}[t]{\linewidth}
 The voice agent was able to set and pursue tasks by itself in anticipation of future needs.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q16.] \begin{minipage}[t]{\linewidth}
 The voice agent was able to complete tasks quickly.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q17.] \begin{minipage}[t]{\linewidth}
 The voice agent was able to find and process the necessary information for completing the task.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q18.] \begin{minipage}[t]{\linewidth}
 The voice agent was able to adapt/adjust its behavior based on prior events.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \end{enumerate}
 \subsubsection*{Appealing, eerie and familiar impressions}
 \begin{enumerate}
 \item[Q20.] \begin{minipage}[t]{\linewidth}
 I found the voice agent appealing.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q21.] \begin{minipage}[t]{\linewidth}
 I found the voice agent eerie.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q22.] \begin{minipage}[t]{\linewidth}
 I found the voice agent familiar.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \end{enumerate}
 \subsubsection*{Perceived anthropomorphism}
 \begin{enumerate}
 \item[Q37.] \begin{minipage}[t]{\linewidth}
 The voice agent is able to speak like a human.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q38.] \begin{minipage}[t]{\linewidth}
 The voice agent can be happy.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q39.] \begin{minipage}[t]{\linewidth}
 The voice agent can be friendly.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q40.] \begin{minipage}[t]{\linewidth}
 The voice agent can be respectful.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q41.] \begin{minipage}[t]{\linewidth}
 The voice agent can be funny.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \item[Q42.] \begin{minipage}[t]{\linewidth}
 The voice agent can be caring.
-\surveyseven{Very strongly disagree}{}{Very strongly agree}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
+\end{minipage}
+\end{enumerate}
+\subsection{Agent rating (ARQ, draft)}
+Rate each voice agent. One draft item per dimension adapts the Agent Rating Questionnaire~\cite{wang2020terrible} as used by Venkatakrishnan et al.~\cite{venkatakrishnan2026clarifying}. Use 1 = Very strongly disagree and 7 = Very strongly agree.
+\begin{enumerate}[labelwidth=3.2em,leftmargin=3.6em]
+\item[ARQ1.] \begin{minipage}[t]{\linewidth}
+The voice agent was helpful. \textit{(Helpfulness)}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
+\end{minipage}
+\item[ARQ2.] \begin{minipage}[t]{\linewidth}
+I could relate to the voice agent. \textit{(Relatability)}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
+\end{minipage}
+\item[ARQ3.] \begin{minipage}[t]{\linewidth}
+The voice agent behaved appropriately. \textit{(Appropriate behavior)}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
+\end{minipage}
+\item[ARQ4.] \begin{minipage}[t]{\linewidth}
+The voice agent was likeable. \textit{(Likeability)}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
+\end{minipage}
+\item[ARQ5.] \begin{minipage}[t]{\linewidth}
+I would be willing to interact with the voice agent again. \textit{(Interact again)}
+\surveysevenpair{Very strongly disagree}{}{Very strongly agree}
 \end{minipage}
 \end{enumerate}
 \subsection{Voice and assistance experience}
-Rate each statement about this block. Use 1 = Strongly disagree and 7 = Strongly agree; intermediate points are numbered 2--6.
+Rate each statement for each voice. Use 1 = Strongly disagree and 7 = Strongly agree; intermediate points are numbered 2--6.
 \begin{enumerate}
 \item \begin{minipage}[t]{\linewidth}
 The agent's voice is similar to mine.
-\surveyseven{Strongly disagree}{}{Strongly agree}
+\surveysevenpair{Strongly disagree}{}{Strongly agree}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 The hints seemed responsive to what I was looking at.
-\surveyseven{Strongly disagree}{}{Strongly agree}
+\surveysevenpair{Strongly disagree}{}{Strongly agree}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 The hints were helpful.
-\surveyseven{Strongly disagree}{}{Strongly agree}
+\surveysevenpair{Strongly disagree}{}{Strongly agree}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 The hints were distracting.
-\surveyseven{Strongly disagree}{}{Strongly agree}
+\surveysevenpair{Strongly disagree}{}{Strongly agree}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 The speaking voice felt familiar.
-\surveyseven{Strongly disagree}{}{Strongly agree}
+\surveysevenpair{Strongly disagree}{}{Strongly agree}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I trusted the spoken guidance.
-\surveyseven{Strongly disagree}{}{Strongly agree}
+\surveysevenpair{Strongly disagree}{}{Strongly agree}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I felt comfortable hearing this voice.
-\surveyseven{Strongly disagree}{}{Strongly agree}
+\surveysevenpair{Strongly disagree}{}{Strongly agree}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 The voice felt uncanny or unsettling.
-\surveyseven{Strongly disagree}{}{Strongly agree}
+\surveysevenpair{Strongly disagree}{}{Strongly agree}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I relied on the spoken hints when deciding where to search next.
-\surveyseven{Strongly disagree}{}{Strongly agree}
+\surveysevenpair{Strongly disagree}{}{Strongly agree}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 The agent's voice sounded natural.
-\surveyseven{Strongly disagree}{}{Strongly agree}
+\surveysevenpair{Strongly disagree}{}{Strongly agree}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I was willing to follow the agent's instructions.
-\surveyseven{Strongly disagree}{}{Strongly agree}
+\surveysevenpair{Strongly disagree}{}{Strongly agree}
 \end{minipage}
 \item \begin{minipage}[t]{\linewidth}
 I was motivated to complete the task without the agent's guidance.
-\surveyseven{Strongly disagree}{}{Strongly agree}
+\surveysevenpair{Strongly disagree}{}{Strongly agree}
 \end{minipage}
 \end{enumerate}
 \par\medskip\noindent
-How much did you like the voice in this block?
-\textit{Response:} 0--100; 0 = Do not like at all, 100 = Like extremely; Unable to rate.\par\noindent Rating (0--100): \rule{0.2\linewidth}{0.3pt}\quad\surveychoice{Unable to rate}
+How much did you like each voice?
+\textit{Response:} 0--100 for each voice; 0 = Do not like at all, 100 = Like extremely; Unable to rate.\par\noindent Selected Voice (0--100): \rule{0.15\linewidth}{0.3pt}\quad\surveychoice{Unable to rate}\par\noindent Self-Similar Voice (0--100): \rule{0.15\linewidth}{0.3pt}\quad\surveychoice{Unable to rate}
 \par\medskip\noindent
-During this block, what percentage of the time did you use the agent's guidance to decide where to search?
-\textit{Response:} 0--100\%; 0 = None of the time, 100 = All of the time; Unable to estimate.\par\noindent Percentage (0--100): \rule{0.16\linewidth}{0.3pt}\,\%\quad\surveychoice{Unable to estimate}
+For each voice, what percentage of the time did you use the agent's guidance to decide where to search?
+\textit{Response:} 0--100\% for each voice; 0 = None of the time, 100 = All of the time; Unable to estimate.\par\noindent Selected Voice (0--100): \rule{0.15\linewidth}{0.3pt}\,\%\quad\surveychoice{Unable to estimate}\par\noindent Self-Similar Voice (0--100): \rule{0.15\linewidth}{0.3pt}\,\%\quad\surveychoice{Unable to estimate}
 \par\noindent\begin{minipage}{\linewidth}
 \par\medskip\noindent
-How would you describe the gender presentation of the agent's voice?
+How would you describe the gender presentation of each agent's voice?
 \textit{Response:} Optional free text.\surveywrite\surveychoice{Unsure}
 \end{minipage}\par
 \subsection{Technical and comfort checks}
@@ -388,13 +434,13 @@ Did any prompt unexpectedly repeat, cut off, arrive late, or use the wrong voice
 Did you take an unplanned break or experience an interruption?
 \par\nopagebreak \surveychoice{No}\surveychoice{Yes} If Yes, optional description.\surveywrite
 \par\medskip\noindent
-Is there anything else you would like to share about this block?
+Is there anything else you would like to share about either voice?
 \textit{Response:} Optional free text.\surveywrite
 \section{Final survey: comparison and debrief}
 \subsection{Voice comparison and debrief}
 \par\medskip\noindent
 Which voice did you prefer?
-\par\nopagebreak \surveychoice{The neutral voice I selected}\surveychoice{The synthetic version of my own voice}\surveychoice{No preference}\surveychoice{Unsure}
+\par\nopagebreak \surveychoice{The Selected Voice}\surveychoice{The Self-Similar Voice}\surveychoice{No preference}\surveychoice{Unsure}
 \begin{enumerate}
 \item Why did you choose that response?
 \item How did you approach the task, and how did the guidance affect your strategy?
@@ -412,8 +458,8 @@ Responses are optional. The interviewer will ask the broad experience questions 
 
 
 
-\section{Retained Voice-Recording Passage}
-The English passage below is reproduced verbatim from the run sheet and supplies the recording used to prepare the self-similar voice. Before participant use, the passage, recording duration, and audio acceptance procedure will be verified against the study build and versioned. The objects named in the passage are recording material only and do not identify the targets of measured trials. Participants will read in their usual speaking voice, without a request to whisper or imitate an inner monologue.
+\section{Fallback Voice-Recording Passage}
+The participant's spoken answers during the audio intake normally supply the samples used to prepare the self-similar voice. The English passage below, reproduced verbatim from the run sheet, is read only when the intake does not yield enough usable speech. Before participant use, the passage, recording duration, and audio acceptance procedure will be verified against the study build and versioned. The objects named in the passage are recording material only and do not identify the targets of measured trials. Participants will read in their usual speaking voice, without a request to whisper or imitate an inner monologue.
 
 \begin{quote}
 Locate the red sphere. Look toward the upper shelf. Move your gaze slowly to the right. Check the blue cube near the center. Compare each object's color and shape. Scan the lower row from left to right. Look beside the purple cylinder. Point the controller ray at the target and check its highlight. Press the trigger to select the matching object. Take a short pause. Get ready for the next trial.
