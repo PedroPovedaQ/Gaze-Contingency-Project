@@ -209,11 +209,14 @@ public sealed partial class TrialReviewApp
         float left=16;
         if(provenance!=null){StatusChip(new Rect(left,18,112,28),provenance,m_Warn,true);left+=120;}
         var breadcrumb=new Rect(left,14,232,36);
-        if(GUI.Button(breadcrumb,new GUIContent(name+" ▾",name+" · Participants & datasets"),m_Chip))OpenDatasetPanel();
+        if(GUI.Button(breadcrumb,new GUIContent((participant==provenance&&string.IsNullOrEmpty(DatasetName)?$"Run {run}":name)+" ▾",name+" · Participants & datasets"),m_Chip))OpenDatasetPanel();
         string status=m_FollowLive?(WaitingForHeadset?"Waiting for signal":m_DrainingLive?"Buffered replay":"Following live"):m_ViewLive?"Reviewing archive":"Saved replay";
         Color stateColor=m_FollowLive?(WaitingForHeadset?m_MutedLabel.normal.textColor:m_DrainingLive?m_Warn:m_Ok):m_ViewLive?m_Info:m_MutedLabel.normal.textColor;
         if(WaitingForHeadset)stateColor.a=.55f+.45f*Mathf.Abs(Mathf.Sin(Time.unscaledTime*2));
-        StatusChip(new Rect(left+244,18,154,28),"●  "+status,stateColor);
+        var statusRect=new Rect(left+244,18,154,28);
+        StatusChip(statusRect,"",stateColor);
+        GUI.Label(new Rect(statusRect.x+10,statusRect.y,14,statusRect.height),"●",new GUIStyle(m_Small){normal={textColor=stateColor}});
+        GUI.Label(new Rect(statusRect.x+28,statusRect.y,statusRect.width-32,statusRect.height),status,new GUIStyle(m_Label){fontSize=12,alignment=TextAnchor.MiddleLeft});
         float right=width-688;
         bool enabled=GUI.enabled;GUI.enabled=enabled&&!m_DetachedReview;
         if(Action(new Rect(right,14,208,36),"New participant session",true))OpenIntake();
@@ -225,15 +228,16 @@ public sealed partial class TrialReviewApp
             if(Action(new Rect(right+300,14,148,36),"Wi-Fi settings",m_LivePanel))m_LivePanel=!m_LivePanel;
             LiveModeSwitch(new Rect(right+456,14,160,36));
         }
-        if(GUI.Button(new Rect(width-56,14,40,36),new GUIContent(m_LightTheme?"☾":"☀",m_LightTheme?"Dark mode":"Light mode"),m_Chip))ToggleTheme();
+        if(GUI.Button(new Rect(width-64,14,48,36),new GUIContent(m_LightTheme?"Dark":"Light",m_LightTheme?"Dark mode":"Light mode"),m_Chip))ToggleTheme();
     }
     void HeaderMenu(float width)
     {
         if(!m_FileMenu)return;
-        var rect=new Rect(width-472,58,208,100);Panel(rect);
+        var rect=new Rect(width-472,58,208,100);Fill(rect,m_Border);Fill(new Rect(rect.x+1,rect.y+1,rect.width-2,rect.height-2),m_Raised);
         if(Action(new Rect(rect.x+8,rect.y+8,192,36),"Open run…")){m_FileMenu=false;Browse(false);}
         if(Action(new Rect(rect.x+8,rect.y+52,192,36),"Demo")){m_FileMenu=false;StartCoroutine(Open(Path.Combine(Application.streamingAssetsPath,"Demo/recording.jsonl")));}
-        if(Event.current.type==EventType.MouseDown&&!rect.Contains(Event.current.mousePosition)&&Event.current.mousePosition.y>64)m_FileMenu=false;
+        if(Event.current.type==EventType.KeyDown&&Event.current.keyCode==KeyCode.Escape){m_FileMenu=false;Event.current.Use();}
+        if(Event.current.type==EventType.MouseDown&&!rect.Contains(Event.current.mousePosition)&&!new Rect(width-472,14,76,36).Contains(Event.current.mousePosition))m_FileMenu=false;
     }
     void LiveModeSwitch(Rect rect)
     {
@@ -281,9 +285,13 @@ public sealed partial class TrialReviewApp
     void Trials(Rect rect)
     {
         GUILayout.BeginArea(rect);GUILayout.Label("TRIALS",m_Heading);GUILayout.Space(8);
+        GUILayout.BeginHorizontal();
         GUI.SetNextControlName("text:trial-search");
         m_TrialQuery=GUILayout.TextField(m_TrialQuery,m_Field,GUILayout.Height(36));
-        if(string.IsNullOrEmpty(m_TrialQuery))GUI.Label(new Rect(10,35,150,28),"Search trials…",m_Small);
+        var search=GUILayoutUtility.GetLastRect();
+        if(string.IsNullOrEmpty(m_TrialQuery)&&GUI.GetNameOfFocusedControl()!="text:trial-search")GUI.Label(new Rect(search.x+8,search.y,search.width-16,search.height),"Search trials…",m_Small);
+        if(GUILayout.Button(new GUIContent("×","Clear trial search"),m_Chip,GUILayout.Width(28),GUILayout.Height(36)))m_TrialQuery="";
+        GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         string[] filters={"All","Study","Practice"};
         for(int i=0;i<3;i++)if(GUILayout.Button(filters[i],m_TrialFilter==i?m_ActiveChip:m_Chip))m_TrialFilter=i;
@@ -294,11 +302,24 @@ public sealed partial class TrialReviewApp
         {
             if(!TrialReviewTracks.Matches(trial,m_TrialQuery,m_TrialFilter))continue;
             string next=trial.practice?"PRACTICE":$"BLOCK {trial.block} · {Voice(trial.voice)}";
-            if(next!=group){GUILayout.Space(10);GUILayout.Label(next,m_Heading);group=next;}
+            if(next!=group)
+            {
+                GUILayout.Space(12);GUILayout.Label(new GUIContent(trial.practice?"PRACTICE":$"BLOCK {trial.block}",$"Recorded block: {trial.block} · voice: {trial.voice}"),m_Heading);
+                var voiceRect=GUILayoutUtility.GetRect(10,24,GUILayout.ExpandWidth(true));
+                StatusChip(voiceRect,Voice(trial.voice),m_Info);GUILayout.Space(8);group=next;
+            }
             var track=m_Tracks.For(trial);
             string duration=track==null?"":Clock(track.End-trial.time);
             bool selected=trial==m_Timeline.State.Trial;
-            if(GUILayout.Button($"{(selected?"› ":"")}{TrialNumber(trial):00}     {duration}\n|θ| {trial.absoluteTheta}°  ·  {(track?.Completed==true?"Selected":track?.TimedOut==true?"Time up":"Recorded")}",selected?m_ActiveRow:m_Row,GUILayout.Height(59)))SelectTrial(trial);
+            var row=GUILayoutUtility.GetRect(10,76,GUILayout.ExpandWidth(true));
+            var rowStyle=new GUIStyle(m_Row);if(selected)rowStyle.normal.background=m_CardTexture;
+            if(GUI.Button(row,new GUIContent("",$"{next} · trial {TrialNumber(trial)} · {duration}"),rowStyle))SelectTrial(trial);
+            if(selected)Fill(new Rect(row.x,row.y+6,3,row.height-12),m_Accent);
+            GUI.Label(new Rect(row.x+12,row.y+8,40,24),$"{TrialNumber(trial):00}",new GUIStyle(m_Mono){fontSize=18});
+            GUI.Label(new Rect(row.x+50,row.y+12,row.width-62,20),duration,new GUIStyle(m_Mono){fontSize=12,alignment=TextAnchor.MiddleRight});
+            GUI.Label(new Rect(row.x+12,row.y+43,70,22),$"|θ| {trial.absoluteTheta}°",new GUIStyle(m_Mono){fontSize=11});
+            StatusChip(new Rect(row.xMax-82,row.y+42,74,24),track?.Completed==true?"Selected":track?.TimedOut==true?"Time up":"Recorded",track?.Completed==true?m_Ok:track?.TimedOut==true?m_Warn:m_MutedLabel.normal.textColor);
+            GUILayout.Space(8);
             count++;
         }
         if(count==0)GUILayout.Label("No matching trials",m_MutedLabel);

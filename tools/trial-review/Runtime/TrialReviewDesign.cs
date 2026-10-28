@@ -5,7 +5,7 @@ public sealed partial class TrialReviewApp
     Color m_Info,m_Ok,m_Warn,m_ErrorColor,m_Raised;
     GUIStyle m_Mono,m_Clock,m_Card,m_Unavailable;
     Font m_MonoFont;
-    Texture2D m_CardTexture;
+    Texture2D m_CardTexture,m_ScrollTexture;
     Texture2D Rounded(Color color)
     {
         const int size=16;
@@ -30,6 +30,11 @@ public sealed partial class TrialReviewApp
         m_Unavailable=new GUIStyle(m_MutedLabel){fontStyle=FontStyle.Italic};
         if(m_CardTexture!=null)Destroy(m_CardTexture);
         m_CardTexture=Rounded(m_Raised);
+        if(m_ScrollTexture!=null)Destroy(m_ScrollTexture);
+        m_ScrollTexture=Rounded(m_Border);
+        GUI.skin.verticalScrollbar=new GUIStyle{fixedWidth=8,normal={background=m_Panel},margin=new RectOffset(4,0,0,0)};
+        GUI.skin.verticalScrollbarThumb=new GUIStyle{fixedWidth=8,border=new RectOffset(6,6,6,6),normal={background=m_ScrollTexture},hover={background=m_ScrollTexture},active={background=m_ScrollTexture}};
+        GUI.skin.verticalScrollbarUpButton=new GUIStyle{fixedHeight=0};GUI.skin.verticalScrollbarDownButton=new GUIStyle{fixedHeight=0};
         m_Card=new GUIStyle{normal={background=m_CardTexture},border=new RectOffset(6,6,6,6),padding=new RectOffset(12,12,12,12),margin=new RectOffset(0,0,4,8)};
     }
     void StatusChip(Rect rect,string text,Color color,bool outline=false)

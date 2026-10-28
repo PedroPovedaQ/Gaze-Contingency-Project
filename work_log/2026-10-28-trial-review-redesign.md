@@ -29,3 +29,9 @@ Built and ran captures at 1440×900 and 1280×800; inspected dark/light screensh
 Compact camera segment, Layers checkbox drawer (26-layers.png), timestamped missing-pose banner, and anchored provenance caption. Verified Menlo after SF Mono failed to render; no font errors in recapture. Read thesis Step 1/2 feedback; header icon/status/menu and scrollbars will be refined with the next layout step.
 
 Built and ran captures at 1440×900 and 1280×800; inspected dark/light screenshots. Existing Unity build verification suites passed. Screenshot files: `after/step3/01-first-person.png` through `24-intake-ready.png`, plus `1280/`.
+
+## Step 4
+
+Trial cards show mono number/duration, angle and semantic outcome; selected trial retains a 3px gold bar. Search placeholder respects focus with a clear control (27-trial-search.png). Applied thesis header feedback (no duplicate provenance, legible status, text theme control, outlined menu with Escape/outside dismissal) and themed 8px scrollbars. Fixed clipped theme text in a second capture pass.
+
+Built and ran captures at 1440×900 and 1280×800; inspected dark/light screenshots. Existing Unity build verification suites passed. Screenshot files: `after/step4/01-first-person.png` through `24-intake-ready.png`, plus `1280/`.
