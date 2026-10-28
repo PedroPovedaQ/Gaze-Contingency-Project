@@ -8,6 +8,7 @@ using UnityEngine;
 public sealed partial class TrialReviewApp
 {
     bool m_CaptureMode;
+    bool m_CaptureCheckInputs;
     string m_CaptureDirectory;
     void Awake()
     {
@@ -44,6 +45,39 @@ public sealed partial class TrialReviewApp
         if(phase=="interview_complete") {state.eligible=true;state.cloneState="ready";state.cacheState="preparing";state.cacheCompleted=420;state.speechSeconds=34;state.sampleWords=72;}
         return state;
     }
+    void RunCaptureInputChecks()
+    {
+        var original=Event.current;
+        void Check(bool condition,string message){if(!condition)throw new InvalidOperationException("Capture input check: "+message);}
+        try
+        {
+            m_Playing=false;m_SpaceHeld=false;Seek(0);
+            void Key(EventType type,KeyCode code,bool enabled=true,string focus="")=>HandlePlaybackKeyboard(new Event{type=type,keyCode=code},enabled,focus);
+            Key(EventType.KeyDown,KeyCode.Space);Check(m_Playing,"Space plays");
+            Key(EventType.KeyDown,KeyCode.Space);Check(m_Playing,"Held Space does not repeat");
+            Key(EventType.KeyUp,KeyCode.Space);Key(EventType.KeyDown,KeyCode.Space);Check(!m_Playing,"Space pauses");
+            Key(EventType.KeyUp,KeyCode.Space);
+            Key(EventType.KeyDown,KeyCode.RightArrow);Check(m_Time>0,"Right steps forward");
+            Key(EventType.KeyDown,KeyCode.LeftArrow);Check(m_Time==0,"Left steps backward");
+            Key(EventType.KeyDown,KeyCode.Space,true,"text:trial-search");Check(!m_Playing,"Text field retains Space");
+            Key(EventType.KeyDown,KeyCode.Space,false);Check(!m_Playing,"Modal retains Space");
+            var area=new Rect(100,100,400,138);int id=GUIUtility.GetControlID(FocusType.Passive);var trial=m_Timeline.Trials[0];
+            void Pointer(EventType type,float x)
+            {
+                Event.current=new Event{type=type,button=0,mousePosition=new Vector2(x,160)};
+                HandleTimelinePointer(area,0,60,trial,id);
+            }
+            Pointer(EventType.MouseDown,200);Check(Math.Abs(m_Time-15)<.001&&m_TimelineDrag,"Drag starts at cursor");
+            Pointer(EventType.MouseDrag,600);Check(m_Time==60,"Drag clamps at end across trial boundaries");
+            Pointer(EventType.MouseUp,400);Check(Math.Abs(m_Time-45)<.001&&!m_TimelineDrag&&GUIUtility.hotControl==0,"Drag releases at cursor");
+            // Pointer checks crossed trials in a single GUI frame. Start screenshots with a fresh renderer,
+            // so display-only collider caches cannot retain objects from the exercised seek sequence.
+            m_Renderer.Dispose();m_Renderer=new TrialReplayRenderer(m_Timeline){RecordedHead=true,ShowGaze=false};
+            ResetCamera();Seek(0);m_CaptureCheckInputs=false;
+            Debug.Log("TRIAL_REVIEW_CAPTURE_INPUT_PASS Space, repeat guard, arrows, text/modal guards, timeline drag and clamp");
+        }
+        finally {Event.current=original;}
+    }
     IEnumerator CaptureScreens()
     {
         Directory.CreateDirectory(m_CaptureDirectory);
@@ -51,15 +85,15 @@ public sealed partial class TrialReviewApp
         m_Dataset=m_Catalog.Register(m_Path,"synthetic-desktop-demo","SYNTHETIC","");
         m_DatasetDraft="Synthetic development demo";m_IdDraft="SYNTHETIC";
         m_IntakeMic="Development microphone (inactive)";
-        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu","layers","trial-search","cursor-details","cursor-collapsed"};
+        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu","layers","trial-search","cursor-details","cursor-collapsed","shortcuts","jev-alternatives"};
         var timeline=m_Timeline;
         for(int i=0;i<states.Length;i++)
         {
             string state=states[i];
             m_Timeline=timeline; m_Playing=false; m_Tab=0; m_CameraMode=0; m_RunTimeline=true;
-            m_InspectScroll=Vector2.zero; m_IntakeScroll=Vector2.zero; m_IntakeOpen=false; m_Intake=null; m_IntakeFolder=null;
+            m_JevScroll=Vector2.zero;m_InspectScroll=Vector2.zero; m_IntakeScroll=Vector2.zero; m_IntakeOpen=false; m_Intake=null; m_IntakeFolder=null;
             m_TrialQuery=state=="trial-search"?"02":"";m_LayersOpen=state=="layers";m_FileMenu=state=="file-menu";m_Browser=false;m_DatasetPanel=false;m_Loading=false;m_Ready=false;m_LightTheme=state.StartsWith("light-");
-            m_CollapsedCards.Clear();
+            m_ShortcutsOpen=state=="shortcuts";m_CollapsedCards.Clear();
             if(state=="cursor-details")m_InspectScroll=new Vector2(0,500);
             if(state=="cursor-collapsed")foreach(string card in new[]{"Agent speech","Guidance state","Tracking"})m_CollapsedCards[card]=true;
             Seek(0);
@@ -70,7 +104,8 @@ public sealed partial class TrialReviewApp
             if(state=="cursor-speech") {Seek(1.2);m_InspectScroll=Vector2.zero;}
             if(state=="events")m_Tab=1;
             if(state=="final-no-summary")m_Tab=2;
-            if(state=="jev"||state=="light-jev"){m_Tab=3;m_SelectedJev=m_Tracks.Jev.Decisions.FirstOrDefault()?.Id;}
+            if(state=="jev"||state=="light-jev"||state=="jev-alternatives"){m_Tab=3;m_SelectedJev=m_Tracks.Jev.Decisions.FirstOrDefault()?.Id;}
+            if(state=="jev-alternatives")m_JevScroll=new Vector2(0,330);
             if(state=="evaluation")m_Tab=4;
             if(state=="selected-trial")m_RunTimeline=false;
             if(state=="open-run"){m_Browser=true;m_BrowserPath=Path.Combine(Application.streamingAssetsPath,"Demo");m_Directories=Array.Empty<string>();m_Files=new[]{m_Path};}

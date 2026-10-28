@@ -41,3 +41,9 @@ Built and ran captures at 1440×900 and 1280×800; inspected dark/light screensh
 Single-row Cursor/Events/Final/Jev/Eval tabs with selected underline and stable inspector width. Agent speech is above the fold; cursor cards collapse with saved preferences; numeric metrics use Menlo and unavailable values are muted italic. Final/Jev/Eval card surfaces retain legacy/missing provenance. Added 28-cursor-details.png and 29-cursor-collapsed.png. Read theta legibility feedback; proportional theta label will be included with transport typography.
 
 Built and ran captures at 1440×900 and 1280×800; inspected dark/light screenshots. Existing Unity build verification suites passed. Screenshot files: `after/step5/01-first-person.png` through `24-intake-ready.png`, plus `1280/`.
+
+## Step 6
+
+Grouped neutral playback, mono clocks, speed, samples, scope, export and audio controls. Event labels offset from markers, ellipsized or omitted when crowded; boundaries and subtle selected-trial shading retain gaze gaps. Added shortcut popover (30-shortcuts.png). Actual Unity GUI handler checks pass for Space, held-key guard, arrows, text/modal guards, cross-trial drag/clamp/release. Applied theta font and compact selected Jev-row feedback; 31-jev-alternatives.png verifies probability bars and frozen-state provenance. Capture resets its renderer after input checks to isolate screenshots from exercised seek caches.
+
+Built and ran captures at 1440×900 and 1280×800; inspected dark/light screenshots. Existing Unity build verification suites passed. Screenshot files: `after/step6/01-first-person.png` through `24-intake-ready.png`, plus `1280/`.

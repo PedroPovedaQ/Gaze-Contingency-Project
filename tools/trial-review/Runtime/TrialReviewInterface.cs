@@ -113,6 +113,7 @@ public sealed partial class TrialReviewApp
     {
         if(m_CaptureMode && Event.current.type!=EventType.Layout && Event.current.type!=EventType.Repaint) return;
         Styles();
+        if(m_CaptureMode&&m_CaptureCheckInputs&&m_Timeline!=null&&Event.current.type==EventType.Repaint){RunCaptureInputChecks();return;}
         // Keep controls comfortably sized on both retina and small desktop windows.
         float scale=Mathf.Min(Screen.width/1440f,Screen.height/900f);
         GUI.matrix=Matrix4x4.Scale(new Vector3(scale,scale,1));
@@ -317,7 +318,7 @@ public sealed partial class TrialReviewApp
             if(selected)Fill(new Rect(row.x,row.y+6,3,row.height-12),m_Accent);
             GUI.Label(new Rect(row.x+12,row.y+8,40,24),$"{TrialNumber(trial):00}",new GUIStyle(m_Mono){fontSize=18});
             GUI.Label(new Rect(row.x+50,row.y+12,row.width-62,20),duration,new GUIStyle(m_Mono){fontSize=12,alignment=TextAnchor.MiddleRight});
-            GUI.Label(new Rect(row.x+12,row.y+43,70,22),$"|θ| {trial.absoluteTheta}°",new GUIStyle(m_Mono){fontSize=11});
+            GUI.Label(new Rect(row.x+12,row.y+43,70,22),$"|θ| {trial.absoluteTheta}°",new GUIStyle(m_Label){fontSize=12});
             StatusChip(new Rect(row.xMax-82,row.y+42,74,24),track?.Completed==true?"Selected":track?.TimedOut==true?"Time up":"Recorded",track?.Completed==true?m_Ok:track?.TimedOut==true?m_Warn:m_MutedLabel.normal.textColor);
             GUILayout.Space(8);
             count++;
@@ -531,37 +532,53 @@ public sealed partial class TrialReviewApp
         var record=direction>0?m_Events.FirstOrDefault(r=>r.sequence>cursor):m_Events.LastOrDefault(r=>r.sequence<cursor);
         if(record!=null){m_Playing=false;Seek(record.time,record.sequence);}
     }
+    bool m_ShortcutsOpen;
     void Transport(Rect rect)
     {
         Panel(rect);bool enabled=GUI.enabled;GUI.enabled=enabled&&m_Timeline!=null;
-        float x=rect.x+10,y=rect.y+8;
-        if(Action(new Rect(x,y,68,38),m_Playing?"Pause":"Play",m_Playing))TogglePlayback();
-        if(Action(new Rect(x+76,y,70,38),"‹ Event"))JumpEvent(-1);
-        if(Action(new Rect(x+152,y,70,38),"Event ›"))JumpEvent(1);
+        float x=rect.x+12,y=rect.y+8;
+        if(Action(new Rect(x,y,68,38),"‹ Event"))JumpEvent(-1);
+        if(GUI.Button(new Rect(x+76,y,40,38),new GUIContent(m_Playing?"Ⅱ":"▶",Help(m_Playing?"Pause":"Play")),new GUIStyle(m_Chip){fontSize=20,padding=new RectOffset(4,4,4,4)}))TogglePlayback();
+        if(Action(new Rect(x+124,y,68,38),"Event ›"))JumpEvent(1);
+        GUI.Label(new Rect(x+212,y-1,146,28),Clock(m_Time),m_Clock);
+        GUI.Label(new Rect(x+212,y+27,146,20),"Trial "+Clock(m_Time-(m_Timeline?.State.Trial?.time??0)),new GUIStyle(m_Mono){fontSize=11,normal={textColor=m_MutedLabel.normal.textColor}});
+        if(Action(new Rect(x+366,y,56,38),$"{m_Speed:0.##}×"))
+        {float[] speeds={.25f,.5f,1,2};m_Speed=speeds[(Array.IndexOf(speeds,m_Speed)+1)%speeds.Length];m_FollowLive=false;Sync(true);}
+        if(Action(new Rect(x+438,y,76,38),"‹ Sample"))Step(-1);
+        if(Action(new Rect(x+522,y,76,38),"Sample ›"))Step(1);
         double start=0,end=m_Timeline?.Duration??1;
         var trial=m_Timeline?.State.Trial;var track=m_Tracks.For(trial);
         if(!m_RunTimeline&&track!=null){start=trial.time;end=Math.Max(start+.001,track.End);}
         if(m_TimelineDrag){start=m_DragStart;end=m_DragEnd;trial=m_DragTrial;}
-        GUI.Label(new Rect(x+236,y+7,230,25),$"Study {Clock(m_Time)}  ·  Trial {Clock(m_Time-(m_Timeline?.State.Trial?.time??0))}",m_Label);
-        if(Action(new Rect(x+457,y,74,38),$"{m_Speed:0.##}×"))
-        {float[] speeds={.25f,.5f,1,2};m_Speed=speeds[(Array.IndexOf(speeds,m_Speed)+1)%speeds.Length];m_FollowLive=false;Sync(true);}
-        GUI.enabled=enabled; // Audio controls also work before the first live trial.
-        if(Action(new Rect(x+541,y,70,38),m_Muted?"Unmute":"Mute",m_Muted))SetViewerAudio(m_Volume,!m_Muted);
-        float volume=GUI.HorizontalSlider(new Rect(x+623,y+6,95,20),m_Volume,0,1);
-        GUI.Label(new Rect(x+623,y+23,100,18),$"Voice {m_Volume*100:0}%",m_Small);
+        float right=rect.xMax;
+        if(Action(new Rect(right-640,y,124,38),"Whole session",m_RunTimeline))m_RunTimeline=true;
+        if(Action(new Rect(right-512,y,124,38),"Selected trial",!m_RunTimeline))m_RunTimeline=false;
+        GUI.enabled=enabled&&trial!=null&&!m_ViewLive;
+        if(Action(new Rect(right-372,y,164,38),"Export trial data…"))ExportTrial();
+        GUI.enabled=enabled;
+        var speaker=new Rect(right-192,y,40,38);
+        if(GUI.Button(speaker,new GUIContent("",Help(m_Muted?"Unmute":"Mute")),m_Chip))SetViewerAudio(m_Volume,!m_Muted);
+        Color ink=m_Muted?m_MutedLabel.normal.textColor:m_Label.normal.textColor;
+        Fill(new Rect(speaker.x+9,speaker.y+15,5,9),ink);Fill(new Rect(speaker.x+14,speaker.y+11,4,17),ink);
+        if(m_Muted)GUI.Label(new Rect(speaker.x+22,speaker.y+8,16,24),"×",m_Label);
+        else {Fill(new Rect(speaker.x+23,speaker.y+14,2,11),ink);Fill(new Rect(speaker.x+29,speaker.y+10,2,19),ink);}
+        float volume=GUI.HorizontalSlider(new Rect(right-140,y+14,80,20),m_Volume,0,1);
+        GUI.Label(new Rect(right-52,y+6,44,28),$"{m_Volume*100:0}%",new GUIStyle(m_Mono){fontSize=12,alignment=TextAnchor.MiddleRight});
         if(volume!=m_Volume)SetViewerAudio(volume,m_Muted);
         GUI.enabled=enabled&&m_Timeline!=null;
-        if(Action(new Rect(x+734,y,85,38),"‹ Sample"))Step(-1);
-        if(Action(new Rect(x+825,y,85,38),"Sample ›"))Step(1);
-        if(Action(new Rect(rect.xMax-350,y,130,38),m_RunTimeline?"Whole session":"Selected trial",m_RunTimeline))m_RunTimeline=!m_RunTimeline;
-        GUI.enabled=enabled&&trial!=null&&!m_ViewLive;
-        if(Action(new Rect(rect.xMax-210,y,198,38),"Export trial data…"))ExportTrial();
-        GUI.enabled=enabled&&m_Timeline!=null;
-        var area=new Rect(rect.x+126,y+59,rect.width-144,138);
+        var area=new Rect(rect.x+126,y+66,rect.width-144,138);
         if(m_Timeline!=null)TimelineTracks(area,start,end,trial);
-        for(int i=0;i<4;i++)GUI.Label(new Rect(rect.x+14,area.y+18+i*30,110,24),new[]{"Agent speech","Gaze samples","Events","Jev decisions"}[i],m_MutedLabel);
-        string notice=string.IsNullOrEmpty(m_ExportNotice)?m_Speed==1?"Drag the playhead or any track · scene and data at cursor · Left / Right: sample · Space: play / pause":"Audio plays at 1× only · Space: play / pause":m_ExportNotice;
-        GUI.Label(new Rect(rect.x+14,rect.yMax-24,rect.width-28,20),notice,m_MutedLabel);
+        string[] lanes={"Agent speech","Gaze samples","Events","Jev decisions"};
+        for(int i=0;i<4;i++)GUI.Label(new Rect(rect.x+14,area.y+18+i*30,110,26),new GUIContent(lanes[i],i==3?"Green: speech/playback · orange: fade out · red: timeout/error · gray: pending/legacy · outlined: discarded":lanes[i]),m_Small);
+        GUI.enabled=enabled;
+        if(Action(new Rect(rect.x+12,rect.yMax-27,28,23),"?",m_ShortcutsOpen))m_ShortcutsOpen=!m_ShortcutsOpen;
+        string notice=string.IsNullOrEmpty(m_ExportNotice)?m_Speed==1?"":"Audio plays at 1× only · Space: play / pause":m_ExportNotice;
+        GUI.Label(new Rect(rect.x+48,rect.yMax-26,rect.width-64,20),notice,m_MutedLabel);
+        if(m_ShortcutsOpen)
+        {
+            var help=new Rect(rect.x+12,rect.yMax-147,440,112);Fill(help,m_Border);Fill(new Rect(help.x+1,help.y+1,help.width-2,help.height-2),m_Raised);
+            GUI.Label(new Rect(help.x+16,help.y+12,help.width-32,88),"Space: play / pause\nLeft / Right: previous / next sample\nDrag the playhead or any track · scene and data at cursor",m_Label);
+        }
         GUI.enabled=enabled;
     }
     void TogglePlayback()
@@ -594,8 +611,20 @@ public sealed partial class TrialReviewApp
         // Roughly ten ticks, rounded to useful seconds at each range.
         double step=duration<=10?1:duration<=50?5:duration<=100?10:duration<=300?30:duration<=900?60:300;
         for(double t=0;t<=duration;t+=step)
-        {float x=X(start+t);Fill(new Rect(x,rect.y+14,1,96),m_Border);GUI.Label(new Rect(x+3,rect.y-4,65,20),$"{t:0}s",m_Small);}
-        for(int lane=0;lane<4;lane++)Fill(new Rect(rect.x,rect.y+18+lane*30,rect.width,26),m_TrackBackground);
+        {float x=X(start+t);Fill(new Rect(x,rect.y+14,1,96),m_Border);if(!m_Timeline.Trials.Any(b=>Math.Abs(X(b.time)-x)<45))GUI.Label(new Rect(x+3,rect.y-4,65,20),$"{t:0}s",m_Small);}
+        for(int lane=0;lane<4;lane++)Fill(new Rect(rect.x,rect.y+18+lane*30,rect.width,26),lane%2==0?m_TrackBackground:m_Raised);
+        if(m_RunTimeline&&trial!=null)
+        {
+            var selected=m_Tracks.For(trial);
+            float from=Mathf.Clamp(X(trial.time),rect.x,rect.xMax),to=Mathf.Clamp(X(selected?.End??trial.time),rect.x,rect.xMax);
+            Fill(new Rect(from,rect.y+18,Mathf.Max(0,to-from),116),new Color(m_Info.r,m_Info.g,m_Info.b,.07f));
+        }
+        foreach(var boundary in m_Timeline.Trials)
+        {
+            if(boundary.time<start||boundary.time>end)continue;
+            float bx=X(boundary.time);Fill(new Rect(bx,rect.y+14,1,122),m_Border);
+            GUI.Label(new Rect(bx+4,rect.y-4,40,20),$"T{TrialNumber(boundary):00}",new GUIStyle(m_Small){font=m_MonoFont,normal={textColor=m_Label.normal.textColor}});
+        }
         foreach(var segment in m_Audio.Plan.Segments)
         {
             if(segment.End<=start||segment.Start.time>end)continue;
@@ -613,15 +642,22 @@ public sealed partial class TrialReviewApp
                 double a=Math.Max(start,gaze.Start),b=Math.Min(end,gaze.End);if(b<=a)continue;
                 Fill(new Rect(X(a),rect.y+56,Mathf.Max(1,X(b)-X(a)),6),m_Orange);
             }
-            float lastLabel=-1000;
-            foreach(var record in item.Events)
+        }
+        var events=m_Tracks.Trials.Values.Where(item=>m_RunTimeline||item.Snapshot==trial).SelectMany(item=>item.Events)
+            .Where(record=>record.time>=start&&record.time<=end&&!record.kind.StartsWith("audio_",StringComparison.Ordinal)&&!record.kind.StartsWith("readiness_",StringComparison.Ordinal)).OrderBy(record=>record.time).ThenBy(record=>record.sequence).ToList();
+        for(int i=0;i<events.Count;i++)
+        {
+            var record=events[i];float x=Mathf.Min(rect.xMax-3,X(record.time));
+            Fill(new Rect(x,rect.y+83,3,12),m_Info);
+            float next=i+1<events.Count?X(events[i+1].time):rect.xMax;
+            float gap=next-x;
+            string tooltip=$"{Clock(record.time-start)} · {EventName(record.kind)} · {TrialReviewGuidanceState.Transition(record)}";
+            if(GUI.Button(new Rect(x-3,rect.y+79,8,22),new GUIContent("",tooltip),GUIStyle.none)){m_Playing=false;Seek(record.time,record.sequence);}
+            if(gap>=60)
             {
-                if(record.time<start||record.time>end||record.kind.StartsWith("audio_",StringComparison.Ordinal)||record.kind.StartsWith("readiness_",StringComparison.Ordinal))continue;
-                float x=X(record.time);Fill(new Rect(x,rect.y+83,3,12),m_Accent);
-                string label=x-lastLabel>125?EventName(record.kind):"";
-                if(label.Length>0)lastLabel=x;
-                if(GUI.Button(new Rect(x-3,rect.y+79,Mathf.Min(label.Length>0?122:8,rect.xMax-x+3),22),new GUIContent("  "+label,$"{Clock(record.time-start)} · {EventName(record.kind)} · {TrialReviewGuidanceState.Transition(record)}"),m_Small))
-                {m_Playing=false;Seek(record.time,record.sequence);}
+                float labelWidth=gap-15;
+                string label=Ellipsis(EventName(record.kind),labelWidth,m_Small);
+                if(GUI.Button(new Rect(x+9,rect.y+79,labelWidth,22),new GUIContent(label,tooltip),m_Small)){m_Playing=false;Seek(record.time,record.sequence);}
             }
         }
         JevTrack(rect,start,end,trial);
@@ -630,6 +666,12 @@ public sealed partial class TrialReviewApp
         Fill(new Rect(cursor-5,rect.y+5,12,10),m_Accent);
         var stamp=new Rect(Mathf.Clamp(cursor-64,rect.x,rect.xMax-128),rect.y-24,128,22);
         Fill(stamp,m_Surface);GUI.Label(stamp,"Study "+Clock(m_Time),m_Small);
+    }
+    static string Ellipsis(string text,float width,GUIStyle style)
+    {
+        if(style.CalcSize(new GUIContent(text)).x<=width)return text;
+        while(text.Length>0&&style.CalcSize(new GUIContent(text+"…")).x>width)text=text.Substring(0,text.Length-1);
+        return text.Length==0?"":text+"…";
     }
     void HandleTimelinePointer(Rect rect,double start,double end,TrialReplayRecord trial,int id)
     {

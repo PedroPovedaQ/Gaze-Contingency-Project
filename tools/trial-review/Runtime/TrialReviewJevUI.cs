@@ -53,11 +53,16 @@ public sealed partial class TrialReviewApp
         foreach(var d in decisions)
         {
             string timing=d.Response?["elapsed_ms"] != null ? $" · {(double)d.Response["elapsed_ms"]:0} ms" : "";
-            GUILayout.BeginVertical(m_Card);
-            if(GUILayout.Button(new GUIContent($"{Clock(d.Time-(trial?.time??0))} · {d.Provider}",d.Kind+"\nClick to inspect the recorded request."),m_SelectedJev==d.Id?m_ActiveRow:m_Row))SelectJev(d);
-            var outcome=GUILayoutUtility.GetRect(10,24,GUILayout.ExpandWidth(true));StatusChip(outcome,d.Summary,JevColor(d));
-            if(timing.Length>0)GUILayout.Label(timing.Trim(' ','·'),m_Mono);
-            GUILayout.EndVertical();
+            var row=GUILayoutUtility.GetRect(10,56,GUILayout.ExpandWidth(true));
+            bool active=m_SelectedJev==d.Id;
+            var style=new GUIStyle(m_Row);if(active)style.normal.background=m_CardTexture;
+            string full=$"{Clock(d.Time-(trial?.time??0))} · {d.Provider} · {d.Summary}{timing}";
+            if(GUI.Button(row,new GUIContent("",full+"\n"+d.Kind+"\nClick to inspect the recorded request."),style))SelectJev(d);
+            if(active)Fill(new Rect(row.x,row.y+6,3,row.height-12),m_Accent);
+            GUI.Label(new Rect(row.x+12,row.y+8,106,40),$"{Clock(d.Time-(trial?.time??0))} · {d.Provider}",new GUIStyle(m_Mono){fontSize=11,wordWrap=true,alignment=TextAnchor.MiddleLeft});
+            StatusChip(new Rect(row.x+122,row.y+16,Mathf.Max(60,row.width-196),24),d.Summary,JevColor(d));
+            GUI.Label(new Rect(row.xMax-66,row.y+8,58,40),timing.Trim(' ','·'),new GUIStyle(m_Mono){fontSize=11,alignment=TextAnchor.MiddleRight});
+            GUILayout.Space(8);
         }
         GUILayout.EndVertical();
         var selected=decisions.FirstOrDefault(d=>d.Id==m_SelectedJev);
