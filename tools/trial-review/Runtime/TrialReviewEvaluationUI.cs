@@ -156,7 +156,7 @@ public sealed partial class TrialReviewApp
     {
         m_EvaluationScroll=GUILayout.BeginScrollView(m_EvaluationScroll,false,true);
         m_EvaluationContentWidth=Mathf.Max(170,width-40);
-        GUILayout.BeginVertical(GUILayout.Width(m_EvaluationContentWidth));
+        GUILayout.BeginVertical(m_Card,GUILayout.Width(m_EvaluationContentWidth));
         GUILayout.Label("GUIDANCE EVALUATION",m_Heading);
         GUILayout.Label("Post-run evidence checks and model judgments. Neither is a participant rating or proof of accurate eye tracking.",m_MutedLabel);
         bool automatic=!SuppressAutomaticEvaluation&&PlayerPrefs.GetInt("AutomaticAstraEvaluation",1)==1;

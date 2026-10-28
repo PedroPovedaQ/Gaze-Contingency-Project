@@ -46,14 +46,20 @@ public sealed partial class TrialReviewApp
     {
         m_JevScroll=GUILayout.BeginScrollView(m_JevScroll);
         var decisions=m_Tracks.Jev.Decisions.Where(d=>d.TrialId==trial?.trialId).ToList();
+        GUILayout.BeginVertical(m_Card);
         GUILayout.Label("MODEL DECISIONS",m_Heading);
         GUILayout.Label($"{decisions.Count(d=>!d.Legacy)} recorded requests · {decisions.Count(d=>d.Legacy)} legacy events",m_MutedLabel);
         GUILayout.Label("Recorded history, including outcomes after the cursor. Select a request to inspect the scene when it was sent.",m_MutedLabel);
         foreach(var d in decisions)
         {
             string timing=d.Response?["elapsed_ms"] != null ? $" · {(double)d.Response["elapsed_ms"]:0} ms" : "";
-            if(GUILayout.Button(new GUIContent($"{Clock(d.Time-(trial?.time??0))} · {d.Provider} · {d.Summary}{timing}",d.Kind+"\nClick to inspect the recorded request."),m_SelectedJev==d.Id?m_ActiveRow:m_Row))SelectJev(d);
+            GUILayout.BeginVertical(m_Card);
+            if(GUILayout.Button(new GUIContent($"{Clock(d.Time-(trial?.time??0))} · {d.Provider}",d.Kind+"\nClick to inspect the recorded request."),m_SelectedJev==d.Id?m_ActiveRow:m_Row))SelectJev(d);
+            var outcome=GUILayoutUtility.GetRect(10,24,GUILayout.ExpandWidth(true));StatusChip(outcome,d.Summary,JevColor(d));
+            if(timing.Length>0)GUILayout.Label(timing.Trim(' ','·'),m_Mono);
+            GUILayout.EndVertical();
         }
+        GUILayout.EndVertical();
         var selected=decisions.FirstOrDefault(d=>d.Id==m_SelectedJev);
         if(selected==null && decisions.Count>0)
         {
@@ -65,6 +71,7 @@ public sealed partial class TrialReviewApp
         GUILayout.Label(selected.Kind,m_Heading);
         if(selected.Legacy)
         { GUILayout.Label("Candidates and probabilities: not recorded in this version.",m_Label);GUILayout.Label(selected.Application??"No details",m_Code);GUILayout.EndScrollView();return; }
+        GUILayout.BeginVertical(m_Card);
         GUILayout.Label("PROVIDER AND PLAYBACK",m_Heading);
         GUILayout.Label("Provider: "+selected.Provider+" · "+selected.Status,m_Label);
         GUILayout.Label("Unity: "+(selected.Application??"No application outcome recorded"),m_Label);
@@ -89,11 +96,12 @@ public sealed partial class TrialReviewApp
             : "Playback is a recorded software onset, not proof the participant heard it. A timeout can still produce local fallback audio.",m_MutedLabel);
         if (adaptive && selected.ApplicationRecord != null)
             GUILayout.Label(TrialReviewJev.Detail(selected.ApplicationRecord)?.ToString(Formatting.Indented) ?? selected.Application, m_Code);
+        GUILayout.EndVertical();
         var questions=payload?["questions"] as JObject;
         var answers=selected.Response?["answers"] as JObject;
         if(questions!=null)foreach(var q in questions.Properties())
         {
-            GUILayout.Space(10);GUILayout.Label(q.Name,m_Heading);
+            GUILayout.BeginVertical(m_Card);GUILayout.Label(q.Name,m_Heading);
             var answer=answers?[q.Name];
             string choice=(string)answer?["choice"];
             GUILayout.Label("Selected: "+(choice??"No accepted answer recorded"),m_Label);
@@ -103,13 +111,14 @@ public sealed partial class TrialReviewApp
                 bool numeric=double.TryParse(probability,System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out var value) && value>=0 && value<=1;
                 string suffix=numeric?$" ({value:P0})":" (probability not recorded)";
                 GUILayout.Label(new GUIContent((option.Name==choice?"✓ ":"")+option.Name+suffix,option.Value.ToString(Formatting.Indented)),m_Label);
-                if(numeric) { var bar=GUILayoutUtility.GetRect(20,5,GUILayout.ExpandWidth(true));Fill(bar,m_TrackBackground);Fill(new Rect(bar.x,bar.y,bar.width*(float)value,bar.height),m_Accent); }
+                if(numeric) { var bar=GUILayoutUtility.GetRect(20,5,GUILayout.ExpandWidth(true));Fill(bar,m_TrackBackground);Fill(new Rect(bar.x,bar.y,bar.width*(float)value,bar.height),m_Info); }
             }
+            GUILayout.EndVertical();
         }
-        GUILayout.Space(10);GUILayout.Label("STATE SENT TO MODEL",m_Heading);
+        GUILayout.BeginVertical(m_Card);GUILayout.Label("STATE SENT TO MODEL",m_Heading);
         GUILayout.Label(new GUIContent(payload?["state"]?.ToString(Formatting.Indented)??"Not recorded","Frozen state at request time, not the current playback cursor. Null means unavailable."),m_Code);
         GUILayout.Label("Model probabilities describe the supplied alternatives; they are not validated measures of navigation correctness.",m_MutedLabel);
-        GUILayout.EndScrollView();
+        GUILayout.EndVertical();GUILayout.EndScrollView();
     }
 
     // One consistent hover layer also makes existing GUIContent tooltips visible.

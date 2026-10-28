@@ -122,7 +122,7 @@ public sealed partial class TrialReviewApp
         HandlePlaybackKeyboard(Event.current, GUI.enabled, GUI.GetNameOfFocusedControl());
         Header(width);
         if(m_LivePanel)LiveControls(width);
-        float top=m_LivePanel?78+LiveControlsHeight:78,bottom=height-260,rail=204,inspector=m_Tab==3?380:274;
+        float top=m_LivePanel?78+LiveControlsHeight:78,bottom=height-260,rail=204,inspector=380;
         Panel(new Rect(0,top,rail,bottom-top));Panel(new Rect(width-inspector,top,inspector,bottom-top));
         float left=rail+14,viewWidth=width-inspector-14-left;
         m_OptionColumns=Mathf.Clamp(Mathf.FloorToInt(viewWidth/145),3,8);
@@ -436,19 +436,25 @@ public sealed partial class TrialReviewApp
     }
     void Metric(string label,string value)
     {
-        GUILayout.BeginHorizontal();GUILayout.Label(label,m_MutedLabel,GUILayout.Width(96));
-        GUILayout.Label(string.IsNullOrEmpty(value)?"Unavailable":value,m_Label);GUILayout.EndHorizontal();GUILayout.Space(5);
+        GUILayout.BeginHorizontal();GUILayout.Label(label,m_MutedLabel,GUILayout.Width(104));
+        value=string.IsNullOrEmpty(value)?"Unavailable":value;
+        bool unavailable=value.Contains("Unavailable")||value.Contains("No current sample")||value.Contains("Not recorded");
+        bool numeric=value.Any(char.IsDigit)&&!value.Any(c=>char.IsLetter(c)&&c!='m'&&c!='s');
+        GUILayout.Label(value,unavailable?m_Unavailable:numeric?new GUIStyle(m_Mono){wordWrap=true}:m_Label);GUILayout.EndHorizontal();GUILayout.Space(4);
     }
     void Inspector(Rect rect)
     {
         GUILayout.BeginArea(rect);GUILayout.BeginHorizontal();
         string[] tabs={"At cursor","Events","Final data","Jev","Evaluation"};
+        string[] labels={"Cursor","Events","Final","Jev","Eval"};
         for(int i=0;i<tabs.Length;i++)
         {
-            if(i==3){GUILayout.EndHorizontal();GUILayout.BeginHorizontal();}
-            if(GUILayout.Button(HelpContent(tabs[i]),m_Tab==i?m_ActiveChip:m_Chip)){m_Tab=i;m_InspectScroll=Vector2.zero;}
+            var style=new GUIStyle(m_Chip){fontStyle=m_Tab==i?FontStyle.Bold:FontStyle.Normal,padding=new RectOffset(4,4,8,8)};
+            foreach(var part in new[]{style.normal,style.hover,style.active,style.focused}){part.background=null;part.textColor=m_Label.normal.textColor;}
+            if(GUILayout.Button(new GUIContent(labels[i],Help(tabs[i])),style,GUILayout.Width((rect.width-20)/5))){m_Tab=i;m_InspectScroll=Vector2.zero;}
+            var tabRect=GUILayoutUtility.GetLastRect();if(m_Tab==i)Fill(new Rect(tabRect.x,tabRect.yMax-2,tabRect.width,2),m_Accent);
         }
-        GUILayout.EndHorizontal();GUILayout.Space(18);
+        GUILayout.EndHorizontal();GUILayout.Space(12);
         var state=m_Timeline.State;var trial=state.Trial;var sample=state.Sample;
         if(m_Tab==4) EvaluationInspector(trial,rect.width);
         else if(m_Tab==3) JevInspector(trial);
@@ -466,38 +472,53 @@ public sealed partial class TrialReviewApp
         else if(m_Tab==2)
         {
             m_InspectScroll=GUILayout.BeginScrollView(m_InspectScroll);
-            RunExportControls();
-            GUILayout.Label("FINAL TRIAL RESULTS",m_Heading);
+            GUILayout.BeginVertical(m_Card);RunExportControls();GUILayout.EndVertical();
+            GUILayout.BeginVertical(m_Card);GUILayout.Label("FINAL TRIAL RESULTS",m_Heading);
             GUILayout.Label("Final summary context, not values at the cursor. Block surveys repeat across trials.",m_MutedLabel);
             if(Button("Choose CSV export…"))Browse(true);
             var row=m_Summary?.For(trial);
             if(row==null)GUILayout.Label("No matching summary loaded. Choose a completed export with manifest.json and trials.csv.",m_Label);
             else foreach(var pair in row){GUILayout.Label(pair.Key,m_Heading);GUILayout.Label(string.IsNullOrEmpty(pair.Value)?"Unavailable":pair.Value,m_Label);GUILayout.Space(8);}
-            GUILayout.EndScrollView();
+            GUILayout.EndVertical();GUILayout.EndScrollView();
         }
         else
         {
             m_InspectScroll=GUILayout.BeginScrollView(m_InspectScroll);
-            GUILayout.Label(trial==null?"No trial":$"{(trial.practice?"Practice":"Trial")} {TrialNumber(trial):00}",m_Title);GUILayout.Space(14);
+            GUILayout.BeginVertical(m_Card);
+            GUILayout.Label(trial==null?"No trial":$"{(trial.practice?"Practice":"Trial")} {TrialNumber(trial):00}",m_Title);GUILayout.Space(8);
             Metric("Voice",Voice(trial?.voice));Metric("Study time",Clock(m_Time));Metric("Trial time",Clock(m_Time-(trial?.time??0)));Metric("Search",state.Searching?"Active":"Inactive");
-            GuidanceInspector();
-            ThetaInspector();
-            GUILayout.Space(12);GUILayout.Label("TRACKING",m_Heading);GUILayout.Space(8);
-            bool current=m_Renderer.SampleCurrent&&!WaitingForHeadset;
-            Metric("Eye gaze",current&&TrialReplayRenderer.GazeUsable(sample)?"Valid ray":current?"Unavailable / invalid":"No current sample");
-            Metric("Head pose",current&&TrialReplayRenderer.HeadUsable(sample)?"Tracked":"Unavailable");
-            Metric("Right trigger",!current||sample?.rightController==null||sample.rightController.tracked!=1?"Unavailable":sample.rightController.triggerHeld==1?"Held":sample.rightController.triggerHeld==0?"Released":"Unknown");
-            Metric("Sample age",sample==null?"Unavailable":$"{Math.Max(0,m_Time-sample.time)*1000:F0} ms");
-            GUILayout.Space(12);GUILayout.Label("AGENT SPEECH",m_Heading);GUILayout.Space(8);
-            var speech=m_Audio.Plan.Segments.LastOrDefault(s=>s.Contains(m_Time,m_Sequence)&&!(s.Start.detail??"").Contains("software_one_shot_start"));
-            GUILayout.Label(WaitingForHeadset?"Waiting for signal":speech==null?"No saved speech at this time":string.IsNullOrEmpty(speech.Start.text)?"Recorded audio (no transcript)":speech.Start.text,m_Label);
-            if(speech!=null&&!WaitingForHeadset&&Button("Play from this message")){m_Speed=1;Seek(speech.Start.time,speech.Start.sequence);m_Playing=true;Sync(true);}
-            GUILayout.Space(18);GUILayout.Label("GAZE PROVENANCE",m_Heading);GUILayout.Space(8);
-            Metric("Source",sample?.gazeRaySource??sample?.gazeSource);
-            Metric("Alignment",sample?.gazeRayVersion==TrialReplayGaze.Version?(sample.gazeAlignmentApplied?"Applied during capture":"Not applied"):m_Correction.Supported?"Legacy display correction":"Unverified legacy ray");
-            GUILayout.Label("Ray intersections are not validated fixations. Body, chair and room are reconstruction aids.",m_MutedLabel);
-            GUILayout.Space(14);m_RawExpanded=GUILayout.Toggle(m_RawExpanded,"Show raw observation",m_Chip);
-            if(m_RawExpanded&&sample!=null){GUILayout.Label($"Source line {m_Timeline.SampleSourceLine} · historical values remain during gaps",m_MutedLabel);GUI.SetNextControlName("text:raw-data");GUILayout.TextArea(JsonUtility.ToJson(sample,true),m_Code);}
+            GUILayout.EndVertical();
+            if(BeginInspectorCard("Agent speech"))
+            {
+                var speech=m_Audio.Plan.Segments.LastOrDefault(s=>s.Contains(m_Time,m_Sequence)&&!(s.Start.detail??"").Contains("software_one_shot_start"));
+                GUILayout.Label(WaitingForHeadset?"Waiting for signal":speech==null?"No saved speech at this time":string.IsNullOrEmpty(speech.Start.text)?"Recorded audio (no transcript)":speech.Start.text,speech==null?m_Unavailable:m_Label);
+                if(speech!=null&&!WaitingForHeadset&&Button("Play from this message")){m_Speed=1;Seek(speech.Start.time,speech.Start.sequence);m_Playing=true;Sync(true);}
+            }
+            EndInspectorCard();
+            if(BeginInspectorCard("Guidance state"))GuidanceInspector();EndInspectorCard();
+            if(BeginInspectorCard("Tracking"))
+            {
+                bool current=m_Renderer.SampleCurrent&&!WaitingForHeadset;
+                Metric("Eye gaze",current&&TrialReplayRenderer.GazeUsable(sample)?"Valid ray":current?"Unavailable / invalid":"No current sample");
+                Metric("Head pose",current&&TrialReplayRenderer.HeadUsable(sample)?"Tracked":"Unavailable");
+                Metric("Right trigger",!current||sample?.rightController==null||sample.rightController.tracked!=1?"Unavailable":sample.rightController.triggerHeld==1?"Held":sample.rightController.triggerHeld==0?"Released":"Unknown");
+                Metric("Sample age",sample==null?"Unavailable":$"{Math.Max(0,m_Time-sample.time)*1000:F0} ms");
+            }
+            EndInspectorCard();
+            if(BeginInspectorCard("Pre-cue angle snapshot"))ThetaInspector();EndInspectorCard();
+            if(BeginInspectorCard("Gaze provenance"))
+            {
+                Metric("Source",sample?.gazeRaySource??sample?.gazeSource);
+                Metric("Alignment",sample?.gazeRayVersion==TrialReplayGaze.Version?(sample.gazeAlignmentApplied?"Applied during capture":"Not applied"):m_Correction.Supported?"Legacy display correction":"Unverified legacy ray");
+                GUILayout.Label("Ray intersections are not validated fixations. Body, chair and room are reconstruction aids.",m_MutedLabel);
+            }
+            EndInspectorCard();
+            if(BeginInspectorCard("Raw observation"))
+            {
+                m_RawExpanded=GUILayout.Toggle(m_RawExpanded,"Show raw observation",m_Chip);
+                if(m_RawExpanded&&sample!=null){GUILayout.Label($"Source line {m_Timeline.SampleSourceLine} · historical values remain during gaps",m_MutedLabel);GUI.SetNextControlName("text:raw-data");GUILayout.TextArea(JsonUtility.ToJson(sample,true),m_Code);}
+            }
+            EndInspectorCard();
             if(!string.IsNullOrEmpty(m_Timeline.Warning))GUILayout.Label(m_Timeline.Warning,m_MutedLabel);
             if(!string.IsNullOrEmpty(m_Audio.Warning))GUILayout.Label(m_Audio.Warning,m_MutedLabel);
             GUILayout.EndScrollView();

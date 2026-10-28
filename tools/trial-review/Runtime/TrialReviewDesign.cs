@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public sealed partial class TrialReviewApp
 {
@@ -43,4 +44,20 @@ public sealed partial class TrialReviewApp
         if(outline)GUI.DrawTexture(new Rect(rect.x+1,rect.y+1,rect.width-2,rect.height-2),Texture2D.whiteTexture,ScaleMode.StretchToFill,false,0,m_Surface,0,5);
         GUI.Label(rect,text,new GUIStyle(m_Small){normal={textColor=color},alignment=TextAnchor.MiddleCenter});
     }
+    readonly Dictionary<string,bool> m_CollapsedCards=new Dictionary<string,bool>();
+    bool BeginInspectorCard(string title)
+    {
+        GUILayout.BeginVertical(m_Card);
+        if(!m_CollapsedCards.TryGetValue(title,out bool collapsed))
+            m_CollapsedCards[title]=collapsed=!m_CaptureMode&&PlayerPrefs.GetInt("ViewerCard:"+title,0)==1;
+        if(GUILayout.Button((collapsed?"+  ":"−  ")+title.ToUpperInvariant(),new GUIStyle(m_Heading){alignment=TextAnchor.MiddleLeft},GUILayout.MinHeight(24)))
+        {
+            m_CollapsedCards[title]=collapsed=!collapsed;
+            if(!m_CaptureMode){PlayerPrefs.SetInt("ViewerCard:"+title,collapsed?1:0);PlayerPrefs.Save();}
+        }
+        if(!collapsed)GUILayout.Space(8);
+        return !collapsed;
+    }
+    void EndInspectorCard()=>GUILayout.EndVertical();
+
 }

@@ -35,3 +35,9 @@ Built and ran captures at 1440×900 and 1280×800; inspected dark/light screensh
 Trial cards show mono number/duration, angle and semantic outcome; selected trial retains a 3px gold bar. Search placeholder respects focus with a clear control (27-trial-search.png). Applied thesis header feedback (no duplicate provenance, legible status, text theme control, outlined menu with Escape/outside dismissal) and themed 8px scrollbars. Fixed clipped theme text in a second capture pass.
 
 Built and ran captures at 1440×900 and 1280×800; inspected dark/light screenshots. Existing Unity build verification suites passed. Screenshot files: `after/step4/01-first-person.png` through `24-intake-ready.png`, plus `1280/`.
+
+## Step 5
+
+Single-row Cursor/Events/Final/Jev/Eval tabs with selected underline and stable inspector width. Agent speech is above the fold; cursor cards collapse with saved preferences; numeric metrics use Menlo and unavailable values are muted italic. Final/Jev/Eval card surfaces retain legacy/missing provenance. Added 28-cursor-details.png and 29-cursor-collapsed.png. Read theta legibility feedback; proportional theta label will be included with transport typography.
+
+Built and ran captures at 1440×900 and 1280×800; inspected dark/light screenshots. Existing Unity build verification suites passed. Screenshot files: `after/step5/01-first-person.png` through `24-intake-ready.png`, plus `1280/`.

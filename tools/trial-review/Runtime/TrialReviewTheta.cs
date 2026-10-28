@@ -78,7 +78,6 @@ public partial class TrialReviewApp
     {
         var record=m_Timeline.State.ThetaSnapshot;
         var value=TrialReviewTheta.Read(record);
-        GUILayout.Space(12);GUILayout.Label("PRE-CUE ANGLE SNAPSHOT",m_Heading);
         if(value==null)
         {
             GUILayout.Label(record==null?"Unavailable at this cursor. Older recordings and practice may have no snapshot.":"Malformed snapshot; inspect the raw event detail.",m_MutedLabel);

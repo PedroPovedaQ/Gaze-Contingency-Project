@@ -10,7 +10,6 @@ public sealed partial class TrialReviewApp
 
     void GuidanceInspector()
     {
-        GUILayout.Space(12);GUILayout.Label("GUIDANCE STATE",m_Heading);GUILayout.Space(8);
         var state=m_GuidanceState.Current;
         if(state==null){GUILayout.Label(m_GuidanceState.Availability,m_MutedLabel);return;}
         Metric("Policy",string.IsNullOrEmpty(state.guidancePolicy)?"Not recorded":state.guidancePolicy);

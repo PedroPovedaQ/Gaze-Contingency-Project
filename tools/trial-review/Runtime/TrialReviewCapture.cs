@@ -51,7 +51,7 @@ public sealed partial class TrialReviewApp
         m_Dataset=m_Catalog.Register(m_Path,"synthetic-desktop-demo","SYNTHETIC","");
         m_DatasetDraft="Synthetic development demo";m_IdDraft="SYNTHETIC";
         m_IntakeMic="Development microphone (inactive)";
-        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu","layers","trial-search"};
+        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu","layers","trial-search","cursor-details","cursor-collapsed"};
         var timeline=m_Timeline;
         for(int i=0;i<states.Length;i++)
         {
@@ -59,12 +59,15 @@ public sealed partial class TrialReviewApp
             m_Timeline=timeline; m_Playing=false; m_Tab=0; m_CameraMode=0; m_RunTimeline=true;
             m_InspectScroll=Vector2.zero; m_IntakeScroll=Vector2.zero; m_IntakeOpen=false; m_Intake=null; m_IntakeFolder=null;
             m_TrialQuery=state=="trial-search"?"02":"";m_LayersOpen=state=="layers";m_FileMenu=state=="file-menu";m_Browser=false;m_DatasetPanel=false;m_Loading=false;m_Ready=false;m_LightTheme=state.StartsWith("light-");
+            m_CollapsedCards.Clear();
+            if(state=="cursor-details")m_InspectScroll=new Vector2(0,500);
+            if(state=="cursor-collapsed")foreach(string card in new[]{"Agent speech","Guidance state","Tracking"})m_CollapsedCards[card]=true;
             Seek(0);
             if(state=="playing-subtitles"){Seek(1.2);m_Playing=true;}
             if(state=="missing-pose")Seek(8.35);
             if(state=="third-person")m_CameraMode=1;
             if(state=="overhead")m_CameraMode=2;
-            if(state=="cursor-speech") {Seek(1.2);m_InspectScroll=new Vector2(0,180);}
+            if(state=="cursor-speech") {Seek(1.2);m_InspectScroll=Vector2.zero;}
             if(state=="events")m_Tab=1;
             if(state=="final-no-summary")m_Tab=2;
             if(state=="jev"||state=="light-jev"){m_Tab=3;m_SelectedJev=m_Tracks.Jev.Decisions.FirstOrDefault()?.Id;}
