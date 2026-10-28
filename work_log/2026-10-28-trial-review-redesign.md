@@ -59,3 +59,15 @@ Built and ran captures at 1440×900 and 1280×800; inspected dark/light screensh
 Removed Unity splash and added centered loading spinner/card (41-startup.png). Prioritized trial-defining event labels and fixed shortcut-chip clipping. Applied intake review: separated error-outlined withdrawal, neutral right-hand finish, text close, phase-specific instructions, outlined selection cards and stronger scrim. Kept original one-click withdrawal: confirmation would add a gate forbidden by the binding scope; Pedro may decide separately. Sequential code review found/fixed clipped Layers controls in a reduced viewport; added scrolling and 42-layers-wifi-panel.png plus capture-only audio-status polling guard/editor check. Final 42 captures at both sizes and 121 Python tests passed; review and invariant receipts included.
 
 Built and ran captures at 1440×900 and 1280×800; inspected dark/light screenshots. Existing Unity build verification suites passed. Screenshot files: `after/step8/01-first-person.png` through `24-intake-ready.png`, plus `1280/`.
+
+## Final installation and acceptance
+
+All Steps 0–8 completed in order and committed locally: d580590, 9799552, 0b02b1d, dca7f6b, 3641eac, 3abb428, 5d872fb, 3a00543, 0ca7448. Final captures run from `01-first-person.png` through `42-layers-wifi-panel.png` at both resolutions; complete names are in coordination `trial-viewer-shots/PHASE2-INDEX.md` and `PHASE2-MANIFEST.json`.
+
+Built `/tmp/Trial Review Redesign Step8-release.app`, copied and captured from `~/Applications/Trial Review Redesign 20261028.app`, then updated `~/Applications/Follow My Voice Study Intake.app` only after acceptance. The old bundle is preserved as `~/Applications/Follow My Voice Study Intake Backup 20261028.app`. Every file hash and symlink target matched between build/new/installed bundles and between old/backup bundles. See `receipts/2026-10-28-trial-review-redesign/installation.json`.
+
+Verification: 121 Python tests; 24 Unity PASS markers covering build, existing replay/audio/provenance/CSV/seek checks and new capture/phase checks; 42 captures at 1440×900 and 1280×800 without exceptions or GUI layout errors. Real handlers exercised using synthetic Unity key/pointer events. Sequential ce-code-review receipt is `receipts/2026-10-28-trial-review-redesign/code-review.md`; no independent review agents were used, per the project mapping. All concrete findings resolved.
+
+Protected live viewer PID 38585 and bridge PID 38591 remain running; never signalled or relaunched. No microphone, provider, cloning or headset operations were invoked. No participant/raw-data changes, pushes, Overleaf publication or docs/thesis edits. Existing dirty progress.md plus this session's entry remain uncommitted. No real-audio/consented-intake/headset rehearsal claimed.
+
+Open UX question: whether a later behavior change should add withdrawal confirmation. The binding no-new-gates invariant took precedence over the board suggestion; styling/separation were applied. Existing early eligibility review ordering is faithfully reflected in the stepper.

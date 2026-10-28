@@ -1,0 +1,12 @@
+{
+  "installed": "/Users/pedro.poveda/Applications/Follow My Voice Study Intake.app",
+  "redesign": "/Users/pedro.poveda/Applications/Trial Review Redesign 20261028.app",
+  "backup": "/Users/pedro.poveda/Applications/Follow My Voice Study Intake Backup 20261028.app",
+  "code_commit": "0ca74480258f53bf31d17e9ba22dd99813e7dd92",
+  "verified_build": "/tmp/Trial Review Redesign Step8-release.app",
+  "new_file_count": 169,
+  "backup_file_count": 169,
+  "new_bundle_manifest_sha256": "49ed5a3380d4b56812151d8bc4a1b4c2ab5aefe41978720700e7eab18d743993",
+  "old_bundle_manifest_sha256": "cb0cafb23f337c8a9f5e348831d0475266823095026c499c39c1ea5b191d9f05",
+  "verification": "All file-content hashes and symlink targets match: build == redesign == installed; original == backup. No app launched outside capture mode."
+}
