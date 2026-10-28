@@ -1,17 +1,36 @@
+## Current two-stage provider — October 26, 2026
+
+**Implemented:** `20261026-minilm-reassurance-v8` serves action → phrase decisions. Policy `jev_adaptive_assistance_v4` has seven actions; `observe_2s` and `observe_4s` are no longer offered or accepted. Observation ends after stage one. Speaking actions invoke a separate MiniLM candidate ranker through `questions.assistance_phrase`, on the same service/provider. Unity does not choose the winning phrase.
+
+`behavior.phrase_history` carries actual current-round playback counts and last-start ages, including canonical and rendered text. It survives pause/resume, clears on a new round/participant, and excludes proposals or playback cancelled before onset. Both providers receive it. The ranker uses candidate-specific repeat features; Jev receives the exact counts and an explicit repetition-discouraging instruction. Repetition remains possible when necessary, especially singleton correction menus.
+
+- `phrase_data.py`: strict second-stage contract and versioned state/candidate features; synthetic preference generator.
+- `train_phrase.py`: full MiniLM fine-tuning with a scalar scoring head and listwise loss; validation checkpoint selection.
+- `phrase_model.py`: learned candidate scores and uncalibrated offered-choice softmax. No runtime teacher or lexical fallback.
+- `serve.py`: loads both checkpoints once; health advertises both stages; each response records the actual stage weight hash.
+- `headset.py`: pins this bundle and tunnels the Mac CPU service over authorized ADB.
+
+Training still uses **authored synthetic supervision**, not Jev distillation, expert labels, or participant outcomes. The phrase teacher discourages exact repeats, then prefers concision or detail according to the selected action and prior cues. Test agreement establishes imitation only. Live model selection is advisory until Unity rechecks spatial truth, tracking, trial identity, prepared audio and request freshness. No automatic cloud or rules fallback replaces a failed phrase decision.
+
+Current reassurance policy, training iterations and verification receipts: [progress reassurance](../../work_log/2026-10-26-progress-reassurance.md). Pending or interrupted responses to earlier cues are included in synthetic training; they do not automatically suppress reassurance during fresh measured progress.
+
+Earlier experiments below are historical; their action counts, policies, checkpoint names and evaluation results must not be attributed to the current bundle.
+
 # Local Jev policy experiments
 
-## Active headset comparison (October 26)
+## Historical single-stage headset comparison (October 26)
 
-**Implemented:** quick-test headset Settings now has an Adaptive/Baseline control and a separate **Model: Jev / Local MiniLM** button. `python3 tools/local-jev/headset.py` starts/reuses the adaptive-v2 model and connects headset loopback through USB or Wi-Fi ADB. Keep the Mac awake. See [headset comparison and verification](../../docs/testing/2026-10-26-headset-model-toggle.md) for scope, reconnecting, telemetry and failure behavior. Local mode is now active assistance; the historical shadow workflow below remains read-only.
+**Implemented:** Local MiniLM is the default for new study and quick-test sessions. Headset Settings has a **Model: Local MiniLM / Jev** button; Jev is opt-in. Adaptive/Baseline remains a separate development control. `python3 tools/local-jev/headset.py` starts/reuses the adaptive-v4 checkpoint and connects headset loopback through USB or Wi-Fi ADB. Keep the Mac awake. See [headset comparison and verification](../../docs/testing/2026-10-26-headset-model-toggle.md) for scope, reconnecting, telemetry and failure behavior. Local mode is now active assistance; the historical shadow workflow below remains read-only.
 
 
 Fine-tunes a pretrained MiniLM encoder for bounded assistance choices. The new
 adaptive checkpoint has nine strategies; the preserved v4 checkpoint has five
 legacy navigation actions. These are policy classifiers, not Jev weights or a
-general language model. Study sessions continue using Jev; development quick tests
-can actively select MiniLM. Both can also be compared on recorded requests.
+general language model. Study sessions and development quick tests default to MiniLM; both can
+explicitly select Jev while paused. Both can also be compared on recorded requests.
 
-Latest results: [adaptive v2 comparison](../../docs/testing/2026-10-26-local-adaptive.md).
+Latest results: [elapsed-silence fix and MiniLM default](../../work_log/2026-10-26-local-hint-silence.md).
+Earlier results: [adaptive v2 comparison](../../docs/testing/2026-10-26-local-adaptive.md).
 Earlier results: [five-action continuation](../../docs/testing/2026-10-25-local-jev-continuation.md).
 
 

@@ -1,4 +1,4 @@
-"""Adaptive v2 contract and synthetic supervision; never uses device replays to train."""
+"""Adaptive v4 contract and synthetic supervision; never uses device replays to train."""
 from collections import Counter
 import copy
 import hashlib
@@ -10,10 +10,11 @@ import re
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT/'Assets/SpatialVoice/JevDecisionClient.Adaptive.cs'
-LABELS = ['observe_1s', 'observe_2s', 'observe_4s', 'orient_brief', 'orient_explicit',
+LABELS = ['observe_1s', 'orient_brief', 'orient_explicit',
           'refine_brief', 'refine_explicit', 'correct', 'encourage']
-FEATURE_VERSION = 'adaptive-v2-measured-v1'
-POLICY = 'jev_adaptive_assistance_v2'
+LEGACY_FEATURE_VERSION = 'adaptive-v2-measured-v1'
+FEATURE_VERSION = 'adaptive-v4-progress-v3'
+POLICY = 'jev_adaptive_assistance_v4'
 
 
 def contract():
@@ -28,11 +29,11 @@ def contract():
 
 def payload(state, capabilities):
     strategies, instructions = contract()
-    if not set(capabilities) <= set(LABELS[3:]): raise ValueError('Unknown capability')
+    if not set(capabilities) <= set(LABELS[1:]): raise ValueError('Unknown capability')
     state = copy.deepcopy(state)
     state['policy'] = POLICY
     return dict(model='typesafe-ai/jev', state=state, questions=dict(assistance=dict(type='choice',
-                criteria={k:strategies[k] for k in LABELS if k in LABELS[:3] or k in capabilities},
+                criteria={k:strategies[k] for k in LABELS if k in LABELS[:1] or k in capabilities},
                 instructions=instructions)))
 
 
@@ -48,12 +49,12 @@ def unpack(request):
     question = request['questions']['assistance']
     if not isinstance(question, dict): raise ValueError('Invalid question')
     choices = question.get('criteria')
-    if question.get('type') != 'choice' or not isinstance(choices, dict) or not set(LABELS[:3]) <= set(choices) or not set(choices) <= set(LABELS):
+    if question.get('type') != 'choice' or not isinstance(choices, dict) or not set(LABELS[:1]) <= set(choices) or not set(choices) <= set(LABELS):
         raise ValueError('Unsupported assistance choices')
     if any(not isinstance(v, str) or len(v)>1024 for v in choices.values()): raise ValueError('Invalid criteria')
     state = request.get('state')
     if not isinstance(state, dict) or state.get('schema') != 'adaptive-assistance-v1' or state.get('policy') != POLICY:
-        raise ValueError('Expected adaptive v2 state')
+        raise ValueError('Expected adaptive v4 state')
     runtime, behavior = state.get('runtime'), state.get('behavior')
     if not isinstance(runtime, dict) or not isinstance(behavior, dict): raise ValueError('Missing state')
     evidence, playback = runtime.get('evidence'), runtime.get('playback')
@@ -76,11 +77,11 @@ def unpack(request):
     return state, runtime, evidence, playback, choices
 
 
-def blocked(request):
+def blocked(request, *, allow_playback=False):
     _, runtime, e, p, _ = unpack(request)
     return (e.get('valid') is not True or e.get('geometryAvailable') is not True or
             e['guidanceState'].get('newGuidanceAllowed') is not True or
-            p.get('is_busy') is not False or p.get('is_speaking') is not False or
+            (not allow_playback and (p.get('is_busy') is not False or p.get('is_speaking') is not False)) or
             e.get('controllerOnTarget') is not False or e.get('targetGazeQualified') is not False or
             e.get('gazeWithinTargetVicinity', False) is not False or runtime.get('locally_qualified', True) is not True)
 
@@ -98,15 +99,29 @@ def measurements(request):
     # Same 3-degree/4-second trend bands as AdaptiveGuidanceHistory.Trend; not a class label.
     trend = 'unknown' if not reliable else 'approaching' if delta>3 else 'receding' if delta < -3 else 'little_change'
     sustained = reliable and delta>3 and rising>=.75
+    current = [s for s in samples if s['age_seconds'] <= 2]
+    current_steps = [a['angular_error_degrees']-b['angular_error_degrees'] for a,b in zip(current,current[1:])]
+    progressing = (len(current) >= 2 and current[-1]['age_seconds'] <= .75 and
+                   current[0]['age_seconds']-current[-1]['age_seconds'] >= .5 and
+                   max(a['age_seconds']-b['age_seconds'] for a,b in zip(current,current[1:])) <= 1.25 and
+                   len({s.get('direction') for s in current}) == 1 and
+                   sum(current_steps) >= 1 and current_steps[-1] > .1)
     cues = behavior.get('interventions', [])
     last = cues[-1] if cues else {}
     response = number(last.get('error_reduction_after_3s'), optional=True)
-    return dict(span=span, gap=gap, delta=delta, fraction=rising, trend=trend, sustained=sustained,
+    return dict(span=span, gap=gap, delta=delta, fraction=rising, trend=trend, sustained=sustained, progressing=progressing,
                 last_strategy=last.get('strategy','none'), response=response,
                 response_status=last.get('response_status','none'), cues=len(cues))
 
 
-def text(request):
+def silence_band(request):
+    value = number(request['state']['runtime'].get('seconds_since_speech_ended'), optional=True)
+    if value is None: return 'unknown'
+    if value < 0: raise ValueError('Negative elapsed silence')
+    return 'recent' if value < 4 else 'extended' if value < 6 else 'long'
+
+
+def text(request, version=FEATURE_VERSION):
     """Measured summaries, no oracle decisions, IDs, Jev answers or future observations."""
     state, runtime, e, p, choices = unpack(request)
     b = state['behavior']; m = measurements(request)
@@ -133,19 +148,26 @@ def text(request):
               f'cue count: {m["cues"]}; wrong selections: {b.get("wrong_selections",0)}',
               'previous outcomes: '+','.join(str(t.get('outcome','unknown')) for t in b.get('previous_trials',[])),
               'offered: '+','.join(sorted(choices))]
+    if version == FEATURE_VERSION:
+        parts.append('elapsed silence: '+silence_band(request))
+        parts.append('current measured progress: '+boolean(m['progressing']))
+    elif version != LEGACY_FEATURE_VERSION:
+        raise ValueError('Unsupported adaptive feature version')
     return '. '.join(parts)
 
 
 def reference(request):
-    """Authored supervision approximating v2, NOT human ground truth or model inference."""
+    """Authored supervision approximating v4, NOT human ground truth or model inference."""
     _, _, e, _, choices = unpack(request)
     m = measurements(request)
     if blocked(request): return 'observe_1s'
     if 'correct' in choices and (e.get('targetReturnPending') is True or e['guidanceState'].get('allowedAction') in ('ReturnTarget','ReturnWall','ReturnBearing')):
         return 'correct'
+    silence = silence_band(request)
+    if m['progressing'] and 'encourage' in choices:
+        return 'observe_1s' if m['last_strategy']=='encourage' and silence=='recent' else 'encourage'
     if m['trend']=='unknown': return 'observe_1s'
-    if m['sustained']: return 'observe_4s'
-    if m['trend']=='approaching': return 'encourage' if 'encourage' in choices and m['last_strategy']!='encourage' else 'observe_2s'
+    if m['trend']=='approaching' and silence in ('recent','unknown'): return 'observe_1s'
     family = 'refine' if e.get('insideTargetWall') else 'orient'
     error = number(e.get('vicinityErrorDegrees'),optional=True)
     if error is None: error = math.hypot(number(e.get('yawErrorDegrees',0)),number(e.get('pitchErrorDegrees',0)))
@@ -162,11 +184,12 @@ def example(rng, index, split):
     period = rng.choice([.50,.55]) if split!='test' else rng.choice([.51,.6])
     count = int(12/period)+1
     samples=[]
+    forward_rate = rng.choice([.65, 1.2, 4.0])
     for i in range(count):
         age = (count-1-i)*period
         # The older window can improve even while the most recent trajectory retreats.
         if age>4: value=error+rng.uniform(-20,20)+(age-4)*rng.uniform(0,6)
-        elif mode=='steady': value=error+age*4
+        elif mode=='steady': value=error+age*forward_rate
         elif mode=='recede': value=error-age*2
         elif mode=='mixed': value=error+age*2+ (4 if i%2 else -4)
         elif mode=='oscillate': value=error+(5 if i%2 else -5)
@@ -174,7 +197,7 @@ def example(rng, index, split):
         samples.append(dict(age_seconds=round(age,3),angular_error_degrees=round(min(179,max(1,value)),2),direction='left' if inside else 'right'))
     if mode=='insufficient': samples=samples[-rng.choice([1,2,3]):]
     family='refine' if inside else 'orient'
-    caps=[family+'_brief',family+'_explicit']
+    caps=rng.choice([[family+'_brief',family+'_explicit'],[family+'_brief'],[family+'_explicit']])
     # Do not leak the departure label through the existence of a capability alone.
     if departure or rng.random()<.15: caps.append('correct')
     if mode in ('steady','mixed') and rng.random()<.65: caps.append('encourage')
@@ -184,12 +207,19 @@ def example(rng, index, split):
            yawErrorDegrees=round(error if not inside else 0,2),pitchErrorDegrees=round(error if inside else 0,2),
            guidanceState=dict(newGuidanceAllowed=True,allowedAction=rng.choice(['ReturnTarget','ReturnWall','ReturnBearing']) if departure else 'Direction'))
     p=dict(is_busy=False,is_speaking=False)
-    runtime=dict(evidence=e,playback=p,locally_qualified=True,seconds_since_speech_ended=rng.choice([None,rng.uniform(0,14)]))
+    runtime=dict(evidence=e,playback=p,locally_qualified=True,seconds_since_speech_ended=rng.choice([None,rng.uniform(0,4),rng.uniform(4,6),rng.uniform(6,14)]))
     cues=[]
     if rng.random()<.5:
-        cues=[dict(strategy=rng.choice([family+'_brief',family+'_explicit','encourage']),
-                   error_reduction_after_3s=rng.choice([None,round(rng.uniform(-15,20),2)]),
-                   response_status='observed_not_causal')]
+        for _ in range(rng.randint(1,4)):
+            status=rng.choice(['pending','observed_not_causal','unavailable_overlapping_intervention'])
+            cues.append(dict(strategy=rng.choice([family+'_brief',family+'_explicit','encourage']),
+                             error_reduction_after_3s=round(rng.uniform(-15,20),2) if status=='observed_not_causal' else None,
+                             response_status=status))
+    # Optional historical metadata can be unknown in real requests. It must not
+    # become a shortcut for suppressing fresh measured progress.
+    for key in ['targetAcknowledged','targetReturnPending','vicinityErrorDegrees']:
+        if rng.random()<.25 and not (departure and key=='targetReturnPending'): e.pop(key,None)
+    if rng.random()<.25: e['guidanceState'].pop('allowedAction',None)
     b=dict(schema='adaptive-behavior-v1',recent=dict(samples=samples,error_reduction_degrees=round(samples[0]['angular_error_degrees']-samples[-1]['angular_error_degrees'],2)),
            interventions=cues,previous_trials=[dict(outcome=rng.choice(['TimedOut','Completed'])) for _ in range(rng.randrange(4))],wrong_selections=rng.randrange(3))
     if rng.random()<.18:
@@ -205,10 +235,10 @@ def example(rng, index, split):
 
 def generate(output):
     output.mkdir(parents=True,exist_ok=False)
-    manifest=dict(policy=POLICY,features=FEATURE_VERSION,supervision='crossed-departure-v2',source_sha256=hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
+    manifest=dict(policy=POLICY,features=FEATURE_VERSION,supervision='seven-actions-reassurance-v8-history-coverage',source_sha256=hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
                   interpretation='Synthetic authored policy. Test holds different sample cadences and triple guard conflicts; no device cases used for training or selection.',files={})
     seen=set()
-    for split,count,seed in [('train',2700,26102611),('valid',540,26102612),('test',540,26102613)]:
+    for split,count,seed in [('train',2240,26102681),('valid',448,26102682),('test',448,26102683)]:
         rng=random.Random(seed); rows=[]; counts=Counter()
         for i in range(100000):
             row=example(rng,i,split); key=text(row['payload'])

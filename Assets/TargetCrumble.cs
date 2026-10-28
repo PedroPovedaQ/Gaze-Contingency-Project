@@ -13,6 +13,9 @@ public sealed class TargetCrumble : MonoBehaviour
     Material m_Material;
     Mesh m_ConfettiMesh;
     Material[] m_ConfettiMaterials;
+    static AudioClip s_BurstClip;
+    AudioSource m_BurstAudio;
+    bool m_AudioPaused;
     readonly Vector3[] m_ConfettiVertices = new Vector3[ConfettiCount * 8];
     readonly Vector3[] m_ConfettiVelocities = new Vector3[ConfettiCount];
     static readonly Color[] k_ConfettiColors =
@@ -24,6 +27,9 @@ public sealed class TargetCrumble : MonoBehaviour
     float m_Time;
     static readonly int[] k_Faces = { 0, 2, 1, 0, 1, 3, 0, 3, 2, 1, 2, 3 };
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    static void LoadBurstAudio() => s_BurstClip = Resources.Load<AudioClip>("ConfettiBurst");
+
     public static TargetCrumble Play(GameObject target, FindObjectGameManager game)
     {
         if (target == null || !target.TryGetComponent<Renderer>(out var source)) return null;
@@ -32,10 +38,29 @@ public sealed class TargetCrumble : MonoBehaviour
         var effect = root.AddComponent<TargetCrumble>();
         effect.m_Game = game;
         effect.Create(target, source);
+        effect.PlayBurstAudio();
         // Keep the actual object/metadata alive for capture observers and normal
         // round cleanup. Only its visible surface is replaced after timing stops.
         source.enabled = false;
         return effect;
+    }
+
+    void PlayBurstAudio()
+    {
+        if (s_BurstClip == null) LoadBurstAudio();
+        if (s_BurstClip == null) return;
+        m_BurstAudio = gameObject.AddComponent<AudioSource>();
+        m_BurstAudio.playOnAwake = false;
+        m_BurstAudio.clip = s_BurstClip;
+        m_BurstAudio.spatialBlend = 1f;
+        m_BurstAudio.rolloffMode = AudioRolloffMode.Logarithmic;
+        m_BurstAudio.minDistance = 1f;
+        m_BurstAudio.maxDistance = 15f;
+        m_BurstAudio.dopplerLevel = 0f;
+        m_BurstAudio.volume = .55f;
+        if (!Application.isPlaying) return;
+        m_BurstAudio.Play();
+        m_Game?.GetComponent<TrialReplayRecorder>()?.RecordEffect(s_BurstClip, "confetti_burst", m_BurstAudio.volume);
     }
 
     void Create(GameObject target, Renderer source)
@@ -159,7 +184,14 @@ public sealed class TargetCrumble : MonoBehaviour
     }
     void Update()
     {
-        if (m_Game != null && m_Game.ResearcherPaused) return;
+        if (m_Game != null && m_Game.ResearcherPaused)
+        {
+            if (!m_AudioPaused && m_BurstAudio != null) m_BurstAudio.Pause();
+            m_AudioPaused = true;
+            return;
+        }
+        if (m_AudioPaused && m_BurstAudio != null) m_BurstAudio.UnPause();
+        m_AudioPaused = false;
         m_Time += Time.deltaTime;
         if (m_Time >= Duration) { Destroy(gameObject); return; }
         UpdateGeometry(m_Time);

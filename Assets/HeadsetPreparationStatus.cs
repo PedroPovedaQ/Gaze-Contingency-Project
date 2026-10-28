@@ -21,7 +21,11 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
         public double updatedUtc;
         public bool wallControlAvailable, wallsVisible;
         public string commandId, commandResult;
+        public EyeValidationStatus validation;
+        public bool validationAvailable;
         public AssistanceRuntimeSnapshot assistance;
+        public string eyeRecordingId, eyeCaptureStatus;
+        public bool eyeGazeTimestampAvailable, eyePupilTimestampAvailable, eyeHeadPoseTimeMatched;
         public bool intakeAvailable;
         public string participantSessionId, participantCode, configuration, assignmentState, nextParticipantCode;
     }
@@ -35,6 +39,7 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
         public double observedUtc;
         public bool wallsVisible;
         public ParticipantSessionAssignment assignment;
+        public EyeValidationRequest validation;
     }
 
     [Serializable]
@@ -109,6 +114,12 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
                 m_Status.revision - command.observedRevision > 20 ||
                 double.IsNaN(command.observedUtc) || double.IsInfinity(command.observedUtc) ||
                 UtcSeconds - command.observedUtc < 0 || UtcSeconds - command.observedUtc > 10) return;
+            if (command.action != null && command.action.StartsWith("validation_", StringComparison.Ordinal))
+            {
+                if (EyeValidationSession.Instance?.Command(command.action, command.validation)==true) m_Status.commandResult="applied";
+                return;
+            }
+            if (EyeValidationSession.Instance?.Active==true) return;
             if (command.action == "assign_session")
             {
                 var selector = GetComponent<VoiceModeSelector>();
@@ -160,7 +171,9 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
                 m_Status.progressKnown = false;
             }
             var selector = GetComponent<VoiceModeSelector>();
-            m_Status.intakeAvailable = selector != null && selector.CanStageDesktopSession;
+            m_Status.validation=EyeValidationSession.Instance?.Status;
+            m_Status.validationAvailable=EyeValidationSession.Instance?.Available??false;
+            m_Status.intakeAvailable = selector != null && selector.CanStageDesktopSession && !(m_Status.validation?.active??false);
             m_Status.participantSessionId = selector?.DesktopAssignmentId ?? "";
             m_Status.participantCode = selector?.DesktopAssignmentCode ?? "";
             m_Status.configuration = selector?.DesktopConfiguration ?? "";
@@ -168,7 +181,18 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
             if (string.IsNullOrEmpty(m_Status.nextParticipantCode) || m_Status.participantCode == m_Status.nextParticipantCode)
                 m_Status.nextParticipantCode = SessionConfig.SuggestedParticipantId;
             m_Status.assistance = GetComponent<HintGenerator>()?.CaptureAssistanceStatus() ?? SessionConfig.CaptureAssistanceSelection();
-            m_Status.wallControlAvailable = m_Game != null;
+            var eye=SharedGazeStream.Instance;
+            var observation=eye?.Latest;
+            double age=observation!=null ? Time.realtimeSinceStartupAsDouble-observation.htcQueryReceiptTime : double.PositiveInfinity;
+            bool recent=observation!=null && observation.htcQueryReceiptTime>0 && age>=0 && age<.1;
+            var timing=observation?.htcTiming;
+            m_Status.eyeRecordingId=observation?.recordingId ?? "";
+            m_Status.eyeGazeTimestampAvailable=recent && timing!=null && timing.gaze.observed==1 && timing.gaze.result==0 && timing.gaze.returnedTime>0;
+            m_Status.eyePupilTimestampAvailable=recent && timing!=null && timing.pupil.observed==1 && timing.pupil.result==0 && timing.pupil.returnedTime>0;
+            m_Status.eyeHeadPoseTimeMatched=recent && observation.htcHeadPoseValid;
+            m_Status.eyeCaptureStatus=eye==null ? "Eye recording unavailable" : eye.RecordingError!=null ? "Eye recording error: "+eye.RecordingError :
+                "Recording raw eye data; spatial accuracy, event detection and sensor cadence require validation";
+            m_Status.wallControlAvailable = m_Game != null && !(m_Status.validation?.active??false);
             m_Status.wallsVisible = m_Game != null && m_Game.DegreeGuidesVisible;
             m_Status.revision++;
             m_Status.updatedUtc = UtcSeconds;

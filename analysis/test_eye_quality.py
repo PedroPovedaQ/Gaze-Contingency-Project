@@ -170,7 +170,7 @@ class EyeQualityTests(unittest.TestCase):
             self.assertEqual(exported[0]['calibration_id'],'')
             self.assertEqual(exported[0]['exclusion_reason'],'')
             report=json.loads((output/'quality_report.json').read_text())
-            self.assertEqual(report['report_version'],'eye-quality-v3-source-aware-ext')
+            self.assertEqual(report['report_version'],'eye-quality-v4-stream-timing')
             self.assertEqual(report['trials'][0]['valid_time_fraction'],1)
             self.assertFalse(report['recording_end_status']['complete'])
             timing=json.loads((output/'timing_report.json').read_text())

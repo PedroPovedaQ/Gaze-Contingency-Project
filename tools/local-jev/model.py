@@ -21,7 +21,8 @@ class Policy:
         start = time.perf_counter()
         self.tokenizer = AutoTokenizer.from_pretrained(path, local_files_only=True)
         self.model = AutoModelForSequenceClassification.from_pretrained(path, local_files_only=True).to(device).eval()
-        self.adaptive = getattr(self.model.config, 'local_jev_feature_version', None) == adaptive_data.FEATURE_VERSION
+        self.feature_version = getattr(self.model.config, 'local_jev_feature_version', None)
+        self.adaptive = self.feature_version in (adaptive_data.LEGACY_FEATURE_VERSION, adaptive_data.FEATURE_VERSION)
         self.scope = 'assistance' if self.adaptive else 'navigation_action'
         self.labels = adaptive_data.LABELS if self.adaptive else LABELS
         if self.adaptive and getattr(self.model.config, 'local_jev_policy', None) != adaptive_data.POLICY:
@@ -38,7 +39,7 @@ class Policy:
         if guard and (adapter.blocked if adapter else blocked)(payload):
             silence = 'observe_1s' if self.adaptive else 'wait'
             return self.answer(silence, {silence: 1.0}, payload, start, 'local_gate')
-        features = adapter.text(payload) if adapter else model_text(payload, getattr(self.model.config, 'local_jev_feature_version', None))
+        features = adapter.text(payload, getattr(self, 'feature_version', adaptive_data.FEATURE_VERSION)) if adapter else model_text(payload, self.feature_version)
         encoded = self.tokenizer(features, return_tensors='pt', truncation=False)
         if encoded['input_ids'].shape[1] > MAX_TOKENS:
             raise ValueError('Input exceeds supported context; refusing silent truncation')

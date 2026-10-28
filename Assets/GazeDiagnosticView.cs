@@ -22,6 +22,16 @@ public sealed class GazeDiagnosticView : MonoBehaviour
     Pose m_PanelAnchor;
     double m_Start, m_LastRefresh;
     long m_Deliveries, m_Rows;
+    double m_TargetStarted;
+    int m_CompletedTargets;
+    [Serializable] sealed class ValidationReceipt
+    {
+        public string id,set,recordingId,build=Application.buildGUID;
+        public int completedTargets,expectedTargets;
+        public bool completed,spatialAccuracyApproved=false;
+        public double endedAt;
+        public string procedure="World-fixed dots; manual advance after >=2 s exposure. 0.25 s settling excluded in analysis. Completion is not accuracy acceptance.";
+    }
     void Start()
     {
         Instance=this; m_Stream=GetComponent<SharedGazeStream>();
@@ -47,7 +57,7 @@ public sealed class GazeDiagnosticView : MonoBehaviour
     public void SetVisible(bool visible)
     {
         // Never expose calibration stimuli during active experimental search.
-        if(visible && (EntryGazeAlignment.IsShowing || (m_Game!=null && m_Game.SearchActive))) return;
+        if(visible && ((EyeValidationSession.Instance?.Active??false) || EntryGazeAlignment.IsShowing || (m_Game!=null && m_Game.SearchActive))) return;
         if(visible && !Visible && Camera.main!=null)
         {
             m_PanelAnchor=MenuPose(Camera.main.transform);
@@ -61,7 +71,7 @@ public sealed class GazeDiagnosticView : MonoBehaviour
         if(m_Panel==null || Camera.main==null) return;
         bool search=m_Game!=null && m_Game.SearchActive;
         // Researcher launch control is only available in setup or an explicit pause, not trial readiness.
-        bool canCheck=!EntryGazeAlignment.IsShowing && (m_Game==null || m_Game.ResearcherPaused || m_Game.CurrentState!=FindObjectGameManager.GameState.Playing);
+        bool canCheck=!(EyeValidationSession.Instance?.Active??false) && !EntryGazeAlignment.IsShowing && (m_Game==null || m_Game.ResearcherPaused || m_Game.CurrentState!=FindObjectGameManager.GameState.Playing);
         if(search || !canCheck) SetVisible(false);
         bool showLauncher=!Visible && canCheck && !search;
         if(showLauncher && !m_Launcher.activeSelf)
@@ -99,7 +109,7 @@ public sealed class GazeDiagnosticView : MonoBehaviour
             $"X-mirrored-origin comparison: {(s.valid && s.validationTargetPresent ? s.mirroredOriginErrorDegrees.ToString("F2") : "n/a")} deg\n"+
             $"<b>Quick alignment:</b> {m_Stream.QuickAlignment.Status}\n"+
             $"{m_Set ?? "Choose a separate check below."}  target {m_TargetIndex+1}\n"+
-            (m_Target!=null ? "Turn toward the dot; hold gaze, then Next.\n" : "")+
+            (m_Target!=null ? $"Look at the dot; hold for 2 s, then Next ({Math.Max(0,2-(Time.realtimeSinceStartupAsDouble-m_TargetStarted)):F1} s).\n" : "")+
             (m_Stream.RecordingError!=null ? "<color=red>Recording error: "+m_Stream.RecordingError+"</color>" : "Logging raw samples, invalid states and timing.");
     }
     public void Begin(string set)
@@ -107,7 +117,7 @@ public sealed class GazeDiagnosticView : MonoBehaviour
         if (EntryGazeAlignment.IsShowing) return;
         if(m_Game!=null && m_Game.CurrentState==FindObjectGameManager.GameState.Playing && !m_Game.ResearcherPaused)return;
         if(Camera.main==null)return;
-        Finish();m_Set=set;m_ValidationId=Guid.NewGuid().ToString("N");m_TargetIndex=0;
+        Finish();m_Set=set;m_ValidationId=Guid.NewGuid().ToString("N");m_TargetIndex=0;m_CompletedTargets=0;
         m_Anchor=Camera.main.transform.position;m_Heading=Quaternion.Euler(0,Camera.main.transform.eulerAngles.y,0);
         if (set == "quick")
         {
@@ -123,7 +133,11 @@ public sealed class GazeDiagnosticView : MonoBehaviour
         m_Target.GetComponent<Renderer>().material.color=Color.magenta;
         PlaceTarget();
     }
-    public void Next() { if(m_Target==null || m_Set=="quick")return; m_TargetIndex++;PlaceTarget(); }
+    public void Next()
+    {
+        if(m_Target==null || m_Set=="quick" || Time.realtimeSinceStartupAsDouble-m_TargetStarted<2)return;
+        m_CompletedTargets++;m_TargetIndex++;PlaceTarget();
+    }
     void PlaceTarget()
     {
         if (m_Set == "quick")
@@ -145,10 +159,22 @@ public sealed class GazeDiagnosticView : MonoBehaviour
             if(m_Set=="heldout") { yaw+=7;pitch+=3;distance+=.15f; }
         }
         m_Target.transform.position=m_Anchor+m_Heading*Quaternion.Euler(-pitch,yaw,0)*Vector3.forward*distance;
+        m_TargetStarted=Time.realtimeSinceStartupAsDouble;
         m_Stream.SetValidationTarget(m_Target.transform,m_ValidationId,m_Set,"target_"+m_TargetIndex);
     }
     public void Finish()
     {
+        bool seal=m_Set!=null && m_Set!="quick" && m_Stream!=null && !string.IsNullOrEmpty(m_Stream.RecordingPath);
+        if(seal)
+        {
+            int expected=m_Set=="drift"?5:m_Set=="fit"?9:54;
+            var receipt=new ValidationReceipt {id=m_ValidationId,set=m_Set,recordingId=m_Stream.Latest?.recordingId,
+                completedTargets=m_CompletedTargets,expectedTargets=expected,completed=m_CompletedTargets==expected,
+                endedAt=Time.realtimeSinceStartupAsDouble};
+            try { System.IO.File.WriteAllText(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(m_Stream.RecordingPath),
+                "spatial_validation_"+m_ValidationId+".json"),JsonUtility.ToJson(receipt,true)); }
+            catch(Exception e) { Debug.LogError("[EyeValidation] Receipt could not be saved: "+e.Message); }
+        }
         if (m_Set == "quick" && m_Stream != null && m_Stream.QuickAlignment.IsRunning)
             m_Stream.ClearQuickAlignment("Quick alignment cancelled before completing all checks.");
         bool hadTarget=m_Target!=null;
@@ -156,6 +182,7 @@ public sealed class GazeDiagnosticView : MonoBehaviour
         if (m_Stream != null && m_ValidationId != null && m_Stream.ValidationId == m_ValidationId)
             m_Stream.SetValidationTarget(null,null,null,null);
         m_Set=null;
+        if(seal)m_Stream.SealRecording();
         if(hadTarget && m_Panel!=null)Position(m_Panel,m_PanelAnchor,PanelOffset(false));
     }
     static Pose MenuPose(Transform head) => new Pose(head.position,Quaternion.Euler(0,head.eulerAngles.y,0));

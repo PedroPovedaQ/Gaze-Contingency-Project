@@ -48,6 +48,26 @@ public static class SessionConfig {
 }
 public class HintGenerator { public AssistanceRuntimeSnapshot CaptureAssistanceStatus() => SessionConfig.CaptureAssistanceSelection(); }
 public class TrialReplayRecorder { public void RecordHeadsetControl(string detail) {} }
+// Only the capture-status boundary is needed by this standalone (non-Unity) suite.
+public class SharedGazeStream {
+    public static SharedGazeStream Instance;
+    public EyeObservationStub Latest;
+    public string RecordingError;
+}
+public class EyeObservationStub {
+    public double htcQueryReceiptTime;
+    public string recordingId="recording";
+    public bool htcHeadPoseValid;
+    public EyeTimingStub htcTiming;
+}
+public class EyeTimingStub { public EyeStampStub gaze,pupil; }
+public struct EyeStampStub { public int observed,result;public long returnedTime; }
+public class EyeValidationSession {
+    public static EyeValidationSession Instance;
+    public EyeValidationStatus Status;
+    public bool Available, Active;
+    public bool Command(string action, EyeValidationRequest request) => false;
+}
 static class HeadsetPreparationChecks
 {
     static void Call(object target, string method, params object[] args) =>
@@ -66,6 +86,16 @@ static class HeadsetPreparationChecks
             string path = Path.Combine(dir, "PreparationLogs", "live-headset-state.json");
             Call(status, "Awake");
             var first = Read(path);
+            Require(!(bool)first["eyeGazeTimestampAvailable"],"Missing eye stream must not claim timing");
+            UnityEngine.Time.realtimeSinceStartupAsDouble=1;
+            SharedGazeStream.Instance=new SharedGazeStream {Latest=new EyeObservationStub {htcQueryReceiptTime=1,htcHeadPoseValid=true,
+                htcTiming=new EyeTimingStub {gaze=new EyeStampStub {observed=1,returnedTime=9007199254740993},pupil=new EyeStampStub {observed=1,result=-1,returnedTime=10}}}};
+            Call(status,"Write");var capture=Read(path);
+            Require((bool)capture["eyeGazeTimestampAvailable"] && !(bool)capture["eyePupilTimestampAvailable"] && (bool)capture["eyeHeadPoseTimeMatched"],"Per-stream failures must remain separate");
+            UnityEngine.Time.realtimeSinceStartupAsDouble=2;Call(status,"Write");capture=Read(path);
+            Require(!(bool)capture["eyeGazeTimestampAvailable"] && !(bool)capture["eyeHeadPoseTimeMatched"],"Stale capture cannot appear current");
+            SharedGazeStream.Instance=null;
+            UnityEngine.Time.realtimeSinceStartupAsDouble=0;Call(status,"Write");
             Require((string)first["phase"] == "ready", "Initial setup must not claim a trial or loading");
             var assistance = (Dictionary<string,object>)first["assistance"];
             Require((string)assistance["provider"]=="jev" && (string)assistance["connection"]=="not_checked" && assistance["lastDecisionId"]==null,

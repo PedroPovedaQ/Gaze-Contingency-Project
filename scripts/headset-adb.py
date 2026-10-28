@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Select the Focus Vision (prefer Wi-Fi), then optionally install and launch."""
+"""Select the Focus Vision, then optionally install, reconnect MiniLM and launch."""
 import argparse
 import os
 from pathlib import Path
@@ -76,6 +76,19 @@ def main():
     if args.apk:
         # Pin the chosen serial throughout; a disappearing headset must not redirect installation.
         print(run("-s", serial, "install", "-r", str(args.apk.resolve()), timeout=240), flush=True)
+        # ADB reverse mappings can disappear across reconnects/updates. Reuse the pinned
+        # model launcher so every deployment restores the tunnel before the app opens.
+        try:
+            local = subprocess.run(
+                [sys.executable, str(ROOT / "tools/local-jev/headset.py"), "--serial", serial],
+                capture_output=True, text=True, timeout=45)
+        except subprocess.TimeoutExpired as exc:
+            raise RuntimeError("APK installed, but MiniLM reconnection timed out; app not launched. "
+                               "Check ~/.local/share/follow-my-voice-models/headset-service/.") from exc
+        if local.returncode:
+            raise RuntimeError("APK installed, but MiniLM reconnection failed; app not launched. " +
+                               (local.stderr.strip() or local.stdout.strip()))
+        print("Local MiniLM ready; headset connection restored.", flush=True)
         component = run("-s", serial, "shell", "cmd", "package", "resolve-activity", "--brief",
                         "-a", "android.intent.action.MAIN", "-c", "android.intent.category.LAUNCHER",
                         args.package).splitlines()[-1]

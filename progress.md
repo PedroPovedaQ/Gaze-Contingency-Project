@@ -1,3 +1,80 @@
+## 2026-10-27
+
+- Simplified standard gaze preparation to one Start → three fit dots → automatic five-dot verification → results → activation → centering. Removed the standard shape confirmation and second Begin; retained explicit Skip/Retry. Added a provisional correction state that cannot authorize trials; only recorded verification promotes it. Moved benefit/no-worsening safeguards to the five-dot check and recorded paired pre-/post-correction statistics. Historical standalone shape validation remains unchanged. Added UI/state/math regression checks and passed the Unity preparation suite plus validation/activation scripts. Android build succeeded (177.7 s), installed and launched over Wi-Fi (package update 20:58:48); MiniLM health HTTP 200 from headset loopback. No new wearer accuracy result claimed.
+- Added docs/research/standard-gaze-accuracy-method.md with exact target geometry, timing, angular-error formula, equal-target aggregation, fit/verification separation, gates, provenance and research limits. Updated procedure/flow/testing docs and posted the method handoff to Claude on the shared coordination board. No docs/thesis/ edits or commits/pushes.
+
+## 2026-10-27
+
+- Added automatic MiniLM setup to headset deployments: after installing the APK, the selected serial is passed to the existing pinned-model launcher to start/reuse the server and recreate ADB reverse before launch. Failures stop launch with an explicit assistance error. Eight device-selection/deployment tests pass, including ordering, same-device targeting, failure blocking and read-only device discovery. Scope is our Build and Run pipeline; Mac awake/ADB connectivity remain necessary. Live Android build passed (35.2 s); with the tunnel absent before deployment, installation automatically recreated it before launch. Both synthetic action and phrase requests returned HTTP 200 through headset loopback afterward. Targeted manual diff review; no model weights/policy or experiment measures changed.
+- Read and replied to the shared thesis coordination board with standard calibration procedure, pilot thresholds, P033 spatial-check provenance, and uncommitted/unpushed status. Added durable board instructions to AGENTS.md; no docs/thesis/ edits or publishing.
+
+## 2026-10-27
+
+- Restored Local MiniLM headset connectivity: Mac service was healthy with the pinned reassurance-v8 two-stage bundle, but ADB reverse mappings were empty. Re-ran the existing local-model launcher for Wi-Fi headset 192.168.1.208:5555. Verified HTTP 200 health and synthetic action/phrase inference from headset loopback through the restored tunnel (correct; This area. Look higher.). No model or app code changed. Saved live-state file remained stale/paused, so current in-app Ready display and audible guidance need the app resumed; this check does not claim observed playback.
+
+## 2026-10-27
+
+- Made per-participant gaze preparation standard before activation/practice and experiment centering: three-dot calibration, held-out shape confirmation, independent five-dot accuracy, and recorded result. Keep Skip without an offset; preserve passed participant-bound corrections into the study. Added runtime accuracy/guard tests and reproduced P033 offline accuracy (1.2565°) from the recorded session. Updated procedure/testing docs. Final Android build passed (52.5 s), installed and launched over Wi-Fi; a fresh wearer walkthrough remains. Details: `work_log/2026-10-27-standard-gaze-preparation.md`.
+
+## 2026-10-27
+
+- Analyzed completed P033 validation `98d87489136743039dc7774e63b936fe` from an immutable device copy. Accepted alignment: −0.234° yaw / −3.661° pitch; three held-out checks passed and wearer confirmed. Independent five-dot mean angular error was 1.257° corrected versus 4.391° uncorrected on the same observations (71.4% lower); all five targets completed. Used uniform 500 ms settling and 1,634 deduplicated host queries, without fitting on scored observations. Report: `~/Library/Application Support/Follow My Voice/Validation Pilot 20261027/audits/drift-98d874-accuracy-v2/`. This validates only this pilot spatial check, not saccades/IPA or sensor cadence; no app code changed.
+
+## 2026-10-27
+
+- Researcher-requested pilot change: raised the maximum fitted gaze correction from 5° to 8° so repeated ~6° upward offsets can reach independent validation. Offset remains freshly measured, head-relative and participant-bound; separate-target median ≤2°/P90 ≤3° checks, stability, improvement and wearer confirmation remain required. Reports save the actual 8° cap. Stopped the active failed calibration cleanly before updating the headset. Verification/deployment receipt follows in `work_log/2026-10-27-upward-gaze-offset.md`.
+
+## 2026-10-27
+
+- Reviewed two new wearer alignment rejections: required corrections were 6.03° and 5.69°, almost entirely downward, with consistent offsets across all three fit dots and passing within-dot stability gates. Both exceeded the existing 5° application guard before independent checks; no correction accepted or new accuracy claimed. Preserved both reports. Next wearer step is current-fit HTC recalibration followed by independent app validation; thresholds unchanged.
+
+## 2026-10-27
+
+- Investigated upward gaze offset: saved native rays already carry it; native-head versus Unity-camera orientation differs by median 0.0015° (P95 0.0302°), far below the observed bias. No supported coordinate/sign/target-placement bug found. Added explicit fresh alignment before independent validation, using existing bounded three-dot fit plus separate shape checks and wearer confirmation. Fixed validation participant binding before offset application; preserve raw gaze, separate fit/check phases, embed alignment report and clear validation-only correction afterward. Software checks and both builds passed; Android installed/launched over Wi-Fi (56.0 s build), updated viewer opened. User not ready for the wearer retest yet; no improvement claimed. See `work_log/2026-10-27-upward-gaze-offset.md`.
+
+## 2026-10-27
+
+- **Implemented / observed — calibrated drift calculation audit:** independent geometry checks matched saved Unity angles within 0.00018° and scheduled target positions within sub-micrometre floating-point tolerance. Corrected spatial summaries to deduplicate source queries before window selection, recompute 3D angular errors, require completed targets, and report a uniform 0.5 s window plus settling sensitivity. Wearer-confirmed post-HTC-calibration run measured 5.03° equal-target mean (4.37/6.55/2.98/4.67/6.60° centre/left/right/down/up); 1.0 s window gives 5.02°. Both eyes retain upward residual bias. This is descriptive application error, not certified headset accuracy or a physical tracking fix. Original recordings and reports preserved. See `work_log/2026-10-27-drift-accuracy-audit.md`.
+
+## 2026-10-27
+
+- **Observed — first completed eye-validation drift pilot:** headset Begin press recorded; all five targets completed and source files pulled/audited. Gaze and controller records present. Preliminary mean used-ray errors across positions 4.2–7.0 degrees; these include transitions and do not establish calibrated spatial accuracy. Saccade/IPA acceptance remains open. See `work_log/2026-10-27-eye-validation-exercises.md`.
+
+## 2026-10-27
+
+Implemented isolated eye-validation exercises controlled from Trial Viewer: spatial/drift dots, fixation/saccade jumps, blink/head-turn/pursuit/light/gaze-angle controls, counterbalanced arithmetic with responses/ratings, and sandbox object search. Added participant/IPD metadata, raw recording/event receipts, stale-command protection and validation-only analysis/review exports. Physiological acceptance remains open. Android installed and remote drift staging was acknowledged; the first pilot ended as interrupted when the headset paused, preserving 2,051 instruction-stage gaze rows. No completed wearer result yet. Fixed missing pre-study controller sampling discovered in that recording; follow-up Android build succeeded (168.8 s), installed and launched over Wi-Fi; wearer retest remains open. Details: `docs/testing/eye-validation-exercises.md`.
+
+## 2026-10-27
+
+- **Implemented — participant IPD recording:** Trial Viewer intake accepts binocular distance IPD in millimetres with pupillometer/ruler/participant-report provenance, plus a separate optional headset lens-spacing value. Metadata persists in the local intake, headset assignment, participant/run snapshots and trial summary; flat CSV/Final data exports retain it. Missing and legacy measurements stay unavailable. New-participant reset clears values; no IPD is inferred from eye origins. Verification/build receipt: `work_log/2026-10-27-participant-ipd.md`.
+
+- **Implemented — first target-wall arrival override:** Adaptive fixes the first qualified arrival action and asks the selected Jev/MiniLM phrase model for one of four prepared area acknowledgments, with round speech history. Actual-onset consumption survives pause/resume; target/controller confirmation and stale-evidence guards remain. Eligible outside-wall instructions use the existing 150 ms fade, not syllable detection. C# guidance/voice checks and 39 model tests passed; live synthetic requests succeeded for both models. Headset offline; local build/deployment record: `work_log/2026-10-27-first-wall-arrival.md`.
+
+## 2026-10-26
+
+- Eye measurement readiness: added independent native HTC query stamps, matching requested-time head pose, per-eye target-collider AOI evidence, stream-specific deduplication/pupil timing, explicit precision definitions, censored last-target candidates, validation receipts and clean segment closure. Trial Viewer reports actual timing availability. Existing study outcomes remain unvalidated pending wearer, event and pupil-method checks; see `docs/research/eye-measurement-readiness-20261026.md`.
+- Verification: 343 analysis tests, eight native suites, managed gaze/preparation checks and Unity ABI checks passed; Android APK and Trial Viewer built. Headset disconnected, so installation and physical validation remain open. See `work_log/2026-10-26-eye-measurement-readiness.md` for artifacts and review limits.
+
+- **Observed / research audit — Vive eye measures:** launched the current installed app over Wi-Fi with MiniLM v8 ready; reviewed Pro Eye papers and author code, then Focus Vision-specific literature and Eye-LEAN. Identified discarded native pupil time metadata, unverified eye/head timing, legacy hover proxies, non-equivalent precision definitions and missing last-target-fixation AOI validation. Executed three synthetic reference comparisons; 42 existing eye-analysis/report tests passed. Saved `docs/research/vive-eye-measurement-audit-20261026.md` and comparison JSON. Focus Vision preprint code/data archives returned 403; no reproduction claimed. No runtime definitions changed; physical accuracy/event/coverage validation remains open.
+
+- **Implemented — progress reassurance:** both provider policies now encourage steady/slow movement and allow reassurance again after earlier encouragement; only `observe_1s` remains. Broadened current progress qualification and synthetic history coverage, trained/pinned MiniLM reassurance v8 with a separate learned phrase ranker. Final weights pass all 14 targeted regressions; 38 Python checks, C# pipeline and voice-isolation suites passed. Live Jev and local action→phrase tests produce “Keep going right.” for progress and directions for stalls. Android build succeeded (55.3 s), installed/launched over Wi-Fi; model tunnel and actual device HTTP inference verified. Synthetic agreement is not participant benefit; existing target/tracking guards remain essential. Wearer testing remains open. See `work_log/2026-10-26-progress-reassurance.md`.
+
+## 2026-10-26
+
+- **Implemented — two-stage Jev/MiniLM assistance:** the selected provider chooses an action, then chooses exact wording from that action’s truthful prepared alternatives. Removed `observe_2s`; observation skips stage two. Actual current-round playback counts/ages (including opening speech) reach phrase selection, survive pause/resume and clear for a new round/participant. Added versioned v5 local action and phrase checkpoints, exact stage attribution and linked Trial Viewer inspection. Synthetic held-out action agreement 510/512; phrase agreement 151/160 and repeat avoidance 85/89 eligible cases, not participant-benefit evidence. Live production C# requests passed for both providers; local speaking path 215 ms, Jev 404–483 ms in small synthetic probes. Unit/transport/voice tests and viewer build passed. Final Android build passed (42.3 s), installed/launched over Wi-Fi; v5 tunnel restored. Wearer validation remains open; build/deployment receipt in `work_log/2026-10-26-two-stage-assistance.md`. No commit/push.
+
+## 2026-10-26
+
+- **Implemented — neutral quick-test cache and desktop preparation:** Trial Viewer can prepare Eric’s exact runtime catalog on the Mac and copy changed decoded audio to the headset. Persistent source-bound PCM cache skips repeated MP3 decoding; preparation batches work instead of yielding once per clip, while preserving final level matching and replay. Actual 566-clip first pass took 39.08 s with zero synthesis; repeat check 4.76 s with zero decode/transfer. Voice isolation and 94 viewer tests passed; viewer built/opened. Also fixed the hidden model-button null-parent lookup observed during device verification. Headset full loading-time/wearer check remains open. See `work_log/2026-10-26-neutral-audio-cache.md`.
+
+## 2026-10-26
+
+- **Implemented — MiniLM default and more responsive hints:** new study and quick-test sessions default to Local MiniLM; paused Settings can opt into Jev or switch back. New participant reset restores MiniLM. Local mode disables incidental Jev calls and uses prepared local round feedback. Fine-tuned adaptive-v4 with elapsed silence and varied available hint capabilities; all seven diagnosed quiet-gap requests now choose offered speech, six prior behavior probes and 192 closed-gate probes pass. Python (32), C# session/transport and Unity feedback/routing checks passed. Android build passed (77.0 s), installed/launched over Wi-Fi; v4 service/tunnel ready. Headset is asleep, so fresh on-device status and wearer validation remain open. See `work_log/2026-10-26-local-hint-silence.md`.
+
+## 2026-10-26
+
+- **Implemented — spatial confetti sound:** correct selections start a 0.65-second mono pop/rustle at the target center with the visual burst. The sound is preloaded, uses 3D distance/panning without Doppler, pauses with the effect, survives target removal, and is recorded as a replay effect. Unity feedback checks passed; Android build succeeded (96.1 s), installed and launched over Wi-Fi. In-headset volume/localization check remains open. See `work_log/2026-10-26-spatial-confetti-audio.md`.
+
 ## 2026-10-26
 
 - Corrected the “Almost” selection reminder to run only as expired-trial feedback when fresh gaze/controller evidence shows an acknowledged, qualified target hold with the trigger released. Removed the three-second mid-search reminder. Ordinary timeouts, target confirmations, the 25-second deadline and success scoring remain intact. Added timeout evidence logging and prepared next-round/block/final wording for both voices. Regression, voice-isolation, model-interface and Unity feedback checks passed. Android build succeeded (68.8 s), installed and launched over Wi-Fi; Local MiniLM tunnel restored. Wearer verification remains open. See `work_log/2026-10-26-timeout-selection-reminder.md`.

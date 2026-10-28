@@ -5,9 +5,11 @@ import json
 import hashlib
 from pathlib import Path
 from model import Policy
+from phrase_model import PhrasePolicy
+import phrase_data
 
 
-def handler(policy):
+def handler(policy, phrase_policy=None):
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args): pass  # Do not retain request state or identifiers.
 
@@ -19,7 +21,7 @@ def handler(policy):
 
         def do_GET(self):
             if self.path != '/health': return self.reply(404, {'error': 'not_found'})
-            self.reply(200, {'status': 'ready', 'scope': getattr(policy, 'scope', 'navigation_action'), 'device': policy.device, 'model_version': getattr(policy, 'model_version', None)})
+            self.reply(200, {'status': 'ready', 'scope': getattr(policy, 'scope', 'navigation_action'), 'device': policy.device, 'model_version': getattr(policy, 'model_version', None), 'stages': ['assistance', 'assistance_phrase'] if phrase_policy else ['assistance']})
 
         def do_POST(self):
             if self.path != '/typesafe/v1/systemone': return self.reply(404, {'error': 'not_found'})
@@ -29,9 +31,12 @@ def handler(policy):
                 self.connection.settimeout(5)
                 payload = json.loads(self.rfile.read(length))
                 if not isinstance(payload, dict): raise ValueError('Expected object')
-                result = policy.predict(payload)
+                phrase_request = set(payload.get('questions') or {}) == {phrase_data.SCOPE}
+                if phrase_request and phrase_policy is None: raise ValueError('Phrase checkpoint unavailable')
+                active = phrase_policy if phrase_request else policy
+                result = active.predict(payload)
                 result['model_version'] = getattr(policy, 'model_version', None)
-                result['checkpoint_sha256'] = getattr(policy, 'checkpoint_sha256', None)
+                result['checkpoint_sha256'] = getattr(active, 'checkpoint_sha256', None)
                 self.reply(200, result)
             except (ValueError, KeyError, TypeError, AttributeError):
                 self.reply(400, {'error': 'unsupported_or_invalid_action_request'})
@@ -49,7 +54,12 @@ def main():
     policy = Policy(args.model, args.device)
     policy.model_version = args.model.resolve().parent.name
     policy.checkpoint_sha256 = hashlib.sha256((args.model / 'model.safetensors').read_bytes()).hexdigest()
-    server = HTTPServer(('127.0.0.1', args.port), handler(policy))
+    phrase_policy = None
+    if getattr(policy.model.config, 'local_jev_policy', None) == 'jev_adaptive_assistance_v4':
+        phrase_path = args.model.parent / 'phrase' / 'model'
+        phrase_policy = PhrasePolicy(phrase_path, args.device)
+        phrase_policy.checkpoint_sha256 = hashlib.sha256((phrase_path / 'model.safetensors').read_bytes()).hexdigest()
+    server = HTTPServer(('127.0.0.1', args.port), handler(policy, phrase_policy))
     print(json.dumps(dict(status='listening',host='127.0.0.1',port=args.port,load_ms=policy.load_ms)),flush=True)
     try: server.serve_forever()
     except KeyboardInterrupt: pass

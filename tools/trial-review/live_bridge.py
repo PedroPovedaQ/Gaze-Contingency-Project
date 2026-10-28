@@ -16,6 +16,7 @@ import shlex
 import shutil
 import subprocess
 import time
+from participant_intake import validate_fit
 
 ROOTS = ('GazeReplays', 'EyeMeasurements', 'GazeData', 'PreparationLogs')
 CHUNK = 2 * 1024 * 1024
@@ -228,6 +229,18 @@ def validate_headset_state(value):
                   wallsVisible=value.get('wallsVisible') is True,
                   commandId=value.get('commandId') if isinstance(value.get('commandId'), str) else '',
                   commandResult=value.get('commandResult') if value.get('commandResult') in ('applied', 'rejected') else '')
+    result['validationAvailable'] = value.get('validationAvailable') is True
+    validation = value.get('validation')
+    if isinstance(validation, dict):
+        result['validation'] = {k: validation.get(k, '') for k in
+            ('id', 'protocol', 'stage', 'exercise', 'condition', 'prompt', 'recordingPath', 'error', 'participant')}
+        result['validation'].update({k: validation.get(k, 0) for k in ('revision', 'step', 'count', 'remaining')})
+        result['validation'].update(active=validation.get('active') is True,
+                                    completed=validation.get('completed') is True, measurementsValidated=False)
+    for key in ('eyeRecordingId', 'eyeCaptureStatus'):
+        result[key] = value.get(key, '') if isinstance(value.get(key, ''), str) else ''
+    for key in ('eyeGazeTimestampAvailable', 'eyePupilTimestampAvailable', 'eyeHeadPoseTimeMatched'):
+        result[key] = value.get(key) is True
     result['assistance'] = validate_assistance_status(value.get('assistance'))
     result.update(intakeAvailable=value.get('intakeAvailable') is True)
     for key in ('participantSessionId', 'participantCode', 'configuration', 'assignmentState', 'nextParticipantCode'):
@@ -243,13 +256,14 @@ def validate_assignment(value):
             raise ValueError('Invalid participant assignment field: '+key)
     if value.get('configuration') not in ('A','B') or value.get('neutralGender') not in ('Male','Female') or type(value.get('neutralOption')) is not int or not 0 <= value['neutralOption'] < 6:
         raise ValueError('Invalid condition or neutral voice choice')
-    if set(value) != {'schema','id','participantCode','configuration','neutralGender','neutralOption','cloneVoiceId'}:
+    if set(value) - {'fit'} != {'schema','id','participantCode','configuration','neutralGender','neutralOption','cloneVoiceId'}:
         raise ValueError('Assignment must not contain interview data')
+    validate_fit(value.get('fit'))
     return value
 
 
 def validate_control(command, state, now):
-    if not isinstance(command, dict) or command.get('schema') != 1 or command.get('action') not in ('set_walls', 'assign_session'):
+    if not isinstance(command, dict) or command.get('schema') != 1 or command.get('action') not in ('set_walls', 'assign_session', 'validation_start', 'validation_next', 'validation_answer', 'validation_stop'):
         raise ValueError('Unsupported headset control')
     if not isinstance(command.get('id'), str) or not re.fullmatch(r'[0-9a-f]{32}', command['id']):
         raise ValueError('Invalid control ID')
@@ -268,11 +282,50 @@ def validate_control(command, state, now):
     if command['action'] == 'set_walls':
         if state.get('wallControlAvailable') is not True or type(command.get('wallsVisible')) is not bool:
             raise ValueError('Walls unavailable')
-    else:
+    elif command['action'] == 'assign_session':
         assignment = validate_assignment(command.get('assignment'))
         if state.get('intakeAvailable') is not True and state.get('participantSessionId') != assignment['id']:
             raise ValueError('Headset is busy with another session')
+    else:
+        validate_validation_control(command, state)
+    if command['action'] in ('set_walls', 'assign_session') and (state.get('validation') or {}).get('active'):
+        raise ValueError('Validation in progress')
     return command
+
+
+def validate_validation_control(command, state):
+    request = command.get('validation')
+    if not isinstance(request, dict):
+        raise ValueError('Missing validation request')
+    action = command['action']
+    if action == 'validation_start':
+        if state.get('validationAvailable') is not True:
+            raise ValueError('Headset not ready for validation')
+        validate_fit(request.get('fit'))
+        if type(request.get('alignFirst', False)) is not bool:
+            raise ValueError('Invalid alignment option')
+        if request.get('mode') not in ('full','spatial','saccades','controls','arithmetic','search','drift'):
+            raise ValueError('Unknown validation mode')
+        if not re.fullmatch(r'P[0-9]{3,12}', request.get('participant', '')):
+            raise ValueError('Use a participant code, not a name')
+        if type(request.get('seed')) is not int or not -(2**31) <= request['seed'] < 2**31 or type(request.get('hardFirst')) is not bool:
+            raise ValueError('Invalid schedule settings')
+        if not isinstance(request.get('notes', ''), str) or len(request.get('notes', '')) > 500:
+            raise ValueError('Invalid validation notes')
+    else:
+        current = state.get('validation') or {}
+        if current.get('active') is not True or request.get('id') != current.get('id'):
+            raise ValueError('Validation session changed')
+        if action != 'validation_stop' and (type(request.get('revision')) is not int or request['revision'] != current.get('revision')):
+            raise ValueError('Validation step changed')
+        if action == 'validation_next' and current.get('stage') != 'instruction':
+            raise ValueError('Not at an instruction screen')
+        if action == 'validation_answer':
+            value = request.get('value')
+            if type(value) is not int or not 0 <= value <= 999 or current.get('stage') not in ('response','rating'):
+                raise ValueError('Invalid response')
+            if current.get('stage') == 'rating' and not 1 <= value <= 7:
+                raise ValueError('Rating must be 1–7')
 
 
 def wireless_endpoint(adb, requested):

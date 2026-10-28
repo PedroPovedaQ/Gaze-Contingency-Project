@@ -8,6 +8,34 @@ using UnityEngine.Networking;
 
 public partial class VoiceSynthesizer
 {
+    // Desktop receives runtime wording/keys rather than scraping C# or guessing phrases.
+    public void ExportNeutralQuickTestCatalog(string[] phrases)
+    {
+        if (string.IsNullOrEmpty(m_CacheDir)) return;
+        try
+        {
+            string voice = SessionConfig.NeutralId(NeutralVoiceProfile.Male, 0);
+            var entries = new Newtonsoft.Json.Linq.JArray();
+            var seen = new HashSet<string>();
+            foreach (string phrase in phrases)
+            {
+                string text = VoicePromptText.FormatForVoice(phrase, VoiceCondition.Generic);
+                string name = Path.GetFileName(CachePathForPerspective(text, "el-" + voice, VoicePerspective.External));
+                if (seen.Add(name)) entries.Add(new Newtonsoft.Json.Linq.JObject {
+                    ["file"] = name, ["request"] = VoiceSynthesisRequest.Json(text, k_Model) });
+            }
+            string folder = Path.Combine(Application.persistentDataPath, "PreparationLogs");
+            Directory.CreateDirectory(folder);
+            string path = Path.Combine(folder, "neutral-audio-catalog.json");
+            File.WriteAllText(path + ".tmp", new Newtonsoft.Json.Linq.JObject {
+                ["schema"] = 1, ["voiceId"] = voice, ["model"] = k_Model,
+                ["contentVersion"] = ContentVersion, ["phrases"] = entries }.ToString());
+            if (File.Exists(path)) File.Delete(path);
+            File.Move(path + ".tmp", path);
+        }
+        catch (Exception e) { Debug.LogWarning(k_Tag + " Could not publish optional desktop cache catalog: " + e.GetType().Name); }
+    }
+
     VoiceDownloadBatch m_DownloadBatch;
     int m_PreparationGeneration;
     Func<string, byte[], string, Action<VoiceAudioVerification.Result>, IEnumerator> m_VerifyAudio = VoiceAudioVerification.Verify;

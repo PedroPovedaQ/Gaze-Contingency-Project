@@ -381,7 +381,7 @@ public partial class VoiceAssistantController : MonoBehaviour
         }
         // The manager waits before changing voice/block. Reinforcement belongs to the completed trial.
         while (!decision.IsCompleted && Time.realtimeSinceStartupAsDouble < deadline) yield return null;
-        string status = "local_fallback";
+        string status = SessionConfig.AssistanceProvider == "jev" ? "local_fallback" : "local_catalog";
         SpatialVoice.EncouragementPhrase selected = candidates.Count > 0 ? candidates[0] : null;
         if (decision.IsCompleted && Time.realtimeSinceStartupAsDouble <= deadline)
         {

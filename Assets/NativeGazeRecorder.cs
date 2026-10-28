@@ -126,4 +126,10 @@ public sealed class NativeGazeRecorder : MonoBehaviour
         m_Writer=null;
     }
     void OnDestroy() { if(Instance==this)Instance=null; }
+    public void SealSegment()
+    {
+        OnDisable();
+        m_Stopped=false;m_FirstEpoch=0;m_LastSequence=0;m_EpochChanged=false;
+        m_LastDrainCount=0;m_LastStatus=default;RecordingPath=null;
+    }
 }

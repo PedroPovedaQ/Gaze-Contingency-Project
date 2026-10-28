@@ -14,12 +14,14 @@ public sealed partial class TrialReviewApp
         public int neutralOption, promptRevision;
         public float recordedSeconds;
         public IntakeAnswer[] answers;
+        public ParticipantFitMeasurements fit;
     }
     [Serializable] sealed class IntakeRequest
     {
         public string action, folder, keysPath, participantCode, configuration, neutralGender, audio;
         public int neutralOption;
         public bool skip;
+        public ParticipantFitMeasurements fit;
     }
     [Serializable] sealed class IntakeResult { public bool ok; public string error; }
     sealed class IntakeJob { public Process process; public string result, action; }
@@ -32,6 +34,21 @@ public sealed partial class TrialReviewApp
     AudioSource m_InterviewSpeaker;
     Vector2 m_IntakeScroll;
     double m_IntakePoll;
+    string m_IntakeIpd = "", m_IntakeHeadsetIpd = "";
+    int m_IntakeIpdSource;
+    static readonly string[] IpdSources = { "not_recorded", "pupillometer", "ruler", "participant_report" };
+    ParticipantFitMeasurements ReadIntakeFit()
+    {
+        var fit = new ParticipantFitMeasurements { ipdRecorded = !string.IsNullOrWhiteSpace(m_IntakeIpd),
+            headsetIpdRecorded = !string.IsNullOrWhiteSpace(m_IntakeHeadsetIpd), ipdSource = IpdSources[m_IntakeIpdSource] };
+        if (fit.ipdRecorded && !float.TryParse(m_IntakeIpd, System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture, out fit.participantIpdMm))
+            throw new ArgumentException("Enter participant IPD in millimetres, using a decimal point.");
+        if (fit.headsetIpdRecorded && !float.TryParse(m_IntakeHeadsetIpd, System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture, out fit.headsetIpdMm))
+            throw new ArgumentException("Enter headset lens spacing in millimetres, using a decimal point.");
+        fit.Validate(); return fit;
+    }
     string IntakeKeys => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config/follow-my-voice/api_keys.json");
     void OpenIntake()
     {
@@ -58,7 +75,8 @@ public sealed partial class TrialReviewApp
             string request = Path.Combine(m_IntakeFolder, "request-" + Guid.NewGuid().ToString("N") + ".json");
             File.WriteAllText(request, JsonUtility.ToJson(new IntakeRequest { action = action, folder = m_IntakeFolder,
                 keysPath = IntakeKeys, participantCode = m_IntakeCode, configuration = m_IntakeConfiguration == 0 ? "A" : "B",
-                neutralGender = m_IntakeGender == 0 ? "Male" : "Female", neutralOption = m_IntakeOption, audio = audio, skip = skip }));
+                neutralGender = m_IntakeGender == 0 ? "Male" : "Female", neutralOption = m_IntakeOption, audio = audio, skip = skip,
+                fit = action == "create" ? ReadIntakeFit() : null }));
             var process = Process.Start(new ProcessStartInfo("/usr/bin/python3", Argument(Path.Combine(Application.streamingAssetsPath, "participant_intake.py")) + " --request " + Argument(request)) { UseShellExecute = false, CreateNoWindow = true });
             return new IntakeJob { process = process, action = action, result = Path.ChangeExtension(request, ".result.json") };
         }
@@ -152,7 +170,8 @@ public sealed partial class TrialReviewApp
         {
             var state = m_LiveStatus.headsetState;
             var assignment = new ParticipantSessionAssignment { id = m_Intake.id, participantCode = m_Intake.participantCode,
-                configuration = m_Intake.configuration, neutralGender = m_Intake.neutralGender, neutralOption = m_Intake.neutralOption, cloneVoiceId = m_Intake.cloneVoiceId };
+                configuration = m_Intake.configuration, neutralGender = m_Intake.neutralGender, neutralOption = m_Intake.neutralOption, cloneVoiceId = m_Intake.cloneVoiceId,
+                fit = m_Intake.fit ?? new ParticipantFitMeasurements() };
             assignment.Validate();
             var command = new HeadsetCommand { id = Guid.NewGuid().ToString("N"), sessionId = state.sessionId, action = "assign_session",
                 observedRevision = state.revision, observedUtc = state.updatedUtc, createdUtc = UtcSeconds, assignment = assignment };
@@ -174,6 +193,13 @@ public sealed partial class TrialReviewApp
         if (m_Intake == null)
         {
             GUILayout.Label("Participant code", m_Label); m_IntakeCode = GUILayout.TextField(m_IntakeCode, m_Field);
+            GUILayout.Label("Participant binocular distance IPD (mm) · blank = not recorded", m_Label);
+            m_IntakeIpd = GUILayout.TextField(m_IntakeIpd, m_Field);
+            m_IntakeIpdSource = GUILayout.SelectionGrid(m_IntakeIpdSource,
+                new[] { "Not recorded", "Pupillometer", "Ruler", "Participant report" }, 2, m_Button);
+            GUILayout.Label("Headset lens spacing (mm) · optional, entered separately", m_Label);
+            m_IntakeHeadsetIpd = GUILayout.TextField(m_IntakeHeadsetIpd, m_Field);
+            GUILayout.Label("Confirm these measurements before beginning. They are saved with this session; eye tracking does not measure them automatically.", m_MutedLabel);
             m_IntakeConfiguration = GUILayout.SelectionGrid(m_IntakeConfiguration, new[] { "A · Self-similar first", "B · Neutral first" }, 2, m_Button);
             m_IntakeGender = GUILayout.SelectionGrid(m_IntakeGender, new[] { "Male neutral voice", "Female neutral voice" }, 2, m_Button);
             m_IntakeOption = GUILayout.SelectionGrid(m_IntakeOption, m_IntakeGender == 0 ? new[] { "Eric", "Roger", "Chris", "Will", "Brian", "Liam" } : new[] { "Janet", "Sarah", "Jessica", "Matilda", "Bella", "Laura" }, 3, m_Button);
@@ -188,6 +214,11 @@ public sealed partial class TrialReviewApp
         else
         {
             GUILayout.Label(m_Intake.participantCode + " · Configuration " + m_Intake.configuration, m_Heading);
+            var fit = m_Intake.fit;
+            GUILayout.Label(fit != null && fit.ipdRecorded
+                ? $"Participant IPD: {fit.participantIpdMm:0.##} mm · {fit.ipdSource}" : "Participant IPD: not recorded", m_Label);
+            GUILayout.Label(fit != null && fit.headsetIpdRecorded
+                ? $"Headset lens spacing: {fit.headsetIpdMm:0.##} mm (manual entry)" : "Headset lens spacing: not recorded", m_MutedLabel);
             GUILayout.Label(m_Intake.prompt ?? "", m_Label, GUILayout.MinHeight(80));
             GUILayout.Label($"Answer audio: {m_Intake.recordedSeconds:0} seconds · Clone: {m_Intake.cloneState}", m_Label);
             if (!string.IsNullOrEmpty(m_Intake.cloneError)) GUILayout.Label(m_Intake.cloneError, m_Label);
@@ -223,7 +254,7 @@ public sealed partial class TrialReviewApp
             GUI.enabled = true;
             GUILayout.Label(fresh && headset.participantSessionId == m_Intake.id ? "Headset: " + headset.assignmentState : "Headset must be connected and waiting for a participant.", m_MutedLabel);
             GUI.enabled = !busy && m_CloneJob == null && m_AnswerClip == null;
-            if (Button("Finish here / create another session")) { m_InterviewSpeaker?.Stop(); m_Intake = null; m_IntakeFolder = null; m_IntakePlayedRevision = 0; m_IntakeConsent = false; m_PendingAnswer = null; PlayerPrefs.DeleteKey("ParticipantIntakeFolder"); m_IntakeCode = headset?.nextParticipantCode ?? "P001"; }
+            if (Button("Finish here / create another session")) { m_InterviewSpeaker?.Stop(); m_Intake = null; m_IntakeFolder = null; m_IntakePlayedRevision = 0; m_IntakeConsent = false; m_PendingAnswer = null; m_IntakeIpd = m_IntakeHeadsetIpd = ""; m_IntakeIpdSource = 0; PlayerPrefs.DeleteKey("ParticipantIntakeFolder"); m_IntakeCode = headset?.nextParticipantCode ?? "P001"; }
             GUI.enabled = true;
         }
         if (!File.Exists(IntakeKeys)) GUILayout.Label("API configuration missing: " + IntakeKeys, m_Label);

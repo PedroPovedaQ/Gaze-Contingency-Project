@@ -38,7 +38,7 @@ def prepare(project):
     for name in ['TrialReplayData', 'TrialReplayGaze', 'TrialReplayState', 'TrialReplayFile', 'TrialReplayAudio']:
         (shared / (name + '.cs')).write_text(source('Assets/Replay/' + name + '.cs'))
     # Pure data/policy dependencies only; no recorders, bootstraps, credentials or XR.
-    for name in ['GuidanceDecision', 'GuidanceStateSnapshot', 'GazeObservation', 'GazeQuickAlignment', 'GazeTargetHistory', 'DirectionalHintPolicy', 'ParticipantSessionAssignment']:
+    for name in ['GuidanceDecision', 'GuidanceStateSnapshot', 'GazeObservation', 'HtcQueryTiming', 'GazeQuickAlignment', 'GazeTargetHistory', 'DirectionalHintPolicy', 'ParticipantSessionAssignment', 'EyeValidationProtocol']:
         (shared / (name + '.cs')).write_text(source('Assets/' + name + '.cs'))
 
     # Reuse the live angular policy and collider recipe, without session/XR dependencies.
@@ -124,6 +124,7 @@ def prepare(project):
     shutil.copyfile(htc / 'LICENSE.txt', destination / 'LICENSE.txt')
     (assets / 'StreamingAssets').mkdir(exist_ok=True)
     shutil.copyfile(HERE / 'live_bridge.py', assets / 'StreamingAssets/live_bridge.py')
+    shutil.copyfile(HERE / 'neutral_audio.py', assets / 'StreamingAssets/neutral_audio.py')
     shutil.copyfile(HERE / 'participant_intake.py', assets / 'StreamingAssets/participant_intake.py')
     shutil.copyfile(HERE / 'export_run.py', assets / 'StreamingAssets/export_run.py')
     analysis = assets / 'StreamingAssets/Analysis'

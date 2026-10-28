@@ -116,11 +116,11 @@ public sealed partial class TrialReviewApp
         GUI.matrix=Matrix4x4.Scale(new Vector3(scale,scale,1));
         float width=Screen.width/scale,height=Screen.height/scale;
         Fill(new Rect(0,0,width,height),m_Background);
-        GUI.enabled=!m_Browser&&!m_Loading&&!m_DatasetPanel&&!m_IntakeOpen;
+        GUI.enabled=!m_Browser&&!m_Loading&&!m_DatasetPanel&&!m_IntakeOpen&&!m_ValidationOpen;
         HandlePlaybackKeyboard(Event.current, GUI.enabled, GUI.GetNameOfFocusedControl());
         Header(width);
         if(m_LivePanel)LiveControls(width);
-        float top=m_LivePanel?(m_FollowLive?260:164):78,bottom=height-260,rail=204,inspector=m_Tab==3?380:274;
+        float top=m_LivePanel?78+LiveControlsHeight:78,bottom=height-260,rail=204,inspector=m_Tab==3?380:274;
         Panel(new Rect(0,top,rail,bottom-top));Panel(new Rect(width-inspector,top,inspector,bottom-top));
         float left=rail+14,viewWidth=width-inspector-14-left;
         m_OptionColumns=Mathf.Clamp(Mathf.FloorToInt(viewWidth/145),3,8);
@@ -161,6 +161,7 @@ public sealed partial class TrialReviewApp
         if(m_DatasetPanel)DatasetDialog(width,height);
         DrawHoverHelp(width,height);
         DrawIntake(width,height);
+        DrawValidation(width,height);
     }
     void DrawWaitingConnection()
     {

@@ -4,7 +4,7 @@ import unittest
 import uuid
 import wave
 from pathlib import Path
-from participant_intake import create, load, answer, clone_answers, patch, ticket, INTERVIEW_VOICE
+from participant_intake import create, load, answer, clone_answers, patch, ticket, validate_fit, INTERVIEW_VOICE
 from live_bridge import validate_control
 
 class Provider:
@@ -42,7 +42,7 @@ class IntakeTests(unittest.TestCase):
         state=load(self.folder);self.assertEqual(state['phase'],'interview_complete')
         self.assertEqual(self.provider.followups,2)
         clone_answers(self.folder,self.provider); assignment=ticket(load(self.folder))
-        self.assertEqual(set(assignment),{'schema','id','participantCode','configuration','neutralGender','neutralOption','cloneVoiceId'})
+        self.assertEqual(set(assignment),{'schema','id','participantCode','configuration','neutralGender','neutralOption','cloneVoiceId','fit'})
         self.assertNotEqual(INTERVIEW_VOICE,assignment['cloneVoiceId'])
     def test_prompt_failure_retry_does_not_advance_answer_twice(self):
         name=self.recording();self.provider.fail_speech=True
@@ -77,5 +77,26 @@ class IntakeTests(unittest.TestCase):
         self.assertNotIn(INTERVIEW_VOICE, catalog)
     def test_invalid_code_does_not_create_session(self):
         with self.assertRaises(ValueError): create(self.folder/'other','../private','A')
+
+    def test_ipd_persists_with_provenance_and_separate_lens_setting(self):
+        fit = dict(ipdRecorded=True, participantIpdMm=63.5, ipdSource='pupillometer', headsetIpdRecorded=True, headsetIpdMm=64)
+        folder = self.folder / uuid.uuid4().hex
+        create(folder, 'P102', 'B', fit=fit)
+        state = patch(folder, phase='interview_complete', cloneState='ready', cloneVoiceId='fixture_voice_id')
+        self.assertEqual(load(folder)['fit'], fit)
+        from live_bridge import validate_assignment
+        self.assertEqual(validate_assignment(ticket(state))['fit'], fit)
+        self.assertFalse(load(self.folder)['fit']['ipdRecorded'])
+        del state['fit']
+        self.assertEqual(ticket(state)['fit']['ipdSource'], 'not_recorded')
+
+    def test_ipd_rejects_nonfinite_units_missing_source_and_private_fields(self):
+        base = validate_fit(None)
+        for value in (0, -1, 630, float('nan'), float('inf'), '63', True):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                validate_fit(dict(base, ipdRecorded=True, participantIpdMm=value, ipdSource='ruler'))
+        for fit in (dict(base, participantIpdMm=63), dict(base, ipdRecorded=True, participantIpdMm=63),
+                    dict(base, name='private'), dict(base, headsetIpdRecorded=True, headsetIpdMm=0)):
+            with self.assertRaises(ValueError): validate_fit(fit)
 
 if __name__=='__main__': unittest.main()

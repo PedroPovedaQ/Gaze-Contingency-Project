@@ -10,7 +10,7 @@ public static class NativeGazeTimestampChecks
     [MenuItem("Tools/Codex/Check Native Gaze Timestamp Diagnostics")]
     public static void Run()
     {
-        if (Marshal.SizeOf<NativeGazeRecord>() != 136 || Marshal.SizeOf<NativeGazeStatus>() != 56)
+        if (Marshal.SizeOf<NativeGazeRecord>() != 136 || Marshal.SizeOf<NativeGazeStatus>() != 56 || Marshal.SizeOf<HtcQueryStamp>() != 112)
             throw new Exception("Native gaze ABI mismatch.");
         // Nanosecond values must survive JSON as integers, without float rounding.
         var original = new NativeGazeRecord { sequence=9007199254740993UL, runtimePoseTime=9007199254740993L,

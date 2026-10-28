@@ -543,6 +543,7 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine(FormattableString.Invariant($"  \"active_search_limit_seconds\": {StudyTrialClock.SearchLimitSeconds},"));
         sb.AppendLine(FormattableString.Invariant($"  \"participant_id\": \"{SessionConfig.ParticipantId}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"desktop_session_id\": \"{SessionConfig.DesktopSessionId}\","));
+        sb.AppendLine("  \"participant_fit\": " + JsonUtility.ToJson(SessionConfig.ParticipantFit) + ",");
         sb.AppendLine(FormattableString.Invariant($"  \"run_number\": {SessionConfig.RunNumber},"));
         sb.AppendLine(FormattableString.Invariant($"  \"condition\": \"{SessionConfig.ConditionLabel}\","));
         sb.AppendLine(FormattableString.Invariant($"  \"voice_condition\": \"{(SessionConfig.VoiceBlocksEnabled ? "counterbalanced" : SessionConfig.VoiceTag)}\","));
@@ -668,6 +669,10 @@ public class TrialDataLogger : MonoBehaviour
             sb.AppendLine(FormattableString.Invariant($"      \"fixation_count_on_target\": {rec.fixationCountOnTarget},"));
             sb.AppendLine(FormattableString.Invariant($"      \"fixation_count_on_distractors\": {rec.fixationCountOnDistractors},"));
             sb.AppendLine(FormattableString.Invariant($"      \"fixation_count_total\": {totalFixations},"));
+            sb.AppendLine("      \"eye_counter_semantics\": \"ray_object_visits_and_transitions_not_physiological_events\",");
+            sb.AppendLine(FormattableString.Invariant($"      \"proxy_ray_visit_count\": {totalFixations},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"proxy_target_ray_seconds\": {rec.fixationTimeOnTarget:F3},"));
+            sb.AppendLine(FormattableString.Invariant($"      \"proxy_object_transition_count\": {rec.saccadeCount},"));
             sb.AppendLine(FormattableString.Invariant($"      \"avg_fixation_duration_seconds\": {avgFixDuration:F3},"));
             sb.AppendLine(FormattableString.Invariant($"      \"saccade_count\": {rec.saccadeCount},"));
             sb.AppendLine(FormattableString.Invariant($"      \"saccade_frequency_hz\": {saccadeFreq:F3},"));
@@ -788,7 +793,7 @@ public class TrialDataLogger : MonoBehaviour
         sb.AppendLine(FormattableString.Invariant($"First-try accuracy: {firstTryPct:F1}%"));
         sb.AppendLine(FormattableString.Invariant($"Wrong captures: {totalWrong}"));
         sb.AppendLine(FormattableString.Invariant($"Avg time to find target: {avgFind:F1}s"));
-        sb.AppendLine(FormattableString.Invariant($"Fixation time on target: {targetFixPct:F1}%"));
+        sb.AppendLine(FormattableString.Invariant($"Ray-intersection time on target (not fixation): {targetFixPct:F1}%"));
         sb.AppendLine(FormattableString.Invariant($"Fixation time on distractors: {distractorFixPct:F1}%"));
         if (blinkCount >= 0 && blinksPerMinute >= 0f)
             sb.AppendLine(FormattableString.Invariant($"Blink rate: {blinksPerMinute:F1}/min"));

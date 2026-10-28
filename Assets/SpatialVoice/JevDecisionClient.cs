@@ -59,7 +59,8 @@ namespace SpatialVoice
                     response.EnsureSuccessStatusCode();
                     var health = JObject.Parse(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
                     if ((string)health["status"] != "ready" || (string)health["scope"] != "assistance" ||
-                        (string)health["model_version"] != LocalModelVersion)
+                        (string)health["model_version"] != LocalModelVersion ||
+                        !JToken.DeepEquals(health["stages"], new JArray("assistance", "assistance_phrase")))
                         throw new FormatException("Local adaptive checkpoint mismatch");
                 }
             }
@@ -245,8 +246,8 @@ namespace SpatialVoice
         {
             var request = JObject.Parse(payload);
             if (m_Local && (request["questions"] is JObject questions) &&
-                (questions.Count != 1 || questions["assistance"] == null))
-                throw new InvalidOperationException("Local model supports assistance only");
+                (questions.Count != 1 || (questions["assistance"] == null && questions["assistance_phrase"] == null)))
+                throw new InvalidOperationException("Local model supports action and phrase assistance only");
             var state = request["state"];
             string id = state is JObject ? (string)state["decision_id"] : null;
             id = id ?? Guid.NewGuid().ToString("N");

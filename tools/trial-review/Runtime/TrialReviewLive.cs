@@ -208,6 +208,7 @@ public sealed partial class TrialReviewApp
         public double createdUtc, observedUtc;
         public bool wallsVisible;
         public ParticipantSessionAssignment assignment;
+        public EyeValidationRequest validation;
     }
     HeadsetCommand m_HeadsetCommand;
     string m_ControlError;
@@ -241,9 +242,12 @@ public sealed partial class TrialReviewApp
             GUILayout.Label(new GUIContent(recorded ? "Headset selected: " + assistance.SelectionLabel + " · " + assistance.ConnectionLabel : "Headset assistance: not recorded",
                 recorded ? "Model: " + (assistance.modelVersion ?? "not used") + "\nPolicy: " + assistance.policy + "\nConfigured does not guarantee cloud reachability." : "Older headset build has no provider status"), m_Heading);
             GUILayout.Label(recorded ? "Last accepted: " + assistance.LastDecisionLabel + " · Queued does not confirm playback" : "No model decision recorded", m_MutedLabel);
+            GUILayout.Label(string.IsNullOrEmpty(state.eyeCaptureStatus) ? "Eye measurement status: unavailable in this build" : state.eyeCaptureStatus, m_MutedLabel);
+            GUILayout.Label($"Eye pose time: {(state.eyeGazeTimestampAvailable ? "recorded" : "unavailable")} · Pupil capture time: {(state.eyePupilTimestampAvailable ? "recorded" : "unavailable")} · Matching head pose: {(state.eyeHeadPoseTimeMatched ? "available" : "unavailable")}", m_MutedLabel);
         }
         else GUILayout.Label("Headset assistance: waiting for a fresh live status", m_MutedLabel);
         GUILayout.BeginHorizontal();
+        if (Button("Eye validation", GUILayout.Width(125))) OpenValidation();
         if (Button("New participant session", GUILayout.Width(190))) OpenIntake();
         GUILayout.Label("Headset controls", m_Heading, GUILayout.Width(150));
         bool wasEnabled = GUI.enabled;
@@ -267,9 +271,10 @@ public sealed partial class TrialReviewApp
         GUILayout.EndHorizontal();
     }
 
+    float LiveControlsHeight => m_FollowLive ? 300 : 116;
     void LiveControls(float width)
     {
-        GUILayout.BeginArea(new Rect(22, 73, width - 44, m_FollowLive ? 182 : 86));
+        GUILayout.BeginArea(new Rect(22, 73, width - 44, LiveControlsHeight));
         GUILayout.BeginHorizontal();
         GUILayout.Label("Headset Wi-Fi IP", m_Label, GUILayout.Width(125));
         GUI.SetNextControlName("text:wifi-endpoint");
@@ -294,6 +299,7 @@ public sealed partial class TrialReviewApp
         if (m_FollowLive && m_LiveAudioClock.WaitingForAudio) view = "Buffering recorded speech audio · " + view;
         if (m_LiveAudioClock.UnavailableCount > 0) view += $" · {m_LiveAudioClock.UnavailableCount} audio asset(s) unavailable after 5 s";
         GUILayout.Label(m_LiveStatus?.state == "error" ? m_LiveStatus.message : view + " · Headset keeps the original recording", m_MutedLabel);
+        NeutralAudioControls();
         if (m_FollowLive) HeadsetControls();
         GUILayout.EndArea();
     }
@@ -303,6 +309,10 @@ public sealed partial class TrialReviewApp
 [Serializable]
 public sealed class TrialReviewHeadsetState
 {
+    public EyeValidationStatus validation;
+    public bool validationAvailable;
+    public string eyeRecordingId, eyeCaptureStatus;
+    public bool eyeGazeTimestampAvailable, eyePupilTimestampAvailable, eyeHeadPoseTimeMatched;
     public AssistanceRuntimeSnapshot assistance;
     public int schema, revision;
     public bool intakeAvailable;

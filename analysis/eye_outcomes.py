@@ -20,8 +20,9 @@ import pywt
 from scipy.spatial.transform import Rotation
 
 from eye_quality import read_recording, compare_annotations
+from eye_timing import stamp, usable_stamp, clock_identity
 
-VERSION = 'htc-query-eye-candidates-v2-auditable-screening'
+VERSION = 'htc-eye-candidates-v3-stream-dedup-target-aoi'
 
 
 @dataclass(frozen=True)
@@ -104,7 +105,7 @@ def ipa(values, duration):
     return count, count / duration
 
 
-def fresh_search_segments(rows, config):
+def fresh_search_segments(rows, config, stream='gaze'):
     """Deduplicate HTC query receipts globally; cached rows do not become samples.
 
     A query taken before reveal is not carried into search. Context boundaries,
@@ -112,13 +113,17 @@ def fresh_search_segments(rows, config):
     """
     segments, segment, previous_key = [], [], None
     last_query = None
+    last_native, native_identity = None, None
     for row in rows:
+        native = stamp(row,stream)
+        identity = clock_identity(row,native) if native is not None else None
         key = (row.get('recordingId'), row.get('participant'), row.get('run'),
-               row.get('sourceTrialId'), row.get('phase'), row.get('practice'), row.get('deviceId'))
+               row.get('sourceTrialId'), row.get('phase'), row.get('practice'), row.get('deviceId'), identity)
         t = row.get('htcQueryReceiptTime')
         usable = (row.get('phase') == 'search' and row.get('sourceTrialId') and
                   row.get('valid') and row.get('focused') and row.get('deviceAvailable') and
-                  row.get('htcGazeAvailable') and isinstance(t, (int, float)) and t > 0 and
+                  row.get('htcGazeAvailable' if stream=='gaze' else 'pupilAvailable') and isinstance(t, (int, float)) and t > 0 and
+                  (native is None or usable_stamp(native)) and
                   abs(row['receiptTime'] - t) <= config.max_gap_s)
         if key != previous_key or not usable:
             if segment:
@@ -131,6 +136,21 @@ def fresh_search_segments(rows, config):
             continue
         backwards = last_query is not None and t < last_query
         last_query = t
+        if native is not None:
+            if identity != native_identity:
+                last_native, native_identity = None, identity
+            if usable_stamp(native):
+                native_time = native['returnedTime']
+                if last_native == native_time:
+                    continue
+                backwards |= last_native is not None and native_time < last_native
+                # A large source-time gap breaks the segment even if query delivery is regular.
+                if last_native is not None and (native_time-last_native)/1e9 > config.max_gap_s:
+                    if segment: segments.append(segment)
+                    segment = []
+                last_native = native_time
+            else:
+                last_native = None
         if not usable or backwards:
             if segment:
                 segments.append(segment)
@@ -222,19 +242,29 @@ def analyze(rows, config=Config(), pupil_diagnostics=None):
                 if duration >= config.fixation_min_s:
                     group['fixation_eligible_seconds'] += duration
                 def add(kind, start, end):
-                    events.append(dict(recording_id=key[0], trial_id=key[3], eye=side,
+                    event = dict(recording_id=key[0], trial_id=key[3], eye=side,
                         kind='candidate_'+kind, start=float(times[start]), end=float(times[end]),
-                        duration_s=float(times[end]-times[start]), validated=False))
+                        duration_s=float(times[end]-times[start]), validated=False,
+                        target_id='', target_aoi_fraction=None, boundary_censored=start==0 or end==len(times)-1)
+                    if kind=='fixation':
+                        window=samples[start:end+1]
+                        targets={r.get('taskTargetId') for r in window}
+                        if len(targets)==1 and all(r.get('taskAoiAvailable') is True and r.get('taskTargetId') for r in window):
+                            event['target_id']=next(iter(targets))
+                            event['target_aoi_fraction']=sum(r.get(side+'HitObjectId')==event['target_id'] for r in window)/len(window)
+                    events.append(event)
                 fixations = idt(times, directions, config)
                 group['fixation_count'] += len(fixations)
                 for start, end in fixations:
                     add('fixation', start, end)
-                head_ok = np.array([bool(r.get('headValid')) and vec(r, 'headRotation', 'xyzw') is not None for r in samples])
+                head_fields=['htcHeadWorldRotation' if r.get('htcTiming') is not None else 'headRotation' for r in samples]
+                head_ok = np.array([bool(r.get('htcHeadPoseValid' if r.get('htcTiming') is not None else 'headValid')) and
+                                    vec(r, field, 'xyzw') is not None for r,field in zip(samples,head_fields)])
                 # No missing head-pose replacement, even for a stationary-looking ray.
                 for begin, finish in true_runs(head_ok):
                     if finish - begin < 2:
                         continue
-                    q = Rotation.from_quat([vec(r, 'headRotation', 'xyzw') for r in samples[begin:finish]])
+                    q = Rotation.from_quat([vec(r,field,'xyzw') for r,field in zip(samples[begin:finish],head_fields[begin:finish])])
                     local = q.inv().apply(directions[begin:finish])
                     dt = np.diff(times[begin:finish])
                     head_speed = np.rad2deg((q[:-1].inv()*q[1:]).magnitude()) / dt
@@ -249,12 +279,25 @@ def analyze(rows, config=Config(), pupil_diagnostics=None):
                         if config.saccade_min_s - 1e-10 <= elapsed <= config.saccade_max_s + 1e-10:
                             group['saccade_count'] += 1
                             add('saccade', begin+a, begin+b)
+    # Pupil acquisition is independent of gaze pose requests: do not discard a new
+    # pupil observation just because the gaze timestamp repeats (or vice versa).
+    for segment in fresh_search_segments(rows, config, stream='pupil'):
+        first=segment[0]
+        key=(first['recordingId'],first.get('participant'),first.get('run'),first['sourceTrialId'])
+        for side in ('left','right'):
+            group=groups[(*key,side)]
             for samples in eye_segments(segment, side, config, pupil=True, excluded_times=invalid.get((key[3], side), ())):
-                times = np.array([r['htcQueryReceiptTime'] for r in samples])
+                native=stamp(samples[0],'pupil')
+                if native is not None:
+                    origin=native['returnedTime']
+                    times=np.array([(stamp(r,'pupil')['returnedTime']-origin)/1e9 for r in samples])
+                else:
+                    times = np.array([r['htcQueryReceiptTime'] for r in samples])
                 screen, grid = pupil_screen(times, config)
                 if pupil_diagnostics is not None:
                     pupil_diagnostics.append(dict(recording_id=key[0], trial_id=key[3], eye=side,
-                        start=float(times[0]), end=float(times[-1]), samples=len(samples),
+                        start=samples[0]['htcQueryReceiptTime'], end=samples[-1]['htcQueryReceiptTime'], samples=len(samples),
+                        processing_clock='runtime_pupil_capture_ns' if native is not None else 'legacy_query_receipt',
                         first_failure=screen['reasons'][0] if screen['reasons'] else 'accepted',
                         failed_checks=';'.join(screen['reasons']),
                         **{k:v for k,v in screen.items() if k != 'reasons'}))
@@ -269,6 +312,13 @@ def analyze(rows, config=Config(), pupil_diagnostics=None):
                 group['pupil_segments_accepted'] += 1
     output = []
     for group in groups.values():
+        target_events=[e for e in events if e['recording_id']==group['recording_id'] and
+                       e['trial_id']==group['trial_id'] and e['eye']==group['eye'] and
+                       e['kind']=='candidate_fixation' and e['target_aoi_fraction']==1.]
+        last_target=max(target_events,key=lambda e:e['end']) if target_events else None
+        group['last_target_candidate_s']=(last_target['duration_s'] if last_target and not last_target['boundary_censored'] else None)
+        group['last_target_candidate_status']=('boundary_censored' if last_target and last_target['boundary_censored'] else
+                                              'candidate_all_samples_on_target' if last_target else 'no_complete_target_candidate')
         group['saccade_frequency_hz'] = (group['saccade_count']/group['saccade_eligible_seconds']
                                          if group['saccade_eligible_seconds'] else None)
         group['ipa_candidate_hz'] = (group['ipa_extrema']/group['pupil_eligible_seconds']
@@ -278,7 +328,7 @@ def analyze(rows, config=Config(), pupil_diagnostics=None):
         if not group['saccade_eligible_seconds']:
             group['saccade_count'] = None
         group['status'] = 'exploratory_candidate_not_validated'
-        group['clock'] = 'HTC_query_receipt_not_sensor_capture'
+        group['clock'] = 'gaze_duration=query_receipt;pupil=runtime_capture_when_present_else_query;neither_sensor_validated'
         output.append(group)
     return output, events
 

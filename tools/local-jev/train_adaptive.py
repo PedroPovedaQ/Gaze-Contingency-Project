@@ -1,4 +1,4 @@
-"""Transfer the v4 encoder to nine assistance choices; freeze selection before evaluation."""
+"""Transfer a parent encoder to the current assistance choices; select by validation."""
 import argparse
 from collections import Counter
 import hashlib
@@ -53,7 +53,7 @@ def main():
     model=AutoModelForSequenceClassification.from_pretrained(args.parent/'model',local_files_only=True)
     old=model.classifier
     # Keep the fully fine-tuned encoder and transfer corresponding head rows; all weights train.
-    mapping=data.LABELS if set(model.config.label2id)==set(data.LABELS) else ['wait','wait','wait','orient','orient','refine','refine','correct','encourage']
+    mapping=[label if label in model.config.label2id else ('wait' if label.startswith('observe_') else label.split('_')[0]) for label in data.LABELS]
     head=torch.nn.Linear(old.in_features,len(data.LABELS))
     with torch.no_grad():
         for i,label in enumerate(mapping):
@@ -64,7 +64,7 @@ def main():
     model=model.to(device)
     provenance=dict(parent=str(args.parent),parent_sha256=hashlib.sha256((args.parent/'model/model.safetensors').read_bytes()).hexdigest(),
                     seed=seed,learning_rate=2e-5,head_learning_rate=args.head_learning_rate,batch_size=24,epochs=args.epochs,max_seconds=args.max_seconds,
-                    initialization='v4 encoder and corresponding five-class head rows expanded to nine; full fine-tune',
+                    initialization='parent encoder and matching action rows transferred; full fine-tune',
                     selection='validation masked accuracy only, first tie retained',
                     packages={k:importlib.metadata.version(k) for k in ['torch','transformers','numpy','safetensors']},
                     code_sha256={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in Path(__file__).parent.glob('*.py')})

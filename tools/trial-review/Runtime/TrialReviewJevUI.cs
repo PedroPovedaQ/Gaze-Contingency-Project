@@ -74,7 +74,16 @@ public sealed partial class TrialReviewApp
         var playback=selected.PlaybackRecord;
         GUILayout.Label(playback==null?"Playback start not recorded for this request.":$"Playback started {Clock(playback.time-(trial?.time??0))}\n{playback.text}\nRequest to playback: {(playback.time-selected.Time)*1000:0} ms",m_Label);
         var payload=selected.Request?["payload"] as JObject;
-        bool adaptive = payload?["questions"]?["assistance"] != null;
+        bool phraseStage = payload?["questions"]?["assistance_phrase"] != null;
+        bool adaptive = payload?["questions"]?["assistance"] != null || phraseStage;
+        if (phraseStage)
+        {
+            string parentId = (string)payload?["state"]?["parent_action_decision_id"];
+            GUILayout.Label("Phrase stage · Action: " + (string)payload?["state"]?["selected_action"], m_Heading);
+            GUILayout.Label("Round phrase history is included in the frozen state below. Playback is linked to the parent action request.", m_MutedLabel);
+            var parent = decisions.FirstOrDefault(d => d.Id == parentId);
+            if (parent != null && GUILayout.Button("View parent action and playback", m_Row)) SelectJev(parent);
+        }
         GUILayout.Label(adaptive
             ? "Adaptive policy: observation stays silent; unavailable advice is retried without an automatic search cue. Playback marks software onset."
             : "Playback is a recorded software onset, not proof the participant heard it. A timeout can still produce local fallback audio.",m_MutedLabel);

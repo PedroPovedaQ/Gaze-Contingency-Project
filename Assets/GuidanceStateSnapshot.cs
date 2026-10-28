@@ -21,7 +21,7 @@ public sealed class GuidanceStateSnapshot
 [Serializable]
 public sealed class AssistanceRuntimeSnapshot
 {
-    public const string LocalModelVersion = "20261026-minilm-adaptive-v2";
+    public const string LocalModelVersion = "20261026-minilm-reassurance-v8";
     public string mode, provider, modelVersion, policy, connection;
     public string lastDecisionId, lastDecisionProvider, lastStrategy, lastOutcome;
     public double capturedAtSeconds, lastDecisionAtSeconds;
@@ -33,8 +33,8 @@ public sealed class AssistanceRuntimeSnapshot
     public string ConnectionLabel => connection == "not_checked" ? "Not checked" : connection == "not_required" ? "Not used" :
         connection == "not_configured" ? "Not configured" : connection == "checking" ? "Checking…" :
         connection == "configured" ? "Configured" : connection == "ready" ? "Ready" : connection == "unavailable" ? "Unavailable" : "Not recorded";
-    public string StrategyLabel => lastStrategy == "observe_1s" ? "Observe for 1s" : lastStrategy == "observe_2s" ? "Observe for 2s" :
-        lastStrategy == "observe_4s" ? "Observe for 4s" : lastStrategy == "orient_brief" ? "Brief direction" :
+    public string StrategyLabel => lastStrategy == "observe_1s" ? "Observe for 1s" :
+        lastStrategy == "orient_brief" ? "Brief direction" :
         lastStrategy == "orient_explicit" ? "Fuller direction" : lastStrategy == "refine_brief" ? "Brief refinement" :
         lastStrategy == "refine_explicit" ? "Precise refinement" : lastStrategy == "correct" ? "Correct direction" :
         lastStrategy == "encourage" ? "Reinforce progress" : "Unknown strategy";

@@ -18,14 +18,15 @@ namespace SpatialVoice
         INavigationDecisionProvider m_Decisions;
         CancellationTokenSource m_Warmup;
         bool m_WarmupStarted;
+        bool? m_CloudAdviceEnabled;
         public bool IsSelecting => m_Pending != null;
         public void Initialize(string gatewayKey, string elevenLabsKey, VoiceSynthesizer voice, INavigationDecisionProvider decisionProvider = null)
         {
             m_Voice = voice;
             var decisions = m_Decisions = decisionProvider ?? new JevDecisionClient(gatewayKey);
             decisions.Trace += m_Voice.RecordJevTrace;
-            m_Voice.TransmissionAdvisor = decisions.Available ? decisions.ShouldTransmitAsync : null;
-            m_Voice.InterruptionAdvisor = decisions.Available ? decisions.ShouldInterruptAsync : null;
+            m_CloudAdviceEnabled = null;
+            RefreshDecisionProvider();
             m_Game = GetComponent<FindObjectGameManager>();
             m_Navigation = gameObject.AddComponent<SpatialVoiceNavigationManager>();
             m_Navigation.Configure(gatewayKey, elevenLabsKey, () => SessionConfig.Voice == VoiceCondition.SelfSimilar
@@ -33,11 +34,21 @@ namespace SpatialVoice
             m_Navigation.Diagnostic += status => m_Voice.RecordNavigationStatus(JsonUtility.ToJson(new CatalogEvent {
                 stage = "catalog", status = status, time = Time.realtimeSinceStartupAsDouble }));
         }
+        public void RefreshDecisionProvider()
+        {
+            bool enabled = SessionConfig.AssistanceProvider == "jev" && m_Decisions != null && m_Decisions.Available;
+            if (m_Voice == null || m_CloudAdviceEnabled == enabled) return;
+            m_CloudAdviceEnabled = enabled;
+            m_Voice.TransmissionAdvisor = enabled ? m_Decisions.ShouldTransmitAsync : null;
+            m_Voice.InterruptionAdvisor = enabled ? m_Decisions.ShouldInterruptAsync : null;
+            if (!enabled) { m_Warmup?.Cancel(); m_WarmupStarted = false; }
+        }
         [Serializable] struct CatalogEvent { public string stage, status; public double time; }
         void Update()
         {
+            RefreshDecisionProvider();
             UpdateLocalConnection();
-            if (!m_WarmupStarted && m_Voice != null && m_Voice.LibraryReady && m_Decisions != null && m_Decisions.Available)
+            if (m_CloudAdviceEnabled == true && !m_WarmupStarted && m_Voice != null && m_Voice.LibraryReady && m_Decisions != null && m_Decisions.Available)
             { m_WarmupStarted = true; WarmConnection(); }
             if (m_Pending != null && (m_Relevant == null || !m_Relevant())) Cancel();
         }
@@ -62,7 +73,7 @@ namespace SpatialVoice
 
         public bool TryRequest(Transform target, string route, Func<GuidanceSelection, bool> commit)
         {
-            if (IsSelecting || m_Navigation == null || m_Navigation.Database == null || !m_Voice.CanRequestGuidance("catalog_turn") ||
+            if (SessionConfig.AssistanceProvider != "jev" || IsSelecting || m_Navigation == null || m_Navigation.Database == null || !m_Voice.CanRequestGuidance("catalog_turn") ||
                 !TryGeometry(target, out var initial)) return false;
             // Respect the existing route lock near the rear seam. Never reverse a planned
             // turn merely because SignedAngle changes sign at 180 degrees.

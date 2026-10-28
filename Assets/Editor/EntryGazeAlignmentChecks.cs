@@ -103,6 +103,15 @@ public static class EntryGazeAlignmentChecks
             entry.Abort(); Check(!entry.Active && !entry.Completed, "Abort never accepts calibration");
             string path = System.IO.Path.Combine(Application.persistentDataPath, "EyeMeasurements", "entry_alignment_" + Read<string>(entry, "m_EntryId") + ".json");
             if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
+            entry.ResetForRetry();
+            var study=entry.Run(studyVerification:true);
+            Check(study.MoveNext() && !Read<Button>(entry,"m_Ok").gameObject.activeSelf && Read<Button>(entry,"m_Skip").gameObject.activeSelf,
+                "Simplified preparation hides shape OK but retains Skip");
+            Check(Read<TMPro.TextMeshProUGUI>(entry,"m_Text").text.Contains("follow automatically"),
+                "Participant knows verification follows automatically");
+            entry.Abort();
+            path=System.IO.Path.Combine(Application.persistentDataPath,"EyeMeasurements","entry_alignment_"+Read<string>(entry,"m_EntryId")+".json");
+            if(System.IO.File.Exists(path))System.IO.File.Delete(path);
             Debug.Log("[EntryGazeAlignmentChecks] PASS: explicit start, countdown/red centers, three-dot mean, three independent shapes, preview-only correction, manual OK and interruption.");
         }
         finally

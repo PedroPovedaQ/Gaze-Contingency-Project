@@ -89,7 +89,10 @@ public partial class HintGenerator
     public void SetLifecycle(GuidancePhase phase, string reason)
     {
         if (phase == GuidancePhase.Completed || phase == GuidancePhase.TimedOut || phase == GuidancePhase.Stopped)
+        {
             m_AdaptiveHistory.EndTrial(phase.ToString());
+            m_OpeningHistoryIdentity = null;
+        }
         if (phase == GuidancePhase.Paused) m_AdaptiveHistory.BreakObservation();
         m_State.SetLifecycle(phase, reason, Time.realtimeSinceStartupAsDouble);
         m_GazeHitObjectId = null; m_ClosestVicinityObject = null; m_EvaluatedTarget = null;

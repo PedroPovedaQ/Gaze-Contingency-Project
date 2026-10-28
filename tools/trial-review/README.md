@@ -1,5 +1,11 @@
 # Trial Review desktop app
 
+**Implemented October 27 — participant IPD:** before **Begin interview**, enter binocular distance IPD in millimetres and choose its source (pupillometer, ruler, or participant report). Optionally enter the headset lens spacing separately. Check values before creating the interview; they are saved with that session and sent with the participant assignment. Leave unavailable measurements blank/Not recorded. These are manual entries, not hardware readings. The flat trial CSV and joined **Final data** panel include participant IPD, source and headset lens spacing. Earlier recordings and headset-only quick tests have no inferred IPD. Details: `work_log/2026-10-27-participant-ipd.md` at the repository root.
+
+**Implemented October 26 — neutral quick-test audio cache:** in **Wi-Fi settings**, select **Prepare neutral test audio** before starting a headset session. The Mac reads the installed app’s exact Eric phrase catalog, reuses existing headset MP3s, synthesizes only missing lines, decodes them with ffmpeg, and transfers only changed cache files. Wait for **Neutral audio ready on headset**. This does not start a trial. The headset retains the cache across app restarts and works without the viewer once prepared. Changed wording/model/voice keys remain separate; changed source bytes or damaged decode files fall back to the MP3. Final level matching, manifests and replay waveforms remain headset-owned. Transcript validation remains bypassed as configured.
+
+The Mac needs ffmpeg and, only for missing phrases, `~/.config/follow-my-voice/api_keys.json` with `elevenlabs_key`. Cache: `~/.local/share/follow-my-voice-neutral-audio`; status: `neutral-audio-status.json` in the live archive. This action currently targets **Eric / neutral development quick test**, not all neutral participant voices or clones. Finish/cancel an existing headset session first. Runtime catalog: `PreparationLogs/neutral-audio-catalog.json`. The worker is also callable as `python3 tools/trial-review/neutral_audio.py --endpoint HEADSET_IP:5555 --output /path/status.json`.
+
 **Implemented October 25 — live headset controls:** While following **Live**, the Wi-Fi panel has a separate **Headset controls → Walls** button. It sets all eight headset wall outlines and degree labels together using the same API as the wrist setting; target objects, search geometry, schedule and trial clocks are unchanged. **Viewer walls** still affects only the desktop reconstruction. This control requires the updated headset build and a fresh, awake connection. The label reflects headset-reported state, including wrist changes, and requests show pending/confirmed/rejected status. Saved and detached review cannot send controls. Commands are session-bound, expire after ten seconds, and become invalid across sleep/focus changes. Accepted requests are retained under `PreparationLogs/controls_<launch-session>/commands.jsonl`; changes during an active replay also appear as `headset_setting_changed` events. Pre-trial changes use the standalone audit without starting a replay.
 
 **Implemented October 25 — theta v7:** **At cursor** displays recorded pre-cue assigned/realized angles, error, signed target height, eye/cross/target coordinates, gaze sequence and both realtime clocks. Coordinates are explicitly Unity world, separate from replay coordinates. Earlier cursors/legacy recordings remain unavailable. Repeated pre-search readiness attempts and backwards seeking retain the correct snapshot and finalized object positions. Selected-trial export adds exact `pre-cue-theta.jsonl`; **Final data** includes every flattened snapshot field. Condensed CSV adds five fields: snapshot status, realized signed/absolute angle, assignment error, and target-minus-cross height (22 columns total). These are recorded geometric measurements, not total physical rotation.
@@ -572,3 +578,12 @@ the end-to-end check for actual Wi-Fi delivery and listening.
 ### Search deadline
 
 New headset recordings emit `trial_timeout` after 15 active-search seconds. Trial Review labels these trials **Time up**, hides the expired scene at that event, and retains the recorded encouragement/subtitles. A timeout does not imply a trigger selection or session failure. Historical recordings retain their original durations; the viewer does not impose the new deadline on them.
+
+### Eye validation controls
+
+Live mode → **Eye validation** starts isolated spatial, saccade, control, arithmetic,
+search or drift exercises. Enter the participant code and IPD measurements; choose
+ABBA/BAAB arithmetic order. Live status shows the exercise and remaining time.
+Begin, answer/rating and stop commands are bound to the current headset session
+and validation revision. Raw recordings sync in `EyeMeasurements`; see
+[the protocol and first-device test](../../docs/testing/eye-validation-exercises.md).

@@ -22,12 +22,28 @@ from eye_outcomes import Config, VERSION, analyze, write_csv
 from eye_quality import angle, read_recording, recording_status
 from thesis_voice_condition_plots import condition, CONDITIONS, COLORS
 from tlx_scoring import score_tlx, DIMENSIONS
+from eye_timing import diagnostics as timing_diagnostics
 
-VERSION_REPORT = 'voice-eye-measures-v1'
+VERSION_REPORT = 'voice-eye-measures-v2-target-aoi-timing'
 EYE_GATES = ['independent_detector_validation_not_established',
              'task_wide_spatial_accuracy_and_drift_acceptance_not_established',
              'sensor_capture_clock_and_sampling_independence_not_established',
              'prespecified_trial_coverage_and_exclusion_policy_not_established']
+
+
+def capture_requirements(rows, integrity, timing=None):
+    """Presence checks for a validation recording, never scientific approval."""
+    if timing is None:
+        timing=timing_diagnostics(rows)
+    checks=dict(clean_recording=integrity.get('complete') is True,
+                gaze_time_recorded=timing['gaze']['unique_times']>1,
+                pupil_time_recorded=timing['pupil']['unique_times']>1,
+                matching_head_pose_recorded=any(r.get('htcHeadPoseValid') is True for r in rows),
+                search_target_aoi_recorded=any(r.get('phase')=='search' and r.get('taskAoiAvailable') is True for r in rows),
+                independent_validation_targets_recorded=any(r.get('validationTargetPresent') is True and r.get('validationSet')=='heldout' for r in rows),
+                drift_targets_recorded=any(r.get('validationTargetPresent') is True and r.get('validationSet')=='drift' for r in rows))
+    return dict(checks=checks, missing_capture_evidence=[k for k,v in checks.items() if not v],
+                interpretation='Presence in this recording only; task, held-out and drift checks may occupy separate segments. Does not establish coverage, spatial acceptance, event validity, sensor rate, or workload validity.')
 
 
 def finite_number(value):
@@ -58,6 +74,7 @@ def build_trials(summaries, metrics):
                 candidate_fixation_count_mean_per_eye=None, candidate_saccade_hz_mean_per_eye=None,
                 fixation_coverage_min_eye=None, saccade_coverage_min_eye=None,
                 last_target_fixation_s=None, last_fixation_status='unavailable_no_validated_target_AOI_event_join',
+                last_target_candidate_s=None,
                 eye_research_eligible=False, eye_measurement_status='no_raw_eye_metrics',
                 recording_id='', recording_complete=None,
                 research_gate_reasons=';'.join(EYE_GATES))
@@ -83,6 +100,10 @@ def build_trials(summaries, metrics):
         if eyes['left']['recording_id'] != eyes['right']['recording_id']:
             raise ValueError('Eyes belong to different recordings: ' + tid)
         t['recording_id'] = eyes['left']['recording_id']
+        target_values=[m.get('last_target_candidate_s') for m in eyes.values()]
+        if all(finite_number(v) and v>0 for v in target_values):
+            t['last_target_candidate_s']=sum(target_values)/2
+            t['last_fixation_status']='raw_eye_target_join_candidate_not_validated'
         for prefix, field in [('fixation', 'candidate_fixation_count_mean_per_eye'),
                               ('saccade', 'candidate_saccade_hz_mean_per_eye')]:
             values, coverages = [], []
@@ -201,7 +222,7 @@ def plot(trials, surveys, out):
                          'axes.spines.top': False, 'axes.spines.right': False})
     fig, axs = plt.subplots(2, 2, figsize=(11, 8))
     panels = [
-        ('(a) Last target fixation duration', 'Duration (s)', 'last_target_fixation_s', trials),
+        ('(a) Last target fixation candidate', 'Mean per-eye duration (s)', 'last_target_candidate_s', trials),
         ('(b) Candidate fixation count', 'Mean count per eye in usable intervals', 'candidate_fixation_count_mean_per_eye', trials),
         ('(c) Candidate saccade frequency', 'Mean per-eye rate (events / eligible s)', 'candidate_saccade_hz_mean_per_eye', trials),
         ('(d) Perceived workload · Raw TLX', 'Unweighted mean, rescaled to 0–100', 'nasa_tlx_score_0_100', surveys)]
@@ -215,7 +236,7 @@ def plot(trials, surveys, out):
             eligible = [r for r in rows if r['condition'] == label and r.get('plot_eligible') and r.get(field) is not None]
             values = [r[field] for r in eligible]
             if not values:
-                message = ('Unavailable\nTarget-fixation validation\nand AOI join pending' if field == 'last_target_fixation_s'
+                message = ('Unavailable\nNo complete raw-eye\ntarget candidate' if field == 'last_target_candidate_s'
                            else 'No scored\nblock responses' if field == 'nasa_tlx_score_0_100' else 'No eligible\nrecorded measurements')
                 ax.text(x, .48, message, transform=ax.get_xaxis_transform(), ha='center', va='center', fontsize=10, color='#626970')
                 continue
@@ -229,7 +250,7 @@ def plot(trials, surveys, out):
                 transform=ax.get_xaxis_transform(), ha='center', fontsize=9)
         ax.set_ylim(bottom=0)
         if field == 'nasa_tlx_score_0_100': ax.set_ylim(0, 100)
-        elif field == 'last_target_fixation_s': ax.set_ylim(0, 1)
+        elif field == 'last_target_candidate_s': ax.set_ylim(bottom=0)
     fig.suptitle('Recorded development data · eye-event validation pending', fontsize=16, y=.98)
     fig.subplots_adjust(left=.10, right=.97, top=.87, bottom=.14, wspace=.4, hspace=.55)
     fig.text(.5, .055, 'Different development runs; no paired voice effect or significance test. Missing data are not zero.', ha='center', fontsize=10, color='#555')
@@ -283,8 +304,11 @@ def main():
         m, e = analyze(rows, config)
         metrics.extend(m); events.extend(e)
         spatial.extend(spatial_diagnostics(rows, config))
+        integrity=recording_status(path, rows, warnings)
+        timing=timing_diagnostics(rows)
         recordings.append(dict(recording_id=rid, path=str(path.resolve()), rows=len(rows), warnings=warnings,
-            integrity=recording_status(path, rows, warnings), validated=False))
+            integrity=integrity, htc_timing=timing,
+            capture_requirements=capture_requirements(rows,integrity,timing), validated=False))
     trials = build_trials(summaries, metrics)
     recording_by_id = {r['recording_id']: r for r in recordings}
     for trial in trials:
@@ -307,7 +331,7 @@ def main():
     report = dict(version=VERSION_REPORT, detector_version=VERSION, config=asdict(config),
         command=[sys.executable, str(Path(__file__).resolve()), *sys.argv[1:]],
         eye_research_ready=False, eye_gate_reasons=EYE_GATES,
-        last_target_fixation_status='unavailable_no_validated_target_AOI_event_join',
+        last_target_fixation_status='candidate_only_when_both_eyes_have_uncensored_target_events',
         tlx_scored_blocks=sum(r['plot_eligible'] for r in surveys),
         inputs=manifest, recordings=recordings,
         spatial_diagnostic_rows=len(spatial),
@@ -316,7 +340,7 @@ def main():
         nonresolved_or_inconsistent_trials=[t['trial_id'] for t in trials if not t['plot_eligible']],
         unmatched_eye_trial_ids=sorted({m['trial_id'] for m in metrics}-{t['trial_id'] for t in trials}),
         interpretation='Development diagnostics only. Eyes and trials are not independent participants. No voice-effect inference.',
-        last_fixation_definition='Pending: last independently detected fixation intersecting the recorded target AOI before controller selection, excluding pause/gap boundaries and reporting censored events separately.',
+        last_fixation_definition='Candidate: final I-DT event whose every sample hits the same target collider during search, separately per eye; exclude events touching segment boundaries. Binocular descriptive mean requires both eyes. Not validated last fixation before selection; selection-adjacent events may be censored.',
         coverage_definition='Per-eye eligible interval seconds / recorded active search seconds; minimum of the two eyes. No extrapolation or automatic acceptance threshold.',
         source_clock='HTC query receipt, not verified sensor capture; summary exposure is a duration, not a timestamp join.',
         code=[fingerprint(Path(__file__).with_name(p)) for p in ('research_measures.py', 'eye_outcomes.py', 'eye_quality.py', 'tlx_scoring.py', 'thesis_voice_condition_plots.py')],

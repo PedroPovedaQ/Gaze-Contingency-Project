@@ -43,7 +43,16 @@ public static class SessionConfig
     const string k_Tag = "[Session]";
 
     /// <summary>Current participant ID (e.g., "P001"). Set before game start.</summary>
-    public static string ParticipantId { get; set; } = "";
+    static string s_ParticipantId = "";
+    public static string ParticipantId
+    {
+        get => s_ParticipantId;
+        set
+        {
+            if (s_ParticipantId != value) ParticipantFit = new ParticipantFitMeasurements();
+            s_ParticipantId = value;
+        }
+    }
 
     /// <summary>Current run number within this participant (auto-incremented).</summary>
     public static int RunNumber { get; private set; }
@@ -143,6 +152,7 @@ public static class SessionConfig
     // User-directed provider trust: no transcript, filler or content-integrity admission gates.
     public static bool ValidateVoiceTranscript { get; set; } = false;
     public static string DesktopSessionId { get; private set; } = "";
+    public static ParticipantFitMeasurements ParticipantFit { get; private set; } = new ParticipantFitMeasurements();
     public static string SuggestedParticipantId => FindNextParticipantId();
     public static void ConfigureDesktopSession(ParticipantSessionAssignment assignment)
     {
@@ -159,17 +169,19 @@ public static class SessionConfig
         ResetForNewParticipant();
         ParticipantId = assignment.participantCode;
         DesktopSessionId = assignment.id;
+        ParticipantFit = assignment.fit?.Copy() ?? new ParticipantFitMeasurements();
         SelectNeutralVoice((NeutralVoiceProfile)System.Enum.Parse(typeof(NeutralVoiceProfile), assignment.neutralGender), assignment.neutralOption);
         SelfSimilarVoiceId = assignment.cloneVoiceId;
         TrySetPerspective(VoicePerspective.External);
         Directory.CreateDirectory(directory);
         if (!File.Exists(orderPath)) File.WriteAllText(orderPath, assignment.Order);
         File.WriteAllText(sessionPath, assignment.id);
+        File.WriteAllText(Path.Combine(directory, "participant-fit-v1.json"), JsonUtility.ToJson(ParticipantFit, true));
         ConfigureVoiceBlocks(replaceNeutralSelection: true);
     }
     static bool s_JevLedGuidance = true;
-    static bool s_LocalAdaptiveModel;
-    public static bool LocalAdaptiveModel => DevelopmentQuickTest && s_LocalAdaptiveModel;
+    static bool s_LocalAdaptiveModel = true;
+    public static bool LocalAdaptiveModel => s_LocalAdaptiveModel;
     public static string AssistanceProvider => !JevLedGuidance ? "baseline_rules" : LocalAdaptiveModel ? "local_minilm" : "jev";
     public static AssistanceRuntimeSnapshot CaptureAssistanceSelection() => new AssistanceRuntimeSnapshot {
         mode = JevLedGuidance ? "adaptive" : "baseline", provider = AssistanceProvider,
@@ -178,12 +190,11 @@ public static class SessionConfig
     };
     public static bool TrySetLocalAdaptiveModel(bool enabled)
     {
-        if (!DevelopmentQuickTest) return false;
         s_LocalAdaptiveModel = enabled;
         return true;
     }
     public static bool JevLedGuidance => s_JevLedGuidance;
-    public static string GuidancePolicy => JevLedGuidance ? "jev_adaptive_assistance_v2" : "baseline_local_priority_v2_target_fast";
+    public static string GuidancePolicy => JevLedGuidance ? "jev_adaptive_assistance_v4" : "baseline_local_priority_v2_target_fast";
     public static bool TrySetJevLedGuidance(bool enabled)
     {
         if (!DevelopmentQuickTest) return false;
@@ -376,6 +387,7 @@ public static class SessionConfig
         string folderName = $"run_{RunNumber:D3}_{ConditionLabel}_{timestamp}";
         CurrentRunFolder = Path.Combine(participantDir, folderName);
         Directory.CreateDirectory(CurrentRunFolder);
+        File.WriteAllText(Path.Combine(CurrentRunFolder, "participant-fit-v1.json"), JsonUtility.ToJson(ParticipantFit, true));
         File.WriteAllText(Path.Combine(CurrentRunFolder, "session-mode-v1.txt"),
             "mode=" + SessionMode + "\n" + (DevelopmentQuickTest ? "study_data=false\n" : ""));
         if (!string.IsNullOrEmpty(DesktopSessionId))
@@ -415,8 +427,9 @@ public static class SessionConfig
     public static void ResetForNewParticipant()
     {
         DesktopSessionId = "";
+        ParticipantFit = new ParticipantFitMeasurements();
         s_JevLedGuidance = true;
-        s_LocalAdaptiveModel = false;
+        s_LocalAdaptiveModel = true;
         Debug.Log($"{k_Tag} Resetting session state for a new participant");
         VoiceBlocksEnabled = false;
         NeutralQuickTest = false;

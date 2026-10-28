@@ -9,6 +9,65 @@ public partial class HintGenerator
     readonly AdaptiveGuidanceHistory m_AdaptiveHistory = new AdaptiveGuidanceHistory();
     readonly AdaptiveGuidanceSchedule m_AdaptiveSchedule = new AdaptiveGuidanceSchedule();
     long m_ActionPolicyEpoch;
+    AdaptiveGuidanceDecision m_WallArrivalDecision;
+    Func<bool> m_WallArrivalRelevant;
+    double m_NextWallArrivalRequest;
+
+    bool TryAdaptiveWallArrival(bool valid, bool inside, Func<GuidanceAction,bool> allows)
+    {
+        bool Eligible() => SessionConfig.JevLedGuidance && !m_AdaptiveHistory.WallArrivalSpoken && !m_State.TargetAcknowledged &&
+            m_State.Allows(GuidanceAction.Arrival) && m_State.WallStable;
+        if (!Eligible() || !valid || !inside)
+        { m_WallArrivalDecision=null; m_WallArrivalRelevant=null; return false; }
+        if (m_WallArrivalDecision != null && !m_WallArrivalRelevant())
+        { m_WallArrivalDecision=null; m_WallArrivalRelevant=null; }
+        if (m_WallArrivalDecision != null)
+        {
+            var decision=m_WallArrivalDecision;
+            var relevant=m_WallArrivalRelevant;
+            m_Voice.TryAreaCorrection(decision.Phrase,relevant,() => {
+                m_AdaptiveHistory.MarkWallArrivalSpoken();
+                m_AdaptiveHistory.Spoken(decision.RequestId,"wall_arrival_override",Time.realtimeSinceStartupAsDouble,
+                    Math.Sqrt(m_YawError*m_YawError+m_PitchError*m_PitchError),decision.Phrase);
+                Commit(GuidanceAction.Arrival,true); m_LastTipTime=Time.time; m_CurrentHint=AreaCorrectionPhrase;
+                Record(Decision("committed",AdaptiveGuidancePipeline.WallArrivalOverride,AreaCorrectionPhrase,
+                    decision.Phrase,true,true,false,true,decision.RequestId));
+                m_WallArrivalDecision=null; m_WallArrivalRelevant=null;
+            },AdaptiveGuidancePipeline.WallArrivalOverride,decision.RequestId);
+            return true;
+        }
+        double now=Time.realtimeSinceStartupAsDouble;
+        if (now<m_NextWallArrivalRequest || !m_Voice.LibraryReady) return true;
+        if (m_Navigation==null)m_Navigation=GetComponent<StudyNavigationVoiceBridge>();
+        if (m_Navigation==null || m_Navigation.IsSelecting) return true;
+        var phrases=new List<string>();
+        foreach(var phrase in AdaptiveGuidancePipeline.WallArrivalPhrases())
+            if(m_Voice.IsPreparedPhrase(phrase))phrases.Add(phrase);
+        if(phrases.Count==0)return true;
+        var target=m_EvaluatedTarget; long epoch=m_ActionPolicyEpoch;
+        string context=HistoryIdentity+"|"+SessionConfig.AssistanceProvider+"|"+SessionConfig.Voice+"|"+
+            (SessionConfig.Voice==VoiceCondition.SelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId);
+        bool Relevant() {
+            Evaluate(out bool v,out bool i,out _); EvaluatePointing(v);
+            string current=HistoryIdentity+"|"+SessionConfig.AssistanceProvider+"|"+SessionConfig.Voice+"|"+
+                (SessionConfig.Voice==VoiceCondition.SelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId);
+            return context==current && epoch==m_ActionPolicyEpoch && Active() && Eligible() && v && i && m_EvaluatedTarget==target &&
+                allows(GuidanceAction.Arrival) && !EvaluateLooking(v) && !(m_ControllerEvidenceValid && m_ControllerOnTarget);
+        }
+        string id=Guid.NewGuid().ToString("N");
+        var state=new JObject { ["schema"]="adaptive-assistance-v1",["policy"]=JevDecisionClient.AdaptivePolicy,
+            ["decision_id"]=id,["override_reason"]=AdaptiveGuidancePipeline.WallArrivalOverride,
+            ["runtime"]=JObject.Parse(m_Voice.CaptureTransmissionContext()),["behavior"]=m_AdaptiveHistory.Snapshot(now) };
+        m_NextWallArrivalRequest=now+1;
+        m_Navigation.TryAdaptiveRequest(state,new Dictionary<string,IReadOnlyList<string>>{{"refine_explicit",phrases}},Relevant,decision => {
+            if(!Relevant())return false;
+            m_WallArrivalDecision=decision; m_WallArrivalRelevant=Relevant;
+            Record(Decision("requested",AdaptiveGuidancePipeline.WallArrivalOverride,AreaCorrectionPhrase,
+                decision.Phrase,true,true,false,true,id));
+            return true;
+        },wallArrival:true);
+        return true;
+    }
 
     public void ToggleDevelopmentGuidancePolicy()
     {
@@ -23,45 +82,44 @@ public partial class HintGenerator
             ["time"] = Time.realtimeSinceStartupAsDouble }.ToString(Newtonsoft.Json.Formatting.None));
     }
 
-    public void ToggleDevelopmentAssistanceProvider()
+    public void ToggleAssistanceProvider()
     {
         if (m_GameManager != null && m_GameManager.SearchActive && !m_GameManager.ResearcherPaused) return;
         if (!SessionConfig.JevLedGuidance || !SessionConfig.TrySetLocalAdaptiveModel(!SessionConfig.LocalAdaptiveModel)) return;
         m_ActionPolicyEpoch++; m_AdaptiveSchedule.Reset(); m_AdaptiveHistory.BreakObservation();
         m_Navigation?.Cancel(); m_Navigation?.ResetAssistanceStatus(); m_Voice?.CancelPendingGuidance();
+        m_Navigation?.RefreshDecisionProvider();
         PublishState(false);
         m_Voice?.RecordGuidanceState(CurrentStateSnapshot);
         m_Voice?.RecordNavigationStatus(new JObject { ["schema"] = "assistance-provider-change-v1",
             ["provider"] = SessionConfig.AssistanceProvider, ["policy"] = SessionConfig.GuidancePolicy,
             ["model_version"] = SessionConfig.LocalAdaptiveModel ? JevDecisionClient.LocalModelVersion : "typesafe-ai/jev",
-            ["study_data"] = false, ["time"] = Time.realtimeSinceStartupAsDouble }.ToString(Newtonsoft.Json.Formatting.None));
+            ["study_data"] = !SessionConfig.DevelopmentQuickTest, ["time"] = Time.realtimeSinceStartupAsDouble }.ToString(Newtonsoft.Json.Formatting.None));
     }
 
     string AdaptiveDirection(string strategy, GuidanceAction action, string direction) =>
         strategy == "correct" && action == GuidanceAction.ReturnBearing
             ? m_State.TargetHistory.PendingDirection(Time.realtimeSinceStartupAsDouble) : direction;
 
-    // Resolve a strategy into grounded audio locally. No phrase text or preferred action is sent to the policy.
-    string AdaptivePhrase(string strategy, GuidanceAction action, string direction, bool inside)
+    // Unity supplies truthful, prepared alternatives; the second model decision selects wording.
+    IReadOnlyList<string> AdaptivePhrases(string strategy, GuidanceAction action, string direction, bool inside)
     {
         direction = AdaptiveDirection(strategy, action, direction);
-        if (strategy == "correct" && action == GuidanceAction.ReturnBearing)
-            return AdaptiveGuidanceGrounding.BearingCorrection(direction, m_YawError, m_PitchError,
-                m_VerticalFraction, m_VisualReferenceVerticalSuppressed);
-        if (string.IsNullOrEmpty(direction) || direction == DirectionalHintPolicy.AlignedPhrase) return null;
-        switch (strategy)
+        string correction = null;
+        if (strategy == "correct")
         {
-            case "orient_brief": return !inside ? DirectionalHintPolicy.Variant(direction,0) : null;
-            case "orient_explicit": return !inside ? AdaptiveGuidanceGrounding.ExplicitOrientation(direction,m_TurnRemaining) : null;
-            case "refine_brief": return inside ? DirectionalHintPolicy.Variant(direction,0,verticalFraction:m_VerticalFraction) : null;
-            case "refine_explicit": return inside ? DirectionalHintPolicy.AreaEntry(direction,0,m_VerticalFraction) : null;
-            case "correct":
-                return action == GuidanceAction.ReturnTarget ? DirectionalHintPolicy.ReturnToTarget(direction) :
+            if (action == GuidanceAction.ReturnBearing)
+                correction = AdaptiveGuidanceGrounding.BearingCorrection(direction, m_YawError, m_PitchError,
+                    m_VerticalFraction, m_VisualReferenceVerticalSuppressed);
+            else if (!string.IsNullOrEmpty(direction) && direction != DirectionalHintPolicy.AlignedPhrase)
+                correction = action == GuidanceAction.ReturnTarget ? DirectionalHintPolicy.ReturnToTarget(direction) :
                     action == GuidanceAction.ReturnWall ? DirectionalHintPolicy.ReturnToArea(direction) : null;
-            case "encourage": return m_AdaptiveHistory.HasRecentProgress(direction,Time.realtimeSinceStartupAsDouble)
-                ? DirectionalHintPolicy.Progress(direction,0) : null;
-            default: return null;
         }
+        var result = new List<string>();
+        foreach (string phrase in AdaptiveGuidanceGrounding.Phrases(strategy, direction, inside, m_TurnRemaining,
+            m_VerticalFraction, correction, m_AdaptiveHistory.HasRecentProgress(direction, Time.realtimeSinceStartupAsDouble)))
+            if (m_Voice.IsPreparedPhrase(phrase)) result.Add(phrase);
+        return result;
     }
 
     bool TryAdaptiveGuidance(string direction, bool valid, bool inside, bool far, bool looking, Func<GuidanceAction,bool> allows)
@@ -85,13 +143,11 @@ public partial class HintGenerator
         m_AdaptiveSchedule.Requested(now,evidenceEvent);
         var target = m_EvaluatedTarget;
         long epoch = m_ActionPolicyEpoch;
-        var capabilities = new List<string>();
-        var resolved = new Dictionary<string,string>();
+        var options = new Dictionary<string, IReadOnlyList<string>>();
         foreach (string strategy in new[] { "orient_brief","orient_explicit","refine_brief","refine_explicit","correct","encourage" })
         {
-            string phrase = AdaptivePhrase(strategy,action,direction,inside);
-            if (phrase == null || !m_Voice.IsPreparedPhrase(phrase)) continue;
-            capabilities.Add(strategy); resolved[strategy] = phrase;
+            var phrases = AdaptivePhrases(strategy, action, direction, inside);
+            if (phrases.Count > 0) options.Add(strategy, phrases);
         }
         bool Relevant()
         {
@@ -106,18 +162,19 @@ public partial class HintGenerator
         runtime.Remove("maximum_deferral_seconds"); runtime.Remove("deferred_seconds");
         var state = new JObject { ["schema"] = "adaptive-assistance-v1", ["policy"] = JevDecisionClient.AdaptivePolicy,
             ["decision_id"] = id, ["runtime"] = runtime, ["behavior"] = m_AdaptiveHistory.Snapshot(now) };
-        bool requested = m_Navigation != null && m_Navigation.TryAdaptiveRequest(state,capabilities,Relevant, decision => {
+        bool requested = m_Navigation != null && m_Navigation.TryAdaptiveRequest(state,options,Relevant, decision => {
             if (!Relevant()) return false;
             if (!decision.Speak) { m_AdaptiveSchedule.Decided(Time.realtimeSinceStartupAsDouble,decision); return true; }
-            if (!resolved.TryGetValue(decision.Strategy,out string phrase)) return false;
-            bool StillCurrent() => Relevant() && AdaptivePhrase(decision.Strategy,action,direction,inside) == phrase;
+            string phrase = decision.Phrase;
+            if (string.IsNullOrEmpty(phrase)) return false;
+            bool StillCurrent() => Relevant() && new List<string>(AdaptivePhrases(decision.Strategy,action,direction,inside)).Contains(phrase);
             if (!StillCurrent()) return false;
             string spokenDirection = AdaptiveDirection(decision.Strategy,action,direction);
             var recorded = Decision("requested","adaptive:" + decision.Strategy,spokenDirection,phrase,true,inside,far,true,id);
             bool accepted = m_Voice.TryGuidanceTransmission(phrase, StillCurrent, () => {
                 m_CurrentHint = spokenDirection; m_LastTipTime = Time.time; RememberDirection(spokenDirection); Commit(action,inside);
                 m_AdaptiveHistory.Spoken(id,decision.Strategy,Time.realtimeSinceStartupAsDouble,
-                    Math.Sqrt(m_YawError*m_YawError + m_PitchError*m_PitchError));
+                    Math.Sqrt(m_YawError*m_YawError + m_PitchError*m_PitchError), phrase);
                 Record(Decision("committed","adaptive:" + decision.Strategy,spokenDirection,phrase,true,inside,far,true,id));
             }, "adaptive_assistance", id, true, SessionConfig.AssistanceProvider + "_adaptive");
             if (accepted) { m_AdaptiveSchedule.Decided(Time.realtimeSinceStartupAsDouble,decision); Record(recorded); }

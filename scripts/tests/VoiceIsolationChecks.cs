@@ -13,6 +13,31 @@ partial class VoiceIsolationChecks
     {
         while (routine.MoveNext()) { Time.unscaledTime += 0.05f; if (routine.Current is IEnumerator child) Drain(child); else System.Threading.Thread.Sleep(1); }
     }
+    static void CheckNeutralDecodedCache(string root)
+    {
+        string source = Path.Combine(root, "neutral-cache-fixture.mp3");
+        File.WriteAllBytes(source, new byte[] { 1, 2, 3 });
+        var pcm = new float[4800]; for (int i = 0; i < pcm.Length; i++) pcm[i] = .1f;
+        NeutralDecodedAudio.Save(source, pcm, 1, 48000);
+        Check(NeutralDecodedAudio.TryLoad(source, out var loaded, out var channels, out var hz) &&
+            loaded.Length == pcm.Length && loaded[42] == pcm[42] && channels == 1 && hz == 48000, "Decoded cache round trip preserves samples");
+        File.WriteAllBytes(source, new byte[] { 3, 2, 1 });
+        Check(!NeutralDecodedAudio.TryLoad(source, out loaded, out channels, out hz), "Changed provider audio invalidates decoded cache");
+        NeutralDecodedAudio.Save(source, pcm, 1, 48000);
+        var bytes = File.ReadAllBytes(source + NeutralDecodedAudio.Suffix); bytes[90] ^= 1;
+        File.WriteAllBytes(source + NeutralDecodedAudio.Suffix, bytes);
+        Check(!NeutralDecodedAudio.TryLoad(source, out loaded, out channels, out hz), "Damaged decoded bytes fall back to original audio");
+        File.WriteAllBytes(source + NeutralDecodedAudio.Suffix, new byte[4]);
+        Check(!NeutralDecodedAudio.TryLoad(source, out loaded, out channels, out hz), "Partial decoded file is never playable");
+        NeutralDecodedAudio.Save(source, pcm, 1, 48000);
+        SessionConfig.ValidateVoiceTranscript = false;
+        var synth = new VoiceSynthesizer(); Set(synth, "m_CacheDir", root); Set(synth, "m_Preparing", true);
+        Set(synth, "m_PreparingText", "test phrase");
+        var routine = (IEnumerator)typeof(VoiceSynthesizer).GetMethod("PlayFromFile", BindingFlags.NonPublic | BindingFlags.Instance)
+            .Invoke(synth, new object[] { source, false, "neutral", true });
+        Check(!routine.MoveNext() && synth.LastError == null, "Warm neutral load performs no asynchronous decoder/network wait");
+        SessionConfig.ValidateVoiceTranscript = true;
+    }
     static void CheckVoiceProcessing(string root)
     {
         var synth = new VoiceSynthesizer();
@@ -372,6 +397,25 @@ partial class VoiceIsolationChecks
             pending = new System.Threading.Tasks.TaskCompletionSource<bool>();
             synth.InterruptionAdvisor = (state, token) => { requests++; return pending.Task; };
         }
+        Begin();
+        synth.GuidanceEvidence.valid=true;synth.GuidanceEvidence.insideTargetWall=true;synth.GuidanceEvidence.wallEntryQualified=true;
+        synth.InterruptionAdvisor=null;
+        Check(synth.TryAreaCorrection(next,()=>relevant,()=>committed++,"first_target_wall_entry","arrival-test"),
+            "model-chosen first wall arrival can interrupt without cloud interruption advisor");
+        var arrivalFade=MonoBehaviour.LastRoutine;
+        relevant=false; Drain(arrivalFade);
+        Check(committed==0,"leaving wall before fade cannot commit arrival");
+        foreach(string protectedCase in new[]{"onset","ending","cooldown","within","confirmation"})
+        {
+            Begin(); synth.InterruptionAdvisor=null;
+            if(protectedCase=="onset")source.time=.1f;
+            if(protectedCase=="ending")source.time=3.5f;
+            if(protectedCase=="cooldown")Set(synth,"m_LastSmoothInterruption",(double)Time.unscaledTime);
+            if(protectedCase=="within")Set(synth,"m_SpeechStartStage","within_target_wall");
+            if(protectedCase=="confirmation")Set(synth,"m_CurrentPhrase",DirectionalHintPolicy.LookingPhrase);
+            Check(!synth.TryAreaCorrection(next,()=>true,null,"first_target_wall_entry","protected"),"arrival preserves "+protectedCase);
+        }
+        synth.GuidanceEvidence.wallEntryQualified=false;
         Begin(); int before = source.StopCalls;
         var liveState=Newtonsoft.Json.Linq.JObject.Parse(synth.CaptureDecisionContext());
         Check((bool)liveState["playback"]["is_speaking"] && (string)liveState["playback"]["context"]=="tip" &&
@@ -523,6 +567,7 @@ partial class VoiceIsolationChecks
         try
         {
             CheckParallelDownloads(root);
+            CheckNeutralDecodedCache(root);
             CheckVoiceProcessing(root);
             // Exercise real DSP: exact neutral bypass, no onset delay, stereo room tail,
             // determinism and silence. Library tests below check treated RMS/peaks.
@@ -1010,10 +1055,18 @@ partial class VoiceIsolationChecks
                 CheckRun20Pacing(synth, lazyPrompt);
                 CheckSmoothInterruptions(synth, lazyPrompt);
             }
+            int phraseStarts = 0;
+            Action<string,string,string> capturePhrase = (canonical, spoken, context) => {
+                phraseStarts++;
+                Check(canonical == lazyPrompt && spoken == VoicePromptText.FormatForVoice(lazyPrompt, SessionConfig.Voice),
+                    "Round history receives canonical and actual spoken text only at playback onset");
+            };
+            synth.PhrasePlaybackStarted += capturePhrase;
             var decisionEvents = new System.Collections.Generic.List<string>();
             Action<string,string,string,string> captureDecisionEvents = (kind,context,key,detail) => decisionEvents.Add(kind+"|"+detail);
             synth.Telemetry += captureDecisionEvents;
             synth.Speak(lazyPrompt,"tip",guidanceDecisionId:"original-decision"); Drain(MonoBehaviour.LastRoutine);
+            Check(phraseStarts == 1, "One actual playback produces one history event");
             foreach (var kind in new[] {"audio_request","audio_playback_start","audio_playback_end"})
                 Check(decisionEvents.Exists(e=>e.StartsWith(kind+"|") && e.Contains("decision_id=original-decision")),
                     "Audio lifecycle preserves the original decision ID: "+kind);
@@ -1021,6 +1074,7 @@ partial class VoiceIsolationChecks
             synth.Speak(lazyPrompt,"round"); Drain(MonoBehaviour.LastRoutine);
             Check(!decisionEvents.Exists(e=>e.Contains("decision_id=")),"Non-guidance speech cannot inherit a prior decision");
             synth.Telemetry -= captureDecisionEvents;
+            synth.PhrasePlaybackStarted -= capturePhrase;
             DownloadHandlerAudioClip.ForceSkewed = false;
             DownloadHandlerAudioClip.Quiet = false;
             Check(ChallengeSet.TotalRounds == 80 && ChallengeSet.RoundsPerBlock == 40 && ChallengeSet.BlockCount == 2, "full two-block schedule");
@@ -1328,9 +1382,16 @@ partial class VoiceIsolationChecks
             Check(!SessionConfig.DevelopmentQuickTest && !SessionConfig.NewCloneQuickTest && SessionConfig.SelfSimilarVoiceId=="" &&
                 ChallengeSet.RoundCount == 80 && SessionConfig.ParticipantId == "",
                 "new participant restores the full study schedule and disables shortcut");
-            Check(!SessionConfig.LocalAdaptiveModel && !SessionConfig.TrySetLocalAdaptiveModel(true) && SessionConfig.AssistanceProvider == "jev",
-                "New participant resets model selection and study cannot select development model");
-            Check(SessionConfig.JevLedGuidance && SessionConfig.GuidancePolicy == "jev_adaptive_assistance_v2" && !SessionConfig.TrySetJevLedGuidance(false),
+            Check(SessionConfig.LocalAdaptiveModel && SessionConfig.AssistanceProvider == "local_minilm",
+                "New participant defaults to local MiniLM");
+            Check(SessionConfig.TrySetLocalAdaptiveModel(false) && SessionConfig.AssistanceProvider == "jev",
+                "Study can explicitly opt into Jev");
+            SessionConfig.ResetForNewParticipant();
+            Check(SessionConfig.LocalAdaptiveModel && SessionConfig.AssistanceProvider == "local_minilm",
+                "New participant clears previous Jev opt-in");
+            Check(SessionConfig.TrySetLocalAdaptiveModel(false) && SessionConfig.TrySetLocalAdaptiveModel(true) && SessionConfig.LocalAdaptiveModel,
+                "Study can switch back from Jev to MiniLM");
+            Check(SessionConfig.JevLedGuidance && SessionConfig.GuidancePolicy == "jev_adaptive_assistance_v4" && !SessionConfig.TrySetJevLedGuidance(false),
                 "New participant uses active adaptive guidance; baseline override is development-only");
             SessionConfig.ParticipantId = "DEV_NEUTRAL"; // Same seed: mode must still invalidate cached geometry.
             var studyPlan = ChallengeSet.Rounds;
@@ -1356,12 +1417,18 @@ partial class VoiceIsolationChecks
             var desktop = new ParticipantSessionAssignment { id = Guid.NewGuid().ToString("N"), participantCode = "P991",
                 configuration = "A", neutralGender = "Male", neutralOption = 1, cloneVoiceId = "desktop_clone_id" };
             SessionConfig.ConfigureDesktopSession(desktop);
+            desktop.fit = new ParticipantFitMeasurements { ipdRecorded = true, participantIpdMm = 63.5f,
+                ipdSource = "pupillometer", headsetIpdRecorded = true, headsetIpdMm = 64 };
+            SessionConfig.ConfigureDesktopSession(desktop);
+            desktop.fit.participantIpdMm = 65;
+            Check(SessionConfig.ParticipantFit.participantIpdMm == 63.5f, "IPD assignment is copied, not shared mutable state");
             Check(SessionConfig.VoiceForRound(0) == VoiceCondition.SelfSimilar && SessionConfig.VoiceForRound(40) == VoiceCondition.Generic,
                 "Configuration A overrides odd participant parity and starts self-similar");
             Check(SessionConfig.SelfSimilarVoiceId == desktop.cloneVoiceId && SessionConfig.DesktopSessionId == desktop.id,
                 "Desktop clone and session identity transfer together");
             string desktopRun = SessionConfig.BeginRun();
             Check(File.ReadAllText(Path.Combine(desktopRun, "desktop-session-id.txt")) == desktop.id, "Run links back to desktop intake");
+            Check(File.ReadAllText(Path.Combine(desktopRun, "participant-fit-v1.json")).Contains("63.5"), "Run persists participant IPD snapshot");
             SessionConfig.ConfigureDesktopSession(desktop);
             desktop.configuration = "B";
             bool conflict = false; try { SessionConfig.ConfigureDesktopSession(desktop); } catch (InvalidOperationException) { conflict = true; }
@@ -1371,6 +1438,14 @@ partial class VoiceIsolationChecks
             Check(SessionConfig.VoiceForRound(0) == VoiceCondition.Generic, "Configuration B overrides even participant parity");
             SessionConfig.ResetForNewParticipant();
             Check(SessionConfig.DesktopSessionId == "", "Participant reset clears desktop identity");
+            Check(!SessionConfig.ParticipantFit.ipdRecorded && !SessionConfig.ParticipantFit.headsetIpdRecorded, "Participant reset clears IPD and lens spacing");
+            foreach (float value in new[] { float.NaN, float.PositiveInfinity, 0, -1, 630 })
+            {
+                bool ipdRejected = false;
+                try { new ParticipantFitMeasurements { ipdRecorded = true, participantIpdMm = value, ipdSource = "ruler" }.Validate(); }
+                catch (ArgumentException) { ipdRejected = true; }
+                Check(ipdRejected, "Invalid participant IPD rejected");
+            }
             Console.WriteLine("PASS: voice isolation, cache, audio failures, neutral quick-test preparation, development identity and schedule/reset.");
         }
         finally { Directory.Delete(root, true); }
@@ -1430,7 +1505,7 @@ namespace UnityEngine
             if (text != null || model != null)
                 return "{\"text\":\"" + (text ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"") +
                     "\",\"model_id\":\"" + (model ?? "") + "\"}";
-            return "{}";
+            return x is ParticipantFitMeasurements ? Newtonsoft.Json.JsonConvert.SerializeObject(x) : "{}";
         }
     }
 }

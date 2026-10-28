@@ -10,13 +10,14 @@ import math
 import statistics
 from collections import defaultdict
 from pathlib import Path
+from eye_timing import diagnostics as timing_diagnostics, stamp, STREAMS
 
 DETECTOR_VERSION = 'world-ray-ivt-candidate-v2'
 BOOLEAN_FIELDS = ('sourceCaptureTimeKnown', 'sourceSequenceKnown', 'newInputUpdate', 'deviceAvailable',
                   'tracked', 'poseValid', 'valid', 'focused', 'headValid', 'validationTargetPresent',
                   'practice', 'htcGazeAvailable', 'leftValid', 'rightValid', 'pupilAvailable',
                   'leftPupilValid', 'rightPupilValid', 'opennessAvailable', 'leftOpennessValid',
-                  'rightOpennessValid', 'alignmentApplied')
+                  'rightOpennessValid', 'alignmentApplied', 'taskAoiAvailable', 'htcHeadPoseValid')
 
 
 def vector(value):
@@ -232,6 +233,7 @@ def summarize(rows, settle=.25, max_gap=.1):
         observed_seconds = settled_rows[-1]['receiptTime']-settled_rows[0]['receiptTime'] if settled_rows else 0.
         valid_seconds = sum(valid_interval_seconds(dict(a, valid=raw_ext_valid(a)), b['receiptTime']-a['receiptTime'], max_gap)
                             for a,b in zip(settled_rows,settled_rows[1:]))
+        error_deltas=[b['targetErrorDegrees']-a['targetErrorDegrees'] for segment in segments for a,b in zip(segment,segment[1:])]
         spatial.append(dict(validation_id=validation,set=set_name,target=target,spatial_ray_source="OpenXR_EXT",
                             samples=len(accepted),recorded_updates=sum(bool(r.get('newInputUpdate')) for r in values),
                             settled_updates=len(settled), invalid_settled_updates=len(settled)-len(accepted),
@@ -240,11 +242,13 @@ def summarize(rows, settle=.25, max_gap=.1):
                             gap_seconds=max(0,observed_seconds-valid_seconds),
                             valid_time_fraction=valid_seconds/observed_seconds if observed_seconds else None,
                             median_error_deg=percentile(errors,.5),p90_error_deg=percentile(errors,.9),
+                            target_error_sd_population_deg=statistics.pstdev(errors) if errors else None,
+                            target_error_rms_s2s_deg=math.sqrt(statistics.mean(d*d for d in error_deltas)) if error_deltas else None,
                             mirrored_origin_median_error_deg=percentile([r['mirroredOriginErrorDegrees'] for r in accepted],.5),
                             precision_pairs=len(differences),
                             rms_s2s_deg=math.sqrt(statistics.mean(x*x for x in differences)) if differences else None,
                             **spatial_bias(accepted, segments)))
-    return dict(schema=1,report_version='eye-quality-v3-source-aware-ext',
+    return dict(schema=1,report_version='eye-quality-v4-stream-timing',htc_timing=timing_diagnostics(rows),
                 native_fallback_rows=sum(r.get('raySource') == 'HTC_binocular_mean' for r in rows),
                 spatial_analysis_source='OpenXR_EXT_only; native derived ray requires separate validation',poll_rows=len(rows),input_updates=len(updates),elapsed_seconds=elapsed,
                 input_delivery_hz=1/statistics.mean(intervals) if intervals else None,
@@ -393,10 +397,11 @@ def csv_rows(path,rows):
 
 def flat(row):
     result={}
-    for key,value in row.items():
+    def flatten(prefix,value):
         if isinstance(value,dict):
-            for axis,v in value.items():result[key+'_'+axis]=v
-        else: result[key]=value
+            for key,child in value.items(): flatten(prefix+'_'+key if prefix else key,child)
+        else: result[prefix]=value
+    flatten('',row)
     if not row.get('valid'):
         for prefix in ('worldOrigin_', 'worldDirection_', 'unalignedWorldOrigin_', 'unalignedWorldDirection_'):
             for key in list(result):
@@ -447,9 +452,10 @@ def read_recording(path):
             for field in BOOLEAN_FIELDS:
                 if field in row and type(row[field]) is not bool:
                     raise ValueError(f'Invalid boolean {field} at line {line_number}')
-            for field in ('inputEventTime', 'ageSeconds', 'htcQueryReceiptTime', 'maxDeliveryAgeSeconds'):
+            for field in ('inputEventTime', 'ageSeconds', 'htcQueryReceiptTime', 'htcQueryEndReceiptTime', 'headPoseReceiptTime', 'maxDeliveryAgeSeconds'):
                 if field in row and (type(row[field]) not in (int, float) or not math.isfinite(row[field])):
                     raise ValueError(f'Invalid numeric {field} at line {line_number}')
+            for stream in STREAMS: stamp(row,stream)
             rows.append(row)
     if not rows:
         raise ValueError('No observations')

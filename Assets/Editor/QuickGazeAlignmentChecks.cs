@@ -56,7 +56,7 @@ public static class QuickGazeAlignmentChecks
         Check(!alignment.IsRunning && alignment.Report.outcome == "rejected", "No infinite wait for usable gaze");
 
         alignment.Begin(Vector3.zero, Quaternion.identity, time += 30);
-        FeedPoint(alignment, ref time, 8, 0);
+        FeedPoint(alignment, ref time, 9, 0);
         Check(!alignment.IsActive && alignment.Report.outcome == "rejected", "Large bias requires vendor recalibration");
         alignment.Begin(Vector3.zero, Quaternion.identity, time += 10);
         FeedPoint(alignment, ref time, 0, 0);
@@ -127,11 +127,24 @@ public static class QuickGazeAlignmentChecks
         Check(alignment.IsRunning && alignment.TargetIndex == 3 && !alignment.IsActive,
             "A dot above five degrees must not reject an acceptable three-dot mean");
         Check(new Vector2(alignment.Report.yawCorrectionDegrees, alignment.Report.pitchCorrectionDegrees).magnitude < 5,
-            "Recorded three-dot mean remains within the unchanged correction cap");
+            "Recorded three-dot mean remains within the correction cap");
         for (int shape = 0; shape < 3; shape++) FeedPoint(alignment, ref time, .884948f, 4.615378f);
         Check(alignment.AwaitingConfirmation && !alignment.IsActive, "Mean fit still requires independent checks and explicit OK");
         alignment.BeginGuided(Vector3.zero, Quaternion.identity, time += 10);
         for (int dot = 0; dot < 3; dot++) FeedPoint(alignment, ref time, 6, 0);
+        Check(alignment.IsRunning && alignment.TargetIndex == 3 && !alignment.IsActive &&
+            !alignment.ConfirmGuided(time), "Six-degree fit is permitted but cannot bypass held-out checks");
+        for (int shape = 0; shape < 3; shape++) FeedPoint(alignment, ref time, 6, 0);
+        Check(alignment.AwaitingConfirmation && alignment.ConfirmGuided(time), "Six-degree correction requires independent checks and confirmation");
+        Check(alignment.Report.maxCorrectionDegrees == 8 && Mathf.Abs(alignment.Report.yawCorrectionDegrees + 6) < .01f,
+            "Record the raised cap and measured correction, not a hardcoded six-degree offset");
+        alignment.BeginGuided(Vector3.zero, Quaternion.identity, time += 10);
+        for (int dot = 0; dot < 3; dot++) FeedPoint(alignment, ref time, 0, 6);
+        FeedPoint(alignment, ref time, 0, 2);
+        Check(alignment.Report.outcome == "rejected" && !alignment.IsActive,
+            "Raised cap still rejects a vertical correction that fails held-out accuracy");
+        alignment.BeginGuided(Vector3.zero, Quaternion.identity, time += 10);
+        for (int dot = 0; dot < 3; dot++) FeedPoint(alignment, ref time, 9, 0);
         Check(alignment.Report.points.Count == 3 && alignment.Report.outcome == "rejected" && !alignment.IsActive &&
             !alignment.ConfirmGuided(time), "Oversized completed mean still rejects without applying an offset");
         alignment.BeginGuided(Vector3.zero, Quaternion.identity, time += 10);
@@ -141,6 +154,25 @@ public static class QuickGazeAlignmentChecks
         Check(alignment.PointProgress == 0 && alignment.CountdownRemaining(time) > 0, "No samples collected during 3-2-1");
         alignment.CancelOrClear("Skip", time);
         Check(!alignment.IsActive && !alignment.AwaitingConfirmation, "Skip cancels guided entry");
+        alignment.BeginGuided(Vector3.zero,Quaternion.identity,time+=10,studyVerification:true);
+        for(int dot=0;dot<3;dot++)FeedPoint(alignment,ref time,2,1);
+        Check(alignment.AwaitingAccuracy && !alignment.IsActive && !alignment.IsRunning &&
+            !alignment.AwaitingConfirmation && alignment.Report.points.Count==3,
+            "Simplified study fit stops at three dots with no shapes or accepted correction");
+        var candidate=Sample(time+1,Vector3.zero,Quaternion.identity,Vector3.forward*2,2,1);
+        alignment.Apply(candidate);
+        Check(candidate.alignmentApplied && candidate.alignmentStatus=="awaiting_accuracy" && !alignment.IsActive,
+            "Candidate is measurable but not accepted for study trials");
+        Check(!alignment.ConfirmGuided(time) && !alignment.ConfirmStudyAccuracy(new StudyGazeAccuracy.Result {passed=false},"check",time),
+            "Neither old OK nor a failed five-dot check can accept the candidate");
+        Check(alignment.ConfirmStudyAccuracy(new StudyGazeAccuracy.Result {passed=true},"check",time) &&
+            alignment.IsActive && !alignment.AwaitingAccuracy && !alignment.Report.userConfirmed && alignment.Report.accuracyValidationId=="check",
+            "Passing independent verification is linked without inventing shape confirmation");
+        alignment.BeginGuided(Vector3.zero,Quaternion.identity,time+=10,studyVerification:true);
+        for(int dot=0;dot<3;dot++)FeedPoint(alignment,ref time,2,1);
+        alignment.CancelOrClear("Skip",time);
+        Check(!alignment.IsActive && !alignment.AwaitingAccuracy && !alignment.ConfirmStudyAccuracy(new StudyGazeAccuracy.Result {passed=true},"check",time),
+            "Skip clears the temporary correction and prevents later acceptance");
         Debug.Log("[QuickGazeAlignmentChecks] PASS: independent checks, head-relative bias, immutable raw gaze, source change, gaps, duplicates, timeout, large bias and zero bias. Hardware validation remains required.");
     }
 

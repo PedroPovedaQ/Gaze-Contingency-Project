@@ -9,6 +9,7 @@
 #include <cstddef>
 static_assert(sizeof(GazeRecord)==136, "Managed record ABI changed");
 static_assert(sizeof(GazeStatus)==56, "Managed status ABI changed");
+static_assert(sizeof(HtcStamp)==112, "Managed HTC timestamp ABI changed");
 static_assert(offsetof(GazeRecord,qx)==80, "Managed pose offset changed");
 
 #define CHECK(x) do { if(!(x)) throw std::runtime_error(std::string(__func__)+":"+std::to_string(__LINE__)+" " #x); } while(false)
@@ -23,6 +24,8 @@ std::atomic<int64_t> poseTime{900};
 std::atomic<bool> writeTime{true};
 std::atomic<uintptr_t> nextAction{10},nextSpace{100};
 std::atomic<int> timestampCount{0};
+std::atomic<uint64_t> lastLocatedSpace{0},lastLocatedBase{0};
+std::atomic<XrTime> lastLocatedTime{0};
 std::atomic<XrSpaceLocationFlags> flags{3};
 std::atomic<bool> initialTimeWasZero{true};
 std::mutex blockingGate;
@@ -39,7 +42,8 @@ XrResult XRAPI_CALL stringToPath(XrInstance,const char* text,XrPath* path) {
 XrResult XRAPI_CALL mockSuggest(XrInstance,const XrInteractionProfileSuggestedBinding*) { return static_cast<XrResult>(result.load()); }
 XrResult XRAPI_CALL mockAction(XrActionSet,const XrActionCreateInfo*,XrAction* out) { *out=handle<XrAction>(nextAction++); return XR_SUCCESS; }
 XrResult XRAPI_CALL mockSpace(XrSession,const XrActionSpaceCreateInfo*,XrSpace* out) { *out=handle<XrSpace>(nextSpace++); return XR_SUCCESS; }
-XrResult XRAPI_CALL mockLocate(XrSpace,XrSpace,XrTime,XrSpaceLocation* location) {
+XrResult XRAPI_CALL mockLocate(XrSpace space,XrSpace relativeTo,XrTime time,XrSpaceLocation* location) {
+    lastLocatedSpace=id(space);lastLocatedBase=id(relativeTo);lastLocatedTime=time;
     GazeStatus s{}; ng_status(&s);
     { std::unique_lock<std::mutex> lock(blockingGate);
       if(blockLocate) { enteredLocate=true;blockingCv.notify_all();blockingCv.wait(lock,[]{return releaseLocate;}); }
@@ -65,6 +69,14 @@ XrResult XRAPI_CALL mockDestroySpace(XrSpace) { return static_cast<XrResult>(res
 XrResult XRAPI_CALL mockDestroyAction(XrAction) { return static_cast<XrResult>(result.load()); }
 XrResult XRAPI_CALL mockDestroySet(XrActionSet) { return static_cast<XrResult>(result.load()); }
 XrResult XRAPI_CALL mockDestroySession(XrSession) { return static_cast<XrResult>(result.load()); }
+XrResult XRAPI_CALL mockHtc(uint64_t,const void*,void* output) {
+    auto* data=static_cast<HtcOutputPrefix*>(output);
+    if(data->time!=0) initialTimeWasZero=false;
+    if(writeTime)data->time=poseTime;
+    return static_cast<XrResult>(result.load());
+}
+XrResult XRAPI_CALL mockTracker(XrSession,const void*,uint64_t* tracker) { *tracker=42;return XR_SUCCESS; }
+XrResult XRAPI_CALL mockReference(XrSession,const XrReferenceSpaceCreateInfo*,XrSpace* space) { *space=handle<XrSpace>(700);return XR_SUCCESS; }
 XrResult XRAPI_CALL mockGet(XrInstance,const char* name,PFN_xrVoidFunction* fn) {
 #define MAP(api,mock) if(std::strcmp(name,#api)==0) {*fn=reinterpret_cast<PFN_xrVoidFunction>(mock);return XR_SUCCESS;}
     MAP(xrStringToPath,stringToPath)
@@ -72,6 +84,8 @@ XrResult XRAPI_CALL mockGet(XrInstance,const char* name,PFN_xrVoidFunction* fn) 
     MAP(xrCreateActionSpace,mockSpace) MAP(xrLocateSpace,mockLocate)
     MAP(xrDestroySpace,mockDestroySpace) MAP(xrDestroyAction,mockDestroyAction)
     MAP(xrDestroyActionSet,mockDestroySet) MAP(xrDestroySession,mockDestroySession)
+    MAP(xrGetEyeGazeDataHTC,mockHtc) MAP(xrGetEyePupilDataHTC,mockHtc) MAP(xrGetEyeGeometricDataHTC,mockHtc)
+    MAP(xrCreateEyeTrackerHTC,mockTracker) MAP(xrCreateReferenceSpace,mockReference)
 #undef MAP
     *fn=nullptr;return XR_ERROR_FUNCTION_UNSUPPORTED;
 }
@@ -165,13 +179,59 @@ void restartWhileInFlight() {
     producer.join();CHECK(status().epoch==oldEpoch+1);CHECK(drain().empty());
     a=makeAction();bind({a});sp=makeSpace(a);query(sp);auto r=drain();CHECK(r.size()==1);CHECK(r[0].sequence==1);CHECK(r[0].epoch==oldEpoch+1);
 }
+void htcTimestamps() {
+    reset();
+    HtcStamp stamps[3]{}; CHECK(ng_take_htc(stamps,3)==112);
+    PFN_xrVoidFunction fn{};
+    getProc(instance,"xrGetEyeGazeDataHTC",&fn);
+    HtcGazeInfoPrefix input{XR_TYPE_UNKNOWN,nullptr,base,800};
+    HtcOutputPrefix output{XR_TYPE_UNKNOWN,nullptr,777};
+    poseTime=9007199254740993LL; // Must survive exactly, beyond a JavaScript Number's range.
+    CHECK(reinterpret_cast<HtcQuery>(fn)(42,&input,&output)==XR_SUCCESS);
+    CHECK(ng_take_htc(stamps,3)==112);CHECK(stamps[0].returnedTime==9007199254740993LL);
+    CHECK(stamps[0].requestedTime==800);CHECK(stamps[0].baseSpace==id(base));
+    CHECK(stamps[0].tracker==42);CHECK(stamps[0].afterNs>=stamps[0].beforeNs);
+    CHECK(stamps[0].observed==1);CHECK(stamps[1].observed==0);CHECK(initialTimeWasZero);
+    ng_take_htc(stamps,3);CHECK(stamps[0].observed==0); // No stale reuse.
+    getProc(instance,"xrGetEyePupilDataHTC",&fn);
+    writeTime=false;output.time=888;reinterpret_cast<HtcQuery>(fn)(42,nullptr,&output);
+    ng_take_htc(stamps,3);CHECK(stamps[1].returnedTime==0);CHECK(stamps[1].requestedTime==0);
+    result=XR_ERROR_RUNTIME_FAILURE;writeTime=true;
+    reinterpret_cast<HtcQuery>(fn)(42,nullptr,&output);ng_take_htc(stamps,3);
+    CHECK(stamps[1].returnedTime==0);CHECK(stamps[1].result==XR_ERROR_RUNTIME_FAILURE);
+    result=XR_SUCCESS;
+    std::thread other([&]{reinterpret_cast<HtcQuery>(fn)(42,nullptr,&output);});other.join();
+    ng_take_htc(stamps,3);CHECK(stamps[1].observed==0); // No cross-thread misassociation.
+}
+void matchingHeadPose() {
+    reset();PFN_xrVoidFunction fn{};
+    getProc(instance,"xrCreateEyeTrackerHTC",&fn);
+    uint64_t tracker{};reinterpret_cast<HtcCreate>(fn)(session,nullptr,&tracker);
+    getProc(instance,"xrCreateReferenceSpace",&fn);
+    XrReferenceSpaceCreateInfo info{XR_TYPE_REFERENCE_SPACE_CREATE_INFO,nullptr,XR_REFERENCE_SPACE_TYPE_VIEW,{{0,0,0,1},{0,0,0}}};
+    XrSpace view{};reinterpret_cast<PFN_xrCreateReferenceSpace>(fn)(session,&info,&view);
+    getProc(instance,"xrGetEyeGazeDataHTC",&fn);
+    HtcGazeInfoPrefix input{XR_TYPE_UNKNOWN,nullptr,base,123456};
+    HtcOutputPrefix output{XR_TYPE_UNKNOWN,nullptr,0};
+    flags=15;reinterpret_cast<HtcQuery>(fn)(tracker,&input,&output);
+    HtcStamp stamps[3]{};ng_take_htc(stamps,3);
+    CHECK(stamps[0].session==id(session));CHECK(stamps[0].headFlags==15);CHECK(stamps[0].headQw==1);CHECK(stamps[0].headY==2);
+    CHECK(lastLocatedSpace==id(view));CHECK(lastLocatedBase==id(input.baseSpace));CHECK(lastLocatedTime==input.time);
+    auto firstEpoch=stamps[0].epoch;
+    destroySession(session);
+    reinterpret_cast<HtcQuery>(fn)(tracker,&input,&output);ng_take_htc(stamps,3);
+    CHECK(stamps[0].session==0);CHECK(stamps[0].headFlags==0);
+    createTracker(session,nullptr,&tracker);reinterpret_cast<HtcQuery>(fn)(tracker,&input,&output);ng_take_htc(stamps,3);
+    CHECK(stamps[0].epoch>firstEpoch);CHECK(stamps[0].headFlags==0);
+}
 }
 int main() {
     const std::pair<const char*,std::function<void()>> tests[]={
         {"binding orders and replacement",test::bindingOrders},{"output chain and result preservation",test::outputChainsAndResults},
         {"timestamp fidelity and bounded overflow",test::timestampsAndOverflow},{"lifecycle and handle reuse",test::lifecycleAndReuse},
-        {"concurrent drain and locate",test::concurrentDrain},{"restart discards in-flight old epoch",test::restartWhileInFlight}};
+        {"concurrent drain and locate",test::concurrentDrain},{"restart discards in-flight old epoch",test::restartWhileInFlight},
+        {"HTC stream timestamp provenance",test::htcTimestamps},{"matching head pose and session lifetime",test::matchingHeadPose}};
     try {for(const auto& item:tests) {item.second();std::cout<<"PASS "<<item.first<<'\n';}}
     catch(const std::exception& e) {std::cerr<<"FAIL "<<e.what()<<'\n';return 1;}
-    std::cout<<"6 native interception suites passed; these do not establish sensor timing or headset compatibility.\n";
+    std::cout<<"8 native interception suites passed; these do not establish sensor timing or headset compatibility.\n";
 }

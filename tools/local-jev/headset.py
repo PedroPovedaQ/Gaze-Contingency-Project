@@ -12,7 +12,7 @@ import time
 import urllib.error
 import urllib.request
 
-VERSION = '20261026-minilm-adaptive-v2'
+VERSION = '20261026-minilm-reassurance-v8'
 ROOT = Path.home() / '.local/share/follow-my-voice-models'
 ADB = Path('/Applications/Unity/Hub/Editor/6000.3.10f1/PlaybackEngines/AndroidPlayer/SDK/platform-tools/adb')
 
@@ -41,7 +41,7 @@ def main():
     model = ROOT / VERSION / 'model'
     python = ROOT / 'venv/bin/python'
     if not model.is_dir() or not python.is_file():
-        raise SystemExit('Adaptive v2 checkpoint or local Python environment is missing.')
+        raise SystemExit('Pinned adaptive checkpoint or local Python environment is missing.')
     state = health()
     log_dir = ROOT / 'headset-service'
     log_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -61,14 +61,14 @@ def main():
             time.sleep(.5)
         if state is None:
             raise SystemExit(f'Local service is still loading or unavailable; inspect {log_path}')
-    if state.get('model_version') != VERSION or state.get('scope') != 'assistance' or state.get('status') != 'ready':
+    if state.get('model_version') != VERSION or state.get('scope') != 'assistance' or state.get('status') != 'ready' or state.get('stages') != ['assistance', 'assistance_phrase']:
         raise SystemExit('Port 8766 is serving a different model/contract. It was not replaced. Stop that service explicitly before retrying.')
     subprocess.run([str(ADB), '-s', serial, 'reverse', 'tcp:8766', 'tcp:8766'], check=True, stdout=subprocess.DEVNULL)
     tunnels = subprocess.check_output([str(ADB), '-s', serial, 'reverse', '--list'], text=True)
     if 'tcp:8766 tcp:8766' not in tunnels:
         raise SystemExit('ADB did not confirm the model tunnel.')
     print(json.dumps(dict(status='ready', serial=serial, model_version=VERSION, transport='adb_reverse_loopback',
-                          log_directory=str(log_dir), note='Choose Adaptive, then Model: Local MiniLM in quick-test Settings. Keep the Mac awake.')))
+                          log_directory=str(log_dir), note='MiniLM is the default. Settings can opt into Jev. Keep the Mac awake.')))
 
 
 if __name__ == '__main__':

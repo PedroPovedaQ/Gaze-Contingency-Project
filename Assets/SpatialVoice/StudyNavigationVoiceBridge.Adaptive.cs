@@ -60,17 +60,17 @@ namespace SpatialVoice
             catch (Exception) { m_LocalReady = false; LocalModelStatus = "Unavailable · check Mac"; }
             finally { m_LocalChecking = false; m_NextLocalCheck = Time.realtimeSinceStartupAsDouble + 5; }
         }
-        public bool TryAdaptiveRequest(JObject state, IReadOnlyList<string> capabilities, Func<bool> relevant,
-            Func<AdaptiveGuidanceDecision, bool> apply)
+        public bool TryAdaptiveRequest(JObject state, IReadOnlyDictionary<string, IReadOnlyList<string>> options, Func<bool> relevant,
+            Func<AdaptiveGuidanceDecision, bool> apply, bool wallArrival = false)
         {
             var decisions = SessionConfig.LocalAdaptiveModel ? (INavigationDecisionProvider)m_LocalDecisions : m_Decisions;
             if (IsSelecting || (SessionConfig.LocalAdaptiveModel && !m_LocalReady) ||
                 !(decisions is IAdaptiveGuidanceProvider provider) || !decisions.Available || !relevant()) return false;
-            StartAdaptiveRequest(provider, state, capabilities, relevant, apply);
+            StartAdaptiveRequest(provider, state, options, relevant, apply, wallArrival);
             return true;
         }
-        async void StartAdaptiveRequest(IAdaptiveGuidanceProvider provider, JObject state, IReadOnlyList<string> capabilities,
-            Func<bool> relevant, Func<AdaptiveGuidanceDecision,bool> apply)
+        async void StartAdaptiveRequest(IAdaptiveGuidanceProvider provider, JObject state, IReadOnlyDictionary<string, IReadOnlyList<string>> options,
+            Func<bool> relevant, Func<AdaptiveGuidanceDecision,bool> apply, bool wallArrival)
         {
             using (var cancellation = m_Voice.GuidanceScheduler.Begin(GuidanceRequestKind.Catalog))
             {
@@ -83,18 +83,21 @@ namespace SpatialVoice
                 int round = m_Game.CurrentObjectiveIndex;
                 double started = Time.realtimeSinceStartupAsDouble;
                 bool Current() => this != null && isActiveAndEnabled && !token.IsCancellationRequested &&
-                    SessionConfig.JevLedGuidance && providerName == SessionConfig.AssistanceProvider && m_Voice != null && m_Voice.GuidanceReady &&
+                    SessionConfig.JevLedGuidance && providerName == SessionConfig.AssistanceProvider && m_Voice != null &&
+                    (wallArrival ? m_Voice.LibraryReady : m_Voice.GuidanceReady) &&
                     voice == SessionConfig.Voice && identity == (voice == VoiceCondition.SelfSimilar ? SessionConfig.SelfSimilarVoiceId : SessionConfig.NeutralVoiceId) &&
                     participant == SessionConfig.ParticipantId && round == m_Game.CurrentObjectiveIndex &&
-                    Time.realtimeSinceStartupAsDouble - started <= 2 && relevant();
+                    Time.realtimeSinceStartupAsDouble - started <= 3.25 && relevant();
                 m_Relevant = Current;
                 string id = (string)state["decision_id"];
                 try
                 {
                     await Task.Yield();
                     if (!Current()) { RecordDiscard(id); return; }
-                    cancellation.CancelAfter(JevDecisionClient.AdaptiveDeadlineMilliseconds);
-                    var decision = await provider.ChooseAssistanceAsync(state,capabilities,token);
+                    cancellation.CancelAfter(2 * JevDecisionClient.AdaptiveDeadlineMilliseconds);
+                    var decision = wallArrival
+                        ? await AdaptiveGuidancePipeline.ChooseWallArrivalAsync(provider,state,options["refine_explicit"],Current,token)
+                        : await AdaptiveGuidancePipeline.ChooseAsync(provider, state, options, Current, token);
                     token.ThrowIfCancellationRequested();
                     if (!Current()) { RecordDiscard(id); return; }
                     bool accepted = apply(decision);
@@ -107,6 +110,8 @@ namespace SpatialVoice
                     m_Voice.RecordJevTrace(new JObject { ["schema"] = "jev-trace-v1", ["request_id"] = id,
                         ["stage"] = "application", ["outcome"] = accepted ? (decision.Speak ? "scheduled" : "observing") : "discarded_stale",
                         ["policy"] = JevDecisionClient.AdaptivePolicy, ["provider"] = providerName, ["strategy"] = decision.Strategy,
+                        ["phrase_request_id"] = decision.PhraseRequestId, ["phrase"] = decision.Phrase,
+                        ["override_reason"] = wallArrival ? AdaptiveGuidancePipeline.WallArrivalOverride : null,
                         ["reassess_after_seconds"] = decision.ReassessSeconds, ["actual_playback"] = false }.ToString(Formatting.None));
                 }
                 catch (OperationCanceledException) { RecordDiscard(id); }

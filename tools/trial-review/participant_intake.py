@@ -5,6 +5,7 @@ from contextlib import contextmanager
 import fcntl
 import io
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -53,7 +54,24 @@ def patch(folder, **fields):
     return state
 
 
-def create(folder, participant, configuration, neutral_gender='Male', neutral_option=0):
+def validate_fit(fit):
+    if fit is None:
+        return dict(ipdRecorded=False, participantIpdMm=0, ipdSource='not_recorded', headsetIpdRecorded=False, headsetIpdMm=0)
+    if not isinstance(fit, dict) or set(fit) != {'ipdRecorded', 'participantIpdMm', 'ipdSource', 'headsetIpdRecorded', 'headsetIpdMm'}:
+        raise ValueError('Invalid IPD metadata fields.')
+    for flag, number in [('ipdRecorded', 'participantIpdMm'), ('headsetIpdRecorded', 'headsetIpdMm')]:
+        value = fit[number]
+        if type(fit[flag]) is not bool or type(value) not in (float, int) or not math.isfinite(value):
+            raise ValueError('IPD must be a finite number in millimetres.')
+        if (fit[flag] and not 0 < value <= 100) or (not fit[flag] and value != 0):
+            raise ValueError('Enter IPD in millimetres (greater than 0, at most 100), or leave it blank.')
+    if fit['ipdSource'] not in (('pupillometer', 'ruler', 'participant_report') if fit['ipdRecorded'] else ('not_recorded',)):
+        raise ValueError('Choose the participant IPD measurement source.')
+    return dict(fit)
+
+
+def create(folder, participant, configuration, neutral_gender='Male', neutral_option=0, fit=None):
+    fit = validate_fit(fit)
     if not re.fullmatch(r'P[0-9]{3,12}', participant): raise ValueError('Use a participant code such as P001.')
     if configuration not in ('A', 'B'): raise ValueError('Choose configuration A or B.')
     if neutral_gender not in ('Male', 'Female') or not 0 <= neutral_option < 6: raise ValueError('Choose a neutral study voice.')
@@ -63,7 +81,7 @@ def create(folder, participant, configuration, neutral_gender='Male', neutral_op
                      neutralGender=neutral_gender, neutralOption=neutral_option, phase='interview',
                      questionIndex=0, followup=False, prompt=QUESTIONS[0][1], promptRevision=0,
                      interviewVoiceId=INTERVIEW_VOICE, interviewVoiceName=INTERVIEW_NAME,
-                     answers=[], cloneState='not_started', cloneVoiceId='', error='', cloneError='',
+                     fit=fit, answers=[], cloneState='not_started', cloneVoiceId='', error='', cloneError='',
                      recordedSeconds=0, updatedUtc=time.time())
         atomic(folder / 'session.json', state)
     return state
@@ -189,7 +207,8 @@ def clone_answers(folder, provider):
 def ticket(state):
     if state['phase']!='interview_complete' or state['cloneState']!='ready' or not state['cloneVoiceId']:
         raise ValueError('Finish the interview and voice cloning before sending to the headset.')
-    return {k:state[k] for k in ('schema','id','participantCode','configuration','neutralGender','neutralOption','cloneVoiceId')}
+    return {**{k:state[k] for k in ('schema','id','participantCode','configuration','neutralGender','neutralOption','cloneVoiceId')},
+            'fit': validate_fit(state.get('fit'))}
 
 
 def main():
@@ -197,7 +216,7 @@ def main():
     args=parser.parse_args();req=json.loads(args.request.read_text());folder=Path(req['folder'])
     try:
         action=req['action'];provider=None if action=='create' else Provider(req['keysPath'])
-        if action=='create': create(folder,req['participantCode'],req['configuration'],req['neutralGender'],req['neutralOption'])
+        if action=='create': create(folder,req['participantCode'],req['configuration'],req['neutralGender'],req['neutralOption'],req.get('fit'))
         elif action=='prompt': speak_prompt(folder,provider)
         elif action=='answer': answer(folder,provider,req.get('audio'),req.get('skip',False))
         elif action=='clone': clone_answers(folder,provider)

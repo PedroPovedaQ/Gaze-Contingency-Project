@@ -102,6 +102,19 @@ public partial class VoiceSynthesizer
     {
         if (m_InterruptionCoroutine == null && IsSpeaking && m_AudioSource.clip != null &&
             (m_CurrentContext == "tip" || m_CurrentContext == "guidance_repeat") &&
+            SpatialVoice.SpeechPhraseMetadata.Describe(phrase).intent == "area_arrival" &&
+            SpatialVoice.SpeechPhraseMetadata.CanReplace(m_CurrentPhrase,phrase) &&
+            GuidanceEvidence.valid && GuidanceEvidence.insideTargetWall && GuidanceEvidence.wallEntryQualified &&
+            GuidanceSpeechPolicy.CanConfirmWallDuringSpeech(reason,m_SpeechStartStage,m_AudioSource.time,SpeechRemaining,
+                Time.realtimeSinceStartupAsDouble,m_LastSmoothInterruption) && stillRelevant())
+        {
+            CancelInterruptionAdvice();
+            Telemetry?.Invoke("interruption_advice",m_CurrentContext,m_ActiveClipKey ?? "",
+                "decision_id="+decisionId+";result=local_qualified_wall_entry;reason="+reason);
+            return true;
+        }
+        if (m_InterruptionCoroutine == null && IsSpeaking && m_AudioSource.clip != null &&
+            (m_CurrentContext == "tip" || m_CurrentContext == "guidance_repeat") &&
             SpatialVoice.SpeechPhraseMetadata.Describe(m_CurrentPhrase).interruptPolicy == "replace_if_misleading" &&
             GuidanceSpeechPolicy.IsAcknowledgment(phrase) &&
             SpatialVoice.SpeechPhraseMetadata.CanReplace(m_CurrentPhrase, phrase) &&

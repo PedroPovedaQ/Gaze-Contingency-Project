@@ -14,6 +14,10 @@ public partial class HintGenerator : MonoBehaviour
     int m_ProgressVariant;
     float m_TurnRemaining;
     string m_OpeningTurn;
+    string m_OpeningHistoryIdentity;
+    string HistoryParticipant => SessionConfig.ParticipantId + "|" + SessionConfig.CurrentRunFolder;
+    int HistoryTrial => m_GameManager != null ? m_GameManager.CurrentObjectiveIndex : 0;
+    string HistoryIdentity => HistoryParticipant + "|" + HistoryTrial;
     double m_InvalidGazeSince = -1;
     float m_YawError, m_PitchError;
     float m_VerticalError, m_VerticalFraction = float.NaN;
@@ -44,7 +48,15 @@ public partial class HintGenerator : MonoBehaviour
     bool m_VicinityAmbiguous;
     float m_ClosestVicinityError;
     public GazeTargetVicinity Vicinity => m_Vicinity;
-    public void Initialize(string apiKey, AgentContext context, VoiceSynthesizer voice, GazeCoverageTracker coverageTracker = null) => m_Voice = voice;
+    public void Initialize(string apiKey, AgentContext context, VoiceSynthesizer voice, GazeCoverageTracker coverageTracker = null)
+    {
+        if (m_Voice != null) m_Voice.PhrasePlaybackStarted -= OnPhrasePlaybackStarted;
+        m_Voice = voice;
+        if (m_Voice != null) m_Voice.PhrasePlaybackStarted += OnPhrasePlaybackStarted;
+    }
+    void OnPhrasePlaybackStarted(string phrase, string spokenText, string context) =>
+        m_AdaptiveHistory.RecordPhrase(phrase, spokenText, context, Time.realtimeSinceStartupAsDouble);
+    void OnDestroy() { if (m_Voice != null) m_Voice.PhrasePlaybackStarted -= OnPhrasePlaybackStarted; }
     void Start()
     {
         m_GameManager = GetComponent<FindObjectGameManager>();
@@ -54,9 +66,11 @@ public partial class HintGenerator : MonoBehaviour
     public void OnNewObjective(bool resumed = false)
     {
         m_Voice?.ClearGuidanceEvidence();
-        m_AdaptiveHistory.BeginTrial(SessionConfig.ParticipantId + "|" + SessionConfig.CurrentRunFolder, m_GameManager != null ? m_GameManager.CurrentObjectiveIndex : 0,
-            Time.realtimeSinceStartupAsDouble, resumed);
+        m_AdaptiveHistory.BeginTrial(HistoryParticipant, HistoryTrial,
+            Time.realtimeSinceStartupAsDouble, resumed || m_OpeningHistoryIdentity == HistoryIdentity);
+        m_OpeningHistoryIdentity = null;
         m_AdaptiveSchedule.Reset(); m_ActionPolicyEpoch++;
+        m_WallArrivalDecision=null; m_WallArrivalRelevant=null; m_NextWallArrivalRequest=0;
         if (resumed) m_State.ResumeSearch(Time.realtimeSinceStartupAsDouble);
         else m_State.BeginSearch(Time.realtimeSinceStartupAsDouble, m_OpeningTurn);
         m_OpeningTurn = null; m_ProgressVariant = 0;
@@ -173,6 +187,7 @@ public partial class HintGenerator : MonoBehaviour
             }
             return; // Let the person hold gaze within the target region without nudging it away.
         }
+        if (TryAdaptiveWallArrival(valid,inside,Allows)) return;
         if (TryAdaptiveGuidance(desired, valid, inside, far, looking, Allows)) return;
         // Remember a qualified target visit, even though the narrow crossing
         // history is cleared by confirmation. A blink cannot manufacture a departure.
@@ -385,6 +400,12 @@ public partial class HintGenerator : MonoBehaviour
         // Use fresh thresholds, without carrying the previous trial's hysteresis.
         string direction = inside ? DirectionalHintPolicy.WithinArea(m_YawError, m_PitchError) :
             coarse ?? DirectionalHintPolicy.AlignedPhrase;
+        if (m_OpeningHistoryIdentity != HistoryIdentity)
+        {
+            m_AdaptiveHistory.BeginTrial(HistoryParticipant, HistoryTrial, Time.realtimeSinceStartupAsDouble, false);
+            m_AdaptiveHistory.BreakObservation();
+            m_OpeningHistoryIdentity = HistoryIdentity;
+        }
         phrase = DirectionalHintPolicy.Opening(direction, inside, m_VerticalFraction);
         m_OpeningTurn = !inside ? direction : null;
         PublishState(valid);

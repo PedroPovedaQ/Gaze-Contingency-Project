@@ -183,6 +183,22 @@ class TrialCSVTests(unittest.TestCase):
             rows = list(csv.DictReader(f))
         return rows, report
 
+    def test_participant_ipd_export_and_legacy_missing(self):
+        self.save()
+        rows, _ = self.read('legacy-ipd')
+        self.assertEqual(rows[0]['participant_ipd_mm'], '')
+        self.assertEqual(rows[0]['participant_ipd_source'], 'not_recorded')
+        self.summary['participant_fit'] = dict(ipdRecorded=True, participantIpdMm=63.5, ipdSource='ruler',
+                                              headsetIpdRecorded=True, headsetIpdMm=64)
+        self.save()
+        rows, _ = self.read('with-ipd')
+        self.assertEqual(rows[0]['participant_ipd_mm'], '63.5')
+        self.assertEqual(rows[0]['participant_ipd_source'], 'ruler')
+        self.assertEqual(rows[0]['headset_lens_spacing_mm'], '64')
+        self.summary['participant_fit']['participantIpdMm'] = float('nan')
+        self.save()
+        with self.assertRaises(ValueError): self.read('invalid-ipd')
+
     def test_exact_precue_snapshot_export_and_legacy_blanks(self):
         from test_theta_snapshot import snapshot
         self.summary["objectives"][0]["pre_cue_theta"] = snapshot()

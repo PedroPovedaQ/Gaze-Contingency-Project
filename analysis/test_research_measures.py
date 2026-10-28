@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 import tempfile
 
-from research_measures import build_trials, score_surveys
+from research_measures import build_trials, score_surveys, capture_requirements
 from test_eye_outcomes import sample
 
 
@@ -25,6 +25,20 @@ def metric(eye, count, seconds, **kwargs):
 
 
 class ResearchMeasureTests(unittest.TestCase):
+    def test_candidate_join_does_not_promote_research_outcome(self):
+        values=[metric(side,4,4,last_target_candidate_s=.2) for side in ('left','right')]
+        row=build_trials([summary()],values)[0]
+        self.assertEqual(row['last_target_candidate_s'],.2)
+        self.assertIsNone(row['last_target_fixation_s'])
+        self.assertFalse(row['eye_research_eligible'])
+        values[1]['last_target_candidate_s']=None
+        self.assertIsNone(build_trials([summary()],values)[0]['last_target_candidate_s'])
+
+    def test_recording_presence_does_not_imply_study_ready(self):
+        checks=capture_requirements([sample(1)],{'complete':True})
+        self.assertTrue(checks['checks']['clean_recording'])
+        self.assertIn('gaze_time_recorded',checks['missing_capture_evidence'])
+        self.assertIn('search_target_aoi_recorded',checks['missing_capture_evidence'])
     def test_two_eyes_are_one_descriptive_trial_not_two_participants(self):
         rows = build_trials([summary()], [metric('left', 4, 4), metric('right', 8, 8)])
         self.assertEqual(len(rows), 1)

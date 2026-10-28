@@ -18,6 +18,7 @@ public static class StudyFeedbackChecks
             "Near-vertical gaze cannot invent a horizontal cross direction.");
         CheckVerticalWallDistance();
         CheckRoundPerformance();
+        CheckModelRouting();
         CheckTimeout();
         foreach (string phrase in DirectionalHintPolicy.AllPhrases())
             Check(Array.IndexOf(VoiceAssistantController.StarterPhrases(), phrase) >= 0 &&
@@ -35,6 +36,12 @@ public static class StudyFeedbackChecks
             effect = TargetCrumble.Play(target, null);
             Check(effect != null && !target.GetComponent<Renderer>().enabled && target.activeSelf,
                 "Only the original surface is hidden; trial metadata remains alive.");
+            var burstAudio = effect.GetComponent<AudioSource>();
+            Check(burstAudio != null && burstAudio.clip != null && burstAudio.clip.channels == 1 &&
+                burstAudio.clip.length < TargetCrumble.Duration && burstAudio.spatialBlend == 1f &&
+                burstAudio.dopplerLevel == 0f && !burstAudio.loop &&
+                Vector3.Distance(burstAudio.transform.position, target.GetComponent<Renderer>().bounds.center) < .001f,
+                "A short mono confetti burst uses 3D audio at the selected target, without looping or Doppler.");
             Check(effect.GetComponentsInChildren<Collider>().Length == 0 && effect.GetComponentsInChildren<Rigidbody>().Length == 0,
                 "Fragments cannot become selection targets or physics bodies.");
             var mesh = effect.GetComponent<MeshFilter>().sharedMesh;
@@ -62,7 +69,8 @@ public static class StudyFeedbackChecks
             UnityEngine.Random.state = oldRandom;
             Check(next == UnityEngine.Random.value, "Animation does not perturb stimulus randomization.");
             UnityEngine.Object.DestroyImmediate(target); target = null;
-            Check(effect != null && mesh != null, "Final-trial object cleanup does not erase the animation.");
+            Check(effect != null && mesh != null && burstAudio != null,
+                "Final-trial object cleanup does not erase the animation or its spatial sound.");
             // Ordinary MonoBehaviours do not receive play-mode OnDestroy in this
             // edit-mode fixture. Exercise the owned-resource lifecycle explicitly.
             typeof(TargetCrumble).GetMethod("OnDestroy", BindingFlags.Instance | BindingFlags.NonPublic)
@@ -136,6 +144,39 @@ public static class StudyFeedbackChecks
         }
         finally { UnityEngine.Object.DestroyImmediate(target); UnityEngine.Object.DestroyImmediate(host); }
         Debug.Log("[StudyTimeoutChecks] PASS: deadline, pauses, one terminal event, no success/stop, next wall, prepared voices and replay boundary.");
+    }
+
+    static void CheckModelRouting()
+    {
+        var host = new GameObject("ModelRoutingFixture"); host.SetActive(false);
+        bool priorLocal = SessionConfig.LocalAdaptiveModel;
+        var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        try
+        {
+            var synth = host.AddComponent<VoiceSynthesizer>();
+            var bridge = host.AddComponent<SpatialVoice.StudyNavigationVoiceBridge>();
+            SessionConfig.TrySetLocalAdaptiveModel(true);
+            bridge.Initialize("test-not-a-real-key", "test-not-a-real-key", synth);
+            Check(typeof(VoiceSynthesizer).GetField("<TransmissionAdvisor>k__BackingField", flags).GetValue(synth) == null && typeof(VoiceSynthesizer).GetField("<InterruptionAdvisor>k__BackingField", flags).GetValue(synth) == null,
+                "MiniLM does not attach incidental Jev speech advisors.");
+            SessionConfig.TrySetLocalAdaptiveModel(false); bridge.RefreshDecisionProvider();
+            Check(typeof(VoiceSynthesizer).GetField("<TransmissionAdvisor>k__BackingField", flags).GetValue(synth) != null && typeof(VoiceSynthesizer).GetField("<InterruptionAdvisor>k__BackingField", flags).GetValue(synth) != null,
+                "Jev opt-in attaches its speech advisors.");
+            SessionConfig.TrySetLocalAdaptiveModel(true); bridge.RefreshDecisionProvider();
+            Check(typeof(VoiceSynthesizer).GetField("<TransmissionAdvisor>k__BackingField", flags).GetValue(synth) == null && typeof(VoiceSynthesizer).GetField("<InterruptionAdvisor>k__BackingField", flags).GetValue(synth) == null,
+                "Switching back to MiniLM detaches Jev advisors.");
+            var voice = host.AddComponent<VoiceAssistantController>();
+            typeof(VoiceAssistantController).GetField("m_EncouragementClient", flags).SetValue(voice,
+                new SpatialVoice.JevDecisionClient("test-not-a-real-key"));
+            var result = (System.Threading.Tasks.Task<SpatialVoice.EncouragementPhrase>)
+                typeof(VoiceAssistantController).GetMethod("RequestRoundEncouragement", flags).Invoke(voice,
+                new object[] { new SpatialVoice.RoundPerformance(), SpatialVoice.RoundEncouragement.Phrases,
+                    System.Threading.CancellationToken.None });
+            Check(result.IsCompleted && result.Result == null,
+                "MiniLM uses prepared local round feedback without a Jev request.");
+        }
+        finally { UnityEngine.Object.DestroyImmediate(host); SessionConfig.TrySetLocalAdaptiveModel(priorLocal); }
+        Debug.Log("[ModelRoutingChecks] PASS: MiniLM local speech routing and explicit Jev opt-in.");
     }
 
     static void CheckRoundPerformance()

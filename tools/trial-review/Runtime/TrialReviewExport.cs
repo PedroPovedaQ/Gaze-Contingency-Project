@@ -61,6 +61,7 @@ public static class TrialReviewExport
         using(var output=Writer(Path.Combine(folder,"README.txt")))output.Write(
             "Recorded trial observation export. Times are session elapsed seconds and trial-relative elapsed seconds, not search-only durations.\n"+
             "samples.csv contains replay observations, not the separate full eye-acquisition stream. Gaze validity is retained; no fixation detection is performed.\n"+
+            "For per-eye native timestamps, target collider hits, matching head poses and pupil measurements, export EyeMeasurements/gaze_observations.jsonl with analysis/eye_quality.py. XrTime fields are integer nanoseconds: preserve them as integers or text, never spreadsheet/JavaScript floating-point values.\n"+
             "objects.csv is the initial snapshot; subsequent object changes are preserved inside observations.jsonl and raw_record_json.\n"+
             "pre-cue-theta.jsonl, when present, retains exact recorded snapshot JSON in Unity world coordinates and app realtime seconds (not the replay frame/clock).\n"+
             "This is a data subset, not a standalone replay package: retain the original recording and sibling audio/ folder.\n"+

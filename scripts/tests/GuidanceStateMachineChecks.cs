@@ -86,6 +86,7 @@ class GuidanceStateMachineChecks
         old=m.Revision;m.SetLifecycle(GuidancePhase.Paused,"researcher_pause",3.1);
         Check(m.Phase==GuidancePhase.Paused && m.Action==GuidanceAction.None && m.Revision!=old,"Pause invalidates pending work");
         m.ResumeSearch(4);m.Step(Input(4));m.Step(Input(4.3));Check(m.Phase==GuidancePhase.Turning,"Resume can establish current direction");
+        Check(m.TargetAcknowledged,"target acknowledgment survives pause so first-wall override remains suppressed");
         m.SetLifecycle(GuidancePhase.Completed,"correct_selection",5);Check(m.Phase==GuidancePhase.Completed,"Success has explicit state");
         old=m.Revision; m.SetLifecycle(GuidancePhase.TimedOut,"search_deadline",5.1);
         Check(m.Phase==GuidancePhase.TimedOut && m.Action==GuidanceAction.None && m.Revision!=old,"Timeout invalidates pending guidance without claiming selection");

@@ -1,0 +1,55 @@
+{
+  "kind": "synthetic_definition_comparison_not_hardware_validation",
+  "author_repo": "https://github.com/ischtz/jemr2022-vr-eyetracking",
+  "author_commit": "0e4eb8ddcc587bb78df10b529430728dc3892af1",
+  "author_stats_sha256": "91249cd91be7d281a0708a79193d2cb0022c11a0e006c2b38d3bf82409971246",
+  "local_eye_quality_sha256": "9a648706cc7e54e867fb9208c4b6be8c3bdd292ae83e6eef5742135dc3019879",
+  "method": "Executed the inspected author mean/sd/rmsi functions via AST extraction on absolute 3D target errors, matching analysis/vexptoolbox/data.py lines 419-460. Compared with current eye_quality.summarize on identical contiguous synthetic directions. Mean vs median and population error SD vs radial sample SD are deliberately different estimands. No claim of paper-wide replication.",
+  "fixtures": [
+    {
+      "fixture": "alternating_equal_radius",
+      "yaw_degrees": [
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "author_mean_absolute_error_deg": 0.9999999999999002,
+      "current_median_error_deg": 0.9999999999999002,
+      "author_population_sd_of_error_deg": 0.0,
+      "current_radial_sample_sd_deg": 1.1547005383791362,
+      "author_rms_change_in_error_deg": 0.0,
+      "current_rms_change_in_direction_deg": 1.9999999999999472
+    },
+    {
+      "fixture": "one_side_movement",
+      "yaw_degrees": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "author_mean_absolute_error_deg": 2.4999999999999303,
+      "current_median_error_deg": 2.499999999999935,
+      "author_population_sd_of_error_deg": 1.118033988749909,
+      "current_radial_sample_sd_deg": 1.2909944487357101,
+      "author_rms_change_in_error_deg": 1.0000000000000164,
+      "current_rms_change_in_direction_deg": 0.9999999999997786
+    },
+    {
+      "fixture": "stationary_bias",
+      "yaw_degrees": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "author_mean_absolute_error_deg": 1.9999999999999472,
+      "current_median_error_deg": 1.9999999999999472,
+      "author_population_sd_of_error_deg": 0.0,
+      "current_radial_sample_sd_deg": 0.0,
+      "author_rms_change_in_error_deg": 0.0,
+      "current_rms_change_in_direction_deg": 0.0
+    }
+  ]
+}

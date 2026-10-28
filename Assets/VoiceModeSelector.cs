@@ -116,6 +116,9 @@ public class VoiceModeSelector : MonoBehaviour
     {
         m_Enrollment = enrollment;
         m_Synth = synth;
+        var neutralCatalog = new System.Collections.Generic.List<string>(VoiceAssistantController.PhraseLibrary());
+        neutralCatalog.Add(VoiceAssistantController.AgentIntroduction + DirectionalHintPolicy.ReadinessPrompt(0));
+        m_Synth?.ExportNeutralQuickTestCatalog(neutralCatalog.ToArray());
         m_LiveStatus = GetComponent<HeadsetPreparationStatus>();
         if (m_LiveStatus == null) m_LiveStatus = gameObject.AddComponent<HeadsetPreparationStatus>();
         m_PerspectiveChosen = false;

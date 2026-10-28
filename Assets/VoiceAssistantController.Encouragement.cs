@@ -58,7 +58,7 @@ public partial class VoiceAssistantController
         IReadOnlyList<EncouragementPhrase> candidates, CancellationToken token)
     {
         m_EncouragementDecisionId = Guid.NewGuid().ToString("N");
-        if (m_EncouragementClient == null || !m_EncouragementClient.Available || candidates.Count < 2)
+        if (SessionConfig.AssistanceProvider != "jev" || m_EncouragementClient == null || !m_EncouragementClient.Available || candidates.Count < 2)
             return Task.FromResult<EncouragementPhrase>(null);
         var task = m_EncouragementClient.ChooseEncouragementAsync(facts, candidates, token, m_EncouragementDecisionId);
         // Observe faults even if disable/session-stop disposes the coroutine while advice is pending.

@@ -85,9 +85,10 @@ public sealed class StudyRayControls : MonoBehaviour
         m_ActionPolicyLabel = RayMenuFeedback.CreateButton(m_VicinityControls.transform, "DEV guidance: adaptive",
             new Vector2(0,-365), new Vector2(320,64),
             () => GetComponent<HintGenerator>()?.ToggleDevelopmentGuidancePolicy()).GetComponentInChildren<TextMeshProUGUI>();
-        m_ProviderLabel = RayMenuFeedback.CreateButton(m_VicinityControls.transform, "Model: Jev",
-            new Vector2(340,-365), new Vector2(320,90),
-            () => GetComponent<HintGenerator>()?.ToggleDevelopmentAssistanceProvider()).GetComponentInChildren<TextMeshProUGUI>();
+        m_ProviderLabel = RayMenuFeedback.CreateButton(m_Panel.transform, "Model: Local MiniLM",
+            new Vector2(340,-155), new Vector2(320,110),
+            () => GetComponent<HintGenerator>()?.ToggleAssistanceProvider()).GetComponentInChildren<TextMeshProUGUI>();
+        m_ProviderLabel.GetComponentInParent<Button>(true).gameObject.SetActive(false);
         var following = new GameObject("Active assistance status", typeof(RectTransform), typeof(TextMeshProUGUI));
         following.transform.SetParent(m_Panel.transform, false);
         m_FollowingLabel = following.GetComponent<TextMeshProUGUI>();
@@ -202,22 +203,23 @@ public sealed class StudyRayControls : MonoBehaviour
         m_EyeDotButton.gameObject.SetActive(m_SettingsOpen);
         m_EyeDotButton.interactable = m_Game.RotationalBetaEnabled;
         m_EyeDotLabel.text = "Eye dot: " + (m_EyeDot.Visible ? "On" : "Off");
-        m_FollowingLabel.gameObject.SetActive(SessionConfig.DevelopmentQuickTest);
-        if (SessionConfig.DevelopmentQuickTest)
+        m_FollowingLabel.gameObject.SetActive(SessionConfig.DevelopmentQuickTest || m_SettingsOpen);
+        if (m_FollowingLabel.gameObject.activeSelf)
         {
             var following = GetComponent<HintGenerator>()?.CaptureAssistanceStatus() ?? SessionConfig.CaptureAssistanceSelection();
             m_FollowingLabel.text = "Selected: " + following.SelectionLabel + "\nConnection: " + following.ConnectionLabel +
                 "\nLast accepted: " + following.LastDecisionLabel;
         }
+        m_ProviderLabel.GetComponentInParent<Button>(true).gameObject.SetActive(m_SettingsOpen);
+        m_ProviderLabel.text = !SessionConfig.JevLedGuidance ? "Model: unused in baseline" : SessionConfig.LocalAdaptiveModel
+            ? "Model: Local MiniLM\n" + (GetComponent<SpatialVoice.StudyNavigationVoiceBridge>()?.LocalModelStatus ?? "Connect Mac") + "\nTap to use Jev"
+            : "Model: Jev\nTap to use Local MiniLM";
+        m_ProviderLabel.GetComponentInParent<Button>(true).interactable = SessionConfig.JevLedGuidance &&
+            (!m_Game.SearchActive || m_Game.ResearcherPaused);
         m_VicinityControls.SetActive(m_SettingsOpen && SessionConfig.DevelopmentQuickTest);
         if (m_VicinityControls.activeSelf)
         {
             m_ActionPolicyLabel.text = "DEV guidance: " + (SessionConfig.JevLedGuidance ? "adaptive" : "baseline");
-            m_ProviderLabel.text = !SessionConfig.JevLedGuidance ? "Model: unused in baseline" : SessionConfig.LocalAdaptiveModel
-                ? "Model: Local MiniLM\n" + (GetComponent<SpatialVoice.StudyNavigationVoiceBridge>()?.LocalModelStatus ?? "Connect Mac")
-                : "Model: Jev\nTap to use Local MiniLM";
-            m_ProviderLabel.GetComponentInParent<Button>().interactable = SessionConfig.JevLedGuidance &&
-                (!m_Game.SearchActive || m_Game.ResearcherPaused);
             var vicinity = GetComponent<HintGenerator>()?.Vicinity;
             m_RingLabel.text = "DEV target ring: " + (vicinity != null && vicinity.RingVisible ? "On" : "Off");
             m_RadiusLabel.text = $"Gaze radius: object + {(vicinity != null ? vicinity.PaddingDegrees : GazeTargetVicinity.DefaultPaddingDegrees):0}°";

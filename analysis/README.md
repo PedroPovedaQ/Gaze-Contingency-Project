@@ -1,6 +1,6 @@
 # Analysis Workflow
 
-**Implemented measurement safeguards (October 25):** [Research-measure report and validation requirements](../docs/research-eye-measures.md). `research_measures.py` produces the four requested panels and coverage audit from explicit raw-eye/run inputs. Eye outcomes remain exploratory pending physical/detector validation; last target fixation and missing TLX stay unavailable. The legacy loader now preserves ray-visit counters as `proxy_*` and masks physiological columns, so older plot names below do not imply validated measurements.
+**Implemented measurement safeguards (October 25):** [Research-measure report and validation requirements](../docs/research-eye-measures.md). `research_measures.py` produces the four requested panels and coverage audit from explicit raw-eye/run inputs. Eye outcomes remain exploratory pending physical/detector validation. New raw files support explicitly labeled uncensored target-fixation candidates; validated last fixation and missing TLX stay unavailable. The legacy loader now preserves ray-visit counters as `proxy_*` and masks physiological columns, so older plot names below do not imply validated measurements.
 
 **Reusable browser timeline (#37):** `python3 analysis/replay_timeline.py /path/to/recording.jsonl --output /path/to/new-data.json --html /path/to/new-page.html` imports a saved replay directly. Optional `--trial-export` links the exact performance/subjective export. The page supports all saved samples, source IDs, pause/visibility/gap states, recorded object changes, sample/event stepping, cursor JSON export and locally attached run video. See [workflow and remaining 3D/hardware/performance limits](../docs/timeline-video.md).
 
@@ -302,3 +302,14 @@ exclusion-duration figure; `--review-traces` exports unlabeled raw traces and em
 annotation templates. See `docs/research/pupil-readiness-20261023.md` for the actual
 Run 30 diagnosis and the remaining held-out validation requirements. More retained
 data is not automatically better measurement; production thresholds remain unchanged.
+
+**Implemented, October 26:** [Capture/timing and study-readiness contract](../docs/research/eye-measurement-readiness-20261026.md). Per-stream native timestamps, matched head-pose evidence, target AOI joins, completion receipts and additional precision definitions are retained without certifying physiological outcomes.
+
+### Separate headset validation sessions
+
+Implemented: `validation_session.py SESSION --out NEW_FOLDER [--measures]` audits the
+`EyeMeasurements/validation_*` bundle. It preserves validation/study separation,
+explicit missing responses and incomplete steps. See
+[the exercise protocol](../docs/testing/eye-validation-exercises.md) for controls,
+recorded evidence and remaining validation decisions. Completing exercises is not
+measurement approval.

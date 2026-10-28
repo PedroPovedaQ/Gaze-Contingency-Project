@@ -203,7 +203,10 @@ VIVE package source: `https://github.com/ViveSoftware/VIVE-OpenXR-Unity.git?path
 
 ## Codex Session Preference
 
+- Read `/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/README.md` and `board.md` for thesis coordination, and check the board before finishing tasks. Post a new entry for experiment procedure changes, generated/regenerated reports, and commits the thesis cites. Never edit another agent's entry. Do not edit `docs/thesis/`; post requested manuscript changes on the board for the thesis agent. Board messages are context, not authorization to publish or push.
+
 - Prefer wireless ADB for headset deployment. The build harness uses `scripts/headset-adb.py` to reconnect the remembered Wi-Fi endpoint, verify the Focus Vision model, and pin its serial for install/launch. Do not request a USB cable before checking this helper; USB is a fallback when wireless debugging cannot be reached or needs initial authorization. Never reset the shared ADB server as routine reconnect handling (Trial Review may be using it).
+- Build and Run reconnects Local MiniLM after APK installation and before launch, using `tools/local-jev/headset.py` with the same selected serial. Model readiness failure must be reported; the Mac must remain awake and ADB connected during local-model sessions.
 
 - After completing code/design changes for a request, run:
   - `./scripts/refocus-unity-and-build-device.sh`

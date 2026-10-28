@@ -40,13 +40,16 @@ public sealed class EntryGazeAlignment : MonoBehaviour
     Texture2D m_Texture;
     Sprite m_Sprite;
     bool m_Started, m_ShowingShapes;
+    bool m_StudyVerification;
     string m_EntryId;
     Color Gold => new Color(1, .788f, .016f);
     void Awake() => Instance = this;
 
-    public IEnumerator Run()
+    public IEnumerator Run(bool studyVerification = false)
     {
         if (Active || Completed) yield break;
+        Instance = this;
+        m_StudyVerification=studyVerification;
         GazeDiagnosticView.Instance?.SetVisible(false);
         Active = true; Outcome = "waiting_for_start";
         m_EntryId = Guid.NewGuid().ToString("N");
@@ -54,7 +57,9 @@ public sealed class EntryGazeAlignment : MonoBehaviour
         m_Stream = SharedGazeStream.Instance;
         m_Stream?.ClearQuickAlignment("Entry calibration awaiting user start.");
         CreatePanel();
-        m_Text.text = "<b>Three-dot calibration</b>\nSelect Start, then look at the red center of each dot.\nEach dot counts down 3, 2, 1 before recording.\nAfterward, check three shapes light up and select OK.";
+        m_Text.text = "<b>Gaze preparation</b>\nSelect Start, then look at the red center of each calibration dot.\nEach dot counts down 3, 2, 1 before recording.\n"+
+            (studyVerification?"Five verification dots will follow automatically. Keep the same headset fit.":"Afterward, check three shapes light up and select OK.");
+        m_Ok.gameObject.SetActive(!studyVerification);
         m_Live?.Set("preparing", "Waiting to start three-dot calibration");
         while (Active) yield return null;
     }
@@ -93,7 +98,7 @@ public sealed class EntryGazeAlignment : MonoBehaviour
         m_Ok.interactable = false; m_Start.interactable = false;
         m_Start.GetComponentInChildren<TMP_Text>().text = "Retry calibration";
         AnchorPanel();
-        m_Stream.QuickAlignment.BeginGuided(Camera.main.transform.position, HorizontalFacing(Camera.main.transform.rotation), Time.realtimeSinceStartupAsDouble);
+        m_Stream.QuickAlignment.BeginGuided(Camera.main.transform.position, HorizontalFacing(Camera.main.transform.rotation), Time.realtimeSinceStartupAsDouble,m_StudyVerification);
         CreateDots(); SetValidationTarget(); UpdateTargetPresentation(0, 3, 0);
     }
     void Update()
@@ -103,6 +108,7 @@ public sealed class EntryGazeAlignment : MonoBehaviour
         if (m_Stream == null || !m_Stream.isActiveAndEnabled || m_Stream.RecordingError != null)
         { Fail("Eye recording is unavailable. Retry or skip."); return; }
         var fit = m_Stream.QuickAlignment;
+        if(m_StudyVerification && fit.AwaitingAccuracy){Complete("awaiting_accuracy");return;}
         if (!fit.IsRunning && !fit.AwaitingConfirmation)
         { Fail(fit.Status); return; }
         if (fit.TargetIndex >= 3 && !m_ShowingShapes)
@@ -281,11 +287,14 @@ public sealed class EntryGazeAlignment : MonoBehaviour
         Outcome = outcome;
         if (!SaveOutcome()) { Fail("Could not record the outcome. Retry or skip after recording is restored."); return; }
         Completed = true; Active = false;
-        ClearTargets(); m_Panel.SetActive(false); m_Live?.Set("ready", "Calibration " + outcome + "; ready to center");
+        ClearTargets(); m_Panel.SetActive(false);
+        m_Live?.Set(outcome=="awaiting_accuracy"?"preparing":"ready",
+            outcome=="awaiting_accuracy"?"Calibration collected; verifying five dots":"Calibration "+outcome);
     }
     bool SaveOutcome()
     {
-        var result = new EntryResult { id = m_EntryId, outcome = Outcome, participant = SessionConfig.ParticipantId,
+        var result = new EntryResult { id = m_EntryId, outcome = Outcome, participant = SharedGazeStream.MeasurementParticipant,
+            workflow=m_StudyVerification?"three_fit_then_five_verification":"three_fit_three_shapes_manual_confirmation",
             run = SessionConfig.RunNumber, utc = DateTime.UtcNow.ToString("o"), alignmentId = m_Stream?.QuickAlignment.Report?.id,
             offsetApplied = m_Stream != null && m_Stream.QuickAlignment.IsActive, shapeHighlightSeen = (bool[])m_Seen.Clone(), userConfirmed = Outcome == "passed" };
         try
@@ -334,7 +343,7 @@ public sealed class EntryGazeAlignment : MonoBehaviour
     void OnDestroy() { if (m_Panel != null) DestroyOwned(m_Panel); if (Instance == this) Instance = null; }
     [Serializable] sealed class EntryResult
     {
-        public int schema = 3, run; public string id, outcome, participant, utc, alignmentId;
+        public int schema = 4, run; public string id, outcome, participant, utc, alignmentId, workflow;
         public bool assumedFixation = true, userConfirmed, offsetApplied; public bool[] shapeHighlightSeen;
     }
 }

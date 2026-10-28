@@ -82,4 +82,5 @@ internal static class NativeGazeInterop
     [DllImport(Library)] internal static extern void ng_status(out NativeGazeStatus status);
     [DllImport(Library)] internal static extern int ng_drain([Out] NativeGazeRecord[] output, int maximum);
     [DllImport(Library)] internal static extern long ng_monotonic_ns();
+    [DllImport(Library)] internal static extern int ng_take_htc([Out] HtcQueryStamp[] output, int count);
 }

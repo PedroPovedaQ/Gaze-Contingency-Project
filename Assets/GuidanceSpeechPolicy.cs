@@ -11,7 +11,7 @@ public static class GuidanceSpeechPolicy
     // Jev cannot add a second waiting period to these newly qualified events.
     public static bool IsPromptEvent(string reason) => reason == "gaze_target_vicinity_hold" ||
         reason == "controller_target_gaze_vicinity" || reason == "turn_progress_milestone" ||
-        reason == "gaze_target_plane" || reason == "stable_wall_entry" ||
+        reason == "gaze_target_plane" || reason == "stable_wall_entry" || reason == "first_target_wall_entry" ||
         reason == "sustained_target_selection_reminder" || reason == "recent_target_departure" ||
         reason == "target_bearing_overshoot" || reason == "gaze_overshoot_return";
     public static bool IsOrdinaryDirection(string reason) => reason == "stable_direction" || reason == "catalog_turn" || reason == "jev_action";
@@ -25,6 +25,10 @@ public static class GuidanceSpeechPolicy
         remaining >= .5 && now - lastInterruption >= InterruptionCooldown;
 
     public const double InterruptionCooldown = 2.5;
+    public static bool CanConfirmWallDuringSpeech(string reason, string speechStartStage, double elapsed,
+        double remaining, double now, double lastInterruption) => reason == "first_target_wall_entry" &&
+        speechStartStage == "outside_target_wall" &&
+        CanConsiderInterruption(false,elapsed,remaining,now,lastInterruption);
     // Protect short phrases and their endings. Jev cannot override these local bounds.
     public static bool CanConsiderInterruption(bool acknowledgment, double elapsed, double remaining,
         double now, double lastInterruption) => !acknowledgment && elapsed >= .65 && remaining >= 1.0 &&

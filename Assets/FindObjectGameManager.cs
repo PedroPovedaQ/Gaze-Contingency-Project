@@ -175,7 +175,7 @@ public class FindObjectGameManager : MonoBehaviour
         if (m_TechnicallyStopped || m_State == GameState.Completed) return;
         m_SearchClock.Pause(Time.timeAsDouble);
         m_TechnicallyStopped = true; SearchActive = false;
-        m_EntryAlignment?.Abort();
+        GetComponent<StudyGazePreparation>()?.Abort();
         GetComponent<ActivationExercise>()?.Abort();
         GetComponent<HintGenerator>()?.SetLifecycle(GuidancePhase.Stopped, reason);
         GetComponent<VoiceAssistantController>()?.CancelSearchOpening();
@@ -346,7 +346,6 @@ public class FindObjectGameManager : MonoBehaviour
     RotationalSearchLayout.Slot[] m_RotationalSlots;
     Material m_PlaneOutlineMaterial;
     bool m_CenterAccepted;
-    EntryGazeAlignment m_EntryAlignment;
     [SerializeField] bool m_UseDebugRoundCountOverride;
     [SerializeField, Min(1)] int m_DebugRoundCount = ChallengeSet.TotalRounds;
 
@@ -505,21 +504,21 @@ public class FindObjectGameManager : MonoBehaviour
         // Neither the practice trial nor its clock may begin behind this screen.
         while (Camera.main == null && !m_TechnicallyStopped) yield return null;
         if (m_TechnicallyStopped) yield break;
-        m_EntryAlignment = GetComponent<EntryGazeAlignment>();
-        if (m_EntryAlignment == null) m_EntryAlignment = gameObject.AddComponent<EntryGazeAlignment>();
+        var preparation = GetComponent<StudyGazePreparation>() ?? gameObject.AddComponent<StudyGazePreparation>();
         var activation = GetComponent<ActivationExercise>() ?? gameObject.AddComponent<ActivationExercise>();
-        do
-        {
-            yield return m_EntryAlignment.Run();
-            if (m_TechnicallyStopped || !m_EntryAlignment.Completed) yield break;
-            yield return activation.Run();
-            if (m_TechnicallyStopped) yield break;
-            if (activation.RecalibrationRequested) m_EntryAlignment.ResetForRetry();
-        } while (activation.RecalibrationRequested);
-        if (!activation.Completed) yield break;
         if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
         while (!m_CenterAccepted && !m_TechnicallyStopped)
         {
+            if(!preparation.Ready || !activation.Completed || activation.RecalibrationRequested)
+            {
+                yield return preparation.Run();
+                if(m_TechnicallyStopped || !preparation.Completed)yield break;
+                if(!preparation.Ready)continue;
+                yield return activation.Run();
+                if(m_TechnicallyStopped)yield break;
+                if(activation.RecalibrationRequested || !preparation.Ready)continue;
+                if(!activation.Completed)yield break;
+            }
             m_Checkpoint.Show((SessionConfig.DevelopmentQuickTest ? "<b>" + SessionConfig.QuickTestTitle + " · DEVELOPMENT ONLY</b>\n" : "<b>360° SEARCH BETA</b>\n") +
                 "Sit at the center and face your chosen forward direction.\nEight planes will surround you, 21 objects on each.\nStay seated and turn to search.",
                 "Center and begin");
@@ -532,7 +531,7 @@ public class FindObjectGameManager : MonoBehaviour
 
     public bool StartCenteredSession()
     {
-        if (m_EntryAlignment == null || !m_EntryAlignment.Completed) return false;
+        if (GetComponent<StudyGazePreparation>()?.Ready != true) return false;
         if (GetComponent<ActivationExercise>()?.Completed != true) return false;
         if (!m_UseRotationalLayout || m_CenterAccepted || m_State != GameState.Idle || !Application.isFocused || Camera.main == null) return false;
         var selector = GetComponent<VoiceModeSelector>();
@@ -561,6 +560,7 @@ public class FindObjectGameManager : MonoBehaviour
 
     void OnDisable()
     {
+        GetComponent<StudyGazePreparation>()?.Abort();
         GetComponent<ActivationExercise>()?.Abort();
         ChallengeSet.DebugRoundCountOverride = 0;
         if (m_Spawner != null) m_Spawner.objectSpawned -= OnObjectSpawned;

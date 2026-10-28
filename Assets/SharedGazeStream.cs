@@ -29,9 +29,14 @@ public sealed class SharedGazeStream : MonoBehaviour
     public bool MirrorLocalOriginX { get => m_MirrorLocalOriginX; set => m_MirrorLocalOriginX = value; }
     public event Action<GazeObservation> Observed;
     GazeObservation m_LastNative;
+    readonly HtcQueryStamp[] m_HtcStamps = new HtcQueryStamp[3];
+    bool m_TimingAdapterFailed;
+    SpawnableObjectInfo m_TaskTarget;
+    int m_TaskTargetRound = -1;
     EyeGazeInteraction.EyeGazeDevice m_Device;
     XRGazeInteractor m_Interactor;
     FindObjectGameManager m_Game;
+    FindObjectGameManager m_SubscribedGame;
     TrialReplayWriter m_Writer;
     string m_RecordingId;
     string m_FinalizedAlignmentId;
@@ -52,13 +57,23 @@ public sealed class SharedGazeStream : MonoBehaviour
         Instance = this;
         gameObject.AddComponent<GazeDiagnosticView>();
         gameObject.AddComponent<NativeGazeRecorder>();
+        gameObject.AddComponent<EyeValidationSession>();
     }
     void OnEnable() => InputSystem.onAfterUpdate += AfterInput;
     void OnDisable()
     {
         ClearQuickAlignment("Eye measurement stopped; repeat quick alignment.");
         InputSystem.onAfterUpdate -= AfterInput;
+        if(m_SubscribedGame!=null)m_SubscribedGame.OnGameCompleted-=OnRunCompleted;
+        m_SubscribedGame=null;
+        SealRecording();
+    }
+    void OnRunCompleted(float elapsed) { Capture();SealRecording(); }
+    // Close an immutable segment explicitly; Android process termination may never call OnDisable.
+    public void SealRecording()
+    {
         if (m_Writer == null) return;
+        GetComponent<NativeGazeRecorder>()?.SealSegment();
         m_Writer.Dispose();
         RecordingError = RecordingError ?? m_Writer.Error;
         try
@@ -69,6 +84,7 @@ public sealed class SharedGazeStream : MonoBehaviour
         }
         catch (Exception e) { RecordingError=e.Message;Debug.LogError("[SharedGaze] " + e.Message); }
         m_Writer=null;
+        RecordingPath=null;
     }
     void OnDestroy() { if (Instance == this) Instance = null; }
     void OnApplicationFocus(bool focus)
@@ -91,6 +107,12 @@ public sealed class SharedGazeStream : MonoBehaviour
     {
         if (m_Interactor == null) m_Interactor = FindFirstObjectByType<XRGazeInteractor>();
         if (m_Game == null) m_Game = FindFirstObjectByType<FindObjectGameManager>();
+        if(m_Game!=m_SubscribedGame)
+        {
+            if(m_SubscribedGame!=null)m_SubscribedGame.OnGameCompleted-=OnRunCompleted;
+            m_SubscribedGame=m_Game;
+            if(m_SubscribedGame!=null)m_SubscribedGame.OnGameCompleted+=OnRunCompleted;
+        }
         m_Device = null;
         foreach (var device in InputSystem.devices)
             if (device is EyeGazeInteraction.EyeGazeDevice eye) { m_Device = eye; break; }
@@ -141,7 +163,7 @@ public sealed class SharedGazeStream : MonoBehaviour
     void SaveQuickAlignmentResult()
     {
         var result = QuickAlignment.Report;
-        if (result == null || (result.outcome == "collecting" || result.outcome == "awaiting_confirmation") || result.id == m_FinalizedAlignmentId) return;
+        if (result == null || (result.outcome == "collecting" || result.outcome == "awaiting_confirmation" || result.outcome == "awaiting_accuracy") || result.id == m_FinalizedAlignmentId) return;
         try
         {
             if (RecordingError != null || string.IsNullOrEmpty(RecordingPath))
@@ -160,11 +182,15 @@ public sealed class SharedGazeStream : MonoBehaviour
         m_FinalizedAlignmentId = result.id;
     }
 
+    // Bind calibration before applying an offset, not later during target annotation.
+    public static string MeasurementParticipant => EyeValidationSession.Instance?.Active == true
+        ? EyeValidationSession.Instance.Status.participant : SessionConfig.ParticipantId;
+
     void Capture()
     {
         double now = Time.realtimeSinceStartupAsDouble;
         var s = new GazeObservation { sequence = m_Sequence++, frame = Time.frameCount, receiptTime = now,
-            focused = m_Focused && Application.isFocused, participant = SessionConfig.ParticipantId,
+            focused = m_Focused && Application.isFocused, participant = MeasurementParticipant,
             run = SessionConfig.RunNumber, voice = SessionConfig.VoiceTag,
             recordingId = m_RecordingId, maxDeliveryAgeSeconds=m_MaxDeliveryAgeSeconds, validationId = ValidationId, validationSet = ValidationSet,
             targetId = ValidationTargetId, correction = m_MirrorLocalOriginX ? "mirror_local_origin_x_diagnostic" : "none" };
@@ -207,11 +233,13 @@ public sealed class SharedGazeStream : MonoBehaviour
         var head = Camera.main;
         var hmd = InputDevices.GetDeviceAtXRNode(XRNode.Head);
         s.headValid = head != null && hmd.TryGetFeatureValue(UnityEngine.XR.CommonUsages.isTracked, out bool tracked) && tracked;
-        if (head != null) { s.headPosition = head.transform.position; s.headRotation = head.transform.rotation; }
+        if (head != null) { s.headPosition = head.transform.position; s.headRotation = head.transform.rotation; s.headPoseReceiptTime=Time.realtimeSinceStartupAsDouble; }
         if (s.newInputUpdate) { CaptureHtc(s); m_LastNative=s; }
         else if (m_LastNative != null)
         {
             s.htcQueryReceiptTime=m_LastNative.htcQueryReceiptTime;
+            s.htcTiming=m_LastNative.htcTiming;s.htcQueryEndReceiptTime=m_LastNative.htcQueryEndReceiptTime;
+            s.htcHeadPoseValid=m_LastNative.htcHeadPoseValid;s.htcHeadWorldRotation=m_LastNative.htcHeadWorldRotation;
             s.htcGazeAvailable=m_LastNative.htcGazeAvailable;s.leftValid=m_LastNative.leftValid;s.rightValid=m_LastNative.rightValid;
             s.leftNativeOrigin=m_LastNative.leftNativeOrigin;s.rightNativeOrigin=m_LastNative.rightNativeOrigin;
             s.leftNativeRotation=m_LastNative.leftNativeRotation;s.rightNativeRotation=m_LastNative.rightNativeRotation;
@@ -230,7 +258,7 @@ public sealed class SharedGazeStream : MonoBehaviour
         // Gather uncorrected observations from the ACTUAL usable source, including HTC fallback.
         // Do not allow a mid-search or unrecorded calibration to alter guidance.
         bool studyPlaying = m_Game != null && m_Game.CurrentState == FindObjectGameManager.GameState.Playing && !m_Game.ResearcherPaused;
-        if (RecordingError != null || (QuickAlignment.IsRunning && studyPlaying))
+        if (RecordingError != null || ((QuickAlignment.IsRunning || QuickAlignment.AwaitingAccuracy) && studyPlaying))
             ClearQuickAlignment("Alignment interrupted by study activity or recording failure.");
         if (QuickAlignment.IsRunning && ValidationSet == "quick" && ValidationId == QuickAlignment.Report.id &&
             ValidationTargetId == "target_" + QuickAlignment.TargetIndex)
@@ -249,6 +277,8 @@ public sealed class SharedGazeStream : MonoBehaviour
                     s.validationTarget - m_Interactor.transform.parent.TransformPoint(mirrored));
             }
         }
+        CaptureTaskAoi(s);
+        EyeValidationSession.Instance?.Annotate(s);
         Latest = s;
         Record(s); Observed?.Invoke(s);
     }
@@ -302,6 +332,7 @@ public sealed class SharedGazeStream : MonoBehaviour
     {
         var feature = OpenXRSettings.Instance != null ? OpenXRSettings.Instance.GetFeature<ViveEyeTracker>() : null;
         if (feature == null || !feature.enabled) return;
+        TakeHtcTiming(); // Discard any earlier query on this thread before the three calls below.
         s.htcQueryReceiptTime = Time.realtimeSinceStartupAsDouble;
         s.htcGazeAvailable = feature.GetEyeGazeData(out var eyes) && eyes != null && eyes.Length >= 2;
         if (s.htcGazeAvailable)
@@ -341,6 +372,61 @@ public sealed class SharedGazeStream : MonoBehaviour
             s.leftOpenness = s.leftOpennessValid ? geometry[0].eyeOpenness : 0;
             s.rightOpenness = s.rightOpennessValid ? geometry[1].eyeOpenness : 0;
         }
+        s.htcQueryEndReceiptTime=Time.realtimeSinceStartupAsDouble;
+        if(TakeHtcTiming())
+        {
+            s.htcTiming=new HtcQueryTiming { gaze=m_HtcStamps[0], pupil=m_HtcStamps[1], geometric=m_HtcStamps[2] };
+            var timing=s.htcTiming.gaze;
+            var parent=m_Interactor!=null ? m_Interactor.transform.parent : null;
+            var native=new VIVE.OpenXR.XrQuaternionf { x=timing.headQx,y=timing.headQy,z=timing.headQz,w=timing.headQw };
+            var rotation=VIVE.OpenXR.OpenXRHelper.ToUnityQuaternion(native);
+            s.htcHeadPoseValid=timing.observed==1 && timing.result==0 && (timing.headFlags & 15UL)==15UL &&
+                parent!=null && Finite(rotation) && Quaternion.Dot(rotation,rotation)>.5f;
+            if(s.htcHeadPoseValid)s.htcHeadWorldRotation=parent.rotation*rotation;
+        }
+    }
+    bool TakeHtcTiming()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if(!m_TimingAdapterFailed && NativeGazeTimestampFeature.NativeLoaded)
+        {
+            try
+            {
+                if(NativeGazeInterop.ng_take_htc(m_HtcStamps,3)!=System.Runtime.InteropServices.Marshal.SizeOf<HtcQueryStamp>())
+                    throw new InvalidOperationException("HTC timestamp ABI mismatch");
+                return true;
+            }
+            catch(Exception e) { m_TimingAdapterFailed=true;Debug.LogError("[SharedGaze] Native HTC timing unavailable: "+e.Message); }
+        }
+#endif
+        return false;
+    }
+    void CaptureTaskAoi(GazeObservation s)
+    {
+        if(m_Game==null || !m_Game.SearchActive)return;
+        if(m_TaskTarget==null || m_TaskTargetRound!=m_Game.PresentedRoundIndex)
+        {
+            m_TaskTarget=null;m_TaskTargetRound=m_Game.PresentedRoundIndex;
+            foreach(var obj in m_Game.SpawnedObjects)
+            {
+                if(obj==null || !obj.TryGetComponent<SpawnableObjectInfo>(out var info))continue;
+                if(info.shapeName==m_Game.CurrentTarget.shape && info.colorName==m_Game.CurrentTarget.color)
+                { m_TaskTarget=info;break; }
+            }
+        }
+        if(m_TaskTarget==null)return;
+        s.taskAoiAvailable=true;s.taskTargetId=m_TaskTarget.objectId;s.taskTargetPosition=m_TaskTarget.transform.position;
+        if(m_TaskTarget.TryGetComponent<Collider>(out var collider))
+        { s.taskTargetBoundsCenter=collider.bounds.center;s.taskTargetBoundsExtents=collider.bounds.extents; }
+        // Raw per-eye rays, no quick-alignment offset or hover/dwell event substitution.
+        s.leftHitObjectId=s.htcGazeAvailable && s.leftValid ? HitObject(s.leftWorldOrigin,s.leftWorldDirection) : "";
+        s.rightHitObjectId=s.htcGazeAvailable && s.rightValid ? HitObject(s.rightWorldOrigin,s.rightWorldDirection) : "";
+    }
+    static string HitObject(Vector3 origin,Vector3 direction)
+    {
+        if(!Physics.Raycast(origin,direction,out var hit,30f,1<<8,QueryTriggerInteraction.Ignore))return "";
+        var info=hit.collider.GetComponentInParent<SpawnableObjectInfo>();
+        return info!=null ? info.objectId : "";
     }
     static Vector3 NativePosition(VIVE.OpenXR.XrVector3f v) => new Vector3(v.x,v.y,v.z);
     static Quaternion NativeRotation(VIVE.OpenXR.XrQuaternionf q) => new Quaternion(q.x,q.y,q.z,q.w);
@@ -373,7 +459,8 @@ public sealed class SharedGazeStream : MonoBehaviour
     {
         public string build = Application.buildGUID, unity = Application.unityVersion, device = SystemInfo.deviceModel,
             os = SystemInfo.operatingSystem, source = "OpenXR EXT input state; optional HTC per-eye polls",
-            timing = "receiptTime and inputEventTime: Unity realtime seconds; source capture time/sequence unavailable",
+            timing = "receiptTime/inputEventTime/query brackets: Unity seconds. htcTiming: exact integer XrTime ns per stream; gaze is requested pose time, pupil/geometric runtime-reported capture time; not validated sensor timing. Head pose is receipt-time only.",
+            aoi = "Raw per-eye closest Layer 8 collider intersection; target ID and world bounds at query receipt. Not a fixation detector. Historical files lack this join.",
             nativeCoordinates = "HTC raw right-handed OpenXR app space; EXT pose already Unity converted",
             rateConclusion = "120 Hz sensor acquisition NOT ESTABLISHED; repeated polls are not distinct source observations";
     }

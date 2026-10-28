@@ -34,6 +34,9 @@ BASE_FIELDS = [
     "exclude_from_study_analysis",
     "analysis_exclusion_reason",
     "participant_id",
+    "participant_ipd_mm",
+    "participant_ipd_source",
+    "headset_lens_spacing_mm",
     "run_number",
     "session_id",
     "trial_id",
@@ -238,6 +241,24 @@ def encode(value: Any) -> str:
     if isinstance(value, float):
         return format(value, ".10g")
     return str(value)
+
+
+def participant_fit_fields(summary: dict) -> dict:
+    fit = summary.get("participant_fit") or {}
+    result = {"participant_ipd_mm": None, "participant_ipd_source": "not_recorded", "headset_lens_spacing_mm": None}
+    for flag, value_key, column in (("ipdRecorded", "participantIpdMm", "participant_ipd_mm"),
+                                    ("headsetIpdRecorded", "headsetIpdMm", "headset_lens_spacing_mm")):
+        if fit.get(flag) is True:
+            value = fit.get(value_key)
+            if type(value) not in (int, float) or not math.isfinite(value) or not 0 < value <= 100:
+                raise ValueError("Invalid recorded IPD in summary; expected millimetres.")
+            result[column] = value
+    if fit.get("ipdRecorded") is True:
+        source = fit.get("ipdSource")
+        if source not in ("pupillometer", "ruler", "participant_report"):
+            raise ValueError("Recorded participant IPD is missing its measurement source.")
+        result["participant_ipd_source"] = source
+    return result
 
 
 def data_labels(summary: dict, run: Path, practice: bool = False) -> dict:
@@ -658,6 +679,7 @@ def read_summary(run: Path) -> tuple[dict, dict[str, Trial]]:
             "export_schema": SCHEMA,
             **data_labels(summary, run),
             "participant_id": participant,
+            **participant_fit_fields(summary),
             "run_number": run_number,
             "session_id": session,
             "trial_id": tid,

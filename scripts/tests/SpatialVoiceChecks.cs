@@ -26,10 +26,12 @@ partial class SpatialVoiceChecks
             CheckSpeechMemory();
             CheckActionMenu();
             CheckAdaptiveGuidance();
+            CheckAdaptivePipeline().GetAwaiter().GetResult();
             CheckAdaptiveTransport().GetAwaiter().GetResult();
             CheckLocalAdaptiveTransport().GetAwaiter().GetResult();
             CheckActionTransport().GetAwaiter().GetResult();
             if (args.Length == 0) { }
+            else if (args.Length == 2 && args[0] == "--export-phrase-menus") System.IO.File.WriteAllText(args[1], AdaptivePhraseMenus().ToString());
             else if (args.Length == 1 && args[0] == "--live-local-adaptive") LiveLocalAdaptive().GetAwaiter().GetResult();
             else if (args.Length == 3 && args[0] == "--live-adaptive") LiveAdaptive(args[1],args[2]).GetAwaiter().GetResult();
             else if (args.Length == 4 && args[0] == "--replay-adaptive") ReplayAdaptive(args[1],args[2],args[3]).GetAwaiter().GetResult();

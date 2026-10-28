@@ -1,5 +1,9 @@
 # Gaze agent and telemetry guide
 
+**Implemented — 2026-10-27 participant IPD metadata:** Trial Viewer intake records manually entered binocular distance IPD (mm), its source (pupillometer, ruler or participant report), and optional separate headset lens spacing. Enter/check these before creating the interview. The coded assignment carries them to participant/run `participant-fit-v1.json` and `trial_summary.json` (`participant_fit`). Flat exports expose `participant_ipd_mm`, `participant_ipd_source`, and `headset_lens_spacing_mm`; the viewer's joined Final data shows them. Missing/legacy entries stay unavailable. Availability flags govern raw JSON zero placeholders. No anatomical IPD is inferred from raw eye origins, and no hardware lens setting is read automatically. See [implementation and verification](../../work_log/2026-10-27-participant-ipd.md).
+
+**Implemented — 2026-10-26 provider default:** new sessions use Local MiniLM for adaptive assistance. Headset Settings can explicitly switch to Jev while paused and switch back; a new participant resets to MiniLM. Local mode uses the Mac service through ADB and does not silently fall back to Jev. It also uses prepared local round feedback and disables Jev's separate transmission/interruption advisors. Provider changes and accepted decisions retain their provenance. See [model setup and comparison](../testing/2026-10-26-headset-model-toggle.md).
+
 **Implemented — 2026-10-25:** active search guidance now uses the [adaptive Jev policy](09-adaptive-assistance.md), which controls observation timing and assistance strategy from recent behavior and cue responses. Earlier fixed-cadence descriptions below apply to the development baseline; target acquisition and local playback checks remain in force.
 
 ## Automatic entry eye alignment — October 23, 2026

@@ -51,6 +51,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
     string m_ActiveClipKey;
     string m_GuidanceDecisionId, m_PendingCorrectionDecisionId;
     public event Action<string, string, string, string> Telemetry;
+    public event Action<string, string, string> PhrasePlaybackStarted;
     public event Action<string> PlaybackFailed;
 
     [Serializable] class ClipAudit
@@ -82,6 +83,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
     {
         if (neutralOnly && onlyVoice.HasValue && onlyVoice.Value != VoiceCondition.Generic)
             throw new ArgumentException("Conflicting single-voice preparation options.");
+        double preparationStarted = Time.realtimeSinceStartupAsDouble;
         SessionConfig.LockPerspective();
         Stop();
         int preparationGeneration = m_PreparationGeneration;
@@ -117,6 +119,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         if (preparationGeneration != m_PreparationGeneration) yield break;
         bool success = true;
         int preparedLines = 0;
+        double frameStarted = Time.realtimeSinceStartupAsDouble;
         foreach (var job in downloads)
             if (job.error != null) { Fail(job.error); success = false; break; }
         foreach (var voice in m_LibraryVoices)
@@ -137,6 +140,8 @@ public partial class VoiceSynthesizer : MonoBehaviour
                 }
                 if (!string.IsNullOrEmpty(LastError)) { success = false; break; }
                 Report(PreparationStage, .45f + .45f * ++preparedLines / Math.Max(1, lines.Count));
+                if (Time.realtimeSinceStartupAsDouble - frameStarted >= .004)
+                { yield return null; if (preparationGeneration != m_PreparationGeneration) yield break; frameStarted = Time.realtimeSinceStartupAsDouble; }
             }
             if (!success) break;
         }
@@ -163,7 +168,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
             catch (Exception) { Debug.LogWarning($"{k_Tag} Could not persist preparation error."); }
         }
         // Publish the exact matched waveforms while Loading is still visible.
-        // One clip per frame avoids a whole-library serialization spike. Transfer
+        // Yield after a short batch to avoid whole-library serialization spikes. Transfer
         // acknowledgements never gate the participant's study.
         if (LibraryReady)
         {
@@ -171,12 +176,13 @@ public partial class VoiceSynthesizer : MonoBehaviour
             if (replay != null)
             {
                 int exported = 0;
+                frameStarted = Time.realtimeSinceStartupAsDouble;
                 foreach (var prepared in m_PreparedClips.Values)
                 {
                     replay.PrepareVoiceClip(prepared);
                     Report("Finishing audio setup", .94f + .05f * ++exported / Math.Max(1, m_PreparedClips.Count));
-                    yield return null;
-                    if (preparationGeneration != m_PreparationGeneration) yield break;
+                    if (Time.realtimeSinceStartupAsDouble - frameStarted >= .004)
+                    { yield return null; if (preparationGeneration != m_PreparationGeneration) yield break; frameStarted = Time.realtimeSinceStartupAsDouble; }
                 }
             }
             PreparationProgress = 1;
@@ -185,6 +191,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
             yield return null;
             if (preparationGeneration != m_PreparationGeneration) yield break;
         }
+        Debug.Log($"{k_Tag} Preparation completed: ready={LibraryReady}; lines={lines.Count}; seconds={Time.realtimeSinceStartupAsDouble - preparationStarted:F3}");
         done?.Invoke(LibraryReady);
     }
 
@@ -585,7 +592,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         int generation = m_PreparationGeneration;
         long playbackGeneration = m_PlaybackGeneration;
         // Defer once so Speak has stored the coroutine handle before any early exit.
-        yield return null;
+        if (!m_Preparing) yield return null;
         if (generation != m_PreparationGeneration || playbackGeneration != m_PlaybackGeneration) yield break;
         if (!silent) LastError = null;
         bool allowOnDemand = LibraryReady && m_OnDemandPhrases != null && m_OnDemandPhrases.Contains(text);
@@ -663,6 +670,16 @@ public partial class VoiceSynthesizer : MonoBehaviour
             bool validateTranscript = SessionConfig.ValidateVoiceTranscript;
             if (validateTranscript && !VoiceAudioVerification.HasReceipt(filePath, m_PreparingText))
             { Fail("Unverified audio cannot enter the playable library."); yield break; }
+            float[] cachedPcm = null; int cachedChannels = 0, cachedFrequency = 0;
+            bool decodedHit = false;
+            if (!wantSelfSimilar && NeutralDecodedAudio.TryLoad(filePath, out cachedPcm, out cachedChannels, out cachedFrequency))
+            {
+                decodedHit = true;
+                clip = AudioClip.Create(Path.GetFileNameWithoutExtension(filePath), cachedPcm.Length / cachedChannels,
+                    cachedChannels, cachedFrequency, false);
+                if (!clip.SetData(cachedPcm, 0)) { Destroy(clip); Fail("Could not load decoded neutral audio."); yield break; }
+            }
+            else
             using (var request = UnityWebRequestMultimedia.GetAudioClip("file://" + filePath, AudioType.MPEG))
             {
                 yield return request.SendWebRequest();
@@ -684,6 +701,11 @@ public partial class VoiceSynthesizer : MonoBehaviour
             }
             var samples = new float[clip.samples * clip.channels];
             if (!clip.GetData(samples, 0)) { RejectClip(clip, filePath, "Could not read decoded audio samples."); yield break; }
+            if (!wantSelfSimilar && !decodedHit)
+            {
+                try { NeutralDecodedAudio.Save(filePath, samples, clip.channels, clip.frequency); }
+                catch (Exception e) { Debug.LogWarning(k_Tag + " Optional decoded cache: " + e.GetType().Name); }
+            }
             // Raw provider caches stay untouched. Replay captures this processed clip;
             // normalization below measures the actual treated waveform in both modes.
             // FFT/filter work is pure PCM processing and can take hundreds of ms per
@@ -692,7 +714,8 @@ public partial class VoiceSynthesizer : MonoBehaviour
             int channels = clip.channels, frequency = clip.frequency;
             var input = samples;
             var processor = m_ProcessAudio;
-            var processing = Task.Run(() => processor(input, channels, frequency, wantSelfSimilar));
+            var processing = wantSelfSimilar ? Task.Run(() => processor(input, channels, frequency, true))
+                : Task.FromResult(InnerThoughtVoice.Process(input, channels, frequency, false));
             InnerThoughtVoice.Result treated;
             bool consumed = false;
             try
@@ -796,6 +819,7 @@ public partial class VoiceSynthesizer : MonoBehaviour
         }
         m_LastSpokenPhrase = m_PreparingText;
         m_AudioSource.Play();
+        PhrasePlaybackStarted?.Invoke(m_CurrentPhrase, m_PreparingText, m_CurrentContext);
         m_DecisionMemory.Started(m_PreparingText, m_CurrentContext, Time.realtimeSinceStartupAsDouble, GuidanceEvidence.guidanceState);
         AudioTelemetry("audio_playback_start", m_CurrentContext ?? "", m_ActiveClipKey, $"dsp_time={AudioSettings.dspTime:F6};perspective={actualPerspective};perspective_version={VoicePromptText.Version};effect_profile={InnerThoughtVoice.Profile(wantSelfSimilar)};text={m_PreparingText}");
         onGuidanceStarted?.Invoke();
@@ -830,13 +854,14 @@ public partial class VoiceSynthesizer : MonoBehaviour
     /// Generates a deterministic cache file path from the text content.
     /// Uses a simple hash to avoid filesystem issues with long/special-char filenames.
     /// </summary>
-    string GetCachePath(string text, string scope)
+    string GetCachePath(string text, string scope) => CachePathForPerspective(text, scope, SessionConfig.Perspective);
+    string CachePathForPerspective(string text, string scope, VoicePerspective perspective)
     {
         // Scope the key by voice so generic vs self-similar (and different clones)
         // never collide on identical hint text; include script mode/version even for shared lines.
         string model = k_Model;
         string keyed = ContentVersion + "|" + VoicePromptText.Version + "|" +
-            SessionConfig.Perspective + "|" + model + "|" + scope + "|" + text;
+            perspective + "|" + model + "|" + scope + "|" + text;
         using (var sha = SHA256.Create())
         {
             string hash = BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(keyed))).Replace("-", "").ToLowerInvariant();
