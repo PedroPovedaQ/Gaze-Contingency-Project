@@ -19,6 +19,7 @@ public sealed partial class TrialReviewApp
 
     void InitializeCatalog()
     {
+        if(m_CaptureMode) return;
         try
         {
             m_Catalog = new TrialReviewCatalog(CatalogPath);
@@ -44,6 +45,7 @@ public sealed partial class TrialReviewApp
     }
     void CatalogAction(Action action)
     {
+        if(m_CaptureMode) return;
         string datasetId = m_Dataset?.id;
         try { action(); m_Catalog.Save(); m_CatalogError = null; }
         catch (Exception error)

@@ -26,6 +26,8 @@ public sealed class TrialReviewCatalog
     public Document Data { get; private set; }
     public string FilePath { get; }
     string m_Saved;
+    public static TrialReviewCatalog DevelopmentFixture() => new TrialReviewCatalog();
+    TrialReviewCatalog() { Data = new Document(); }
     public TrialReviewCatalog(string path)
     {
         FilePath = Path.GetFullPath(path);
@@ -98,6 +100,7 @@ public sealed class TrialReviewCatalog
     }
     public void Save()
     {
+        if (FilePath == null) throw new InvalidOperationException("Development fixture cannot be saved.");
         string json = JsonUtility.ToJson(Data, true);
         if (json == m_Saved) return;
         // Multiple viewer versions may be open: never overwrite another window's edits.

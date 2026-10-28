@@ -32,6 +32,7 @@ public sealed partial class TrialReviewApp
 
     void InitializeLive(string[] args)
     {
+        if(m_CaptureMode) return;
         m_Endpoint = PlayerPrefs.GetString("LiveEndpoint", "");
         // Mono on macOS maps MyDocuments to HOME, so use the explicit Documents folder.
         m_LiveOutput = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Documents", "Trial Review Live");
@@ -45,6 +46,7 @@ public sealed partial class TrialReviewApp
     static string Argument(string value) => "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
     void ConnectLive()
     {
+        if(m_CaptureMode) return;
         if(m_DetachedReview) { m_Error="Live recording stays in the main window."; return; }
         try
         {
@@ -99,6 +101,7 @@ public sealed partial class TrialReviewApp
 
     void PollLive()
     {
+        if(m_CaptureMode) return;
         // Saved-only viewing does not need to touch the protected Documents archive.
         if(m_Bridge==null&&m_LiveStream==null)return;
         double now = Time.realtimeSinceStartupAsDouble;

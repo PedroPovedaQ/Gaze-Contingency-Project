@@ -110,6 +110,7 @@ public sealed partial class TrialReviewApp
 
     IEnumerator PlayIntakeFile(string name, AudioType type)
     {
+        if(m_CaptureMode) yield break;
         m_PromptPlaying = true;
         string session = m_Intake.id;
         using (var request=UnityWebRequestMultimedia.GetAudioClip(new Uri(Path.Combine(m_IntakeFolder,name)).AbsoluteUri,type))
@@ -129,6 +130,7 @@ public sealed partial class TrialReviewApp
 
     void StartParticipantAudio(string action)
     {
+        if(m_CaptureMode) return;
         if (m_IntakeAudioJob != null || !Consented) return;
         try
         {
@@ -144,6 +146,7 @@ public sealed partial class TrialReviewApp
 
     void PollParticipantAudio()
     {
+        if(m_CaptureMode) return;
         if (m_IntakeAudioJob == null || !m_IntakeAudioJob.HasExited) return;
         int code=m_IntakeAudioJob.ExitCode; m_IntakeAudioJob.Dispose(); m_IntakeAudioJob=null;
         ReloadIntake();

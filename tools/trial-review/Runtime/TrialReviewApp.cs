@@ -39,13 +39,21 @@ public sealed partial class TrialReviewApp : MonoBehaviour
     {
         Application.runInBackground = true;
         Application.targetFrameRate = 60;
-        gameObject.AddComponent<AudioListener>();
+        if (!m_CaptureMode) gameObject.AddComponent<AudioListener>();
         m_Volume = Mathf.Clamp01(PlayerPrefs.GetFloat("ViewerVoiceVolume", .8f));
         m_Muted = PlayerPrefs.GetInt("ViewerVoiceMuted", 0) != 0;
         AudioListener.volume = m_Muted ? 0 : m_Volume;
         m_Actors = new TrialReviewActors();
         m_Environment = new TrialReviewEnvironment();
         var args = Environment.GetCommandLineArgs();
+        if(m_CaptureMode)
+        {
+            m_Muted=true;m_Volume=0;
+            yield return Open(Path.Combine(Application.streamingAssetsPath,"Demo/recording.jsonl"));
+            if(m_Timeline==null) { Debug.LogError("Capture demo failed to load"); Application.Quit(1); yield break; }
+            m_Tracks.Refresh(m_Timeline);
+            yield return CaptureScreens(); yield break;
+        }
         m_DetachedReview = Array.IndexOf(args,"--review-window") >= 0;
         if(m_DetachedReview) { m_Muted=true; AudioListener.volume=0; }
         int browseRoot=Array.IndexOf(args,"--browse-root");
@@ -99,7 +107,7 @@ public sealed partial class TrialReviewApp : MonoBehaviour
             if (timeline.Trials.Count == 0) throw new InvalidDataException("Recording has no trial snapshots");
             if (hash != TrialReviewSummary.Hash(path)) throw new IOException("Recording changed while opening. Use a copied, stopped recording.");
             renderer = new TrialReplayRenderer(timeline) { RecordedHead = true, ShowGaze = false };
-            audio = new TrialReplayAudioPreview(timeline, new TrialReviewAudioOutput());
+            audio = new TrialReplayAudioPreview(timeline, m_CaptureMode ? (TrialReplayAudioPreview.IOutput)new CaptureSilentOutput() : new TrialReviewAudioOutput());
             m_Audio?.Dispose(); m_Renderer?.Dispose();
             m_Timeline = timeline; m_Renderer = renderer; m_Audio = audio; m_Correction = correction;
             InitializeRunExport();
@@ -120,6 +128,7 @@ public sealed partial class TrialReviewApp : MonoBehaviour
     }
     void Update()
     {
+        if(m_CaptureMode) { m_Tracks.Refresh(m_Timeline); return; }
         if (m_LiveOutput != null) PollLive();
         PollIntake();
         m_Tracks.Refresh(m_Timeline);

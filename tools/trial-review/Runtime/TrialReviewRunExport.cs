@@ -17,6 +17,7 @@ public sealed partial class TrialReviewApp
 
     void InitializeRunExport()
     {
+        if(m_CaptureMode) return;
         m_ParticipantName=PlayerPrefs.GetString(NameKey,"");
         m_RunCsvFolder="";m_StudyDataFolder="";m_RunCsvStatus="";
         m_Evaluation=null;m_Judge=null;m_JudgeFolder="";m_JudgeStatus="";m_EvaluationError="";m_JudgeRequested=false;m_EvaluationFolder="";
@@ -25,6 +26,7 @@ public sealed partial class TrialReviewApp
     }
     void UpdateRunExport()
     {
+        if(m_CaptureMode) return;
         if(!m_RunCsvRequested||RunCsvBusy||m_Loading||m_Timeline==null)return;
         if(m_ViewLive && (m_Timeline.Records.LastOrDefault()?.kind!="end" ||
             !ReceiverConnected || m_LiveStatus.pendingBytes>0 || m_LiveStatus.verifiedFiles<m_LiveStatus.files))return;
@@ -33,6 +35,7 @@ public sealed partial class TrialReviewApp
     }
     IEnumerator GenerateRunCsv()
     {
+        if(m_CaptureMode) yield break;
         var timeline=m_Timeline;string participantName=m_ParticipantName,expectedHash=m_ViewLive?null:m_Hash;
         string assignedId=AssignedParticipantId,datasetId=m_Dataset?.id??"",datasetName=DatasetName;
         m_RunCsvStatus="Generating condensed, round and full-run CSVs…";

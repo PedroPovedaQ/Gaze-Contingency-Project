@@ -110,6 +110,7 @@ public sealed partial class TrialReviewApp
 
     void OnGUI()
     {
+        if(m_CaptureMode && Event.current.type!=EventType.Layout && Event.current.type!=EventType.Repaint) return;
         Styles();
         // Keep controls comfortably sized on both retina and small desktop windows.
         float scale=Mathf.Min(Screen.width/1440f,Screen.height/900f);

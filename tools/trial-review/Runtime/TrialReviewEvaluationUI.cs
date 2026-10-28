@@ -70,6 +70,7 @@ public sealed partial class TrialReviewApp
     }
     void UpdateEvaluation()
     {
+        if(m_CaptureMode) return;
         // A bounded judge can outlive its viewer. Reopening must keep following
         // that worker's atomic progress report, even without owning its process.
         if(m_Evaluation!=null&&(string)m_Judge?["status"]=="pending"&&Time.unscaledTime>=m_NextJudgePoll)

@@ -70,6 +70,7 @@ public sealed partial class TrialReviewApp
     string IntakeKeys => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config/follow-my-voice/api_keys.json");
     void OpenIntake()
     {
+        if(m_CaptureMode) { m_IntakeOpen=true; return; }
         m_IntakeOpen = true;
         if (m_IntakeFolder == null)
         {
@@ -92,12 +93,14 @@ public sealed partial class TrialReviewApp
     }
     void ReloadIntake()
     {
+        if(m_CaptureMode) return;
         if (m_IntakeFolder == null || !File.Exists(Path.Combine(m_IntakeFolder, "session.json"))) return;
         try { m_Intake = JsonUtility.FromJson<IntakeState>(File.ReadAllText(Path.Combine(m_IntakeFolder, "session.json"))); }
         catch (Exception) { m_IntakeError = "Could not read the local interview session."; }
     }
     IntakeJob StartIntakeJob(string action, string audio = null, bool skip = false)
     {
+        if(m_CaptureMode) return null;
         try
         {
             Directory.CreateDirectory(m_IntakeFolder);
@@ -116,6 +119,7 @@ public sealed partial class TrialReviewApp
     }
     void PollIntake()
     {
+        if(m_CaptureMode) return;
         if (m_IntakeStarting || m_AnswerClip != null) return;
         if (Time.realtimeSinceStartupAsDouble < m_IntakePoll) return;
         m_IntakePoll = Time.realtimeSinceStartupAsDouble + .3;
@@ -161,6 +165,7 @@ public sealed partial class TrialReviewApp
     }
     IEnumerator StartAnswer()
     {
+        if(m_CaptureMode) yield break;
         if (!Consented || m_PromptPlaying || m_QuestionHeardRevision != m_Intake.promptRevision || string.IsNullOrEmpty(m_CaptureName)) yield break;
         m_IntakeStarting = true; m_InterviewSpeaker?.Stop(); m_Audio?.Stop(); m_Playing = false;
         yield return Application.RequestUserAuthorization(UserAuthorization.Microphone);
@@ -219,6 +224,7 @@ public sealed partial class TrialReviewApp
     }
     void SendIntake()
     {
+        if(m_CaptureMode) return;
         try
         {
             var state = m_LiveStatus.headsetState;
@@ -281,7 +287,7 @@ public sealed partial class TrialReviewApp
             {
                 if (m_AnswerClip == null && !busy)
                 {
-                    foreach (string device in Microphone.devices)
+                    foreach (string device in m_CaptureMode ? new[]{"Development microphone (inactive)"} : Microphone.devices)
                         if (GUILayout.Toggle((m_IntakeMic ?? (Microphone.devices.Length > 0 ? Microphone.devices[0] : "")) == device, device)) m_IntakeMic = device;
                 }
                 GUI.enabled = !busy && !m_PromptPlaying && Consented && m_QuestionHeardRevision == m_Intake.promptRevision && m_QuestionHeardRevision > 0;
@@ -316,7 +322,7 @@ public sealed partial class TrialReviewApp
             if (Button("Finish here / create another session")) { m_InterviewSpeaker?.Stop(); m_Intake = null; m_IntakeFolder = null; m_IntakePlayedRevision = 0; m_IntakeConsent = false; m_PendingAnswer = null; m_IntakeIpd = m_IntakeHeadsetIpd = ""; m_IntakeIpdSource = 0; PlayerPrefs.DeleteKey("ParticipantIntakeFolder"); m_IntakeCode = headset?.nextParticipantCode ?? "P001"; }
             GUI.enabled = true;
         }
-        if (!File.Exists(IntakeKeys)) GUILayout.Label("API configuration missing: " + IntakeKeys, m_Label);
+        if (!m_CaptureMode && !File.Exists(IntakeKeys)) GUILayout.Label("API configuration missing: " + IntakeKeys, m_Label);
         if (!string.IsNullOrEmpty(m_IntakeError)) GUILayout.Label(m_IntakeError, m_Label);
         GUILayout.EndScrollView();
         GUI.enabled = m_AnswerClip == null && !m_IntakeStarting;
