@@ -93,6 +93,8 @@ Sabouni et al. evaluated nonverbal proximity alerts during a VR search for targe
 
 Coughlan et al.'s CamIO system guided a tracked stylus toward points of interest on physical objects using cardinal-direction instructions~\cite{coughlan2020spatial}. Its feasibility study involved four blind participants. This provides a precedent for communicating spatial corrections through speech.
 
+Tanaka et al. compared three auditory guidance techniques in VR with eleven blind participants who reached for targets in arm-reachable space at three difficulty levels defined by target size~\cite{tanaka2026coarse}: continuous head-referenced spatial audio, an on-demand verbal mode that spoke hand-relative directions such as ``up,'' and an on-demand hand-referenced audio mode. The verbal mode yielded the lowest error rates, fastest completion, lowest workload, and strongest preference. The authors describe target acquisition as a multi-stage process in which spatial audio supports coarse localization and on-demand cues support correction near the target. This result directly supports spoken directions for the final, precise stage of finding a target. Its transfer to the present task is limited: their participants were blind and reached with the hand, requested verbal cues themselves, and received hand-relative directions, whereas Follow My Voice guides sighted, seated participants through visual search with agent-initiated, gaze-relative speech.
+
 \paragraph{Design synthesis for the voice comparison.}
 The agent first helps locate the relevant wall, then narrows the search within it; the participant confirms the inferred target with the right trigger. The target's initially hidden identity gives the voice an ongoing instructional role, unlike a single announcement supplementing a known target.
 
@@ -128,7 +130,7 @@ Table~\ref{tab:related-work-map} summarizes what each selected research strand c
 \begin{tabularx}{\linewidth}{@{}p{0.26\linewidth}XX@{}}\toprule
 Research strand & Relevance to this project & Boundary of transfer \\\midrule
 Self-similar voice~\cite{kao2021selfsimilar,guo2024doppelganger} & Motivates the voice manipulation and both favorable and adverse experience measures. & Educational or embodied collaboration tasks do not establish a search-speed benefit here. \\
-Auditory and staged gaze guidance~\cite{losing2014guiding,kwok2022twostep} & Supports investigating gaze-dependent, coarse-to-fine assistance. & Does not validate this headset, phrase policy, or gate durations. \\
+Auditory and staged gaze guidance~\cite{losing2014guiding,kwok2022twostep,tanaka2026coarse} & Supports investigating gaze-dependent, coarse-to-fine assistance. & Does not validate this headset, phrase policy, or gate durations. \\
 Spatially grounded guidance~\cite{kim2026spatialaudio,kim2026speechtospatial} & Supports anchoring spoken instructions to current scene geometry, with sound supplying coarse direction. & Remote-assistance and brief-cue localization studies do not test a guiding voice's identity or gaze-contingent timing. \\
 AR search and task feedback~\cite{zhang2023seehear} & Separates in-task cues from post-task feedback. & Known-target task and feedback manipulation differ from this hidden-target voice comparison. \\
 Context-aware XR agents~\cite{bovo2025embardiment} & Motivates explicit recent context for state-dependent assistance. & Does not establish an independent benefit of this bounded memory. \\
