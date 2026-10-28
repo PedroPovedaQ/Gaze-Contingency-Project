@@ -51,6 +51,62 @@ Total per block reference & 65 & 130 numeric ratings across two references, befo
 \end{tabularx}
 \end{table}
 
-\subsection{Measurement Quality}
-Following eye-tracking reporting guidance~\cite{dunn2024reporting,niehorster2026dataquality}, tracking validity, observation age, data coverage, gaps and spatial-validation error accompany gaze-derived measures. Ray intersections and vicinity hits are reported as interaction events rather than fixations. Native eye-tracker sampling frequency is not inferred from render-frame observations. Pupil-based workload inference and fixation/saccade outcomes will be included only after independent validation. Trial performance and subjective summaries remain linked to separate raw gaze, motion and event records through participant, session, block and trial identifiers. Scale metadata distinguishes the present 0--10 workload form from any earlier exports using another range.
+\section{Validating the Measures}
+\label{sec:measure-validation}
+A measure can fail in two different ways. It can be computed incorrectly, for example by counting pause time as search time or treating a missing gaze sample as a valid one. Or it can be computed exactly as defined and still not reflect the construct it is meant to capture, as when a ray intersection is read as a fixation or a pupil signal driven by luminance is read as workload. The first is a question of verification; the second is a question of validation. Follow My Voice addresses both at four levels: automated tests with known answers, reconstruction of each trial from its raw records, validation of the eye tracker for each participant, and a dedicated validation session for the eye-event and pupil measures. Table~\ref{tab:measure-validation} summarizes the evidence each measure requires before it enters confirmatory analysis, and its current status.
 
+\begin{table}[htbp]
+\centering
+\caption[How each measure is verified and validated]{How each measure is verified and validated. Verification asks whether a value is computed as defined; validation asks whether it reflects the intended construct on this apparatus.}
+\label{tab:measure-validation}
+\small
+\tagpdfsetup{table/header-rows={1}}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.2\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.18\linewidth}@{}}
+\toprule
+Measure & Verification & Validation & Status \\\midrule
+Active completion time, missed targets & Tests with known clocks, pauses, deadlines, and failures; trial replay & Pilot reconstruction of observed sessions & Tests implemented; pilot pending \\
+Gaze and controller contact times & Tests for validity, gaps, and identity conflicts; trial replay & Per-participant spatial validation & Tests implemented; wearer validation pending \\
+Instruction counts and speech timing & Counts from recorded playback starts; tests separate requests from delivery & Pilot review of audio timing and wording & Tests implemented; pilot pending \\
+Fixations, saccades & Tests with known synthetic events & Eye validation session with independent annotation and held-out thresholds & Exploratory until validated \\
+IPA & Tests of the wavelet calculation and segment screens & Easy/hard arithmetic contrast with luminance and gaze-angle controls & Exploratory until validated \\
+NASA-TLX, IMI, agent perception, ARQ & Scoring tests with explicit scale bounds & Established or published instruments; pilot comprehension check & Scoring implemented; pilot pending \\
+Custom voice items & Stored and reported per item & No combined score; perceived similarity serves as a manipulation check & Item-level only \\\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Computational Verification}
+Every derived measure is computed by analysis code that is exercised by automated tests on inputs whose correct output is known in advance. The tests encode the definitions in Section~\ref{ch:measurement} as checkable cases.
+\begin{itemize}
+\item \textbf{Fixations, saccades and head turns.} Synthetic gaze streams containing two known fixations must yield exactly those fixations. A known saccade must be detected, while a head turn must be excluded.
+\item \textbf{Trial clocks.} Recorded pause intervals must be removed from the active-search clock. A 25-second timeout must remain a timeout rather than a selection. A technical failure must not be counted as a missed target.
+\item \textbf{Missing data.} Unknown tracking must never become valid gaze. Missing values must remain missing rather than becoming zero, while an observed zero is retained.
+\item \textbf{Inconsistent inputs.} The export refuses inconsistent inputs, such as conflicting target identities, two recordings for one trial, or a regressing clock, rather than producing a value from them.
+\item \textbf{Questionnaire scoring.} NASA-TLX scoring must reject unknown scale directions and unsupported ranges instead of guessing.
+\item \textbf{Session schedule.} Schedule checks confirm the trial allocation for both voice orders.
+\end{itemize}
+These tests establish that the code implements its definitions. They do not show that the definitions measure what they are intended to measure.
+
+\subsection{Reconstruction Checks}
+Trial summaries are derived from, and stored separately from, the frame-level gaze, motion, and event records (Figure~\ref{fig:data-provenance}). Every exported value can therefore be traced to the observations it came from. Trial Review replays a trial on a common timeline with the reconstructed scene, the recorded gaze and controller rays, guidance transitions, model decisions, and speech playback (Section~\ref{sec:trial-review}). A reviewer can step to the frame at which the export places a target contact, selection, or speech onset and confirm that the event occurred there. Instruction counts come from recorded playback starts rather than from requested cues, so a cue that was requested but never played does not count as delivered guidance. Before confirmatory recruitment, pilot sessions confirm that trial events can be reconstructed from the saved data for sessions whose course is directly observed (Section~\ref{sec:pilot}).
+
+\subsection{Eye-Tracker Validation for Each Participant}
+Gaze-derived measures are only as accurate as the gaze signal. After the headset is fitted, vendor calibration is followed by an independent spatial check: the participant looks at targets at known positions, and the angular error between the recorded gaze direction and the true target direction is computed. Following eye-tracking reporting guidance~\cite{dunn2024reporting,niehorster2026dataquality}, accuracy (the average offset) and precision (the sample-to-sample spread) are reported separately. A stable offset and a noisy signal produce different guidance failures even when their mean errors are similar. Invalid observations are excluded from the error distribution but counted in availability summaries. If an offset correction is applied, the targets used to fit it are kept separate from those used to judge it.
+
+The effective acquisition rate is estimated from distinct source observations rather than from rendered frames (Section~\ref{ch:measurement}). Because the headset does not currently expose native capture timestamps, a 120-Hz rate is not assumed. Tracking validity, data coverage, and gaps accompany every gaze-derived measure. Ray intersections and vicinity hits are reported as interaction events, not fixations.
+
+\subsection{Eye Validation Session}
+Fixation, saccade, and pupil measures require evidence that a test with synthetic data cannot provide. They are therefore validated with a separate in-headset session controlled from Trial Review, in which every stimulus has a known position, timing, or difficulty. The session contains seven groups of exercises:
+\begin{itemize}
+\item \textbf{Spatial accuracy.} Twenty-seven fixation dots, at three distances (1.2, 2.4, and 3.2~m), three horizontal angles ($-15^\circ$, $0^\circ$, $+15^\circ$), and three vertical angles ($-10^\circ$, $0^\circ$, $+10^\circ$), measure accuracy and precision across the region in which targets appear.
+\item \textbf{Fixations and saccades.} A 20-second steady fixation and 24 cued jumps between eight known positions provide fixation periods and gaze shifts with known onset and amplitude. These are compared with the dispersion-based fixation detector and the velocity-based saccade detector~\cite{salvucci2000fixations}. A dot jump is a cue rather than a measured saccade, so detector output is also compared with independent annotation of the recorded traces, and the detector thresholds are evaluated on data held out from threshold selection.
+\item \textbf{Controls for false events.} Cued blinks, a slow head turn while the eyes hold a world-fixed dot, and smooth pursuit of a moving dot test whether blinks, head motion, or pursuit are mistaken for fixations or saccades.
+\item \textbf{Pupil confounds.} Background luminance changes and steady gaze at different horizontal angles measure how much pupil size, and therefore IPA, changes for reasons unrelated to workload.
+\item \textbf{Workload contrast.} Four counterbalanced blocks of easy and hard mental arithmetic, with recorded answers and difficulty ratings, provide a manipulation with known difficulty. IPA~\cite{duchowski2018ipa} is treated as a workload indicator for this apparatus only if it separates hard from easy arithmetic by more than the variation produced by the luminance and gaze-angle controls.
+\item \textbf{Practice search.} Short practice searches in a separate environment check selection behavior.
+\item \textbf{Drift check.} Five final dots measure drift without fitting a new correction.
+\end{itemize}
+
+The session is implemented and was first run with a wearer on October 27, 2026, when a development participant completed the five drift targets with in-headset confirmation. The spatial, saccade, control, and arithmetic exercises have not yet been completed with a wearer. The session report therefore records the measurements as not validated. Acceptance criteria for the detectors and for IPA will be fixed from pilot data before confirmatory analysis. Until those criteria are met, fixation counts, saccade rates, and IPA are reported as exploratory, and final fixation duration on the target remains unavailable (Section~\ref{ch:measurement}).
+
+\subsection{Questionnaire Measures}
+NASA-TLX~\cite{hart1988nasatlx} and the published instruments in Table~\ref{tab:battery} are used with their established item structure. The ARQ items are taken from Venkatakrishnan et al.~\cite{venkatakrishnan2026clarifying}. Wording adapted from an embodied agent to a voice agent is documented in Appendix~\ref{app:instruments}. Scale metadata distinguishes the present 0--10 workload form from earlier exports that used another range, so responses are never rescaled implicitly. The custom voice and assistance items have no prior validation. They are therefore analyzed as individual items, with no combined score, and perceived voice similarity serves as a manipulation check rather than an outcome. Pilot sessions measure survey comprehension and completion time before recruitment.
