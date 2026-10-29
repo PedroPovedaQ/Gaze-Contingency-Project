@@ -111,6 +111,6 @@ d.line(270,285,400,340);d.line(730,285,600,340)
 d.box(230,340,540,115,'Paired contribution to the study estimate',['Counterbalanced order + participant clustering','Separate performance and questionnaire models'])
 d.text(500,545,'Repeat across participants; determine sample size through a prospective power analysis.',20,anchor='middle');d.save('analysis-units')
 # Normalize font aliases in reused editable sources too.
-for name in ['study-procedure-current','voice-guidance-memory-architecture']:
+for name in ['voice-guidance-memory-architecture']:  # study-procedure-current: generate-study-procedure.py
  p=F/f'{name}.svg';s=p.read_text().replace('font-family: Helvetica-Bold;', 'font-family: Helvetica; font-weight: bold;');p.write_text(s);cairosvg.svg2pdf(bytestring=s.encode(),write_to=str(F/f'{name}.pdf'))
 print('Generated 10 new vector figures and refreshed 2 reused vectors.')
