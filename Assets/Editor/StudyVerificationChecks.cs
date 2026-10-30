@@ -9,6 +9,7 @@ public static class StudyVerificationChecks
     public static void Run()
     {
         if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play mode before verification.");
+        ScheduleChecks.Run();
         GazeQualityChecks.Run();
         GazeWallFilterChecks.Run();
         ControllerSelectionChecks.Run();

@@ -15,6 +15,18 @@ class DesktopRunExportTests(unittest.TestCase):
         self.recording = self.fixture.package / "recording.jsonl"
         self.output = self.fixture.root / "exports"
 
+    def test_current_and_legacy_schedule_metadata_survive_export(self):
+        for version,size in (("readiness-target-angle-v8-signed-steps-32-one-practice",32),
+                             ("readiness-target-angle-v7-one-practice",40)):
+            self.fixture.summary.update(challenge_set=version,rounds_per_block=size,nominal_total_rounds=2*size)
+            for i,record in enumerate(self.fixture.summary['objectives']):
+                record.update(index=size-1+i,block=i,voice_condition='selfsimilar' if i==0 else 'neutral-male')
+            self.fixture.save()
+            folder=export_run.generate(self.recording,self.output/version)
+            with (folder/'trials.csv').open(newline='') as file: rows=list(csv.DictReader(file))
+            self.assertEqual([r['schedule_version'] for r in rows],[version,version])
+            self.assertEqual([int(r['block_index']) for r in rows],[0,1])
+
     def test_names_rounds_combined_cache_and_unchanged_ids(self):
         original = self.recording.read_bytes()
         folder = export_run.generate(self.recording, self.output, 'Alex, "A"')

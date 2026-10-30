@@ -1,0 +1,123 @@
+{
+  "participant": "SCHEDULE_V8_SYNTHETIC",
+  "seed": 1178684363,
+  "schedule": "readiness-target-angle-v8-signed-steps-32-one-practice",
+  "allocation": [
+    {
+      "block": 0,
+      "signed_theta": 0,
+      "total": 4,
+      "above": 2,
+      "below": 2
+    },
+    {
+      "block": 0,
+      "signed_theta": 45,
+      "total": 4,
+      "above": 2,
+      "below": 2
+    },
+    {
+      "block": 0,
+      "signed_theta": -45,
+      "total": 4,
+      "above": 2,
+      "below": 2
+    },
+    {
+      "block": 0,
+      "signed_theta": 90,
+      "total": 4,
+      "above": 2,
+      "below": 2
+    },
+    {
+      "block": 0,
+      "signed_theta": -90,
+      "total": 4,
+      "above": 2,
+      "below": 2
+    },
+    {
+      "block": 0,
+      "signed_theta": 135,
+      "total": 4,
+      "above": 2,
+      "below": 2
+    },
+    {
+      "block": 0,
+      "signed_theta": -135,
+      "total": 4,
+      "above": 2,
+      "below": 2
+    },
+    {
+      "block": 0,
+      "signed_theta": 180,
+      "total": 4,
+      "above": 2,
+      "below": 2
+    },
+    {
+      "block": 1,
+      "signed_theta": 0,
+      "total": 4,
+      "above": 2,
+      "below": 2
+    },
+    {
+      "block": 1,
+      "signed_theta": 45,
+      "total": 4,
+      "above": 2,
+      "below": 2
+    },
+    {
+      "block": 1,
+      "signed_theta": -45,
+      "total": 4,
+      "above": 2,
+      "below": 2
+    },
+    {
+      "block": 1,
+      "signed_theta": 90,
+      "total": 4,
+      "above": 2,
+      "below": 2
+    },
+    {
+      "block": 1,
+      "signed_theta": -90,
+      "total": 4,
+      "above": 2,
+      "below": 2
+    },
+    {
+      "block": 1,
+      "signed_theta": 135,
+      "total": 4,
+      "above": 2,
+      "below": 2
+    },
+    {
+      "block": 1,
+      "signed_theta": -135,
+      "total": 4,
+      "above": 2,
+      "below": 2
+    },
+    {
+      "block": 1,
+      "signed_theta": 180,
+      "total": 4,
+      "above": 2,
+      "below": 2
+    }
+  ],
+  "identities_per_block": 24,
+  "single_identities_per_block": 16,
+  "doubled_identities_per_block": 8,
+  "python_validator_errors": []
+}

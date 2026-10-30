@@ -4,36 +4,35 @@ using UnityEngine;
 /// <summary>
 /// Deterministic challenge definitions for the conjunction search experiment.
 ///
-/// Design: 80 measured rounds total per session, plus separate practice.
+/// Design: 64 measured rounds total per session, plus separate practice.
 /// The agent is gaze-contingent in every round, in either voice condition.
 ///
-/// Seeded per participant, with equal absolute target-wall angle counts in both
+/// Seeded per participant, with equal signed target-wall step counts in both
 /// blocks. Each block independently shuffles balanced directions and order.
 /// </summary>
 public static class ChallengeSet
 {
     // Two voice blocks; guidance remains gaze-contingent throughout.
-    public const int RoundsPerBlock = 40;
+    public const int RoundsPerBlock = 32;
     public const int BlockCount = 2;
     public const int PracticeTrialCount = 1;
-    public const int TotalRounds = RoundsPerBlock * BlockCount; // 80
+    public const int TotalRounds = RoundsPerBlock * BlockCount; // 64
     public const int ObjectsPerRound = 168;
     public static string ScheduleVersion => SessionConfig.DevelopmentQuickTest
-        ? "readiness-target-angle-v7-quick-origin0"
-        : "readiness-target-angle-v7-one-practice";
-    public const string TargetIdentityPolicy = "matched-counts-shuffled-24-plus-16-v1";
-    public const string HeightAssignmentPolicy = "four-above-four-below-per-angle-v1";
+        ? "readiness-target-angle-v8-signed-steps-32-quick-origin0"
+        : "readiness-target-angle-v8-signed-steps-32-one-practice";
+    public const string TargetIdentityPolicy = "matched-counts-shuffled-24-plus-8-v1";
+    public const string HeightAssignmentPolicy = "two-above-two-below-per-signed-step-v1";
     public const string ThetaReference = "pre_cue_eye_origin_to_readiness_cross";
-    public const string DirectionPolicy = "independent-blocks-four-left-four-right-v1";
-    const int k_AngleCategories = 5;
+    public const string DirectionPolicy = "independent-blocks-four-per-signed-step-v1";
     const int k_PlaneCount = 8;
     const int k_ObjectsPerPlane = ObjectsPerRound / k_PlaneCount;
-    // Optional short test run: 0 means use all 80 trials. A shorter run will not
+    // Optional short test run: 0 means use all 64 trials. A shorter run will not
     // necessarily finish both blocks or preserve the completed-trial angle balance.
     public static int DebugRoundCountOverride { get; set; }
 
     // How many measured trials the game will actually run. Clamp keeps a debug
-    // request inside 1–80; it does not change the full plan generated below.
+    // request inside 1–64; it does not change the full plan generated below.
     public static int RoundCount => System.Math.Min(SessionConfig.DevelopmentQuickTest ? RoundsPerBlock : TotalRounds,
         DebugRoundCountOverride > 0
             ? Mathf.Clamp(DebugRoundCountOverride, 1, TotalRounds)
@@ -62,7 +61,7 @@ public static class ChallengeSet
     // target wall/slot, geometry seed, and the pair linking it to the other block.
     public struct RoundDef
     {
-        public int roundIndex;       // 0-79
+        public int roundIndex;       // 0-63
         public int blockIndex;       // 0-1: counterbalanced voice blocks
         public ObjectDef target;
         public ObjectDef[] objects;  // all 168
@@ -135,8 +134,7 @@ public static class ChallengeSet
         foreach (var round in Rounds)
         {
             // Use the saved voice-block assignment, not whichever voice is speaking
-            // right now. Trial/block indices start at 0. % 40 gives position within
-            // the block: overall trial index 43 becomes position 3 in block 1.
+            // right now. Trial/block indices start at 0; modulo gives the position within a block.
             string voice = SessionConfig.VoiceBlocksEnabled ? SessionConfig.VoiceLabelForRound(round.roundIndex) : SessionConfig.VoiceTag;
             writer.WriteLine(System.FormattableString.Invariant($"{SessionConfig.ParticipantId},{ScheduleVersion},{ScheduleSeed},{round.roundIndex},{round.blockIndex},{round.roundIndex % RoundsPerBlock},{voice},{round.anglePair},{round.targetPlane},{round.targetPlane * 45},{round.SignedTheta},{round.AbsoluteTheta},{round.targetSlot},{round.layoutSeed},{round.target.shape},{round.target.color},{(round.roundIndex < RoundCount ? 1 : 0)},{round.startPlane},{round.startPlane * 45},{ThetaReference},{TargetIdentityPolicy},{HeightAssignmentPolicy},{DirectionPolicy},{round.targetHeightFraction:R},{round.crossOffsetFraction:R}"));
         }
@@ -166,7 +164,7 @@ public static class ChallengeSet
     /// <summary>
     /// Build the single practice trial (practiceIndex 0) using a practice-only seed.
     /// Route its voice through measured round 0, so it follows the assigned first block.
-    /// Practice does not consume any of the eighty measured trials or angle quotas.
+    /// Practice does not consume any of the sixty-four measured trials or angle quotas.
     /// </summary>
     public static RoundDef PracticeRound(int practiceIndex)
     {
@@ -195,8 +193,8 @@ public static class ChallengeSet
     }
 
     /// <summary>
-    /// Build all eighty measured trials: balance angle categories, choose directions,
-    /// shuffle each block, repeat identities with equal counts in both voice blocks,
+    /// Build all sixty-four measured trials: balance angle categories, choose directions,
+    /// shuffle each block, use each identity at least once in each voice block,
     /// and place each trial's sole target on its assigned wall.
     /// This chooses wall/slot and a layout seed; RotationalSearchLayout.Build uses
     /// that seed to scatter actual positions and heights within the wall boundaries.
@@ -207,64 +205,40 @@ public static class ChallengeSet
         s_NeutralQuickTest = SessionConfig.DevelopmentQuickTest;
         var rng = new System.Random(ScheduleSeed);
 
-        // 1. Make forty angle assignments. These numbers are units of 45°, not degrees:
-        //    0, 1, 2, 3, 4 mean 0°, 45°, 90°, 135°, 180°. Repeat eight times for equal counts.
-        //    Each assignment gets an allocation ID for audit after shuffling.
-        var magnitudes = new int[RoundsPerBlock];
-        for (int i = 0; i < magnitudes.Length; i++) magnitudes[i] = i % k_AngleCategories;
-        // Direction and height quotas are independently shuffled in each block.
-        // anglePair is retained as an allocation ID, not a mirrored-trial promise.
+        // Four copies of each signed wall step, in four independently shuffled
+        // eight-trial groups. Allocation IDs survive shuffling for audit only.
+        int[] signedSteps = { 0, 1, -1, 2, -2, 3, -3, 4 };
         var turnSteps = new int[TotalRounds];
         var heights = new float[TotalRounds];
-        for (int block = 0; block < BlockCount; block++)
-        for (int magnitude = 0; magnitude < k_AngleCategories; magnitude++)
-        {
-            var signs = new int[] { 1, 1, 1, 1, -1, -1, -1, -1 };
-            var sides = new int[] { 1, 1, 1, 1, -1, -1, -1, -1 };
-            Shuffle(signs, rng); Shuffle(sides, rng);
-            for (int copy = 0; copy < 8; copy++)
-            {
-                int index = block * RoundsPerBlock + magnitude + copy * k_AngleCategories;
-                turnSteps[index] = (8 + magnitude * signs[copy]) % 8;
-                // Random heights, at least 10% of the vertical range from the cross.
-                heights[index] = .5f + sides[copy] * (float)(.1 + rng.NextDouble() * .35);
-            }
-        }
-
-        // 2. Randomize each five-trial group separately. Each group contains one of
-        // every |theta|, so early trials cannot exhaust the 0°/45° quota in a cluster.
-        // Shuffle the eight copies of each magnitude across groups, then use
-        // Fisher–Yates within each group. Block two independently orders the same
-        // allocation IDs; directions are balanced independently.
         var pairOrder = new int[TotalRounds];
         for (int block = 0; block < BlockCount; block++)
         {
             int start = block * RoundsPerBlock;
-            int groups = RoundsPerBlock / k_AngleCategories;
-            for (int magnitude = 0; magnitude < k_AngleCategories; magnitude++)
+            for (int step = 0; step < signedSteps.Length; step++)
             {
-                var copies = new int[groups];
-                for (int copy = 0; copy < groups; copy++) copies[copy] = magnitude + copy * k_AngleCategories;
+                var sides = new int[4];
+                for (int copy = 0; copy < 4; copy++) sides[copy] = copy < 2 ? 1 : -1;
+                Shuffle(sides, rng);
+                var copies = new int[] { 0, 1, 2, 3 };
                 Shuffle(copies, rng);
-                for (int group = 0; group < groups; group++)
-                    pairOrder[start + group * k_AngleCategories + magnitude] = copies[group];
-            }
-            for (int group = 0; group < groups; group++)
-            {
-                int offset = start + group * k_AngleCategories;
-                for (int i = k_AngleCategories - 1; i > 0; i--)
+                for (int copy = 0; copy < 4; copy++)
                 {
-                    int j = rng.Next(i + 1);
-                    (pairOrder[offset + i], pairOrder[offset + j]) = (pairOrder[offset + j], pairOrder[offset + i]);
+                    int allocation = step + copy * 8;
+                    turnSteps[start + allocation] = (8 + signedSteps[step]) % 8;
+                    heights[start + allocation] = .5f + sides[copy] * (float)(.1 + rng.NextDouble() * .35);
+                    pairOrder[start + copy * 8 + step] = step + copies[copy] * 8;
                 }
+            }
+            for (int group = 0; group < 4; group++)
+            for (int i = 7; i > 0; i--)
+            {
+                int offset = start + group * 8, j = rng.Next(i + 1);
+                (pairOrder[offset + i], pairOrder[offset + j]) = (pairOrder[offset + j], pairOrder[offset + i]);
             }
         }
 
-        // 3. List all 6 shapes × 4 colors = 24 possible targets. Both blocks use
-        // all 24 once, plus the same seeded subset of 16 a second time. Each bag
-        // is independently shuffled, with no immediate repeat at bag boundaries.
-        // Thus both voices have identical identity counts, without claiming 80
-        // globally unique targets or pairing exact geometry/identity across voices.
+        // Both voices receive all 24 identities plus the same seeded subset of eight.
+        // Shuffle each bag independently and avoid immediate repeats at boundaries.
         var allTargets = new List<(int si, int ci)>();
         for (int si = 0; si < Shapes.Length; si++)
             for (int ci = 0; ci < ColorNames.Length; ci++)
@@ -348,8 +322,8 @@ public static class ChallengeSet
             int destination = plane * k_ObjectsPerPlane + slot;
             (objects[targetIndex], objects[destination]) = (objects[destination], objects[targetIndex]);
 
-            // 6. Save the trial. Integer division r / 40 maps indices 0–39 to block 0
-            // and 40–79 to block 1. The layout seed controls the separate horizontal
+            // 6. Save the trial. Integer division maps indices 0–31 to block 0
+            // and 32–63 to block 1. The layout seed controls the separate horizontal
             // position draws. Readiness completion constrains the target bearing using
             // the valid eye origin before the opening cue. Actual positions are logged.
             // Random draws can collide. Retry so every trial really has a distinct

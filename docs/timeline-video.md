@@ -1,5 +1,7 @@
 # Run video in the trial timeline
 
+**Implemented — October 30, 2026:** the current schedule is 64 measured trials (32 per voice), plus one practice: four per signed step, absolute-angle counts 4/8/8/8/4, and 16 above/16 below with two of each per signed step. All 24 identities occur per block; eight repeat. See [current schedule](balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v8.
+
 **Implemented locally — October 1, 2026.** The browser timeline imports a saved replay JSONL, displays its recorded scene overview and exact source samples, and can display a locally selected headset video alongside them. One video and alignment belong to one recording; switching its trials seeks within the same recording. This extends [#37](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/37). It does not start video capture, render Unity video from telemetry, or add video to the performance CSV.
 
 ## Open a run

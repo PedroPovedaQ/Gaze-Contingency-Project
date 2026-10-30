@@ -1,0 +1,74 @@
+Managed Stacktrace:
+=================================================================
+	  at <unknown> <0xffffffff>
+	  at UnityEngine.Rendering.ScriptableRenderContext:Submit_Internal <0x00007>
+	  at UnityEngine.Rendering.ScriptableRenderContext:Submit <0x0001f>
+	  at UnityEngine.Rendering.Universal.UniversalRenderPipeline:RenderSingleCamera <0x00ab3>
+	  at UnityEngine.Rendering.Universal.UniversalRenderPipeline:RenderCameraStack <0x00a9f>
+	  at UnityEngine.Rendering.Universal.UniversalRenderPipeline:Render <0x0027b>
+	  at UnityEngine.Rendering.RenderPipeline:InternalRender <0x00057>
+	  at UnityEngine.Rendering.RenderPipelineManager:DoRenderLoop_Internal <0x0010f>
+	  at <Module>:runtime_invoke_void_object_intptr_object_AtomicSafetyHandle <0x00093>
+	  at <unknown> <0xffffffff>
+	  at UnityEngine.Camera:Render_Injected <0x00007>
+	  at UnityEngine.Camera:Render <0x0006f>
+	  at GazeQualityChecks:CaptureVicinityRing <0x00347>
+	  at GazeQualityChecks:CheckPointingVicinity <0x0144f>
+	  at GazeQualityChecks:Run <0x00ddb>
+	  at StudyVerificationChecks:Run <0x00017>
+	  at System.Object:runtime_invoke_void <0x00067>
+=================================================================
+Obtained 49 stack frames.
+#0  0x0000010382de68 in GfxDevice::DrawSharedGeometryJobs(DynamicVBOBuffer const&, unsigned int, DynamicVBOBuffer const&, unsigned int, GeometryJobFence, DrawBuffersRange const*, unsigned long, VertexDeclaration*)
+#1  0x00000103327f94 in void DrawUtil::DrawLineOrTrailFromNodeQueue<(SpriteMaskInteraction)0>(RenderNodeQueue const&, unsigned int, VertexInputMasks, int)
+#2  0x0000010323f9dc in BatchRenderer::Flush(BatchBreakCause)
+#3  0x0000010323fdc0 in BatchRenderer::EndLoopFlush()
+#4  0x0000010347c7d4 in ScriptableRenderLoopDraw(ScriptableLoopObjectData const*, unsigned long, SharedRendererScene const&, DrawRenderersCommand const&, ShaderPassContext&, GfxDevice&, int)
+#5  0x00000103483d8c in ScriptableRenderLoopJob(GfxDeviceAsyncCommand::ArgScratch*, GfxDeviceAsyncCommand::Arg const*)
+#6  0x00000103832bc0 in GfxDevice::ExecuteAsync(int, void (*)(GfxDeviceAsyncCommand::ArgScratch*, GfxDeviceAsyncCommand::Arg const*), GfxDeviceAsyncCommand::ArgScratch**, GfxDeviceAsyncCommand::Arg const*, JobFence const&)
+#7  0x000001034804a0 in ScheduleRenderJobs(unsigned int, ScriptableRenderContextArg const*, JobFence const&)
+#8  0x00000103480054 in ExecuteDrawRenderersCommand(ScriptableRenderContextArg*)
+#9  0x0000010346cef0 in ScriptableRenderContext::ExecuteRendererList(RendererList)
+#10 0x000001033c9694 in RenderingCommandBuffer::ExecuteCommandBufferWithState(ShaderPassContext&, RenderNodeQueue&, RenderingCommandBufferState*, unsigned int, ComputeQueueType) const
+#11 0x000001033c6f6c in RenderingCommandBuffer::ExecuteCommandBuffer(ShaderPassContext&, RenderNodeQueue&, unsigned int, core::vector<std::__1::pair<ShaderLab::FastPropertyName, RenderTexture*>, core::allocator<std::__1::pair<ShaderLab::FastPropertyName, RenderTexture*>, 0ul>>*, ComputeQueueType, RenderTexture*) const
+#12 0x0000010346a9bc in ScriptableRenderContext::ExecuteScriptableRenderLoop()
+#13 0x0000700fea750c in  (wrapper managed-to-native) UnityEngine.Rendering.ScriptableRenderContext:Submit_Internal (UnityEngine.Rendering.ScriptableRenderContext&) [{0x7b8a69d110} + 0x64]  (0x700fea74a8 0x700fea756c) [0x1587c2a80 - Unity Child Domain]
+#14 0x0000700fea7438 in  UnityEngine.Rendering.ScriptableRenderContext:Submit () [{0x7b8a422720} + 0x20] [/Users/bokken/build/output/unity/unity/Runtime/Export/RenderPipeline/ScriptableRenderContext.cs :: 147u] (0x700fea7418 0x700fea7448) [0x1587c2a80 - Unity Child Domain]
+#15 0x0000700fdd0ab4 in  UnityEngine.Rendering.Universal.UniversalRenderPipeline:RenderSingleCamera (UnityEngine.Rendering.ScriptableRenderContext,UnityEngine.Rendering.Universal.UniversalCameraData) [{0x7b8a3d75b0} + 0xab4] [./Library/PackageCache/com.unity.render-pipelines.universal@37e0d4fc2503/Runtime/UniversalRenderPipeline.cs :: 922u] (0x700fdd0000 0x700fdd0b94) [0x1587c2a80 - Unity Child Domain]
+#16 0x0000700eb71780 in  UnityEngine.Rendering.Universal.UniversalRenderPipeline:RenderCameraStack (UnityEngine.Rendering.ScriptableRenderContext,UnityEngine.Camera,bool) [{0x7b8a3d6c60} + 0xaa0] [./Library/PackageCache/com.unity.render-pipelines.universal@37e0d4fc2503/Runtime/UniversalRenderPipeline.cs :: 1125u] (0x700eb70ce0 0x700eb71b0c) [0x1587c2a80 - Unity Child Domain]
+#17 0x0000700eb6a8f4 in  UnityEngine.Rendering.Universal.UniversalRenderPipeline:Render (UnityEngine.Rendering.ScriptableRenderContext,System.Collections.Generic.List`1<UnityEngine.Camera>) [{0x7b896661c8} + 0x27c] [./Library/PackageCache/com.unity.render-pipelines.universal@37e0d4fc2503/Runtime/UniversalRenderPipeline.cs :: 499u] (0x700eb6a678 0x700eb6aa84) [0x1587c2a80 - Unity Child Domain]
+#18 0x0000700eb6a5f0 in  UnityEngine.Rendering.RenderPipeline:InternalRender (UnityEngine.Rendering.ScriptableRenderContext,System.Collections.Generic.List`1<UnityEngine.Camera>) [{0x7b8a032c78} + 0x58] [/Users/bokken/build/output/unity/unity/Runtime/Export/RenderPipeline/RenderPipeline.cs :: 59u] (0x700eb6a598 0x700eb6a634) [0x1587c2a80 - Unity Child Domain]
+#19 0x0000700ead1f50 in  UnityEngine.Rendering.RenderPipelineManager:DoRenderLoop_Internal (UnityEngine.Rendering.RenderPipelineAsset,intptr,UnityEngine.Object,Unity.Collections.LowLevel.Unsafe.AtomicSafetyHandle) [{0x7b7f44f208} + 0x110] [/Users/bokken/build/output/unity/unity/Runtime/Export/RenderPipeline/RenderPipelineManager.cs :: 159u] (0x700ead1e40 0x700ead2018) [0x1587c2a80 - Unity Child Domain]
+#20 0x0000700ead235c in  (wrapper runtime-invoke) <Module>:runtime_invoke_void_object_intptr_object_AtomicSafetyHandle (object,intptr,intptr,intptr) [{0x7b8a032e98} + 0x94]  (0x700ead22c8 0x700ead2410) [0x1587c2a80 - Unity Child Domain]
+#21 0x0000015e08f0c4 in mono_jit_runtime_invoke
+#22 0x0000015e214b50 in do_runtime_invoke
+#23 0x0000015e214a90 in mono_runtime_invoke
+#24 0x00000103954714 in scripting_method_invoke(ScriptingMethodPtr, ScriptingObjectPtr, ScriptingArguments&, ScriptingExceptionPtr*, bool)
+#25 0x0000010392ac88 in ScriptingInvocation::Invoke(ScriptingExceptionPtr*, bool)
+#26 0x00000103a7f138 in Scripting::UnityEngine::Rendering::RenderPipelineManagerProxy::DoRenderLoop_Internal(ScriptingObjectPtr, void*, Scripting::UnityEngine::ObjectProxy, void const*, ScriptingExceptionPtr*)
+#27 0x0000010346bf30 in ScriptableRenderContext::ExtractAndExecuteRenderPipeline(core::vector<Camera*, core::allocator<Camera*, 0ul>> const&, void (*)(SceneNode const*, AABB const*, IndexList&, SceneCullingParameters const*), void*, ScriptingObjectPtr)
+#28 0x00000103161e44 in Camera::CustomRenderWithPipeline(ShaderPassContext&, Camera::RenderFlag, void (*)(SceneNode const*, AABB const*, IndexList&, SceneCullingParameters const*), void*, ScriptingObjectPtr)
+#29 0x00000103161540 in Camera::StandaloneCustomRender(Camera::RenderFlag, Shader*, core::basic_string<char, core::StringStorageDefault<char>> const&, Camera::PerformRenderFunction*, ScriptingObjectPtr)
+#30 0x00000103172cd8 in CameraScripting::Render(Camera*)
+#31 0x0000700eabf890 in  (wrapper managed-to-native) UnityEngine.Camera:Render_Injected (intptr) [{0x7b8a032898} + 0x60]  (0x700eabf830 0x700eabf8e4) [0x1587c2a80 - Unity Child Domain]
+#32 0x0000700eabf7a8 in  UnityEngine.Camera:Render () [{0x7b82d42d20} + 0x70]  (0x700eabf738 0x700eabf7bc) [0x1587c2a80 - Unity Child Domain]
+#33 0x0000700eab9fa8 in  GazeQualityChecks:CaptureVicinityRing (UnityEngine.GameObject,UnityEngine.LineRenderer) [{0x7b8a014fa0} + 0x348] [/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Assets/Editor/GazeQualityChecks.cs :: 290u] (0x700eab9c60 0x700eaba184) [0x1587c2a80 - Unity Child Domain]
+#34 0x0000700eab14c0 in  GazeQualityChecks:CheckPointingVicinity () [{0x7b7f8dfb68} + 0x1450] [/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Assets/Editor/GazeQualityChecks.cs :: 147u] (0x700eab0070 0x700eab45dc) [0x1587c2a80 - Unity Child Domain]
+#35 0x0000700e831b94 in  GazeQualityChecks:Run () [{0x7b7f8de610} + 0xddc] [/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Assets/Editor/GazeQualityChecks.cs :: 38u] (0x700e830db8 0x700e831c04) [0x1587c2a80 - Unity Child Domain]
+#36 0x0000700e32d1d8 in  StudyVerificationChecks:Run () [{0x7b7f8de408} + 0x18] [/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Assets/Editor/StudyVerificationChecks.cs :: 14u] (0x700e32d1c0 0x700e32d23c) [0x1587c2a80 - Unity Child Domain]
+#37 0x0000700e32d5c8 in  (wrapper runtime-invoke) object:runtime_invoke_void (object,intptr,intptr,intptr) [{0x7b897b3de8} + 0x68]  (0x700e32d560 0x700e32d650) [0x1587c2a80 - Unity Child Domain]
+#38 0x0000015e08f0c4 in mono_jit_runtime_invoke
+#39 0x0000015e214b50 in do_runtime_invoke
+#40 0x0000015e214a90 in mono_runtime_invoke
+#41 0x00000103954714 in scripting_method_invoke(ScriptingMethodPtr, ScriptingObjectPtr, ScriptingArguments&, ScriptingExceptionPtr*, bool)
+#42 0x0000010392ac88 in ScriptingInvocation::Invoke(ScriptingExceptionPtr*, bool)
+#43 0x000001049fbae4 in Application::ParseARGVCommands()
+#44 0x000001049fade8 in Application::FinishLoadingProject()
+#45 0x00000105e3ecd0 in NoGraphicsMain()
+#46 0x00000105e3f46c in EditorMain(int, char const**)
+#47 0x00000105e3f73c in main
+#48 0x00000186e0cd7c in start
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      ALC ILPP context 1 is unloading

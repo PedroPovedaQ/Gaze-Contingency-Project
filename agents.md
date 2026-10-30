@@ -4,7 +4,7 @@
 
 Unity 6 mixed reality project targeting the **HTC Vive Focus Vision**. Passthrough (video see-through) MR environment for a research study on gaze-contingent AI assistance. Built from Unity's MR Template with HTC Vive OpenXR integration.
 
-**Study (current local implementation, October 20, 2026)**: seated hidden-target search on eight surrounding virtual planes, 168 objects per trial, two counterbalanced 40-trial voice blocks and one uncounted practice trial using the first assigned voice. Gaze drives guidance; only the right-controller ray plus trigger selects. Break/comfort/tracking checks occur between blocks; condition-specific questionnaires are administered retrospectively at the end. Qualtrics remains on hold. `docs/protocol/2026-10-20-alignment-audit.md` distinguishes implemented behavior from outstanding geometry, height, power, consent and pilot checks. Table-tap, 14-round, two-practice and object-dwell descriptions below are historical template context, not current study behavior.
+**Study (current local implementation, October 30, 2026)**: seated hidden-target search on eight surrounding virtual planes, 168 objects per trial, two counterbalanced 32-trial voice blocks and one uncounted practice trial using the first assigned voice. Gaze drives guidance; only the right-controller ray plus trigger selects. Break/comfort/tracking checks occur between blocks; condition-specific questionnaires are administered retrospectively at the end. Qualtrics remains on hold. `docs/protocol/2026-10-20-alignment-audit.md` distinguishes implemented behavior from outstanding geometry, height, power, consent and pilot checks. Table-tap, 14-round, two-practice and object-dwell descriptions below are historical template context, not current study behavior.
 
 ## Research Documents and Evidence Conventions
 
@@ -14,7 +14,7 @@ Unity 6 mixed reality project targeting the **HTC Vive Focus Vision**. Passthrou
 - `docs/guide/02-gameplay-round-flow.md` is the authoritative runtime account for round timing, deterministic stimuli, condition order, controller selection, and completion.
 - `docs/guide/03-gaze-agent-and-telemetry.md` is the authoritative account for gaze-derived hints and recorded telemetry.
 - `docs/guide/01-system-overview.md` and `docs/diagram.md` explain system ownership and data flow.
-- `project_proposal.tex` is historical proposal material. Its earlier physical-books, seven-target, and between-subjects descriptions are superseded by the current two-voice 80-trial task unless explicitly revived.
+- `project_proposal.tex` is historical proposal material. Its earlier physical-books, seven-target, and between-subjects descriptions are superseded by the current two-voice 64-trial task unless explicitly revived.
 - `docs/enhanced-gaze-contingency-plan.md` records design history; verify all thresholds and counts against current code before treating them as implemented.
 - `analysis/README.md` defines the post-session analysis workflow and generated outputs.
 

@@ -1,5 +1,7 @@
 # Angle-controlled randomized trials — October 25, 2026
 
+**Implemented — October 30, 2026:** the current schedule is 64 measured trials (32 per voice), plus one practice: four per signed step, absolute-angle counts 4/8/8/8/4, and 16 above/16 below with two of each per signed step. All 24 identities occur per block; eight repeat. See [current schedule](../balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v8.
+
 **Implemented locally; headset validation pending.** User requested random positions and target choices conditioned on matched theta, rather than mirrored trials, and approved implementation and tracking. Work is tracked in [GitHub issue #10](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/10) on [Gaze Study — Participant Readiness](https://github.com/users/PedroPovedaQ/projects/2). GitHub Projects is the task system for this repository.
 
 ## Current behavior

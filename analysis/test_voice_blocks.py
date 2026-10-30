@@ -8,34 +8,34 @@ from voice_blocks import voice_block_reports, pairing_exclusions, write_voice_bl
 
 
 class VoiceBlockTests(unittest.TestCase):
-    def current_run(self, root, participant='P001', reverse=False, debug=0, run=1):
+    def current_run(self, root, participant='P001', reverse=False, debug=0, run=1, block_size=32):
         folder=Path(root, participant, f'run_{run:03d}')
         folder.mkdir(parents=True)
         order='selfsimilar_then_neutral' if reverse else 'neutral_then_selfsimilar'
         objectives=[]
-        for i in range(debug or 80):
-            neutral=(i<40) != reverse
+        for i in range(debug or 2*block_size):
+            neutral=(i<block_size) != reverse
             objectives.append(dict(index=i, completed=True, outcome='completed',
                 trial_id=f'{participant}_run{run:03d}_r{i:02d}',
                 voice_condition='neutral-male' if neutral else 'selfsimilar',
                 time_to_find_seconds=8.0 if neutral else 6.0))
         summary=dict(schema_version=2, participant_id=participant, run_number=run,
                      condition='gaze_aware_voice-blocks-'+order, voice_order=order,
-                     session_outcome='completed', rounds_per_block=40,
-                     nominal_total_rounds=80, total_rounds=debug or 80,
+                     session_outcome='completed', rounds_per_block=block_size,
+                     nominal_total_rounds=2*block_size, total_rounds=debug or 2*block_size,
                      debug_round_override=debug, objectives=objectives)
         (folder/'trial_summary.json').write_text(json.dumps(summary))
 
-    def test_current_eighty_trial_sessions_pair_in_both_voice_orders(self):
+    def test_current_forty_eight_trial_sessions_pair_in_both_voice_orders(self):
         with tempfile.TemporaryDirectory() as directory:
             self.current_run(directory)
             self.current_run(directory, participant='P002', reverse=True)
             rows=load_all_summaries(Path(directory))
-            self.assertEqual(set(rows.rounds_per_block),{40})
-            self.assertEqual(set(rows.nominal_total_rounds),{80})
+            self.assertEqual(set(rows.rounds_per_block),{32})
+            self.assertEqual(set(rows.nominal_total_rounds),{64})
             blocks,pairs=voice_block_reports(rows)
             self.assertEqual(len(blocks),4)
-            self.assertEqual(set(blocks.trials),{40})
+            self.assertEqual(set(blocks.trials),{32})
             self.assertEqual(list(pairs.self_minus_neutral_seconds),[-2,-2])
             self.assertTrue(pairing_exclusions(rows).empty)
             output=Path(directory,'reports'); output.mkdir()
@@ -44,12 +44,21 @@ class VoiceBlockTests(unittest.TestCase):
                 saved=list(csv.DictReader(file))
             self.assertEqual([float(r['self_minus_neutral_seconds']) for r in saved],[-2,-2])
 
-    def test_debug_completion_cannot_substitute_for_a_full_pair(self):
+    def test_legacy_eighty_trial_sessions_still_pair(self):
         with tempfile.TemporaryDirectory() as directory:
-            self.current_run(directory,debug=45)
+            self.current_run(directory, block_size=40)
             rows=load_all_summaries(Path(directory))
             blocks,pairs=voice_block_reports(rows)
-            self.assertEqual(set(blocks.trials),{40,5})
+            self.assertEqual(set(blocks.trials),{40})
+            self.assertEqual(len(pairs),1)
+            self.assertTrue(pairing_exclusions(rows).empty)
+
+    def test_debug_completion_cannot_substitute_for_a_full_pair(self):
+        with tempfile.TemporaryDirectory() as directory:
+            self.current_run(directory,debug=37)
+            rows=load_all_summaries(Path(directory))
+            blocks,pairs=voice_block_reports(rows)
+            self.assertEqual(set(blocks.trials),{32,5})
             self.assertTrue(pairs.empty)
             self.assertIn('debug run',pairing_exclusions(rows).iloc[0].reason)
 
@@ -83,9 +92,9 @@ class VoiceBlockTests(unittest.TestCase):
             self.current_run(directory,run=1)
             self.current_run(directory,run=2)
             rows=load_all_summaries(Path(directory))
-            partial=rows[((rows.run_number==1)&(rows.round_index<40))|
-                         ((rows.run_number==2)&(rows.round_index>=40))]
-            self.assertEqual(len(partial),80)
+            partial=rows[((rows.run_number==1)&(rows.round_index<32))|
+                         ((rows.run_number==2)&(rows.round_index>=32))]
+            self.assertEqual(len(partial),64)
             self.assertTrue(voice_block_reports(partial)[1].empty)
             self.assertEqual(len(pairing_exclusions(partial)),2)
 

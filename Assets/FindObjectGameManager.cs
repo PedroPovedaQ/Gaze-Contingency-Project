@@ -11,7 +11,7 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
 /// <summary>
-/// 80-round conjunction search game with eight-plane beta or table-shelf layouts.
+/// 64-round conjunction search game with eight-plane beta or table-shelf layouts.
 /// Player finds 1 target via controller ray and trigger. On correct capture: show fixation cross,
 /// destroy objects, wait, spawn fresh, finalize gaze interactables, go.
 /// </summary>

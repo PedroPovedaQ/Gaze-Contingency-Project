@@ -1,4 +1,7 @@
-"""Rebuild the original October 1 study schematic from vector primitives.
+"""Rebuild the HISTORICAL October 1 schematic, not the current v8 procedure.
+
+Current allocation: docs/balanced-angle-schedule.md. This dated artifact retains
+its original counts and is not regenerated as part of schedule updates.
 
 Requires reportlab; emits an editable SVG and vector PDF. Render the PDF to PNG
 with pdftoppm for inspection. Content reflects the local runtime and a proposed

@@ -1,0 +1,11 @@
+{
+  "new_bundle": "/Users/pedro.poveda/Applications/Follow My Voice Schedule64 20261030.app",
+  "main": "/Users/pedro.poveda/Applications/Follow My Voice Study Intake.app",
+  "backup": "/Users/pedro.poveda/Applications/Follow My Voice Study Intake Backup 20261030.app",
+  "original_entries": 169,
+  "new_entries": 169,
+  "backup_verified": true,
+  "new_main_verified": true,
+  "original_manifest_sha256": "24c1c2644f605c901d6f52e9b1aa2a354180aa8f1dc8ac25eacd659dd880ce66",
+  "new_manifest_sha256": "f03f60960602a4aeec109c4c2146d6d381ca611c8e1f0946da8b5fdc609f267d"
+}

@@ -1,0 +1,11 @@
+{
+  "apk": "Builds/CodexAndroid/codex_build.apk",
+  "bytes": 72032949,
+  "sha256": "486b9695e1de6dde5dd178ba5495712b5bd9d02facd2cb3d8b0bd5b3269c8a75",
+  "installed_sha256": "486b9695e1de6dde5dd178ba5495712b5bd9d02facd2cb3d8b0bd5b3269c8a75",
+  "package": "com.DefaultCompany.MixedRealityTemplate",
+  "serial": "192.168.1.208:5555",
+  "launch_status": "ok",
+  "local_minilm": "ready",
+  "note": "Initial helper passed the historical MRTemplateProject package and installed successfully but could not launch; corrected to the built application ID, reconnected MiniLM and launched successfully."
+}

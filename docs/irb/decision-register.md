@@ -1,5 +1,7 @@
 # IRB Protocol Decision Register
 
+**Implemented — October 30, 2026:** the current schedule is 64 measured trials (32 per voice), plus one practice: four per signed step, absolute-angle counts 4/8/8/8/4, and 16 above/16 below with two of each per signed step. All 24 identities occur per block; eight repeat. See [current schedule](../balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v8.
+
 **Protocol proposal / October 20 update:** one practice trial; final-only condition-specific questionnaires after both 40-trial blocks; between-block rest/comfort/tracking checks remain. Qualtrics is on hold. See `docs/protocol/2026-10-20-final-survey-decision.md`. Earlier runtime descriptions below do not establish implementation of these new decisions.
 ## 2026-10-01 — Current implementation and preliminary sensitivity evidence
 

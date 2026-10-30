@@ -62,13 +62,13 @@
 \field{Preferred voice ID} & \field{Survey version} \\
 \end{tabularx}
 \vspace{8pt}
-\action{CURRENT DESIGN / RESEARCHER ONLY}{Two counterbalanced voice blocks: participant-preferred catalog voice and self-similar synthetic voice. Each block will contain 40 measured trials (80 total); one practice trial will be separate. Use the saved assigned order. Each trial will be one hidden-target search. Both conditions will use the same gaze-contingent guidance policy and right-controller selection. Say ``first block'' and ``second block'' without suggesting either voice will improve performance.}
+\action{CURRENT DESIGN / RESEARCHER ONLY}{Two counterbalanced voice blocks: participant-preferred catalog voice and self-similar synthetic voice. Each block will contain 32 measured trials (64 total); one practice trial will be separate. Use the saved assigned order. Each trial will be one hidden-target search. Both conditions will use the same gaze-contingent guidance policy and right-controller selection. Say ``first block'' and ``second block'' without suggesting either voice will improve performance.}
 \step{Before participant arrives}
 {\color{ActionInk}\itshape
 \begin{itemize}
 \item {Sanitize and test the HTC Vive Focus Vision and right controller. Check the rotating chair and clear the seated movement area.}
 \item {Open the frozen study build and the versioned questionnaires. Confirm the build ID, audio-library version, recording destination and available storage.}
-\item {Enter coded participant/run IDs and saved voice-block order. Verify one practice trial and 40 measured trials per block. Confirm researcher visual aids and passthrough are set consistently across conditions.}
+\item {Enter coded participant/run IDs and saved voice-block order. Verify one practice trial and 32 measured trials per block. Confirm researcher visual aids and passthrough are set consistently across conditions.}
 \item {Prepare consent, baseline survey, both block surveys, final interview and session/event record. Use one defined TLX collection route and avoid duplicate administration.}
 \end{itemize}
 }
@@ -133,7 +133,7 @@
 \say{ASK}{``Do you have any questions about the controls or task?''}
 \say{SAY}{``When you are ready, we will begin the first task block.''}
 \step{6 First task block}
-\action{PLANNED SCHEDULE}{40 measured trials in this voice block; the practice trial is separate. Verify the configured count before participant use.}
+\action{PLANNED SCHEDULE}{32 measured trials in this voice block; the practice trial is separate. Verify the configured count before participant use.}
 \action{RESEARCHER SETTINGS}{Confirm the saved first voice and planned trial schedule. Keep object layout, selection method, guidance policy and the finalized prompt wording constant across voices.}
 \say{SAY}{``We will now begin the first task block. Find each target as quickly and accurately as you comfortably can. Stay seated and use the same right-controller ray and trigger selection you practiced. Tell me if you need to pause.''}
 \action{ACTION}{Start block; monitor safety.}
@@ -142,7 +142,7 @@
 \action{ACTION}{Record break duration and current comfort. Recheck headset fit and independently validate tracking before the next block; recalibrate if required by the frozen acceptance rules.}
 \say{BEFORE CONTINUING ASK}{``Do you feel comfortable and well enough to continue?''}
 \step{7 Second task block}
-\action{PLANNED SCHEDULE}{40 measured trials using the other assigned voice. Retain incomplete or interrupted trials with their outcomes; do not add replacement trials merely to reach 40 valid attempts.}
+\action{PLANNED SCHEDULE}{32 measured trials using the other assigned voice. Retain incomplete or interrupted trials with their outcomes; do not add replacement trials merely to reach 32 valid attempts.}
 \say{SAY}{``We will now begin the second task block. This block will use the other assistant voice. The task and selection method will remain the same. Find each target as quickly and accurately as you comfortably can, and tell me if you need to pause.''}
 \action{ACTION}{Start block; monitor safety.}
 \say{AT COMPLETION SAY}{``The search task is complete. Please stop turning. I will help you remove the headset, then you will complete the final questionnaires about both blocks.''}
@@ -174,8 +174,8 @@
 \step{Difficulty and timing record / researcher only}
 \action{CONFIRMED OUTCOME}{Active trial completion time will be the primary outcome, accounting for horizontal theta toward the target from the starting reference. Record the opening cue separately: it will precede object reveal and the active-search timer. Completion will be the correct right-trigger selection.}
 \action{OPENING-CUE CHECK}{Log cue onset/end, object reveal and head pose at cue onset and reveal. Participants may turn before the timer starts. Proposed sensitivity outcome: cue-onset-to-correct-selection time, alongside the primary active-search time. Starting theta alone will not account for movement during the cue.}
-\action{THETA}{Keep nominal wall-angle category, exact starting target bearing, and actual head rotation distinct. The schedule will allocate eight trials at each absolute nominal angle (0, 45, 90, 135 and 180 degrees) per block in a randomized order. Save signs, positions, reference definition, seed and realized schedule. Calculate pre-cue theta from the horizontal origin-to-cross and origin-to-target vectors. Retain the sign and absolute angle; do not divide completion time by degrees.}
-\action{CONFIRMED HEIGHT REFERENCE}{Signed height delta will be target-center world Y minus readiness-cross-center world Y, in metres. Positive means above the cross; negative means below. Save both positions. The intended quota is 20 above and 20 below per block; verify implementation and freeze feasible ranges/deadband before claiming the quota is met.}
+\action{THETA}{Keep nominal wall-angle category, exact starting target bearing, and actual head rotation distinct. The schedule will allocate four trials at each signed step (0, +45, -45, +90, -90, +135, -135, 180 degrees), giving absolute counts 4/8/8/8/4 per block in a randomized order. Each signed step has two targets above and two below the readiness cross (16 above and 16 below per block). All 24 shape/color identities occur per block, with eight repeating. Save signs, positions, reference definition, seed and realized schedule. Calculate pre-cue theta from the horizontal origin-to-cross and origin-to-target vectors. Retain the sign and absolute angle; do not divide completion time by degrees.}
+\action{CONFIRMED HEIGHT REFERENCE}{Signed height delta will be target-center world Y minus readiness-cross-center world Y, in metres. Positive means above the cross; negative means below. Save both positions. The implemented v8 quota is 16 above and 16 below per block, with two of each at every signed step. Verify wearer comfort and feasible height ranges before participant use.}
 \meeting{BEFORE CONFIRMATORY RECRUITMENT}{Complete the theta-adjusted power analysis and recruitment plan; set tracking acceptance, practice proficiency, timeout, interruption and missing-data rules; verify the vertical schedule and acoustic checks; reconcile consent with actual service processing and retention.}
 \clearpage
 

@@ -1,5 +1,7 @@
 # Controller-ray menus and directional hints
 
+**Implemented — October 30, 2026:** the current schedule is 64 measured trials (32 per voice), plus one practice: four per signed step, absolute-angle counts 4/8/8/8/4, and 16 above/16 below with two of each per signed step. All 24 identities occur per block; eight repeat. See [current schedule](balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v8.
+
 ## Current implementation — October 1, 2026
 
 **Implemented locally; headset verification pending.** Study interaction is right-controller ray + fresh trigger only, with blue hover and one entry haptic pulse. Setup offers six voices per chosen gender in a three-by-two grid, with a fictional portrait for all twelve candidates. Hover auditions; trigger selects; Confirm requires completed successful audio. See [voice choices](voice-choices.md).

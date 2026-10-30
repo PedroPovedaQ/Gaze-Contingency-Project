@@ -1,0 +1,44 @@
+...................................................................................................................................................................................................................................................................................................................................................................
+----------------------------------------------------------------------
+Ran 355 tests in 7.984s
+
+OK
+Loaded 14 round records from 1 sessions
+Participants: 1
+Conditions: {'gaze_aware': 14}
+Loaded 14 round records from 1 sessions
+Participants: 1
+Conditions: {'gaze_aware': 14}
+Loaded 14 round records from 1 sessions
+Participants: 1
+Conditions: {'gaze_aware': 14}
+Loaded 14 round records from 1 sessions
+Participants: 1
+Conditions: {'gaze_aware': 14}
+Loaded 1 round records from 1 sessions
+Participants: 1
+Conditions: {'unknown': 1}
+Loaded 1 round records from 1 sessions
+Participants: 1
+Conditions: {'unknown': 1}
+Loaded 1 round records from 1 sessions
+Participants: 1
+Conditions: {'unknown': 1}
+Loaded 128 round records from 2 sessions
+Participants: 2
+Conditions: {'gaze_aware': 128}
+Loaded 37 round records from 1 sessions
+Participants: 1
+Conditions: {'gaze_aware': 37}
+Loaded 64 round records from 1 sessions
+Participants: 1
+Conditions: {'gaze_aware': 64}
+Loaded 80 round records from 1 sessions
+Participants: 1
+Conditions: {'gaze_aware': 80}
+Loaded 128 round records from 2 sessions
+Participants: 1
+Conditions: {'gaze_aware': 128}
+Loaded 28 round records from 2 sessions
+Participants: 2
+Conditions: {'gaze_aware': 28}

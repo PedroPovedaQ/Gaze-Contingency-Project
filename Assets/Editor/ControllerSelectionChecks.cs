@@ -270,6 +270,14 @@ public static class ControllerSelectionChecks
             var eyeDotLabel = new GameObject("EyeDotLabel",typeof(RectTransform),typeof(TMPro.TextMeshProUGUI));
             eyeDotLabel.transform.SetParent(controlsPanel.transform,false);
             Set(controls,"m_EyeDotLabel",eyeDotLabel.GetComponent<TMPro.TextMeshProUGUI>());
+            // Supply labels added to the production controls since this fixture was written.
+            foreach (string field in new[] { "m_FollowingLabel", "m_ProviderLabel" })
+            {
+                var label = new GameObject(field, typeof(RectTransform), typeof(TMPro.TextMeshProUGUI));
+                label.transform.SetParent(controlsPanel.transform, false);
+                if (field == "m_ProviderLabel") label.AddComponent<UnityEngine.UI.Button>();
+                Set(controls, field, label.GetComponent<TMPro.TextMeshProUGUI>());
+            }
             var vicinity=new GameObject("HiddenVicinityControls");vicinity.transform.SetParent(controlsPanel.transform);
             Set(controls,"m_VicinityControls",vicinity);
             Call(controls,"LateUpdate");var controlsPose=PoseOf(controlsPanel);

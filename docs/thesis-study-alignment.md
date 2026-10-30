@@ -1,5 +1,7 @@
 # Seated rotating-search thesis: alignment checkpoint
 
+**Implemented — October 30, 2026:** the current schedule is 64 measured trials (32 per voice), plus one practice: four per signed step, absolute-angle counts 4/8/8/8/4, and 16 above/16 below with two of each per signed step. All 24 identities occur per block; eight repeat. See [current schedule](balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v8.
+
 **Protocol proposal / October 20 update:** one practice trial in the first assigned voice; final-only condition-specific questionnaires after both 40-trial blocks; between-block rest/comfort/tracking checks remain. Qualtrics is on hold. See `docs/protocol/2026-10-20-final-survey-decision.md`. The practice/survey gates now align locally; see [the implementation audit](protocol/2026-10-20-alignment-audit.md). The September entries below are historical and are superseded where they conflict.
 **Measurement planning (2026-09-16):** see the [living measures register](measures-register.md) for all surveys, behavioral metrics, scoring, implementation gaps and open decisions. IMI is now included; final subscales/form are proposed.
 

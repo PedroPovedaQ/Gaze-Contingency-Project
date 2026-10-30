@@ -1,0 +1,21 @@
+Source: /tmp/schedule64-final-allocation.log
+SHA256: fbd4b0ad0ff708b10b9c8ed1bfdbe71ee0c9de490bac364ed8316d316807b85e
+
+[ScheduleChecks] ALLOCATION block=0 signed=0 above=2 below=2
+[ScheduleChecks] ALLOCATION block=0 signed=45 above=2 below=2
+[ScheduleChecks] ALLOCATION block=0 signed=-45 above=2 below=2
+[ScheduleChecks] ALLOCATION block=0 signed=90 above=2 below=2
+[ScheduleChecks] ALLOCATION block=0 signed=-90 above=2 below=2
+[ScheduleChecks] ALLOCATION block=0 signed=135 above=2 below=2
+[ScheduleChecks] ALLOCATION block=0 signed=-135 above=2 below=2
+[ScheduleChecks] ALLOCATION block=0 signed=180 above=2 below=2
+[ScheduleChecks] ALLOCATION block=1 signed=0 above=2 below=2
+[ScheduleChecks] ALLOCATION block=1 signed=45 above=2 below=2
+[ScheduleChecks] ALLOCATION block=1 signed=-45 above=2 below=2
+[ScheduleChecks] ALLOCATION block=1 signed=90 above=2 below=2
+[ScheduleChecks] ALLOCATION block=1 signed=-90 above=2 below=2
+[ScheduleChecks] ALLOCATION block=1 signed=135 above=2 below=2
+[ScheduleChecks] ALLOCATION block=1 signed=-135 above=2 below=2
+[ScheduleChecks] ALLOCATION block=1 signed=180 above=2 below=2
+[ScheduleChecks] PASS: 64-trial v8 schedule, realized pinned geometry, height allocation and actual 32-trial block break.
+Exiting batchmode successfully now!

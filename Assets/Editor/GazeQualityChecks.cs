@@ -276,6 +276,13 @@ public static class GazeQualityChecks
     }
     static void CaptureVicinityRing(GameObject target, LineRenderer ring)
     {
+        // Camera.Render can crash native URP line rendering with the Null device.
+        // Keep structural checks headless; run this visual capture with a GPU.
+        if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
+        {
+            Debug.Log("[GazeQualityChecks] Vicinity capture skipped: Null graphics device; GPU verification required.");
+            return;
+        }
         int targetLayer=target.layer, ringLayer=ring.gameObject.layer;
         var cameraObject=new GameObject("VicinityPreviewCamera",typeof(Camera));
         var output=new RenderTexture(800,600,24);
@@ -416,7 +423,7 @@ public static class GazeQualityChecks
             loggerType.GetField("m_GameManager", flags).SetValue(logger, game);
             loggerType.GetField("m_SessionId", flags).SetValue(logger, "STOP_FIXTURE");
             var records = (System.Collections.IList)loggerType.GetField("m_ObjectiveRecords", flags).GetValue(logger);
-            foreach (int round in new[] { 0, 39, 79 })
+            foreach (int round in new[] { 0, ChallengeSet.RoundsPerBlock - 1, ChallengeSet.TotalRounds - 1 })
             foreach (bool captured in new[] { true, false })
             {
                 records.Clear();
@@ -505,7 +512,7 @@ public static class GazeQualityChecks
             var sample = new GazeObservation { participant="TEST", run=3 };
             SharedGazeStream.FillTrialContext(sample, game);
             Check(sample.round == -1 && sample.block == -1 && sample.sourceTrialId == "", "Setup cannot invent a trial");
-            foreach (int round in new[] { 0, 39, 79 })
+            foreach (int round in new[] { 0, ChallengeSet.RoundsPerBlock - 1, ChallengeSet.TotalRounds - 1 })
             {
                 current.SetValue(game,round); present.Invoke(game,null);
                 string voice = game.PresentedVoiceTag;
@@ -513,15 +520,15 @@ public static class GazeQualityChecks
                 SessionConfig.Voice = SessionConfig.Voice == VoiceCondition.Generic ? VoiceCondition.SelfSimilar : VoiceCondition.Generic;
                 SharedGazeStream.FillTrialContext(sample,game);
                 Check(sample.round==round && sample.sourceTrialId==$"TEST_run003_r{round:D2}" &&
-                    sample.block==round/40 && sample.voice==voice,"Feedback preserves completed eye trial and voice, including block/final boundary");
+                    sample.block==round/ChallengeSet.RoundsPerBlock && sample.voice==voice,"Feedback preserves completed eye trial and voice, including block/final boundary");
             }
             typeof(FindObjectGameManager).GetProperty("IsPractice").SetValue(game,true);
-            current.SetValue(game,0);present.Invoke(game,null);current.SetValue(game,40);
+            current.SetValue(game,0);present.Invoke(game,null);current.SetValue(game,ChallengeSet.RoundsPerBlock);
             SharedGazeStream.FillTrialContext(sample,game);
             Check(sample.practice && sample.round==0 && sample.block==-1 && sample.sourceTrialId=="",
                 "Practice feedback stays practice and cannot join a measured trial");
             present.Invoke(game,null);SharedGazeStream.FillTrialContext(sample,game);
-            Check(sample.round==40 && sample.practice,"Only the next presentation advances the recording context");
+            Check(sample.round==ChallengeSet.RoundsPerBlock && sample.practice,"Only the next presentation advances the recording context");
         }
         finally { SessionConfig.Voice=originalVoice; UnityEngine.Object.DestroyImmediate(host); }
     }

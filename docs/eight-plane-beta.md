@@ -1,5 +1,7 @@
 # Eight-plane rotational search
 
+**Implemented — October 30, 2026:** the current schedule is 64 measured trials (32 per voice), plus one practice: four per signed step, absolute-angle counts 4/8/8/8/4, and 16 above/16 below with two of each per signed step. All 24 identities occur per block; eight repeat. See [current schedule](balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v8.
+
 **Implemented October 23, 2026:** compact vertical layout `rotational_scatter_v5_compact_vertical` uses a 2.2036 m wall (70% of the former 3.148 m). Object centers span 0.10–2.1036 m above the floor; radius, horizontal extent, shape scale, 21 objects per wall and 0.20 m minimum center separation are unchanged. Deterministic placement is regenerated within this shorter range. New replay snapshots save exact local wall bottom/height; legacy object coordinates and inferred walls are not compressed retroactively. Earlier geometry descriptions below are historical.
 
 **Implemented locally — October 1, 2026; headset acceptance pending.** This is the current seated octagonal layout. Historical fixed-seed, table/shelf, 10-trial-block, first-person/target-naming and either-controller descriptions are superseded. The [round-flow guide](guide/02-gameplay-round-flow.md) owns current lifecycle behavior.

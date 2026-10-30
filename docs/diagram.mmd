@@ -1,22 +1,23 @@
 flowchart TD
     A["Setup with right controller ray + trigger<br/>VoiceModeSelector / StudyRayControls"] --> B["Choose presentation and one of six voices<br/>Record natural sample; prepare/check both voices"]
     B --> C["Fit and calibrate; independent Eye check<br/>Center seated octagonal layout"]
-    C --> D["Two separate practice trials<br/>One per assigned voice"]
-    D --> E["Researcher checkpoint starts measured run<br/>40 trials per voice; saved counterbalanced order"]
+    C --> D["One separate practice trial<br/>First assigned voice"]
+    D --> E["Researcher checkpoint starts measured run<br/>32 trials per voice; saved counterbalanced order"]
     E --> F["Previous-target-wall readiness cross<br/>TrialReadinessGate / FindObjectGameManager"]
     F --> G{"Valid continuous readiness<br/>AND announcement finished?"}
     G -->|No| F
-    G -->|Yes| H["Reveal 168 objects; begin active-search clock"]
+    G -->|Yes| OPN["Opening direction completes while targets stay hidden"]
+    OPN --> H["Reveal 168 objects; begin active-search clock"]
     H --> I["Shared valid/fresh gaze<br/>Horizontal guidance, then fine / vertical cues"]
     I --> J["Right-ray object highlight + entry haptic<br/>Fresh trigger confirms selection"]
     J --> K{"Correct target?"}
     K -->|No: retain target| I
     K -->|Yes| L["Record capture; stop search clock<br/>Chime + varied active-voice reinforcement"]
-    L --> M{"Measured trial 40 or 80?"}
+    L --> M{"Measured trial 32 or 64?"}
     M -->|No| F
-    M -->|40| N["Block questions + break / refit check<br/>Confirm next voice block"]
+    M -->|32| N["Break / comfort / tracking check<br/>Confirm next voice block"]
     N --> F
-    M -->|80| O["Final block questions; interview / debrief<br/>Save and verify session package"]
+    M -->|64| O["Both retrospective block questionnaires; interview / debrief<br/>Save and verify session package"]
     H -. "Explicit pause: hide stimuli,<br/>pause search clock; Continue resumes" .-> H
     I -. "Invalid/stale gaze: suspend new cues" .-> I
     H --> P["Separate linked recording layers"]

@@ -7,8 +7,8 @@ This overview replaces the earlier table/shelf, dwell-selection and warmer/colde
 ## Session flow
 
 1. Use the right controller ray and trigger for setup. Choose a gender presentation, audition six voice options and confirm the preferred voice. Record a natural voice sample through the authorized self-similar enrollment workflow. Both conditions use ElevenLabs; accept starter audio levels and record the selected identities.
-2. Fit/calibrate the headset and establish the seated scene reference. Complete two practice trials, one per assigned voice.
-3. Run 40 measured trials in the first voice, collect block questionnaires and take breaks outside active-search time; then run 40 in the other voice. The saved order controls the run.
+2. Fit/calibrate the headset and establish the seated scene reference. Complete one practice trial using the first assigned voice.
+3. Run 32 measured trials in the first voice, take a comfort/tracking break outside active-search time; then run 32 in the other voice. The saved order controls the run; condition-specific questionnaires follow both blocks.
 4. Each trial begins with a world-fixed readiness cross on the previous target wall (front initialization for the first practice) and a non-identifying spoken introduction. Reveal objects/start search only when readiness and speech gates pass.
 5. The agent alone knows the target identity. It guides horizontal turning toward the correct wall, finer horizontal alignment, then vertical adjustment. Both voices use the same participant-directed wording policy. Invalid/stale gaze suspends new decisions.
 6. Point the right controller ray at an object for highlight/haptic feedback and press the trigger. Wrong choices retain the search without revealing the target. A correct choice records capture, plays a chime and varied active-voice reinforcement, then advances. Looking alone does not select.
@@ -19,7 +19,7 @@ This overview replaces the earlier table/shelf, dwell-selection and warmer/colde
 | Component | Responsibility |
 |---|---|
 | `FindObjectGameManager` | Search/transition/practice/block state, presented-trial identity, pause clock, object lifecycle and checkpoints. |
-| `ChallengeSet` | Seeded 40+40 allocation, eight of each absolute wall-angle category per block, mirrored pairs and recorded object/layout assignments. |
+| `ChallengeSet` | Seeded 32+32 allocation, four of each signed step and two above/two below per step and recorded object/layout assignments. |
 | `ShapeObjectFactory` / `SpawnableObjectInfo` | Object meshes/appearance, stable object identity and shape/color/plane metadata. |
 | `ControllerRaySelector` | Right-controller ray intersection, highlight, haptic entry feedback and fresh trigger selection; no dwell capture. |
 | `StudyRayControls` / `StudyCheckpoint` / `VoiceModeSelector` | Right-ray settings, pause/continue/repeat and setup/voice controls. |

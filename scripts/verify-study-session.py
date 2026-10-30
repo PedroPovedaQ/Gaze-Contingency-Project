@@ -9,54 +9,57 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "analysis"))
-from theta_snapshot import V7, REFERENCE, flatten as flatten_theta
+from theta_snapshot import V8, PRE_CUE_SCHEDULES, QUICK_SCHEDULES, REFERENCE, flatten as flatten_theta
 
 
 def validate_schedule(folder, summary):
     """Audit versioned full plans, including disabled/unstarted trials."""
     version = summary.get("challenge_set")
-    v7 = version in V7
-    quick = version == "readiness-target-angle-v7-quick-origin0"
-    if not v7 and version != "previous-wall-angle-v5-stratified-40-trials":
+    pre_cue = version in PRE_CUE_SCHEDULES
+    v8 = version in V8
+    block_size = 32 if v8 else 40
+    total = block_size * 2
+    quick = version in QUICK_SCHEDULES
+    if not pre_cue and version != "previous-wall-angle-v5-stratified-40-trials":
         return []  # Historical schedules retain their original contract.
     errors = []
     try:
         with (folder / "trial_schedule.csv").open(encoding="utf-8-sig", newline="") as file:
             rows = list(csv.DictReader(file))
-        if len(rows) != 80 or [int(r["trial_index"]) for r in rows] != list(range(80)):
-            return ["Schedule: expected all 80 uniquely ordered planned trials"]
-        if v7:
+        if len(rows) != total or [int(r["trial_index"]) for r in rows] != list(range(total)):
+            return [f"Schedule: expected all {total} uniquely ordered planned trials"]
+        if pre_cue:
             for key in ("total_rounds", "debug_round_override", "nominal_total_rounds", "rounds_per_block", "schedule_seed"):
                 if type(summary.get(key)) is not int:
-                    errors.append(f"Schedule: v7 {key} must be an integer")
+                    errors.append(f"Schedule: pre-cue schedule {key} must be an integer")
             if errors:
                 return errors
             if summary["debug_round_override"] < 0 or summary["schedule_seed"] < 0:
                 errors.append("Schedule: negative debug override/seed")
             if summary.get("angle_balance_applied") is not True:
-                errors.append("Schedule: v7 requires angle balancing to be applied")
+                errors.append("Schedule: pre-cue schedule requires angle balancing to be applied")
             if not quick and (summary.get("session_mode") != "study" or summary.get("voice_condition") != "counterbalanced"):
-                errors.append("Schedule: normal v7 requires study mode and counterbalanced voices")
+                errors.append("Schedule: normal pre-cue schedule requires study mode and counterbalanced voices")
         count = summary["total_rounds"]
         override = summary["debug_round_override"]
-        expected_count = max(1, min(80, override)) if override > 0 else 80
+        expected_count = max(1, min(total, override)) if override > 0 else total
         if quick:
-            expected_count = min(40, expected_count)
+            expected_count = min(block_size, expected_count)
             if summary.get("session_mode") not in ("neutral_quick_test", "clone_quick_test", "new_clone_quick_test"):
                 errors.append("Schedule: quick version requires a development quick-test mode")
             expected_quick_voice = ("neutral-" + summary["neutral_voice_profile"]
                                     if summary.get("session_mode") == "neutral_quick_test" else "selfsimilar")
             if summary.get("voice_condition") != expected_quick_voice:
                 errors.append("Schedule: quick-test mode and voice disagree")
-        if v7 and (summary.get("theta_reference") != REFERENCE
-                or summary.get("direction_policy") != "independent-blocks-four-left-four-right-v1"
-                or summary.get("height_assignment_policy") != "four-above-four-below-per-angle-v1"
-                or summary.get("target_identity_policy") != "matched-counts-shuffled-24-plus-16-v1"):
-            errors.append("Schedule: v7 policy/reference mismatch")
-        if summary["rounds_per_block"] != 40 or summary["nominal_total_rounds"] != 80 or count != expected_count:
+        if pre_cue and (summary.get("theta_reference") != REFERENCE
+                or summary.get("direction_policy") != ("independent-blocks-four-per-signed-step-v1" if v8 else "independent-blocks-four-left-four-right-v1")
+                or summary.get("height_assignment_policy") != ("two-above-two-below-per-signed-step-v1" if v8 else "four-above-four-below-per-angle-v1")
+                or summary.get("target_identity_policy") != ("matched-counts-shuffled-24-plus-8-v1" if v8 else "matched-counts-shuffled-24-plus-16-v1")):
+            errors.append("Schedule: pre-cue schedule policy/reference mismatch")
+        if summary["rounds_per_block"] != block_size or summary["nominal_total_rounds"] != total or count != expected_count:
             errors.append("Schedule: block/full/debug counts disagree")
         for index, row in enumerate(rows):
-            block = index // 40
+            block = index // block_size
             neutral = (block == 0) == (summary["voice_order"] == "neutral_then_selfsimilar")
             expected_voice = "neutral-" + summary["neutral_voice_profile"] if neutral else "selfsimilar"
             if quick:
@@ -74,13 +77,13 @@ def validate_schedule(folder, summary):
                 errors.append(f"Schedule trial {index}: immediate target repetition")
             if (row["participant_id"] != summary["participant_id"] or row["schedule_version"] != version
                     or int(row["schedule_seed"]) != summary["schedule_seed"]
-                    or int(row["block_index"]) != block or int(row["trial_in_block"]) != index % 40
+                    or int(row["block_index"]) != block or int(row["trial_in_block"]) != index % block_size
                     or row["voice_condition"] != expected_voice or int(row["enabled_in_run"]) != int(index < count)
-                    or row["theta_reference"] != (REFERENCE if v7 else "previous_target_wall_center")
+                    or row["theta_reference"] != (REFERENCE if pre_cue else "previous_target_wall_center")
                     or row["target_identity_policy"] != summary["target_identity_policy"]
                     or row["height_assignment_policy"] != summary["height_assignment_policy"]):
                 errors.append(f"Schedule trial {index}: identity, version, assignment or enabled flag mismatch")
-            if v7:
+            if pre_cue:
                 height, offset = float(row["target_height_fraction"]), float(row["cross_offset_fraction"])
                 if (row["direction_policy"] != summary["direction_policy"] or not math.isfinite(height)
                         or not (.05 - 1e-6 <= height <= .4 + 1e-6 or .6 - 1e-6 <= height <= .95 + 1e-6)
@@ -88,38 +91,55 @@ def validate_schedule(folder, summary):
                         or index == 0 and offset != 0
                         or int(row["wall_azimuth_deg"]) != target * 45
                         or int(row["start_wall_azimuth_deg"]) != start * 45):
-                    errors.append(f"Schedule trial {index}: invalid v7 direction/height/cross geometry")
+                    errors.append(f"Schedule trial {index}: invalid pre-cue direction/height/cross geometry")
                 if index == 0 and quick and start != 0:
                     errors.append("Schedule: wrong initial readiness wall")
         identity_counts = []
         for block in range(2):
-            subset = rows[block * 40:(block + 1) * 40]
-            if Counter(int(r["absolute_theta_deg"]) for r in subset) != Counter({angle: 8 for angle in (0,45,90,135,180)}):
+            subset = rows[block * block_size:(block + 1) * block_size]
+            if Counter(int(r["absolute_theta_deg"]) for r in subset) != Counter({0:4,45:8,90:8,135:8,180:4} if v8 else {angle:8 for angle in (0,45,90,135,180)}):
                 errors.append(f"Schedule block {block}: absolute-angle quota mismatch")
-            if sorted(int(r["angle_pair"]) for r in subset) != list(range(40)):
+            if sorted(int(r["angle_pair"]) for r in subset) != list(range(block_size)):
                 errors.append(f"Schedule block {block}: missing/duplicate angle pairs")
-            for offset in range(0, 40, 5):
-                if {int(r["absolute_theta_deg"]) for r in subset[offset:offset + 5]} != {0,45,90,135,180}:
-                    errors.append(f"Schedule block {block}: five-trial angle group mismatch")
-            if v7:
-                for angle in (0, 45, 90, 135, 180):
-                    category = [r for r in subset if int(r["absolute_theta_deg"]) == angle]
-                    if sum(float(r["target_height_fraction"]) > .5 for r in category) != 4:
-                        errors.append(f"Schedule block {block}: height quota mismatch at {angle}")
-                    if angle in (45, 90, 135) and sum(int(r["signed_theta_deg"]) > 0 for r in category) != 4:
-                        errors.append(f"Schedule block {block}: direction quota mismatch at {angle}")
+            if v8:
+                signed_steps = {0,45,-45,90,-90,135,-135,180}
+                if Counter(int(r["signed_theta_deg"]) for r in subset) != Counter({a:4 for a in signed_steps}):
+                    errors.append(f"Schedule block {block}: signed-step quota mismatch")
+                for offset in range(0, block_size, 8):
+                    if {int(r["signed_theta_deg"]) for r in subset[offset:offset+8]} != signed_steps:
+                        errors.append(f"Schedule block {block}: eight-trial signed-step group mismatch")
+                if sum(float(r["target_height_fraction"]) > .5 for r in subset) != 16:
+                    errors.append(f"Schedule block {block}: total height quota mismatch")
+                for angle in signed_steps:
+                    above = sum(float(r["target_height_fraction"]) > .5 for r in subset if int(r["signed_theta_deg"]) == angle)
+                    if above != 2:
+                        errors.append(f"Schedule block {block}: signed height quota mismatch at {angle}")
+                for angle in (45,90,135):
+                    if sum(float(r["target_height_fraction"]) > .5 for r in subset if int(r["absolute_theta_deg"]) == angle) != 4:
+                        errors.append(f"Schedule block {block}: absolute height quota mismatch at {angle}")
+            else:
+                for offset in range(0, block_size, 5):
+                    if {int(r["absolute_theta_deg"]) for r in subset[offset:offset + 5]} != {0,45,90,135,180}:
+                        errors.append(f"Schedule block {block}: five-trial angle group mismatch")
+                if pre_cue:
+                    for angle in (0,45,90,135,180):
+                        category = [r for r in subset if int(r["absolute_theta_deg"]) == angle]
+                        if sum(float(r["target_height_fraction"]) > .5 for r in category) != 4:
+                            errors.append(f"Schedule block {block}: height quota mismatch at {angle}")
+                        if angle in (45,90,135) and sum(int(r["signed_theta_deg"]) > 0 for r in category) != 4:
+                            errors.append(f"Schedule block {block}: direction quota mismatch at {angle}")
             identities = Counter((r["target_shape"], r["target_color"]) for r in subset)
             identity_counts.append(identities)
-            if len(identities) != 24 or Counter(identities.values()) != Counter({1: 8, 2: 16}):
+            if len(identities) != 24 or Counter(identities.values()) != Counter({1:16,2:8} if v8 else {1:8,2:16}):
                 errors.append(f"Schedule block {block}: target repetition quota mismatch")
         if identity_counts[0] != identity_counts[1]:
             errors.append("Schedule: voice blocks have different target identity counts")
-        second = {int(r["angle_pair"]): r for r in rows[40:]}
-        for row in ([] if v7 else rows[:40]):
+        second = {int(r["angle_pair"]): r for r in rows[block_size:]}
+        for row in ([] if pre_cue else rows[:block_size]):
             mirror = second.get(int(row["angle_pair"]))
             if mirror is None or (int(row["signed_theta_deg"]) + int(mirror["signed_theta_deg"])) % 360 != 0:
                 errors.append("Schedule: angle pair is not mirrored")
-        if len({r["layout_seed"] for r in rows}) != 80:
+        if len({r["layout_seed"] for r in rows}) != total:
             errors.append("Schedule: repeated layout seed")
         records = summary["objectives"]
         if [r["index"] for r in records] != list(range(count)):
@@ -130,7 +150,7 @@ def validate_schedule(folder, summary):
                 errors.append("Schedule: summary trial index outside enabled plan")
                 continue
             planned = rows[index]
-            if v7:
+            if pre_cue:
                 snapshot = record.get("pre_cue_theta")
                 started = finite_time(record.get("search_started_at")) or record.get("outcome") in ("completed", "timeout")
                 if snapshot is None and started and summary.get("angle_balance_applied") is not False:
@@ -143,7 +163,7 @@ def validate_schedule(folder, summary):
                     except ValueError as error:
                         errors.append(f"Schedule trial {index}: {error}")
             for key in ("start_plane", "target_plane", "signed_theta_deg", "absolute_theta_deg", "angle_pair", "layout_seed"):
-                if (v7 and type(record[key]) is not int) or record[key] != int(planned[key]):
+                if (pre_cue and type(record[key]) is not int) or record[key] != int(planned[key]):
                     errors.append(f"Schedule trial {index}: summary {key} disagrees with manifest")
             if (record["shape"] != planned["target_shape"] or record["color"] != planned["target_color"]
                     or record["voice_condition"] != planned["voice_condition"]):
@@ -302,7 +322,7 @@ def validate(folder, allow_incomplete=False):
     # Historical perspectives deliberately differed. The current shared-command
     # policy must actually contain the same prepared text in both voices.
     shared_commands = summary.get("voice_perspective") == "shared_participant_directed_imperative"
-    quick = summary.get("challenge_set") == "readiness-target-angle-v7-quick-origin0"
+    quick = summary.get("challenge_set") in QUICK_SCHEDULES
     quick_neutral = str(summary.get("voice_condition", "")).startswith("neutral-")
     if quick:
         if not sets.get("neutral" if quick_neutral else "selfsimilar"):
@@ -319,8 +339,8 @@ def validate(folder, allow_incomplete=False):
     objects_per_round = summary.get("objects_per_round", 56)
     if type(rounds_per_block) is not int or rounds_per_block <= 0 or type(objects_per_round) is not int or objects_per_round <= 0:
         return errors + ["Invalid block or object count"]
-    if summary.get("challenge_set") in V7 and objects_per_round != 168:
-        errors.append("Schedule: v7 requires 168 objects per trial")
+    if summary.get("challenge_set") in PRE_CUE_SCHEDULES and objects_per_round != 168:
+        errors.append("Schedule: pre-cue schedule requires 168 objects per trial")
     for record in records:
         trial = record["trial_id"]
         neutral = quick_neutral if quick else (record["index"] < rounds_per_block) == neutral_first
@@ -328,7 +348,7 @@ def validate(folder, allow_incomplete=False):
         if record["voice_condition"] != expected:
             errors.append(f"{trial}: wrong voice assignment")
         trial_events = [event for event in events if event["trial_id"] == trial]
-        if summary.get("challenge_set") in V7:
+        if summary.get("challenge_set") in PRE_CUE_SCHEDULES:
             snapshots = [event for event in trial_events if event["event_type"] == "theta_snapshot"]
             snapshot = record.get("pre_cue_theta")
             started = any(e["event_type"] == "search_start" for e in trial_events)
@@ -400,7 +420,7 @@ def validate(folder, allow_incomplete=False):
         else:
             errors.extend(completed_trial_timing(record, trial_events))
             limit = summary.get("active_search_limit_seconds")
-            if limit is not None or summary.get("challenge_set") in V7:
+            if limit is not None or summary.get("challenge_set") in PRE_CUE_SCHEDULES:
                 if not finite_time(limit) or float(limit) <= 0:
                     errors.append(f"{trial}: missing/invalid search deadline")
                 elif finite_time(record.get("time_to_find_seconds")) and float(record["time_to_find_seconds"]) > float(limit) + .03:

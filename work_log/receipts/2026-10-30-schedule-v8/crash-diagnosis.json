@@ -1,0 +1,8 @@
+{
+  "file": "mono_crash.fc884b2ee.0.json",
+  "sha256": "6c7e267caaa43d87bb37d5f773ff5228300ed47b9e1b556919253c1665526e4b",
+  "mtime": 1793375558.0398734,
+  "source_log": "/tmp/schedule-unity.log",
+  "cause": "-nographics Null graphics device; GazeQualityChecks.CaptureVicinityRing calls Camera.Render; native URP line rendering faults at GfxDevice::DrawSharedGeometryJobs. SIGSEGV corresponds to exit 139.",
+  "fix": "Skip only screenshot capture on Null device; retain structural checks. Full suite passed headless and GPU; GPU capture visually inspected."
+}

@@ -1,7 +1,7 @@
 """Generate a small, deterministic SYNTHETIC trial export for schema review.
 
 No participant data, device measurements, audio or validated survey responses are
-generated. Three example rows are not a replacement for the 40-trial schedule.
+generated. Three example rows are not a replacement for the 32-trial schedule.
 """
 from __future__ import annotations
 
@@ -113,7 +113,7 @@ def generate(output: Path) -> dict:
             record.update(schema=2, sequence=sequence, frame=sequence)
             stream.write(json.dumps(record) + "\n")
     summary = dict(participant_id=PARTICIPANT, run_number=1, session_id=SESSION,
-                   session_mode="synthetic_demo", rounds_per_block=40, voice_order="demo_neutral_only",
+                   session_mode="synthetic_demo", rounds_per_block=32, voice_order="demo_neutral_only",
                    neutral_voice_id="synthetic-no-audio", theta_reference="demo_initial_forward_wall",
                    objectives=objectives)
     (run / "trial_summary.json").write_text(json.dumps(summary, indent=2) + "\n")
@@ -135,7 +135,7 @@ def generate(output: Path) -> dict:
         "# Synthetic trial sheets\n\nAll data are invented for software/schema review. "
         "No participant was measured. Exclude all rows from study analysis.\n\n"
         "Three examples: clean completion; wrong selection then completion; paused/interrupted "
-        "incomplete trial. They are a schema excerpt, not a balanced 40-trial block. "
+        "incomplete trial. They are a schema excerpt, not a balanced 32-trial block. "
         "The intentionally incomplete recording flags all associated trials.\n\n"
         "Block-level survey answers repeat across three rows with the same response ID. "
         "These are not three independent responses. The Raw NASA-TLX mean uses explicit "

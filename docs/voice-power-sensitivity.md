@@ -1,5 +1,7 @@
 # Voice-study sensitivity — planning proposal
 
+**Implemented — October 30, 2026:** the current schedule is 64 measured trials (32 per voice), plus one practice: four per signed step, absolute-angle counts 4/8/8/8/4, and 16 above/16 below with two of each per signed step. All 24 identities occur per block; eight repeat. See [current schedule](balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v8.
+
 **October 1, 2026. Implemented analysis tooling; protocol proposal, not a final sample-size justification.** The selected runtime design remains 40 trials per voice, 80 measured trials per participant, with separate practice. This document advances [task #16](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/16) without choosing the primary outcome, effect of interest, enrollment target, alpha or exclusion policy for the researcher. It uses no participant data and does not fit P020 or import its earlier named-target variance.
 
 ## What this can answer

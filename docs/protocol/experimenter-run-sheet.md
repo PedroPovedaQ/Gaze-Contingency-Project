@@ -1,6 +1,6 @@
 # Experimenter run sheet
 
-**Protocol proposal — October 20, 2026. Qualtrics on hold.** One practice trial; two 40-trial blocks; condition-specific questionnaires collected only in the final survey. See [current timing and reconciliation](2026-10-20-final-survey-decision.md). The authoritative formatted source is the corresponding file in docs/protocol/overleaf. Generated legacy forms are superseded drafts.
+**Protocol proposal — October 20, 2026. Qualtrics on hold.** One practice trial; two 32-trial blocks; condition-specific questionnaires collected only in the final survey. See [current timing and reconciliation](2026-10-20-final-survey-decision.md). The authoritative formatted source is the corresponding file in docs/protocol/overleaf. Generated legacy forms are superseded drafts.
 
 <div class="tcolorbox">
 
@@ -31,7 +31,7 @@ read them aloud.
 #### CURRENT DESIGN / RESEARCHER ONLY
 
 Two counterbalanced voice blocks: participant-preferred catalog voice
-and self-similar synthetic voice. Each block will contain 40 measured
+and self-similar synthetic voice. Each block will contain 32 measured
 trials (80 total); one practice trial will be separate. Use the saved
 assigned order. Each trial will be one hidden-target search. Both
 conditions will use the same gaze-contingent guidance policy and
@@ -48,7 +48,7 @@ suggesting either voice will improve performance.
   available storage.
 
 - Enter coded participant/run IDs and saved voice-block order. Verify
-  one practice trial and 40 measured trials per block. Confirm
+  one practice trial and 32 measured trials per block. Confirm
   researcher visual aids and passthrough are set consistently across
   conditions.
 
@@ -252,7 +252,7 @@ participant; freeze that rule before collection.
 
 #### PLANNED SCHEDULE
 
-40 measured trials in this voice block; the practice trial is separate.
+32 measured trials in this voice block; the practice trial is separate.
 Verify the configured count before participant use.
 
 #### RESEARCHER SETTINGS
@@ -296,7 +296,7 @@ required by the frozen acceptance rules.
 
 #### PLANNED SCHEDULE
 
-40 measured trials using the other assigned voice. Retain incomplete or
+32 measured trials using the other assigned voice. Retain incomplete or
 interrupted trials with their outcomes; do not add replacement trials
 merely to reach 40 valid attempts.
 

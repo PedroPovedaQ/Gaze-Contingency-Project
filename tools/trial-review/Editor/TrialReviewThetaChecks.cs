@@ -9,6 +9,7 @@ public static class TrialReviewThetaChecks
     static void Check(bool ok,string message){if(!ok)throw new Exception("Theta review: "+message);}
     public static void Run(TrialReplayTimeline demo)
     {
+        CheckScheduleVersions(demo);
         // Use real parser-validated demo meshes/objects, but isolate the new timeline.
         var header=JsonUtility.FromJson<TrialReplayRecord>(JsonUtility.ToJson(demo.Header));
         header.sequence=0;header.time=0;header.meshes=null;
@@ -65,5 +66,42 @@ public static class TrialReviewThetaChecks
         }
         finally{Directory.Delete(root,true);}
         Debug.Log("TRIAL_REVIEW_THETA_PASS exact snapshot, cursor boundaries, rewind, finalized transforms, legacy absence, export and parser guards");
+    }
+
+    static void CheckScheduleVersions(TrialReplayTimeline demo)
+    {
+        foreach (var version in new[] { ("readiness-target-angle-v7-one-practice",40),
+            ("readiness-target-angle-v8-signed-steps-32-one-practice",32) })
+        {
+            string root=Path.Combine(Path.GetTempPath(),"review-schedule-"+Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+            try
+            {
+                var header=JsonUtility.FromJson<TrialReplayRecord>(JsonUtility.ToJson(demo.Header));
+                header.sequence=0;header.time=0;header.meshes=null;
+                var first=JsonUtility.FromJson<TrialReplayRecord>(JsonUtility.ToJson(demo.Trials[0]));
+                first.sequence=1;first.time=1;first.round=version.Item2-1;first.block=0;
+                first.trialId="last-first-block";first.scheduleVersion=version.Item1;
+                first.meshes=demo.Meshes.Values.ToArray();
+                var second=JsonUtility.FromJson<TrialReplayRecord>(JsonUtility.ToJson(first));
+                second.sequence=2;second.time=2;second.round=version.Item2;second.block=1;
+                second.trialId="first-second-block";second.meshes=null;
+                string file=Path.Combine(root,"recording.jsonl");
+                File.WriteAllLines(file,new[]{header,first,second}.Select(r=>JsonUtility.ToJson(r)));
+                var timeline=TrialReplayFile.Read(file);
+                foreach(var trial in timeline.Trials)
+                {
+                    timeline.Seek(trial.time);
+                    Check(timeline.State.Trial.round==trial.round && timeline.State.Trial.block==trial.block,
+                        "recorded block boundary survives seek for "+version.Item1);
+                    string folder=TrialReviewExport.Write(root,timeline,trial,TrialReviewSummary.Hash(file),null);
+                    var exported=JsonUtility.FromJson<TrialReplayRecord>(File.ReadLines(Path.Combine(folder,"observations.jsonl")).First());
+                    Check(exported.scheduleVersion==version.Item1 && exported.round==trial.round && exported.block==trial.block,
+                        "observation export retains original schedule version and block");
+                }
+            }
+            finally{Directory.Delete(root,true);}
+        }
+        Debug.Log("TRIAL_REVIEW_SCHEDULE_PASS v7 39/40 and v8 31/32 boundaries retain recorded versions in replay and export");
     }
 }

@@ -1,5 +1,7 @@
 # Per-trial performance and subjective CSVs
 
+**Implemented — October 30, 2026:** the current schedule is 64 measured trials (32 per voice), plus one practice: four per signed step, absolute-angle counts 4/8/8/8/4, and 16 above/16 below with two of each per signed step. All 24 identities occur per block; eight repeat. See [current schedule](balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v8.
+
 **Implemented locally — September 28, 2026:** `analysis/trial_csv.py` writes one header and one summary row per logical trial, plus `trials.csv` containing those same rows and a provenance manifest. This implements the post-session export portion of [#20](https://github.com/PedroPovedaQ/Gaze-Contingency-Project/issues/20). It runs on the computer against copied, stopped recordings; it does **not** add a writer to the headset or replace raw replay/motion recordings.
 
 ```bash

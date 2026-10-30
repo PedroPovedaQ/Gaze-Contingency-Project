@@ -1,0 +1,9 @@
+Source: /tmp/schedule64-android.log
+SHA256: c19a7eed68702c82e9782b665aef79ac1cb0447819c53ed94e2c5228047e7de3
+
+NullReferenceException: Object reference not set to an instance of an object
+  at VIVE.OpenXR.VIVEFocus3Feature.GetOpenXrExtensionInfo (UnityEditor.BuildTargetGroup& buildTargetGroup, System.Collections.Generic.List`1[VIVE.OpenXR.VIVEFocus3Feature+OpenXrExtension]& myExtensionList, System.Boolean isRecordEnableOnly) [0x0004d] in ./Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab/Runtime/VIVEFocus3Feature.cs:364
+  at VIVE.OpenXR.Editor.ViveSpectatorCameraProcess.OnPreprocessBuildExt (UnityEditor.Build.Reporting.BuildReport report) [0x00000] in ./Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab/Editor/ViveSpectatorCameraProcess.cs:59
+NullReferenceException: Object reference not set to an instance of an object
+[CodexBuild] Build succeeded in 71.2s, size 1167.9 MB
+Exiting batchmode successfully now!

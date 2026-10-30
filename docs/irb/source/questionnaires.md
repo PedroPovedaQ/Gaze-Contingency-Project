@@ -1,5 +1,7 @@
 # Participant questionnaires
 
+**Implemented — October 30, 2026:** the current schedule is 64 measured trials (32 per voice), plus one practice: four per signed step, absolute-angle counts 4/8/8/8/4, and 16 above/16 below with two of each per signed step. All 24 identities occur per block; eight repeat. See [current schedule](../../balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v8.
+
 **Protocol proposal — October 20, 2026. Qualtrics on hold.** One practice trial; two 40-trial blocks; condition-specific questionnaires collected only in the final survey. See [current timing and reconciliation](../../protocol/2026-10-20-final-survey-decision.md). The authoritative formatted source is the corresponding file in docs/protocol/overleaf. Generated legacy forms are superseded drafts.
 
 **Survey Questions by Referenced Block**

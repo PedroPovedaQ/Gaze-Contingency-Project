@@ -9,7 +9,7 @@ import unittest
 import numpy as np
 from scipy import stats
 
-from voice_sensitivity import detectable_dz, mean_ar1_variance, paired_power, recruitment_for_completion, run, simulate, validate, wilson
+from voice_sensitivity import detectable_dz, mean_ar1_variance, paired_power, recruitment_for_completion, run, simulate, theta_categories, validate, wilson
 
 CONFIG = Path(__file__).parent/'power/voice_sensitivity.json'
 
@@ -17,6 +17,18 @@ CONFIG = Path(__file__).parent/'power/voice_sensitivity.json'
 class VoiceSensitivityTests(unittest.TestCase):
     def config(self):
         return json.loads(CONFIG.read_text())
+
+    def test_current_signed_step_and_legacy_geometry_allocations(self):
+        config = self.config()
+        validate(config)
+        for size, quota in ((32, [4,8,8,8,4]), (40, [8,8,8,8,8])):
+            draws = theta_categories(np.random.default_rng(17), (3,2), size)
+            for block in draws.reshape(-1,size):
+                self.assertEqual(np.bincount(block).tolist(), quota)
+        config.update(version='voice-sensitivity-proposal-v1', trials_per_voice=[10,40])
+        validate(config)
+        config['trials_per_voice'] = [32]
+        with self.assertRaises(ValueError): validate(config)
 
     def test_paired_benchmark_null_symmetry_and_inverse(self):
         self.assertAlmostEqual(paired_power(48,0,.025),.025,places=10)
@@ -90,9 +102,9 @@ class VoiceSensitivityTests(unittest.TestCase):
     def test_artifacts_config_order_independence_and_cli(self):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory);config=self.config()
-            config.update(replications=20,participants=[15],trials_per_voice=[10],time_ratios=[1,.9],scenarios=[config['scenarios'][0]])
+            config.update(replications=20,participants=[15],trials_per_voice=[32],time_ratios=[1,.9],scenarios=[config['scenarios'][0]])
             path=root/'config.json';path.write_text(json.dumps(config))
-            first=run(path,root/'one',plots=False)
+            first=run(path,root/'one',plots=True)
             self.assertEqual(json.loads((root/'one/sensitivity.json').read_text()),first)
             self.assertEqual((root/'one/configuration.json').read_bytes(),path.read_bytes())
             config['time_ratios'].reverse();path.write_text(json.dumps(config))

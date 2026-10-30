@@ -17,7 +17,7 @@ import numpy as np
 import scipy
 from scipy import optimize, special, stats
 
-VERSION = 'voice-sensitivity-proposal-v1'
+VERSION = 'voice-sensitivity-proposal-v2-signed-32'
 
 
 def paired_power(n, dz, alpha):
@@ -70,7 +70,7 @@ def recruitment_for_completion(complete_n, retention, assurance):
 
 
 def validate(config):
-    if config.get('version') != VERSION:
+    if config.get('version') not in (VERSION, 'voice-sensitivity-proposal-v1'):
         raise ValueError('Unsupported sensitivity configuration')
     for key in ('seed', 'replications'):
         if type(config[key]) is not int or config[key] < (1 if key == 'replications' else 0):
@@ -78,7 +78,9 @@ def validate(config):
     for key in ('participants', 'trials_per_voice', 'time_ratios', 'benchmark_alphas', 'retention_probabilities', 'scenarios'):
         if not isinstance(config[key], list) or not config[key]: raise ValueError('Empty ' + key)
     if any(type(n) is not int or n < 6 for n in config['participants']): raise ValueError('At least six participants per scenario')
-    if any(type(m) is not int or m < 5 or m % 5 for m in config['trials_per_voice']): raise ValueError('Trials must be a positive multiple of five')
+    if any(type(m) is not int or m < 5 or (m % 5 and not (m == 32 and config['version'] == VERSION))
+           for m in config['trials_per_voice']):
+        raise ValueError('Trials must be 32 for v8 or a legacy multiple of five')
     if len(config['theta_log_effects']) != 5: raise ValueError('Five theta effects required')
     numeric = ['baseline_seconds','participant_intercept_sd','period_log_effect','period_person_sd','within_block_log_change','minimum_block_fraction','alpha','target_power']
     if any(type(config[k]) not in (int,float) or not math.isfinite(config[k]) for k in numeric): raise ValueError('Non-finite parameter')
@@ -100,6 +102,13 @@ def validate(config):
         if s['informative_loss_strength'] and (s['voice_slope_sd'] == 0 or s['participant_loss'] == 0): raise ValueError('Informative loss needs baseline loss and heterogeneous slopes')
 
 
+def theta_categories(rng, shape, trials):
+    """v8 groups have eight signed steps; legacy benchmarks have five magnitudes."""
+    categories = np.array([0, 1, 1, 2, 2, 3, 3, 4] if trials == 32 else [0, 1, 2, 3, 4])
+    order = rng.random((*shape, trials // len(categories), len(categories))).argsort(axis=-1)
+    return categories[order].reshape(*shape, trials)
+
+
 def simulate(config, scenario, n, m, ratio, seed):
     """Bounded-memory Monte Carlo; each generated participant is an independent unit."""
     rng = np.random.default_rng(seed)
@@ -115,8 +124,7 @@ def simulate(config, scenario, n, m, ratio, seed):
         voice_slope = rng.normal(0, scenario['voice_slope_sd'], (batch,n))
         intercept = rng.normal(0, config['participant_intercept_sd'], (batch,n))
         period_slope = config['period_log_effect'] + rng.normal(0, config['period_person_sd'], (batch,n))
-        # One of each absolute-theta category in every five-trial group.
-        permutation = rng.random((batch,n,2,m//5,5)).argsort(axis=-1).reshape(batch,n,2,m)
+        permutation = theta_categories(rng, (batch,n,2), m)
         geometry = np.asarray(config['theta_log_effects'])[permutation]
         noise = rng.normal(0, scenario['trial_sd'], (batch,n,2,m))
         rho = scenario['ar1']
@@ -195,7 +203,7 @@ def run(config_path, out, plots=True):
                    for n,p in itertools.product(config['participants'],config['retention_probabilities'])]
     out.mkdir(parents=True)
     (out/'configuration.json').write_bytes(source)
-    report=dict(version=VERSION,status='protocol_proposal_synthetic_assumptions_not_final_sample_size',
+    report=dict(version=config['version'],status='protocol_proposal_synthetic_assumptions_not_final_sample_size',
                 configuration_sha256=hashlib.sha256(source).hexdigest(),
                 script_sha256=script_hash,
                 python=platform.python_version(),numpy=np.__version__,scipy=scipy.__version__,
@@ -215,7 +223,7 @@ def run(config_path, out, plots=True):
                 rows=sorted((r for r in simulation if r['scenario']==scenario['name'] and r['trials_per_voice']==m and r['time_ratio']==ratio),key=lambda r:r['participants_enrolled'])
                 color=colors(config['scenarios'].index(scenario))
                 x=[r['participants_enrolled'] for r in rows]
-                ax.plot(x,[r['rejection_rate_all'] for r in rows],color=color,marker='o',linestyle='-' if m==40 else '--',label=f"{scenario['name'].replace('_',' ')}, {m}/voice")
+                ax.plot(x,[r['rejection_rate_all'] for r in rows],color=color,marker='o',linestyle='-' if m==max(config['trials_per_voice']) else '--',label=f"{scenario['name'].replace('_',' ')}, {m}/voice")
                 ax.fill_between(x,[r['mc_interval_all'][0] for r in rows],[r['mc_interval_all'][1] for r in rows],color=color,alpha=.08)
             ax.axhline(config['alpha'] if ratio==1 else config['target_power'],color='gray',linestyle=':')
             ax.set(title=f'Hypothetical time ratio {ratio:g}',xlabel='Enrolled participants',ylabel='Rejection probability',ylim=(0,1))

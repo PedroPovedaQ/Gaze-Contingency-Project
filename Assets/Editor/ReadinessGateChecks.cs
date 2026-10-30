@@ -118,7 +118,7 @@ public static class ReadinessGateChecks
                     "The first quick-test cross appears in front of the centered user.");
                 gate.Cancel();
             }
-            Debug.Log("[ReadinessGateChecks] PASS: all 40 quick-test transitions reach the planned wall; first cross is forward.");
+            Debug.Log("[ReadinessGateChecks] PASS: all 32 quick-test transitions reach the planned wall; first cross is forward.");
         }
         finally
         {

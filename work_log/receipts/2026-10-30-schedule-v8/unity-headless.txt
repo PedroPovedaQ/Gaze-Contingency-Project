@@ -1,0 +1,47 @@
+Source: /tmp/schedule64-unity-headless.log
+SHA256: 2b7952dace67a3255cdba9310ab6a5c4d49a419ff2b09ee21be1cd36a7f02ef5
+
+[ScheduleChecks] ALLOCATION block=0 signed=0 above=2 below=2
+[ScheduleChecks] ALLOCATION block=0 signed=45 above=2 below=2
+[ScheduleChecks] ALLOCATION block=0 signed=-45 above=2 below=2
+[ScheduleChecks] ALLOCATION block=0 signed=90 above=2 below=2
+[ScheduleChecks] ALLOCATION block=0 signed=-90 above=2 below=2
+[ScheduleChecks] ALLOCATION block=0 signed=135 above=2 below=2
+[ScheduleChecks] ALLOCATION block=0 signed=-135 above=2 below=2
+[ScheduleChecks] ALLOCATION block=0 signed=180 above=2 below=2
+[ScheduleChecks] ALLOCATION block=1 signed=0 above=2 below=2
+[ScheduleChecks] ALLOCATION block=1 signed=45 above=2 below=2
+[ScheduleChecks] ALLOCATION block=1 signed=-45 above=2 below=2
+[ScheduleChecks] ALLOCATION block=1 signed=90 above=2 below=2
+[ScheduleChecks] ALLOCATION block=1 signed=-90 above=2 below=2
+[ScheduleChecks] ALLOCATION block=1 signed=135 above=2 below=2
+[ScheduleChecks] ALLOCATION block=1 signed=-135 above=2 below=2
+[ScheduleChecks] ALLOCATION block=1 signed=180 above=2 below=2
+[ScheduleChecks] PASS: 64-trial v8 schedule, realized pinned geometry, height allocation and actual 32-trial block break.
+[GazeQualityChecks] PASS: native-eye readiness fallback, raw preservation and invalid/stale rejection
+[GazeQualityChecks] PASS: first-cue trial/resume lifecycle and target-history serialization
+[GazeQualityChecks] PASS: hidden-target same-wall opening, diagonals, other-wall cue and invalid/stale gaze.
+[GazeQualityChecks] Vicinity capture skipped: Null graphics device; GPU verification required.
+[GazeQualityChecks] PASS: pointing vicinity, target identity, freshness, vertical arrival and development-only radius/ring controls
+[GazeQualityChecks] PASS: coordinates, idempotent diagnostic flip, hidden target, shared wording, shared-stream CSV validity and append safety. Hardware accuracy/rate NOT validated.
+[GazeWallFilterChecks] PASS: real physics wall blocks default ray; configured gaze reaches target; gaze UI blocking disabled.
+[ControllerSelectionChecks] PASS: right settings chord edges, hold, A release, timeout, reconnect and repeat.
+[ControllerSelectionChecks] PASS: eye/settings launchers, open menus and Continue stay world-fixed through head movement; reopen reanchors upright.
+[ControllerSelectionChecks] PASS: wrist mixed-reality bridge, camera transparency, off state, restoration and reenable; native layer needs device verification.
+[ControllerSelectionChecks] PASS: ring shine, hue/alpha restoration, controller rim priority, hover rotation and hidden-object guards.
+[GazeWallFilterChecks] PASS: real physics wall blocks default ray; configured gaze reaches target; gaze UI blocking disabled.
+[ControllerSelectionChecks] PASS: trigger edges, pause/tracking gates, no gaze dwell, fixed objects, highlight cleanup, scene rig and right-only UI policy.
+[ReadinessGateChecks] PASS: all 32 quick-test transitions reach the planned wall; first cross is forward.
+[ReadinessGateChecks] PASS: continuous gaze, resets, audio gate, no timer bypass, fixed world cross, padded whole-cross region and search onset.
+[StudyFeedbackChecks] PASS: round encouragement facts, immutable snapshots, practice identity, telemetry, missing client, repeated stop, restart, disable and prepared phrases.
+[ModelRoutingChecks] PASS: MiniLM local speech routing and explicit Jev opt-in.
+[StudyTimeoutChecks] PASS: deadline, pauses, one terminal event, no success/stop, next wall, prepared voices and replay boundary.
+[StudyFeedbackChecks] PASS: gaze-relative cross direction, prepared reminders, spherical 100-piece burst, 120 confetti pieces, no physics/RNG interference and cleanup.
+[GuidanceBoundaryChecks] PASS: all eight walls/labels, pre-spawn preference, wrist on/off, reopening/API sync, ray feedback and unchanged zone geometry.
+[VoiceChoiceChecks] PASS: gender then voice, six options, switching/back, invalid choice and no-audio confirmation gate.
+[TrialReplayChecks] PASS: pose freshness, phase boundaries, unknown tracking, exact sequence rewind and source snapshot.
+[TrialReplayChecks] PASS: indexed seeks equal full-prefix reconstruction across 80 trials, exact boundaries and random rewinds.
+[TrialReplayAudioChecks] PASS: WAV integrity, overlapping effects/speech, per-event gain, exact stop/seek, pause/speed/disposal and missing assets. Acoustic listening remains unverified.
+[TrialReplayChecks] PASS: roundtrip, 168 objects, wrong/correct choice, pause, rewind, motion, recovery, corruption, traversal, version, overwrite, controller tracking/trigger/hit, no dwell, legacy schema, audio.
+[StudyVerificationChecks] PASS: offline study integration. Headset accuracy, rate, audio and interaction validation remain required.
+Exiting batchmode successfully now!

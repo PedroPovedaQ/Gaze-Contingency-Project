@@ -1,0 +1,1 @@
+{"status": "ready", "serial": "192.168.1.208:5555", "model_version": "20261026-minilm-reassurance-v8", "transport": "adb_reverse_loopback", "log_directory": "/Users/pedro.poveda/.local/share/follow-my-voice-models/headset-service", "note": "MiniLM is the default. Settings can opt into Jev. Keep the Mac awake."}

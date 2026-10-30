@@ -3,6 +3,10 @@ import math
 
 REFERENCE = "pre_cue_eye_origin_to_readiness_cross"
 V7 = {"readiness-target-angle-v7-one-practice", "readiness-target-angle-v7-quick-origin0"}
+V8 = {"readiness-target-angle-v8-signed-steps-32-one-practice",
+      "readiness-target-angle-v8-signed-steps-32-quick-origin0"}
+PRE_CUE_SCHEDULES = V7 | V8
+QUICK_SCHEDULES = {v for v in PRE_CUE_SCHEDULES if v.endswith("quick-origin0")}
 SCALARS = {
     "round": "round", "gazeSequence": "gaze_sequence",
     "time": "realtime_seconds", "gazeReceiptTime": "gaze_receipt_realtime_seconds",

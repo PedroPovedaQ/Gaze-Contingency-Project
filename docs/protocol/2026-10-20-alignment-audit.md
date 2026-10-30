@@ -1,5 +1,7 @@
 # Protocol/runtime alignment — October 20, 2026
 
+**Implemented — October 30, 2026:** the current schedule is 64 measured trials (32 per voice), plus one practice: four per signed step, absolute-angle counts 4/8/8/8/4, and 16 above/16 below with two of each per signed step. All 24 identities occur per block; eight repeat. See [current schedule](../balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v8.
+
 The full October 20 handoff supersedes the earlier handoff. **Qualtrics stays on hold.** The later user decision resolves practice: use the first assigned voice (Order A preferred catalog; Order B self-similar). This is an implementation audit, not approval to recruit or a report of participant outcomes.
 
 ## Reconciled sources

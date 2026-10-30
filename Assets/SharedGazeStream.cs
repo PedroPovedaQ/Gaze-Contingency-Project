@@ -309,7 +309,7 @@ public sealed class SharedGazeStream : MonoBehaviour
     }
 
     // Keep eye/replay linkage on the completed trial during success speech. The
-    // manager's next-objective counter can already point at another block or 80.
+    // manager's next-objective counter can already point at another block or the end of the schedule.
     public static void FillTrialContext(GazeObservation sample, FindObjectGameManager game)
     {
         sample.eyeDotEnabled = game.TryGetComponent<EyeDot>(out var eyeDot) && eyeDot.Visible;

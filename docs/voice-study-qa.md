@@ -1,5 +1,7 @@
 # Two-voice study QA — current local build
 
+**Implemented — October 30, 2026:** the current schedule is 64 measured trials (32 per voice), plus one practice: four per signed step, absolute-angle counts 4/8/8/8/4, and 16 above/16 below with two of each per signed step. All 24 identities occur per block; eight repeat. See [current schedule](balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v8.
+
 **Implemented locally; headset verification pending (October 1, 2026).** Compare participant-preferred and self-similar voices with the same gaze-contingent imperative guidance. There are two separate practice trials, then **40 measured trials per voice / 80 total**. The agent knows the hidden target; the participant follows directions and selects using the right controller. This checklist supersedes older 14-trial, first-person, button-shortcut and countdown instructions.
 
 ## Run the complete flow
