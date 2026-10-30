@@ -1,11 +1,14 @@
-\chapter{USER STUDY METHODOLOGY}
-\label{ch:study}
-This chapter describes the within-participant user study that uses Follow My Voice to answer the research questions in Section~\ref{sec:research-questions}. It covers the experimental design and participants, the procedure, the data the system records, how each measure is scored, and the planned statistical analysis.
+\section{Participants}
+\label{sec:participants}
+Eligible participants are consenting adults able to understand the task, hear the guidance, view the scene with usual correction and safely use the seated setup and right controller. Handedness, visual correction and prior XR and voice-assistant experience are recorded. Sample size and the enrollment ceiling will be determined before recruitment by a power analysis for the theta-adjusted repeated-measures outcome that accounts for plausible within-participant variation and incomplete observations.
+
+
+\section{Experiment Design}
+\label{ch:methodology}
+The user study uses a within-participant design to answer the research questions in Section~\ref{sec:research-questions}.
 
 The study design draws on Chiossi et al.'s visual-search study, which combines search outcomes with eye-tracking measures~\cite{chiossi2024searching}. This study keeps that separation between task performance and visual behavior but changes the research question to voice identity, initially withholds the target identity, and uses a researcher-selected 25-second search limit. Complementary work by Pfeil et al. at UCF compares eye--head coordination in virtual and physical viewing~\cite{pfeil2018eyehead}. That work motivates retaining head motion alongside eye direction when interpreting gaze in this application.
 
-\section{Experimental Design}
-\label{ch:methodology}
 \draftnote{This section specifies the proposed confirmatory procedure. The implemented snapshot supports one practice trial, two 40-trial blocks, and a final questionnaire handoff. It also records pre-cue starting geometry and balances target direction and height within each block. Sample size and pilot acceptance rules remain unresolved.}
 \subsection{Voice Manipulation and Comparison Rationale}
 This thesis compares two ways of personalizing assistance: a synthetic voice derived from the participant's recorded speech and a neutral voice selected by that participant from the supplied catalog. Letting participants choose the neutral alternative ties the comparison to a design choice a user could face. The within-participant task provides repeated observations under both configurations. Similarity ratings indicate whether participants heard the clone as resembling themselves, whereas performance and experience measures compare how each voice functions as guidance.
@@ -43,9 +46,6 @@ Objects vary in position within each plane of the shared layout, so each trial s
 
 \clearpage
 Nominal angle steps are defined relative to the readiness (start) wall, which is the previous target wall. For the first measured trial, this reference is the practice target wall. The first measured cross is centered on its wall. Each later cross is shifted sideways by a seeded offset of up to 20 percent of the usable half-width. Target placement happens when readiness completes, while all objects remain hidden and before the opening cue. At that moment, the application rotates the horizontal bearing from the participant's eye origin to the cross by the assigned signed angle, places the target where that bearing meets the assigned wall, and arranges the remaining objects around it. The exact starting angle defined below therefore equals the assigned category at that instant. If the required position falls outside the wall, the session stops so the participant can recenter, rather than substituting a different angle or trial. Final positions depend on the saved eye origin as well as the seed, so each layout is reconstructed from the saved object positions.
-
-\subsection{Participants}
-Eligible participants are consenting adults able to understand the task, hear the guidance, view the scene with usual correction and safely use the seated setup and right controller. Handedness, visual correction and prior XR and voice-assistant experience are recorded. Sample size and the enrollment ceiling will be determined before recruitment by a power analysis for the theta-adjusted repeated-measures outcome that accounts for plausible within-participant variation and incomplete observations.
 
 \subsection{Research Questions and Outcomes}
 Each research question in Section~\ref{sec:research-questions} maps onto specific outcomes. RQ1 uses active completion time as the primary outcome, with missed targets and perceived workload, measured with an adaptation of NASA-TLX~\cite{hart1988nasatlx}, as secondary outcomes. RQ2 uses the Index of Pupillary Activity~\cite{duchowski2018ipa}, fixation count, and saccade frequency, which remain exploratory until the eye-event detectors are validated on the headset. RQ3 uses the interest/enjoyment subscale of the Intrinsic Motivation Inventory (IMI)~\cite{ryan1982control,mcauley1989imi}, with the other three IMI subscales reported alongside it. Agent perception, eeriness, voice experience, reliance, search behavior, and variation in the voice contrast with starting angle are exploratory. The hypotheses are directional, favoring the self-similar voice, but the voice contrasts are tested two-sided so that an advantage for the neutral voice would also be detected. Repeated trials are treated as within-participant observations, not as independent participants.

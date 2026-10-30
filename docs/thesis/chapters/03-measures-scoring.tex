@@ -1,11 +1,11 @@
-\section{Measures and Scoring}
+\subsection{Scoring}
 \label{sec:scoring}
-\subsection{Task Performance}
+\subsubsection{Task Performance}
 \paragraph{Active completion time.} The primary outcome is elapsed active-search time in seconds from object reveal to the correct right-trigger selection, excluding the union of recorded pause intervals overlapping that period. Section~\ref{ch:measurement} specifies the clock equation and handling of overlapping pauses. Lower values indicate faster completion. Readiness, opening guidance, post-selection feedback, questionnaires and between-trial breaks do not contribute to this outcome. An unfinished trial retains its observed exposure and outcome but has no successful completion time. The full interval from opening-cue onset to selection is also defined to describe the complete instructed task duration.
 
 \paragraph{Target contact and selection errors.} Time to first target gaze is the active-clock time of the first valid, recorded gaze-ray intersection with the target, and time to first controller contact uses the first tracked right-controller ray--target intersection. Last target-gaze contact time denotes the last observed valid target intersection during the trial, not a fixation duration or a spoken confirmation. These event times remain distinct from trigger selection and from the larger gaze-vicinity region used by the guidance system. Incorrect selections are counted as trigger presses that select non-target objects. If no valid target contact is observed, its latency is missing rather than zero. All contact times retain their source and sampling resolution.
 
-\subsection{Starting Geometry and Search Behavior}
+\subsubsection{Starting Geometry and Search Behavior}
 \paragraph{Starting angle, height and distance.} The pre-cue snapshot saves a reference origin (the eye origin at readiness completion), readiness-cross position and target position. Starting theta ($\theta_0$) is the signed angle about world up between the horizontal origin-to-cross and origin-to-target vectors. Its magnitude $|\theta_0|$ quantifies horizontal turn demand, and its sign preserves direction. Degenerate horizontal vectors are marked unavailable. The primary analysis adjusts for $|\theta_0|$ rather than dividing completion time by degrees. Nominal wall-angle assignment, exact pre-cue theta and post-reveal head-to-target error are separate variables. Recordings made before the snapshot was added carry only nominal theta and therefore lack $\theta_0$.
 
 Signed target-height difference is $\Delta h=y_{\mathrm{target}}-y_{\mathrm{cross}}$, in metres; positive values indicate above-cross targets. Euclidean target distance is the three-dimensional distance between target center and the first valid tracked head position after reveal, with that observation's timestamp retained. All positions used in a calculation share a recorded coordinate frame.
@@ -16,7 +16,7 @@ Distinct walls visited, wall transitions and revisits summarize search coverage 
 
 \paragraph{Instructions and guidance timing.} The delivered active-search assistance total counts playback starts for directional guidance, gaze/pointing acknowledgments, and selection reminders, including delivered repeats. These categories are also reported separately, as specified in Section~\ref{ch:measurement}. Requested repeats, delivered repeats and interrupted utterances are retained separately. Model requests, prefetched audio and success speech are excluded from delivered search instructions. Opening cues and success feedback retain separate event labels. Timing analysis distinguishes evidence qualification, decision-request latency, model deferral, scheduling delay and audio onset. Gaze confirmations and controller confirmations are evaluated separately against their corresponding gates. The controller gate includes both its hold and the required nearby valid gaze.
 
-\subsection{Subjective Measures}
+\subsubsection{Subjective Measures}
 \paragraph{Workload.} Workload is measured with an adaptation of \href{https://doi.org/10.1016/S0166-4115(08)62386-9}{Hart and Staveland's NASA-TLX}~\cite{hart1988nasatlx}. Six dimensions---mental, physical and temporal demand, performance, effort and frustration---are rated separately for each voice block during the final survey, after both blocks. The study uses a documented 0--10 adaptation without pairwise weighting. Demand, effort and frustration run from 0 = Very low to 10 = Very high. The Performance prompt asks how successful the participant was and runs from 0 = Failure to 10 = Perfect. This favorable-direction response is a deliberate local adaptation of the opposite orientation in the \href{https://human-factors.arc.nasa.gov/groups/TLX/downloads/TLXScale.pdf}{NASA rating form}. All six raw responses are retained; higher raw Performance values indicate better perceived performance. Before calculating the workload mean, only Performance is reverse-scored once as $10-r_{\mathrm{Performance}}$. The unweighted mean uses the other five raw ratings and this reversed Performance value, and is calculated only when all six responses are present. Higher mean scores therefore indicate greater workload or poorer perceived performance.
 
 \paragraph{Motivation and activity experience.} The \href{https://selfdeterminationtheory.org/intrinsic-motivation-inventory/}{Intrinsic Motivation Inventory}~\cite{ryan1982control,mcauley1989imi} contributes interest/enjoyment (7 items), effort/importance (5), pressure/tension (5), and value/usefulness (7). Responses range from 1 = Not at all true to 7 = Very true. Published reverse keys are applied before averaging each complete subscale. Interest/enjoyment represents intrinsic motivation, and the four subscales are not combined into an overall IMI score. Activity wording refers to the completed search block, with task-specific adaptations documented.
@@ -51,7 +51,7 @@ Total per block reference & 65 & 130 numeric ratings across two references, befo
 \end{tabularx}
 \end{table}
 
-\section{Validating the Measures}
+\subsection{Validating the Measures}
 \label{sec:measure-validation}
 A measure can fail in two different ways. It can be computed incorrectly, for example by counting pause time as search time or treating a missing gaze sample as a valid one. Or it can be computed exactly as defined and still not reflect the construct it is meant to capture, as when a ray intersection is read as a fixation or a pupil signal driven by luminance is read as workload. The first is a question of verification; the second is a question of validation. Follow My Voice addresses both at four levels: automated tests with known answers, reconstruction of each trial from its raw records, validation of the eye tracker for each participant, and a dedicated validation session for the eye-event and pupil measures. Table~\ref{tab:measure-validation} summarizes the evidence each measure requires before it enters confirmatory analysis, and its current status.
 
@@ -74,7 +74,7 @@ Custom voice items & Stored and reported per item & No combined score; perceived
 \end{tabularx}
 \end{table}
 
-\subsection{Computational Verification}
+\subsubsection{Computational Verification}
 Every derived measure is computed by analysis code that is exercised by automated tests on inputs whose correct output is known in advance. The tests encode the definitions in Section~\ref{ch:measurement} as checkable cases.
 \begin{itemize}
 \item \textbf{Fixations, saccades and head turns.} Synthetic gaze streams containing two known fixations must yield exactly those fixations. A known saccade must be detected, while a head turn must be excluded.
@@ -86,15 +86,15 @@ Every derived measure is computed by analysis code that is exercised by automate
 \end{itemize}
 These tests establish that the code implements its definitions. They do not show that the definitions measure what they are intended to measure.
 
-\subsection{Reconstruction Checks}
+\subsubsection{Reconstruction Checks}
 Trial summaries are derived from, and stored separately from, the frame-level gaze, motion, and event records (Figure~\ref{fig:data-provenance}). Every exported value can therefore be traced to the observations it came from. Trial Review replays a trial on a common timeline with the reconstructed scene, the recorded gaze and controller rays, guidance transitions, model decisions, and speech playback (Section~\ref{sec:trial-review}). A reviewer can step to the frame at which the export places a target contact, selection, or speech onset and confirm that the event occurred there. Instruction counts come from recorded playback starts rather than from requested cues, so a cue that was requested but never played does not count as delivered guidance. Before confirmatory recruitment, pilot sessions confirm that trial events can be reconstructed from the saved data for sessions whose course is directly observed (Section~\ref{sec:pilot}).
 
-\subsection{Eye-Tracker Validation for Each Participant}
+\subsubsection{Eye-Tracker Validation for Each Participant}
 Gaze-derived measures are only as accurate as the gaze signal. After the headset is fitted, vendor calibration is followed by an independent spatial check: the participant looks at targets at known positions, and the angular error between the recorded gaze direction and the true target direction is computed. Following eye-tracking reporting guidance~\cite{dunn2024reporting,niehorster2026dataquality}, accuracy (the average offset) and precision (the sample-to-sample spread) are reported separately. A stable offset and a noisy signal produce different guidance failures even when their mean errors are similar. Invalid observations are excluded from the error distribution but counted in availability summaries. If an offset correction is applied, the targets used to fit it are kept separate from those used to judge it.
 
 The effective acquisition rate is estimated from distinct source observations rather than from rendered frames (Section~\ref{ch:measurement}). Because the headset does not currently expose native capture timestamps, a 120-Hz rate is not assumed. Tracking validity, data coverage, and gaps accompany every gaze-derived measure. Ray intersections and vicinity hits are reported as interaction events, not fixations.
 
-\subsection{Eye Validation Session}
+\subsubsection{Eye Validation Session}
 Fixation, saccade, and pupil measures require evidence that a test with synthetic data cannot provide. They are therefore validated with a separate in-headset session controlled from Trial Review, in which every stimulus has a known position, timing, or difficulty. The session contains seven groups of exercises:
 \begin{itemize}
 \item \textbf{Spatial accuracy.} Twenty-seven fixation dots, at three distances (1.2, 2.4, and 3.2~m), three horizontal angles ($-15^\circ$, $0^\circ$, $+15^\circ$), and three vertical angles ($-10^\circ$, $0^\circ$, $+10^\circ$), measure accuracy and precision across the region in which targets appear.
@@ -108,5 +108,5 @@ Fixation, saccade, and pupil measures require evidence that a test with syntheti
 
 The session is implemented and was first run with a wearer on October 27, 2026, when a development participant completed the five drift targets with in-headset confirmation. The spatial, saccade, control, and arithmetic exercises have not yet been completed with a wearer. The session report therefore records the measurements as not validated. Acceptance criteria for the detectors and for IPA will be fixed from pilot data before confirmatory analysis. Until those criteria are met, fixation counts, saccade rates, and IPA are reported as exploratory, and final fixation duration on the target remains unavailable (Section~\ref{ch:measurement}).
 
-\subsection{Questionnaire Measures}
+\subsubsection{Questionnaire Measures}
 NASA-TLX~\cite{hart1988nasatlx} and the published instruments in Table~\ref{tab:battery} are used with their established item structure. The ARQ items are taken from Venkatakrishnan et al.~\cite{venkatakrishnan2026clarifying}. Wording adapted from an embodied agent to a voice agent is documented in Appendix~\ref{app:instruments}. Scale metadata distinguishes the present 0--10 workload form from earlier exports that used another range, so responses are never rescaled implicitly. The custom voice and assistance items have no prior validation. They are therefore analyzed as individual items, with no combined score, and perceived voice similarity serves as a manipulation check rather than an outcome. Pilot sessions measure survey comprehension and completion time before recruitment.

@@ -1,0 +1,23 @@
+\chapter{DEVELOPMENT EVALUATION}
+\label{app:development}
+\label{sec:development-evaluation}
+Before participant data collection, the system was evaluated in two ways: automated software verification and recorded development sessions on the headset. Both describe how the apparatus behaves; neither provides participant results or a voice-condition effect.
+
+\section{Software Verification}
+Software verification records document the apparatus alongside the development recordings in Section~\ref{sec:development-results}. A verification run on October 20, 2026 passed schedule and voice-isolation checks confirming one practice trial in the first assigned voice, two measured blocks, and the nominal-angle quotas. The same run passed 38 trial-export tests and seven workload scoring and plotting tests, and the Android application was built, installed, and launched successfully. These test counts come from that run and were not re-executed for this manuscript. The current software version, dated October 25, 2026, includes the pre-cue snapshot and balanced direction and height allocation. Its schedule checks pass across 50 participant identifiers and both voice orders, and its geometry checks pass across every starting wall and angle category.
+\begin{table}[htbp]
+\centering\caption{Apparatus verification and outstanding validation.}
+\small\tagpdfsetup{table/header-rows={1}}
+\begin{tabularx}{\linewidth}{@{}p{0.28\linewidth}XX@{}}\toprule
+Component & What was verified & Not yet established \\\midrule
+Schedule and voice checks & One practice trial and nominal allocation of 40 trials in each of two blocks pass automated checks & Wearer completion of a full session \\
+Trial export and TLX tests & Declared scales and retrospective joins are correct in tested cases & Validation of all questionnaires \\
+Unity integration checks & Listed state and interaction cases pass & Robustness to all timing races \\
+Android build/install/launch & Application built, installed, and started & Acceptance in a participant session \\
+Exact pre-cue theta & Snapshot saved at readiness completion; geometry checks pass & Observation in a complete wearer session \\
+Vertical allocation & 20/20 and per-angle height quotas pass schedule checks & Target visibility and seated comfort \\
+Voice-condition outcomes & None; no confirmatory dataset reported & Any performance or preference conclusion \\\bottomrule
+\end{tabularx}
+\end{table}
+
+\input{chapters/07-development-results}
