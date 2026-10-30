@@ -48,31 +48,5 @@ This study explores the impact of self-similar spoken assistance when guiding se
 
 Answering this question requires appropriate guidance in both conditions and a record of what each participant heard. Gaze contingency, the shared decision policy, and playback logging address this requirement. Interpreting the interaction also requires independent gaze-quality checks and separate records of looking, pointing, and selecting~\cite{dunn2024reporting,niehorster2026dataquality}. Chapter~\ref{ch:system} and Section~\ref{ch:measurement} describe these controls.
 
-\section{Scope of the Comparison}
-The independent variable is voice condition: neutral voice versus self-similar synthetic voice. Both conditions use gaze contingency, the same semantic phrase library, the same local geometry rules, and the same controller-selection mechanics. Because these properties are shared, the study cannot estimate the separate contributions of gaze contingency, short-term memory, the cloud decision agent, or synthetic speech in general.
-
-The task is deliberately narrower than unrestricted navigation. Participants remain seated and rotate their head and chair to search surrounding planes. Guidance such as ``turn left'' refers to orientation within this seated setup rather than walking toward a target. Objects appear in a virtual room, and the target is initially unnamed. Conclusions are limited to guided search under these conditions.
-
-The single practice trial uses the first assigned voice, so whichever voice appears first receives additional exposure. Counterbalancing distributes this asymmetry across voices but does not remove learning or carryover; the analysis therefore models period and assigned order, and the practice assignment is reported.
-
-Figure~\ref{fig:comparison-framework} separates the voice manipulation from the shared task.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\linewidth,alt={Two voice conditions feed a shared hidden-target search task and a paired outcome comparison.}]{figures/comparison-framework.pdf}
-\caption[Two voices, one guidance method]{Participants complete the same search task twice, once with a neutral voice and once with a self-similar voice. Only the voice changes. The gaze-contingent hint logic, phrase library, starting-angle allocation, and selection method are the same in both conditions, so outcome differences reflect the voice configuration rather than the guidance method.}
-\label{fig:comparison-framework}
-\end{figure}
-
-
-\section{Intended Contributions}
-The thesis develops an empirical comparison of self-similar voice with a preferred alternative in virtual-reality task assistance. Its conceptual contribution is to distinguish resemblance from preference and to examine performance alongside the favorable or uncomfortable experience of hearing one's own synthetic voice.
-
-The methodological contribution is a within-participant design for this comparison: two counterbalanced voice blocks, a shared hidden-target task, explicit trigger selection, identical nominal starting-angle quotas across blocks, retrospective voice-referenced questionnaires, and a planned repeated-measures analysis. Manipulation checks and acoustic-quality reporting characterize what each voice condition delivered before outcomes are interpreted.
-
-The guidance and recording platform serves as the apparatus for this comparison. Local spatial eligibility, constrained agent decisions, prepared speech, and synchronized review allow inspection of what each participant heard and whether delivery problems affected the comparison. Neither a provider benchmark nor a new gaze-guidance algorithm is claimed as a primary contribution.
-
-The empirical contribution is pending; the thesis does not yet report a recruited sample, condition means, significance tests, or participant quotations.
-
-\section{Organization of the Thesis}
-Chapter~\ref{ch:literature} reviews work on guiding attention and search in extended reality, spoken and gaze-contingent guidance, voice as a social cue, and the measurement of workload, engagement, and eye behavior, and it closes with the research gap this thesis addresses. Chapter~\ref{ch:system} describes the Follow My Voice system and the development evidence for it. Chapter~\ref{ch:study} describes the user study: its design, procedure, data collection, measures, and planned analysis. Chapter~\ref{ch:evaluation} presents the results framework, organized by research question. Chapter~\ref{ch:discussion} interprets the possible outcomes and discusses limitations and future work, and Chapter~\ref{ch:conclusion} concludes. Appendix~\ref{app:instruments} reproduces the questionnaires, Appendix~\ref{app:data} defines the recorded data, and Appendix~\ref{app:scenarios} specifies the guidance scenarios used to evaluate the apparatus.
+\section{Overview}
+Chapter~\ref{ch:system} presents the methodology: the Follow My Voice system, its gaze-contingent guidance and decision model, and the development evidence for it. Chapter~\ref{ch:study} describes the user study: its design, procedure, data collection, measures, and planned analysis. Chapter~\ref{ch:evaluation} presents the results framework, organized by research question. Chapter~\ref{ch:discussion} interprets the possible outcomes and discusses limitations and future work, and Chapter~\ref{ch:conclusion} concludes. Appendix~\ref{app:instruments} reproduces the questionnaires, Appendix~\ref{app:data} defines the recorded data, and Appendix~\ref{app:scenarios} specifies the guidance scenarios used to evaluate the apparatus.

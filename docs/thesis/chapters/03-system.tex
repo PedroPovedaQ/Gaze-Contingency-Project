@@ -1,5 +1,11 @@
-\chapter{THE FOLLOW MY VOICE SYSTEM}
+\chapter{METHODOLOGY}
 \label{ch:system}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth,alt={Two voice conditions, a generic agent voice the user chooses from a catalog and a self-similar voice matched to the user, both feed one shared LLM-based guidance system that produces audio cues from the trial state and the target object's location.}]{figures/system-setup.pdf}
+\caption[System setup]{System setup. Guidance is delivered in one of two voices: a generic agent voice that the participant chooses from a catalog, or a self-similar voice matched to the participant. Both voices are driven by the same guidance system, which issues audio cues from the trial state and the target object's location.}
+\label{fig:system-setup}
+\end{figure}
 This chapter describes Follow My Voice, the virtual-reality application built for this thesis. It covers the search scene, the gaze-contingent guidance and the agent that decides when and how to speak, voice preparation, and the tools that record and review each session. The same system serves both voice conditions; only the voice that delivers the guidance changes. The chapter closes with development evidence showing how the system behaves on the headset (Section~\ref{sec:development-evaluation}), and Chapter~\ref{ch:study} describes the user study that uses it.
 
 The application runs on the HTC VIVE Focus Vision headset. Each participant completes one practice trial and 80 measured trials, divided into two counterbalanced blocks of 40 trials, one per voice condition. The project source is available at \href{https://github.com/PedroPovedaQ/Gaze-Contingency-Project}{the Gaze Contingency Project GitHub repository}.
