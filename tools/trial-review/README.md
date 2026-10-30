@@ -610,3 +610,21 @@ open -n "$HOME/Applications/Trial Review Redesign 20261028.app" --args \
 ```
 
 Capture forces the bundled synthetic demo and in-memory development intake/catalog fixtures. It bypasses live initialization, ADB/receiver launch, polling, microphone access, audio playback/workers, intake jobs, exports and automatic evaluation. Other launch modes are ignored; real UI input is ignored during capture. The output is numbered PNGs plus Unity's log, and the app exits after `TRIAL_REVIEW_CAPTURE_PASS`. `TRIAL_REVIEW_CAPTURE_INPUT_PASS` confirms the existing keyboard and timeline handlers passed synthetic GUI-event checks. Use 1280 × 800 for the small-window pass. These captures verify presentation, not real consent, recording, cloning or headset operation.
+
+**Development figure recapture:** `--capture-recorded-scene OUTPUT --recording TEMP_COPY`
+uses the same service/input isolation but requires the exact read-only temporary copy of
+DEV_NEUTRAL Run 26 (SHA-256 `6c731b5902d307955ccdfbe5f56ffd5cddf70e6d3a9b425842ef70a965278c15`).
+It never substitutes the demo. Copy the sibling `audio/` directory too to retain the speech
+timeline; no audio is played. The preset captures Trial 01 at session time 14.83 s,
+sample sequence 919, first-person recorded head and overhead yaw 0°/pitch 89°/distance
+5.5 m, FOV 65°, original 36:19 camera aspect. Viewer walls, degrees, detection ring,
+subtitles, state markers and target reveal are off; room, avatar, eye gaze and controller
+visualizations remain on. The provenance caption is below the scene, as in the original.
+Newer cosmetic attachments to avatar/controller mesh tips are bypassed only in this
+preset: the gaze starts at its saved origin with saved direction (3 m display length),
+and the controller uses its saved ray origin/end. Both are asserted before each capture.
+Use `-screen-width 2400 -screen-height 1650 -screen-fullscreen 0` for the original client
+area size (PNG excludes the original 56-pixel native title bar). The current UI is retained.
+The exact-source preset rejects gaze-correction profiles and verifies source hash and
+absence of catalog/export/live jobs after capture. Delete the temporary recording/audio
+copy after verifying both PNGs and `RECORDED_SCENE_CAPTURE_PASS` in the log.

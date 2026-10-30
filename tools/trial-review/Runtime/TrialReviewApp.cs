@@ -48,6 +48,7 @@ public sealed partial class TrialReviewApp : MonoBehaviour
         if(m_CaptureMode)
         {
             m_Muted=true;m_Volume=0;
+            if(m_RecordedSceneCapture) { yield return CaptureRecordedScene(args); yield break; }
             yield return Open(Path.Combine(Application.streamingAssetsPath,"Demo/recording.jsonl"));
             if(m_Timeline==null) { Debug.LogError("Capture demo failed to load"); Application.Quit(1); yield break; }
             m_Tracks.Refresh(m_Timeline);

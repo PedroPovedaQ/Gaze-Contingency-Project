@@ -8,16 +8,20 @@ using UnityEngine;
 public sealed partial class TrialReviewApp
 {
     bool m_CaptureMode;
+    bool m_RecordedSceneCapture;
     bool m_CaptureCheckInputs;
     string m_CaptureDirectory,m_CaptureIntakeActivity;
     void Awake()
     {
         var args = Environment.GetCommandLineArgs();
         int index = Array.IndexOf(args, "--capture");
+        int recordedIndex = Array.IndexOf(args, "--capture-recorded-scene");
+        m_RecordedSceneCapture = recordedIndex >= 0;
+        if(m_RecordedSceneCapture) index=recordedIndex;
         m_CaptureMode = index >= 0;
         if (!m_CaptureMode) return;
         if (index + 1 >= args.Length || args[index + 1].StartsWith("--"))
-            throw new ArgumentException("--capture requires an output directory");
+            throw new ArgumentException("Capture requires an output directory");
         m_CaptureDirectory = Path.GetFullPath(args[index + 1]);
         m_ThemeLoaded = true; m_LightTheme = false;
     }

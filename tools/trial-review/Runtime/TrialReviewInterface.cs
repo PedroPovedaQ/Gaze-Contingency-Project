@@ -128,6 +128,8 @@ public sealed partial class TrialReviewApp
         float left=rail+14,viewWidth=width-inspector-14-left;
         float optionsHeight=8;
         m_Viewport=new Rect(left,top+48,viewWidth,bottom-top-48-optionsHeight);
+        // Preserve the original thesis capture's 936 x 494 camera framing in the current UI.
+        if(m_RecordedSceneCapture) m_Viewport.height=m_Viewport.width*19f/36f;
         CameraControls(new Rect(left,top,viewWidth,40));
         if(m_Timeline!=null)
         {
@@ -337,7 +339,12 @@ public sealed partial class TrialReviewApp
         m_GuidanceState.Prepare(m_Timeline,m_Time,m_Sequence,WaitingForHeadset);
         m_Environment.Prepare(m_Timeline.State.Trial,m_ShowWalls,m_ShowRoom);
         m_Actors.Prepare(m_Timeline,m_Time,m_Renderer.RecordedHead,m_ShowBody,m_Renderer.ShowControllers,m_ShowEyeRay,m_Correction);
-        if(m_Actors.RightVisible)m_Renderer.AttachControllerRay(m_Actors.RightControllerTip);
+        if(m_RecordedSceneCapture)
+        {
+            // The old figure used saved ray origins. Do not apply newer avatar-emitter cosmetics.
+            if(m_Actors.GazeAvailable)m_Actors.EyeRay.SetPosition(0,m_Timeline.State.Sample.gazeOrigin);
+        }
+        else if(m_Actors.RightVisible)m_Renderer.AttachControllerRay(m_Actors.RightControllerTip);
         m_Vicinity.Prepare(m_Timeline,m_Renderer,m_Time,m_Sequence,m_Actors.GazeAvailable&&!WaitingForHeadset,m_Actors.GazeRay,m_ShowDetectionRing,m_GuidanceState.Current);
         // The orbit follows the fixed seated center, never per-frame head translation.
         if(!m_Renderer.RecordedHead)
@@ -365,7 +372,7 @@ public sealed partial class TrialReviewApp
             GUI.Label(new Rect(banner.x+12,banner.y+8,banner.width-24,24),"Head pose unavailable · overview shown",new GUIStyle(m_Label){normal={textColor=new Color32(255,159,67,255)}});
             GUI.Label(new Rect(banner.x+12,banner.y+32,banner.width-24,20),"at Study "+Clock(m_Time),new GUIStyle(m_Mono){fontSize=12,normal={textColor=new Color(.85f,.85f,.85f)}});
         }
-        var caption=new Rect(m_Viewport.x,m_Viewport.yMax-30,m_Viewport.width,30);
+        var caption=new Rect(m_Viewport.x,m_Viewport.yMax-(m_RecordedSceneCapture?0:30),m_Viewport.width,30);
         Fill(caption,new Color(.025f,.03f,.035f,.9f));
         GUI.Label(new Rect(caption.x+12,caption.y+4,caption.width-24,24),
             $"{(m_Vicinity.RecordedWinner?"Recorded highlight":"Reconstructed highlight (not recorded)")} · ring estimated · padding {m_Vicinity.Padding:0.#}° ({(m_Vicinity.RecordedPadding?"recorded":"default")})",new GUIStyle(m_Small){normal={textColor=new Color(.8f,.8f,.77f)}});
