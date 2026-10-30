@@ -214,3 +214,10 @@ VIVE package source: `https://github.com/ViveSoftware/VIVE-OpenXR-Unity.git?path
   - bring Unity to the foreground, and
   - trigger Android Build And Run (`Tools > Codex > Build And Run Android`) via menu automation.
 - Do this by default unless the user explicitly asks not to.
+
+## Desktop app installs
+
+- Do not add new dated or named app bundles to `~/Applications`. There are exactly two: `Follow My Voice Study Intake.app` (current) and `Follow My Voice Study Intake Previous.app` (the one before it).
+- To install a verified desktop build: remove the old `Previous`, rename the current app to `Previous`, then copy the build in as `Follow My Voice Study Intake.app`. Verify it against the build output and quit the app first.
+- Do not create backups under any other name. Test builds stay in the build output folder.
+
