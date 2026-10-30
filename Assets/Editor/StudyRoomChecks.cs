@@ -27,13 +27,21 @@ public static class StudyRoomChecks
             var shelves = (List<GameObject>)typeof(FindObjectGameManager).GetField("m_ShelfObjects",Private).GetValue(game);
             var room = shelves[0];
             Assert(room.GetComponentsInChildren<Collider>(true).Length==0,"No room collider, including disabled children");
-            Assert(room.GetComponentsInChildren<Renderer>(true).Length==5,"Floor and four distant walls");
+            Assert(room.GetComponentsInChildren<Renderer>(true).Length==6,"Floor, circle and four distant walls");
+            var circle = room.transform.Find("Seated floor circle");
+            Assert(circle != null && circle.localPosition == new Vector3(0,.003f,0),"Circle centered above floor without z-fighting");
+            Assert(StudyRoomEnvironment.CircleRadius == RotationalSearchLayout.DefaultRadius,"Circle radius matches object-plane radius");
+            var mesh = circle.GetComponent<MeshFilter>().sharedMesh;
+            for(int i=1;i<mesh.vertexCount;i++)
+                Assert(Mathf.Abs(mesh.vertices[i].magnitude-1.5f)<.00001f && mesh.normals[i].y>.999f,"Circular 1.5 m perimeter faces upward");
+            Assert(circle.GetComponent<Renderer>().sharedMaterial.color==new Color(.35f,.33f,.23f,1),"Muted yellow sRGB preserved");
             Assert(room.transform.position==new Vector3(100,2,-100),"Existing floor height and seated horizontal origin");
             Assert(room.transform.rotation==rotation,"Room follows seated yaw");
             foreach(var renderer in room.GetComponentsInChildren<Renderer>())
             {
                 Assert(renderer.gameObject.layer==2,"Surfaces also use Ignore Raycast layer");
                 Assert(renderer.shadowCastingMode==UnityEngine.Rendering.ShadowCastingMode.Off,"No new cast shadows");
+                Assert(!renderer.receiveShadows,"No received shadows");
             }
             for(int plane=0;plane<8;plane++)
             {
@@ -66,7 +74,7 @@ public static class StudyRoomChecks
                 Object.DestroyImmediate(temporary);
                 Assert(renderer.forceRenderingOff==alreadyHidden,"Room cleanup restores previous backdrop visibility");
             }
-            Debug.Log("[StudyRoomChecks] PASS: hidden defaults, 10x10x6 room at existing floor/yaw, no colliders/shadows, all eight top/bottom rays, readiness geometry and independent debug toggle.");
+            Debug.Log("[StudyRoomChecks] PASS: hidden defaults, 10x10x6 room, 1.5 m muted yellow circle above existing floor/yaw, no colliders/shadows, all eight top/bottom rays, readiness geometry and independent debug toggle.");
         }
         finally
         {

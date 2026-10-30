@@ -88,10 +88,10 @@ public sealed class TrialReviewEnvironment : IDisposable
                 }
             }
         }
-        if(trial.roomEnvironment==StudyRoomEnvironment.Version)
+        if(trial.roomEnvironment==StudyRoomEnvironment.Version || trial.roomEnvironment==StudyRoomEnvironment.GrayFloorVersion)
         {
             // Use the exact runtime mesh, dimensions and neutral materials for new recordings.
-            var room=StudyRoomEnvironment.Create(Vector3.zero,Quaternion.identity,bottom);
+            var room=StudyRoomEnvironment.Create(Vector3.zero,Quaternion.identity,bottom,trial.roomEnvironment);
             room.transform.SetParent(m_Room.transform,false);
         }
         else BuildLegacyRoom(points,bottom,height);

@@ -1,0 +1,181 @@
+{
+  "environment": "neutral-room-v2",
+  "status": "Development synthetic Unity GPU render; not wearer evidence",
+  "source_base_commit": "51e43cb9990648f5d1d80c5c7b610f639dca25e5",
+  "circle": {
+    "radius_m": 1.5,
+    "lift_m": 0.003,
+    "srgb": [
+      0.35,
+      0.33,
+      0.23,
+      1
+    ],
+    "srgb_8bit": [
+      89,
+      84,
+      59
+    ],
+    "edge_stripe": false
+  },
+  "floor_srgb": [
+    0.32,
+    0.32,
+    0.32,
+    1
+  ],
+  "wall_srgb": [
+    0.38,
+    0.38,
+    0.38,
+    1
+  ],
+  "first_person": {
+    "position": [
+      0,
+      1.2,
+      0
+    ],
+    "look_at": [
+      0,
+      0.65,
+      1.5
+    ],
+    "fov": 80
+  },
+  "wide": {
+    "position": [
+      4,
+      5,
+      -5
+    ],
+    "look_at": [
+      0,
+      1.05,
+      0
+    ],
+    "fov": 34
+  },
+  "contrast_floor_camera": {
+    "position": [
+      0,
+      1.2,
+      3
+    ],
+    "look_at": [
+      0,
+      0.1,
+      1.5
+    ],
+    "fov": 60,
+    "view": "exterior diagnostic; not seated"
+  },
+  "files": {
+    "room-first-person.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "82fbaa7692c69097c736c2ee861a0e6cf5afaa6599610a1cf87966939a9486a1",
+      "visually_inspected": true
+    },
+    "room-wide.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "05293b61718d73570dccbb3df45ec474e8ec52eb34578d59da01d8b5a966ff66",
+      "visually_inspected": true
+    },
+    "contrast-blue.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "ca4b69f72158f88b962cdb9e9df98b310e43fcdbb43782a3e995196d583ff3ab",
+      "visually_inspected": true
+    },
+    "contrast-floor-blue.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "ee6086407baa293c4d8ae3ce70ae6032c2ad13157596fb6d9f88aed5e40162b6",
+      "visually_inspected": true
+    },
+    "contrast-floor-green.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "7fd54bd5fd942d109e5763175fc29dfd568169cd57612373099fd8919270073e",
+      "visually_inspected": true
+    },
+    "contrast-floor-red.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "58e91d0ae3aca7407eef4be8d198f164f669ee6bf196f263e2e12b548575b057",
+      "visually_inspected": true
+    },
+    "contrast-floor-yellow.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "a58aebf09a804233b7acffe28061adcdee443c77118b35035fbec1812f1bbfe5",
+      "visually_inspected": true
+    },
+    "contrast-green.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "a1d980bb399c7caca182c0324057d16d8f25b8b66dac4b977ba278b3fc56f1ee",
+      "visually_inspected": true
+    },
+    "contrast-red.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "d0f12a9508d081998bc7ec4776de4035a8557cdf2938ec4f53623b653e156f59",
+      "visually_inspected": true
+    },
+    "contrast-yellow.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "c4af5f13a1ac163704694f58b353e500bb3df734b3183a7ebd44dee53c56e8f3",
+      "visually_inspected": true
+    },
+    "room-first-person-gray-floor.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "db882010181aca87373b4f4bc4a948c1171b5421aca4db841db8c50ecaf94812",
+      "preserved_v1_verified_against_old_manifest": true
+    },
+    "room-wide-gray-floor.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "6b14b45730739825c73736cffd565ce22730480c96249296684ebc62a8fa659a",
+      "preserved_v1_verified_against_old_manifest": true
+    }
+  },
+  "sources_sha256": {
+    "Assets/StudyRoomEnvironment.cs": "c82088cd13cd38b88a19ba91a550aed6fe0950c34e33a23fd989dafedfafab5d",
+    "Assets/Editor/ThesisRoomCapture.cs": "cd7b9fa9e4f97885d3077943351a95f4ffadccb6d0b539b6cb175c6f06e13a1e",
+    "Assets/Editor/StudyRoomChecks.cs": "b937990789ebb6f473c877b92f57bf89eedc402ab5f42f5d65f9f3f70225211c",
+    "Assets/FindObjectGameManager.cs": "53c6faf79f5240d78b534bcf1424025992ca2ac3c2019b8e7abccd2c205e3e9d",
+    "Assets/RotationalSearchLayout.cs": "d0724918d31ba2a3f9280d7d54087a40075f690444ed5b657c3f27ffc14f0a2c",
+    "Assets/ShapeObjectFactory.cs": "260faf39e34e420dd5e0f38294e42e5fd751755b79de3543af29130dc0dcb46b",
+    "Assets/Replay/TrialReplayRecorder.cs": "d12b94fc15e2cc883f48811c85a36bfbe5d35f7a345b04b8d4735f0e9fedd913",
+    "tools/trial-review/Runtime/TrialReviewEnvironment.cs": "0600bf7543e71188d4502aa7b243d78e02901cf2f3e54f54d9d8fcf4b18d736c"
+  }
+}

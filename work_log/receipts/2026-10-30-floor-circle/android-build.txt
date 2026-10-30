@@ -1,0 +1,120 @@
+[CodexBuild] 192.168.1.208:5555
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+CodexBuildTools:RunHeadsetAdb (string) (at Assets/Editor/CodexBuildTools.cs:126)
+CodexBuildTools:BuildAndroid (UnityEditor.BuildOptions,bool) (at Assets/Editor/CodexBuildTools.cs:42)
+CodexBuildTools:BuildAndRunAndroid () (at Assets/Editor/CodexBuildTools.cs:23)
+
+(Filename: Assets/Editor/CodexBuildTools.cs Line: 126)
+[CodexBuild] Building Android player to Builds/CodexAndroid/codex_build.apk; launch on device: True.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+CodexBuildTools:BuildAndroid (UnityEditor.BuildOptions,bool) (at Assets/Editor/CodexBuildTools.cs:83)
+CodexBuildTools:BuildAndRunAndroid () (at Assets/Editor/CodexBuildTools.cs:23)
+
+(Filename: Assets/Editor/CodexBuildTools.cs Line: 83)
+
+NullReferenceException: Object reference not set to an instance of an object
+  at VIVE.OpenXR.VIVEFocus3Feature.GetOpenXrExtensionInfo (UnityEditor.BuildTargetGroup& buildTargetGroup, System.Collections.Generic.List`1[VIVE.OpenXR.VIVEFocus3Feature+OpenXrExtension]& myExtensionList, System.Boolean isRecordEnableOnly) [0x0004d] in ./Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab/Runtime/VIVEFocus3Feature.cs:364
+  at VIVE.OpenXR.VIVEFocus3Feature.IsViveSpectatorCameraEnabled () [0x00000] in ./Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab/Runtime/VIVEFocus3Feature.cs:212
+  at VIVE.OpenXR.Editor.ViveSpectatorCameraProcess.OnPreprocessBuildExt (UnityEditor.Build.Reporting.BuildReport report) [0x00000] in ./Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab/Editor/ViveSpectatorCameraProcess.cs:59
+  at UnityEditor.XR.OpenXR.Features.OpenXRFeatureBuildHooks.OnPreprocessBuild (UnityEditor.Build.Reporting.BuildReport report) [0x00054] in ./Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Editor/FeatureSupport/OpenXRFeatureBuildHooks.cs:83
+  at UnityEditor.Build.BuildPipelineInterfaces+<>c__DisplayClass17_0.<OnBuildPreProcess>b__1 (UnityEditor.Build.IPreprocessBuildWithReport bpp) [0x00000] in /Users/bokken/build/output/unity/unity/Editor/Mono/BuildPipeline/BuildPipelineInterfaces.cs:526
+  at UnityEditor.Build.BuildPipelineInterfaces.InvokeCallbackInterfacesPair[T1,T2] (System.Collections.Generic.List`1[T] oneInterfaces, System.Action`1[T] invocationOne, System.Collections.Generic.List`1[T] twoInterfaces, System.Action`1[T] invocationTwo, System.Boolean exitOnFailure) [0x000ff] in /Users/bokken/build/output/unity/unity/Editor/Mono/BuildPipeline/BuildPipelineInterfaces.cs:492
+UnityEngine.DebugLogHandler:Internal_LogException_Injected(Exception, IntPtr)
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+Failed to move the asset (Assets/XR/UserSimulationSettings/Resources/XRSimulationPreferences.asset) to a temporary location: Cannot move asset from Assets/XR/UserSimulationSettings/Resources/XRSimulationPreferences.asset to Assets/XR/Temp/XRSimulationPreferences.asset: Destination path name does already exist
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+UnityEditor.XR.Simulation.SimulationSettingsBuildProcessor:TryMoveAsset (string,string) (at ./Library/PackageCache/com.unity.xr.arfoundation@7ee87c4f5245/Editor/Simulation/SimulationSettingsBuildProcessor.cs:121)
+UnityEditor.XR.Simulation.SimulationSettingsBuildProcessor:OnPreprocessBuild (UnityEditor.Build.Reporting.BuildReport) (at ./Library/PackageCache/com.unity.xr.arfoundation@7ee87c4f5245/Editor/Simulation/SimulationSettingsBuildProcessor.cs:50)
+UnityEditor.Build.BuildPipelineInterfaces/<>c__DisplayClass17_0:<OnBuildPreProcess>b__1 (UnityEditor.Build.IPreprocessBuildWithReport) (at /Users/bokken/build/output/unity/unity/Editor/Mono/BuildPipeline/BuildPipelineInterfaces.cs:526)
+UnityEditor.Build.BuildPipelineInterfaces:InvokeCallbackInterfacesPair<UnityEditor.Build.IPreprocessBuild, UnityEditor.Build.IPreprocessBuildWithReport> (System.Collections.Generic.List`1<UnityEditor.Build.IPreprocessBuild>,System.Action`1<UnityEditor.Build.IPreprocessBuild>,System.Collections.Generic.List`1<UnityEditor.Build.IPreprocessBuildWithReport>,System.Action`1<UnityEditor.Build.IPreprocessBuildWithReport>,bool) (at /Users/bokken/build/output/unity/unity/Editor/Mono/BuildPipeline/BuildPipelineInterfaces.cs:492)
+UnityEditor.Build.BuildPipelineInterfaces:OnBuildPreProcess (UnityEditor.Build.Reporting.BuildReport) (at /Users/bokken/build/output/unity/unity/Editor/Mono/BuildPipeline/BuildPipelineInterfaces.cs:524)
+Failed to move the asset (Assets/XR/Resources/XRSimulationRuntimeSettings.asset) to a temporary location: Cannot move asset from Assets/XR/Resources/XRSimulationRuntimeSettings.asset to Assets/XR/Temp/XRSimulationRuntimeSettings.asset: Destination path name does already exist
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+UnityEditor.XR.Simulation.SimulationSettingsBuildProcessor:TryMoveAsset (string,string) (at ./Library/PackageCache/com.unity.xr.arfoundation@7ee87c4f5245/Editor/Simulation/SimulationSettingsBuildProcessor.cs:121)
+UnityEditor.XR.Simulation.SimulationSettingsBuildProcessor:OnPreprocessBuild (UnityEditor.Build.Reporting.BuildReport) (at ./Library/PackageCache/com.unity.xr.arfoundation@7ee87c4f5245/Editor/Simulation/SimulationSettingsBuildProcessor.cs:50)
+UnityEditor.Build.BuildPipelineInterfaces/<>c__DisplayClass17_0:<OnBuildPreProcess>b__1 (UnityEditor.Build.IPreprocessBuildWithReport) (at /Users/bokken/build/output/unity/unity/Editor/Mono/BuildPipeline/BuildPipelineInterfaces.cs:526)
+UnityEditor.Build.BuildPipelineInterfaces:InvokeCallbackInterfacesPair<UnityEditor.Build.IPreprocessBuild, UnityEditor.Build.IPreprocessBuildWithReport> (System.Collections.Generic.List`1<UnityEditor.Build.IPreprocessBuild>,System.Action`1<UnityEditor.Build.IPreprocessBuild>,System.Collections.Generic.List`1<UnityEditor.Build.IPreprocessBuildWithReport>,System.Action`1<UnityEditor.Build.IPreprocessBuildWithReport>,bool) (at /Users/bokken/build/output/unity/unity/Editor/Mono/BuildPipeline/BuildPipelineInterfaces.cs:492)
+UnityEditor.Build.BuildPipelineInterfaces:OnBuildPreProcess (UnityEditor.Build.Reporting.BuildReport) (at /Users/bokken/build/output/unity/unity/Editor/Mono/BuildPipeline/BuildPipelineInterfaces.cs:524)
+NullReferenceException: Object reference not set to an instance of an object
+  at VIVE.OpenXR.Editor.ModifyAndroidManifest+AndroidManifest.AddOpenXRFeatures () [0x000cf] in ./Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab/Editor/AndroidManifestProcess.cs:294
+  at VIVE.OpenXR.Editor.ModifyAndroidManifest.OnPostGenerateGradleAndroidProjectExt (System.String path) [0x00028] in ./Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab/Editor/AndroidManifestProcess.cs:44
+  at UnityEditor.XR.OpenXR.Features.OpenXRFeatureBuildHooks.OnPostGenerateGradleAndroidProject (System.String path) [0x0000c] in ./Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Editor/FeatureSupport/OpenXRFeatureBuildHooks.cs:96
+  at UnityEditor.Android.PostProcessor.Tasks.ProcessGenerateProjectCallbacks.OnGeneratePlatformProjectPostprocess (System.String path, System.Boolean strict) [0x00105] in /home/bokken/build/output/unity/unity/PlatformDependent/AndroidPlayer/Editor/Managed/PostProcessor/Tasks/ProcessGenerateProjectCallbacks.cs:41
+UnityEngine.DebugLogHandler:Internal_LogException_Injected(Exception, IntPtr)
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+UnityEditor.Android.PostProcessor.Tasks.ProcessGenerateProjectCallbacks:OnGeneratePlatformProjectPostprocess(String, Boolean) (at /home/bokken/build/output/unity/unity/PlatformDependent/AndroidPlayer/Editor/Managed/PostProcessor/Tasks/ProcessGenerateProjectCallbacks.cs:45)
+UnityEditor.Android.PostProcessor.Tasks.ProcessGenerateProjectCallbacks:Execute(PostProcessorContext) (at /home/bokken/build/output/unity/unity/PlatformDependent/AndroidPlayer/Editor/Managed/PostProcessor/Tasks/ProcessGenerateProjectCallbacks.cs:67)
+Failed to move the asset (Assets/XR/Temp/XRSimulationPreferences.asset) to a temporary location: Cannot move asset from Assets/XR/Temp/XRSimulationPreferences.asset to Assets/XR/UserSimulationSettings/Resources/XRSimulationPreferences.asset: Destination path name does already exist
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+UnityEditor.XR.Simulation.SimulationSettingsBuildProcessor:TryMoveAsset (string,string) (at ./Library/PackageCache/com.unity.xr.arfoundation@7ee87c4f5245/Editor/Simulation/SimulationSettingsBuildProcessor.cs:121)
+UnityEditor.XR.Simulation.SimulationSettingsBuildProcessor:OnPostprocessBuild (UnityEditor.Build.Reporting.BuildReport) (at ./Library/PackageCache/com.unity.xr.arfoundation@7ee87c4f5245/Editor/Simulation/SimulationSettingsBuildProcessor.cs:64)
+UnityEditor.Build.BuildPipelineInterfaces/<>c__DisplayClass21_0:<OnBuildPostProcess>b__1 (UnityEditor.Build.IPostprocessBuildWithReport) (at /Users/bokken/build/output/unity/unity/Editor/Mono/BuildPipeline/BuildPipelineInterfaces.cs:619)
+UnityEditor.Build.BuildPipelineInterfaces:InvokeCallbackInterfacesPair<UnityEditor.Build.IPostprocessBuild, UnityEditor.Build.IPostprocessBuildWithReport> (System.Collections.Generic.List`1<UnityEditor.Build.IPostprocessBuild>,System.Action`1<UnityEditor.Build.IPostprocessBuild>,System.Collections.Generic.List`1<UnityEditor.Build.IPostprocessBuildWithReport>,System.Action`1<UnityEditor.Build.IPostprocessBuildWithReport>,bool) (at /Users/bokken/build/output/unity/unity/Editor/Mono/BuildPipeline/BuildPipelineInterfaces.cs:492)
+UnityEditor.Build.BuildPipelineInterfaces:OnBuildPostProcess (UnityEditor.Build.Reporting.BuildReport) (at /Users/bokken/build/output/unity/unity/Editor/Mono/BuildPipeline/BuildPipelineInterfaces.cs:617)
+Failed to move the asset (Assets/XR/Temp/XRSimulationRuntimeSettings.asset) to a temporary location: Cannot move asset from Assets/XR/Temp/XRSimulationRuntimeSettings.asset to Assets/XR/Resources/XRSimulationRuntimeSettings.asset: Destination path name does already exist
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogWarning (object)
+UnityEditor.XR.Simulation.SimulationSettingsBuildProcessor:TryMoveAsset (string,string) (at ./Library/PackageCache/com.unity.xr.arfoundation@7ee87c4f5245/Editor/Simulation/SimulationSettingsBuildProcessor.cs:121)
+UnityEditor.XR.Simulation.SimulationSettingsBuildProcessor:OnPostprocessBuild (UnityEditor.Build.Reporting.BuildReport) (at ./Library/PackageCache/com.unity.xr.arfoundation@7ee87c4f5245/Editor/Simulation/SimulationSettingsBuildProcessor.cs:64)
+UnityEditor.Build.BuildPipelineInterfaces/<>c__DisplayClass21_0:<OnBuildPostProcess>b__1 (UnityEditor.Build.IPostprocessBuildWithReport) (at /Users/bokken/build/output/unity/unity/Editor/Mono/BuildPipeline/BuildPipelineInterfaces.cs:619)
+UnityEditor.Build.BuildPipelineInterfaces:InvokeCallbackInterfacesPair<UnityEditor.Build.IPostprocessBuild, UnityEditor.Build.IPostprocessBuildWithReport> (System.Collections.Generic.List`1<UnityEditor.Build.IPostprocessBuild>,System.Action`1<UnityEditor.Build.IPostprocessBuild>,System.Collections.Generic.List`1<UnityEditor.Build.IPostprocessBuildWithReport>,System.Action`1<UnityEditor.Build.IPostprocessBuildWithReport>,bool) (at /Users/bokken/build/output/unity/unity/Editor/Mono/BuildPipeline/BuildPipelineInterfaces.cs:492)
+UnityEditor.Build.BuildPipelineInterfaces:OnBuildPostProcess (UnityEditor.Build.Reporting.BuildReport) (at /Users/bokken/build/output/unity/unity/Editor/Mono/BuildPipeline/BuildPipelineInterfaces.cs:617)
+[CodexBuild] Build succeeded in 86.6s, size 1168.0 MB
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+CodexBuildTools:BuildAndroid (UnityEditor.BuildOptions,bool) (at Assets/Editor/CodexBuildTools.cs:89)
+CodexBuildTools:BuildAndRunAndroid () (at Assets/Editor/CodexBuildTools.cs:23)
+
+(Filename: Assets/Editor/CodexBuildTools.cs Line: 89)
+
+[CodexBuild] Selected VIVE Focus Vision: 192.168.1.208:5555
+Performing Streamed Install
+Success
+Local MiniLM ready; headset connection restored.
+Starting: Intent { cmp=com.DefaultCompany.MixedRealityTemplate/com.unity3d.player.UnityPlayerGameActivity }
+Status: ok
+LaunchState: UNKNOWN (0)
+Activity: com.DefaultCompany.MixedRealityTemplate/com.unity3d.player.UnityPlayerGameActivity
+WaitTime: 3016
+Complete
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)

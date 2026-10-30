@@ -459,9 +459,13 @@ recorded-head first person remains the default.
 rotational layouts. Radius is inferred from snapshot object-plane positions; height
 uses recorded search-plane bounds when supplied, otherwise spans the snapshot objects.
 **Room** independently toggles the surrounding environment. New recordings tagged
-`roomEnvironment=neutral-room-v1` use the shared runtime room: 10 × 10 m floor,
+`roomEnvironment=neutral-room-v2` use the shared runtime room: 10 × 10 m floor,
 6 m walls at 5 m from center, wall sRGB (0.38, 0.38, 0.38), floor (0.32, 0.32, 0.32),
-unlit/no shadows and no colliders. Historical recordings without the tag retain the
+unlit/no shadows and no colliders. V2 adds a seated-origin 1.5 m radius disk,
+sRGB (0.35, 0.33, 0.23), 3 mm above the gray floor. Recordings tagged
+`neutral-room-v1` retain the all-gray floor. This is a visual change only;
+physical luminance equivalence and pupil/IPA effects remain unvalidated.
+Historical recordings without the tag retain the
 illustrative room, including its one-metre floor grid; no historical room is asserted
 to have been seen by a participant. Both viewer toggles still start enabled; viewer
 outlines are diagnostic overlays even though headset outlines now default off.

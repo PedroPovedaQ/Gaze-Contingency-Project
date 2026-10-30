@@ -1,0 +1,1249 @@
+{
+  "status": "Development digital-image diagnostic only; no photometric or psychophysical validation.",
+  "circle_srgb": [
+    0.35,
+    0.33,
+    0.23
+  ],
+  "gray_srgb": [
+    0.32,
+    0.32,
+    0.32
+  ],
+  "object_yellow_srgb": [
+    0.95,
+    0.85,
+    0.1
+  ],
+  "circle_nominal_relative_luminance": 0.0881234246624319,
+  "gray_nominal_relative_luminance": 0.08353512742580468,
+  "circle_relative_to_gray_percent": 5.4926560574202865,
+  "examples": [
+    {
+      "image": "contrast-blue.png",
+      "shape": "Sphere",
+      "view": "seated-top",
+      "colored_pixels": 2004,
+      "median_rgb": [
+        35.0,
+        78.0,
+        211.5
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 131.587
+    },
+    {
+      "image": "contrast-blue.png",
+      "shape": "Cube",
+      "view": "seated-top",
+      "colored_pixels": 3830,
+      "median_rgb": [
+        49.0,
+        100.0,
+        254.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 164.201
+    },
+    {
+      "image": "contrast-blue.png",
+      "shape": "Pyramid",
+      "view": "seated-top",
+      "colored_pixels": 2786,
+      "median_rgb": [
+        21.0,
+        49.0,
+        156.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 107.522
+    },
+    {
+      "image": "contrast-blue.png",
+      "shape": "Cylinder",
+      "view": "seated-top",
+      "colored_pixels": 3153,
+      "median_rgb": [
+        46.0,
+        92.0,
+        240.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 151.905
+    },
+    {
+      "image": "contrast-blue.png",
+      "shape": "Star",
+      "view": "seated-top",
+      "colored_pixels": 1934,
+      "median_rgb": [
+        50.0,
+        81.0,
+        179.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 95.859
+    },
+    {
+      "image": "contrast-blue.png",
+      "shape": "Capsule",
+      "view": "seated-top",
+      "colored_pixels": 1363,
+      "median_rgb": [
+        43.0,
+        90.0,
+        236.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 149.285
+    },
+    {
+      "image": "contrast-blue.png",
+      "shape": "Sphere",
+      "view": "seated-bottom",
+      "colored_pixels": 2135,
+      "median_rgb": [
+        50.0,
+        103.0,
+        255.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 177.184
+    },
+    {
+      "image": "contrast-blue.png",
+      "shape": "Cube",
+      "view": "seated-bottom",
+      "colored_pixels": 4115,
+      "median_rgb": [
+        45.0,
+        98.0,
+        254.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 176.661
+    },
+    {
+      "image": "contrast-blue.png",
+      "shape": "Pyramid",
+      "view": "seated-bottom",
+      "colored_pixels": 3260,
+      "median_rgb": [
+        54.0,
+        111.0,
+        255.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 177.634
+    },
+    {
+      "image": "contrast-blue.png",
+      "shape": "Cylinder",
+      "view": "seated-bottom",
+      "colored_pixels": 3385,
+      "median_rgb": [
+        46.0,
+        99.0,
+        255.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 177.522
+    },
+    {
+      "image": "contrast-blue.png",
+      "shape": "Star",
+      "view": "seated-bottom",
+      "colored_pixels": 2168,
+      "median_rgb": [
+        45.0,
+        98.0,
+        254.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 176.661
+    },
+    {
+      "image": "contrast-blue.png",
+      "shape": "Capsule",
+      "view": "seated-bottom",
+      "colored_pixels": 1404,
+      "median_rgb": [
+        45.0,
+        96.0,
+        251.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 173.568
+    },
+    {
+      "image": "contrast-floor-blue.png",
+      "shape": "Capsule",
+      "view": "exterior-floor",
+      "colored_pixels": 1566,
+      "median_rgb": [
+        30.0,
+        77.0,
+        221.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 172.551
+    },
+    {
+      "image": "contrast-floor-blue.png",
+      "shape": "Star",
+      "view": "exterior-floor",
+      "colored_pixels": 2377,
+      "median_rgb": [
+        32.0,
+        81.0,
+        230.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 180.275
+    },
+    {
+      "image": "contrast-floor-blue.png",
+      "shape": "Cylinder",
+      "view": "exterior-floor",
+      "colored_pixels": 3706,
+      "median_rgb": [
+        30.0,
+        77.0,
+        221.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 172.551
+    },
+    {
+      "image": "contrast-floor-blue.png",
+      "shape": "Pyramid",
+      "view": "exterior-floor",
+      "colored_pixels": 3486,
+      "median_rgb": [
+        32.0,
+        78.0,
+        222.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 172.783
+    },
+    {
+      "image": "contrast-floor-blue.png",
+      "shape": "Cube",
+      "view": "exterior-floor",
+      "colored_pixels": 4538,
+      "median_rgb": [
+        28.0,
+        73.0,
+        215.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 167.863
+    },
+    {
+      "image": "contrast-floor-blue.png",
+      "shape": "Sphere",
+      "view": "exterior-floor",
+      "colored_pixels": 2355,
+      "median_rgb": [
+        35.0,
+        81.0,
+        227.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 176.491
+    },
+    {
+      "image": "contrast-floor-green.png",
+      "shape": "Capsule",
+      "view": "exterior-floor",
+      "colored_pixels": 1541,
+      "median_rgb": [
+        17.0,
+        139.0,
+        119.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 108.669
+    },
+    {
+      "image": "contrast-floor-green.png",
+      "shape": "Star",
+      "view": "exterior-floor",
+      "colored_pixels": 2340,
+      "median_rgb": [
+        17.0,
+        147.0,
+        124.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 115.663
+    },
+    {
+      "image": "contrast-floor-green.png",
+      "shape": "Cylinder",
+      "view": "exterior-floor",
+      "colored_pixels": 3665,
+      "median_rgb": [
+        17.0,
+        139.0,
+        119.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 108.669
+    },
+    {
+      "image": "contrast-floor-green.png",
+      "shape": "Pyramid",
+      "view": "exterior-floor",
+      "colored_pixels": 3459,
+      "median_rgb": [
+        21.0,
+        139.0,
+        120.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 106.63
+    },
+    {
+      "image": "contrast-floor-green.png",
+      "shape": "Cube",
+      "view": "exterior-floor",
+      "colored_pixels": 4463,
+      "median_rgb": [
+        16.0,
+        133.0,
+        116.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 104.781
+    },
+    {
+      "image": "contrast-floor-green.png",
+      "shape": "Sphere",
+      "view": "exterior-floor",
+      "colored_pixels": 2307,
+      "median_rgb": [
+        22.0,
+        145.0,
+        123.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 110.932
+    },
+    {
+      "image": "contrast-floor-red.png",
+      "shape": "Capsule",
+      "view": "exterior-floor",
+      "colored_pixels": 1561,
+      "median_rgb": [
+        149.0,
+        41.0,
+        50.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 74.364
+    },
+    {
+      "image": "contrast-floor-red.png",
+      "shape": "Star",
+      "view": "exterior-floor",
+      "colored_pixels": 2396,
+      "median_rgb": [
+        160.0,
+        43.0,
+        52.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 82.286
+    },
+    {
+      "image": "contrast-floor-red.png",
+      "shape": "Cylinder",
+      "view": "exterior-floor",
+      "colored_pixels": 3710,
+      "median_rgb": [
+        150.0,
+        41.0,
+        50.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 75.173
+    },
+    {
+      "image": "contrast-floor-red.png",
+      "shape": "Pyramid",
+      "view": "exterior-floor",
+      "colored_pixels": 3486,
+      "median_rgb": [
+        145.0,
+        43.0,
+        53.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 69.663
+    },
+    {
+      "image": "contrast-floor-red.png",
+      "shape": "Cube",
+      "view": "exterior-floor",
+      "colored_pixels": 4549,
+      "median_rgb": [
+        140.0,
+        39.0,
+        49.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 68.746
+    },
+    {
+      "image": "contrast-floor-red.png",
+      "shape": "Sphere",
+      "view": "exterior-floor",
+      "colored_pixels": 2342,
+      "median_rgb": [
+        157.0,
+        45.0,
+        54.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 78.549
+    },
+    {
+      "image": "contrast-floor-yellow.png",
+      "shape": "Capsule",
+      "view": "exterior-floor",
+      "colored_pixels": 1568,
+      "median_rgb": [
+        157.0,
+        178.0,
+        43.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 117.115
+    },
+    {
+      "image": "contrast-floor-yellow.png",
+      "shape": "Star",
+      "view": "exterior-floor",
+      "colored_pixels": 2396,
+      "median_rgb": [
+        169.0,
+        188.0,
+        44.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 132.064
+    },
+    {
+      "image": "contrast-floor-yellow.png",
+      "shape": "Cylinder",
+      "view": "exterior-floor",
+      "colored_pixels": 3715,
+      "median_rgb": [
+        159.0,
+        179.0,
+        42.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 119.222
+    },
+    {
+      "image": "contrast-floor-yellow.png",
+      "shape": "Pyramid",
+      "view": "exterior-floor",
+      "colored_pixels": 3486,
+      "median_rgb": [
+        153.0,
+        178.0,
+        46.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 114.46
+    },
+    {
+      "image": "contrast-floor-yellow.png",
+      "shape": "Cube",
+      "view": "exterior-floor",
+      "colored_pixels": 4549,
+      "median_rgb": [
+        148.0,
+        171.0,
+        42.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 106.485
+    },
+    {
+      "image": "contrast-floor-yellow.png",
+      "shape": "Sphere",
+      "view": "exterior-floor",
+      "colored_pixels": 2354,
+      "median_rgb": [
+        166.0,
+        186.0,
+        47.0
+      ],
+      "adjacent_background_rgb": [
+        89.0,
+        84.0,
+        59.0
+      ],
+      "median_rgb_distance": 128.363
+    },
+    {
+      "image": "contrast-green.png",
+      "shape": "Sphere",
+      "view": "seated-top",
+      "colored_pixels": 1965,
+      "median_rgb": [
+        22.0,
+        137.0,
+        116.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 87.098
+    },
+    {
+      "image": "contrast-green.png",
+      "shape": "Cube",
+      "view": "seated-top",
+      "colored_pixels": 3717,
+      "median_rgb": [
+        31.0,
+        177.0,
+        138.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 111.521
+    },
+    {
+      "image": "contrast-green.png",
+      "shape": "Pyramid",
+      "view": "seated-top",
+      "colored_pixels": 2745,
+      "median_rgb": [
+        16.0,
+        85.0,
+        85.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 82.759
+    },
+    {
+      "image": "contrast-green.png",
+      "shape": "Cylinder",
+      "view": "seated-top",
+      "colored_pixels": 3067,
+      "median_rgb": [
+        29.0,
+        163.0,
+        131.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 100.678
+    },
+    {
+      "image": "contrast-green.png",
+      "shape": "Star",
+      "view": "seated-top",
+      "colored_pixels": 1883,
+      "median_rgb": [
+        29.0,
+        128.0,
+        109.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 75.69
+    },
+    {
+      "image": "contrast-green.png",
+      "shape": "Capsule",
+      "view": "seated-top",
+      "colored_pixels": 1342,
+      "median_rgb": [
+        28.0,
+        159.0,
+        129.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 98.127
+    },
+    {
+      "image": "contrast-green.png",
+      "shape": "Sphere",
+      "view": "seated-bottom",
+      "colored_pixels": 2080,
+      "median_rgb": [
+        28.0,
+        186.0,
+        142.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 131.651
+    },
+    {
+      "image": "contrast-green.png",
+      "shape": "Cube",
+      "view": "seated-bottom",
+      "colored_pixels": 4054,
+      "median_rgb": [
+        23.0,
+        176.0,
+        136.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 123.422
+    },
+    {
+      "image": "contrast-green.png",
+      "shape": "Pyramid",
+      "view": "seated-bottom",
+      "colored_pixels": 3223,
+      "median_rgb": [
+        30.0,
+        199.0,
+        150.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 144.972
+    },
+    {
+      "image": "contrast-green.png",
+      "shape": "Cylinder",
+      "view": "seated-bottom",
+      "colored_pixels": 3328,
+      "median_rgb": [
+        24.0,
+        179.0,
+        138.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 126.131
+    },
+    {
+      "image": "contrast-green.png",
+      "shape": "Star",
+      "view": "seated-bottom",
+      "colored_pixels": 2142,
+      "median_rgb": [
+        24.0,
+        176.0,
+        136.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 122.947
+    },
+    {
+      "image": "contrast-green.png",
+      "shape": "Capsule",
+      "view": "seated-bottom",
+      "colored_pixels": 1380,
+      "median_rgb": [
+        24.0,
+        174.0,
+        136.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 121.425
+    },
+    {
+      "image": "contrast-red.png",
+      "shape": "Sphere",
+      "view": "seated-top",
+      "colored_pixels": 1969,
+      "median_rgb": [
+        157.0,
+        43.0,
+        52.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 92.418
+    },
+    {
+      "image": "contrast-red.png",
+      "shape": "Cube",
+      "view": "seated-top",
+      "colored_pixels": 3765,
+      "median_rgb": [
+        219.0,
+        56.0,
+        61.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 133.645
+    },
+    {
+      "image": "contrast-red.png",
+      "shape": "Pyramid",
+      "view": "seated-top",
+      "colored_pixels": 2745,
+      "median_rgb": [
+        86.0,
+        31.0,
+        42.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 86.614
+    },
+    {
+      "image": "contrast-red.png",
+      "shape": "Cylinder",
+      "view": "seated-top",
+      "colored_pixels": 3075,
+      "median_rgb": [
+        193.0,
+        53.0,
+        59.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 112.232
+    },
+    {
+      "image": "contrast-red.png",
+      "shape": "Star",
+      "view": "seated-top",
+      "colored_pixels": 1898,
+      "median_rgb": [
+        145.0,
+        52.0,
+        57.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 77.0
+    },
+    {
+      "image": "contrast-red.png",
+      "shape": "Capsule",
+      "view": "seated-top",
+      "colored_pixels": 1343,
+      "median_rgb": [
+        188.0,
+        51.0,
+        58.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 109.17
+    },
+    {
+      "image": "contrast-red.png",
+      "shape": "Sphere",
+      "view": "seated-bottom",
+      "colored_pixels": 2083,
+      "median_rgb": [
+        232.0,
+        56.0,
+        61.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 153.678
+    },
+    {
+      "image": "contrast-red.png",
+      "shape": "Cube",
+      "view": "seated-bottom",
+      "colored_pixels": 4101,
+      "median_rgb": [
+        218.0,
+        51.0,
+        57.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 141.711
+    },
+    {
+      "image": "contrast-red.png",
+      "shape": "Pyramid",
+      "view": "seated-bottom",
+      "colored_pixels": 3241,
+      "median_rgb": [
+        252.0,
+        60.0,
+        64.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 172.36
+    },
+    {
+      "image": "contrast-red.png",
+      "shape": "Cylinder",
+      "view": "seated-bottom",
+      "colored_pixels": 3337,
+      "median_rgb": [
+        222.0,
+        52.0,
+        57.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 145.344
+    },
+    {
+      "image": "contrast-red.png",
+      "shape": "Star",
+      "view": "seated-bottom",
+      "colored_pixels": 2156,
+      "median_rgb": [
+        218.0,
+        51.0,
+        57.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 141.711
+    },
+    {
+      "image": "contrast-red.png",
+      "shape": "Capsule",
+      "view": "seated-bottom",
+      "colored_pixels": 1384,
+      "median_rgb": [
+        214.0,
+        51.0,
+        57.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 137.877
+    },
+    {
+      "image": "contrast-yellow.png",
+      "shape": "Sphere",
+      "view": "seated-top",
+      "colored_pixels": 1985,
+      "median_rgb": [
+        164.0,
+        175.0,
+        45.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 115.226
+    },
+    {
+      "image": "contrast-yellow.png",
+      "shape": "Cube",
+      "view": "seated-top",
+      "colored_pixels": 3811,
+      "median_rgb": [
+        231.0,
+        227.0,
+        52.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 192.044
+    },
+    {
+      "image": "contrast-yellow.png",
+      "shape": "Pyramid",
+      "view": "seated-top",
+      "colored_pixels": 2761,
+      "median_rgb": [
+        91.0,
+        109.0,
+        37.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 61.482
+    },
+    {
+      "image": "contrast-yellow.png",
+      "shape": "Cylinder",
+      "view": "seated-top",
+      "colored_pixels": 3087,
+      "median_rgb": [
+        203.0,
+        208.0,
+        51.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 160.228
+    },
+    {
+      "image": "contrast-yellow.png",
+      "shape": "Star",
+      "view": "seated-top",
+      "colored_pixels": 1914,
+      "median_rgb": [
+        147.0,
+        145.0,
+        49.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 84.309
+    },
+    {
+      "image": "contrast-yellow.png",
+      "shape": "Capsule",
+      "view": "seated-top",
+      "colored_pixels": 1352,
+      "median_rgb": [
+        197.0,
+        203.0,
+        50.0
+      ],
+      "adjacent_background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 153.118
+    },
+    {
+      "image": "contrast-yellow.png",
+      "shape": "Sphere",
+      "view": "seated-bottom",
+      "colored_pixels": 2108,
+      "median_rgb": [
+        245.0,
+        238.0,
+        51.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 227.741
+    },
+    {
+      "image": "contrast-yellow.png",
+      "shape": "Cube",
+      "view": "seated-bottom",
+      "colored_pixels": 4115,
+      "median_rgb": [
+        230.0,
+        226.0,
+        47.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 209.44
+    },
+    {
+      "image": "contrast-yellow.png",
+      "shape": "Pyramid",
+      "view": "seated-bottom",
+      "colored_pixels": 3260,
+      "median_rgb": [
+        255.0,
+        255.0,
+        54.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 246.256
+    },
+    {
+      "image": "contrast-yellow.png",
+      "shape": "Cylinder",
+      "view": "seated-bottom",
+      "colored_pixels": 3385,
+      "median_rgb": [
+        234.0,
+        229.0,
+        47.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 214.332
+    },
+    {
+      "image": "contrast-yellow.png",
+      "shape": "Star",
+      "view": "seated-bottom",
+      "colored_pixels": 2164,
+      "median_rgb": [
+        230.0,
+        226.0,
+        47.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 209.44
+    },
+    {
+      "image": "contrast-yellow.png",
+      "shape": "Capsule",
+      "view": "seated-bottom",
+      "colored_pixels": 1398,
+      "median_rgb": [
+        226.0,
+        223.0,
+        47.0
+      ],
+      "adjacent_background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 204.553
+    }
+  ],
+  "count": 72,
+  "minimum_median_rgb_distance": 61.482
+}

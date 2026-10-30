@@ -1,0 +1,12 @@
+{
+  "apk": "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Builds/CodexAndroid/codex_build.apk",
+  "apk_bytes": 72035897,
+  "apk_sha256": "aae0b077c4184d6e95254edf33845ebf51aad672a37c70d360cd25da56bb8850",
+  "installed_apk_sha256": "aae0b077c4184d6e95254edf33845ebf51aad672a37c70d360cd25da56bb8850",
+  "installed": true,
+  "launch_status": "ok",
+  "serial": "192.168.1.208:5555",
+  "package": "com.DefaultCompany.MixedRealityTemplate",
+  "desktop_app": "/Users/pedro.poveda/Applications/Follow My Voice Floor Circle 20261030.app",
+  "main_intake_bundle_replaced": false
+}

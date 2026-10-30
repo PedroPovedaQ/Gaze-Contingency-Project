@@ -99,7 +99,8 @@ public static class ThesisRoomCapture
             receipt.AppendLine($"Count={slots.Length}; layout={RotationalSearchLayout.LayoutTag}; layoutSeed={LayoutSeed}; identity=THESIS_ROOM; scheduleSeed={ChallengeSet.ScheduleSeed}; round=0");
             receipt.AppendLine($"Radius={radius:R}; wall height={game.SearchPlaneHeight:R}; floor=0; seated origin=(0,1.2,0); yaw=0; pin={target.plane}/{target.slot}");
             receipt.AppendLine($"Environment={StudyRoomEnvironment.Version}; room=10x10x6 m; walls at radius {StudyRoomEnvironment.Radius}; wall sRGB={StudyRoomEnvironment.WallColor}; floor sRGB={StudyRoomEnvironment.FloorColor}; guides={game.DegreeGuidesVisible}; no colliders");
-            Capture(camera, output, "room-first-person.png", new Vector3(0, 1.2f, 0), new Vector3(0, 1.2f, 1.5f), 80, receipt);
+            receipt.AppendLine($"Floor circle radius={StudyRoomEnvironment.CircleRadius:R} m; lift={StudyRoomEnvironment.CircleLift:R} m; sRGB=({StudyRoomEnvironment.CircleColor.r:R},{StudyRoomEnvironment.CircleColor.g:R},{StudyRoomEnvironment.CircleColor.b:R},1); no edge stripe; no photometric-equivalence claim");
+            Capture(camera, output, "room-first-person.png", new Vector3(0, 1.2f, 0), new Vector3(0, .65f, 1.5f), 80, receipt);
             Capture(camera, output, "room-wide.png", new Vector3(4, 5, -5), new Vector3(0, 1.05f, 0), 34, receipt);
             // Inspect every real shape/color at both vertical extremes, against the same room.
             foreach (var obj in Object.FindObjectsByType<SpawnableObjectInfo>(FindObjectsSortMode.None)) Object.DestroyImmediate(obj.gameObject);
@@ -119,6 +120,10 @@ public static class ThesisRoomCapture
                         examples.Add(obj);
                     }
                 Capture(camera,output,"contrast-"+color.ToLowerInvariant()+".png",new Vector3(0,1.2f,0),new Vector3(0,1.2f,1.5f),80,receipt);
+                // Exterior diagnostic: backs the same lowest-plane objects with the disk.
+                // Seated-center rays through these objects normally meet gray floor beyond it.
+                for (int i=shapes.Length;i<examples.Count;i++) examples[i].SetActive(false);
+                Capture(camera,output,"contrast-floor-"+color.ToLowerInvariant()+".png",new Vector3(0,1.2f,3),new Vector3(0,.1f,1.5f),60,receipt);
                 foreach(var obj in examples) Object.DestroyImmediate(obj);
             }
             File.WriteAllText(Path.Combine(output, "render-receipt.txt"), receipt.ToString());

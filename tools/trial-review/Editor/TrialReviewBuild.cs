@@ -329,7 +329,7 @@ public static class TrialReviewBuild
             string compactBefore=JsonUtility.ToJson(compact);
             environment.Prepare(compact,true,true);
             var room=UnityEngine.Object.FindObjectOfType<StudyRoomEnvironment>();
-            Assert(room!=null&&room.GetComponentsInChildren<Renderer>().Length==5&&room.GetComponentsInChildren<Collider>().Length==0,
+            Assert(room!=null&&room.GetComponentsInChildren<Renderer>().Length==6&&room.GetComponentsInChildren<Collider>().Length==0,
                 "New recordings use collider-free runtime room");
             Assert(room.transform.position==compact.origin+compact.originRotation*new Vector3(0,-1.2f,0),"Room uses recorded floor and origin");
             environment.Prepare(compact,false,true);
@@ -345,6 +345,19 @@ public static class TrialReviewBuild
             Vector3 forward=compact.originRotation*Vector3.forward;
             Assert(environment.TryProjectGaze(new Ray(inside,forward),out _)&&
                 !environment.TryProjectGaze(new Ray(above,forward),out _),"Projection respects the recorded shorter wall top");
+            var grayFloor=JsonUtility.FromJson<TrialReplayRecord>(compactBefore);
+            grayFloor.roomEnvironment="neutral-room-v1";
+            string grayBefore=JsonUtility.ToJson(grayFloor);
+            environment.Prepare(grayFloor,true,true);
+            room=UnityEngine.Object.FindObjectOfType<StudyRoomEnvironment>();
+            Assert(room!=null&&room.GetComponentsInChildren<Renderer>().Length==5&&room.transform.Find("Seated floor circle")==null,
+                "v1 recordings retain gray floor without circle");
+            Assert(JsonUtility.ToJson(grayFloor)==grayBefore,
+                "v1 playback preserves recording values");
+            environment.Prepare(compact,true,true);
+            room=UnityEngine.Object.FindObjectOfType<StudyRoomEnvironment>();
+            Assert(room.GetComponentsInChildren<Renderer>().Length==6&&room.transform.Find("Seated floor circle")!=null,
+                "Rewinding from v1 to v2 restores circle");
             environment.Prepare(trial,true,true);
             Assert(UnityEngine.Object.FindObjectOfType<StudyRoomEnvironment>()==null,"Legacy room survives switching back without new surfaces");
             Assert(!environment.HasRecordedWallBounds&&Mathf.Abs(environment.WallHeight-legacyHeight)<.0001f,
