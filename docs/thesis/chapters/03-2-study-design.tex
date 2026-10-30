@@ -47,6 +47,51 @@ Objects vary in position within each plane of the shared layout, so each trial s
 \clearpage
 Nominal angle steps are defined relative to the readiness (start) wall, which is the previous target wall. For the first measured trial, this reference is the practice target wall. The first measured cross is centered on its wall. Each later cross is shifted sideways by a seeded offset of up to 20 percent of the usable half-width. Target placement happens when readiness completes, while all objects remain hidden and before the opening cue. At that moment, the application rotates the horizontal bearing from the participant's eye origin to the cross by the assigned signed angle, places the target where that bearing meets the assigned wall, and arranges the remaining objects around it. The exact starting angle defined below therefore equals the assigned category at that instant. If the required position falls outside the wall, the session stops so the participant can recenter, rather than substituting a different angle or trial. Final positions depend on the saved eye origin as well as the seed, so each layout is reconstructed from the saved object positions.
 
+\subsection{Starting Angle and Measures}
+\label{sec:theta-measures}
+Each trial is characterized by its starting angle $\theta_0$, the horizontal angle between the direction of the readiness cross and the direction of the target, as seen from the participant's eye position. Let $\mathbf{o}$ be the eye origin saved when readiness completes, $\mathbf{c}$ the readiness-cross center, and $\mathbf{p}$ the target center, all in the same world coordinate frame. With $\Pi(\mathbf{v})=(v_x,0,v_z)$ projecting a vector onto the horizontal plane, define
+\begin{equation}
+\mathbf{a}=\Pi(\mathbf{c}-\mathbf{o}),\qquad
+\mathbf{b}=\Pi(\mathbf{p}-\mathbf{o}).
+\end{equation}
+The starting angle is then
+\begin{equation}
+\theta_0=\operatorname{atan2}\!\left(\hat{\mathbf{y}}\cdot(\mathbf{a}\times\mathbf{b}),\,\mathbf{a}\cdot\mathbf{b}\right)\frac{180}{\pi}.
+\end{equation}
+Its sign gives the direction of the turn, and its magnitude $|\theta_0|$ gives the horizontal turn demand of the trial (Figure~\ref{fig:starting-geometry}). Each block schedules eight trials at each of $0$, $45$, $90$, $135$, and $180$ degrees, and the target is placed so that the realized angle matches the assigned one. Because a larger angle requires a larger turn, the analysis adjusts for $|\theta_0|$ rather than dividing completion time by degrees. Appendix~\ref{app:measurement-definitions} gives the remaining details of the snapshot and the height and distance measures.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth,alt={Overhead octagonal layout with origin, cross reference, nominal wall center, and an offset target showing distinct bearings.}]{figures/starting-geometry.pdf}
+\caption[Nominal wall assignment and exact starting angle]{Conceptual overhead geometry. The target is placed on its assigned wall where the assigned angle from the origin-to-cross bearing meets the wall, so it is generally offset from the wall center. The pre-cue snapshot saves the origin, cross and target used for this placement.}
+\label{fig:starting-geometry}
+\end{figure}
+
+Table~\ref{tab:measures-overview} lists what is measured for each research question, where it comes from, and the unit at which it is analyzed. Section~\ref{sec:scoring} gives the scoring of each measure, and Section~\ref{sec:measure-validation} describes how each is validated.
+
+\begin{table}[htbp]
+\centering
+\caption[Measures by research question]{Measures by research question. Fixation, saccade, and pupil measures remain exploratory until the eye-event detectors are validated.}
+\label{tab:measures-overview}
+\small
+\tagpdfsetup{table/header-rows={1}}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.2\linewidth}>{\raggedright\arraybackslash}p{0.16\linewidth}>{\raggedright\arraybackslash}p{0.17\linewidth}@{}}
+\toprule
+Role & Measure & Unit & Source & Analysis unit \\\midrule
+RQ1 (primary) & Active completion time & Seconds, log-transformed & Application events & Trial \\
+RQ1 & Missed targets & Percent of searches & Application events & Participant by block \\
+RQ1 & Perceived workload (NASA-TLX) & Mean of six 0--10 ratings & Final survey & Participant by voice block \\
+RQ2 & Index of Pupillary Activity & Extrema per second & Eye tracker & Search \\
+RQ2 & Fixation count & Count & Eye tracker & Search \\
+RQ2 & Saccade frequency & Events per second & Eye tracker & Search \\
+RQ3 & IMI interest/enjoyment & Subscale mean & Final survey & Participant by voice block \\
+Manipulation check & Perceived voice similarity & 1--7 rating & Final survey & Participant by voice block \\
+Exploratory & Agent perception, eeriness, ARQ, custom voice items & 1--7 ratings & Final survey & Participant by voice block \\
+Exploratory & Search behavior (head rotation, walls visited, revisits) & Degrees, counts & Application records & Trial \\
+Adjustment & Starting angle $|\theta_0|$ & Degrees & Pre-cue snapshot & Trial \\\bottomrule
+\end{tabularx}
+\end{table}
+
 \subsection{Research Questions and Outcomes}
 Each research question in Section~\ref{sec:research-questions} maps onto specific outcomes. RQ1 uses active completion time as the primary outcome, with missed targets and perceived workload, measured with an adaptation of NASA-TLX~\cite{hart1988nasatlx}, as secondary outcomes. RQ2 uses the Index of Pupillary Activity~\cite{duchowski2018ipa}, fixation count, and saccade frequency, which remain exploratory until the eye-event detectors are validated on the headset. RQ3 uses the interest/enjoyment subscale of the Intrinsic Motivation Inventory (IMI)~\cite{ryan1982control,mcauley1989imi}, with the other three IMI subscales reported alongside it. Agent perception, eeriness, voice experience, reliance, search behavior, and variation in the voice contrast with starting angle are exploratory. The hypotheses are directional, favoring the self-similar voice, but the voice contrasts are tested two-sided so that an advantage for the neutral voice would also be detected. Repeated trials are treated as within-participant observations, not as independent participants.
 

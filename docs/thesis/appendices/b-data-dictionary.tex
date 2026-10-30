@@ -67,16 +67,7 @@ This section gives the formal definitions summarized in Section~\ref{ch:measurem
 
 \subsection{Coordinate Frames and Starting Geometry}
 \label{sec:starting-geometry}
-Let $\mathbf{o}$ denote the saved trial reference origin, $\mathbf{c}$ the readiness-cross center, and $\mathbf{p}$ the target center. All three positions are expressed in the same world coordinate frame. Let $\Pi(\mathbf{v})=(v_x,0,v_z)$ project a vector onto the horizontal plane. Define
-\begin{equation}
-\mathbf{a}=\Pi(\mathbf{c}-\mathbf{o}),\qquad
-\mathbf{b}=\Pi(\mathbf{p}-\mathbf{o}).
-\end{equation}
-For nondegenerate vectors, the exact pre-cue starting angle is
-\begin{equation}
-\theta_0=\operatorname{atan2}\!\left(\hat{\mathbf{y}}\cdot(\mathbf{a}\times\mathbf{b}),\,\mathbf{a}\cdot\mathbf{b}\right)\frac{180}{\pi}.
-\end{equation}
-The sign convention is checked against Unity's world-up signed-angle convention using known left and right targets. The absolute value $|\theta_0|$ describes horizontal demand from the saved cross reference. For exactly backward targets, $-180$ and $+180$ identify the same horizontal bearing. The sign then depends on a tie convention, but the absolute magnitude is 180 degrees in either case.
+The starting angle $\theta_0$ is defined in Section~\ref{sec:theta-measures}. The sign convention is checked against Unity's world-up signed-angle convention using known left and right targets. The absolute value $|\theta_0|$ describes horizontal demand from the saved cross reference. For exactly backward targets, $-180$ and $+180$ identify the same horizontal bearing. The sign then depends on a tie convention, but the absolute magnitude is 180 degrees in either case.
 
 The application saves this snapshot when readiness completes, before the opening cue. It records the eye origin of the valid gaze observation that completed readiness, the cross and target centers in world coordinates, that observation's sequence number and receipt time, the assigned and realized signed angles, and the target-height difference. The target is placed from the same origin, so the realized angle equals the assigned category. A difference larger than 0.01 degrees stops the session. Recordings made before the snapshot was added, including the development recordings in Section~\ref{sec:development-results}, contain only nominal signed and absolute theta fields. These fields describe wall geometry relative to the previous target wall, not the exact pre-cue angle. If a horizontal vector is degenerate, the angle is recorded as unavailable rather than zero, since zero would describe an easy starting configuration.
 
@@ -90,15 +81,7 @@ Positive values identify targets above the cross center, and negative values ide
 
 The three-dimensional distance measure relies on a different observation: the first valid tracked head position $\mathbf{h}_k$ after reveal. Its value is $d=\|\mathbf{p}-\mathbf{h}_k\|_2$, in metres, stored with the timestamp of $\mathbf{h}_k$. This distance describes geometry at an observed post-reveal head pose, so it cannot stand in for the pre-cue snapshot in recordings that lack one.
 
-Figures~\ref{fig:starting-geometry} and~\ref{fig:height-reference} illustrate these definitions with conceptual rather than recorded layouts.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\linewidth,alt={Overhead octagonal layout with origin, cross reference, nominal wall center, and an offset target showing distinct bearings.}]{figures/starting-geometry.pdf}
-\caption[Nominal wall assignment and exact starting angle]{Conceptual overhead geometry. The target is placed on its assigned wall where the assigned angle from the origin-to-cross bearing meets the wall, so it is generally offset from the wall center. The pre-cue snapshot saves the origin, cross and target used for this placement.}
-\label{fig:starting-geometry}
-\end{figure}
-
+Figure~\ref{fig:height-reference} illustrates the height definition with a conceptual rather than recorded layout, and Figure~\ref{fig:starting-geometry} shows the corresponding overhead geometry.
 
 \begin{figure}[htbp]
 \centering
