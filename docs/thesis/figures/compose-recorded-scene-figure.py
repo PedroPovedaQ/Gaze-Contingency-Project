@@ -8,12 +8,12 @@ def data(im):
  b=io.BytesIO();im.save(b,format='PNG');return 'data:image/png;base64,'+base64.b64encode(b.getvalue()).decode()
 def img(im,x,y,w,h):return f'<image x="{x}" y="{y}" width="{w}" height="{h}" href="{data(im)}"/>'
 def txt(x,y,t,size=24,fill='#111',weight='normal'):return f'<text x="{x}" y="{y}" font-family="Arial, sans-serif" font-size="{size}" fill="{fill}" font-weight="{weight}">{t}</text>'
-a=Image.open(sources/'first-person-final-full.png').convert('RGB')
-b=Image.open(sources/'overhead-framed-full.png').convert('RGB')
+a=Image.open(sources/'first-person-no-walls-full.png').convert('RGB')
+b=Image.open(sources/'overhead-no-walls-full.png').convert('RGB')
 # Crop viewer chrome only. Source screenshots are retained unchanged.
-scene=(363,267,1920,1088)
+scene=(362,211,1742,936)
 # Overhead centered square crop; selected after visual inspection of the full capture.
-overhead=(500,267,1770,1088)
+overhead=(470,211,1627,936)
 parts=['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2496" height="2596" viewBox="0 0 1248 1298">','<rect width="1248" height="1298" fill="white"/><g transform="translate(24,16)">']
 parts += [txt(0,29,'(a) Recorded first-person view',26,weight='bold'),img(a.crop(scene),0,44,1200,633)]
 parts += [txt(0,720,'(b) Overhead arrangement',26,weight='bold'),txt(866,720,'(c) Object examples',26,weight='bold')]

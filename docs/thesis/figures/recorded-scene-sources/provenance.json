@@ -83,5 +83,15 @@
       "recorded_object_id": "r00_o107",
       "recorded_color": "Blue"
     }
-  ]
+  ],
+  "no_walls_recapture": {
+    "date": "2026-10-30",
+    "files": [
+      "first-person-no-walls-full.png",
+      "overhead-no-walls-full.png"
+    ],
+    "method": "Trial Review recapture of the same recording and session time with Viewer walls off; no retouching",
+    "source_commit": "51e43cb9990648f5d1d80c5c7b610f639dca25e5",
+    "note": "Close-up object panels are unchanged. Original captures are retained in this folder."
+  }
 }
