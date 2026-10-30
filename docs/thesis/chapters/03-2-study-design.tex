@@ -18,25 +18,25 @@ Gaze contingency and the agent's decision rules are common to both conditions. B
 \subsection{Design and Trial Allocation}
 The study uses a within-participant comparison of two voice conditions: a neutral voice and a self-similar synthetic voice. Both conditions use the same guidance policy, semantic phrase library, selection method and visual-feedback settings, although actual phrase sequences may differ because guidance responds to behavior. Because the neutral voice is chosen by the participant whereas the clone is derived from the participant's speech, the two voices may also differ in preference, gender presentation and synthesis quality. The contrast therefore cannot isolate self-similarity from these features.
 
-A saved, balanced randomized allocation assigns neutral-first or self-similar-first order. Counterbalancing the order distributes possible carryover from the first block across the two voices~\cite{williams1949residual}, although it does not remove carryover. Each participant completes one practice trial followed by two measured blocks of 32 trials, one per voice. The practice trial uses the first voice in the assigned order (the self-similar voice for Order A, or the neutral voice for Order B) and is excluded from measured outcomes. A seed makes the trial schedule reproducible. Nominal horizontal-angle quotas are identical across blocks, with trial order and left/right assignments randomized subject to those quotas. Within each block, each bilateral angle category (45, 90 and 135 degrees) has four left and four right assignments. Each block is divided into four shuffled groups of eight trials, each of which contains every signed wall step. All 24 shape-and-color identities appear in every block, and the same eight identities appear a second time in both blocks.
+A saved, balanced randomized allocation assigns neutral-first or self-similar-first order. Counterbalancing the order distributes possible carryover from the first block across the two voices~\cite{williams1949residual}, although it does not remove carryover. Each participant completes one practice trial followed by two measured blocks of 32 trials, one per voice. The practice trial uses the first voice in the assigned order (the self-similar voice for Order A, or the neutral voice for Order B) and is excluded from measured outcomes. A seed makes the trial schedule reproducible. Nominal horizontal-angle quotas are identical across blocks, with trial order and left/right assignments randomized subject to those quotas. Within each block, each bilateral angle category (45, 90 and 135 degrees) has four left and four right assignments. Each block is divided into four shuffled groups of eight trials, each of which contains every signed plane step. All 24 shape-and-color identities appear in every block, and the same eight identities appear a second time in both blocks.
 
 \begin{table}[htbp]\centering
-\caption[Study allocation]{Study allocation. Nominal wall angles are schedule categories, not exact object bearings or accumulated head rotation.}
+\caption[Study allocation]{Study allocation. Nominal plane angles are schedule categories, not exact object bearings or accumulated head rotation.}
 \tagpdfsetup{table/header-rows={1}}
 \begin{tabularx}{\linewidth}{@{}lX@{}}\toprule
 Parameter & Allocation \\\midrule
 Voice conditions & Neutral voice; self-similar synthetic voice \\
 Measured trials & 32 per block; 64 per participant \\
 Practice & One trial; excluded from outcomes \\
-Absolute nominal wall step & Per block, four trials each at 0 and 180 degrees and eight each at 45, 90 and 135 degrees, so that each of the eight signed wall steps occurs four times \\
-Vertical allocation & 16 targets above and 16 below readiness-cross height per block; two above and two below at each signed wall step \\
+Absolute nominal plane step & Per block, four trials each at 0 and 180 degrees and eight each at 45, 90 and 135 degrees, so that each of the eight signed plane steps occurs four times \\
+Vertical allocation & 16 targets above and 16 below readiness-cross height per block; two above and two below at each signed plane step \\
 Condition order & Counterbalanced neutral-first and self-similar-first \\
 Active search limit & 25 seconds, excluding explicit pauses \\
 Selection & Right-controller ray and a trigger press \\\bottomrule
 \end{tabularx}
 \end{table}
 
-Objects vary in position within each plane of the shared layout, so each trial specifies the exact starting angle and target height in addition to the assigned wall. Vertical allocation is defined by target-center height relative to the readiness cross rather than the participant's seated eye height. The cross is placed at the midpoint of the permitted object-height range, and each assigned target center lies between 10 and 45 percent of that range above or below it. The lower bound keeps every target clearly above or below the cross, and the upper bound keeps targets away from the floor and the top of the wall. Pilot sessions will assess target visibility and seated comfort at both extremes.
+Objects vary in position within each plane of the shared layout, so each trial specifies the exact starting angle and target height in addition to the assigned object plane. Vertical allocation is defined by target-center height relative to the readiness cross rather than the participant's seated eye height. The cross is placed at the midpoint of the permitted object-height range, and each assigned target center lies between 10 and 45 percent of that range above or below it. The lower bound keeps every target clearly above or below the cross, and the upper bound keeps targets away from the floor and the top of the object plane. Pilot sessions will assess target visibility and seated comfort at both extremes.
 
 \begin{figure}[htbp]\centering
 \IfFileExists{figures/study-procedure-current.pdf}{\includegraphics[width=\linewidth,alt={Consent, Selected Voice choice, audio intake and headset setup precede two counterbalanced orders. Order A runs a self-similar practice trial, a blue 32-trial self-similar block, a break and a gold 32-trial neutral block; Order B reverses the colors. Both end with a side-by-side final survey. Each trial separates readiness, opening cue, reveal and trigger selection.}]{figures/study-procedure-current.pdf}}{\fbox{\parbox{0.94\linewidth}{Consent $\rightarrow$ Selected Voice $\rightarrow$ audio intake $\rightarrow$ headset setup $\rightarrow$ practice $\rightarrow$ 32-trial voice block $\rightarrow$ break $\rightarrow$ 32-trial voice block $\rightarrow$ survey and debrief. Within each trial: readiness cross $\rightarrow$ opening cue $\rightarrow$ object reveal and active search $\rightarrow$ correct trigger selection.}}}
@@ -45,7 +45,7 @@ Objects vary in position within each plane of the shared layout, so each trial s
 \end{figure}
 
 \clearpage
-Nominal angle steps are defined relative to the readiness (start) wall, which is the previous target wall. For the first measured trial, this reference is the practice target wall. The first measured cross is centered on its wall. Each later cross is shifted sideways by a seeded offset of up to 20 percent of the usable half-width. Target placement happens when readiness completes, while all objects remain hidden and before the opening cue. At that moment, the application rotates the horizontal bearing from the participant's eye origin to the cross by the assigned signed angle, places the target where that bearing meets the assigned wall, and arranges the remaining objects around it. The exact starting angle defined below therefore equals the assigned category at that instant. If the required position falls outside the wall, the session stops so the participant can recenter, rather than substituting a different angle or trial. Final positions depend on the saved eye origin as well as the seed, so each layout is reconstructed from the saved object positions.
+Nominal angle steps are defined relative to the readiness (start) object plane, which is the previous target plane. For the first measured trial, this reference is the practice target plane. The first measured cross is centered on its object plane. Each later cross is shifted sideways by a seeded offset of up to 20 percent of the usable half-width. Target placement happens when readiness completes, while all objects remain hidden and before the opening cue. At that moment, the application rotates the horizontal bearing from the participant's eye origin to the cross by the assigned signed angle, places the target where that bearing meets the assigned object plane, and arranges the remaining objects around it. The exact starting angle defined below therefore equals the assigned category at that instant. If the required position falls outside the object plane, the session stops so the participant can recenter, rather than substituting a different angle or trial. Final positions depend on the saved eye origin as well as the seed, so each layout is reconstructed from the saved object positions.
 
 \subsection{Starting Angle and Measures}
 \label{sec:theta-measures}
@@ -58,12 +58,12 @@ The starting angle is then
 \begin{equation}
 \theta_0=\operatorname{atan2}\!\left(\hat{\mathbf{y}}\cdot(\mathbf{a}\times\mathbf{b}),\,\mathbf{a}\cdot\mathbf{b}\right)\frac{180}{\pi}.
 \end{equation}
-Its sign gives the direction of the turn, and its magnitude $|\theta_0|$ gives the horizontal turn demand of the trial (Figure~\ref{fig:starting-geometry}). Each block schedules four trials at each of the eight signed wall steps, which gives four trials each at $0$ and $180$ degrees and eight each at $45$, $90$, and $135$ degrees, and the target is placed so that the realized angle matches the assigned one. Because a larger angle requires a larger turn, the analysis adjusts for $|\theta_0|$ rather than dividing completion time by degrees. Appendix~\ref{app:measurement-definitions} gives the remaining details of the snapshot and the height and distance measures.
+Its sign gives the direction of the turn, and its magnitude $|\theta_0|$ gives the horizontal turn demand of the trial (Figure~\ref{fig:starting-geometry}). Each block schedules four trials at each of the eight signed plane steps, which gives four trials each at $0$ and $180$ degrees and eight each at $45$, $90$, and $135$ degrees, and the target is placed so that the realized angle matches the assigned one. Because a larger angle requires a larger turn, the analysis adjusts for $|\theta_0|$ rather than dividing completion time by degrees. Appendix~\ref{app:measurement-definitions} gives the remaining details of the snapshot and the height and distance measures.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth,alt={Overhead octagonal layout with origin, cross reference, nominal wall center, and an offset target showing distinct bearings.}]{figures/starting-geometry.pdf}
-\caption[Nominal wall assignment and exact starting angle]{Conceptual overhead geometry. The target is placed on its assigned wall where the assigned angle from the origin-to-cross bearing meets the wall, so it is generally offset from the wall center. The pre-cue snapshot saves the origin, cross and target used for this placement.}
+\includegraphics[width=\linewidth,alt={Overhead octagonal layout with origin, cross reference, nominal plane center, and an offset target showing distinct bearings.}]{figures/starting-geometry.pdf}
+\caption[Nominal plane assignment and exact starting angle]{Conceptual overhead geometry. The target is placed on its assigned object plane where the assigned angle from the origin-to-cross bearing meets the object plane, so it is generally offset from the plane center. The pre-cue snapshot saves the origin, cross and target used for this placement.}
 \label{fig:starting-geometry}
 \end{figure}
 
@@ -87,7 +87,7 @@ RQ2 & Saccade frequency & Events per second & Eye tracker & Search \\
 RQ3 & IMI interest/enjoyment & Subscale mean & Final survey & Participant by voice block \\
 Manipulation check & Perceived voice similarity & 1--7 rating & Final survey & Participant by voice block \\
 Exploratory & Agent perception, eeriness, ARQ, custom voice items & 1--7 ratings & Final survey & Participant by voice block \\
-Exploratory & Search behavior (head rotation, walls visited, revisits) & Degrees, counts & Application records & Trial \\
+Exploratory & Search behavior (head rotation, object planes visited, revisits) & Degrees, counts & Application records & Trial \\
 Adjustment & Starting angle $|\theta_0|$ & Degrees & Pre-cue snapshot & Trial \\\bottomrule
 \end{tabularx}
 \end{table}
@@ -97,7 +97,7 @@ Each research question in Section~\ref{sec:research-questions} maps onto specifi
 
 
 \section{Procedure}
-Participants perform an agent-guided object-search task while seated on a swivel chair, with multiple colored geometric objects scattered across eight surrounding vertical planes. Although the application knows the target identity, the participant does not receive a color-and-shape description before searching. Instead, the agent guides the participant toward the target wall and then refines the direction horizontally, vertically or diagonally. The participant selects an object using the right-controller ray and trigger. Looking at an object, receiving a gaze confirmation or pointing at it does not by itself complete the trial.
+Participants perform an agent-guided object-search task while seated on a swivel chair, with multiple colored geometric objects scattered across eight surrounding vertical planes. Although the application knows the target identity, the participant does not receive a color-and-shape description before searching. Instead, the agent guides the participant toward the target plane and then refines the direction horizontally, vertically or diagonally. The participant selects an object using the right-controller ray and trigger. Looking at an object, receiving a gaze confirmation or pointing at it does not by itself complete the trial.
 
 Each trial begins with the participant looking at a readiness cross. Once readiness is established, an opening directional cue plays while the objects remain hidden, and object reveal then starts active search timing. A correct trigger selection before the 25-second active-search deadline stops timing and produces success feedback. An incorrect selection is counted, and search continues within that same limit.
 
@@ -114,7 +114,7 @@ Figure~\ref{fig:voice-setup} shows these voice steps. The Selected Voice is chos
 \label{fig:voice-setup}
 \end{figure}
 
-The researcher fits the headset and conducts vendor calibration followed by independent spatial validation across relevant heights, wall boundaries, distances and head orientations. Within the application, gaze preparation then records three calibration dots, each preceded by a 3--2--1 countdown, followed automatically by five verification dots (Figure~\ref{fig:calibration-steps}). If an offset correction is introduced, the targets used to fit it are kept separate from those used for independent validation. Standardized instructions explain that participants rely on the agent to discover the target and use the right trigger to select it. Participants then complete the single practice trial and the two assigned 32-trial blocks.
+The researcher fits the headset and conducts vendor calibration followed by independent spatial validation across relevant heights, plane boundaries, distances and head orientations. Within the application, gaze preparation then records three calibration dots, each preceded by a 3--2--1 countdown, followed automatically by five verification dots (Figure~\ref{fig:calibration-steps}). If an offset correction is introduced, the targets used to fit it are kept separate from those used for independent validation. Standardized instructions explain that participants rely on the agent to discover the target and use the right trigger to select it. Participants then complete the single practice trial and the two assigned 32-trial blocks.
 
 \begin{figure}[htbp]
 \centering

@@ -60,7 +60,7 @@ pts=[(cx+r*math.sin(math.radians(a)),cy-r*math.cos(math.radians(a))) for a in [2
 d.path('M'+'L'.join(f'{x},{y}' for x,y in pts)+'Z',color='#adb9bd')
 d.circle(cx,cy,12,fill=B);d.text(cx-15,cy+43,'o',21,True)
 d.line(cx,cy,cx,151,color=B);d.text(210,100,'Cross reference c',19)
-d.line(cx,cy,426,209,color=grey,dash=True);d.text(455,180,'Wall center',18)
+d.line(cx,cy,426,209,color=grey,dash=True);d.text(455,180,'Plane center',18)
 d.line(cx,cy,465,249,color=G);d.circle(465,249,7,fill=gold,stroke=G);d.text(480,272,'Target p',19)
 d.path('M285 275 A75 75 0 0 1 347 308',G);d.text(318,261,'θ₀',24,True,color=G)
 d.box(570,110,390,155,'Allocation category',['0°, 45°, 90°, 135°, or 180°','Eight trials per category per block','Uses nominal wall relationship'])
