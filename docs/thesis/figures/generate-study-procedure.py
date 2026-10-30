@@ -88,7 +88,7 @@ for r, (name, sub, (c1, l1, v1), (c2, v2)) in enumerate(rows):
         box(bx, y, BW, RH, color, color)
         text(bx + 12, y + 30, label, 17, True)
         text(bx + 12, y + 54, voice, 16, True)
-        text(bx + 12, y + 78, '40 measured trials', 14)
+        text(bx + 12, y + 78, '24 measured trials', 14)
     box(BK, y, KW, RH, SETUP, SETUP_EDGE)
     text(BK + KW / 2, y + 40, 'Break', 16, True, 'middle')
     text(BK + KW / 2, y + 60, ['Tracking', 'recheck'], 13, anchor='middle')
