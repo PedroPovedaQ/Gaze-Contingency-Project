@@ -65,7 +65,7 @@ The direction in each cue is computed geometrically by the application before th
 
 \paragraph{Wall membership.} The eight walls form a ring at $45^\circ$ intervals around the chair. The gaze ray is transformed into the target wall's frame and tested against that wall's horizontal sector. Height is ignored in this test, so scanning up and down the correct wall is not counted as leaving it.
 
-\paragraph{Angular error.} The horizontal error $\psi$ is the signed angle about the world up axis between the horizontal projections of $\mathbf{g}$ and $\mathbf{d}$; it is positive when the target lies to the participant's right. The vertical error is the difference in elevation,
+\paragraph{Angular error.} The horizontal, or yaw, error $\psi$ is the signed angle about the world up axis between the horizontal projections of $\mathbf{g}$ and $\mathbf{d}$; it is positive when the target lies to the participant's right. The starting angle $\theta_0$ (Section~\ref{sec:theta-measures}) gives the yaw separating the readiness cross from the target before a trial begins, whereas $\psi$ tracks the remaining yaw error from the current gaze throughout the search. The vertical, or pitch, error is the difference in elevation,
 \begin{equation}
 \phi=\operatorname{elev}(\mathbf{d})-\operatorname{elev}(\mathbf{g}),\qquad
 \operatorname{elev}(\mathbf{v})=\operatorname{atan2}\!\left(v_y,\sqrt{v_x^2+v_z^2}\right)\frac{180}{\pi},
