@@ -74,7 +74,7 @@ d.line(175,300,225,300,color=B,arrow=False,width=5);d.line(200,275,200,325,color
 d.circle(450,170,12,fill=gold,stroke=G);d.text(350,140,'Target p above c',20)
 d.line(230,300,485,300,arrow=False,dash=True);d.line(230,170,485,170,arrow=False,dash=True)
 d.line(490,295,490,175,color=G);d.text(500,242,'Δh',24,True,color=G)
-d.box(610,105,350,140,'Measured blocks',['12 targets above / 12 below','Balanced across nominal angles'],gold)
+d.box(610,105,350,140,'Measured blocks',['16 targets above / 16 below','Two of each at every signed step'],gold)
 d.box(610,285,350,145,'Live refinement',['Uses current gaze geometry','A neighboring highlight is not','automatically its reference'])
 d.text(45,520,'Δh = target height − cross height; preserve sign and the saved reference.',21);d.save('height-reference')
 
@@ -93,10 +93,10 @@ d.line(315,175,365,175);d.box(365,110,270,130,'Versioned processing',['Clock and
 d.line(635,175,685,175);d.box(685,110,280,130,'Trial summaries',['Performance and geometry','Questionnaire references','Provenance and versions'],gold)
 d.line(175,240,175,320);d.box(35,320,410,115,'Trial Review reconstruction',['Timeline, scene, state, and speech','Uses original observations and events'])
 d.line(825,240,825,320);d.box(555,320,410,115,'Analysis tables',['Trials nested within participants','Ratings retain participant × block scope'])
-d.text(500,510,['Derived CSV rows do not replace raw records.','Repeating a block score across 24 rows does not create 40 ratings.'],21,True,'middle');d.save('data-provenance')
+d.text(500,510,['Derived CSV rows do not replace raw records.','Repeating a block score across 32 rows does not create 40 ratings.'],21,True,'middle');d.save('data-provenance')
 
 d=Drawing(560);d.title('Questionnaire administration and reference scope','Protocol proposal: no between-block questionnaires; Qualtrics synchronization remains on hold.')
-d.box(30,115,205,100,'Block 1',['24 measured trials']);d.box(280,115,160,100,'Break',['Comfort checks']);d.box(485,115,205,100,'Block 2',['24 measured trials']);d.box(735,115,235,100,'Final session',['Questionnaires + debrief'],gold)
+d.box(30,115,205,100,'Block 1',['32 measured trials']);d.box(280,115,160,100,'Break',['Comfort checks']);d.box(485,115,205,100,'Block 2',['32 measured trials']);d.box(735,115,235,100,'Final session',['Questionnaires + debrief'],gold)
 for a,b in [(235,280),(440,485),(690,735)]:d.line(a,165,b,165)
 d.box(100,310,365,140,'Reference: Block 1',['Workload, IMI, agent experience','Actual voice mapped by saved order','70 numeric ratings'])
 d.box(535,310,365,140,'Reference: Block 2',['Same instruments and item versions','Actual voice mapped by saved order','70 numeric ratings'])
@@ -105,8 +105,8 @@ d.text(500,515,'Administration time = final session; response scope = participan
 
 d=Drawing(570);d.title('Repeated trials do not replace independent participants','Proposed analysis: within-participant contrast with explicit clustering and observation scope.')
 d.box(25,105,950,400,'Participant i')
-d.box(60,165,410,120,'Voice condition A',['24 trial outcomes with starting geometry','1 set of block-referenced ratings'])
-d.box(530,165,410,120,'Voice condition B',['24 trial outcomes with starting geometry','1 set of block-referenced ratings'],gold)
+d.box(60,165,410,120,'Voice condition A',['32 trial outcomes with starting geometry','1 set of block-referenced ratings'])
+d.box(530,165,410,120,'Voice condition B',['32 trial outcomes with starting geometry','1 set of block-referenced ratings'],gold)
 d.line(270,285,400,340);d.line(730,285,600,340)
 d.box(230,340,540,115,'Paired contribution to the study estimate',['Counterbalanced order + participant clustering','Separate performance and questionnaire models'])
 d.text(500,545,'Repeat across participants; determine sample size through a prospective power analysis.',20,anchor='middle');d.save('analysis-units')
