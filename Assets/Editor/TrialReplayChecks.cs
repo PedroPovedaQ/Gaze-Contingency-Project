@@ -42,8 +42,10 @@ public static class TrialReplayChecks
             int trialLine=Array.FindIndex(lines,l=>JsonUtility.FromJson<TrialReplayRecord>(l).kind=="trial");
             var bounds=JsonUtility.FromJson<TrialReplayRecord>(lines[trialLine]);
             bounds.hasSearchPlaneBounds=true;bounds.searchPlaneBottom=-1.2f;bounds.searchPlaneHeight=2.2036f;
+            bounds.roomEnvironment=StudyRoomEnvironment.Version;
             bad=(string[])lines.Clone();bad[trialLine]=JsonUtility.ToJson(bounds);File.WriteAllLines(corrupt,bad);
             var savedBounds=TrialReplayFile.Read(corrupt).Trials[0];
+            Assert(savedBounds.roomEnvironment==StudyRoomEnvironment.Version,"Room version survives parsing without changing schema");
             Assert(savedBounds.hasSearchPlaneBounds&&Mathf.Abs(savedBounds.searchPlaneHeight-2.2036f)<.0001f&&
                 Mathf.Abs(savedBounds.searchPlaneBottom+1.2f)<.0001f,"Recorded wall bounds survive file parsing");
             bounds.searchPlaneHeight=-1;bad[trialLine]=JsonUtility.ToJson(bounds);File.WriteAllLines(corrupt,bad);

@@ -1,0 +1,8 @@
+{
+  "apk": "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Builds/CodexAndroid/codex_build.apk",
+  "apk_bytes": 72038901,
+  "apk_sha256": "d4087a5e2314b531b7e337baaa461e3e567ab3c746a8b0222434d4642f152e91",
+  "installed": false,
+  "reason": "Wireless helper found no online Focus Vision; no installation attempted",
+  "desktop_app": "/Users/pedro.poveda/Applications/Follow My Voice Neutral Room 20261030.app"
+}

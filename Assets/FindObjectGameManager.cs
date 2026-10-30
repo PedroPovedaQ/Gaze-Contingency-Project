@@ -266,7 +266,7 @@ public class FindObjectGameManager : MonoBehaviour
     [SerializeField, Range(1f, 3f)] float m_RotationalRadius = RotationalSearchLayout.DefaultRadius;
     [SerializeField, Min(0f)] float m_MinObjectHeight = RotationalSearchLayout.DefaultMinHeight;
     [SerializeField, Min(0.1f)] float m_MaxObjectHeight = RotationalSearchLayout.DefaultMaxHeight;
-    [SerializeField] bool m_ShowDegreeGuides = true;
+    [SerializeField] bool m_ShowDegreeGuides = false;
     readonly List<GameObject> m_DegreeGuides = new();
     float m_FloorHeight;
     public float SearchPlaneHeight => m_MaxObjectHeight + RotationalSearchLayout.TopMargin;
@@ -736,6 +736,10 @@ public class FindObjectGameManager : MonoBehaviour
 
     void CreateRotationalFrames()
     {
+        var room = StudyRoomEnvironment.Create(m_SpawnCenter, m_SeatedRotation, m_FloorHeight);
+        var backdrop = GameObject.Find("Environment");
+        if (backdrop != null) room.GetComponent<StudyRoomEnvironment>().HideBackdrop(backdrop.GetComponentsInChildren<Renderer>(true));
+        m_ShelfObjects.Add(room);
         m_DegreeGuides.Clear();
         float bottom = m_FloorHeight - m_SpawnCenter.y;
         float top = bottom + SearchPlaneHeight;

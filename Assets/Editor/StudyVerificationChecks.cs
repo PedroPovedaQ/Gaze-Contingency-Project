@@ -12,6 +12,7 @@ public static class StudyVerificationChecks
         ScheduleChecks.Run();
         GazeQualityChecks.Run();
         GazeWallFilterChecks.Run();
+        StudyRoomChecks.Run();
         ControllerSelectionChecks.Run();
         ReadinessGateChecks.Run();
         StudyFeedbackChecks.Run();

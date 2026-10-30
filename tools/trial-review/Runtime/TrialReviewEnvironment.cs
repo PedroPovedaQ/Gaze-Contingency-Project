@@ -88,6 +88,18 @@ public sealed class TrialReviewEnvironment : IDisposable
                 }
             }
         }
+        if(trial.roomEnvironment==StudyRoomEnvironment.Version)
+        {
+            // Use the exact runtime mesh, dimensions and neutral materials for new recordings.
+            var room=StudyRoomEnvironment.Create(Vector3.zero,Quaternion.identity,bottom);
+            room.transform.SetParent(m_Room.transform,false);
+        }
+        else BuildLegacyRoom(points,bottom,height);
+        // Single-sided room walls are a cutaway when the orbit camera is outside the room.
+        foreach(var root in new[]{m_Walls,m_Room})root.transform.SetPositionAndRotation(Center,trial.originRotation);
+    }
+    void BuildLegacyRoom(Vector3[] points,float bottom,float height)
+    {
         float roomRadius=Mathf.Max(Radius+1.5f,points.Max(p=>new Vector2(p.x,p.z).magnitude)+.8f);
         float roomHeight=Mathf.Max(3,height+.5f);
         Panel(m_Room,new Vector3(0,bottom,0),Quaternion.Euler(90,0,0),new Vector2(roomRadius*2,roomRadius*2));
@@ -101,8 +113,6 @@ public sealed class TrialReviewEnvironment : IDisposable
             Line(m_Room,new[]{new Vector3(x,bottom+.005f,-roomRadius),new Vector3(x,bottom+.005f,roomRadius)},m_Grid,.006f);
             Line(m_Room,new[]{new Vector3(-roomRadius,bottom+.005f,x),new Vector3(roomRadius,bottom+.005f,x)},m_Grid,.006f);
         }
-        // Single-sided room walls are a cutaway when the orbit camera is outside the room.
-        foreach(var root in new[]{m_Walls,m_Room})root.transform.SetPositionAndRotation(Center,trial.originRotation);
     }
     // Use the same finite panels as the reconstruction, not object colliders or
     // an arbitrary distance along the gaze. This is a display projection only.

@@ -1,0 +1,822 @@
+{
+  "status": "development digital render only, not photometric or psychophysical validation",
+  "examples": [
+    {
+      "color": "red",
+      "shape": "Sphere",
+      "height": "top",
+      "visible_colored_pixels": 2000,
+      "median_rgb": [
+        155.0,
+        44.0,
+        52.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 90.54
+    },
+    {
+      "color": "red",
+      "shape": "Cube",
+      "height": "top",
+      "visible_colored_pixels": 3816,
+      "median_rgb": [
+        219.0,
+        56.0,
+        61.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 133.65
+    },
+    {
+      "color": "red",
+      "shape": "Pyramid",
+      "height": "top",
+      "visible_colored_pixels": 2761,
+      "median_rgb": [
+        86.0,
+        31.0,
+        42.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 86.61
+    },
+    {
+      "color": "red",
+      "shape": "Cylinder",
+      "height": "top",
+      "visible_colored_pixels": 3138,
+      "median_rgb": [
+        193.0,
+        53.0,
+        59.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 112.23
+    },
+    {
+      "color": "red",
+      "shape": "Star",
+      "height": "top",
+      "visible_colored_pixels": 1934,
+      "median_rgb": [
+        141.0,
+        56.0,
+        61.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 70.09
+    },
+    {
+      "color": "red",
+      "shape": "Capsule",
+      "height": "top",
+      "visible_colored_pixels": 1358,
+      "median_rgb": [
+        187.0,
+        51.0,
+        58.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 108.34
+    },
+    {
+      "color": "red",
+      "shape": "Sphere",
+      "height": "bottom",
+      "visible_colored_pixels": 2126,
+      "median_rgb": [
+        231.5,
+        56.0,
+        61.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 153.19
+    },
+    {
+      "color": "red",
+      "shape": "Cube",
+      "height": "bottom",
+      "visible_colored_pixels": 4115,
+      "median_rgb": [
+        218.0,
+        51.0,
+        57.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 141.71
+    },
+    {
+      "color": "red",
+      "shape": "Pyramid",
+      "height": "bottom",
+      "visible_colored_pixels": 3260,
+      "median_rgb": [
+        252.0,
+        60.0,
+        64.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 172.36
+    },
+    {
+      "color": "red",
+      "shape": "Cylinder",
+      "height": "bottom",
+      "visible_colored_pixels": 3385,
+      "median_rgb": [
+        222.0,
+        52.0,
+        57.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 145.34
+    },
+    {
+      "color": "red",
+      "shape": "Star",
+      "height": "bottom",
+      "visible_colored_pixels": 2168,
+      "median_rgb": [
+        218.0,
+        51.0,
+        57.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 141.71
+    },
+    {
+      "color": "red",
+      "shape": "Capsule",
+      "height": "bottom",
+      "visible_colored_pixels": 1402,
+      "median_rgb": [
+        214.0,
+        51.0,
+        57.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 137.88
+    },
+    {
+      "color": "blue",
+      "shape": "Sphere",
+      "height": "top",
+      "visible_colored_pixels": 2015,
+      "median_rgb": [
+        36.0,
+        78.0,
+        211.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 130.68
+    },
+    {
+      "color": "blue",
+      "shape": "Cube",
+      "height": "top",
+      "visible_colored_pixels": 3833,
+      "median_rgb": [
+        49.0,
+        100.0,
+        254.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 164.2
+    },
+    {
+      "color": "blue",
+      "shape": "Pyramid",
+      "height": "top",
+      "visible_colored_pixels": 2797,
+      "median_rgb": [
+        21.0,
+        49.0,
+        156.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 107.52
+    },
+    {
+      "color": "blue",
+      "shape": "Cylinder",
+      "height": "top",
+      "visible_colored_pixels": 3172,
+      "median_rgb": [
+        46.0,
+        92.0,
+        240.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 151.9
+    },
+    {
+      "color": "blue",
+      "shape": "Star",
+      "height": "top",
+      "visible_colored_pixels": 1977,
+      "median_rgb": [
+        50.0,
+        82.0,
+        179.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 95.7
+    },
+    {
+      "color": "blue",
+      "shape": "Capsule",
+      "height": "top",
+      "visible_colored_pixels": 1366,
+      "median_rgb": [
+        43.0,
+        90.0,
+        236.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 149.28
+    },
+    {
+      "color": "blue",
+      "shape": "Sphere",
+      "height": "bottom",
+      "visible_colored_pixels": 2137,
+      "median_rgb": [
+        50.0,
+        103.0,
+        255.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 177.18
+    },
+    {
+      "color": "blue",
+      "shape": "Cube",
+      "height": "bottom",
+      "visible_colored_pixels": 4115,
+      "median_rgb": [
+        45.0,
+        98.0,
+        254.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 176.66
+    },
+    {
+      "color": "blue",
+      "shape": "Pyramid",
+      "height": "bottom",
+      "visible_colored_pixels": 3260,
+      "median_rgb": [
+        54.0,
+        111.0,
+        255.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 177.63
+    },
+    {
+      "color": "blue",
+      "shape": "Cylinder",
+      "height": "bottom",
+      "visible_colored_pixels": 3385,
+      "median_rgb": [
+        46.0,
+        99.0,
+        255.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 177.52
+    },
+    {
+      "color": "blue",
+      "shape": "Star",
+      "height": "bottom",
+      "visible_colored_pixels": 2168,
+      "median_rgb": [
+        45.0,
+        98.0,
+        254.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 176.66
+    },
+    {
+      "color": "blue",
+      "shape": "Capsule",
+      "height": "bottom",
+      "visible_colored_pixels": 1409,
+      "median_rgb": [
+        45.0,
+        96.0,
+        251.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 173.57
+    },
+    {
+      "color": "yellow",
+      "shape": "Sphere",
+      "height": "top",
+      "visible_colored_pixels": 2006,
+      "median_rgb": [
+        162.5,
+        174.0,
+        45.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 113.68
+    },
+    {
+      "color": "yellow",
+      "shape": "Cube",
+      "height": "top",
+      "visible_colored_pixels": 3830,
+      "median_rgb": [
+        231.0,
+        227.0,
+        52.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 192.04
+    },
+    {
+      "color": "yellow",
+      "shape": "Pyramid",
+      "height": "top",
+      "visible_colored_pixels": 2786,
+      "median_rgb": [
+        91.0,
+        109.0,
+        37.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 61.48
+    },
+    {
+      "color": "yellow",
+      "shape": "Cylinder",
+      "height": "top",
+      "visible_colored_pixels": 3153,
+      "median_rgb": [
+        203.0,
+        206.0,
+        51.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 158.85
+    },
+    {
+      "color": "yellow",
+      "shape": "Star",
+      "height": "top",
+      "visible_colored_pixels": 1934,
+      "median_rgb": [
+        147.0,
+        145.0,
+        52.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 82.64
+    },
+    {
+      "color": "yellow",
+      "shape": "Capsule",
+      "height": "top",
+      "visible_colored_pixels": 1364,
+      "median_rgb": [
+        197.0,
+        202.0,
+        50.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 152.43
+    },
+    {
+      "color": "yellow",
+      "shape": "Sphere",
+      "height": "bottom",
+      "visible_colored_pixels": 2135,
+      "median_rgb": [
+        244.0,
+        238.0,
+        51.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 227.03
+    },
+    {
+      "color": "yellow",
+      "shape": "Cube",
+      "height": "bottom",
+      "visible_colored_pixels": 4115,
+      "median_rgb": [
+        230.0,
+        226.0,
+        47.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 209.44
+    },
+    {
+      "color": "yellow",
+      "shape": "Pyramid",
+      "height": "bottom",
+      "visible_colored_pixels": 3260,
+      "median_rgb": [
+        255.0,
+        255.0,
+        54.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 246.26
+    },
+    {
+      "color": "yellow",
+      "shape": "Cylinder",
+      "height": "bottom",
+      "visible_colored_pixels": 3385,
+      "median_rgb": [
+        234.0,
+        229.0,
+        47.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 214.33
+    },
+    {
+      "color": "yellow",
+      "shape": "Star",
+      "height": "bottom",
+      "visible_colored_pixels": 2168,
+      "median_rgb": [
+        230.0,
+        226.0,
+        47.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 209.44
+    },
+    {
+      "color": "yellow",
+      "shape": "Capsule",
+      "height": "bottom",
+      "visible_colored_pixels": 1404,
+      "median_rgb": [
+        225.0,
+        223.0,
+        47.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 203.85
+    },
+    {
+      "color": "green",
+      "shape": "Sphere",
+      "height": "top",
+      "visible_colored_pixels": 1999,
+      "median_rgb": [
+        23.0,
+        136.0,
+        115.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 85.56
+    },
+    {
+      "color": "green",
+      "shape": "Cube",
+      "height": "top",
+      "visible_colored_pixels": 3816,
+      "median_rgb": [
+        31.0,
+        177.0,
+        138.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 111.52
+    },
+    {
+      "color": "green",
+      "shape": "Pyramid",
+      "height": "top",
+      "visible_colored_pixels": 2761,
+      "median_rgb": [
+        16.0,
+        85.0,
+        85.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 82.76
+    },
+    {
+      "color": "green",
+      "shape": "Cylinder",
+      "height": "top",
+      "visible_colored_pixels": 3137,
+      "median_rgb": [
+        30.0,
+        163.0,
+        130.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 99.67
+    },
+    {
+      "color": "green",
+      "shape": "Star",
+      "height": "top",
+      "visible_colored_pixels": 1934,
+      "median_rgb": [
+        32.0,
+        124.0,
+        109.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 71.4
+    },
+    {
+      "color": "green",
+      "shape": "Capsule",
+      "height": "top",
+      "visible_colored_pixels": 1359,
+      "median_rgb": [
+        29.0,
+        158.0,
+        128.0
+      ],
+      "background_rgb": [
+        97.0,
+        97.0,
+        97.0
+      ],
+      "median_rgb_distance": 96.47
+    },
+    {
+      "color": "green",
+      "shape": "Sphere",
+      "height": "bottom",
+      "visible_colored_pixels": 2124,
+      "median_rgb": [
+        28.0,
+        186.0,
+        142.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 131.65
+    },
+    {
+      "color": "green",
+      "shape": "Cube",
+      "height": "bottom",
+      "visible_colored_pixels": 4115,
+      "median_rgb": [
+        23.0,
+        176.0,
+        136.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 123.42
+    },
+    {
+      "color": "green",
+      "shape": "Pyramid",
+      "height": "bottom",
+      "visible_colored_pixels": 3260,
+      "median_rgb": [
+        30.0,
+        199.0,
+        150.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 144.97
+    },
+    {
+      "color": "green",
+      "shape": "Cylinder",
+      "height": "bottom",
+      "visible_colored_pixels": 3385,
+      "median_rgb": [
+        24.0,
+        178.0,
+        137.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 124.92
+    },
+    {
+      "color": "green",
+      "shape": "Star",
+      "height": "bottom",
+      "visible_colored_pixels": 2168,
+      "median_rgb": [
+        24.0,
+        176.0,
+        136.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 122.95
+    },
+    {
+      "color": "green",
+      "shape": "Capsule",
+      "height": "bottom",
+      "visible_colored_pixels": 1401,
+      "median_rgb": [
+        24.0,
+        174.0,
+        135.0
+      ],
+      "background_rgb": [
+        82.0,
+        82.0,
+        82.0
+      ],
+      "median_rgb_distance": 120.98
+    }
+  ],
+  "min_median_rgb_distance": 61.48
+}

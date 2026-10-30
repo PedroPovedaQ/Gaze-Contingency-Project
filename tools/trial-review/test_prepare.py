@@ -25,6 +25,8 @@ class PrepareChecks(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = prepare(Path(directory))
             self.assertTrue((root / 'Assets/SharedReplay/GuidanceStateSnapshot.cs').exists())
+            self.assertEqual((root / 'Assets/SharedReplay/StudyRoomEnvironment.cs').read_text(),
+                             (ROOT / 'Assets/StudyRoomEnvironment.cs').read_text())
             self.assertTrue((root / 'Assets/Runtime/TrialReviewGuidanceState.cs').exists())
             self.assertFalse((root / 'Assets/StreamingAssets/api_keys.json').exists())
             self.assertFalse((root / 'Assets/Scenes/GazeContingencyStudyScene.unity').exists())

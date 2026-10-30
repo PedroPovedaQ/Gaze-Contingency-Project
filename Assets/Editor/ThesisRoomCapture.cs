@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -70,8 +69,6 @@ public static class ThesisRoomCapture
             Set(game, "m_SpawnCenter", new Vector3(0, 1.2f, 0));
             Set(game, "m_FloorHeight", 0f);
             Call(game, "CreateRotationalFrames");
-            // Suppress angle text for the requested clean figure; retain real frame geometry/material.
-            foreach (var label in Object.FindObjectsByType<TMP_Text>(FindObjectsSortMode.None)) label.gameObject.SetActive(false);
 
             SessionConfig.ParticipantId = "THESIS_ROOM"; // In-memory identity generation only; no StartRun.
             var round = ChallengeSet.Rounds[0];
@@ -101,10 +98,31 @@ public static class ThesisRoomCapture
             }
             receipt.AppendLine($"Count={slots.Length}; layout={RotationalSearchLayout.LayoutTag}; layoutSeed={LayoutSeed}; identity=THESIS_ROOM; scheduleSeed={ChallengeSet.ScheduleSeed}; round=0");
             receipt.AppendLine($"Radius={radius:R}; wall height={game.SearchPlaneHeight:R}; floor=0; seated origin=(0,1.2,0); yaw=0; pin={target.plane}/{target.slot}");
+            receipt.AppendLine($"Environment={StudyRoomEnvironment.Version}; room=10x10x6 m; walls at radius {StudyRoomEnvironment.Radius}; wall sRGB={StudyRoomEnvironment.WallColor}; floor sRGB={StudyRoomEnvironment.FloorColor}; guides={game.DegreeGuidesVisible}; no colliders");
             Capture(camera, output, "room-first-person.png", new Vector3(0, 1.2f, 0), new Vector3(0, 1.2f, 1.5f), 80, receipt);
             Capture(camera, output, "room-wide.png", new Vector3(4, 5, -5), new Vector3(0, 1.05f, 0), 34, receipt);
+            // Inspect every real shape/color at both vertical extremes, against the same room.
+            foreach (var obj in Object.FindObjectsByType<SpawnableObjectInfo>(FindObjectsSortMode.None)) Object.DestroyImmediate(obj.gameObject);
+            foreach (string color in new[] { "Red", "Blue", "Yellow", "Green" })
+            {
+                var examples = new System.Collections.Generic.List<GameObject>();
+                string[] shapes = { "Sphere", "Cube", "Pyramid", "Cylinder", "Star", "Capsule" };
+                for (int row=0;row<2;row++)
+                    for (int column=0;column<shapes.Length;column++)
+                    {
+                        factory.EnqueueCombo(shapes[column],color);
+                        var obj = new GameObject("Contrast example"); factory.ConfigureObject(obj);
+                        obj.transform.SetPositionAndRotation(new Vector3((column-2.5f)*.18f,
+                            row==0?RotationalSearchLayout.DefaultMinHeight:RotationalSearchLayout.DefaultMaxHeight,1.5f),Quaternion.Euler(0,180,0));
+                        if (shapes[column]=="Pyramid") obj.transform.position-=Vector3.up*obj.transform.localScale.y*.5f;
+                        if (obj.GetComponent<Renderer>().bounds.min.y<=0) throw new InvalidOperationException("Object intersects floor.");
+                        examples.Add(obj);
+                    }
+                Capture(camera,output,"contrast-"+color.ToLowerInvariant()+".png",new Vector3(0,1.2f,0),new Vector3(0,1.2f,1.5f),80,receipt);
+                foreach(var obj in examples) Object.DestroyImmediate(obj);
+            }
             File.WriteAllText(Path.Combine(output, "render-receipt.txt"), receipt.ToString());
-            Debug.Log("[ThesisRoomCapture] PASS: 168 objects, eight runtime frames, two GPU renders; no Play mode or services.");
+            Debug.Log("[ThesisRoomCapture] PASS: 168 objects, hidden search frames, runtime floor/distant walls, two GPU renders; no Play mode or services.");
         }
         finally
         {

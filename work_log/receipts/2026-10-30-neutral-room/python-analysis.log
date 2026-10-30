@@ -1,0 +1,114 @@
+..............E......................E................................................................................................................................E............................E..............................................................................................................................
+======================================================================
+ERROR: test_eye_outcomes (unittest.loader._FailedTest.test_eye_outcomes)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_eye_outcomes
+Traceback (most recent call last):
+  File "/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+  File "/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+    ~~~~~~~~~~^^^^^^
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/analysis/test_eye_outcomes.py", line 8, in <module>
+    from eye_outcomes import Config, analyze, fresh_search_segments, idt, ipa, compare_reviewed_windows
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/analysis/eye_outcomes.py", line 19, in <module>
+    import pywt
+ModuleNotFoundError: No module named 'pywt'
+
+
+======================================================================
+ERROR: test_eye_timing (unittest.loader._FailedTest.test_eye_timing)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_eye_timing
+Traceback (most recent call last):
+  File "/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+  File "/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+    ~~~~~~~~~~^^^^^^
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/analysis/test_eye_timing.py", line 4, in <module>
+    from eye_outcomes import analyze, Config, fresh_search_segments
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/analysis/eye_outcomes.py", line 19, in <module>
+    import pywt
+ModuleNotFoundError: No module named 'pywt'
+
+
+======================================================================
+ERROR: test_pupil_diagnostics (unittest.loader._FailedTest.test_pupil_diagnostics)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_pupil_diagnostics
+Traceback (most recent call last):
+  File "/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+  File "/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+    ~~~~~~~~~~^^^^^^
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/analysis/test_pupil_diagnostics.py", line 6, in <module>
+    from eye_outcomes import Config, analyze, pupil_screen
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/analysis/eye_outcomes.py", line 19, in <module>
+    import pywt
+ModuleNotFoundError: No module named 'pywt'
+
+
+======================================================================
+ERROR: test_research_measures (unittest.loader._FailedTest.test_research_measures)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_research_measures
+Traceback (most recent call last):
+  File "/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+  File "/opt/homebrew/Caskroom/miniconda/base/lib/python3.13/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+    ~~~~~~~~~~^^^^^^
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/analysis/test_research_measures.py", line 9, in <module>
+    from research_measures import build_trials, score_surveys, capture_requirements
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/analysis/research_measures.py", line 21, in <module>
+    from eye_outcomes import Config, VERSION, analyze, write_csv
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/analysis/eye_outcomes.py", line 19, in <module>
+    import pywt
+ModuleNotFoundError: No module named 'pywt'
+
+
+----------------------------------------------------------------------
+Ran 322 tests in 7.527s
+
+FAILED (errors=4)
+Loaded 14 round records from 1 sessions
+Participants: 1
+Conditions: {'gaze_aware': 14}
+Loaded 14 round records from 1 sessions
+Participants: 1
+Conditions: {'gaze_aware': 14}
+Loaded 14 round records from 1 sessions
+Participants: 1
+Conditions: {'gaze_aware': 14}
+Loaded 14 round records from 1 sessions
+Participants: 1
+Conditions: {'gaze_aware': 14}
+Loaded 1 round records from 1 sessions
+Participants: 1
+Conditions: {'unknown': 1}
+Loaded 1 round records from 1 sessions
+Participants: 1
+Conditions: {'unknown': 1}
+Loaded 1 round records from 1 sessions
+Participants: 1
+Conditions: {'unknown': 1}
+Loaded 128 round records from 2 sessions
+Participants: 2
+Conditions: {'gaze_aware': 128}
+Loaded 37 round records from 1 sessions
+Participants: 1
+Conditions: {'gaze_aware': 37}
+Loaded 64 round records from 1 sessions
+Participants: 1
+Conditions: {'gaze_aware': 64}
+Loaded 80 round records from 1 sessions
+Participants: 1
+Conditions: {'gaze_aware': 80}
+Loaded 128 round records from 2 sessions
+Participants: 1
+Conditions: {'gaze_aware': 128}
+Loaded 28 round records from 2 sessions
+Participants: 2
+Conditions: {'gaze_aware': 28}

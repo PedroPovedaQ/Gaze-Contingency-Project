@@ -1,0 +1,104 @@
+{
+  "environment": "neutral-room-v1",
+  "status": "development synthetic Unity GPU render, not wearer evidence",
+  "source_base_commit": "fb6e439b67be8ee216004546462909dc3b490635",
+  "room_m": {
+    "width": 10,
+    "depth": 10,
+    "height": 6,
+    "wall_distance_from_center": 5,
+    "floor_y": 0
+  },
+  "wall_srgb": [
+    0.38,
+    0.38,
+    0.38,
+    1
+  ],
+  "floor_srgb": [
+    0.32,
+    0.32,
+    0.32,
+    1
+  ],
+  "lighting": "unchanged study scene; new room unlit, no shadows",
+  "guides_default_visible": false,
+  "files": {
+    "contrast-blue.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "2b7088d3c0d1d45d04bec359fed37718e8b2bc4e886e8c60192fe4ba85c35918",
+      "visually_inspected": true
+    },
+    "contrast-green.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "0be685c5915bf4dc214960d4308edc53bad16152669b9172fce8286d9c352cce",
+      "visually_inspected": true
+    },
+    "contrast-red.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "00177e24fb22a301cc2fe63a0065b479b61812e827d07c3d56f65dd1bebe2d57",
+      "visually_inspected": true
+    },
+    "contrast-yellow.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "e60ad1cf0e080d6a03af3ee6fdd389c2acb5f8ca2e64b5494f345ba763ab564e",
+      "visually_inspected": true
+    },
+    "room-first-person-outlined.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "7b86d1304b2bbdf99bec7e82489b3e9950be4c4488bdfc882b22c731f6955863",
+      "visually_inspected": false
+    },
+    "room-first-person.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "db882010181aca87373b4f4bc4a948c1171b5421aca4db841db8c50ecaf94812",
+      "visually_inspected": true
+    },
+    "room-wide-outlined.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "9d8337b12f0333748761347c118ef59a6f279aab54929163a0c7d04607572501",
+      "visually_inspected": false
+    },
+    "room-wide.png": {
+      "dimensions": [
+        2560,
+        1440
+      ],
+      "sha256": "6b14b45730739825c73736cffd565ce22730480c96249296684ebc62a8fa659a",
+      "visually_inspected": true
+    }
+  },
+  "sources": {
+    "Assets/StudyRoomEnvironment.cs": "aece3061d8d87aa520a5f422e8a097f11c39e35b3116a7424762e153fbeec6b4",
+    "Assets/FindObjectGameManager.cs": "53c6faf79f5240d78b534bcf1424025992ca2ac3c2019b8e7abccd2c205e3e9d",
+    "Assets/Editor/ThesisRoomCapture.cs": "f5d018ba054f99c7473bda8fedd5e9ac674ddcf1f7dba062e7ffa0f3b3f8e7a4",
+    "Assets/ShapeObjectFactory.cs": "260faf39e34e420dd5e0f38294e42e5fd751755b79de3543af29130dc0dcb46b",
+    "Assets/RotationalSearchLayout.cs": "d0724918d31ba2a3f9280d7d54087a40075f690444ed5b657c3f27ffc14f0a2c",
+    "Assets/ChallengeSet.cs": "3148d3243eb9befb9078e002e654451777e735374079c410250edcea36fe69f7",
+    "tools/trial-review/Runtime/TrialReviewEnvironment.cs": "9e56bead4bd4769c19a819db12ecf020e2172315e60f22f55602b13f8db14d68",
+    "Assets/Replay/TrialReplayData.cs": "0dcec668a1579e6d530e3d1410c232284d06598bec75e52f8ebbd79a61489d76",
+    "Assets/Replay/TrialReplayRecorder.cs": "d12b94fc15e2cc883f48811c85a36bfbe5d35f7a345b04b8d4735f0e9fedd913"
+  },
+  "unchanged_ui_captures": "01\u201309 headset preparation captures precede search room creation; 10 desktop voice selection is a separate UI. None has a changed background."
+}

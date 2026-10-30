@@ -37,6 +37,8 @@ def prepare(project):
 
     for name in ['TrialReplayData', 'TrialReplayGaze', 'TrialReplayState', 'TrialReplayFile', 'TrialReplayAudio']:
         (shared / (name + '.cs')).write_text(source('Assets/Replay/' + name + '.cs'))
+    # Visual room has no bootstrap, recording or XR dependencies.
+    (shared / 'StudyRoomEnvironment.cs').write_text(source('Assets/StudyRoomEnvironment.cs'))
     # Pure data/policy dependencies only; no recorders, bootstraps, credentials or XR.
     for name in ['GuidanceDecision', 'GuidanceStateSnapshot', 'GazeObservation', 'HtcQueryTiming', 'GazeQuickAlignment', 'StudyGazeAccuracy', 'GazeTargetHistory', 'DirectionalHintPolicy', 'ParticipantSessionAssignment', 'EyeValidationProtocol']:
         (shared / (name + '.cs')).write_text(source('Assets/' + name + '.cs'))

@@ -61,7 +61,8 @@ public static class GuidanceBoundaryChecks
         finally
         {
             UnityEngine.Object.DestroyImmediate(menu);
-            if (guides != null) foreach (var guide in guides) UnityEngine.Object.DestroyImmediate(guide);
+            if (game != null)
+                foreach (var item in (List<GameObject>)Field("m_ShelfObjects").GetValue(game)) UnityEngine.Object.DestroyImmediate(item);
             if (game != null && Field("m_PlaneOutlineMaterial").GetValue(game) is Material material)
             {
                 UnityEngine.Object.DestroyImmediate(material);

@@ -1,0 +1,13 @@
+[CodexBuild] Building Android player to Builds/CodexAndroid/codex_build.apk; launch on device: False.
+NullReferenceException: Object reference not set to an instance of an object
+  at VIVE.OpenXR.VIVEFocus3Feature.GetOpenXrExtensionInfo (UnityEditor.BuildTargetGroup& buildTargetGroup, System.Collections.Generic.List`1[VIVE.OpenXR.VIVEFocus3Feature+OpenXrExtension]& myExtensionList, System.Boolean isRecordEnableOnly) [0x0004d] in ./Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab/Runtime/VIVEFocus3Feature.cs:364
+  at VIVE.OpenXR.VIVEFocus3Feature.IsViveSpectatorCameraEnabled () [0x00000] in ./Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab/Runtime/VIVEFocus3Feature.cs:212
+  at VIVE.OpenXR.Editor.ViveSpectatorCameraProcess.OnPreprocessBuildExt (UnityEditor.Build.Reporting.BuildReport report) [0x00000] in ./Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab/Editor/ViveSpectatorCameraProcess.cs:59
+  at UnityEditor.XR.OpenXR.Features.OpenXRFeatureBuildHooks.OnPreprocessBuild (UnityEditor.Build.Reporting.BuildReport report) [0x00054] in ./Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Editor/FeatureSupport/OpenXRFeatureBuildHooks.cs:83
+Compiling shader "Universal Render Pipeline/Unlit"
+NullReferenceException: Object reference not set to an instance of an object
+  at VIVE.OpenXR.Editor.ModifyAndroidManifest+AndroidManifest.AddOpenXRFeatures () [0x000cf] in ./Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab/Editor/AndroidManifestProcess.cs:294
+  at VIVE.OpenXR.Editor.ModifyAndroidManifest.OnPostGenerateGradleAndroidProjectExt (System.String path) [0x00028] in ./Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab/Editor/AndroidManifestProcess.cs:44
+  at UnityEditor.XR.OpenXR.Features.OpenXRFeatureBuildHooks.OnPostGenerateGradleAndroidProject (System.String path) [0x0000c] in ./Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Editor/FeatureSupport/OpenXRFeatureBuildHooks.cs:96
+  at UnityEditor.Android.PostProcessor.Tasks.ProcessGenerateProjectCallbacks.OnGeneratePlatformProjectPostprocess (System.String path, System.Boolean strict) [0x00105] in /home/bokken/build/output/unity/unity/PlatformDependent/AndroidPlayer/Editor/Managed/PostProcessor/Tasks/ProcessGenerateProjectCallbacks.cs:41
+[CodexBuild] Build succeeded in 84.8s, size 1168.1 MB

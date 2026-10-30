@@ -457,10 +457,16 @@ recorded-head first person remains the default.
 
 **Implemented locally:** **Walls** toggles wire outlines and **Degrees** independently toggles signed wall labels: 0° forward, +45°/+90°/+135° to the right, −45°/−90°/−135° to the left, and ±180° at the rear. Either overlay can be shown without the other. Labels use the saved layout orientation (0° is forward), stay readable in all camera views, and apply to both live and saved replay. They are viewer overlays, not evidence that the participant saw the guides. The outlines represent eight-wall
 rotational layouts. Radius is inferred from snapshot object-plane positions; height
-spans the snapshot objects. **Room background** independently toggles a neutral
-floor, one-metre floor grid and four outer room surfaces. Both start enabled.
+uses recorded search-plane bounds when supplied, otherwise spans the snapshot objects.
+**Room** independently toggles the surrounding environment. New recordings tagged
+`roomEnvironment=neutral-room-v1` use the shared runtime room: 10 × 10 m floor,
+6 m walls at 5 m from center, wall sRGB (0.38, 0.38, 0.38), floor (0.32, 0.32, 0.32),
+unlit/no shadows and no colliders. Historical recordings without the tag retain the
+illustrative room, including its one-metre floor grid; no historical room is asserted
+to have been seen by a participant. Both viewer toggles still start enabled; viewer
+outlines are diagnostic overlays even though headset outlines now default off.
 Room walls are single-sided for an open cutaway from the external orbit camera.
-These are visual aids, not a captured physical room or evidence that the wall
+These are virtual reconstructions, not a captured physical room or evidence that the wall
 visuals were enabled during acquisition. Unknown/non-octagonal layouts receive
 only the generic backdrop, not invented study-wall assignments. Context follows
 the snapshot origin/rotation and is rebuilt on trial changes and backward seeks.

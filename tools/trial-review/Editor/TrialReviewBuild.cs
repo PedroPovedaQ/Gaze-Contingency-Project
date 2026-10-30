@@ -324,8 +324,18 @@ public static class TrialReviewBuild
             Assert(!environment.HasRecordedWallBounds,"Legacy records remain inferred, never globally rescaled");
             var compact=JsonUtility.FromJson<TrialReplayRecord>(original);
             compact.hasSearchPlaneBounds=true;compact.searchPlaneBottom=-1.2f;compact.searchPlaneHeight=2.2036f;
+            compact.roomEnvironment=StudyRoomEnvironment.Version;
             foreach(var obj in compact.objects)obj.position=new Vector3(obj.position.x,-1.1f+(obj.position.y-floor)*.5f,obj.position.z);
             string compactBefore=JsonUtility.ToJson(compact);
+            environment.Prepare(compact,true,true);
+            var room=UnityEngine.Object.FindObjectOfType<StudyRoomEnvironment>();
+            Assert(room!=null&&room.GetComponentsInChildren<Renderer>().Length==5&&room.GetComponentsInChildren<Collider>().Length==0,
+                "New recordings use collider-free runtime room");
+            Assert(room.transform.position==compact.origin+compact.originRotation*new Vector3(0,-1.2f,0),"Room uses recorded floor and origin");
+            environment.Prepare(compact,false,true);
+            Assert(!environment.WallsVisible&&environment.RoomVisible&&room.gameObject.activeInHierarchy,"Viewer walls does not hide room");
+            environment.Prepare(compact,true,false);
+            Assert(environment.WallsVisible&&!environment.RoomVisible&&!room.gameObject.activeInHierarchy,"Room toggles shared surfaces only");
             environment.Prepare(compact,true,true);
             Assert(environment.HasRecordedWallBounds&&Mathf.Abs(environment.Floor+1.2f)<.0001f&&
                 Mathf.Abs(environment.WallHeight-2.2036f)<.0001f,"Exact compact bounds take precedence over inferred object extents");
@@ -336,6 +346,7 @@ public static class TrialReviewBuild
             Assert(environment.TryProjectGaze(new Ray(inside,forward),out _)&&
                 !environment.TryProjectGaze(new Ray(above,forward),out _),"Projection respects the recorded shorter wall top");
             environment.Prepare(trial,true,true);
+            Assert(UnityEngine.Object.FindObjectOfType<StudyRoomEnvironment>()==null,"Legacy room survives switching back without new surfaces");
             Assert(!environment.HasRecordedWallBounds&&Mathf.Abs(environment.WallHeight-legacyHeight)<.0001f,
                 "Switching back to old trials restores historical bounds");
             for(int wall=0;wall<8;wall++)

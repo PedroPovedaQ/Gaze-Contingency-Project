@@ -43,6 +43,8 @@ public sealed class TrialReplayRecord
     // Bottom is relative to the recording origin, in the same local frame as saved objects.
     public bool hasSearchPlaneBounds;
     public float searchPlaneBottom, searchPlaneHeight;
+    // Absent on historical recordings: their Room overlay remains illustrative.
+    public string roomEnvironment;
     public TrialReplayObject[] objects;
     public TrialReplayMesh[] meshes;
     public TrialReplayTransform[] changes;

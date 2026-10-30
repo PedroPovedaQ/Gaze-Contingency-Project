@@ -172,6 +172,7 @@ public sealed class TrialReplayRecorder : MonoBehaviour
                 r.hasSearchPlaneBounds = true;
                 r.searchPlaneBottom = Position(new Vector3(m_Origin.x, m_Game.SearchPlaneFloorY, m_Origin.z)).y;
                 r.searchPlaneHeight = m_Game.SearchPlaneHeight;
+                r.roomEnvironment = StudyRoomEnvironment.Version;
             }
             if (!m_Game.IsPractice && m_Game.RotationalBetaEnabled)
             {
