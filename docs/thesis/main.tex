@@ -2,6 +2,16 @@
 \input{UCF_ETD_accessibility}
 \documentclass{UCF_ETD}
 \usepackage{amsmath,booktabs,array,longtable,tabularx,xurl,enumitem}
+\usepackage[nocompress]{cite} % sort numeric citations within each bracket, e.g. [18, 22, 27, 29]
+% With PDF tagging on, each bibliography label also carries tagging hooks, which
+% stops cite from reading it as a number. Drop the hooks only while sorting.
+\makeatletter
+\def\@cite@nonhyper@sanitize{\begingroup
+    \let\hyper@@link\@nonhyper@@link
+    \let\UseHookWithArguments\@gobblefour
+    \protected@xdef\@B@citeB{\csname b@\@citeb\@extra@b@citeb \endcsname}%
+  \endgroup}
+\makeatother
 \setlist{itemsep=3pt,topsep=5pt}
 % Preserve the UCF chapter appearance while exposing its custom headings to
 % the same tagged section hierarchy used by ordinary LaTeX section commands.
