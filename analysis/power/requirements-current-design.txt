@@ -1,0 +1,6 @@
+# Reproduction environment: Python 3.12.12, macOS arm64.
+# statsmodels is used for independent numerical validation, not production fits.
+numpy==2.5.4
+scipy==1.18.1
+matplotlib==3.11.2
+statsmodels==0.15.0

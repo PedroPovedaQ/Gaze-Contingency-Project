@@ -53,6 +53,18 @@ Coordinate checks use the saved origin quaternion/translation to compare replay-
 
 ## Voice-study power/sensitivity planning
 
+**Protocol proposal — current 64-trial mixed-model simulation (October 31, 2026):**
+See [the current report](power/current-design-20261031/REPORT.md). The reproducible
+workflow uses `current_design_power.py`, `current_power_report.py`, and
+`power_development_audit.py`, with fixed seeds, explicit 25-second censoring,
+incomplete trials, participant dropout, random-intercept/voice-slope REML fits,
+null checks and paired-score sensitivity. It distinguishes read-only historical
+development evidence from assumed current-study variances. Full commands,
+dependency pins, Monte Carlo uncertainty and fit failures are in the report.
+The recommended enrollment remains conditional on the stated assumptions; the
+successful-time model does not eliminate selection bias caused by timeouts.
+
+**Historical benchmark (not the current mixed-model power analysis):**
 **Protocol proposal; synthetic assumptions only:** `python3 analysis/voice_sensitivity.py --config analysis/power/voice_sensitivity.json --out /path/to/new-report` generates a paired-test sensitivity benchmark and a trial-level simulation analyzed as order-adjusted participant log-time differences. It compares 10 versus the selected 32 trials per voice across participant counts, voice-response variability, serial correlation and missingness. Null rejection, bias, retained N and Monte Carlo uncertainty are explicit; the informative-loss scenario is a failure-mode stress test. Separate binomial recruitment scenarios distinguish an expected retained count from a stated completion probability.
 
 See [methods, assumptions, outputs and decisions still needed](../docs/voice-power-sensitivity.md). Saved synthetic results are in `analysis/power/results-20261001/`. This does not select an outcome, sample size or exclusion rule, and does not turn repeated block surveys into independent trial outcomes. The current complete-run descriptive exporter remains unchanged. Final mixed-model/censoring choices and power justification require the actual-task pilot and researcher decisions in #16.

@@ -1,0 +1,27 @@
+{
+  "repository_analysis_suite": {
+    "tests": 370,
+    "result": "pass",
+    "skipped": 1,
+    "skip_reason": "optional statsmodels absent in managed repository environment"
+  },
+  "pinned_environment": {
+    "new_tests": 15,
+    "result": "pass",
+    "statsmodels_reference_seeds": [
+      8,
+      18,
+      38
+    ]
+  },
+  "review": "Sequential main-thread review; no independent peer-review claim",
+  "checks": [
+    "Dense REML likelihood and gradient",
+    "statsmodels fixed effects, GLS SE and variance components",
+    "Production C# schedule quotas and eight-trial groups",
+    "Counterbalance, censoring and missingness denominators",
+    "Failure denominator and fixed seed",
+    "Paired-score null size, retention and Holm bounds",
+    "Historical incomplete trials are never zero times"
+  ]
+}

@@ -1,3 +1,10 @@
+## 2026-10-31
+
+- **Protocol proposal:** current-design simulation recommends 60 enrolled participants (30/order), conditional on assumptions. At N=60, approximate detectable time reductions at 80%/90% power are 9.9%/11.7% under middle assumptions, 4.9%/6.1% optimistic and 19.3%/22.6% pessimistic. Small 3–5% effects remain poorly powered under middle assumptions.
+- **Implemented analysis:** 966,000 trial-level mixed-model simulation attempts, current 32+32 signed-step schedule, 25-second censoring, missing trials/dropout, full variance sensitivity grid, null/fit/bias/coverage diagnostics and paired NASA-TLX/IMI power with conservative Holm bounds. Read-only historical development audit; no empirical participant voice-slope estimate is available. All generator parameters remain synthetic assumptions.
+- Deadline selection biases the successful-time model; correlated-effects stress also raises conditional-null rejection. All-trial estimand, censored-model handling, meaningful effect, pilot variances and multiplicity family remain open. Report, CSVs and inspected white-background PNG/PDF are archived under `analysis/power/current-design-20261031/` and copied to thesis coordination `power-analysis/`.
+- 370 analysis tests passed (one optional statsmodels skip); all 15 new tests including statsmodels reference comparisons passed in the pinned environment. Local commit only; coordination CLAIM/DONE. No thesis edits, push, Overleaf, microphone, voice service, headset or participant-data changes. Inherited progress entries preserved.
+
 ## 2026-10-28
 
 - Checkpointed the inherited October 26–27 working tree locally at `03c5a14`, preserving standard gaze preparation, telemetry/guidance and MiniLM reconnect work. Implemented consent-first River audio intake, nine fixed eligibility/baseline items, a speak tone, researcher-reviewed eligibility, automatic participant-bound cloning and both-voice caching/verified transfer, reading fallback, and the external final-survey handoff. Study intakes lock Local MiniLM; development records remain excluded from study data. Operator guide: `docs/guide/10-audio-intake.md`.

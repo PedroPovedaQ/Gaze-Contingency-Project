@@ -1,0 +1,55 @@
+{
+  "version": "current-design-lmm-v1",
+  "kind": "grid",
+  "seed": 20261031,
+  "repetitions": 1000,
+  "workers": 3,
+  "seconds": 716.697134834,
+  "cells": 270,
+  "python": "3.12.12",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "script_sha256": "632f721bc15ec5d1a93af7a771a47ba365d56687e716a07735c4b44bd42d4e2e",
+  "scenarios": [
+    {
+      "name": "optimistic",
+      "residual_sd": 0.35,
+      "intercept_sd": 0.15,
+      "slope_sd": 0.1,
+      "median_seconds": 10.0,
+      "trial_loss": 0.02,
+      "dropout": 0.05,
+      "deadline": 25.0,
+      "ar1": 0.0,
+      "informative_loss": 0.0,
+      "re_correlation": 0.0
+    },
+    {
+      "name": "middle",
+      "residual_sd": 0.55,
+      "intercept_sd": 0.3,
+      "slope_sd": 0.2,
+      "median_seconds": 12.0,
+      "trial_loss": 0.05,
+      "dropout": 0.1,
+      "deadline": 25.0,
+      "ar1": 0.0,
+      "informative_loss": 0.0,
+      "re_correlation": 0.0
+    },
+    {
+      "name": "pessimistic",
+      "residual_sd": 0.8,
+      "intercept_sd": 0.5,
+      "slope_sd": 0.35,
+      "median_seconds": 16.0,
+      "trial_loss": 0.1,
+      "dropout": 0.2,
+      "deadline": 25.0,
+      "ar1": 0.0,
+      "informative_loss": 0.0,
+      "re_correlation": 0.0
+    }
+  ],
+  "thread_limit": "1"
+}

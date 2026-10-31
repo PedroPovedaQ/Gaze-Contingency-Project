@@ -1,0 +1,9 @@
+{
+  "analysis/current_design_power.py": "632f721bc15ec5d1a93af7a771a47ba365d56687e716a07735c4b44bd42d4e2e",
+  "analysis/current_power_report.py": "75f36b95342bb117a2795a862b5f98ea16b67361f65efeaa230ee7df2e0d8a6e",
+  "analysis/power_development_audit.py": "cd33513e8a2698c75ef1fe7473cfd7be4a7eade668cceebad3653ac02bde184a",
+  "analysis/test_current_design_power.py": "5416ca68d15936425f3ade83402920f12077e26fde2e2fa01fead38e89ef7351",
+  "analysis/test_current_power_report.py": "54f22ceb71de84947c56125cae31d1f2f2650025371cc8a19922abcc42042360",
+  "analysis/test_power_development_audit.py": "ec231311b2b7654b495bdf60368e81d2ba99c34a899500b70976c4859f4b9c9a",
+  "analysis/power/requirements-current-design.txt": "d7e5ce65458cd612e78e93a87c378e9107c1334b198dbb5ecf9cc97b447c16b0"
+}

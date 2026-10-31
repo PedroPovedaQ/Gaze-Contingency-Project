@@ -1,0 +1,21 @@
+{
+  "REPORT.md": "f30e923a876198226c2588c9bb88b8832c12d5ac45f5310211f74ce9ef182641",
+  "code-sha256.json": "72bdf673ca7ca40e6dd52fb848261150d2ec8e486e93b3943d8b805c7662890e",
+  "curves-run.json": "cc90422bdf02a94f52a4b3eeb5a7d06e1288e0b328fd63e74bb57f5adf17158d",
+  "curves.csv": "233e9d830eb7fb712553988d4a97c6d70df51c38985741cb06a772cb4ca146d6",
+  "detectable-effects.json": "49043e84c537d7e22ff3bb43a6b002c615c7e73ce3ee3f9855d121e21e1c027b",
+  "development-evidence.json": "f14f2cc8972dc1c6ca346ad8662bdb3aad5c2f0ed2f0db5caeaea2d2c8518c47",
+  "development-trials.csv": "ccff6c78076013347cc6fad02a202b81a71378aff9fed05fc98ae8de7053b7c8",
+  "grid-run.json": "0c3b59e4a8eb71a94a961c5a6ed661e485f1c8c498b69482bf3948b9ccec71e8",
+  "grid.csv": "a6d57313f23fc6b504f2d8941df5efe67704d8f249fda89a31c1d689356c3a18",
+  "input-provenance.json": "25f9b17153fdfb541a5dd1bdd67178d974a291019be60b77b41fbd95400e8a4c",
+  "power-curves.pdf": "917b2d70045f48b6d1ed0c23af169e33c1c7b6499900a8e4e56fda1a7f34af6d",
+  "power-curves.png": "d257b035ef3c31308bf007a7786474e51edd366406422792ed6af30aabb91853",
+  "precision-run.json": "c0fdae9e9808156b9391381c6db1aeb00d686a39656463e87e07bd9090347260",
+  "precision.csv": "dd4737bf33fd7f3aa27ac151219f3e455ed44cdcd31249564d8e0cd7c4849195",
+  "results.csv": "48691d47595fd38797f30d3ee0df9b037b5fd3bf56de5044aee8dc13ae1b4154",
+  "secondary-power.csv": "9ca96b2f98c2273af91c4812c07401bf57be010270c1847e5f7b32d6b3a6fdcd",
+  "stress-run.json": "fe38f86d72c54efa0c85fde2ee17989b5adcdbd8efd8828b1b8b344be313f206",
+  "stress.csv": "ac3055af7014a80f18fbad3e41dba6eaf2ccf4d5db6a9b6b5342c591b4bb7780",
+  "validation.json": "b4e8349f1b5f8c692d98e24d9df4cf8b111c42b14e8879a2f6498490b7b8d8a1"
+}

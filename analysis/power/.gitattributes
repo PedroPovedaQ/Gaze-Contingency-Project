@@ -1,0 +1,2 @@
+# Python's csv writer emits standard CRLF records; retain byte-identical receipts.
+*.csv whitespace=cr-at-eol

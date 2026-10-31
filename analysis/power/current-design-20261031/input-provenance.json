@@ -1,0 +1,26 @@
+{
+  "runtime_base_commit": "cf7dcb6faadd13a5656e60a847d5c3fb995b8d5a",
+  "branch": "experiment/local-jev-20261025",
+  "inputs": [
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Assets/ChallengeSet.cs",
+      "sha256": "3148d3243eb9befb9078e002e654451777e735374079c410250edcea36fe69f7"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/work_log/receipts/2026-10-30-schedule-v8/synthetic-trial-schedule.csv",
+      "sha256": "6ac3635e63099fcb691b977185e07a3bc7d4c26fb58f8ceeba3f75f8e735a391"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/work_log/receipts/2026-10-30-schedule-v8/realized-allocation.json",
+      "sha256": "4a9c7b994b998073f2b06d04944125c4aa06cdb8ffa769187c10741d7c4cdcec"
+    },
+    {
+      "path": "/Users/pedro.poveda/conductor/workspaces/Gaze Contingency Project/indianapolis/docs/thesis/chapters/unused/planned-statistical-analysis.tex",
+      "sha256": "b0428a5c8799267dcbc4b94f09b48909040334f06270ce494ed5e9bd63ef85ca"
+    },
+    {
+      "path": "/Users/pedro.poveda/conductor/workspaces/Gaze Contingency Project/indianapolis/docs/thesis/chapters/04-results.tex",
+      "sha256": "0ebbdc151d4861aab6a7ef198ee51e42ee0c22f7bc8a36480010b2e01604470c"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "cells": 798,
+  "attempted_fits": 966000,
+  "failures": {
+    "nonconverged": 379,
+    "fewer_than_five_pairs": 7
+  },
+  "artifact_and_code_hashes": "all verified",
+  "figure": "PNG and independently rendered PDF opened and visually checked; white background and labels readable",
+  "sources": "schedule/thesis input hashes rechecked unchanged; ten historical development sources verified before/after read"
+}
