@@ -1,0 +1,70 @@
+{
+  "method": "Lowercase word tokens; punctuation ignored; numeral spelling is not normalized. Synthetic Piper only.",
+  "referenceWords": 242,
+  "wordEdits": 1,
+  "answers": [
+    {
+      "question": 1,
+      "piperText": "Yes, I am over eighteen years old and I can take part in this experiment.",
+      "scribeText": "Yes, I am over 18 years old and I can take part in this experiment",
+      "referenceWords": 15,
+      "wordEdits": 1
+    },
+    {
+      "question": 2,
+      "piperText": "Yes, I can hear and understand this voice clearly at a comfortable volume.",
+      "scribeText": "Yes, I can hear and understand this voice clearly at a comfortable volume",
+      "referenceWords": 13,
+      "wordEdits": 0
+    },
+    {
+      "question": 3,
+      "piperText": "Yes, I can see clearly enough to read and find small objects with my usual glasses.",
+      "scribeText": "Yes, I can see clearly enough to read and find small objects with my usual glasses",
+      "referenceWords": 16,
+      "wordEdits": 0
+    },
+    {
+      "question": 4,
+      "piperText": "Yes, I can safely stay seated and turn in a swivel chair while using the controller in my right hand.",
+      "scribeText": "Yes, I can safely stay seated and turn in a swivel chair while using the controller in my right hand",
+      "referenceWords": 20,
+      "wordEdits": 0
+    },
+    {
+      "question": 5,
+      "piperText": "I have tried virtual reality a few times. I explored a quiet virtual room and played a simple game. I use it less than monthly and I prefer seated experiences.",
+      "scribeText": "I have tried virtual reality a few times. I explored a quiet virtual room and played a simple game. I use it less than monthly and I prefer seated experiences",
+      "referenceWords": 30,
+      "wordEdits": 0
+    },
+    {
+      "question": 6,
+      "piperText": "I use spoken directions on my phone every week. Clear instructions help me find the next turn. Long directions can be frustrating when I need to remember several things at once.",
+      "scribeText": "I use spoken directions on my phone every week. Clear instructions help me find the next turn. Long directions can be frustrating when I need to remember several things at once",
+      "referenceWords": 31,
+      "wordEdits": 0
+    },
+    {
+      "question": 7,
+      "piperText": "I have not used eye tracking before. I would be curious to try a system that follows where I look, as long as the researcher explains what is recorded.",
+      "scribeText": "I have not used eye tracking before. I would be curious to try a system that follows where I look as long as the researcher explains what is recorded",
+      "referenceWords": 29,
+      "wordEdits": 0
+    },
+    {
+      "question": 8,
+      "piperText": "I am wearing glasses today.",
+      "scribeText": "I am wearing glasses today",
+      "referenceWords": 5,
+      "wordEdits": 0
+    },
+    {
+      "question": 9,
+      "piperText": "Look toward the chair on your left. Turn slowly and check beside the table. Now look a little higher. You are getting close. Look behind the blue box and then check the shelf above it. Move your gaze back toward the center and look near the edge. Point at the object when you find it. Take your time and check the shape before making your selection. If it is not there, turn a little farther to the right and look near the lamp.",
+      "scribeText": "Look toward the chair on your left. Turn slowly and check beside the table. Now look a little higher. You are getting close. Look behind the blue box and then check the shelf above it. Move your gaze back toward the center and look near the edge. Point at the object when you find it. Take your time and check the shape before making your selection. If it is not there, turn a little farther to the right and look near the lamp.",
+      "referenceWords": 83,
+      "wordEdits": 0
+    }
+  ]
+}

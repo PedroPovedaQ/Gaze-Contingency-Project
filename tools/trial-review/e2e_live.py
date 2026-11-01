@@ -2,7 +2,10 @@
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 import csv
+from email import policy
+from email.parser import BytesParser
 import hashlib
+import io
 import json
 import math
 from pathlib import Path
@@ -31,6 +34,13 @@ API = 'https://api.elevenlabs.io/v1/'
 KEYS = Path.home()/'.config/follow-my-voice/api_keys.json'
 FFMPEG = '/opt/homebrew/bin/ffmpeg'
 CACHE_CLIPS = 20  # Only the harness's fake headset template limits this run; no production knob.
+TTS_CHARACTER_LIMIT = 6000
+
+
+class QuotaUnavailable(RuntimeError):
+    def __init__(self, status):
+        super().__init__('Subscription quota unavailable: HTTP '+str(status))
+        self.status = status
 
 
 def require_development(folder, root):
@@ -52,6 +62,9 @@ class LiveProvider(intake.Provider):
         self.result = dict(mode='live ElevenLabs synthetic development', microphoneUsed=False,
                            realHeadsetUsed=False, protocol=intake.PROTOCOL, calls=[], clones=[],
                            cloneAttempts=0, scenarios=[], promptGenerations=[], playbacks=[],
+                           promptCacheReuses=[], transcriptComparisons=[], ttsCharactersSubmitted=0,
+                           ttsCharacterLimit=TTS_CHARACTER_LIMIT, scribeAudioSeconds=0,
+                           cloneSampleSeconds=0, subscriptionCreditDelta=None,
                            quotaDeltaScope='account-wide; concurrent account activity may contribute')
         self.preflight_ok = False
         self.active_folder = None
@@ -68,7 +81,12 @@ class LiveProvider(intake.Provider):
         self.result['lastVoiceList'] = dict(total=len(voices),
             nonPremade=sum(v.get('category') != 'premade' for v in voices), observedUtc=time.time())
         self.save()
-        sub = json.loads(self.call(API+'user/subscription'))
+        try:
+            sub = json.loads(self.call(API+'user/subscription'))
+        except QuotaUnavailable as error:
+            return dict(quotaStatus='unavailable', httpStatus=error.status,
+                        cloneSlotsFree=None, charactersRemaining=None,
+                        canUseInstantCloning=None, voicesReturned=len(voices)), {v['voice_id'] for v in voices}
         count, limit = sub['character_count'], sub['character_limit']
         # Some subscription API versions omit usage. Count every non-premade voice
         # conservatively (including shared voices), never assume an unknown slot is free.
@@ -89,8 +107,8 @@ class LiveProvider(intake.Provider):
         before, _ = self.account()
         self.result['before'] = before
         self.save()
-        if before['cloneSlotsFree'] < 1 or before['charactersRemaining'] < 30000:
-            raise RuntimeError('Live run stopped: require a free clone slot and at least 30000 remaining characters')
+        if before['cloneSlotsFree'] is not None and before['cloneSlotsFree'] < 1:
+            raise RuntimeError('Live run stopped: no free clone slot')
         if before['canUseInstantCloning'] is False:
             raise RuntimeError('Live run stopped: instant voice cloning unavailable')
         self.preflight_ok = True
@@ -109,7 +127,7 @@ class LiveProvider(intake.Provider):
             readonly = method == 'GET' and path in ('/v1/voices', '/v1/user/subscription')
             if not readonly:
                 if not self.preflight_ok:
-                    raise ValueError('Voice list and quota preflight must succeed first')
+                    raise ValueError('Voice list and subscription preflight must finish first')
                 if method == 'DELETE':
                     voice = path.removeprefix('/v1/voices/')
                     if voice not in {c['voiceId'] for c in self.result['clones']}:
@@ -123,15 +141,50 @@ class LiveProvider(intake.Provider):
             entry = dict(method=method, path=path, startedUtc=time.time())
             if path.startswith('/v1/text-to-speech/'):
                 entry['characters'] = len(json.loads(request.data)['text'])
+            if method == 'POST' and path in ('/v1/speech-to-text', '/v1/voices/add'):
+                message = BytesParser(policy=policy.default).parsebytes(
+                    ('Content-Type: '+request.get_header('Content-type')+'\r\n\r\n').encode()+request.data)
+                samples = 0
+                for part in message.iter_attachments():
+                    if part.get_filename():
+                        with wave.open(io.BytesIO(part.get_payload(decode=True)), 'rb') as wav:
+                            if wav.getframerate() != 24000:
+                                raise ValueError('Synthetic upload must use 24 kHz WAV')
+                            samples += wav.getnframes()
+                if not samples:
+                    raise ValueError('Synthetic audio upload has no WAV samples')
+                entry['audioSamples24kHz'] = samples
+                entry['audioSeconds'] = samples/24000
             with self.lock:
+                characters = entry.get('characters', 0)
+                if self.result['ttsCharactersSubmitted'] + characters > TTS_CHARACTER_LIMIT:
+                    self.result['ttsLimitStop'] = dict(submitted=self.result['ttsCharactersSubmitted'],
+                        blockedCharacters=characters, limit=TTS_CHARACTER_LIMIT)
+                    self.save()
+                    raise RuntimeError('Live run stopped before exceeding 6000 submitted TTS characters')
+                self.result['ttsCharactersSubmitted'] += characters
                 self.result['calls'].append(entry)
+                for endpoint, field in (('/v1/speech-to-text', 'scribeAudioSeconds'),
+                                        ('/v1/voices/add', 'cloneSampleSeconds')):
+                    self.result[field] = sum(c.get('audioSamples24kHz', 0) for c in self.result['calls']
+                                             if c['path'] == endpoint)/24000
                 self.save()
             try:
                 response = original(request, *args, **kwargs)
             except urllib.error.HTTPError as error:
                 with self.lock:
                     entry.update(status=error.code, completedUtc=time.time())
+                    # Retain only the provider's reason, redacting this request's key.
+                    try:
+                        detail = json.loads(error.read()).get('detail', {})
+                        reason = {k:detail[k] for k in ('status','message') if k in detail} if isinstance(detail,dict) else str(detail)
+                        entry['reason'] = json.loads(json.dumps(reason).replace(
+                            request.get_header('Xi-api-key') or '__no_key__', '[REDACTED]'))
+                    except (ValueError, TypeError):
+                        entry['reason'] = str(error.reason)
                     self.save()
+                if method == 'GET' and path == '/v1/user/subscription' and error.code in (401,403):
+                    raise QuotaUnavailable(error.code) from None
                 raise
             # No credentials or raw provider responses are written to receipts.
             with self.lock:
@@ -149,6 +202,13 @@ class LiveProvider(intake.Provider):
                                                    textSha256=hashlib.sha256(text.encode()).hexdigest()))
         self.save()
         return super().speech(text)
+
+    def transcribe(self, data):
+        transcript = super().transcribe(data)
+        self.result['transcriptComparisons'].append(dict(question=len(self.result['transcriptComparisons'])+1,
+            piperText=self.text, scribeText=transcript))
+        self.save()
+        return transcript
 
     def clone(self, code, data):
         require_development(self.active_folder, self.root)
@@ -192,11 +252,13 @@ class LiveProvider(intake.Provider):
         try:
             after, _ = self.account()
             self.result['after'] = after
-            if 'before' in self.result:
+            if 'creditsUsed' in after and 'creditsUsed' in self.result.get('before', {}):
                 self.result['subscriptionCreditDelta'] = after['creditsUsed']-self.result['before']['creditsUsed']
         except Exception as error:
             self.result['afterError'] = type(error).__name__+': '+str(error)
         finally:
+            if self.result['subscriptionCreditDelta'] is None:
+                self.result['quotaDeltaScope'] = 'unavailable; subscription permission not granted or measurement failed'
             self.result['ttsCharactersSubmitted'] = sum(c.get('characters', 0) for c in self.result['calls'])
             self.save()
         if errors: raise RuntimeError('Clone cleanup NOT verified: '+', '.join(errors))
@@ -253,6 +315,9 @@ class LiveHarness(Harness):
         state = intake.speak_prompt(folder,self.provider)
         assert len(self.provider.result['promptGenerations']) == before
         assert (folder/state['promptAudio']).read_bytes() == first
+        self.provider.result['promptCacheReuses'].append(dict(question=state['questionIndex']+1,
+            audioSha256=hashlib.sha256(first).hexdigest(), additionalTtsRequests=0))
+        self.provider.save()
         self.play(folder/state['promptAudio'],f'River Q{state["questionIndex"]+1}')
         self.play(self.tone,'880Hz 180ms cue')
         time.sleep(.07)  # Match the desktop's 250 ms cue-to-capture interval.
@@ -334,17 +399,20 @@ class LiveHarness(Harness):
             if not gate.wait(20): raise RuntimeError('Negative review barrier timed out')
             return synthesize(job,source,keys,voice)
 
-        with patch.object(audio,'synthesize',side_effect=cached_only), ThreadPoolExecutor(max_workers=1) as pool:
-            future = pool.submit(audio.prepare,folder,self.remote,KEYS,FFMPEG)
-            try:
-                assert entered.wait(10)
-                intake.review_eligibility(folder,dict.fromkeys(intake.ELIGIBILITY,'no'),'E2E')
-            finally:
-                gate.set()
-            denied(lambda:future.result(timeout=90))
-        intake.cleanup_clone(folder,self.provider)
-        self.provider.result['clones'][0]['deletionRequested'] = True
-        self.provider.save()
+        try:
+            with patch.object(audio,'synthesize',side_effect=cached_only), ThreadPoolExecutor(max_workers=1) as pool:
+                future = pool.submit(audio.prepare,folder,self.remote,KEYS,FFMPEG)
+                try:
+                    assert entered.wait(10)
+                    intake.review_eligibility(folder,dict.fromkeys(intake.ELIGIBILITY,'no'),'E2E')
+                finally:
+                    gate.set()
+                denied(lambda:future.result(timeout=90))
+        finally:
+            if intake.load(folder)['phase'] == 'screening_stopped':
+                intake.cleanup_clone(folder,self.provider)
+                self.provider.result['clones'][0]['deletionRequested'] = True
+                self.provider.save()
         state = intake.load(folder)
         assert state['cacheState']=='stopped' and state['cloneState']=='deleted'
         denied(lambda:audio.transfer(folder,FakeHeadset()))

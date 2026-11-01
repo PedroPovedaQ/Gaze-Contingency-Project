@@ -651,9 +651,13 @@ python3 tools/trial-review/e2e_intake.py --development-audio --development-sessi
 ```
 
 Live mode reads `~/.config/follow-my-voice/api_keys.json` without printing or modifying
-it. The key must allow voice-list and subscription (`user_read`) reads before any
-billable operation. A free clone slot and at least 30,000 remaining characters are
-required. It attempts one `DEV-E2E-` clone, records its ID immediately, prepares only
+it. Voice-list access is required. A subscription HTTP 401/403 records quota and
+account delta as unavailable and continues without changing keys or permissions.
+Known unavailable cloning/slots still stop preflight; a refused clone POST stops
+without deleting another voice. The harness atomically enforces a hard 6,000 TTS
+character ceiling before every HTTP attempt (including retries), and records exact
+submitted TTS characters, Scribe audio seconds and clone sample seconds.
+It attempts one `DEV-E2E-` clone, records its ID immediately, prepares only
 20 clips through the harness's fake headset template, and deletes only that ID in
 `finally`, verifying absence with the voice list. Never rerun a live test before
 checking its receipt for uncertain creation or failed deletion. Existing receipt
@@ -665,7 +669,11 @@ Piper answers with Scribe v2, starts clone/cache before review, saves a correcti
 with positive review, validates fake-headset handoff and exports, then replays a
 saved pre-review checkpoint on the same clone for the negative path without new
 billable POST calls. This checkpoint replay is not a second participant session or
-an actual desktop restart. Account quota deltas may include concurrent account activity.
+an actual desktop restart. Available account quota deltas may include concurrent
+account activity; unavailable deltas are never reported as zero. At most two clones
+may be created across an authorized test and rerun, with verified deletion of the
+first before rerunning and a cumulative 6,000-character budget across both. Inspect
+prior receipts before a rerun; the per-invocation counter does not reset authorization.
 
 `prepare.py` excludes the harness, live flag and WAV input from study builds. Desktop
 restart validation additionally needs isolated preferences/catalog/session storage,

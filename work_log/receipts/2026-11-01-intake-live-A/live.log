@@ -1,0 +1,1122 @@
+{"preflight": {"quotaStatus": "unavailable", "httpStatus": 401, "cloneSlotsFree": null, "charactersRemaining": null, "canUseInstantCloning": null, "voicesReturned": 28}}
+Running live_happy_worker_path
+Running live_negative_same_clone
+{
+  "mode": "live ElevenLabs synthetic development",
+  "microphoneUsed": false,
+  "realHeadsetUsed": false,
+  "protocol": "audio-intake-v4-20261101",
+  "calls": [
+    {
+      "method": "GET",
+      "path": "/v1/voices",
+      "startedUtc": 1793549248.963574,
+      "status": 200,
+      "completedUtc": 1793549249.238467
+    },
+    {
+      "method": "GET",
+      "path": "/v1/user/subscription",
+      "startedUtc": 1793549249.324211,
+      "status": 401,
+      "completedUtc": 1793549249.457209,
+      "reason": {
+        "status": "missing_permissions",
+        "message": "The API key you used is missing the permission user_read to execute this operation."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/cjVigY5qzO86Huf0OWal",
+      "startedUtc": 1793549343.796211,
+      "characters": 88,
+      "status": 200,
+      "completedUtc": 1793549344.171608,
+      "character-cost": "18"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/SAz9YHcvj6GT2YYXdXww",
+      "startedUtc": 1793549350.911131,
+      "characters": 83,
+      "status": 200,
+      "completedUtc": 1793549351.3351119,
+      "character-cost": "17"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/speech-to-text",
+      "startedUtc": 1793549363.129123,
+      "audioSamples24kHz": 162240,
+      "audioSeconds": 6.76,
+      "status": 200,
+      "completedUtc": 1793549363.780801,
+      "character-cost": "2"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/SAz9YHcvj6GT2YYXdXww",
+      "startedUtc": 1793549363.830921,
+      "characters": 113,
+      "status": 200,
+      "completedUtc": 1793549364.2000792,
+      "character-cost": "23"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/speech-to-text",
+      "startedUtc": 1793549377.768212,
+      "audioSamples24kHz": 161760,
+      "audioSeconds": 6.74,
+      "status": 200,
+      "completedUtc": 1793549378.4775481,
+      "character-cost": "2"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/SAz9YHcvj6GT2YYXdXww",
+      "startedUtc": 1793549378.5561259,
+      "characters": 164,
+      "status": 200,
+      "completedUtc": 1793549379.065554,
+      "character-cost": "33"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/speech-to-text",
+      "startedUtc": 1793549394.02608,
+      "audioSamples24kHz": 185760,
+      "audioSeconds": 7.74,
+      "status": 200,
+      "completedUtc": 1793549394.7828102,
+      "character-cost": "2"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/SAz9YHcvj6GT2YYXdXww",
+      "startedUtc": 1793549394.86416,
+      "characters": 237,
+      "status": 200,
+      "completedUtc": 1793549395.52106,
+      "character-cost": "47"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/speech-to-text",
+      "startedUtc": 1793549413.2135859,
+      "audioSamples24kHz": 207360,
+      "audioSeconds": 8.64,
+      "status": 200,
+      "completedUtc": 1793549413.954116,
+      "character-cost": "3"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/SAz9YHcvj6GT2YYXdXww",
+      "startedUtc": 1793549414.018111,
+      "characters": 181,
+      "status": 200,
+      "completedUtc": 1793549414.478914,
+      "character-cost": "36"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/speech-to-text",
+      "startedUtc": 1793549427.303773,
+      "audioSamples24kHz": 327840,
+      "audioSeconds": 13.66,
+      "status": 200,
+      "completedUtc": 1793549428.152767,
+      "character-cost": "4"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/SAz9YHcvj6GT2YYXdXww",
+      "startedUtc": 1793549428.233818,
+      "characters": 165,
+      "status": 200,
+      "completedUtc": 1793549428.6305358,
+      "character-cost": "33"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/speech-to-text",
+      "startedUtc": 1793549440.9353118,
+      "audioSamples24kHz": 326880,
+      "audioSeconds": 13.62,
+      "status": 200,
+      "completedUtc": 1793549441.7856839,
+      "character-cost": "4"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/SAz9YHcvj6GT2YYXdXww",
+      "startedUtc": 1793549441.8829272,
+      "characters": 136,
+      "status": 200,
+      "completedUtc": 1793549442.269696,
+      "character-cost": "27"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/speech-to-text",
+      "startedUtc": 1793549452.470725,
+      "audioSamples24kHz": 296160,
+      "audioSeconds": 12.34,
+      "status": 200,
+      "completedUtc": 1793549453.5000582,
+      "character-cost": "4"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/SAz9YHcvj6GT2YYXdXww",
+      "startedUtc": 1793549453.588149,
+      "characters": 107,
+      "status": 200,
+      "completedUtc": 1793549454.006156,
+      "character-cost": "21"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/speech-to-text",
+      "startedUtc": 1793549463.395904,
+      "audioSamples24kHz": 154560,
+      "audioSeconds": 6.44,
+      "status": 200,
+      "completedUtc": 1793549464.0137541,
+      "character-cost": "2"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/SAz9YHcvj6GT2YYXdXww",
+      "startedUtc": 1793549464.0583072,
+      "characters": 195,
+      "status": 200,
+      "completedUtc": 1793549464.552665,
+      "character-cost": "39"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/speech-to-text",
+      "startedUtc": 1793549477.6810188,
+      "audioSamples24kHz": 604800,
+      "audioSeconds": 25.2,
+      "status": 200,
+      "completedUtc": 1793549479.0019672,
+      "character-cost": "8"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/voices/add",
+      "startedUtc": 1793549479.178528,
+      "audioSamples24kHz": 2427360,
+      "audioSeconds": 101.14,
+      "status": 200,
+      "completedUtc": 1793549483.076629
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/cjVigY5qzO86Huf0OWal",
+      "startedUtc": 1793549483.168431,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549483.5052302,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/cjVigY5qzO86Huf0OWal",
+      "startedUtc": 1793549483.1689348,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549483.4994812,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/cjVigY5qzO86Huf0OWal",
+      "startedUtc": 1793549483.793678,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549484.1266408,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/cjVigY5qzO86Huf0OWal",
+      "startedUtc": 1793549483.797944,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549484.124077,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/cjVigY5qzO86Huf0OWal",
+      "startedUtc": 1793549484.2874932,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549484.560862,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/cjVigY5qzO86Huf0OWal",
+      "startedUtc": 1793549484.294305,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549484.556181,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/cjVigY5qzO86Huf0OWal",
+      "startedUtc": 1793549484.7911491,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549485.052636,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/cjVigY5qzO86Huf0OWal",
+      "startedUtc": 1793549484.8163042,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549485.088184,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/cjVigY5qzO86Huf0OWal",
+      "startedUtc": 1793549485.2203782,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549485.492609,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/cjVigY5qzO86Huf0OWal",
+      "startedUtc": 1793549485.338644,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549485.58417,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/o2gTwx5OSEMsD2rM0wKT",
+      "startedUtc": 1793549485.656866,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549486.500132,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/o2gTwx5OSEMsD2rM0wKT",
+      "startedUtc": 1793549485.758093,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549486.518271,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/o2gTwx5OSEMsD2rM0wKT",
+      "startedUtc": 1793549486.6836789,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549486.98126,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/o2gTwx5OSEMsD2rM0wKT",
+      "startedUtc": 1793549486.703638,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549486.97146,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/o2gTwx5OSEMsD2rM0wKT",
+      "startedUtc": 1793549487.162924,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549487.492186,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/o2gTwx5OSEMsD2rM0wKT",
+      "startedUtc": 1793549487.169499,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549487.474079,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/o2gTwx5OSEMsD2rM0wKT",
+      "startedUtc": 1793549487.669903,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549487.9753191,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/o2gTwx5OSEMsD2rM0wKT",
+      "startedUtc": 1793549487.67835,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549488.0258691,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/o2gTwx5OSEMsD2rM0wKT",
+      "startedUtc": 1793549488.155606,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549488.411236,
+      "character-cost": "5"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/text-to-speech/o2gTwx5OSEMsD2rM0wKT",
+      "startedUtc": 1793549488.2146938,
+      "characters": 23,
+      "status": 200,
+      "completedUtc": 1793549488.533793,
+      "character-cost": "5"
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/voices/o2gTwx5OSEMsD2rM0wKT",
+      "startedUtc": 1793549491.068785,
+      "status": 200,
+      "completedUtc": 1793549492.719743
+    },
+    {
+      "method": "GET",
+      "path": "/v1/voices",
+      "startedUtc": 1793549492.774972,
+      "status": 200,
+      "completedUtc": 1793549492.921509
+    },
+    {
+      "method": "GET",
+      "path": "/v1/voices",
+      "startedUtc": 1793549493.086163,
+      "status": 200,
+      "completedUtc": 1793549493.237616
+    },
+    {
+      "method": "GET",
+      "path": "/v1/user/subscription",
+      "startedUtc": 1793549493.3266912,
+      "status": 401,
+      "completedUtc": 1793549493.459109,
+      "reason": {
+        "status": "missing_permissions",
+        "message": "The API key you used is missing the permission user_read to execute this operation."
+      }
+    }
+  ],
+  "clones": [
+    {
+      "voiceId": "o2gTwx5OSEMsD2rM0wKT",
+      "name": "DEV-E2E-P900000000001-e757f63e",
+      "deletionVerified": true,
+      "deletionRequested": true
+    }
+  ],
+  "cloneAttempts": 1,
+  "scenarios": [
+    {
+      "scenario": "live_happy_worker_path",
+      "status": "PASS",
+      "seconds": 147.25,
+      "detail": {
+        "prompts": 9,
+        "cacheClips": 20,
+        "headset": "fake transfer and assignment only"
+      }
+    },
+    {
+      "scenario": "live_negative_same_clone",
+      "status": "PASS",
+      "seconds": 1.69,
+      "detail": "Saved pre-review checkpoint, same clone; active cache stopped; DELETE succeeded; no additional billable POST calls"
+    }
+  ],
+  "promptGenerations": [
+    {
+      "question": 1,
+      "textSha256": "a0f7dfcdac22d062fc2b4d3250b9dae27d5393d4f60ec45923c61975366f5f8e"
+    },
+    {
+      "question": 2,
+      "textSha256": "cb558f9e07acc1a2771a1a5f6693b73af585db7e24316df574f55167d1bc2779"
+    },
+    {
+      "question": 3,
+      "textSha256": "6be3d3d2d2a8e2ded6ddd9865e6bf054ea938adc1f9fd162bf4ee5cb78c62b44"
+    },
+    {
+      "question": 4,
+      "textSha256": "799eb627d20edfdecbe241f80c1f5b5ca210a71bb051b067ee582cb39b2fdf4c"
+    },
+    {
+      "question": 5,
+      "textSha256": "4c39e6780becaacc84ba08b1d18e252716a3bf0e17a0351e333479a6f79ee469"
+    },
+    {
+      "question": 6,
+      "textSha256": "0ac662209e5749cb30548d93f2366165b6ed932e11aae2813f0066840d085c7b"
+    },
+    {
+      "question": 7,
+      "textSha256": "283c7ab66ff40f72faed9d47af0a01fb9664a3510adc2f62acbb53d677e2e548"
+    },
+    {
+      "question": 8,
+      "textSha256": "bd92c89c67b64b598037aca73913138b05a8bc68ae277e756c7f25421d986c54"
+    },
+    {
+      "question": 9,
+      "textSha256": "06a9af5dec152f4cff86cba5826d44eccf3e7b85b98dee67060e6da7effb5820"
+    }
+  ],
+  "playbacks": [
+    {
+      "kind": "Selected Voice audition",
+      "seconds": 3.947,
+      "rms": 0.084553,
+      "sha256": "318fa8c251395bd1c5225b7ae789bb11d248e9ee7986ca088f2c9ccb603a1d23"
+    },
+    {
+      "kind": "River Q1",
+      "seconds": 5.433,
+      "rms": 0.08506,
+      "sha256": "15de46979bc48706fb6bf2a888e4e9c0d793c6f8982cf2b8c89919cc9e8f7e5e"
+    },
+    {
+      "kind": "880Hz 180ms cue",
+      "seconds": 0.18,
+      "rms": 0.089974,
+      "sha256": "24abb2c91d93078937b7fd090b1b5749394d95f3f0ae1f8b16eb1f368c4b9db8"
+    },
+    {
+      "kind": "River Q2",
+      "seconds": 7.477,
+      "rms": 0.078967,
+      "sha256": "a1802acfc9effc4196675f470b60e5b5082db45c3eaddf5ff4d92381d1a276c5"
+    },
+    {
+      "kind": "880Hz 180ms cue",
+      "seconds": 0.18,
+      "rms": 0.089974,
+      "sha256": "24abb2c91d93078937b7fd090b1b5749394d95f3f0ae1f8b16eb1f368c4b9db8"
+    },
+    {
+      "kind": "River Q3",
+      "seconds": 10.031,
+      "rms": 0.085198,
+      "sha256": "0c6e6f2554caf453a38e695daae874e1b70a4a12d489eabc7368c2750146a374"
+    },
+    {
+      "kind": "880Hz 180ms cue",
+      "seconds": 0.18,
+      "rms": 0.089974,
+      "sha256": "24abb2c91d93078937b7fd090b1b5749394d95f3f0ae1f8b16eb1f368c4b9db8"
+    },
+    {
+      "kind": "River Q4",
+      "seconds": 13.7,
+      "rms": 0.081233,
+      "sha256": "d15eafd693e597d8602e114288f8ffd8f64a52b70c2f49771c4c6a1e943415a8"
+    },
+    {
+      "kind": "880Hz 180ms cue",
+      "seconds": 0.18,
+      "rms": 0.089974,
+      "sha256": "24abb2c91d93078937b7fd090b1b5749394d95f3f0ae1f8b16eb1f368c4b9db8"
+    },
+    {
+      "kind": "River Q5",
+      "seconds": 10.31,
+      "rms": 0.087532,
+      "sha256": "0351dae7782ddfdf066506f178f9279da9844187f6525fb6b76f405cd1b46260"
+    },
+    {
+      "kind": "880Hz 180ms cue",
+      "seconds": 0.18,
+      "rms": 0.089974,
+      "sha256": "24abb2c91d93078937b7fd090b1b5749394d95f3f0ae1f8b16eb1f368c4b9db8"
+    },
+    {
+      "kind": "River Q6",
+      "seconds": 9.474,
+      "rms": 0.087632,
+      "sha256": "218b7927efc2ef81546d8d98bd3a6db0da04db675ce3d7bf4cbe3a1365643812"
+    },
+    {
+      "kind": "880Hz 180ms cue",
+      "seconds": 0.18,
+      "rms": 0.089974,
+      "sha256": "24abb2c91d93078937b7fd090b1b5749394d95f3f0ae1f8b16eb1f368c4b9db8"
+    },
+    {
+      "kind": "River Q7",
+      "seconds": 7.755,
+      "rms": 0.087986,
+      "sha256": "1655d4dfef2b59b3c45d7d2769c2f0af66328c17b5f1edc34aea5731fcec5b98"
+    },
+    {
+      "kind": "880Hz 180ms cue",
+      "seconds": 0.18,
+      "rms": 0.089974,
+      "sha256": "24abb2c91d93078937b7fd090b1b5749394d95f3f0ae1f8b16eb1f368c4b9db8"
+    },
+    {
+      "kind": "River Q8",
+      "seconds": 6.641,
+      "rms": 0.087709,
+      "sha256": "5ee715fa64925d4e39343e61d3fd50defdf8738b5e1c8b48b5819a90d963a515"
+    },
+    {
+      "kind": "880Hz 180ms cue",
+      "seconds": 0.18,
+      "rms": 0.089974,
+      "sha256": "24abb2c91d93078937b7fd090b1b5749394d95f3f0ae1f8b16eb1f368c4b9db8"
+    },
+    {
+      "kind": "River Q9",
+      "seconds": 10.031,
+      "rms": 0.087005,
+      "sha256": "4cc6989fc7ec35974f9c56d0fd945f64bdec0e0d625cc72f1adad4905ac43a66"
+    },
+    {
+      "kind": "880Hz 180ms cue",
+      "seconds": 0.18,
+      "rms": 0.089974,
+      "sha256": "24abb2c91d93078937b7fd090b1b5749394d95f3f0ae1f8b16eb1f368c4b9db8"
+    },
+    {
+      "kind": "Real cloned-voice cache clip",
+      "seconds": 1.393,
+      "rms": 0.219536,
+      "sha256": "170eb73570577c0a0db683df8e36e22fe8d215cfea86fe92e1ed8b6279f93ce3"
+    }
+  ],
+  "promptCacheReuses": [
+    {
+      "question": 1,
+      "audioSha256": "15de46979bc48706fb6bf2a888e4e9c0d793c6f8982cf2b8c89919cc9e8f7e5e",
+      "additionalTtsRequests": 0
+    },
+    {
+      "question": 2,
+      "audioSha256": "a1802acfc9effc4196675f470b60e5b5082db45c3eaddf5ff4d92381d1a276c5",
+      "additionalTtsRequests": 0
+    },
+    {
+      "question": 3,
+      "audioSha256": "0c6e6f2554caf453a38e695daae874e1b70a4a12d489eabc7368c2750146a374",
+      "additionalTtsRequests": 0
+    },
+    {
+      "question": 4,
+      "audioSha256": "d15eafd693e597d8602e114288f8ffd8f64a52b70c2f49771c4c6a1e943415a8",
+      "additionalTtsRequests": 0
+    },
+    {
+      "question": 5,
+      "audioSha256": "0351dae7782ddfdf066506f178f9279da9844187f6525fb6b76f405cd1b46260",
+      "additionalTtsRequests": 0
+    },
+    {
+      "question": 6,
+      "audioSha256": "218b7927efc2ef81546d8d98bd3a6db0da04db675ce3d7bf4cbe3a1365643812",
+      "additionalTtsRequests": 0
+    },
+    {
+      "question": 7,
+      "audioSha256": "1655d4dfef2b59b3c45d7d2769c2f0af66328c17b5f1edc34aea5731fcec5b98",
+      "additionalTtsRequests": 0
+    },
+    {
+      "question": 8,
+      "audioSha256": "5ee715fa64925d4e39343e61d3fd50defdf8738b5e1c8b48b5819a90d963a515",
+      "additionalTtsRequests": 0
+    },
+    {
+      "question": 9,
+      "audioSha256": "4cc6989fc7ec35974f9c56d0fd945f64bdec0e0d625cc72f1adad4905ac43a66",
+      "additionalTtsRequests": 0
+    }
+  ],
+  "transcriptComparisons": [
+    {
+      "question": 1,
+      "piperText": "Yes, I am over eighteen years old and I can take part in this experiment.",
+      "scribeText": "Yes, I am over 18 years old and I can take part in this experiment"
+    },
+    {
+      "question": 2,
+      "piperText": "Yes, I can hear and understand this voice clearly at a comfortable volume.",
+      "scribeText": "Yes, I can hear and understand this voice clearly at a comfortable volume"
+    },
+    {
+      "question": 3,
+      "piperText": "Yes, I can see clearly enough to read and find small objects with my usual glasses.",
+      "scribeText": "Yes, I can see clearly enough to read and find small objects with my usual glasses"
+    },
+    {
+      "question": 4,
+      "piperText": "Yes, I can safely stay seated and turn in a swivel chair while using the controller in my right hand.",
+      "scribeText": "Yes, I can safely stay seated and turn in a swivel chair while using the controller in my right hand"
+    },
+    {
+      "question": 5,
+      "piperText": "I have tried virtual reality a few times. I explored a quiet virtual room and played a simple game. I use it less than monthly and I prefer seated experiences.",
+      "scribeText": "I have tried virtual reality a few times. I explored a quiet virtual room and played a simple game. I use it less than monthly and I prefer seated experiences"
+    },
+    {
+      "question": 6,
+      "piperText": "I use spoken directions on my phone every week. Clear instructions help me find the next turn. Long directions can be frustrating when I need to remember several things at once.",
+      "scribeText": "I use spoken directions on my phone every week. Clear instructions help me find the next turn. Long directions can be frustrating when I need to remember several things at once"
+    },
+    {
+      "question": 7,
+      "piperText": "I have not used eye tracking before. I would be curious to try a system that follows where I look, as long as the researcher explains what is recorded.",
+      "scribeText": "I have not used eye tracking before. I would be curious to try a system that follows where I look as long as the researcher explains what is recorded"
+    },
+    {
+      "question": 8,
+      "piperText": "I am wearing glasses today.",
+      "scribeText": "I am wearing glasses today"
+    },
+    {
+      "question": 9,
+      "piperText": "Look toward the chair on your left. Turn slowly and check beside the table. Now look a little higher. You are getting close. Look behind the blue box and then check the shelf above it. Move your gaze back toward the center and look near the edge. Point at the object when you find it. Take your time and check the shape before making your selection. If it is not there, turn a little farther to the right and look near the lamp.",
+      "scribeText": "Look toward the chair on your left. Turn slowly and check beside the table. Now look a little higher. You are getting close. Look behind the blue box and then check the shelf above it. Move your gaze back toward the center and look near the edge. Point at the object when you find it. Take your time and check the shape before making your selection. If it is not there, turn a little farther to the right and look near the lamp."
+    }
+  ],
+  "ttsCharactersSubmitted": 1929,
+  "ttsCharacterLimit": 6000,
+  "scribeAudioSeconds": 101.14,
+  "cloneSampleSeconds": 101.14,
+  "subscriptionCreditDelta": null,
+  "quotaDeltaScope": "unavailable; subscription permission not granted or measurement failed",
+  "lastVoiceList": {
+    "total": 28,
+    "nonPremade": 7,
+    "observedUtc": 1793549493.3237278
+  },
+  "before": {
+    "quotaStatus": "unavailable",
+    "httpStatus": 401,
+    "cloneSlotsFree": null,
+    "charactersRemaining": null,
+    "canUseInstantCloning": null,
+    "voicesReturned": 28
+  },
+  "reviewOverlap": {
+    "observedUtc": 1793549483.167457,
+    "cacheState": "preparing",
+    "cacheCompleted": 0,
+    "phase": "eligibility_review",
+    "eligible": false
+  },
+  "happyEvidence": {
+    "cacheDuringReview": true,
+    "cacheClips": 20,
+    "consentVerified": true,
+    "transcriptRows": 9,
+    "exportVerified": true,
+    "correctionPreservedMachineOriginal": true,
+    "nextDevelopmentCode": "P900000000002",
+    "sessionFiles": [
+      {
+        "name": ".lock",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "answer-0d3bb19a117347608b2d40c711a6246c.json",
+        "sha256": "daf975ca56669d010106dd6148f4fb8d1f761967c92104661b16e65eb8de15d3"
+      },
+      {
+        "name": "answer-1c7ac077a7eb4310b5292814c4b30a44.wav",
+        "sha256": "7f8a75147675b79c9ccf68787038afe407234d8afef088eb0e4c99a8487ba136"
+      },
+      {
+        "name": "answer-1c7ac077a7eb4310b5292814c4b30a44.wav.capture.json",
+        "sha256": "0d75817e60ca3bacc079c39d774c263f67c912e425bebc340805c49612818e64"
+      },
+      {
+        "name": "answer-1c7ac077a7eb4310b5292814c4b30a44.wav.end.json",
+        "sha256": "940afb03e4c10460a032bc222015e52c120c6359e27587234a4862bb0ccedc2f"
+      },
+      {
+        "name": "answer-369cd44831ea4603a0f27dfeb5e2dcb6.json",
+        "sha256": "292a78b6c5dd2e4812990d484ca955b6f252e0feac7dea64928a880c99a5a736"
+      },
+      {
+        "name": "answer-3e9dded98f3e4309b0b77d7add3a22cd.json",
+        "sha256": "da1248770e699dfc31c5b1df07c0e75267272f1cf8fc655cb5ddf98b6801bab3"
+      },
+      {
+        "name": "answer-87011960bb6d4cf0b06948cf2f7851e0.json",
+        "sha256": "507a033d7785c4a4b924f93ca1462d53e4c0a10b276f2fee19f3443fc6a2756f"
+      },
+      {
+        "name": "answer-940cf11b14264711af00c6cf158b725e.wav",
+        "sha256": "9ca265657a8c81f5a1e8fdc9a67deb2957001a8db70b064b7c38393073e6df63"
+      },
+      {
+        "name": "answer-940cf11b14264711af00c6cf158b725e.wav.capture.json",
+        "sha256": "cfba8deda43fafbf5f4538542163d83538a02c8b3709d102dbcb8edd34f4c66f"
+      },
+      {
+        "name": "answer-940cf11b14264711af00c6cf158b725e.wav.end.json",
+        "sha256": "94ff324c75af336fd3246c78ae7a4040002693addf514a1812a684bfb58c41ee"
+      },
+      {
+        "name": "answer-9c2c96afe01a4959bac6d360ee92209a.wav",
+        "sha256": "886fdd76a8356a61c27bc94f494221e61fb776bf8ff129460aa384d8b39061ce"
+      },
+      {
+        "name": "answer-9c2c96afe01a4959bac6d360ee92209a.wav.capture.json",
+        "sha256": "c741c426b25c08046bce70badbfed677300f5db53676363377a7f7b781de5059"
+      },
+      {
+        "name": "answer-9c2c96afe01a4959bac6d360ee92209a.wav.end.json",
+        "sha256": "a19386ad6d94e2dc0d5679501027bd0f00878d03745d280040cdff8269a77285"
+      },
+      {
+        "name": "answer-a138715309e44260b75304d7ed588aa7.json",
+        "sha256": "9cecf0a33a1cf50b8d825f0caa8c734fd443b9f5970ff97161fda24eca531765"
+      },
+      {
+        "name": "answer-a42e85e54c5842d2a1fbc469b2c2b669.wav",
+        "sha256": "104d306bb51610ef531a5dbd499acc7625dfeef89e6458ec83484bea63cc7a56"
+      },
+      {
+        "name": "answer-a42e85e54c5842d2a1fbc469b2c2b669.wav.capture.json",
+        "sha256": "6fd3f711292ac51fbafab98d14cc1eecced20f0fee1242d8eb000037f488a892"
+      },
+      {
+        "name": "answer-a42e85e54c5842d2a1fbc469b2c2b669.wav.end.json",
+        "sha256": "cccf79a2507f942361bb684d6e0d406639340055525b103424d0c85e36bac260"
+      },
+      {
+        "name": "answer-a42f28b741ef49d0b81a77d4b5fe8c91.json",
+        "sha256": "7c977fc17d31f8435338d865e0f9456da4ebc6324b2f1c2b66c7e8acc7d9dc05"
+      },
+      {
+        "name": "answer-a93ee4ddf80b470a9e6f2fe833156ba1.wav",
+        "sha256": "fc33de81c471dc78562955dbf45e9c2939f6b6c32b0644609460ab1905bb0786"
+      },
+      {
+        "name": "answer-a93ee4ddf80b470a9e6f2fe833156ba1.wav.capture.json",
+        "sha256": "63d8b63065c2f73e0fc87c851ca1244d6d1850da8cd7fbf95dde298bc6cb2365"
+      },
+      {
+        "name": "answer-a93ee4ddf80b470a9e6f2fe833156ba1.wav.end.json",
+        "sha256": "d9bbe87781652e16c99b4c53980818d706351ffabdcd4e8636d8d00acc93da3d"
+      },
+      {
+        "name": "answer-c75fa055d07b4c7e98902102569d66ab.wav",
+        "sha256": "e1e71241eef8deed118316a34bc28ca8d10d4031c2f28ebceb3889179d7be461"
+      },
+      {
+        "name": "answer-c75fa055d07b4c7e98902102569d66ab.wav.capture.json",
+        "sha256": "d772e64e27896d476082b397e7e075d71f83f608bd2fcbd625e2eb73941b0b11"
+      },
+      {
+        "name": "answer-c75fa055d07b4c7e98902102569d66ab.wav.end.json",
+        "sha256": "4a7a30a0b0ad658b921d0669c55b687b77cf70f0123f3ef2e51070250aac5e9e"
+      },
+      {
+        "name": "answer-cccc21e108ae4a9c85d3f05078bd3ad8.json",
+        "sha256": "b865c31db798b34d2968e864bf4ae985d644d6575a5f462f50cb7ba322dc0378"
+      },
+      {
+        "name": "answer-cd88f8842e2d420da9e44057bab8bee4.json",
+        "sha256": "beb04315e82f74c50b471860184aed5dec619008a9fc442bc7911a190d1c3525"
+      },
+      {
+        "name": "answer-cfe95df1d5794ee3ad55be20a4e1292f.wav",
+        "sha256": "35b9ff4313c751da5e859f57ac18d16279373ab401b8bdafc7dfdc71ad4b3ac9"
+      },
+      {
+        "name": "answer-cfe95df1d5794ee3ad55be20a4e1292f.wav.capture.json",
+        "sha256": "19fb881ee5bec891adde4f5310efb863fc08a9361c2a36102f6c4345af7f7cf4"
+      },
+      {
+        "name": "answer-cfe95df1d5794ee3ad55be20a4e1292f.wav.end.json",
+        "sha256": "784f66b718a3487ccda155788ac394f35ee54edc14d65822376b8d9ac72aed93"
+      },
+      {
+        "name": "answer-d4ff937501dc4fcf836a3e017af0f79b.wav",
+        "sha256": "3e390f235658782bac998937dc694bb32b6a6a9d0e8848cf93e0fbe27aa044bb"
+      },
+      {
+        "name": "answer-d4ff937501dc4fcf836a3e017af0f79b.wav.capture.json",
+        "sha256": "98a22ea4797d71e094154d6524934291cf4b316eaee36bc53debdbca4430588e"
+      },
+      {
+        "name": "answer-d4ff937501dc4fcf836a3e017af0f79b.wav.end.json",
+        "sha256": "0fd279f9ac9a0ad3141e6700df722a318e500329c0dbeaa3c36307f8dcaaf152"
+      },
+      {
+        "name": "answer-e36e6c9a670d4a019e5a6ab5941a68fe.json",
+        "sha256": "b0c4373137d1f5fd0af17f378db0cce63c57fe03d5fb48a109a4a739bb4ec372"
+      },
+      {
+        "name": "answer-fcd1a698ed7c41eeb02023109461233a.wav",
+        "sha256": "20a8a6a784694087b537d92651dfa15a994e2208dfb09bf8920c8efa8488a125"
+      },
+      {
+        "name": "answer-fcd1a698ed7c41eeb02023109461233a.wav.capture.json",
+        "sha256": "573670577202ee98dc2a95e20331875cbd033bcc6d19d0a4820f24f40084ef2c"
+      },
+      {
+        "name": "answer-fcd1a698ed7c41eeb02023109461233a.wav.end.json",
+        "sha256": "85f75fa8852a0a7c99a6b422b57bd709172b3421f3d088996ebcd3aad92d2563"
+      },
+      {
+        "name": "audio-manifest-37abcff858804f02aaa57d4c0276fb98.json",
+        "sha256": "6c840ed128ebfb46f6c1b87163dbb6194dd6e715cbdd8666d4cd68915c0e9c61"
+      },
+      {
+        "name": "consent-1fcc0afc41db4e97bcf4909833232ccc.json",
+        "sha256": "8013b3173f3c475a7041137d89350ab59a069dc356f7a1f399a86aca7bd79375"
+      },
+      {
+        "name": "eligibility-2eed188c53cc4eaaa980d37939d8c208.json",
+        "sha256": "962b59af762c68f48ce1ab96cb8fdd27cf552aed81741f60fd38c6684d768840"
+      },
+      {
+        "name": "intake_transcripts.csv",
+        "sha256": "9553e1ba7e5313019870a1eb800224effbe5857d38232cd911a5cb2d39573642"
+      },
+      {
+        "name": "intake_transcripts.json",
+        "sha256": "63960ec3e85957079b335f3352c9510eefc4c34b58c818ad14b43e232033b8d0"
+      },
+      {
+        "name": "prompt-1-668c9783d01948498123e7c7cc0e3959.mp3",
+        "sha256": "15de46979bc48706fb6bf2a888e4e9c0d793c6f8982cf2b8c89919cc9e8f7e5e"
+      },
+      {
+        "name": "prompt-10-1214192305434ea28c398b83576e3d1d.mp3",
+        "sha256": "0c6e6f2554caf453a38e695daae874e1b70a4a12d489eabc7368c2750146a374"
+      },
+      {
+        "name": "prompt-12-196f28945f82443b9f0f51dc878f3959.mp3",
+        "sha256": "d15eafd693e597d8602e114288f8ffd8f64a52b70c2f49771c4c6a1e943415a8"
+      },
+      {
+        "name": "prompt-13-53493d20acf24c4581a9ff55035a79ae.mp3",
+        "sha256": "d15eafd693e597d8602e114288f8ffd8f64a52b70c2f49771c4c6a1e943415a8"
+      },
+      {
+        "name": "prompt-14-8bc46d62e349429fb56ff150f8cd69cd.mp3",
+        "sha256": "d15eafd693e597d8602e114288f8ffd8f64a52b70c2f49771c4c6a1e943415a8"
+      },
+      {
+        "name": "prompt-16-4b192ba0964347998a5ebe92e94fa334.mp3",
+        "sha256": "0351dae7782ddfdf066506f178f9279da9844187f6525fb6b76f405cd1b46260"
+      },
+      {
+        "name": "prompt-17-7e95f9a727514c3b8450d73fcd3239b0.mp3",
+        "sha256": "0351dae7782ddfdf066506f178f9279da9844187f6525fb6b76f405cd1b46260"
+      },
+      {
+        "name": "prompt-18-63e857775e8a4deb8a58e27560bc6fdf.mp3",
+        "sha256": "0351dae7782ddfdf066506f178f9279da9844187f6525fb6b76f405cd1b46260"
+      },
+      {
+        "name": "prompt-2-16c7fb4f8b864471b61aae4ba0845807.mp3",
+        "sha256": "15de46979bc48706fb6bf2a888e4e9c0d793c6f8982cf2b8c89919cc9e8f7e5e"
+      },
+      {
+        "name": "prompt-20-f2ce51e7730045378011dc0593e97742.mp3",
+        "sha256": "218b7927efc2ef81546d8d98bd3a6db0da04db675ce3d7bf4cbe3a1365643812"
+      },
+      {
+        "name": "prompt-21-9124ead800374b9da6af20bc4ba3fc42.mp3",
+        "sha256": "218b7927efc2ef81546d8d98bd3a6db0da04db675ce3d7bf4cbe3a1365643812"
+      },
+      {
+        "name": "prompt-22-dbc56fe788ec4559b39b7c69131b7d10.mp3",
+        "sha256": "218b7927efc2ef81546d8d98bd3a6db0da04db675ce3d7bf4cbe3a1365643812"
+      },
+      {
+        "name": "prompt-24-9c5d07bb4ec349ebbc87dd38342709bd.mp3",
+        "sha256": "1655d4dfef2b59b3c45d7d2769c2f0af66328c17b5f1edc34aea5731fcec5b98"
+      },
+      {
+        "name": "prompt-25-86060f0b2b0541318a9028a696024a1f.mp3",
+        "sha256": "1655d4dfef2b59b3c45d7d2769c2f0af66328c17b5f1edc34aea5731fcec5b98"
+      },
+      {
+        "name": "prompt-26-58de83a64e81422081d65247369faaeb.mp3",
+        "sha256": "1655d4dfef2b59b3c45d7d2769c2f0af66328c17b5f1edc34aea5731fcec5b98"
+      },
+      {
+        "name": "prompt-28-2de9b3a2d9954ef5a507c37bd0d15beb.mp3",
+        "sha256": "5ee715fa64925d4e39343e61d3fd50defdf8738b5e1c8b48b5819a90d963a515"
+      },
+      {
+        "name": "prompt-29-b8495086a620476fb30e0e3961b3f098.mp3",
+        "sha256": "5ee715fa64925d4e39343e61d3fd50defdf8738b5e1c8b48b5819a90d963a515"
+      },
+      {
+        "name": "prompt-30-e790f9580b1e4b3fbbd60ac20d4f1043.mp3",
+        "sha256": "5ee715fa64925d4e39343e61d3fd50defdf8738b5e1c8b48b5819a90d963a515"
+      },
+      {
+        "name": "prompt-32-0065fb9a5baf406bb37900006d2f3c9f.mp3",
+        "sha256": "4cc6989fc7ec35974f9c56d0fd945f64bdec0e0d625cc72f1adad4905ac43a66"
+      },
+      {
+        "name": "prompt-33-4f96d3c827e74f4491e53762a903afa6.mp3",
+        "sha256": "4cc6989fc7ec35974f9c56d0fd945f64bdec0e0d625cc72f1adad4905ac43a66"
+      },
+      {
+        "name": "prompt-34-67dd69a8c7e54e26b39ebdf103d4c4d6.mp3",
+        "sha256": "4cc6989fc7ec35974f9c56d0fd945f64bdec0e0d625cc72f1adad4905ac43a66"
+      },
+      {
+        "name": "prompt-4-4d0984fbe824417481132c98a1743806.mp3",
+        "sha256": "a1802acfc9effc4196675f470b60e5b5082db45c3eaddf5ff4d92381d1a276c5"
+      },
+      {
+        "name": "prompt-5-4695b144120e48d4ac1d192486845a43.mp3",
+        "sha256": "a1802acfc9effc4196675f470b60e5b5082db45c3eaddf5ff4d92381d1a276c5"
+      },
+      {
+        "name": "prompt-6-42d9f836f9514620b9d3dca941d8a41c.mp3",
+        "sha256": "a1802acfc9effc4196675f470b60e5b5082db45c3eaddf5ff4d92381d1a276c5"
+      },
+      {
+        "name": "prompt-8-5fc8f0a2abc2402eb952a4dedd500109.mp3",
+        "sha256": "0c6e6f2554caf453a38e695daae874e1b70a4a12d489eabc7368c2750146a374"
+      },
+      {
+        "name": "prompt-9-0e4c4b387b0b40d2a5e827650b0161e7.mp3",
+        "sha256": "0c6e6f2554caf453a38e695daae874e1b70a4a12d489eabc7368c2750146a374"
+      },
+      {
+        "name": "river-49af0aaf6a794660a75a353bd45b72d50a656ef1ae99618d4a86b3e85b47a782.mp3",
+        "sha256": "1655d4dfef2b59b3c45d7d2769c2f0af66328c17b5f1edc34aea5731fcec5b98"
+      },
+      {
+        "name": "river-6f91db71afd66d3f1b90159c8d994a657c169045d203d05a813f1ecdc2335611.mp3",
+        "sha256": "0351dae7782ddfdf066506f178f9279da9844187f6525fb6b76f405cd1b46260"
+      },
+      {
+        "name": "river-75a0122a8dda1984bcbac8a108f1ea75fba1cffeae6159d189fd99f0ec3134a4.mp3",
+        "sha256": "a1802acfc9effc4196675f470b60e5b5082db45c3eaddf5ff4d92381d1a276c5"
+      },
+      {
+        "name": "river-9304ba605c5572c467b6245ce2a3216bb001546f62a7e4dc884048c50ed48a52.mp3",
+        "sha256": "5ee715fa64925d4e39343e61d3fd50defdf8738b5e1c8b48b5819a90d963a515"
+      },
+      {
+        "name": "river-93bf2535c645db811ee1f13abae1c1bedc83d42559e3dab17fa790d816bb904f.mp3",
+        "sha256": "4cc6989fc7ec35974f9c56d0fd945f64bdec0e0d625cc72f1adad4905ac43a66"
+      },
+      {
+        "name": "river-962036392294176967237a8cd6bc3fe8b538cf328353725612c724028511280c.mp3",
+        "sha256": "15de46979bc48706fb6bf2a888e4e9c0d793c6f8982cf2b8c89919cc9e8f7e5e"
+      },
+      {
+        "name": "river-a16851de1b307ffba5756e4e9d45354adcc0d87a2047474fd00c893823c0c60e.mp3",
+        "sha256": "0c6e6f2554caf453a38e695daae874e1b70a4a12d489eabc7368c2750146a374"
+      },
+      {
+        "name": "river-ad6724501dc3cd4900d6ebd5f70884027768c30d613adef42133ac9b6e61612b.mp3",
+        "sha256": "218b7927efc2ef81546d8d98bd3a6db0da04db675ce3d7bf4cbe3a1365643812"
+      },
+      {
+        "name": "river-ba8136dc68269ab469a799889f5574de41e4e290825675f3c8e96927e70a0a27.mp3",
+        "sha256": "d15eafd693e597d8602e114288f8ffd8f64a52b70c2f49771c4c6a1e943415a8"
+      },
+      {
+        "name": "session.json",
+        "sha256": "fd08d206188dea164280a20746fb516645b5aa964552e7d02d62f6e1bc246a00"
+      },
+      {
+        "name": "synthetic-development-audition.mp3",
+        "sha256": "318fa8c251395bd1c5225b7ae789bb11d248e9ee7986ca088f2c9ccb603a1d23"
+      }
+    ],
+    "captureDriver": "actual C# detector with synthetic WAV; worker orchestration, not desktop GUI",
+    "promptCache": "all nine generated in isolated session; each reused from exact-text cache before playback"
+  },
+  "captures": [
+    {
+      "reason": "sustained_silence",
+      "samples": 162240,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 161760,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 185760,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 207360,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 327840,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 326880,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 296160,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 154560,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 604800,
+      "speechDetected": true
+    }
+  ],
+  "after": {
+    "quotaStatus": "unavailable",
+    "httpStatus": 401,
+    "cloneSlotsFree": null,
+    "charactersRemaining": null,
+    "canUseInstantCloning": null,
+    "voicesReturned": 28
+  },
+  "temporaryDevelopmentDataRemoved": true
+}

@@ -1,0 +1,61 @@
+....E.....EEF.
+======================================================================
+ERROR: test_known_unavailable_slots_stop_before_mutations (test_e2e_live.LiveBoundaryChecks.test_known_unavailable_slots_stop_before_mutations)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/test_e2e_live.py", line 57, in test_known_unavailable_slots_stop_before_mutations
+    with patch.object(self.provider,'account',return_value=(before,set())): self.provider.preflight()
+                                                                            ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/e2e_live.py", line 93, in preflight
+    raise RuntimeError('Live run stopped: require a free clone slot and at least 30000 remaining characters')
+RuntimeError: Live run stopped: require a free clone slot and at least 30000 remaining characters
+
+======================================================================
+ERROR: test_subscription_permission_denial_continues_without_other_key (test_e2e_live.LiveBoundaryChecks.test_subscription_permission_denial_continues_without_other_key) (status=401)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/test_e2e_live.py", line 69, in test_subscription_permission_denial_continues_without_other_key
+    with self.provider.network_guard(): self.provider.preflight()
+                                        ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/e2e_live.py", line 89, in preflight
+    before, _ = self.account()
+                ~~~~~~~~~~~~^^
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/e2e_live.py", line 71, in account
+    sub = json.loads(self.call(API+'user/subscription'))
+                     ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/participant_intake.py", line 458, in call
+    raise RuntimeError(f'Provider request failed (HTTP {e.code}); check connection, permissions or quota.') from None
+RuntimeError: Provider request failed (HTTP 401); check connection, permissions or quota.
+
+======================================================================
+ERROR: test_subscription_permission_denial_continues_without_other_key (test_e2e_live.LiveBoundaryChecks.test_subscription_permission_denial_continues_without_other_key) (status=403)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/test_e2e_live.py", line 69, in test_subscription_permission_denial_continues_without_other_key
+    with self.provider.network_guard(): self.provider.preflight()
+                                        ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/e2e_live.py", line 89, in preflight
+    before, _ = self.account()
+                ~~~~~~~~~~~~^^
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/e2e_live.py", line 71, in account
+    sub = json.loads(self.call(API+'user/subscription'))
+                     ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/participant_intake.py", line 458, in call
+    raise RuntimeError(f'Provider request failed (HTTP {e.code}); check connection, permissions or quota.') from None
+RuntimeError: Provider request failed (HTTP 403); check connection, permissions or quota.
+
+======================================================================
+FAIL: test_tts_limit_counts_concurrent_requests_and_failed_submissions (test_e2e_live.LiveBoundaryChecks.test_tts_limit_counts_concurrent_requests_and_failed_submissions)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/test_e2e_live.py", line 90, in test_tts_limit_counts_concurrent_requests_and_failed_submissions
+    self.assertCountEqual(results,['HTTPError','RuntimeError'])
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Element counts were not equal:
+First has 2, Second has 1:  'HTTPError'
+First has 0, Second has 1:  'RuntimeError'
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.422s
+
+FAILED (failures=1, errors=3)

@@ -1,0 +1,24 @@
+{
+  "pid5228After": "5228 /Users/pedro.poveda/Applications/Follow My Voice Study Intake.app/Contents/MacOS/Trial Review",
+  "keysUnchanged": {
+    "/Users/pedro.poveda/.config/follow-my-voice/api_keys.json": true,
+    "Assets/StreamingAssets/api_keys.json": true
+  },
+  "configuredKeyAbsentFromArtifacts": true,
+  "liveRequests": 46,
+  "billablePostAttempts": 40,
+  "ttsCharacters": 1929,
+  "scribeSeconds": 101.14,
+  "cloneSeconds": 101.14,
+  "accountDelta": "unavailable",
+  "cloneDeletionVerified": true,
+  "scenarioB": "NOT RUN; person-run rehearsal",
+  "shippedCodeChanged": false,
+  "rebuiltDesktop": false,
+  "rebuiltApk": false,
+  "installed": false,
+  "headsetContact": false,
+  "microphoneUsed": false,
+  "participantDataUsed": false,
+  "pushed": false
+}
