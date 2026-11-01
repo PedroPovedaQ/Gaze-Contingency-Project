@@ -722,7 +722,7 @@ partial class VoiceIsolationChecks
             Check(ChallengeSet.PracticeTrialCount == 1 &&
                 SessionConfig.VoiceForRound(ChallengeSet.PracticeRound(0).roundIndex) == VoiceCondition.Generic,
                 "Order A single practice uses preferred catalog voice");
-            Check(SessionConfig.VoiceForRound(23) == VoiceCondition.Generic && SessionConfig.VoiceForRound(32) == VoiceCondition.SelfSimilar, "block boundary after thirty-two trials");
+            Check(SessionConfig.VoiceForRound(23) == VoiceCondition.Generic && SessionConfig.VoiceForRound(48) == VoiceCondition.SelfSimilar, "block boundary after forty-eight trials");
             File.WriteAllText(Path.Combine(SessionConfig.ParticipantPath, "voice-order-v1.txt"), "selfsimilar_then_neutral");
             SessionConfig.ConfigureVoiceBlocks();
             Check(!SessionConfig.NeutralFirst, "persisted assignment wins on restart");
@@ -1077,7 +1077,7 @@ partial class VoiceIsolationChecks
             synth.PhrasePlaybackStarted -= capturePhrase;
             DownloadHandlerAudioClip.ForceSkewed = false;
             DownloadHandlerAudioClip.Quiet = false;
-            Check(ChallengeSet.TotalRounds == 64 && ChallengeSet.RoundsPerBlock == 32 && ChallengeSet.BlockCount == 2, "full two-block schedule");
+            Check(ChallengeSet.TotalRounds == 96 && ChallengeSet.RoundsPerBlock == 48 && ChallengeSet.BlockCount == 2, "full two-block schedule");
             var angleCounts = new int[2, 5];
             foreach (var trial in ChallengeSet.Rounds)
             {
@@ -1204,17 +1204,17 @@ partial class VoiceIsolationChecks
                 for (int block = 0; block < 2; block++)
                 {
                     var blockTrials = Array.FindAll(schedule, t => t.blockIndex == block);
-                    Check(Array.FindAll(blockTrials, t => t.targetHeightFraction > .5f).Length == 16,
-                        "sixteen above and sixteen below per block");
+                    Check(Array.FindAll(blockTrials, t => t.targetHeightFraction > .5f).Length == 24,
+                        "twenty-four above and twenty-four below per block");
                     foreach (int angle in new[] { 0, 45, -45, 90, -90, 135, -135, 180 })
                     {
                         var trials = Array.FindAll(blockTrials, t => t.SignedTheta == angle);
                         int above = Array.FindAll(trials, t => t.targetHeightFraction > .5f).Length;
-                        Check(trials.Length == 4 && above == 2, "four per signed step with two above and two below");
+                        Check(trials.Length == 6 && above == 3, "six per signed step with three above and three below");
                     }
                     foreach (int angle in new[] { 45, 90, 135 })
-                        Check(Array.FindAll(blockTrials, t => t.AbsoluteTheta == angle && t.targetHeightFraction > .5f).Length == 4,
-                            "bilateral absolute angles have four above and four below");
+                        Check(Array.FindAll(blockTrials, t => t.AbsoluteTheta == angle && t.targetHeightFraction > .5f).Length == 6,
+                            "bilateral absolute angles have six above and six below");
                     Check(identities[block].Count == 24, "all identities appear per voice");
                     int doubled = 0;
                     foreach (var identity in identities[block])
@@ -1222,7 +1222,7 @@ partial class VoiceIsolationChecks
                         Check(identity.Value >= 1 && identity.Value <= 2 && identities[0][identity.Key] == identity.Value, "matched identity counts across voices");
                         if (identity.Value == 2) doubled++;
                     }
-                    Check(doubled == 8, "eight doubled and sixteen single identities");
+                    Check(doubled == 24, "all twenty-four identities doubled");
                 }
                 for (int group = 0; group < ChallengeSet.TotalRounds / 8; group++)
                 {
@@ -1230,11 +1230,11 @@ partial class VoiceIsolationChecks
                     for (int i = 0; i < 8; i++) steps.Add(schedule[group * 8 + i].SignedTheta);
                     Check(steps.Count == 8, "each eight-trial group contains all signed steps");
                 }
-                int[] quota = { 4, 8, 8, 8, 4 };
+                int[] quota = { 6, 12, 12, 12, 6 };
                 for (int a = 0; a < 5; a++) Check(firstCounts[a] == quota[a] && secondCounts[a] == quota[a], "fixed per-block quotas");
                 var saved = new StringWriter(); ChallengeSet.WriteSchedule(saved);
                 var rows = saved.ToString().Trim().Split('\n');
-                Check(rows.Length == 65, "manifest documents all sixty-four planned trials");
+                Check(rows.Length == 97, "manifest documents all ninety-six planned trials");
                 for (int r = 0; r < schedule.Length; r++)
                 {
                     var cells = rows[r + 1].Trim().Split(',');
@@ -1262,16 +1262,16 @@ partial class VoiceIsolationChecks
                     if (SessionConfig.VoiceForRound(trial.roundIndex) == VoiceCondition.Generic) neutralTrials++;
                     else selfTrials++;
                 }
-                Check(neutralTrials == 32 && selfTrials == 32, "both saved orders assign thirty-two trials to each voice");
+                Check(neutralTrials == 48 && selfTrials == 48, "both saved orders assign forty-eight trials to each voice");
             }
             ChallengeSet.DebugRoundCountOverride = 7;
             var truncated = new StringWriter(); ChallengeSet.WriteSchedule(truncated);
             int enabled = 0;
             foreach (var row in truncated.ToString().Trim().Split('\n'))
                 if (row.StartsWith(SessionConfig.ParticipantId + ",") && row.Split(',')[16] == "1") enabled++;
-            Check(enabled == 7 && ChallengeSet.Rounds.Length == 64, "short run preserves complete plan and flags only seven enabled trials");
+            Check(enabled == 7 && ChallengeSet.Rounds.Length == 96, "short run preserves complete plan and flags only seven enabled trials");
             ChallengeSet.DebugRoundCountOverride = 999;
-            Check(ChallengeSet.RoundCount == 64, "debug cannot exceed full study");
+            Check(ChallengeSet.RoundCount == 96, "debug cannot exceed full study");
             ChallengeSet.DebugRoundCountOverride = 0;
             foreach (var trial in ChallengeSet.Rounds)
             {
@@ -1316,8 +1316,8 @@ partial class VoiceIsolationChecks
                 SessionConfig.Voice == VoiceCondition.Generic && SessionConfig.NeutralVoiceName == "Eric" &&
                 SessionConfig.SelfSimilarVoiceId == "" && !SessionConfig.SelfSimilarEnrollmentPending,
                 "quick test clears participant/clone state and uses neutral only");
-            Check(SessionConfig.ParticipantId == "DEV_NEUTRAL" && ChallengeSet.RoundCount == 32,
-                "quick test has a separate development identity and one 32-trial block");
+            Check(SessionConfig.ParticipantId == "DEV_NEUTRAL" && ChallengeSet.RoundCount == 48,
+                "quick test has a separate development identity and one 48-trial block");
             var quickPlan = ChallengeSet.Rounds;
             Check(quickPlan[0].startPlane == 0, "quick test starts at the centered wall without practice");
             string quickRun = SessionConfig.BeginRun();
@@ -1326,7 +1326,7 @@ partial class VoiceIsolationChecks
             var quickSchedule = new StringWriter(); ChallengeSet.WriteSchedule(quickSchedule);
             var scheduleLines = quickSchedule.ToString().Trim().Split('\n');
             for (int i = 1; i < scheduleLines.Length; i++)
-                Check(scheduleLines[i].Split(',')[16] == (i <= 32 ? "1" : "0"), "schedule flags only the executed quick-test block");
+                Check(scheduleLines[i].Split(',')[16] == (i <= 48 ? "1" : "0"), "schedule flags only the executed quick-test block");
             provider.Calls = 0; UnityWebRequest.Requests.Clear();
             DownloadHandlerAudioClip.Corrupt = false; DownloadHandlerAudioClip.Quiet = false;
             Drain(synth.PrepareLibraries(new[] { "Quick test neutral guidance." }, null, ok => prepared = ok, neutralOnly: true));
@@ -1334,14 +1334,14 @@ partial class VoiceIsolationChecks
                 "neutral-only library becomes ready without a clone request");
             foreach (var audit in (IEnumerable)typeof(VoiceSynthesizer).GetField("m_Audit", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(synth))
                 Check((string)audit.GetType().GetField("voice_condition").GetValue(audit) != "selfsimilar", "quick-test manifest has no clone clips");
-            Check(SessionConfig.VoiceForRound(32) == VoiceCondition.Generic, "quick test never changes to the cloned voice");
+            Check(SessionConfig.VoiceForRound(48) == VoiceCondition.Generic, "quick test never changes to the cloned voice");
             SessionConfig.RememberDevelopmentClone("dev-clone-fixture");
             SessionConfig.ConfigureCloneQuickTest(SessionConfig.SavedDevelopmentClone());
             Check(SessionConfig.CloneQuickTest && SessionConfig.DevelopmentQuickTest && !SessionConfig.NeutralQuickTest &&
-                SessionConfig.ParticipantId == "DEV_CLONE" && ChallengeSet.RoundCount == 32 &&
+                SessionConfig.ParticipantId == "DEV_CLONE" && ChallengeSet.RoundCount == 48 &&
                 SessionConfig.SelfSimilarVoiceId == "dev-clone-fixture" && !SessionConfig.VoiceBlocksEnabled &&
                 SessionConfig.VoiceForRound(0) == VoiceCondition.SelfSimilar &&
-                SessionConfig.VoiceForRound(32) == VoiceCondition.SelfSimilar,
+                SessionConfig.VoiceForRound(48) == VoiceCondition.SelfSimilar,
                 "Clone shortcut uses only explicitly saved clone and a separate development block");
             string cloneRun=SessionConfig.BeginRun();
             Check(File.ReadAllText(Path.Combine(cloneRun,"session-mode-v1.txt")).Contains("mode=clone_quick_test\nstudy_data=false"),
@@ -1360,7 +1360,7 @@ partial class VoiceIsolationChecks
             Check(SessionConfig.NewCloneQuickTest && SessionConfig.CloneQuickTest && SessionConfig.DevelopmentQuickTest &&
                 !SessionConfig.NeutralQuickTest && !SessionConfig.VoiceBlocksEnabled &&
                 SessionConfig.SelfSimilarVoiceId == "" && SessionConfig.SelfSimilarEnrollmentPending &&
-                SessionConfig.ParticipantId == "DEV_CLONE" && ChallengeSet.RoundCount == 32,
+                SessionConfig.ParticipantId == "DEV_CLONE" && ChallengeSet.RoundCount == 48,
                 "Fresh-clone quick test clears old voice and waits for new enrollment without a study assignment");
             provider.Calls = 0; prepared = true;
             Drain(synth.PrepareLibraries(new[] { "Fresh clone guidance." }, null, ok=>prepared=ok, onlyVoice: VoiceCondition.SelfSimilar));
@@ -1384,7 +1384,7 @@ partial class VoiceIsolationChecks
                 "Fresh-clone quick-test recording is identified separately and excluded from study data");
             SessionConfig.ResetForNewParticipant();
             Check(!SessionConfig.DevelopmentQuickTest && !SessionConfig.NewCloneQuickTest && SessionConfig.SelfSimilarVoiceId=="" &&
-                ChallengeSet.RoundCount == 64 && SessionConfig.ParticipantId == "",
+                ChallengeSet.RoundCount == 96 && SessionConfig.ParticipantId == "",
                 "new participant restores the full study schedule and disables shortcut");
             Check(SessionConfig.LocalAdaptiveModel && SessionConfig.AssistanceProvider == "local_minilm",
                 "New participant defaults to local MiniLM");
@@ -1426,7 +1426,7 @@ partial class VoiceIsolationChecks
             SessionConfig.ConfigureDesktopSession(desktop);
             desktop.fit.participantIpdMm = 65;
             Check(SessionConfig.ParticipantFit.participantIpdMm == 63.5f, "IPD assignment is copied, not shared mutable state");
-            Check(SessionConfig.VoiceForRound(0) == VoiceCondition.SelfSimilar && SessionConfig.VoiceForRound(32) == VoiceCondition.Generic,
+            Check(SessionConfig.VoiceForRound(0) == VoiceCondition.SelfSimilar && SessionConfig.VoiceForRound(48) == VoiceCondition.Generic,
                 "Configuration A overrides odd participant parity and starts self-similar");
             Check(SessionConfig.SelfSimilarVoiceId == desktop.cloneVoiceId && SessionConfig.DesktopSessionId == desktop.id,
                 "Desktop clone and session identity transfer together");

@@ -56,9 +56,8 @@ def detectable(rows, scenario, target):
 
 def curve_plot(rows, out, precision=None):
     if precision is not None:
-        refined = {(r["scenario"], r["ratio"]): r for r in precision}
-        rows = [refined.get((r["scenario"], r["ratio"]), r)
-                if r["n_enrolled"] == 60 else r for r in rows]
+        refined = {(r["scenario"], r["n_enrolled"], r["ratio"]): r for r in precision}
+        rows = [refined.get((r["scenario"], r["n_enrolled"], r["ratio"]), r) for r in rows]
     colors = ["#6a51a3", "#2171b5", "#008571", "#d47700", "#b62446"]
     fig, axes = plt.subplots(1, 3, figsize=(15, 5.8), sharex=True, sharey=True, facecolor="white")
     for ax, s in zip(axes, MAIN):
@@ -82,10 +81,10 @@ def curve_plot(rows, out, precision=None):
         ax.grid(axis="y", alpha=.17)
         ax.spines[["top", "right"]].set_visible(False)
     axes[0].set_ylabel("Power for voice contrast (%)", fontsize=12)
-    fig.suptitle("64-trial voice study: power depends on participant variability", fontsize=17, y=.99)
+    fig.suptitle("96-trial voice study: power depends on participant variability", fontsize=17, y=.99)
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="lower center", ncol=3, bbox_to_anchor=(.5, .035), frameon=False, fontsize=11)
-    counts = "1,000 simulations/point; 5,000 at N=60" if precision is not None else "1,000 simulations/point"
+    counts = "1,000/point; 10,000 at N=20; selected refinements 5,000" if precision is not None else "1,000 simulations/point"
     fig.text(.5, .012, "Synthetic planning • 25 s deadline • successful trials only • dropout included • 95% Monte Carlo bands • "+counts, ha="center", fontsize=9)
     fig.tight_layout(rect=(0, .18, 1, .91))
     fig.savefig(out/"power-curves.png", dpi=200, facecolor="white")
@@ -98,17 +97,38 @@ def table(header, rows):
         "| "+" | ".join(map(str, row))+" |" for row in rows)
 
 
+def validate_design_inputs(groups, baseline):
+    """Prevent a report from relabelling legacy runs as the 96-trial design."""
+    expected_repetitions = dict(curves=1000, grid=1000, stress=2000, precision=5000,
+                                n20=10000, enrollment=5000)
+    for kind, rows in groups.items():
+        if not rows or any(r.get("trials_per_block") != 48 or
+                           r["repetitions"] != expected_repetitions[kind] for r in rows):
+            raise ValueError(f"{kind}: expected 48 trials per block and {expected_repetitions[kind]} replicates")
+    expected = {(s.name, 20, r) for s in MAIN for r in [1., .97, .95, .93, .90, .85]}
+    for rows, size in [(groups["n20"], 48), (baseline, 32)]:
+        keys = [(r["scenario"], r["n_enrolled"], r["ratio"]) for r in rows]
+        if (len(keys) != len(expected) or set(keys) != expected or
+                any(r.get("trials_per_block") != size or r["repetitions"] != 10000 for r in rows)):
+            raise ValueError("N=20 comparison requires both complete designs at 10,000 replicates")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     out = args.out
-    groups = {kind: load_csv(out/f"{kind}.csv") for kind in ["curves", "grid", "stress", "precision"]}
+    groups = {kind: load_csv(out/f"{kind}.csv") for kind in ["curves", "grid", "stress", "precision", "n20"]}
+    if (out/"enrollment.csv").exists():
+        groups["enrollment"] = load_csv(out/"enrollment.csv")
+    baseline = load_csv(out/"baseline64/n20.csv")
+    validate_design_inputs(groups, baseline)
     combined = [dict(analysis_set=k, **r) for k, rows in groups.items() for r in rows]
+    combined.extend(dict(analysis_set="baseline64_n20", **r) for r in baseline)
     write_csv(out/"results.csv", combined)
     secondary = secondary_rows()
     write_csv(out/"secondary-power.csv", secondary)
-    curve_plot(groups["curves"], out, groups["precision"])
+    curve_plot(groups["curves"], out, groups["precision"] + groups["n20"] + groups.get("enrollment", []))
     precision = groups["precision"]
     get = lambda name, ratio: next(r for r in precision if r["scenario"] == name and r["ratio"] == ratio)
     thresholds = {s.name: {str(p): detectable(precision, s.name, p) for p in [.8, .9]} for s in MAIN}
@@ -146,6 +166,7 @@ def main():
         for r in secondary if r["n_enrolled"]==60 and r["outcome"]=="NASA-TLX" and r["dz"]>0])
     secondary_thresholds = [optimize.brentq(lambda d: enrolled_paired_power(60, d, .025, .855)-p, 0, 2) for p in [.8, .9]]
     runs = [json.loads((out/f"{k}-run.json").read_text()) for k in groups]
+    runs.append(json.loads((out/"baseline64/n20-run.json").read_text()))
     sims = sum(int(r["repetitions"]) for r in combined)
     failures = sum(int(r["failed_fits"]) for r in combined)
     retries = sum(int(r["optimizer_retries"]) for r in combined)
@@ -153,25 +174,70 @@ def main():
     evidence = json.loads((out/"development-evidence.json").read_text())
     early, recent, pooled = (evidence[k] for k in ["earlier_runs", "run30", "combined"])
     mid = thresholds["middle"]
-    report = f"""# Current 64-trial voice-study power analysis
+    comparison = []
+    for r in groups["n20"]:
+        old = next(v for v in baseline if v["scenario"] == r["scenario"] and v["ratio"] == r["ratio"])
+        comparison.append(dict(scenario=r["scenario"], reduction_percent=round(100*(1-r["ratio"])),
+            power_64=old["power"], power_96=r["power"], gain_percentage_points=100*(r["power"]-old["power"]),
+            power_64_low=old["power_low"], power_64_high=old["power_high"],
+            power_96_low=r["power_low"], power_96_high=r["power_high"], repetitions=r["repetitions"]))
+    write_csv(out/"n20-comparison.csv", comparison)
+    n20_table = table(["Scenario", "Reduction", "64-trial power", "96-trial power (95% MC interval)", "Gain (percentage points)"], [
+        [r["scenario"], f"{r['reduction_percent']}%", f"{100*r['power_64']:.2f}%",
+         f"{100*r['power_96']:.2f}% ({100*r['power_96_low']:.2f}–{100*r['power_96_high']:.2f}%)",
+         f"{r['gain_percentage_points']:+.2f}"] for r in comparison if r["reduction_percent"] in (5,7,10,15)])
+    candidate_rows = groups["curves"]
+    # An optional high-precision crossing run replaces, never pools, matching seed prefixes.
+    if (out/"enrollment.csv").exists():
+        refined = load_csv(out/"enrollment.csv")
+        replacement = {(r["scenario"], r["n_enrolled"], r["ratio"]): r for r in refined}
+        candidate_rows = [replacement.get((r["scenario"], r["n_enrolled"], r["ratio"]), r) for r in candidate_rows]
+    candidates = sorted((r for r in candidate_rows if r["scenario"]=="middle" and r["ratio"]==.9), key=lambda r:r["n_enrolled"])
+    crossing = next((r for r in candidates if r["power"]>=.8), None)
+    enrollment_table = table(["Enrollment", "Power for 10% faster", "95% MC interval", "Replicates"], [
+        [int(r["n_enrolled"]), f"{100*r['power']:.2f}%", f"{100*r['power_low']:.2f}–{100*r['power_high']:.2f}%", int(r["repetitions"])]
+        for r in candidates if 44 <= r["n_enrolled"] <= 60])
+    enrollment = f"N={int(crossing['n_enrolled'])} ({int(crossing['n_enrolled'])//2} per order), estimated power {100*crossing['power']:.2f}%" if crossing else "beyond N=60"
+    secondary20 = optimize.brentq(lambda d: enrolled_paired_power(20, d, .025, .855)-.8, 0, 2)
+    headline20 = next(r for r in comparison if r["scenario"]=="middle" and r["reduction_percent"]==10)
+    (out/"design-summary.json").write_text(json.dumps(dict(n20=comparison, middle_n_80_at_10=crossing,
+        secondary_n20_dz80=secondary20, expected_secondary_pairs_n20=17.1,
+        session_minutes_at_search_ceiling=[52,62]), indent=2)+"\n")
+    report = f"""# Current 96-trial voice-study power analysis
 
-**Protocol proposal — recommend enrolling 60 participants, with 30 assigned to each voice order.** This includes dropout: the middle scenario expects about 54 participants with observations in both blocks. At N=60, the successful-completion mixed model detects approximately **{mid['0.8']['reduction']:.1f}% faster search at 80% power** and **{mid['0.9']['reduction']:.1f}% faster search at 90% power**, under the middle assumptions below. These are synthetic planning estimates, not measured voice effects or a promise of power.
+**Protocol proposal — initial enrollment remains Pedro's decision: N=20, 10 per voice order.** Under middle assumptions, a 10% latent time reduction has **{100*headline20['power_96']:.2f}% power with 96 trials versus {100*headline20['power_64']:.2f}% with 64 trials: a gain of {headline20['gain_percentage_points']:.2f} percentage points**. These are synthetic planning estimates, not observed voice effects. Fifty percent more trials does not imply fifty percent more power.
+
+## N=20 and gain over 64 trials
+
+{n20_table}
+
+Both designs use 10,000 replicates per scenario/effect at N=20, including null and 3% cells in the CSV. Maximum MC SE is 0.50 percentage points per estimate; the 95% interval is at most about ±0.98 points. The master seed and per-cell hash policy are unchanged. Different trial counts consume random draws differently: these are not paired datasets. We report each design's uncertainty, not a paired-difference confidence interval. Refinements replace the 1,000-replicate seed prefix; they are never pooled with it.
+
+**N needed for 80% at a 10% reduction, middle assumptions:** {enrollment}. This is the first tested even enrollment whose point estimate reaches 80%, not a guaranteed threshold. All even N=12–60 were evaluated. Participant voice-response variation limits the benefit of additional trials.
+
+{enrollment_table}
+
+**Secondary outcomes at N=20:** 17.1 expected usable questionnaire pairs under .855 retention; conservative Holm (.025) power reaches 80% at **dz≈{secondary20:.3f}** for each of NASA-TLX and IMI interest/enjoyment. This is unchanged by increasing trial count because the same 20 people supply the paired scores. At N=60 the corresponding value remains dz≈{secondary_thresholds[0]:.3f}.
+
+## Session length
+
+**Protocol proposal, not observed timing:** 96 × 25 seconds gives a 40-minute active-search ceiling. Assuming 5–10 seconds readiness/opening/feedback per trial adds 8–16 minutes, plus 3–5 minutes for the between-block break and about one minute for practice: **52–62 minutes for the task portion** at the timeout ceiling. This is 16–18 minutes longer than the comparable 64-trial planning estimate (36–44 minutes). Faster searches shorten it. Consent/intake, voice preparation, headset fitting/calibration, final surveys, extra rests and technical pauses are additional; the full appointment has no established upper bound and needs a rehearsal. The simulation holds dropout, residual variability and learning constant; it does not model added fatigue from a longer session.
+
+## N=60 sensitivity for comparison
 
 {headline_table}
 
-**A 3% time reduction is out of reach within N≤60 across these main scenarios. A 5% reduction is out of reach under the middle and pessimistic scenarios; it is only near the 80% boundary under optimistic assumptions.** Sixty is the largest feasible candidate requested, selected for a roughly 10% target reduction under middle assumptions, not a mathematically guaranteed minimum. For a firm 90% goal, plan around the larger detectable reduction above or revisit the participant ceiling. The smallest scientifically meaningful effect remains Pedro's substantive decision. More trials cannot substitute for more participants when voice responses vary substantially.
+Detectable-effect values above refer to N=60 and interpolate within the simulated grid. Values outside the grid remain unavailable. The smallest scientifically meaningful effect remains a substantive study decision.
 
-**Important limit:** these powers concern rejection by a model fitted to observed successful searches. Deadline censoring biases that model's estimate of the latent, all-assigned-search time ratio. More participants do not remove that bias. This analysis fulfills the planned successful-time LMM simulation; it does not establish adequate power for a censored survival model or solve the primary-estimand issue. Preregister a complementary completion-probability/time-to-event analysis and the interpretation of successful-time results.
-
-For the 10% middle-assumption contrast, the refined estimate is **{100*get('middle',.90)['power']:.1f}% power (95% Monte Carlo interval {100*get('middle',.90)['power_low']:.1f}–{100*get('middle',.90)['power_high']:.1f}%)**. The lower bound is slightly below 80%, so this is an approximately 80% design, not a certified ≥80% guarantee. In a correlated-random-effects stress case, rejection at a zero conditional voice coefficient rises to about 9%; that assumption cannot be treated as harmless.
+**Important limit:** these powers concern rejection by a model fitted to successful searches. Deadline censoring biases its estimate of the latent, all-assigned-search time ratio. More trials or people do not remove that bias. This rerun preserves the previous model and does not establish power for a censored survival model. The primary estimand, complementary completion/time-to-event analysis, covariance structure and multiplicity remain preregistration decisions.
 
 ## Scope and current design
 
-**Implemented design inputs:** two voice blocks × 32 measured trials, within participant, 25-second active-search deadline, one uncounted practice trial. The simulation uses four independently shuffled eight-step groups per block: 0, +45, −45, +90, −90, +135, −135, 180 degrees. Thus each signed step appears four times and absolute-angle counts are 4/8/8/8/4. Order is exactly counterbalanced at enrollment; dropout can unbalance retained observations. There are 168 objects per trial, held constant and therefore absent from the statistical model.
+**Implemented design inputs:** two voice blocks × 48 measured trials, within participant, 25-second active-search deadline, one uncounted practice trial. The simulation uses six independently shuffled eight-step groups per block: 0, +45, −45, +90, −90, +135, −135, 180 degrees. Thus each signed step appears six times and absolute-angle counts are 6/12/12/12/6. Order is exactly counterbalanced at enrollment; dropout can unbalance retained observations. There are 168 objects per trial, held constant and therefore absent from the statistical model.
 
-Source: `Assets/ChallengeSet.cs`, v8 `readiness-target-angle-v8-signed-steps-32-one-practice`, checked against the saved production C# allocation and schedule CSV in `work_log/receipts/2026-10-30-schedule-v8/`. The simulation reproduces its angle-allocation/shuffle distribution. It does not replay .NET random-number bytes, object identities, height placements or the practice-target trajectory. None enters this candidate outcome generator. Exact pre-cue angles are **assumed** to be nominal magnitude plus uniform ±3° jitter clipped to [0,180]; this is not measured headset error. The model fits those simulated exact angles.
+Source: `Assets/ChallengeSet.cs`, v9 `readiness-target-angle-v9-signed-steps-48-one-practice`, checked against the saved production C# allocation and schedule CSV in `work_log/receipts/2026-11-01-schedule-v9/`. The simulation reproduces its angle-allocation/shuffle distribution. It does not replay .NET random-number bytes, object identities, height placements or the practice-target trajectory. None enters this candidate outcome generator. Exact pre-cue angles are **assumed** to be nominal magnitude plus uniform ±3° jitter clipped to [0,180]; this is not measured headset error. The model fits those simulated exact angles.
 
-The Conductor thesis's `chapters/04-results.tex` Section 4.1 and `chapters/unused/planned-statistical-analysis.tex` supplied the model. The latter's 40/80 trial references are historical and are replaced here by current 32/64 counts. Earlier sensitivity/power outputs were not used as current power evidence. No thesis files, participant files, headset state or voice services were changed.
+The Conductor thesis's `chapters/04-results.tex` Section 4.1 and `chapters/unused/planned-statistical-analysis.tex` supplied the model. The latter's 40/80 trial references are historical and are replaced here by current 48/96 counts. Earlier sensitivity/power outputs were not used as current power evidence. No thesis files, participant files or voice services were changed by the analysis. Builds and conditional deployment are recorded separately.
 
 ## Model and test actually simulated
 
@@ -179,7 +245,7 @@ The Conductor thesis's `chapters/04-results.tex` Section 4.1 and `chapters/unuse
 
 `log(T) ~ 1 + V + period + order + a + a² + position + (1 | participant) + (V | participant)`
 
-with independent random intercept and slope components. Here V=−0.5 for selected/neutral and +0.5 for self-similar; period=−0.5/+0.5; order=−1/+1; a=|theta₀|/90−1; position runs linearly from −0.5 to +0.5 within each 32-trial block. The angle function is quadratic (two degrees of freedom); position is linear (one). Zero-degree trials remain included. Random intercept–slope covariance is fixed to zero to avoid estimating a weakly supported correlation at small N. The slope absorbs participant-specific voice **and block** variation; with one block per voice it cannot distinguish the two.
+with independent random intercept and slope components. Here V=−0.5 for selected/neutral and +0.5 for self-similar; period=−0.5/+0.5; order=−1/+1; a=|theta₀|/90−1; position runs linearly from −0.5 to +0.5 within each 48-trial block. The angle function is quadratic (two degrees of freedom); position is linear (one). Zero-degree trials remain included. Random intercept–slope covariance is fixed to zero to avoid estimating a weakly supported correlation at small N. The slope absorbs participant-specific voice **and block** variation; with one block per voice it cannot distinguish the two.
 
 Each dataset gets a genuine trial-level Gaussian restricted-maximum-likelihood fit. The implementation profiles residual variance and uses exact participant cross-products, Woodbury inversion and the determinant lemma for speed. It never substitutes a regression on participant mean times. Reference checks compare its likelihood, analytic gradient, fixed coefficient, GLS covariance and variance estimates to a direct dense calculation and [statsmodels MixedLM](https://www.statsmodels.org/stable/generated/statsmodels.regression.mixed_linear_model.MixedLM.html).
 
@@ -189,7 +255,7 @@ In the independent, centered random-effects generator without censoring, exp(βV
 
 ## What came from development data
 
-**Observed historical evidence:** a read-only audit of nine manifest-listed DEV_NEUTRAL headset replays from October 19–20 (runs 20–28), plus the October 23 run-30 trial summary. Source SHA-256, byte size and modification time were checked before and after reading; all ten sources were unchanged. `development-evidence.json` contains paths/hashes and scope, and `development-trials.csv` contains the extracted historical timings. No unidentified participant files were opened.
+**Observed historical evidence retained byte-for-byte from the 64-trial report (0889229), without reopening the sources:** a read-only audit of nine manifest-listed DEV_NEUTRAL headset replays from October 19–20 (runs 20–28), plus the October 23 run-30 trial summary. Source SHA-256, byte size and modification time were checked before and after reading; all ten sources were unchanged. `development-evidence.json` contains paths/hashes and scope, and `development-trials.csv` contains the extracted historical timings. No unidentified participant files were opened.
 
 - Earlier runs: {early['started']} started, {early['completed']} completed, {early['unfinished']} unfinished; median completed time **{early['median_seconds']:.3f} s**, raw log-time SD **{early['log_sd']:.3f}**, within-run-centered log SD **{early['within_run_log_sd']:.3f}** ({early['within_run_residual_df']} residual df). {early['completed_at_or_above_25']} successful searches reached/exceeded 25 s; the longest was {early['maximum_seconds']:.3f} s and was retained.
 - Run 30: {recent['started']} started / {recent['completed']} completed searches; median **{recent['median_seconds']:.3f} s**, raw log-time SD **{recent['log_sd']:.3f}** ({recent['within_run_residual_df']} residual df); {recent['completed_at_or_above_25']} reached/exceeded 25 s. The next transitioning trial had no search start and is not counted as an attempted search.
@@ -235,15 +301,15 @@ N=60 null checks (5,000 datasets per main scenario):
 
 {null_table}
 
-Total **{sims:,} generated datasets / attempted mixed-model fits**, across {len(combined):,} cells. There were **{failures:,} unresolved failed fits** (counted as non-rejections) and **{retries:,} optimizer retries**. `results.csv` contains per-cell failure reasons, boundary rates, retained participants, missing/timeout denominators, latent bias, latent coverage, power, MC SE and 95% Wilson intervals. Boundary fits are not silently discarded. Boundary rates are among successful fits; failures have no interpretable variance estimates.
+Total **{sims:,} simulation fit attempts** (including repeated seed-prefix refinements), across {len(combined):,} cells, including the 64-trial N=20 comparison. There were **{failures:,} unresolved failed fits** (counted as non-rejections) and **{retries:,} optimizer retries**. `results.csv` contains per-cell failure reasons, boundary rates, retained participants, missing/timeout denominators, latent bias, latent coverage, power, MC SE and 95% Wilson intervals. Boundary fits are not silently discarded. Boundary rates are among successful fits; failures have no interpretable variance estimates.
 
 In the main curves, slope-boundary frequency reaches **{100*most_boundary['slope_boundary_rate']:.1f}%** ({most_boundary['scenario']}, N={int(most_boundary['n_enrolled'])}, ratio {most_boundary['ratio']:.2f}). Small samples therefore often cannot distinguish a small slope variance from zero. The factorial grid additionally includes a true zero-slope case; boundary estimates there are expected and are still reported, not recoded as optimizer failures.
 
-Main curves and factorial grid use 1,000 replicates/cell: maximum power MC SE 1.58 percentage points, about ±3.1 points for a 95% interval near 50% power. Stress cells use 2,000: maximum SE 1.12 points. N=60 refinement uses 5,000: maximum SE .71 points; around 80% power it is .57 points (about ±1.1 points at 95%). These quantify simulation noise, **not uncertainty in the assumed variances**. Headline detectable reductions interpolate linearly in log ratio between adjacent refinement points; they are approximate, not exact optimization thresholds. Brackets are saved in `detectable-effects.json`. Curves show 95% Monte Carlo intervals and may wiggle slightly; no monotonic smoothing is used. Repeated cells across runs use the same seed prefix and are **not independent replications to pool**.
+N=20 refinement uses 10,000 replicates/cell for both designs. Main curves and factorial grid use 1,000 replicates/cell: maximum power MC SE 1.58 percentage points, about ±3.1 points for a 95% interval near 50% power. Stress cells use 2,000: maximum SE 1.12 points. N=60 refinement uses 5,000: maximum SE .71 points; around 80% power it is .57 points (about ±1.1 points at 95%). These quantify simulation noise, **not uncertainty in the assumed variances**. Headline detectable reductions interpolate linearly in log ratio between adjacent refinement points; they are approximate, not exact optimization thresholds. Brackets are saved in `detectable-effects.json`. Curves show 95% Monte Carlo intervals and may wiggle slightly; no monotonic smoothing is used. Repeated cells across runs use the same seed prefix and are **not independent replications to pool**.
 
 ## NASA-TLX and IMI interest/enjoyment
 
-One score per participant per voice gives **one paired difference per outcome per participant**. Sixty-four trials do not create 64 questionnaire observations. Define dz as the mean paired difference divided by the SD of paired differences (not a between-person standardized effect). Exact two-sided noncentral-t power is integrated over binomial retention, assuming normal pair differences. Assumed pair retention is .90 for both blocks × .95 for a complete pair of scores = .855, or **51.3 expected usable pairs from 60 enrollees**. No empirical score SD is available to translate dz to raw scale points.
+One score per participant per voice gives **one paired difference per outcome per participant**. Ninety-six trials do not create 96 questionnaire observations. Define dz as the mean paired difference divided by the SD of paired differences (not a between-person standardized effect). Exact two-sided noncentral-t power is integrated over binomial retention, assuming normal pair differences. Assumed pair retention is .90 for both blocks × .95 for a complete pair of scores = .855, or **51.3 expected usable pairs from 60 enrollees**. No empirical score SD is available to translate dz to raw scale points.
 
 **Open multiplicity decision:** propose a two-outcome family containing NASA-TLX total and IMI interest/enjoyment. Holm tests the smaller p at .025 and, if rejected, the other at .05. The .025 power below is a conservative per-outcome guarantee/lower bound for Holm, and unadjusted .05 power an upper bound; actual Holm power depends on both true effects and their dependence. No exact joint Holm power is claimed. A larger family would require recalculation.
 
@@ -253,7 +319,7 @@ At N=60, the conservative Holm bound reaches 80% at **dz≈{secondary_thresholds
 
 ## Reproduction and artifacts
 
-Scripts: `analysis/current_design_power.py`, `analysis/current_power_report.py`, `analysis/power_development_audit.py`; tests: `analysis/test_current_design_power.py`, `analysis/test_current_power_report.py`, and `analysis/test_power_development_audit.py`. Pinned dependencies are in `analysis/power/requirements-current-design.txt`. Set BLAS thread limits to avoid oversubscription. Fixed master seed **20261031** and SHA-256-derived per-cell seeds are stable across worker counts; each dataset is independently generated within its cell. Processes are CPU workers, not agent delegation.
+Scripts (current v9 defaults; use commit 0889229 to reproduce the archived v8 report): `analysis/current_design_power.py`, `analysis/current_power_report.py`, `analysis/power_development_audit.py`; tests: `analysis/test_current_design_power.py`, `analysis/test_current_power_report.py`, and `analysis/test_power_development_audit.py`. Pinned dependencies are in `analysis/power/requirements-current-design.txt`. Set BLAS thread limits to avoid oversubscription. Fixed master seed **20261031** and SHA-256-derived per-cell seeds are stable across worker counts; each dataset is independently generated within its cell. Processes are CPU workers, not agent delegation.
 
 ```sh
 python -m venv /tmp/gaze-power-reproduce
@@ -266,18 +332,21 @@ $PY analysis/current_design_power.py --out "$OUT" --kind curves --repetitions 10
 $PY analysis/current_design_power.py --out "$OUT" --kind grid --repetitions 1000 --workers 6
 $PY analysis/current_design_power.py --out "$OUT" --kind stress --repetitions 2000 --workers 6
 $PY analysis/current_design_power.py --out "$OUT" --kind precision --repetitions 5000 --workers 6
-$PY analysis/power_development_audit.py --out "$OUT"
+$PY analysis/current_design_power.py --out "$OUT" --kind n20 --repetitions 10000 --workers 6
+$PY analysis/current_design_power.py --out "$OUT/baseline64" --kind n20 --block-size 32 --repetitions 10000 --workers 6
+$PY analysis/power/current-design-96-20261101/refine-enrollment.py --repo "$PWD" --out "$OUT" --workers 2
+# Copy frozen development-evidence.json and development-trials.csv from the 0889229 archive.
 $PY analysis/current_power_report.py --out "$OUT"
 $PY -m unittest discover -s analysis -p 'test_current*power*.py' -v
 $PY -m unittest discover -s analysis -p 'test_power_development_audit.py' -v
 ```
 
-Raw development source paths are local and read-only; the simulation is independent of them. Without those files, copy the frozen `development-evidence.json` into the new output directory to render the report, clearly retaining its historical provenance. `*-run.json` records versions, seed, wall time and simulation-source hash. `input-provenance.json` records the runtime base commit and hashes of the schedule and thesis plan read for this task. Run wall times (some jobs overlapped): {', '.join(r['kind']+' '+str(round(r['seconds'],1))+' s' for r in runs)}. No GPU, microphone or headset is needed.
+Raw development source paths are local and read-only; the simulation is independent of them. Without those files, copy the frozen `development-evidence.json` into the new output directory to render the report, clearly retaining its historical provenance. `*-run.json` records versions, seed, wall time and simulation-source hash. `input-provenance.json` records the runtime base commit, current schedule hashes and the inherited 0889229 input provenance. Run wall times (some jobs overlapped): {', '.join(r['kind']+' '+str(round(r['seconds'],1))+' s' for r in runs)}. No GPU, microphone or headset is needed.
 
 `results.csv` consolidates all trial-level simulations; individual run CSVs preserve their own cells. `secondary-power.csv` contains the paired-score results. `power-curves.png` and `.pdf` are the same white-background figure. `development-evidence.json` and `development-trials.csv` keep the observed inputs distinct from synthetic outputs. Validation receipts and the local commit are recorded in the coordination DONE post and work log. Nothing was pushed or published to Overleaf.
 """
     (out/"REPORT.md").write_text(report)
-    manifest = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in out.iterdir()
+    manifest = {str(p.relative_to(out)): hashlib.sha256(p.read_bytes()).hexdigest() for p in out.rglob("*")
                 if p.is_file() and p.name != "artifact-sha256.json"}
     (out/"artifact-sha256.json").write_text(json.dumps(manifest, indent=2, sort_keys=True)+"\n")
     print(headline_table)

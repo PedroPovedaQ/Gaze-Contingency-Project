@@ -21,7 +21,7 @@ class VoiceSensitivityTests(unittest.TestCase):
     def test_current_signed_step_and_legacy_geometry_allocations(self):
         config = self.config()
         validate(config)
-        for size, quota in ((32, [4,8,8,8,4]), (40, [8,8,8,8,8])):
+        for size, quota in ((48, [6,12,12,12,6]), (32, [4,8,8,8,4]), (40, [8,8,8,8,8])):
             draws = theta_categories(np.random.default_rng(17), (3,2), size)
             for block in draws.reshape(-1,size):
                 self.assertEqual(np.bincount(block).tolist(), quota)

@@ -3,7 +3,7 @@ import unittest
 
 from scipy import stats
 
-from current_power_report import detectable, enrolled_paired_power, paired_power
+from current_power_report import detectable, enrolled_paired_power, paired_power, validate_design_inputs
 
 
 class CurrentPowerReportTests(unittest.TestCase):
@@ -27,6 +27,22 @@ class CurrentPowerReportTests(unittest.TestCase):
         cutoff = stats.t.isf(.025, 29)
         expected = stats.nct.cdf(-cutoff, 29, .5*30**.5)+stats.nct.sf(cutoff, 29, .5*30**.5)
         self.assertAlmostEqual(paired_power(30, .5, .05), expected, places=10)
+
+    def test_report_rejects_mixed_schedule_or_under_refined_comparison(self):
+        import copy
+        rows = [dict(scenario=s, n_enrolled=20, ratio=r, repetitions=10000, trials_per_block=48)
+                for s in ["optimistic", "middle", "pessimistic"] for r in [1., .97, .95, .93, .9, .85]]
+        baseline = [dict(r, trials_per_block=32) for r in rows]
+        validate_design_inputs({"n20": rows}, baseline)
+        for field, value in [("trials_per_block", 32), ("repetitions", 1000), ("n_enrolled", 60)]:
+            bad = copy.deepcopy(rows)
+            bad[0][field] = value
+            with self.assertRaises(ValueError):
+                validate_design_inputs({"n20": bad}, baseline)
+        with self.assertRaises(ValueError):
+            validate_design_inputs({"n20": rows}, rows)
+        with self.assertRaises(ValueError):
+            validate_design_inputs({"n20": rows}, baseline[:-1])
 
     def test_threshold_does_not_extrapolate(self):
         rows = [dict(scenario="x", ratio=1., power=.05), dict(scenario="x", ratio=.9, power=.8)]

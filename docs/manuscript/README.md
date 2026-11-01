@@ -1,8 +1,8 @@
 # Historical planned-study manuscript
 
-**Implemented — October 30, 2026:** the current schedule is 64 measured trials (32 per voice), plus one practice: four per signed step, absolute-angle counts 4/8/8/8/4, and 16 above/16 below with two of each per signed step. All 24 identities occur per block; eight repeat. See [current schedule](../balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v8.
+**Implemented — November 1, 2026:** the current schedule is 96 measured trials (48 per voice), plus one practice: six per signed step, absolute-angle counts 6/12/12/12/6, and 24 above/24 below with three of each per signed step. Each of the 24 identities occurs exactly twice per block. See [current schedule](../balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v9.
 
-**Superseded draft — October 20, 2026.** The 2×2 / 64-trial / N=48 design below is historical. Current working sources are in `../protocol/overleaf/`: two voice conditions, 40 trials each, one practice in the first assigned voice and final retrospective questionnaires. Participant N requires new simulation under the planned trial-level model. The shared `references.bib` is synchronized to the 62-entry working library; that does not update this old manuscript’s design claims.
+**Superseded draft — October 20, 2026.** The 2×2 / 64-trial / N=48 design below is historical. Current working sources are in `../protocol/overleaf/`: two voice conditions, 48 trials each, one practice in the first assigned voice and final retrospective questionnaires. Participant N requires new simulation under the planned trial-level model. The shared `references.bib` is synchronized to the 62-entry working library; that does not update this old manuscript’s design claims.
 
 `gaze-guidance-planned-study.tex` is the IEEE-style planned-study manuscript for the proposed eight-plane, 360-degree experiment. It intentionally reports no empirical results.
 

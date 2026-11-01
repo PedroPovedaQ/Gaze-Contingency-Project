@@ -16,14 +16,14 @@ import current_design_power as power
 class CurrentPowerTests(unittest.TestCase):
     def setUp(self):
         self.x, self.y, self.obs, self.diag = power.generate(
-            np.random.default_rng(123), 12, .90, power.MAIN[1])
+            np.random.default_rng(123), 12, .90, power.MAIN[1], 32)
 
     def test_schedule_matches_production_allocation_and_groups(self):
         path = Path(__file__).resolve().parents[1]/"work_log/receipts/2026-10-30-schedule-v8/synthetic-trial-schedule.csv"
         with path.open() as stream:
             rows = list(csv.DictReader(stream))
         expected = sorted(int(r["signed_theta_deg"]) for r in rows[:32])
-        for block in power.schedule(np.random.default_rng(9), 100).reshape(-1, 32):
+        for block in power.schedule(np.random.default_rng(9), 100, 32).reshape(-1, 32):
             self.assertEqual(sorted(block), expected)
             for group in block.reshape(4, 8):
                 self.assertEqual(sorted(group), sorted(power.STEPS*45))
@@ -40,6 +40,30 @@ class CurrentPowerTests(unittest.TestCase):
                          d["incomplete_trials"], d["exposed_trials"])
         self.assertTrue(np.all(self.y[self.obs] < np.log(25)))
         self.assertEqual(self.obs.sum(), d["successful_trials"])
+
+    def test_96_trial_schedule_and_denominators(self):
+        from collections import Counter
+        for block in power.schedule(np.random.default_rng(9), 100).reshape(-1, 48):
+            self.assertEqual(Counter(block), Counter({a: 6 for a in power.STEPS * 45}))
+            for group in block.reshape(6, 8):
+                self.assertEqual(sorted(group), sorted(power.STEPS * 45))
+        x, y, obs, d = power.generate(np.random.default_rng(123), 20, .9, power.MAIN[1])
+        self.assertEqual(x.shape, (20, 96, 7))
+        self.assertEqual(np.sum(x[:, 0, 1] > 0), 10)
+        self.assertTrue(np.all(x[:, :48, 1] == -x[:, 48:, 1]))
+        self.assertEqual(d["exposed_trials"], 96*20-48*d["dropped_participants"])
+        self.assertEqual(d["successful_trials"]+d["timeout_neutral"]+d["timeout_self"]+
+                         d["incomplete_trials"], d["exposed_trials"])
+        self.assertTrue(np.all(y[obs] < np.log(25)))
+
+    def test_v9_simulation_matches_exported_production_schedule(self):
+        path = Path(__file__).resolve().parents[1]/"work_log/receipts/2026-11-01-schedule-v9/synthetic-trial-schedule.csv"
+        with path.open() as stream:
+            rows = list(csv.DictReader(stream))
+        self.assertEqual(len(rows), 96)
+        expected = sorted(int(r["signed_theta_deg"]) for r in rows[:48])
+        for block in power.schedule(np.random.default_rng(9), 30).reshape(-1, 48):
+            self.assertEqual(sorted(block), expected)
 
     def test_dense_likelihood_and_gradient(self):
         q, m = power.sufficient(self.x, self.y, self.obs)
@@ -104,7 +128,7 @@ class CurrentPowerTests(unittest.TestCase):
     def test_total_second_block_dropout_is_explicit_fit_failure(self):
         x, y, obs, d = power.generate(np.random.default_rng(5), 12, .9,
                                        replace(power.MAIN[1], dropout=1.))
-        self.assertFalse(obs[:, 32:].any())
+        self.assertFalse(obs[:, 48:].any())
         self.assertEqual(d["paired_participants"], 0)
         self.assertFalse(power.fit(x, y, obs, d["paired_participants"])["ok"])
 

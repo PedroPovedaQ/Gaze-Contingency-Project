@@ -16,7 +16,8 @@ class DesktopRunExportTests(unittest.TestCase):
         self.output = self.fixture.root / "exports"
 
     def test_current_and_legacy_schedule_metadata_survive_export(self):
-        for version,size in (("readiness-target-angle-v8-signed-steps-32-one-practice",32),
+        for version,size in (("readiness-target-angle-v9-signed-steps-48-one-practice",48),
+            ("readiness-target-angle-v8-signed-steps-32-one-practice",32),
                              ("readiness-target-angle-v7-one-practice",40)):
             self.fixture.summary.update(challenge_set=version,rounds_per_block=size,nominal_total_rounds=2*size)
             for i,record in enumerate(self.fixture.summary['objectives']):

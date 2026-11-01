@@ -17,7 +17,7 @@ import numpy as np
 import scipy
 from scipy import optimize, special, stats
 
-VERSION = 'voice-sensitivity-proposal-v2-signed-32'
+VERSION = 'voice-sensitivity-proposal-v3-signed-48'
 
 
 def paired_power(n, dz, alpha):
@@ -70,7 +70,7 @@ def recruitment_for_completion(complete_n, retention, assurance):
 
 
 def validate(config):
-    if config.get('version') not in (VERSION, 'voice-sensitivity-proposal-v1'):
+    if config.get('version') not in (VERSION, 'voice-sensitivity-proposal-v2-signed-32', 'voice-sensitivity-proposal-v1'):
         raise ValueError('Unsupported sensitivity configuration')
     for key in ('seed', 'replications'):
         if type(config[key]) is not int or config[key] < (1 if key == 'replications' else 0):
@@ -78,9 +78,11 @@ def validate(config):
     for key in ('participants', 'trials_per_voice', 'time_ratios', 'benchmark_alphas', 'retention_probabilities', 'scenarios'):
         if not isinstance(config[key], list) or not config[key]: raise ValueError('Empty ' + key)
     if any(type(n) is not int or n < 6 for n in config['participants']): raise ValueError('At least six participants per scenario')
-    if any(type(m) is not int or m < 5 or (m % 5 and not (m == 32 and config['version'] == VERSION))
+    signed_counts = {VERSION: (32, 48), 'voice-sensitivity-proposal-v2-signed-32': (32,),
+                     'voice-sensitivity-proposal-v1': ()}[config['version']]
+    if any(type(m) is not int or m < 5 or (m % 5 and m not in signed_counts)
            for m in config['trials_per_voice']):
-        raise ValueError('Trials must be 32 for v8 or a legacy multiple of five')
+        raise ValueError('Trials must be 48 for v9, 32 for v8 or a legacy multiple of five')
     if len(config['theta_log_effects']) != 5: raise ValueError('Five theta effects required')
     numeric = ['baseline_seconds','participant_intercept_sd','period_log_effect','period_person_sd','within_block_log_change','minimum_block_fraction','alpha','target_power']
     if any(type(config[k]) not in (int,float) or not math.isfinite(config[k]) for k in numeric): raise ValueError('Non-finite parameter')
@@ -103,8 +105,8 @@ def validate(config):
 
 
 def theta_categories(rng, shape, trials):
-    """v8 groups have eight signed steps; legacy benchmarks have five magnitudes."""
-    categories = np.array([0, 1, 1, 2, 2, 3, 3, 4] if trials == 32 else [0, 1, 2, 3, 4])
+    """v8/v9 groups have eight signed steps; legacy benchmarks have five magnitudes."""
+    categories = np.array([0, 1, 1, 2, 2, 3, 3, 4] if trials in (32, 48) else [0, 1, 2, 3, 4])
     order = rng.random((*shape, trials // len(categories), len(categories))).argsort(axis=-1)
     return categories[order].reshape(*shape, trials)
 

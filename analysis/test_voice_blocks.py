@@ -8,7 +8,7 @@ from voice_blocks import voice_block_reports, pairing_exclusions, write_voice_bl
 
 
 class VoiceBlockTests(unittest.TestCase):
-    def current_run(self, root, participant='P001', reverse=False, debug=0, run=1, block_size=32):
+    def current_run(self, root, participant='P001', reverse=False, debug=0, run=1, block_size=48):
         folder=Path(root, participant, f'run_{run:03d}')
         folder.mkdir(parents=True)
         order='selfsimilar_then_neutral' if reverse else 'neutral_then_selfsimilar'
@@ -31,11 +31,11 @@ class VoiceBlockTests(unittest.TestCase):
             self.current_run(directory)
             self.current_run(directory, participant='P002', reverse=True)
             rows=load_all_summaries(Path(directory))
-            self.assertEqual(set(rows.rounds_per_block),{32})
-            self.assertEqual(set(rows.nominal_total_rounds),{64})
+            self.assertEqual(set(rows.rounds_per_block),{48})
+            self.assertEqual(set(rows.nominal_total_rounds),{96})
             blocks,pairs=voice_block_reports(rows)
             self.assertEqual(len(blocks),4)
-            self.assertEqual(set(blocks.trials),{32})
+            self.assertEqual(set(blocks.trials),{48})
             self.assertEqual(list(pairs.self_minus_neutral_seconds),[-2,-2])
             self.assertTrue(pairing_exclusions(rows).empty)
             output=Path(directory,'reports'); output.mkdir()
@@ -55,10 +55,10 @@ class VoiceBlockTests(unittest.TestCase):
 
     def test_debug_completion_cannot_substitute_for_a_full_pair(self):
         with tempfile.TemporaryDirectory() as directory:
-            self.current_run(directory,debug=37)
+            self.current_run(directory,debug=53)
             rows=load_all_summaries(Path(directory))
             blocks,pairs=voice_block_reports(rows)
-            self.assertEqual(set(blocks.trials),{32,5})
+            self.assertEqual(set(blocks.trials),{48,5})
             self.assertTrue(pairs.empty)
             self.assertIn('debug run',pairing_exclusions(rows).iloc[0].reason)
 
@@ -92,9 +92,9 @@ class VoiceBlockTests(unittest.TestCase):
             self.current_run(directory,run=1)
             self.current_run(directory,run=2)
             rows=load_all_summaries(Path(directory))
-            partial=rows[((rows.run_number==1)&(rows.round_index<32))|
-                         ((rows.run_number==2)&(rows.round_index>=32))]
-            self.assertEqual(len(partial),64)
+            partial=rows[((rows.run_number==1)&(rows.round_index<48))|
+                         ((rows.run_number==2)&(rows.round_index>=48))]
+            self.assertEqual(len(partial),96)
             self.assertTrue(voice_block_reports(partial)[1].empty)
             self.assertEqual(len(pairing_exclusions(partial)),2)
 

@@ -1,0 +1,10 @@
+Selected VIVE Focus Vision: 192.168.1.208:5555
+Performing Streamed Install
+Success
+Local MiniLM ready; headset connection restored.
+Starting: Intent { cmp=com.DefaultCompany.MixedRealityTemplate/com.unity3d.player.UnityPlayerGameActivity }
+Status: ok
+LaunchState: UNKNOWN (0)
+Activity: com.DefaultCompany.MixedRealityTemplate/com.unity3d.player.UnityPlayerGameActivity
+WaitTime: 3017
+Complete

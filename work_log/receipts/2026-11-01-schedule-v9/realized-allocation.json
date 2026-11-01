@@ -1,0 +1,120 @@
+{
+  "participant": "SCHEDULE_V9_SYNTHETIC",
+  "seed": 1535608244,
+  "schedule_version": "readiness-target-angle-v9-signed-steps-48-one-practice",
+  "validator_errors": [],
+  "allocation": [
+    {
+      "block": 0,
+      "signed_theta": 0,
+      "total": 6,
+      "above": 3,
+      "below": 3
+    },
+    {
+      "block": 0,
+      "signed_theta": 45,
+      "total": 6,
+      "above": 3,
+      "below": 3
+    },
+    {
+      "block": 0,
+      "signed_theta": -45,
+      "total": 6,
+      "above": 3,
+      "below": 3
+    },
+    {
+      "block": 0,
+      "signed_theta": 90,
+      "total": 6,
+      "above": 3,
+      "below": 3
+    },
+    {
+      "block": 0,
+      "signed_theta": -90,
+      "total": 6,
+      "above": 3,
+      "below": 3
+    },
+    {
+      "block": 0,
+      "signed_theta": 135,
+      "total": 6,
+      "above": 3,
+      "below": 3
+    },
+    {
+      "block": 0,
+      "signed_theta": -135,
+      "total": 6,
+      "above": 3,
+      "below": 3
+    },
+    {
+      "block": 0,
+      "signed_theta": 180,
+      "total": 6,
+      "above": 3,
+      "below": 3
+    },
+    {
+      "block": 1,
+      "signed_theta": 0,
+      "total": 6,
+      "above": 3,
+      "below": 3
+    },
+    {
+      "block": 1,
+      "signed_theta": 45,
+      "total": 6,
+      "above": 3,
+      "below": 3
+    },
+    {
+      "block": 1,
+      "signed_theta": -45,
+      "total": 6,
+      "above": 3,
+      "below": 3
+    },
+    {
+      "block": 1,
+      "signed_theta": 90,
+      "total": 6,
+      "above": 3,
+      "below": 3
+    },
+    {
+      "block": 1,
+      "signed_theta": -90,
+      "total": 6,
+      "above": 3,
+      "below": 3
+    },
+    {
+      "block": 1,
+      "signed_theta": 135,
+      "total": 6,
+      "above": 3,
+      "below": 3
+    },
+    {
+      "block": 1,
+      "signed_theta": -135,
+      "total": 6,
+      "above": 3,
+      "below": 3
+    },
+    {
+      "block": 1,
+      "signed_theta": 180,
+      "total": 6,
+      "above": 3,
+      "below": 3
+    }
+  ]
+}

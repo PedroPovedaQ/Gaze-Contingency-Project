@@ -411,9 +411,67 @@ class StudyValidationTests(unittest.TestCase):
                     self.write_schedule(root,rows)
                     self.assertTrue(validator.validate_schedule(root,summary),mutation)
 
+    def v9_fixture(self, root, reverse=False, quick=False, debug=0, clone=False):
+        summary, legacy = self.v7_fixture(root, reverse, quick, 0, clone)
+        summary.update(challenge_set="readiness-target-angle-v9-signed-steps-48-" +
+                       ("quick-origin0" if quick else "one-practice"),
+                       rounds_per_block=48, nominal_total_rounds=96, debug_round_override=debug,
+                       total_rounds=min(48 if quick else 96, debug or 96),
+                       direction_policy="independent-blocks-six-per-signed-step-v1",
+                       height_assignment_policy="three-above-three-below-per-signed-step-v1",
+                       target_identity_policy="matched-counts-shuffled-24-twice-v1")
+        rows, start = [], 0 if quick else 3
+        angles = [0,45,-45,90,-90,135,-135,180]
+        for i in range(96):
+            block, local = divmod(i,48)
+            step, copy = local % 8, local // 8
+            signed = angles[step]
+            target = (start + signed // 45) % 8
+            row = dict(legacy[block*40+local%24])
+            row.update(trial_index=i, cross_offset_fraction=0 if i==0 else .12, trial_in_block=local, angle_pair=local, layout_seed=i+1,
+                       schedule_version=summary['challenge_set'],
+                       **{k:summary[k] for k in ('direction_policy','height_assignment_policy','target_identity_policy')},
+                       target_height_fraction=.7 if copy < 3 else .3,
+                       start_plane=start,target_plane=target,start_wall_azimuth_deg=start*45,wall_azimuth_deg=target*45,
+                       signed_theta_deg=signed,absolute_theta_deg=abs(signed),enabled_in_run=int(i<summary['total_rounds']))
+            rows.append(row); start=target
+        summary['objectives']=[dict(index=r['trial_index'],shape=r['target_shape'],color=r['target_color'],
+            voice_condition=r['voice_condition'],outcome='not_started',search_started_at=-1,
+            **{k:r[k] for k in ('start_plane','target_plane','signed_theta_deg','absolute_theta_deg','angle_pair','layout_seed')})
+            for r in rows[:summary['total_rounds']]]
+        self.write_schedule(root,rows)
+        return summary,rows
+
+    def test_v9_full_recordings_both_orders_quick_modes_and_debug(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            for reverse in (False,True):
+                for quick,clone in ((False,False),(True,False),(True,True)):
+                    for debug in (0,7,47,48,49,100):
+                        self.v7_recording(root,reverse,quick,clone,debug,version=9)
+                        self.assertEqual(validator.validate(root),[])
+
+    def test_v9_rejects_old_counts_and_imbalanced_allocations(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            for mutation in ('count','height','signed_height','identity','group','version','snapshot'):
+                with self.subTest(mutation=mutation):
+                    summary,rows=self.v9_fixture(root)
+                    if mutation=='count': summary['rounds_per_block']=32
+                    if mutation=='height': rows[0]['target_height_fraction']=.3
+                    if mutation=='signed_height':
+                        # Preserve 24/24 overall while making a signed step 4/2.
+                        rows[24]['target_height_fraction']=.7; rows[1]['target_height_fraction']=.3
+                    if mutation=='identity': rows[1]['target_shape']=rows[0]['target_shape']; rows[1]['target_color']=rows[0]['target_color']
+                    if mutation=='group': rows[0],rows[9]=rows[9],rows[0]
+                    if mutation=='version': summary['challenge_set']='readiness-target-angle-v7-one-practice'
+                    if mutation=='snapshot': summary['objectives'][0]['search_started_at']=10
+                    self.write_schedule(root,rows)
+                    self.assertTrue(validator.validate_schedule(root,summary),mutation)
+
     def v7_recording(self, root, reverse=False, quick=False, clone=False, debug=0, version=7):
         from test_theta_snapshot import snapshot
-        plan, rows = (self.v8_fixture if version==8 else self.v7_fixture)(root, reverse, quick, debug, clone)
+        plan, rows = ({9: self.v9_fixture, 8: self.v8_fixture, 7: self.v7_fixture}[version])(root, reverse, quick, debug, clone)
         count = plan['total_rounds']
         summary, events = self.completed_fixture(root, count=count, block_size=plan['rounds_per_block'], object_count=168, reverse=reverse)
         planned_records = plan.pop('objectives')

@@ -1,9 +1,9 @@
 {
-  "version": "voice-sensitivity-proposal-v2-signed-32",
+  "version": "voice-sensitivity-proposal-v3-signed-48",
   "seed": 20261001,
   "replications": 2000,
   "participants": [15, 20, 30, 48],
-  "trials_per_voice": [10, 32],
+  "trials_per_voice": [10, 48],
   "time_ratios": [1.0, 0.95, 0.9],
   "alpha": 0.05,
   "benchmark_alphas": [0.05, 0.025],

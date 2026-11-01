@@ -1,0 +1,9 @@
+{
+  "analysis/current_design_power.py": "53ad1f5d2ba9f9754ba75d310a7c8c5b844af3e4bfe57b6d7087a41be375bcd3",
+  "analysis/current_power_report.py": "da3c473a77b39cff4139a1bd5c4fbbbdbda994113d19fcf798e61c2300644e1d",
+  "analysis/test_current_design_power.py": "cb9d9982f69233370c72cb00cee3d15e1d9107970e4947da243a27634341a8d2",
+  "analysis/test_current_power_report.py": "71a1c04b7988914be3e166ecb1c74b4498d0e751e53333b1b761449ba869fc7c",
+  "analysis/power/requirements-current-design.txt": "d7e5ce65458cd612e78e93a87c378e9107c1334b198dbb5ecf9cc97b447c16b0",
+  "analysis/power/current-design-96-20261101/refine-enrollment.py": "d2b935a63c1f12db3de3f9eaebc81f93c2b909ddc9c709fd810edb6e0b43c0b0",
+  "Assets/ChallengeSet.cs": "0d913fb0eca3b3b8548d6b1f8ff620c8d314305640e2fd2832988b8fdb4a084d"
+}

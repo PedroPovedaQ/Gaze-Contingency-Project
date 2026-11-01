@@ -1,6 +1,6 @@
 # Final-survey timing and protocol reconciliation
 
-**Implemented — October 30, 2026:** the current schedule is 64 measured trials (32 per voice), plus one practice: four per signed step, absolute-angle counts 4/8/8/8/4, and 16 above/16 below with two of each per signed step. All 24 identities occur per block; eight repeat. See [current schedule](../balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v8.
+**Implemented — November 1, 2026:** the current schedule is 96 measured trials (48 per voice), plus one practice: six per signed step, absolute-angle counts 6/12/12/12/6, and 24 above/24 below with three of each per signed step. Each of the 24 identities occurs exactly twice per block. See [current schedule](../balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v9.
 
 **Protocol proposal / user decision — October 20, 2026.** One practice trial precedes two counterbalanced 40-trial voice blocks. Retain a between-block rest break and immediate comfort/tracking checks. Remove the between-block questionnaire; administer the condition-specific questionnaires at the final survey after both blocks. Baseline demographics/SSQ and setup voice auditions remain before the task. **Qualtrics synchronization is on hold.** Runtime verification is recorded separately below; this is not study approval.
 

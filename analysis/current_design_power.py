@@ -22,7 +22,7 @@ import numpy as np
 import scipy
 from scipy import optimize, special, stats
 
-VERSION = "current-design-lmm-v1"
+VERSION = "current-design-lmm-v2-schedule-size"
 SEED = 20261031
 STEPS = np.array([0, 1, -1, 2, -2, 3, -3, 4])
 
@@ -46,48 +46,51 @@ MAIN = [Scenario("optimistic", .35, .15, .10, 10., .02, .05),
         Scenario(), Scenario("pessimistic", .80, .50, .35, 16., .10, .20)]
 
 
-def schedule(rng, n):
+def schedule(rng, n, block_size=48):
     """Same signed-step shuffle law as ChallengeSet.Generate, not its PRNG bytes.
 
-    Four independent permutations of eight steps per block. Height/identity/layout
+    Independent permutations of eight steps per block. Height/identity/layout
     draws do not enter this outcome model; practice is not a measured trial.
     """
-    return STEPS[rng.random((n, 2, 4, 8)).argsort(axis=-1)].reshape(n, 64) * 45
+    if block_size not in (32, 48):
+        raise ValueError("Supported schedules have 32 or 48 trials per block")
+    return STEPS[rng.random((n, 2, block_size // 8, 8)).argsort(axis=-1)].reshape(n, 2 * block_size) * 45
 
 
-def generate(rng, n, ratio, s):
+def generate(rng, n, ratio, s, block_size=48):
     if n < 12 or n % 2 or not 0 < ratio <= 1:
         raise ValueError("Even enrollment >=12 and 0 < time ratio <=1 required")
-    signed = schedule(rng, n)
+    signed = schedule(rng, n, block_size)
+    total = 2 * block_size
     # Assumed exact-angle jitter, not observed calibration/geometry accuracy.
     theta = np.clip(abs(signed) + rng.uniform(-3, 3, signed.shape), 0, 180)
     a = theta / 90 - 1
-    period = np.broadcast_to(np.repeat([-.5, .5], 32), (n, 64))
+    period = np.broadcast_to(np.repeat([-.5, .5], block_size), (n, total))
     order = np.tile([-1., 1.], n // 2)
     rng.shuffle(order)
     voice = period * order[:, None]  # +.5 self-similar; -.5 selected/neutral
-    position = np.broadcast_to(np.tile(np.linspace(-.5, .5, 32), 2), (n, 64))
+    position = np.broadcast_to(np.tile(np.linspace(-.5, .5, block_size), 2), (n, total))
     x = np.stack([np.ones_like(a), voice, period,
-                  np.broadcast_to(order[:, None], (n, 64)), a, a*a, position], axis=-1)
+                  np.broadcast_to(order[:, None], (n, total)), a, a*a, position], axis=-1)
     z = rng.normal(size=(n, 2))
     intercept = s.intercept_sd * z[:, 0]
     slope = s.slope_sd * (s.re_correlation*z[:, 0] +
                          math.sqrt(1-s.re_correlation**2)*z[:, 1])
-    noise = rng.normal(0, s.residual_sd, (n, 2, 32))
-    for j in range(1, 32):
+    noise = rng.normal(0, s.residual_sd, (n, 2, block_size))
+    for j in range(1, block_size):
         noise[:, :, j] = s.ar1*noise[:, :, j-1] + math.sqrt(1-s.ar1**2)*noise[:, :, j]
     beta = [math.log(s.median_seconds), math.log(ratio), -.08, 0., .30, -.08, -.10]
-    y = x @ beta + intercept[:, None] + slope[:, None]*voice + noise.reshape(n, 64)
+    y = x @ beta + intercept[:, None] + slope[:, None]*voice + noise.reshape(n, total)
     dropout = rng.random(n) < s.dropout
-    exposed = np.ones((n, 64), dtype=bool)
-    exposed[dropout, 32:] = False  # first-block observations remain eligible
+    exposed = np.ones((n, total), dtype=bool)
+    exposed[dropout, block_size:] = False  # first-block observations remain eligible
     missing_prob = special.expit(special.logit(s.trial_loss) +
                                  s.informative_loss*(y-math.log(s.median_seconds)))
     incomplete = exposed & (rng.random(y.shape) < missing_prob)
     attempted = exposed & ~incomplete
     timeout = attempted & (y >= math.log(s.deadline))
     observed = attempted & ~timeout
-    diag = dict(paired_participants=int((observed[:, :32].any(1) & observed[:, 32:].any(1)).sum()),
+    diag = dict(paired_participants=int((observed[:, :block_size].any(1) & observed[:, block_size:].any(1)).sum()),
                 participants_with_data=int(observed.any(1).sum()),
                 successful_trials=int(observed.sum()), dropped_participants=int(dropout.sum()),
                 incomplete_trials=int(incomplete.sum()), exposed_trials=int(exposed.sum()))
@@ -183,7 +186,8 @@ def wilson(k, n):
 
 
 def run_cell(task):
-    s, n, ratio, repetitions, seed = task
+    s, n, ratio, repetitions, seed, *design = task
+    block_size = design[0] if design else 48
     # Stable per-cell seed; invariant to process count/task ordering.
     key = json.dumps([asdict(s), n, ratio, seed], sort_keys=True).encode()
     rng = np.random.default_rng(int.from_bytes(hashlib.sha256(key).digest()[:8], "little"))
@@ -191,7 +195,7 @@ def run_cell(task):
     fits, errors = [], {}
     rejects = retries = 0
     for _ in range(repetitions):
-        x, y, obs, d = generate(rng, n, ratio, s)
+        x, y, obs, d = generate(rng, n, ratio, s, block_size)
         for k, v in d.items():
             totals[k] = totals.get(k, 0)+v
         f = fit(x, y, obs, d["paired_participants"])
@@ -203,7 +207,7 @@ def run_cell(task):
             errors[f["error"]] = errors.get(f["error"], 0)+1
     power = rejects/repetitions  # failed fits remain non-rejections
     lo, hi = wilson(rejects, repetitions)
-    out = dict(scenario=s.name, n_enrolled=n, ratio=ratio, repetitions=repetitions,
+    out = dict(scenario=s.name, n_enrolled=n, ratio=ratio, repetitions=repetitions, trials_per_block=block_size,
                power=power, mcse=math.sqrt(power*(1-power)/repetitions),
                power_low=lo, power_high=hi, successful_fits=len(fits),
                failed_fits=repetitions-len(fits), optimizer_retries=retries,
@@ -231,6 +235,8 @@ def tasks(kind, repetitions, seed):
     if kind == "curves":
         return [(s, n, r, repetitions, seed) for s in MAIN
                 for n in range(12, 61, 2) for r in ratios]
+    if kind == "n20":
+        return [(s, 20, r, repetitions, seed) for s in MAIN for r in ratios]
     if kind == "grid":
         return [(Scenario(f"grid-r{r}-i{i}-v{v}", r, i, v), 60, ratio, repetitions, seed)
                 for r in [.35, .55, .80] for i in [.15, .30, .50]
@@ -257,7 +263,8 @@ def write_csv(path, rows):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--out", type=Path, required=True)
-    p.add_argument("--kind", choices=["curves", "grid", "stress", "precision"], default="curves")
+    p.add_argument("--kind", choices=["curves", "grid", "stress", "precision", "n20"], default="curves")
+    p.add_argument("--block-size", type=int, choices=[32, 48], default=48)
     p.add_argument("--repetitions", type=int, default=2000)
     p.add_argument("--workers", type=int, default=6)
     p.add_argument("--seed", type=int, default=SEED)
@@ -269,7 +276,7 @@ def main():
     if target.exists():
         p.error(f"Refusing to overwrite {target}")
     start = time.monotonic()
-    jobs = tasks(args.kind, args.repetitions, args.seed)
+    jobs = [task + (args.block_size,) for task in tasks(args.kind, args.repetitions, args.seed)]
     rows = []
     with ProcessPoolExecutor(args.workers) as pool:
         for row in pool.map(run_cell, jobs, chunksize=1):
@@ -280,6 +287,7 @@ def main():
     write_csv(target, rows)
     target.with_suffix(".partial.csv").unlink(missing_ok=True)
     metadata = dict(version=VERSION, kind=args.kind, seed=args.seed, repetitions=args.repetitions,
+                    trials_per_block=args.block_size,
                     workers=args.workers, seconds=time.monotonic()-start, cells=len(rows),
                     python=platform.python_version(), numpy=np.__version__, scipy=scipy.__version__,
                     script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),

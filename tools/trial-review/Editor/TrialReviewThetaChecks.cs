@@ -71,6 +71,7 @@ public static class TrialReviewThetaChecks
     static void CheckScheduleVersions(TrialReplayTimeline demo)
     {
         foreach (var version in new[] { ("readiness-target-angle-v7-one-practice",40),
+            ("readiness-target-angle-v9-signed-steps-48-one-practice",48),
             ("readiness-target-angle-v8-signed-steps-32-one-practice",32) })
         {
             string root=Path.Combine(Path.GetTempPath(),"review-schedule-"+Guid.NewGuid().ToString("N"));
@@ -102,6 +103,6 @@ public static class TrialReviewThetaChecks
             }
             finally{Directory.Delete(root,true);}
         }
-        Debug.Log("TRIAL_REVIEW_SCHEDULE_PASS v7 39/40 and v8 31/32 boundaries retain recorded versions in replay and export");
+        Debug.Log("TRIAL_REVIEW_SCHEDULE_PASS v7 39/40, v8 31/32 and v9 47/48 boundaries retain recorded versions in replay and export");
     }
 }

@@ -1,0 +1,9 @@
+{
+  "serial": "192.168.1.208:5555",
+  "checked_epoch": 1793538953.0966568,
+  "phase": "paused",
+  "status_updated_epoch": 1793161950.889783,
+  "participant_assignment_present": false,
+  "active_session_detected": false,
+  "activity_stopped": true
+}

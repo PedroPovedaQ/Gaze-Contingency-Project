@@ -1,0 +1,30 @@
+{
+  "version": "current-design-lmm-v2-schedule-size",
+  "kind": "enrollment",
+  "seed": 20261031,
+  "repetitions": 5000,
+  "trials_per_block": 48,
+  "workers": 2,
+  "cells": 9,
+  "seconds": 137.1090502500001,
+  "python": "3.12.12",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "script_sha256": "53ad1f5d2ba9f9754ba75d310a7c8c5b844af3e4bfe57b6d7087a41be375bcd3",
+  "driver_sha256": "d2b935a63c1f12db3de3f9eaebc81f93c2b909ddc9c709fd810edb6e0b43c0b0",
+  "scenarios": [
+    {
+      "name": "middle",
+      "residual_sd": 0.55,
+      "intercept_sd": 0.3,
+      "slope_sd": 0.2,
+      "median_seconds": 12.0,
+      "trial_loss": 0.05,
+      "dropout": 0.1,
+      "deadline": 25.0,
+      "ar1": 0.0,
+      "informative_loss": 0.0,
+      "re_correlation": 0.0
+    }
+  ]
+}

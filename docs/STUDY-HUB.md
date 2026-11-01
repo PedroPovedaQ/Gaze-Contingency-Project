@@ -1,6 +1,6 @@
 # Study hub
 
-**Implemented — October 30, 2026:** the current schedule is 64 measured trials (32 per voice), plus one practice: four per signed step, absolute-angle counts 4/8/8/8/4, and 16 above/16 below with two of each per signed step. All 24 identities occur per block; eight repeat. See [current schedule](balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v8.
+**Implemented — November 1, 2026:** the current schedule is 96 measured trials (48 per voice), plus one practice: six per signed step, absolute-angle counts 6/12/12/12/6, and 24 above/24 below with three of each per signed step. Each of the 24 identities occurs exactly twice per block. See [current schedule](balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v9.
 
 Updated **October 20, 2026**. Current: [final-survey decision and handoff reconciliation](protocol/2026-10-20-final-survey-decision.md). **Qualtrics on hold.** Start with the [current implementation audit and outstanding checks](protocol/2026-10-20-alignment-audit.md). For historical context, see the [meeting decisions and task map](meeting-reconciliation-2026-09-30.md) and [September 28 data/guidance requirements](meeting-reconciliation-2026-09-28.md). Older implementation snapshots below are dated evidence, not current runtime verification.
 

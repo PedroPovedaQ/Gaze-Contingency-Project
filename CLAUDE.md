@@ -8,7 +8,7 @@ the HTC VIVE with passthrough AR.
 
 - **`Assets/FindObjectGameManager.cs`** — game state machine, round flow,
   object spawning, capture logic
-- **`Assets/ChallengeSet.cs`** — deterministic 64-trial schedule (v8),
+- **`Assets/ChallengeSet.cs`** — deterministic 96-trial schedule (v9),
   participant-hashed seed, gaze-contingent guidance in every round
 - **`Assets/ShelfSpawner.cs`** — builds two bookcase units on the detected
   table, computes deterministic shelf spawn points
@@ -29,7 +29,7 @@ the HTC VIVE with passthrough AR.
 
 ## Experimental Design
 
-- **Implemented:** 64 measured trials in two counterbalanced 32-trial voice blocks after one uncounted practice trial, schedule `readiness-target-angle-v8-signed-steps-32-one-practice`: four trials at each of eight signed plane steps per block (|theta| 4/8/8/8/4), 16 targets above and 16 below the readiness cross, 168 objects per trial (21 per plane).
+- **Implemented:** 96 measured trials in two counterbalanced 48-trial voice blocks after one uncounted practice trial, schedule `readiness-target-angle-v9-signed-steps-48-one-practice`: six trials at each of eight signed plane steps per block (|theta| 6/12/12/12/6), 24 targets above and 24 below the readiness cross, 168 objects per trial (21 per plane). Six shuffled groups of eight per block; exactly three targets above and three below at each signed step; every one of the 24 shape/color identities occurs twice per block.
 - **Protocol proposal — user decision, 2026-09-10:** the agent is always gaze-contingent. Gaze awareness is not a factor; do not reintroduce an unaware control or toggle.
 - **Implemented:** the Selected Voice is chosen on the desktop during intake; the self-similar voice is cloned from the audio intake. Order A is self-similar first, Order B is neutral first. The self-similar clips keep the inner-thought audio treatment.
 - **Implemented:** room `neutral-room-v2` with invisible object planes at 1.5 m, gray floor and walls, and a muted yellow floor circle. Decision model `20261031-minilm-direction-v9`, served locally over ADB.

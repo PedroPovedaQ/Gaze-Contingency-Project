@@ -1,0 +1,42 @@
+[
+  {
+    "check": "activation-exercise",
+    "exit": 0
+  },
+  {
+    "check": "eye-validation",
+    "exit": 0
+  },
+  {
+    "check": "gaze-quality",
+    "exit": 0
+  },
+  {
+    "check": "guidance-state",
+    "exit": 0
+  },
+  {
+    "check": "headset-preparation",
+    "exit": 0
+  },
+  {
+    "check": "native-gaze",
+    "exit": 0
+  },
+  {
+    "check": "rotational-layout",
+    "exit": 0
+  },
+  {
+    "check": "spatial-voice",
+    "exit": 0
+  },
+  {
+    "check": "trial-timeout",
+    "exit": 0
+  },
+  {
+    "check": "voice-enrollment",
+    "exit": 0
+  }
+]

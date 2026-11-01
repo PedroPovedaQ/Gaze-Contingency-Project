@@ -1,8 +1,8 @@
 # Trial Review desktop app
 
-**Implemented — October 30, 2026:** the current schedule is 64 measured trials (32 per voice), plus one practice: four per signed step, absolute-angle counts 4/8/8/8/4, and 16 above/16 below with two of each per signed step. All 24 identities occur per block; eight repeat. See [current schedule](../../docs/balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v8.
+**Implemented — November 1, 2026:** the current schedule is 96 measured trials (48 per voice), plus one practice: six per signed step, absolute-angle counts 6/12/12/12/6, and 24 above/24 below with three of each per signed step. Each of the 24 identities occurs exactly twice per block. See [current schedule](../../docs/balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v9.
 
-**Implemented compatibility:** Trial Review and CSV exports use saved trial/block metadata and preserve schedule versions. Regression fixtures cover v8 indices 31/32 and legacy v7 indices 39/40.
+**Implemented compatibility:** Trial Review and CSV exports use saved trial/block metadata and preserve schedule versions. Regression fixtures cover current v9 indices 47/48, v8 indices 31/32 and legacy v7 indices 39/40.
 
 **Implemented October 27 — participant IPD:** before **Begin interview**, enter binocular distance IPD in millimetres and choose its source (pupillometer, ruler, or participant report). Optionally enter the headset lens spacing separately. Check values before creating the interview; they are saved with that session and sent with the participant assignment. Leave unavailable measurements blank/Not recorded. These are manual entries, not hardware readings. The flat trial CSV and joined **Final data** panel include participant IPD, source and headset lens spacing. Earlier recordings and headset-only quick tests have no inferred IPD. Details: `work_log/2026-10-27-participant-ipd.md` at the repository root.
 
@@ -607,7 +607,7 @@ and validation revision. Raw recordings sync in `EyeMeasurements`; see
 Run the installed desktop bundle with an absolute destination directory:
 
 ```sh
-open -n "$HOME/Applications/Trial Review Redesign 20261028.app" --args \
+open -n "$HOME/Applications/Follow My Voice Study Intake.app" --args \
   --capture /tmp/trial-review-shots \
   -screen-width 1440 -screen-height 900 -screen-fullscreen 0 \
   -logFile /tmp/trial-review-capture.log

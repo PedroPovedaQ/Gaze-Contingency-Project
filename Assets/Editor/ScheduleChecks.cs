@@ -12,7 +12,7 @@ public static class ScheduleChecks
     static void Set(object target, string name, object value) => target.GetType().GetField(name,
         BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target, value);
 
-    [MenuItem("Tools/Codex/Check 64 Trial Schedule")]
+    [MenuItem("Tools/Codex/Check 96 Trial Schedule")]
     public static void Run()
     {
         string participant = SessionConfig.ParticipantId;
@@ -26,11 +26,11 @@ public static class ScheduleChecks
         StudyCheckpoint checkpoint = null;
         try
         {
-            SessionConfig.ParticipantId = "SCHEDULE_V8_SYNTHETIC";
+            SessionConfig.ParticipantId = "SCHEDULE_V9_SYNTHETIC";
             foreach (var property in quickProperties) property.SetValue(null, false);
             ChallengeSet.DebugRoundCountOverride = 0;
             blocks.SetValue(null, true);
-            Check(ChallengeSet.TotalRounds == 64 && ChallengeSet.PracticeTrialCount == 1, "64 measured plus one practice");
+            Check(ChallengeSet.TotalRounds == 96 && ChallengeSet.PracticeTrialCount == 1, "96 measured plus one practice");
             var rounds = ChallengeSet.Rounds;
             foreach (var round in rounds)
             {
@@ -51,13 +51,13 @@ public static class ScheduleChecks
             for (int block = 0; block < 2; block++)
             {
                 var subset = rounds.Where(r => r.blockIndex == block).ToArray();
-                Check(subset.Count(r => r.targetHeightFraction > .5f) == 16, "16 above / 16 below");
+                Check(subset.Count(r => r.targetHeightFraction > .5f) == 24, "24 above / 24 below");
                 foreach (int angle in new[] { 0,45,-45,90,-90,135,-135,180 })
                 {
                     var group = subset.Where(r => r.SignedTheta == angle).ToArray();
                     int above = group.Count(r => r.targetHeightFraction > .5f);
-                    Check(group.Length == 4 && above == 2, "Four per signed step with 2/2 heights");
-                    Debug.Log($"[ScheduleChecks] ALLOCATION block={block} signed={angle} above={above} below={4-above}");
+                    Check(group.Length == 6 && above == 3, "Six per signed step with 3/3 heights");
+                    Debug.Log($"[ScheduleChecks] ALLOCATION block={block} signed={angle} above={above} below={6-above}");
                 }
             }
             string export = Environment.GetEnvironmentVariable("SCHEDULE_CHECK_EXPORT");
@@ -71,13 +71,13 @@ public static class ScheduleChecks
             checkpoint = host.AddComponent<StudyCheckpoint>();
             Set(game, "m_UI", ui); Set(game, "m_Checkpoint", checkpoint); Set(game, "m_UseRotationalLayout", true);
             var transition = typeof(FindObjectGameManager).GetMethod("TransitionToNextRound", BindingFlags.Instance | BindingFlags.NonPublic);
-            foreach (int index in new[] { 31,32,40 })
+            foreach (int index in new[] { 31,32,40,47,48,49 })
             {
                 Set(checkpoint, "<Waiting>k__BackingField", false);
                 Set(game, "m_CurrentRound", index);
                 var routine = (System.Collections.IEnumerator)transition.Invoke(game, null);
                 Check(routine.MoveNext(), "Transition starts");
-                Check(checkpoint.Waiting == (index == 32), "Break occurs only after trial 32, never at old boundary 40");
+                Check(checkpoint.Waiting == (index == 48), "Break occurs only after trial 48, never at old boundaries 32/40");
                 (routine as IDisposable)?.Dispose();
             }
         }
@@ -93,6 +93,6 @@ public static class ScheduleChecks
             for (int i = 0; i < quickProperties.Length; i++) quickProperties[i].SetValue(null, quickValues[i]);
             ChallengeSet.DebugRoundCountOverride = debugOverride;
         }
-        Debug.Log("[ScheduleChecks] PASS: 64-trial v8 schedule, realized pinned geometry, height allocation and actual 32-trial block break.");
+        Debug.Log("[ScheduleChecks] PASS: 96-trial v9 schedule, realized pinned geometry, height allocation and actual 48-trial block break.");
     }
 }

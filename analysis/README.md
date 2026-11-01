@@ -1,6 +1,6 @@
 # Analysis Workflow
 
-**Implemented — October 30, 2026:** the current schedule is 64 measured trials (32 per voice), plus one practice: four per signed step, absolute-angle counts 4/8/8/8/4, and 16 above/16 below with two of each per signed step. All 24 identities occur per block; eight repeat. See [current schedule](../docs/balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v8.
+**Implemented — November 1, 2026:** the current schedule is 96 measured trials (48 per voice), plus one practice: six per signed step, absolute-angle counts 6/12/12/12/6, and 24 above/24 below with three of each per signed step. Each of the 24 identities occurs exactly twice per block. See [current schedule](../docs/balanced-angle-schedule.md). Earlier dated counts and allocation descriptions below are historical; they do not describe v9.
 
 **Implemented measurement safeguards (October 25):** [Research-measure report and validation requirements](../docs/research-eye-measures.md). `research_measures.py` produces the four requested panels and coverage audit from explicit raw-eye/run inputs. Eye outcomes remain exploratory pending physical/detector validation. New raw files support explicitly labeled uncensored target-fixation candidates; validated last fixation and missing TLX stay unavailable. The legacy loader now preserves ray-visit counters as `proxy_*` and masks physiological columns, so older plot names below do not imply validated measurements.
 
@@ -53,8 +53,8 @@ Coordinate checks use the saved origin quaternion/translation to compare replay-
 
 ## Voice-study power/sensitivity planning
 
-**Protocol proposal — current 64-trial mixed-model simulation (October 31, 2026):**
-See [the current report](power/current-design-20261031/REPORT.md). The reproducible
+**Protocol proposal — current 96-trial mixed-model simulation (November 1, 2026):**
+See [the current report](power/current-design-96-20261101/REPORT.md). The reproducible
 workflow uses `current_design_power.py`, `current_power_report.py`, and
 `power_development_audit.py`, with fixed seeds, explicit 25-second censoring,
 incomplete trials, participant dropout, random-intercept/voice-slope REML fits,
@@ -65,7 +65,7 @@ The recommended enrollment remains conditional on the stated assumptions; the
 successful-time model does not eliminate selection bias caused by timeouts.
 
 **Historical benchmark (not the current mixed-model power analysis):**
-**Protocol proposal; synthetic assumptions only:** `python3 analysis/voice_sensitivity.py --config analysis/power/voice_sensitivity.json --out /path/to/new-report` generates a paired-test sensitivity benchmark and a trial-level simulation analyzed as order-adjusted participant log-time differences. It compares 10 versus the selected 32 trials per voice across participant counts, voice-response variability, serial correlation and missingness. Null rejection, bias, retained N and Monte Carlo uncertainty are explicit; the informative-loss scenario is a failure-mode stress test. Separate binomial recruitment scenarios distinguish an expected retained count from a stated completion probability.
+**Protocol proposal; synthetic assumptions only:** `python3 analysis/voice_sensitivity.py --config analysis/power/voice_sensitivity.json --out /path/to/new-report` generates a paired-test sensitivity benchmark and a trial-level simulation analyzed as order-adjusted participant log-time differences. It compares 10 versus the selected 48 trials per voice across participant counts, voice-response variability, serial correlation and missingness. Null rejection, bias, retained N and Monte Carlo uncertainty are explicit; the informative-loss scenario is a failure-mode stress test. Separate binomial recruitment scenarios distinguish an expected retained count from a stated completion probability.
 
 See [methods, assumptions, outputs and decisions still needed](../docs/voice-power-sensitivity.md). Saved synthetic results are in `analysis/power/results-20261001/`. This does not select an outcome, sample size or exclusion rule, and does not turn repeated block surveys into independent trial outcomes. The current complete-run descriptive exporter remains unchanged. Final mixed-model/censoring choices and power justification require the actual-task pilot and researcher decisions in #16.
 
@@ -247,7 +247,7 @@ Per-round (in summary JSON `objectives[]`):
 
 New neutral runs use `gaze_aware_voice-neutral-male` / `gaze_aware_voice-neutral-female`; the self-similar label is unchanged. `run_condition` retains this assignment. Historical `voice-generic` remains readable. Male/female are neutral voice profiles, not additional guidance conditions.
 
-For schema-2 two-block sessions, `voice_condition`, `voice_order`, `trial_id`, `outcome`, search-onset and capture timestamps are retained per trial. `voice_block_metrics.csv` reports completed trials by block; `voice_pair_differences.csv` pairs only complete two-block runs within the same participant/run, using saved nominal and per-block trial counts (64 trials in current v8; historical 80-trial v7 and 14-trial runs remain supported). Debug/shortened runs, duplicate or missing trials, inconsistent voice order/assignment and invalid search durations are explicitly excluded. Restarts never supply a replacement block. Historical awareness plots/tests remain legacy outputs. Run `python3 scripts/verify-study-session.py /absolute/path/to/run` from the repository root to check exported timing/voice/object consistency. NASA-TLX block rows preserve the actual voice label; a historical run-wide two-voice score is `overall`.
+For schema-2 two-block sessions, `voice_condition`, `voice_order`, `trial_id`, `outcome`, search-onset and capture timestamps are retained per trial. `voice_block_metrics.csv` reports completed trials by block; `voice_pair_differences.csv` pairs only complete two-block runs within the same participant/run, using saved nominal and per-block trial counts (96 trials in current v9; historical 64-trial v8 and 80-trial v7 and 14-trial runs remain supported). Debug/shortened runs, duplicate or missing trials, inconsistent voice order/assignment and invalid search durations are explicitly excluded. Restarts never supply a replacement block. Historical awareness plots/tests remain legacy outputs. Run `python3 scripts/verify-study-session.py /absolute/path/to/run` from the repository root to check exported timing/voice/object consistency. NASA-TLX block rows preserve the actual voice label; a historical run-wide two-voice score is `overall`.
 
 ## October 1 quality report additions — implemented, validation pending
 
@@ -296,7 +296,7 @@ Plots use the existing analysis environment's matplotlib dependency. Pass `--no-
 
 `verify-study-session.py` now rejects a completed session with unfinished or contradictory trial outcomes, duplicate/missing trial identities or indices, invalid voice order/block counts, duplicate clip identities, non-finite/negative timing and impossible pause sequences. Readiness pauses are outside active search; capture during a search pause fails. Saved onset/capture times, when present, must agree with events. Explicit incomplete mode permits interruption but still checks recorded timing and playback identity; it cannot excuse a false completion claim.
 
-Regression fixtures include complete current 64-trial/168-object and legacy 80-trial packages in both voice orders, historical 14-trial data, legitimate readiness/search pauses and malformed-input CLI exit behavior. These checks do not establish native eye rate, acoustic onset, completeness of separate raw-eye/replay files or hardware durability.
+Regression fixtures include complete current 96-trial/168-object and legacy 64/80-trial packages in both voice orders, historical 14-trial data, legitimate readiness/search pauses and malformed-input CLI exit behavior. These checks do not establish native eye rate, acoustic onset, completeness of separate raw-eye/replay files or hardware durability.
 
 ### Fifteen-second timeout (October 23 build onward)
 

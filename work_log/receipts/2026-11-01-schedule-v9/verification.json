@@ -1,0 +1,75 @@
+{
+  "python_suites": [
+    {
+      "suite": "analysis",
+      "ran": 375,
+      "seconds": 66.388,
+      "skipped": 1,
+      "passed": true
+    },
+    {
+      "suite": "desktop",
+      "ran": 128,
+      "seconds": 47.13,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "suite": "scripts",
+      "ran": 19,
+      "seconds": 2.994,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "suite": "native",
+      "ran": 17,
+      "seconds": 0.085,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "suite": "podcast",
+      "ran": 18,
+      "seconds": 0.009,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "suite": "interactive",
+      "ran": 21,
+      "seconds": 0.666,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "suite": "sync",
+      "ran": 14,
+      "seconds": 0.051,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "suite": "local-jev",
+      "ran": 45,
+      "seconds": 49.822,
+      "skipped": 0,
+      "passed": true
+    },
+    {
+      "suite": "pinned-power",
+      "ran": 17,
+      "seconds": 2.631,
+      "skipped": 0,
+      "passed": true
+    }
+  ],
+  "active_python_run": 637,
+  "active_python_skipped": 1,
+  "pinned_power_tests": 17,
+  "unity_headless_passes": 27,
+  "unity_gpu_passes": 27,
+  "desktop_build_passes": 25,
+  "desktop_capture_states": 46,
+  "offline_csharp_participant_seeds": 50
+}

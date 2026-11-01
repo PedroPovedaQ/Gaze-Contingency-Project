@@ -1,0 +1,56 @@
+{
+  "version": "current-design-lmm-v2-schedule-size",
+  "kind": "grid",
+  "seed": 20261031,
+  "repetitions": 1000,
+  "trials_per_block": 48,
+  "workers": 3,
+  "seconds": 1449.081992292,
+  "cells": 270,
+  "python": "3.12.12",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "script_sha256": "53ad1f5d2ba9f9754ba75d310a7c8c5b844af3e4bfe57b6d7087a41be375bcd3",
+  "scenarios": [
+    {
+      "name": "optimistic",
+      "residual_sd": 0.35,
+      "intercept_sd": 0.15,
+      "slope_sd": 0.1,
+      "median_seconds": 10.0,
+      "trial_loss": 0.02,
+      "dropout": 0.05,
+      "deadline": 25.0,
+      "ar1": 0.0,
+      "informative_loss": 0.0,
+      "re_correlation": 0.0
+    },
+    {
+      "name": "middle",
+      "residual_sd": 0.55,
+      "intercept_sd": 0.3,
+      "slope_sd": 0.2,
+      "median_seconds": 12.0,
+      "trial_loss": 0.05,
+      "dropout": 0.1,
+      "deadline": 25.0,
+      "ar1": 0.0,
+      "informative_loss": 0.0,
+      "re_correlation": 0.0
+    },
+    {
+      "name": "pessimistic",
+      "residual_sd": 0.8,
+      "intercept_sd": 0.5,
+      "slope_sd": 0.35,
+      "median_seconds": 16.0,
+      "trial_loss": 0.1,
+      "dropout": 0.2,
+      "deadline": 25.0,
+      "ar1": 0.0,
+      "informative_loss": 0.0,
+      "re_correlation": 0.0
+    }
+  ],
+  "thread_limit": "1"
+}

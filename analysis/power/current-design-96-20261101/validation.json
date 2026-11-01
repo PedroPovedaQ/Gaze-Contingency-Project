@@ -1,0 +1,109 @@
+{
+  "status": "pass",
+  "cell_counts": {
+    "curves": 450,
+    "grid": 270,
+    "stress": 48,
+    "precision": 30,
+    "n20": 18,
+    "baseline64/n20": 18,
+    "enrollment": 9
+  },
+  "fit_attempts": 1371000,
+  "failed_fits_retained": 515,
+  "seed": 20261031,
+  "checks": [
+    "Complete expected cell sets and all even N=12\u201360",
+    "Exact unchanged scenario parameters",
+    "Original pinned Python/NumPy/SciPy versions and simulation-source hash",
+    "No partial outputs; finite statistics; failure denominators/reasons reconcile",
+    "Both N=20 designs use 10000 replicates per cell",
+    "N=44\u201360 crossing refinement uses 5000 per cell",
+    "Historical development evidence byte-identical; no raw source reopened",
+    "PNG and independently Poppler-rendered PDF visually inspected: readable labels, white background, no clipping"
+  ],
+  "verification": {
+    "python_suites": [
+      {
+        "suite": "analysis",
+        "ran": 375,
+        "seconds": 66.388,
+        "skipped": 1,
+        "passed": true
+      },
+      {
+        "suite": "desktop",
+        "ran": 128,
+        "seconds": 47.13,
+        "skipped": 0,
+        "passed": true
+      },
+      {
+        "suite": "scripts",
+        "ran": 19,
+        "seconds": 2.994,
+        "skipped": 0,
+        "passed": true
+      },
+      {
+        "suite": "native",
+        "ran": 17,
+        "seconds": 0.085,
+        "skipped": 0,
+        "passed": true
+      },
+      {
+        "suite": "podcast",
+        "ran": 18,
+        "seconds": 0.009,
+        "skipped": 0,
+        "passed": true
+      },
+      {
+        "suite": "interactive",
+        "ran": 21,
+        "seconds": 0.666,
+        "skipped": 0,
+        "passed": true
+      },
+      {
+        "suite": "sync",
+        "ran": 14,
+        "seconds": 0.051,
+        "skipped": 0,
+        "passed": true
+      },
+      {
+        "suite": "local-jev",
+        "ran": 45,
+        "seconds": 49.822,
+        "skipped": 0,
+        "passed": true
+      },
+      {
+        "suite": "pinned-power",
+        "ran": 17,
+        "seconds": 2.631,
+        "skipped": 0,
+        "passed": true
+      }
+    ],
+    "active_python_run": 637,
+    "active_python_skipped": 1,
+    "pinned_power_tests": 17,
+    "unity_headless_passes": 27,
+    "unity_gpu_passes": 27,
+    "desktop_build_passes": 25,
+    "desktop_capture_states": 46,
+    "offline_csharp_participant_seeds": 50
+  },
+  "model_compatibility": {
+    "base_commit": "0889229",
+    "legacy_generator_arrays_exact": true,
+    "diagnostics_exact": true,
+    "fit_outputs_exact": true,
+    "scenarios": 3,
+    "seed_policy_unchanged": true
+  },
+  "review": "Sequential main-thread review; no independent peer-review claim"
+}

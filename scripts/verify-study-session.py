@@ -9,7 +9,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "analysis"))
-from theta_snapshot import V8, PRE_CUE_SCHEDULES, QUICK_SCHEDULES, REFERENCE, flatten as flatten_theta
+from theta_snapshot import V8, V9, PRE_CUE_SCHEDULES, QUICK_SCHEDULES, REFERENCE, flatten as flatten_theta
 
 
 def validate_schedule(folder, summary):
@@ -17,7 +17,10 @@ def validate_schedule(folder, summary):
     version = summary.get("challenge_set")
     pre_cue = version in PRE_CUE_SCHEDULES
     v8 = version in V8
-    block_size = 32 if v8 else 40
+    v9 = version in V9
+    signed_schedule = v8 or v9
+    copies = 6 if v9 else 4
+    block_size = 48 if v9 else 32 if v8 else 40
     total = block_size * 2
     quick = version in QUICK_SCHEDULES
     if not pre_cue and version != "previous-wall-angle-v5-stratified-40-trials":
@@ -52,9 +55,9 @@ def validate_schedule(folder, summary):
             if summary.get("voice_condition") != expected_quick_voice:
                 errors.append("Schedule: quick-test mode and voice disagree")
         if pre_cue and (summary.get("theta_reference") != REFERENCE
-                or summary.get("direction_policy") != ("independent-blocks-four-per-signed-step-v1" if v8 else "independent-blocks-four-left-four-right-v1")
-                or summary.get("height_assignment_policy") != ("two-above-two-below-per-signed-step-v1" if v8 else "four-above-four-below-per-angle-v1")
-                or summary.get("target_identity_policy") != ("matched-counts-shuffled-24-plus-8-v1" if v8 else "matched-counts-shuffled-24-plus-16-v1")):
+                or summary.get("direction_policy") != ("independent-blocks-six-per-signed-step-v1" if v9 else "independent-blocks-four-per-signed-step-v1" if v8 else "independent-blocks-four-left-four-right-v1")
+                or summary.get("height_assignment_policy") != ("three-above-three-below-per-signed-step-v1" if v9 else "two-above-two-below-per-signed-step-v1" if v8 else "four-above-four-below-per-angle-v1")
+                or summary.get("target_identity_policy") != ("matched-counts-shuffled-24-twice-v1" if v9 else "matched-counts-shuffled-24-plus-8-v1" if v8 else "matched-counts-shuffled-24-plus-16-v1")):
             errors.append("Schedule: pre-cue schedule policy/reference mismatch")
         if summary["rounds_per_block"] != block_size or summary["nominal_total_rounds"] != total or count != expected_count:
             errors.append("Schedule: block/full/debug counts disagree")
@@ -97,25 +100,25 @@ def validate_schedule(folder, summary):
         identity_counts = []
         for block in range(2):
             subset = rows[block * block_size:(block + 1) * block_size]
-            if Counter(int(r["absolute_theta_deg"]) for r in subset) != Counter({0:4,45:8,90:8,135:8,180:4} if v8 else {angle:8 for angle in (0,45,90,135,180)}):
+            if Counter(int(r["absolute_theta_deg"]) for r in subset) != Counter({0:copies,45:2*copies,90:2*copies,135:2*copies,180:copies} if signed_schedule else {angle:8 for angle in (0,45,90,135,180)}):
                 errors.append(f"Schedule block {block}: absolute-angle quota mismatch")
             if sorted(int(r["angle_pair"]) for r in subset) != list(range(block_size)):
                 errors.append(f"Schedule block {block}: missing/duplicate angle pairs")
-            if v8:
+            if signed_schedule:
                 signed_steps = {0,45,-45,90,-90,135,-135,180}
-                if Counter(int(r["signed_theta_deg"]) for r in subset) != Counter({a:4 for a in signed_steps}):
+                if Counter(int(r["signed_theta_deg"]) for r in subset) != Counter({a:copies for a in signed_steps}):
                     errors.append(f"Schedule block {block}: signed-step quota mismatch")
                 for offset in range(0, block_size, 8):
                     if {int(r["signed_theta_deg"]) for r in subset[offset:offset+8]} != signed_steps:
                         errors.append(f"Schedule block {block}: eight-trial signed-step group mismatch")
-                if sum(float(r["target_height_fraction"]) > .5 for r in subset) != 16:
+                if sum(float(r["target_height_fraction"]) > .5 for r in subset) != block_size // 2:
                     errors.append(f"Schedule block {block}: total height quota mismatch")
                 for angle in signed_steps:
                     above = sum(float(r["target_height_fraction"]) > .5 for r in subset if int(r["signed_theta_deg"]) == angle)
-                    if above != 2:
+                    if above != copies // 2:
                         errors.append(f"Schedule block {block}: signed height quota mismatch at {angle}")
                 for angle in (45,90,135):
-                    if sum(float(r["target_height_fraction"]) > .5 for r in subset if int(r["absolute_theta_deg"]) == angle) != 4:
+                    if sum(float(r["target_height_fraction"]) > .5 for r in subset if int(r["absolute_theta_deg"]) == angle) != copies:
                         errors.append(f"Schedule block {block}: absolute height quota mismatch at {angle}")
             else:
                 for offset in range(0, block_size, 5):
@@ -130,7 +133,7 @@ def validate_schedule(folder, summary):
                             errors.append(f"Schedule block {block}: direction quota mismatch at {angle}")
             identities = Counter((r["target_shape"], r["target_color"]) for r in subset)
             identity_counts.append(identities)
-            if len(identities) != 24 or Counter(identities.values()) != Counter({1:16,2:8} if v8 else {1:8,2:16}):
+            if len(identities) != 24 or Counter(identities.values()) != Counter({2:24} if v9 else {1:16,2:8} if v8 else {1:8,2:16}):
                 errors.append(f"Schedule block {block}: target repetition quota mismatch")
         if identity_counts[0] != identity_counts[1]:
             errors.append("Schedule: voice blocks have different target identity counts")

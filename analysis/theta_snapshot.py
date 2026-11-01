@@ -5,7 +5,9 @@ REFERENCE = "pre_cue_eye_origin_to_readiness_cross"
 V7 = {"readiness-target-angle-v7-one-practice", "readiness-target-angle-v7-quick-origin0"}
 V8 = {"readiness-target-angle-v8-signed-steps-32-one-practice",
       "readiness-target-angle-v8-signed-steps-32-quick-origin0"}
-PRE_CUE_SCHEDULES = V7 | V8
+V9 = {"readiness-target-angle-v9-signed-steps-48-one-practice",
+      "readiness-target-angle-v9-signed-steps-48-quick-origin0"}
+PRE_CUE_SCHEDULES = V7 | V8 | V9
 QUICK_SCHEDULES = {v for v in PRE_CUE_SCHEDULES if v.endswith("quick-origin0")}
 SCALARS = {
     "round": "round", "gazeSequence": "gaze_sequence",

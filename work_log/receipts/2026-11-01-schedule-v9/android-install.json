@@ -1,0 +1,26 @@
+{
+  "serial": "192.168.1.208:5555",
+  "package": "com.DefaultCompany.MixedRealityTemplate",
+  "apk": "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Builds/CodexAndroid/codex_build.apk",
+  "apk_bytes": 72014565,
+  "apk_sha256": "ecab316d839c0055b78ec63e4fc884e2a926152716bdccea1777d780ef54832c",
+  "installed_apk_sha256": "ecab316d839c0055b78ec63e4fc884e2a926152716bdccea1777d780ef54832c",
+  "install_success": true,
+  "launch_status": "ok",
+  "minilm_reconnection": "ready",
+  "latest_status_phase": "paused",
+  "latest_status_updated": 1793161950.889783,
+  "latest_model": "20261026-minilm-reassurance-v8",
+  "latest_status_is_stale": true,
+  "model_service_health": {
+    "status": "ready",
+    "scope": "assistance",
+    "device": "cpu",
+    "model_version": "20261031-minilm-direction-v9",
+    "stages": [
+      "assistance",
+      "assistance_phrase"
+    ]
+  },
+  "wearer_execution_verified": false
+}

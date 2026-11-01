@@ -1,0 +1,8 @@
+{
+  "base_commit": "0889229",
+  "legacy_generator_arrays_exact": true,
+  "diagnostics_exact": true,
+  "fit_outputs_exact": true,
+  "scenarios": 3,
+  "seed_policy_unchanged": true
+}

@@ -1,0 +1,25 @@
+{
+  "initial_environment_attempts": [
+    {
+      "folder": "scripts",
+      "exit": 0,
+      "log": "/tmp/schedule96-python-scripts.log"
+    },
+    {
+      "folder": "tools/paper-to-podcast/tests",
+      "exit": 1,
+      "log": "/tmp/schedule96-python-tools-paper-to-podcast-tests.log"
+    },
+    {
+      "folder": "tools/interactive-paper-podcast/tests",
+      "exit": 1,
+      "log": "/tmp/schedule96-python-tools-interactive-paper-podcast-tests.log"
+    },
+    {
+      "folder": "tools/local-jev",
+      "exit": 1,
+      "log": "/tmp/schedule96-python-tools-local-jev.log"
+    }
+  ],
+  "superseded_by": "verification.json and final python-{podcast,interactive,local-jev,sync}.log receipts; all passed with documented module paths/environments"
+}

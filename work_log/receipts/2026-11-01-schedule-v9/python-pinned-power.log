@@ -1,0 +1,22 @@
+test_96_trial_schedule_and_denominators (test_current_design_power.CurrentPowerTests.test_96_trial_schedule_and_denominators) ... ok
+test_against_statsmodels (test_current_design_power.CurrentPowerTests.test_against_statsmodels) ... ok
+test_counterbalance_and_missing_denominators (test_current_design_power.CurrentPowerTests.test_counterbalance_and_missing_denominators) ... ok
+test_dense_likelihood_and_gradient (test_current_design_power.CurrentPowerTests.test_dense_likelihood_and_gradient) ... ok
+test_effect_changes_timeout_selection_in_expected_directions (test_current_design_power.CurrentPowerTests.test_effect_changes_timeout_selection_in_expected_directions) ... ok
+test_failure_not_removed_from_power_denominator (test_current_design_power.CurrentPowerTests.test_failure_not_removed_from_power_denominator) ... ok
+test_fixed_effect_translation (test_current_design_power.CurrentPowerTests.test_fixed_effect_translation) ... ok
+test_fixed_seed (test_current_design_power.CurrentPowerTests.test_fixed_seed) ... ok
+test_no_censoring_no_loss (test_current_design_power.CurrentPowerTests.test_no_censoring_no_loss) ... ok
+test_schedule_matches_production_allocation_and_groups (test_current_design_power.CurrentPowerTests.test_schedule_matches_production_allocation_and_groups) ... ok
+test_total_second_block_dropout_is_explicit_fit_failure (test_current_design_power.CurrentPowerTests.test_total_second_block_dropout_is_explicit_fit_failure) ... ok
+test_v9_simulation_matches_exported_production_schedule (test_current_design_power.CurrentPowerTests.test_v9_simulation_matches_exported_production_schedule) ... ok
+test_independent_reference (test_current_power_report.CurrentPowerReportTests.test_independent_reference) ... ok
+test_null_size (test_current_power_report.CurrentPowerReportTests.test_null_size) ... ok
+test_report_rejects_mixed_schedule_or_under_refined_comparison (test_current_power_report.CurrentPowerReportTests.test_report_rejects_mixed_schedule_or_under_refined_comparison) ... ok
+test_retention_and_holm_bounds (test_current_power_report.CurrentPowerReportTests.test_retention_and_holm_bounds) ... ok
+test_threshold_does_not_extrapolate (test_current_power_report.CurrentPowerReportTests.test_threshold_does_not_extrapolate) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 2.631s
+
+OK
