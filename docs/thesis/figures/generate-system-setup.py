@@ -45,7 +45,7 @@ SY, SW, SH = 205, 640, 110
 SX = (W - SW) / 2
 arrow(30 + BW / 2, TOP + BH + 2, SX + SW * .3, SY - 3)
 arrow(W - 30 - BW / 2, TOP + BH + 2, SX + SW * .7, SY - 3)
-box(SX, SY, SW, SH, SHARED, SHARED_EDGE, 'Shared LLM-Based Guidance System',
+box(SX, SY, SW, SH, SHARED, SHARED_EDGE, 'Shared Gaze-Contingent Guidance System',
     '(Audio-based cues from trial state and target object location)')
 s.append('</svg>')
 

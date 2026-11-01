@@ -44,7 +44,7 @@ rows = [(34, 'Coarse: find the object plane', [
             ('Refinement', 'Yaw and pitch', ['“Look way higher.”', '“A little higher and left.”']),
             ('Progress', 'After measured progress', ['“Keep going to the left.”', '“A bit more.”']),
             ('On target', 'Gaze or pointing', ['“Right there.”', '“Yep, that\'s it!”']),
-            ('Selection', 'If the trigger is not used', ['“Aim at it with your right', 'controller and press', 'the trigger.”'])])]
+            ('Trigger reminder', 'Target held at the deadline', ['“Time up. Almost! Don\'t', 'forget to press the right', 'trigger to select the object.”'])])]
 for y, label, cards in rows:
     text(20, y - 10, label, 18, True)
     for i, (t, n, q) in enumerate(cards):
