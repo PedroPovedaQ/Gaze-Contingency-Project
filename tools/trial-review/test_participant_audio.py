@@ -19,7 +19,7 @@ class ParticipantAudioTests(unittest.TestCase):
         self.folder=Path(self.temp.name)/uuid.uuid4().hex
         create(self.folder,'P900000000001','A',development=True)
         record_consent(self.folder,'TEST','synthetic consent fixture',True,True)
-        update(self.folder,answers=[{} for _ in range(10)],eligibility=dict(id='fixture-review',values=dict.fromkeys(ELIGIBILITY,'yes')),speechSeconds=30,sampleWords=50,eligible=True,selectedVoiceConfirmed=True,cloneState='ready',cloneVoiceId='synthetic_clone',phase='interview_complete')
+        update(self.folder,answers=[{} for _ in range(9)],eligibility=dict(id='fixture-review',values=dict.fromkeys(ELIGIBILITY,'yes')),speechSeconds=30,sampleWords=50,eligible=True,selectedVoiceConfirmed=True,cloneState='ready',cloneVoiceId='synthetic_clone',phase='interview_complete')
         self.template=dict(schema=1,model=audio.MODEL,contentVersion='matched-voice-v3',
             keyPrefix='matched-voice-v3|perspective-v9-shared-imperative|External|eleven_turbo_v2_5|',
             voices=[dict(gender='Male',option=0,voiceId='synthetic_selected',name='Fixture')],
@@ -53,10 +53,10 @@ class ParticipantAudioTests(unittest.TestCase):
         with patch.object(audio,'synthesize',side_effect=synthesize),patch.object(audio,'decode',side_effect=decode):
             return audio.prepare(self.folder,self.remote,Path('unused'),'unused')
 
-    def test_cache_requires_completed_positive_review_and_speech_thresholds(self):
+    def test_cache_requires_completed_audio_and_speech_thresholds(self):
         original=load(self.folder)
-        cases=[dict(phase='interview'),dict(phase='eligibility_review'),dict(phase='fallback'),
-               dict(phase='screening_stopped',eligible=False),dict(eligibility=None),
+        cases=[dict(phase='interview'),dict(phase='fallback'),
+
                dict(answers=[{} for _ in range(4)]),dict(speechSeconds=29.9),dict(sampleWords=49)]
         for change in cases:
             with self.subTest(change=change):

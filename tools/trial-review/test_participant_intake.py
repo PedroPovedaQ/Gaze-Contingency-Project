@@ -11,13 +11,14 @@ from participant_intake import (create, load, answer, clone_answers, patch, tick
 from live_bridge import validate_control
 
 class Provider:
-    def __init__(self): self.clones=[]; self.prompts=[]; self.fail_speech=False
+    def __init__(self): self.clones=[]; self.prompts=[]; self.deleted=[]; self.fail_speech=False
     def speech(self, text):
         self.prompts.append(text)
         if self.fail_speech: raise RuntimeError('speech unavailable')
         return b'prompt mp3'
     def transcribe(self, data): return 'I use VR weekly. I enjoy exploring different environments and listening to spoken instructions when learning how the controls work.'
     def clone(self, code, data): self.clones.append((code,data)); return 'fixture_voice_id'
+    def delete_voice(self, voice): self.deleted.append(voice)
 
 class IntakeTests(unittest.TestCase):
     def setUp(self):
@@ -91,12 +92,95 @@ class IntakeTests(unittest.TestCase):
     def test_invalid_code_does_not_create_session(self):
         with self.assertRaises(ValueError): create(self.folder/'other','../private','A')
 
-    def test_v3_exact_count_and_legacy_read_only(self):
-        self.assertEqual(len(QUESTIONS), 10)
+    def test_v4_exact_count_and_legacy_read_only(self):
+        self.assertEqual(len(QUESTIONS), 9)
+        self.assertNotIn('handedness', dict(QUESTIONS))
+        self.assertEqual(QUESTIONS[3][1], 'For this experiment, you will be required to stay seated, turn in a swivel chair, and use a controller in your right hand. Can you safely do this? After the tone, please answer in a full sentence. You do not need to give medical details.')
+        self.assertEqual(QUESTIONS[7][1], 'Are you wearing glasses, contact lenses, or no visual correction today? No prescription details are needed.')
         self.assertEqual(QUESTIONS[-1][1], 'Imagine you are helping a friend find something they lost in a room. Talk them through it for about thirty seconds, telling them where to look, which way to turn, and when they are getting close.')
         patch(self.folder, protocol='audio-intake-v2-20261028')
         self.assertEqual(load(self.folder)['protocol'], 'audio-intake-v2-20261028')
         with self.assertRaises(ValueError): self.recording()
+
+    def test_clone_before_review_and_correction_preserves_snapshot(self):
+        from participant_intake import correct_transcript
+        for _ in QUESTIONS: answer(self.folder,self.provider,self.recording())
+        state=clone_answers(self.folder,self.provider)
+        self.assertFalse(state['eligible'])
+        snapshot=state['cloneInputSha256']
+        entry=state['answers'][0]
+        state=correct_transcript(self.folder,entry['id'],'Yes, I am an adult.','TEST')
+        self.assertEqual(state['cloneInputSha256'],snapshot)
+        self.assertEqual(state['answers'][0]['machineTranscript'],entry['machineTranscript'])
+        with self.assertRaises(ValueError): ticket(state)
+
+    def test_review_saves_pending_correction_and_failed_edit_stops_review(self):
+        for _ in QUESTIONS: answer(self.folder,self.provider,self.recording())
+        entry=load(self.folder)['answers'][4]
+        correction=dict(answerId=entry['id'],transcript='I use virtual reality weekly.',structuredValue='invalid')
+        with self.assertRaises(ValueError): review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST',correction)
+        self.assertFalse(load(self.folder).get('eligibility'))
+        correction['structuredValue']='weekly'
+        state=review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST',correction)
+        self.assertTrue(state['eligible'])
+        self.assertEqual(state['answers'][4]['machineTranscript'],entry['machineTranscript'])
+        self.assertEqual(state['answers'][4]['corrections'][0]['operator'],'TEST')
+
+    def test_stop_deletes_clone_and_late_cache_cannot_reopen(self):
+        from participant_intake import cleanup_clone
+        for _ in QUESTIONS: answer(self.folder,self.provider,self.recording())
+        clone_answers(self.folder,self.provider)
+        review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'no'),'TEST')
+        cleanup_clone(self.folder,self.provider);cleanup_clone(self.folder,self.provider)
+        state=patch(self.folder,cacheState='ready',phase='interview_complete')
+        self.assertEqual(state['phase'],'screening_stopped')
+        self.assertEqual(state['cacheState'],'stopped')
+        self.assertEqual(self.provider.deleted,['fixture_voice_id'])
+        self.assertTrue((self.folder/'clone-deletion.json').exists())
+        with self.assertRaises(ValueError): ticket(state)
+
+    def test_withdrawal_in_flight_clone_deletes_returned_voice(self):
+        from participant_intake import withdraw
+        for _ in QUESTIONS: answer(self.folder,self.provider,self.recording())
+        def clone(code,data):
+            withdraw(self.folder)
+            return 'fixture_voice_id'
+        self.provider.clone=clone
+        state=clone_answers(self.folder,self.provider)
+        self.assertEqual(state['phase'],'withdrawn')
+        self.assertEqual(state['cloneState'],'deleted')
+        self.assertEqual(self.provider.deleted,['fixture_voice_id'])
+
+    def test_missing_consent_receipt_blocks_clone(self):
+        for _ in QUESTIONS: answer(self.folder,self.provider,self.recording())
+        next(self.folder.glob('consent-*.json')).unlink()
+        with self.assertRaisesRegex(ValueError,'consent receipt'): clone_answers(self.folder,self.provider)
+        self.assertEqual(self.provider.clones,[])
+
+    def test_verification_required_clone_id_is_retained_for_deletion(self):
+        from participant_intake import CloneVerificationRequired, withdraw, cleanup_clone
+        for _ in QUESTIONS: answer(self.folder,self.provider,self.recording())
+        def verification(code,data): raise CloneVerificationRequired('fixture_voice_id')
+        self.provider.clone=verification
+        with self.assertRaises(CloneVerificationRequired): clone_answers(self.folder,self.provider)
+        self.assertEqual(load(self.folder)['cloneVoiceId'],'fixture_voice_id')
+        withdraw(self.folder);cleanup_clone(self.folder,self.provider)
+        self.assertEqual(load(self.folder)['cloneState'],'deleted')
+
+    def test_delete_endpoint_and_error_receipt_with_fakes_only(self):
+        from unittest.mock import patch as mock
+        from participant_intake import Provider as RealProvider, cleanup_clone, withdraw
+        provider=RealProvider('/unused')
+        with mock.object(provider,'call',return_value=b'{"status":"ok"}') as request:
+            provider.delete_voice('fixture_voice_id')
+            request.assert_called_once_with('https://api.elevenlabs.io/v1/voices/fixture_voice_id',method='DELETE')
+        self.completed();withdraw(self.folder)
+        with mock.object(self.provider,'delete_voice',side_effect=RuntimeError('synthetic offline')):
+            with self.assertRaises(RuntimeError): cleanup_clone(self.folder,self.provider)
+        self.assertEqual(load(self.folder)['cleanupState'],'failed')
+        self.assertFalse((self.folder/'clone-deletion.json').exists())
+        cleanup_clone(self.folder,self.provider)
+        self.assertEqual(load(self.folder)['cloneState'],'deleted')
 
     def test_failed_transcription_advances_preserves_audio_and_can_retry_and_correct(self):
         from participant_intake import retry_transcript, correct_transcript
@@ -223,13 +307,13 @@ class IntakeTests(unittest.TestCase):
         with self.assertRaises(ValueError): self.recording()
         with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
 
-    def test_unclear_eligibility_after_ten_answers_stops_screening(self):
+    def test_unclear_eligibility_after_nine_answers_stops_screening(self):
         for _ in QUESTIONS: answer(self.folder,self.provider,self.recording())
         review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'unclear'),'TEST')
         self.assertEqual(load(self.folder)['phase'],'screening_stopped')
         with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
-        self.assertEqual(len(load(self.folder)['answers']),10)
-        self.assertEqual(load(self.folder)['cacheState'],'not_started')
+        self.assertEqual(len(load(self.folder)['answers']),9)
+        self.assertEqual(load(self.folder)['cacheState'],'stopped')
         self.assertEqual(self.provider.clones,[])
 
     def test_skipped_eligibility_cannot_be_overridden(self):
@@ -238,24 +322,24 @@ class IntakeTests(unittest.TestCase):
         review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
         self.assertFalse(load(self.folder)['eligible'])
 
-    def test_all_ten_answers_precede_review_and_clone(self):
-        for index in range(10):
+    def test_all_nine_answers_precede_review_and_clone(self):
+        for index in range(9):
             state=answer(self.folder,self.provider,self.recording())
-            self.assertEqual(state['phase'],'interview' if index < 9 else 'eligibility_review')
-            with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
-            if index < 9:
+            self.assertEqual(state['phase'],'interview' if index < 8 else 'eligibility_review')
+            if index < 8:
+                with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
                 with self.assertRaises(ValueError): review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
         self.assertEqual(self.provider.prompts,[prompt for _,prompt in QUESTIONS[1:]])
         self.assertEqual(self.provider.clones,[])
         state=review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
         self.assertEqual(state['phase'],'interview_complete')
-        self.assertEqual(len(state['eligibility']['answerIds']),10)
+        self.assertEqual(len(state['eligibility']['answerIds']),9)
         with self.assertRaises(ValueError): review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
         clone_answers(self.folder,self.provider)
         self.assertEqual(len(self.provider.clones),1)
-        self.assertEqual(load(self.folder)['cloneAnswerCount'],10)
+        self.assertEqual(load(self.folder)['cloneAnswerCount'],9)
 
-    def test_negative_review_retains_all_ten_answers_without_clone_or_cache(self):
+    def test_negative_review_retains_all_nine_answers_without_clone_or_cache(self):
         for _ in QUESTIONS: answer(self.folder,self.provider,self.recording())
         before=load(self.folder)['answers']
         values=dict.fromkeys(ELIGIBILITY,'yes');values['adult']='no'
@@ -268,7 +352,7 @@ class IntakeTests(unittest.TestCase):
                        lambda: answer(self.folder,self.provider,skip=True), lambda: ticket(load(self.folder))):
             with self.assertRaises(ValueError): action()
         self.assertEqual(state['cloneState'],'not_started')
-        self.assertEqual(state['cacheState'],'not_started')
+        self.assertEqual(state['cacheState'],'stopped')
         self.assertEqual(self.provider.clones,[])
 
     def test_optional_fallback_finishes_before_single_review(self):
@@ -284,11 +368,11 @@ class IntakeTests(unittest.TestCase):
         state=answer(self.folder,self.provider,self.recording())
         self.assertEqual(state['phase'],'eligibility_review')
         self.assertEqual(state['answers'][-1]['topic'],'reading_fallback')
-        self.assertEqual(len(state['answers']),11)
-        with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
+        self.assertEqual(len(state['answers']),10)
+        clone_answers(self.folder,self.provider)
         review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
         clone_answers(self.folder,self.provider)
-        self.assertEqual(load(self.folder)['cloneAnswerCount'],11)
+        self.assertEqual(load(self.folder)['cloneAnswerCount'],10)
         with self.assertRaises(ValueError): finish_audio_intake(self.folder,use_fallback=True)
 
     def test_insufficient_speech_offers_fallback_before_review(self):

@@ -54,7 +54,6 @@ public sealed partial class TrialReviewApp
                 new IntakeAnswer{question="How often have you used virtual reality?",transcript="Weekly, mostly seated experiences."},
                 new IntakeAnswer{question="How often do you use voice assistants?",transcript="Daily, for reminders."},
                 new IntakeAnswer{question="Have you used eye tracking before?",transcript="No."},
-                new IntakeAnswer{question="Which hand do you usually prefer?",transcript="Right."},
                 new IntakeAnswer{question="What visual correction are you using?",transcript="Glasses."},
                 new IntakeAnswer{question="Imagine you are helping a friend find something they lost in a room. Talk them through it for about thirty seconds, telling them where to look, which way to turn, and when they are getting close.",transcript="Turn left and look near the chair. You are getting close."}
             }).ToArray();
@@ -67,15 +66,14 @@ public sealed partial class TrialReviewApp
             "Are you 18 years of age or older? After the tone, please answer in a full sentence.",
             "Can you hear and understand this voice at a comfortable volume? After the tone, please answer in a full sentence.",
             "With your usual glasses or contact lenses if needed, can you see clearly enough to read and to find small objects? After the tone, please answer in a full sentence.",
-            "Can you safely stay seated, turn in a swivel chair, and use a controller in your right hand? After the tone, please answer in a full sentence. You do not need to give medical details.",
+            "For this experiment, you will be required to stay seated, turn in a swivel chair, and use a controller in your right hand. Can you safely do this? After the tone, please answer in a full sentence. You do not need to give medical details.",
             "Tell me about any experience you have had with virtual reality. What have you tried, how often, and how did it feel? If you have never tried it, tell me what you imagine it is like.",
             "Tell me how you use voice assistants or spoken directions in everyday life, such as on your phone or while driving. What works well for you, and what is frustrating?",
             "Have you used eye tracking before? If you have, describe it. If not, how would you feel about a system that knows where you are looking?",
-            "Which hand do you prefer for everyday tasks, and what is something you always do with that hand?",
-            "Are you wearing glasses, contact lenses, or no visual correction today? Tell me how they usually feel when you are looking at screens. No prescription details are needed.",
+            "Are you wearing glasses, contact lenses, or no visual correction today? No prescription details are needed.",
             "Imagine you are helping a friend find something they lost in a room. Talk them through it for about thirty seconds, telling them where to look, which way to turn, and when they are getting close."
         };
-        string[] topics={"adult","hearing","vision","seated_controller","vr","voice_assistant","eye_tracking","handedness","visual_correction","directional_speech"};
+        string[] topics={"adult","hearing","vision","seated_controller","vr","voice_assistant","eye_tracking","visual_correction","directional_speech"};
         for(int i=0;i<state.answers.Length;i++)
         {state.answers[i].id="fixture-"+i;state.answers[i].question=exactQuestions[i];state.answers[i].topic=topics[i];state.answers[i].structuredValue="unclear";state.answers[i].transcriptionStatus="complete";}
         return state;
@@ -120,7 +118,7 @@ public sealed partial class TrialReviewApp
         m_Dataset=m_Catalog.Register(m_Path,"synthetic-desktop-demo","SYNTHETIC","");
         m_DatasetDraft="Synthetic development demo";m_IdDraft="SYNTHETIC";
         m_IntakeMic="Development microphone (inactive)";
-        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu","layers","trial-search","cursor-details","cursor-collapsed","shortcuts","jev-alternatives","light-intake-consent","light-intake-interview","intake-clone-error","intake-screening-stopped","intake-withdrawn","intake-historical","intake-recording","intake-submitting","intake-prompt-playing","startup","layers-wifi-panel","intake-fallback-available","intake-fallback","light-intake-eligibility","intake-reviewed-awaiting-clone","intake-paused","intake-transcription-failed","intake-identifier-flag","intake-directional-speech","intake-reserve-study","intake-reserve-duplicate","intake-fit-change","intake-fit-no-change","intake-fit-missing"};
+        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu","layers","trial-search","cursor-details","cursor-collapsed","shortcuts","jev-alternatives","light-intake-consent","light-intake-interview","intake-clone-error","intake-screening-stopped","intake-withdrawn","intake-historical","intake-recording","intake-submitting","intake-prompt-playing","startup","layers-wifi-panel","intake-fallback-available","intake-fallback","light-intake-eligibility","intake-reviewed-awaiting-clone","intake-paused","intake-transcription-failed","intake-identifier-flag","intake-directional-speech","intake-reserve-study","intake-reserve-duplicate","intake-fit-change","intake-fit-no-change","intake-fit-missing","monitor-confirm","monitor-calibration","monitor-practice","monitor-search","monitor-block-break","monitor-finished","monitor-stale","monitor-intake"};
         var timeline=m_Timeline;
         states=states.Concat(new[]{"intake-fit-fallback"}).ToArray();
         for(int i=0;i<states.Length;i++)
@@ -195,7 +193,7 @@ public sealed partial class TrialReviewApp
                     else{m_Intake.answers[0].possibleIdentifiers=true;m_Intake.answers[0].transcript="My name is Alex (synthetic fixture). I am over eighteen.";}
                     m_IntakeScroll=new Vector2(0,450);
                 }
-                if(intakeState=="intake-directional-speech"){m_Intake.questionIndex=9;m_Intake.prompt=CaptureIntake("eligibility_review").answers[9].question;}
+                if(intakeState=="intake-directional-speech"){m_Intake.questionIndex=8;m_Intake.prompt=CaptureIntake("eligibility_review").answers[8].question;}
                 m_QuestionHeardRevision=1;
             }
             for(int frame=0;frame<3;frame++)yield return null;
@@ -203,6 +201,17 @@ public sealed partial class TrialReviewApp
             {m_IntakeScroll=new Vector2(0,1000);for(int frame=0;frame<3;frame++)yield return null;}
             if(intakeState=="intake-transcription-failed"||intakeState=="intake-identifier-flag")
             {m_IntakeScroll=new Vector2(0,520);for(int frame=0;frame<3;frame++)yield return null;}
+            if(state.StartsWith("monitor-"))
+            {
+                string screen=state=="monitor-confirm"?"Confirm your session":state=="monitor-calibration"?"Gaze preparation · dot 2 of 3":state=="monitor-practice"?"Practice · Readiness cross":state=="monitor-block-break"?"Block break · comfort and tracking check":state=="monitor-finished"?"Finished · survey handoff":"Trial 49 of 96 · Active search";
+                m_LiveStatus=new LiveStatus {state="connected",updatedUtc=UtcSeconds,headsetStateObservedUtc=UtcSeconds-(state=="monitor-stale"?12:0.2),
+                    headsetState=new TrialReviewHeadsetState {schema=1,sessionId="synthetic",participantCode="P900000000003",participantSessionId="development-capture-only",
+                        screen=screen,phase="trial",trialTotal=96,trialsCompleted=state=="monitor-finished"?96:48,voiceBlock="Block 2 · Selected Voice",
+                        gazeStatus="Tracking",appFocused=true,presenceKnown=true,userPresent=true,screenElapsedSeconds=6,sessionElapsedSeconds=720}};
+                m_ViewLive=true;m_LiveSignalActive=state!="monitor-stale";Seek(1.2);
+                if(state=="monitor-intake"){m_IntakeOpen=true;m_Intake=CaptureIntake("eligibility_review");m_Intake.cloneState="ready";m_Intake.cacheState="preparing";}
+                for(int frame=0;frame<3;frame++)yield return null;
+            }
             yield return new WaitForEndOfFrame();
             string path=Path.Combine(m_CaptureDirectory,$"{i+1:00}-{state}.png");
             ScreenCapture.CaptureScreenshot(path);

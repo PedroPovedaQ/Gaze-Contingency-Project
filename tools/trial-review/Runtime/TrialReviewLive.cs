@@ -279,7 +279,7 @@ public sealed partial class TrialReviewApp
     float LiveControlsHeight => m_FollowLive ? 300 : 116;
     void LiveControls(float width)
     {
-        GUILayout.BeginArea(new Rect(22, 73, width - 44, LiveControlsHeight));
+        GUILayout.BeginArea(new Rect(22, 73+SessionMonitorHeight, width - 44, LiveControlsHeight));
         GUILayout.BeginHorizontal();
         GUILayout.Label("Headset Wi-Fi IP", m_Label, GUILayout.Width(125));
         GUI.SetNextControlName("text:wifi-endpoint");
@@ -323,6 +323,10 @@ public sealed class TrialReviewHeadsetState
     public int schema, revision;
     public bool intakeAvailable;
     public string participantSessionId, participantCode, configuration, assignmentState, nextParticipantCode;
+    public string screen, voiceBlock, gazeStatus, audioFault, modelFault, message;
+    public double screenElapsedSeconds, sessionElapsedSeconds;
+    public int trialsCompleted, trialTotal;
+    public bool appPaused, appFocused, presenceKnown, userPresent;
     public string sessionId, phase;
     public bool progressKnown, wallControlAvailable, wallsVisible;
     public string commandId, commandResult;

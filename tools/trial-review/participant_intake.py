@@ -32,7 +32,7 @@ LEGACY_QUESTIONS = [
     ('handedness', 'Which hand do you usually prefer for everyday tasks: right, left, or both equally? Answer after the tone.'),
     ('visual_correction', 'Are you using no visual correction, glasses, contact lenses, or another correction for this session? Answer after the tone. No prescription details are needed.'),
 ]
-QUESTIONS = [
+V3_QUESTIONS = [
     ('adult', 'Are you 18 years of age or older? After the tone, please answer in a full sentence.'),
     ('hearing', 'Can you hear and understand this voice at a comfortable volume? After the tone, please answer in a full sentence.'),
     ('vision', 'With your usual glasses or contact lenses if needed, can you see clearly enough to read and to find small objects? After the tone, please answer in a full sentence.'),
@@ -44,7 +44,10 @@ QUESTIONS = [
     ('visual_correction', 'Are you wearing glasses, contact lenses, or no visual correction today? Tell me how they usually feel when you are looking at screens. No prescription details are needed.'),
     ('directional_speech', 'Imagine you are helping a friend find something they lost in a room. Talk them through it for about thirty seconds, telling them where to look, which way to turn, and when they are getting close.'),
 ]
-PROTOCOL = 'audio-intake-v3-20261101'
+QUESTIONS = [(topic, text) for topic, text in V3_QUESTIONS if topic != 'handedness']
+QUESTIONS[3] = ('seated_controller', 'For this experiment, you will be required to stay seated, turn in a swivel chair, and use a controller in your right hand. Can you safely do this? After the tone, please answer in a full sentence. You do not need to give medical details.')
+QUESTIONS[7] = ('visual_correction', 'Are you wearing glasses, contact lenses, or no visual correction today? No prescription details are needed.')
+PROTOCOL = 'audio-intake-v4-20261101'
 # Engineering settings, shared with TrialReviewVoiceActivity; not a validated speech detector.
 CAPTURE_SETTINGS = dict(method='20ms_rms_minus_dc_0.01_v1', frameMs=20, rmsThreshold=.01,
                         speechOnsetSeconds=.2, eligibilitySilenceSeconds=3, openSilenceSeconds=5,
@@ -53,7 +56,6 @@ BACKGROUND_CATEGORIES = {
     'vr': ('never', 'less_than_monthly', 'monthly', 'weekly', 'daily', 'unclear'),
     'voice_assistant': ('never', 'less_than_monthly', 'monthly', 'weekly', 'daily', 'unclear'),
     'eye_tracking': ('yes', 'no', 'unclear'),
-    'handedness': ('right', 'left', 'both_equally', 'unclear'),
     'visual_correction': ('none', 'glasses', 'contact_lenses', 'other', 'unclear'),
 }
 ELIGIBILITY = tuple(x[0] for x in QUESTIONS[:4])
@@ -69,7 +71,7 @@ def require_consent(state):
     consent = state.get('consent') or {}
     if (state.get('protocol') != PROTOCOL or consent.get('participantCode') != state['participantCode'] or
             consent.get('sessionId') != state['id'] or consent.get('study') is not True or
-            consent.get('voiceCloud') is not True or state.get('withdrawnUtc')):
+            consent.get('voiceCloud') is not True or stopped(state)):
         raise ValueError('Record study consent and explicit cloud recording/cloning authorization for this session first.')
     return consent
 
@@ -102,7 +104,22 @@ def authorize_recording(folder, filename):
                          cue='880Hz_180ms_before_microphone_v1', settings=CAPTURE_SETTINGS))
 
 
-def review_eligibility(folder, values, operator):
+def confirm_selected_voice(folder):
+    with locked(folder):
+        state=load(folder);require_consent(state)
+        if state['phase']!='select_voice' or not state.get('previewAudio'):
+            raise ValueError('Audition the participant-selected voice first.')
+        state.update(selectedVoiceConfirmed=True,selectedVoiceConfirmedUtc=time.time(),phase='interview')
+        atomic(folder/'session.json',state)
+    return state
+
+
+def review_eligibility(folder, values, operator, correction=None):
+    # Persist the same audited correction as the explicit correction button before review.
+    # Failure leaves the review unsaved and the UI's typed buffer intact.
+    if correction:
+        correct_transcript(folder, correction['answerId'], correction['transcript'], operator,
+                           correction.get('structuredValue') or None)
     with locked(folder):
         state = load(folder); require_consent(state)
         if (state['phase'] != 'eligibility_review' or len(state['answers']) < len(QUESTIONS) or
@@ -114,6 +131,7 @@ def review_eligibility(folder, values, operator):
         atomic(folder / ('eligibility-' + review['id'] + '.json'), review)
         eligible = all(v == 'yes' for v in values.values()) and all(not x['skipped'] for x in state['answers'][:4])
         state.update(eligibility=review, eligible=eligible, phase='interview_complete' if eligible else 'screening_stopped')
+        if not eligible: state.update(cacheState='stopped', cleanupState='pending')
         atomic(folder / 'session.json', state)
     return state
 
@@ -180,8 +198,8 @@ def save_answer_update(folder, state, entry):
 
 def editable_answer(state, answer_id):
     require_consent(state)
-    if state.get('eligibility') or state.get('cloneState') != 'not_started':
-        raise ValueError('Correct transcripts before saving the eligibility review and freezing clone inputs.')
+    if state.get('eligibility'):
+        raise ValueError('Correct transcripts before saving the eligibility review.')
     entry = next((x for x in state['answers'] if x['id'] == answer_id), None)
     if entry is None: raise ValueError('Answer not found in this participant session.')
     return entry
@@ -232,7 +250,8 @@ def correct_transcript(folder, answer_id, transcript, operator, structured_value
 def withdraw(folder):
     with locked(folder):
         state = load(folder)
-        state.update(withdrawnUtc=state.get('withdrawnUtc') or time.time(), phase='withdrawn')
+        state.update(withdrawnUtc=state.get('withdrawnUtc') or time.time(), phase='withdrawn',
+                     cacheState='stopped', cleanupState='pending')
         atomic(folder/'session.json', state); export_transcripts(folder, state)
     return state
 
@@ -241,19 +260,60 @@ def enough_speech(state):
     return state.get('speechSeconds', 0) >= MIN_SPEECH_SECONDS and state.get('sampleWords', 0) >= MIN_WORDS
 
 
+def stopped(state):
+    return bool(state.get('withdrawnUtc')) or state.get('phase') == 'screening_stopped'
+
+
+def require_audio_complete(state):
+    require_consent(state)
+    if (state.get('phase') not in ('eligibility_review', 'interview_complete') or
+            len(state.get('answers', [])) < len(QUESTIONS) or not state.get('selectedVoiceConfirmed') or
+            not enough_speech(state)):
+        raise ValueError('Complete all nine prompts and collect at least 30 seconds of usable speech and 50 words; use the fallback if needed.')
+
+
+def require_consent_receipt(folder, state):
+    consent = require_consent(state)
+    path = folder / ('consent-' + consent['id'] + '.json')
+    if not path.is_file() or json.loads(path.read_text()) != consent:
+        raise ValueError('The original consent receipt is missing or changed.')
+    return consent
+
+
+def cleanup_clone(folder, provider):
+    # Serialize deletion across review, withdrawal, and a returning clone worker.
+    with (folder / '.cleanup.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        state = load(folder)
+        if not stopped(state): raise ValueError('Clone cleanup requires stopped screening or withdrawal.')
+        voice = state.get('cloneVoiceId')
+        if not voice:
+            return patch(folder, cleanupState='waiting_for_clone' if state['cloneState'] in ('cloning', 'uncertain') else 'not_needed')
+        if state.get('cloneDeletedUtc'): return state
+        try:
+            provider.delete_voice(voice)
+        except Exception as error:
+            patch(folder, cleanupState='failed', cleanupError=str(error), cacheState='stopped')
+            raise
+        receipt = dict(voiceId=voice, deletedUtc=time.time(), reason=state['phase'], provider='ElevenLabs')
+        atomic(folder/'clone-deletion.json', receipt)
+        return patch(folder, cloneState='deleted', cloneDeletedUtc=receipt['deletedUtc'],
+                     cleanupState='deleted', cleanupError='', cacheState='stopped')
+
+
 def require_reviewed_eligibility(state):
     review = state.get('eligibility') or {}
     if (state['phase'] != 'interview_complete' or not state.get('eligible') or not review.get('id') or
             len(state['answers']) < len(QUESTIONS) or
             any(review.get('values', {}).get(key) != 'yes' for key in ELIGIBILITY)):
-        raise ValueError('Complete all ten intake questions and the researcher eligibility review first.')
+        raise ValueError('Complete all nine intake questions and the researcher eligibility review first.')
 
 
 def finish_audio_intake(folder, use_fallback):
     with locked(folder):
         state = load(folder); require_consent(state)
         if state['phase'] != 'fallback_available' or state.get('eligibility'):
-            raise ValueError('Finish all ten questions before choosing the optional reading fallback.')
+            raise ValueError('Finish all nine questions before choosing the optional reading fallback.')
         if use_fallback:
             state.update(phase='fallback', questionIndex=len(QUESTIONS),
                          promptAudio='', promptRevision=state['promptRevision']+1,
@@ -288,7 +348,9 @@ def load(folder):
 
 def patch(folder, **fields):
     with locked(folder):
-        state = load(folder); state.update(fields); state['updatedUtc'] = time.time()
+        state = load(folder); was_stopped = stopped(state); phase = state['phase']
+        state.update(fields); state['updatedUtc'] = time.time()
+        if was_stopped: state.update(phase=phase, cacheState='stopped')
         if state.get('withdrawnUtc'): state['phase'] = 'withdrawn'
         atomic(folder / 'session.json', state)
     return state
@@ -374,21 +436,34 @@ def sync_fit(folder, session_id, participant, fit):
         atomic(folder / 'session.json', state)
 
 
+class CloneVerificationRequired(RuntimeError):
+    def __init__(self, voice_id):
+        super().__init__('ElevenLabs requires account-side voice verification. The created voice ID is retained for cleanup.')
+        self.voice_id = voice_id
+
+
 class Provider:
     def __init__(self, keys_path):
         self.keys_path = Path(keys_path).expanduser()
 
-    def call(self, url, data=None, content_type='application/json'):
+    def call(self, url, data=None, content_type='application/json', method=None):
         headers = {'Content-Type': content_type}
         try: headers['xi-api-key'] = json.loads(self.keys_path.read_text())['elevenlabs_key']
         except (OSError, ValueError, KeyError): raise RuntimeError('ElevenLabs credentials are unavailable; local audio is preserved.') from None
-        req = urllib.request.Request(url, data=data, headers=headers)
+        req = urllib.request.Request(url, data=data, headers=headers, method=method)
         try:
             with urllib.request.urlopen(req, timeout=90) as response: return response.read()
         except urllib.error.HTTPError as e:
+            if method == 'DELETE' and e.code == 404: return b''
             raise RuntimeError(f'Provider request failed (HTTP {e.code}); check connection, permissions or quota.') from None
         except (urllib.error.URLError, TimeoutError):
             raise RuntimeError('Provider connection timed out or failed. Your local recordings are preserved.') from None
+
+    def delete_voice(self, voice):
+        if not re.fullmatch(r'[A-Za-z0-9_-]{8,128}', voice): raise ValueError('Invalid clone ID.')
+        result = self.call('https://api.elevenlabs.io/v1/voices/'+voice, method='DELETE')
+        if result and json.loads(result).get('status') != 'ok':
+            raise RuntimeError('Provider did not confirm voice deletion.')
 
     def multipart(self, url, fields, files):
         boundary = uuid.uuid4().hex; chunks = []
@@ -409,9 +484,9 @@ class Provider:
     def clone(self, code, data):
         result = self.multipart('https://api.elevenlabs.io/v1/voices/add', {'name':'study_'+code,'remove_background_noise':'false'},
                                 [('files','participant-answers.wav',data)])
-        if result.get('requires_verification'): raise RuntimeError('ElevenLabs requires account-side voice verification.')
         voice = result.get('voice_id','')
         if not re.fullmatch(r'[A-Za-z0-9_-]{8,128}',voice): raise RuntimeError('Provider returned no usable voice ID.')
+        if result.get('requires_verification'): raise CloneVerificationRequired(voice)
         return voice
 
 
@@ -508,10 +583,8 @@ def answer(folder, provider, filename=None, skip=False):
 def clone_answers(folder, provider):
     with locked(folder):
         state=load(folder)
-        require_consent(state)
-        require_reviewed_eligibility(state)
-        if not state.get('eligible') or not enough_speech(state):
-            raise ValueError('Confirm eligibility and collect at least 30 seconds of usable speech and 50 transcript words; use the reading fallback if needed.')
+        require_audio_complete(state)
+        require_consent_receipt(folder, state)
         if state['cloneVoiceId'] or state['cloneState'] in ('cloning','uncertain'): return state
         answers=[x for x in state['answers'] if x['audio'] and not x['skipped'] and x['quality']['usable']]
         if not answers: raise ValueError('Record participant answers before cloning.')
@@ -528,14 +601,21 @@ def clone_answers(folder, provider):
                     if params is None: params=current; out.setnchannels(params[0]);out.setsampwidth(params[1]);out.setframerate(params[2])
                     if current!=params: raise ValueError('Answer recordings use different audio formats.')
                     out.writeframes(sample.readframes(sample.getnframes()))
-        require_consent(load(folder))
+        patch(folder,cloneAnswerCount=len(answers),cloneAnswerIds=[x['id'] for x in answers],
+              cloneInputSha256=hashlib.sha256(result.getvalue()).hexdigest())
+        require_audio_complete(load(folder))
         voice=provider.clone(state['participantCode'],result.getvalue())
-        return patch(folder,cloneState='ready',cloneVoiceId=voice,cloneAnswerCount=len(answers),
+        state = patch(folder,cloneState='ready',cloneVoiceId=voice,cloneAnswerCount=len(answers),
                      cloneAnswerIds=[x['id'] for x in answers], cloneInputSha256=hashlib.sha256(result.getvalue()).hexdigest(),
                      cloneCreatedUtc=time.time(), cloneError='')
+        if stopped(state): return cleanup_clone(folder, provider)
+        return state
     except Exception as e:
+        if isinstance(e, CloneVerificationRequired):
+            state = patch(folder,cloneVoiceId=e.voice_id,cloneState='verification_required',cloneError=str(e))
+            if stopped(state): cleanup_clone(folder,provider)
         # Do not silently create another provider voice after an uncertain remote outcome.
-        patch(folder,cloneState='uncertain',cloneError=str(e))
+        if not load(folder).get('cloneVoiceId'): patch(folder,cloneState='uncertain',cloneError=str(e))
         raise
 
 
@@ -554,7 +634,7 @@ def main():
     parser=argparse.ArgumentParser();parser.add_argument('--request',type=Path,required=True)
     args=parser.parse_args();req=json.loads(args.request.read_text());folder=Path(req['folder'])
     try:
-        action=req['action'];provider=Provider(req['keysPath']) if action in ('prompt','answer','clone','retry_clone','retry_transcript') else None
+        action=req['action'];provider=Provider(req['keysPath']) if action in ('prompt','answer','clone','retry_clone','retry_transcript','review','withdraw','cleanup_clone') else None
         if action=='codes':
             used, dev = participant_codes.known_codes(folder, req.get('catalog'), req.get('archives') or (), req.get('knownCodes') or ())
             result = dict(ok=True, suggested=participant_codes.suggest(used,dev,req.get('development',False),req.get('headsetSuggestion')),
@@ -564,13 +644,14 @@ def main():
         elif action=='sync_fit':
             sync_fit(folder,req.get('participantSessionId'),req.get('participantCode'),req.get('fit'))
         elif action=='consent': record_consent(folder,req['operator'],req['reference'],req['study'],req['voiceCloud'])
-        elif action=='select_voice':
-            state=load(folder);require_consent(state)
-            if state['phase']!='select_voice' or not state.get('previewAudio'): raise ValueError('Audition the participant-selected voice first.')
-            patch(folder,selectedVoiceConfirmed=True,selectedVoiceConfirmedUtc=time.time(),phase='interview')
+        elif action=='select_voice': confirm_selected_voice(folder)
         elif action=='authorize_recording': authorize_recording(folder,req['audio'])
-        elif action=='review': review_eligibility(folder,dict(zip(ELIGIBILITY,req['eligibilityValues'])),req['operator'])
-        elif action=='withdraw': withdraw(folder)
+        elif action=='review':
+            state=review_eligibility(folder,dict(zip(ELIGIBILITY,req['eligibilityValues'])),req['operator'],req if req.get('saveCorrection') else None)
+            if stopped(state): cleanup_clone(folder,provider)
+        elif action=='withdraw':
+            withdraw(folder); cleanup_clone(folder,provider)
+        elif action=='cleanup_clone': cleanup_clone(folder,provider)
         elif action=='retry_transcript': retry_transcript(folder,provider,req['answerId'])
         elif action=='correct_transcript': correct_transcript(folder,req['answerId'],req['transcript'],req['operator'],req.get('structuredValue') or None)
         elif action=='recover_clone':

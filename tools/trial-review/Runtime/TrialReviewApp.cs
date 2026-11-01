@@ -173,6 +173,7 @@ public sealed partial class TrialReviewApp : MonoBehaviour
     }
     void OnDestroy()
     {
+        if(m_MonitorTexture!=null){m_MonitorTexture.Release();Destroy(m_MonitorTexture);}
         if(m_GazeDotTexture!=null)Destroy(m_GazeDotTexture);
         if(m_CardTexture!=null)Destroy(m_CardTexture);
         if(m_ScrollTexture!=null)Destroy(m_ScrollTexture);

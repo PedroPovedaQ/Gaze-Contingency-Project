@@ -2,7 +2,7 @@
 
 **Implemented — November 1, 2026:** the current operator instructions are [Consent-first audio intake and study setup](10-audio-intake.md). The October 25 prototype is superseded; its manual capture, generated follow-ups and concurrent cloning are no longer available.
 
-New sessions use the ten fixed v3 questions, prospective consent, Selected Voice confirmation, River prompts and a tone before automatic answer capture. All questions and optional fallback precede human eligibility review; the reviewed eligibility and speech-adequacy gates precede cloning/cache preparation. Pause, Repeat, Skip and withdrawal remain available.
+New sessions use the nine fixed v4 questions, prospective consent, Selected Voice confirmation, River prompts and a tone before automatic answer capture. All questions and optional fallback precede human eligibility review; consent and speech adequacy start cloning/cache automatically while eligibility is reviewed. Positive eligibility and a ready, verified cache are required for headset handoff. Stopped screening or withdrawal cancels preparation and deletes a known provider clone. Pause, Repeat, Skip and withdrawal remain available.
 
 **Implemented service boundary:** participant answer audio goes to ElevenLabs for transcription and cloning. Prompts and study speech use ElevenLabs synthesis. The worker reads only `elevenlabs_key` from private `~/.config/follow-my-voice/api_keys.json`; no credentials are packaged in the desktop app. Generated follow-up methods and options have been deleted. The [network audit](../study-network-hosts.md) distinguishes this flow from optional development/evaluation tools.
 

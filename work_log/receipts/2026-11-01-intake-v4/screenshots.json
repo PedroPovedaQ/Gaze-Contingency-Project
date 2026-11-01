@@ -1,0 +1,519 @@
+{
+  "synthetic": true,
+  "sourceApp": "/tmp/FollowMyVoice-IntakeV4-Monitor-20261101.app",
+  "count": 128,
+  "files": [
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/01-first-person.png",
+      "sha256": "1d3684a288b52a25fb52320029eeceea233fdf4a3739b13e368030d2ff8a6321"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/02-playing-subtitles.png",
+      "sha256": "7ba38694c5ba4f3b6cb929abff0a1374fdc45689829f4a9f5a5d7788bfbc6bf6"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/03-missing-pose.png",
+      "sha256": "57a97508ce20ffec8cd16c2bf1251071068ab535f6b96d50d903c25b3d747663"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/04-third-person.png",
+      "sha256": "04f39b2bd7e74e77163f5892e59209322a04db1aaff984f2dbbae2dd60997b6c"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/05-overhead.png",
+      "sha256": "db8b5acce20b7a6e3fb8cf9354742b5c60947909be0751444824c0d51d4c5f10"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/06-cursor-speech.png",
+      "sha256": "191c1e31ffc5db8703c37406982d63d465ff2952cb94718444cc4174e7c1aae0"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/07-events.png",
+      "sha256": "19fb9e62abb71a992dd896d739733e5351e7674ac54144634198c8e0af0c14cd"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/08-final-no-summary.png",
+      "sha256": "6480a51fbfd944071726826438db92967ebbcf761e27bcd1ca58052ee73be696"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/09-jev.png",
+      "sha256": "a9749172177f9516fc05d4e1c91169c72569c7395dff8787ab4336f7721d60da"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/10-evaluation.png",
+      "sha256": "2ec89dc23e02583b2e5ce97a8ce89361faba9f1fd3466bc9393dbdb6fb69e9ce"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/11-selected-trial.png",
+      "sha256": "3af0a80740d4b70ed9b50b6a1a2ac4977f48a725512e7771fd0b0aa91cb9ea19"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/12-light-first-person.png",
+      "sha256": "3a8f5488035c3ebfdda0cc06ac594eabe6edf2068ed61eedec6ca22c6c0a032a"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/13-light-jev.png",
+      "sha256": "82c7ab50a394162f650bb8dcf1ed25cdc3a730c2892fcec5b9eb566b0bc161ae"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/14-open-run.png",
+      "sha256": "b9bed89fb026d878f80a345e69a00ed97f25d5995414ac15897ed2d4d25bcf30"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/15-dataset.png",
+      "sha256": "ec35698177eb8ad4c8522cb53960551604e4eef62ade19fc5ba476161a6d1bce"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/16-empty.png",
+      "sha256": "b601d0ee018be701541f0404f414a4339ed6450e3d015aa1222eb74c5e5a5807"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/17-loading.png",
+      "sha256": "76b0b1396c7bbe167c601cc55f8467d5af42a7f540aa083e288108af5672a847"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/18-intake-reserve.png",
+      "sha256": "41be957c94762102cd9921d0f0042b389a969b6410fe150f16482b7d37d6ac7c"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/19-intake-consent.png",
+      "sha256": "91e6e0915498fffb602ced044910f3723daee6a66eef15e49f37f9dfd066a6af"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/20-intake-voice.png",
+      "sha256": "0fc850cbd64a3ae06866a94a7578dbf252689cf0cf16680a6a9c6a1c2851578f"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/21-intake-interview.png",
+      "sha256": "83d19389ddc84fedccb64578c28002293dd7f56e647e333f438bbca424c1acd7"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/22-intake-eligibility.png",
+      "sha256": "82689a0d49db95510ca2107fcc0473dff0a62c0435af0350fd43a444f59a9ea6"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/23-intake-cache.png",
+      "sha256": "c7ae3bb8cf6fa623d04e43765168be84d7c9017f07ee1ff8613eb51add34c9a0"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/24-intake-ready.png",
+      "sha256": "da50edf886ff0edb6a132ba75dbd8cf5c1778af8c7a2125f75a1f45a030eede2"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/25-file-menu.png",
+      "sha256": "dbd77ceccf9aefefbed6e8367cc84c96c986036b2b7aa4506569cec00adfb81d"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/26-layers.png",
+      "sha256": "7d3e85b63be475eb8c7bf6bca302ec9fd1bc5c13ebdc8f7d6802601f91acb1a4"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/27-trial-search.png",
+      "sha256": "58ec9f8a89cdd184abb83546c919cae3f526ff400119f2bc3d8bb95f2d684675"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/28-cursor-details.png",
+      "sha256": "0a66d021b7e364f2af01b3b5c06a3b7acd8cd466e15643438f253a126c8c033c"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/29-cursor-collapsed.png",
+      "sha256": "fe45887d5f35959eea97cd305609a1243412dc16971260345cd1e29f390d1099"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/30-shortcuts.png",
+      "sha256": "9fae528a7a551edcb0516f40d90287345ab83c9ce6ad5c980f57030db32c15e3"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/31-jev-alternatives.png",
+      "sha256": "1d5c2b1fdf8f9c7123a1f450374fdf1365286c2d652bd0d6483424b3983ad1ff"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/32-light-intake-consent.png",
+      "sha256": "604481852020a601cce8e255811f1aba77a675f314a575d12608a8ca7820fc2c"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/33-light-intake-interview.png",
+      "sha256": "3e1c9a9adc46534784f1e00d80055a58b9be05e038bff5e313428173c3b5b103"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/34-intake-clone-error.png",
+      "sha256": "27006800f8352bda3d8485a53ffd6adf02ced6cc8ff3bee170ac59d1eab3637a"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/35-intake-screening-stopped.png",
+      "sha256": "e6514f7ac84ead7edbf5fca53d1516d4954d8d357e7e345f4cc5ebec4f13b531"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/36-intake-withdrawn.png",
+      "sha256": "1abf4a68106e44933265e6018352c1b2f58fe6cb051dcd16ddf169c8e8b89cf6"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/37-intake-historical.png",
+      "sha256": "b3d437ba9d19b49c5ca0e53b268140f3474e3337784655170377131d1c76519a"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/38-intake-recording.png",
+      "sha256": "56278c2d93a8f2736862ca5335a2c6b962cc1e272008f7f8c294df81cafd0aaa"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/39-intake-submitting.png",
+      "sha256": "e4edeb6b60456530a29dcd5137fc077ca6835456e7227bf73fa4a196dd042a58"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/40-intake-prompt-playing.png",
+      "sha256": "29abb0854e0c6648f2af2b9a3312b5ae33466e8487e8b2432b5997cc98af0b6c"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/41-startup.png",
+      "sha256": "59b6a6fb91bb61dd344e78513194ef82e4cd212d92fd8b64786d602a270ccbfd"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/42-layers-wifi-panel.png",
+      "sha256": "942c6046617a2a74a7f9a0d215dbece93f3a91bf0e8ed3235d64e9dc6568c46c"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/43-intake-fallback-available.png",
+      "sha256": "5eac89d52ffb878cd44cd6423b500b34c458a7a581fb3d98e457977ac1341ac3"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/44-intake-fallback.png",
+      "sha256": "49e71ed6a1857fb899b07e2bcdf3af2d4b3eefdee4b352943d4eca66857efa0f"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/45-light-intake-eligibility.png",
+      "sha256": "a41f717320e288c07c822616b73a80287972dbedcfb5089825b4e780c1ddf1e5"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/46-intake-reviewed-awaiting-clone.png",
+      "sha256": "e5b52dd99d6902913719a95d2a116772fff503f35ef4a6bb54e622ed53c4059e"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/47-intake-paused.png",
+      "sha256": "e1cab32847348f35ca9d07430c85416123efb6a4f4c6079c14e686fe21caa613"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/48-intake-transcription-failed.png",
+      "sha256": "6f1aca32398dec5ff64b4c2df6d5d067477e2da2451c1bd37f512698984ed44b"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/49-intake-identifier-flag.png",
+      "sha256": "1bcb82532d23b8db828a64a9a3b8fe29d3616a6cc6f31852e4642b8cf0763abd"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/50-intake-directional-speech.png",
+      "sha256": "29e2003ae27f360280180e6eba900a4a8ef69616eeafce6954fbdc40b9ef759f"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/51-intake-reserve-study.png",
+      "sha256": "9dac6c296716b8b2c71aca39b19e55b89a5fc3e357dcf628bb0ef6ce9d7f4c4b"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/52-intake-reserve-duplicate.png",
+      "sha256": "649d4195f3231e2244f5e0b43aa1e4e226648d477efefcb72ab4cdc2a361c08b"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/53-intake-fit-change.png",
+      "sha256": "881b8f82ad79bb255bb3f37ca63f2d3a0bd7a9b06a06c0e4ae0b9f54fe1711c9"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/54-intake-fit-no-change.png",
+      "sha256": "7a8be94c5526068b59084807d840d263049c24e60575f1ebcfe03a1caf114281"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/55-intake-fit-missing.png",
+      "sha256": "6b13bcb1b74b810b6c4f1b9b4cfc6c5aaa7c33007f28b9e1e340ae83a917da3b"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/56-monitor-confirm.png",
+      "sha256": "829d9da81034d87ac83c70e3e2b78d77993d3e34a479c8e33f42079712532325"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/57-monitor-calibration.png",
+      "sha256": "cc1bcb60999f4e888e6dfc59dea852f022650ddb7176b07e1fdbb166f710d596"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/58-monitor-practice.png",
+      "sha256": "88d66fcd07aac306cd38af6f5bff9d66f0ace46c0868dd3d2baff977ba4f439d"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/59-monitor-search.png",
+      "sha256": "09f5a617aab62a2e946cb328837aece2fc58c7274c3781b4f5d7885ca682de3b"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/60-monitor-block-break.png",
+      "sha256": "e97b5aeb0e6cc5ced7989ae57ce432460533d008fcfe19e1ad0c7afb0c906e45"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/61-monitor-finished.png",
+      "sha256": "640cc20693f16f2d9d5b9a7a13e6db066b167c181c4d3bc6a7aac8507f885473"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/62-monitor-stale.png",
+      "sha256": "6eee39d9d982f10e2ac59f3d5571faa6d5b54be19c82eb26c5be7f3f161f046e"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/63-monitor-intake.png",
+      "sha256": "cdb6e973490371b9b2359bd51201315f78b9c7ffa44519a21af27492196c6324"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1440/64-intake-fit-fallback.png",
+      "sha256": "b58bdb1a9f8e077133f9d80a0f7a7b2e48c4091f79c3252e6c1f4620dd3d86b9"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/01-first-person.png",
+      "sha256": "cf542a66198340ba1a22a46c3df61b9fda44ff5af8b74f5d9bfea8e2526317db"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/02-playing-subtitles.png",
+      "sha256": "68f7d90dea0cf76cd0c0b2e2a0ee288e345501e95846a704a65705d73d142dce"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/03-missing-pose.png",
+      "sha256": "a60674038517af6279cc5a73293b848356d72c68cc1e9d44a4d42db6e77ae6b1"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/04-third-person.png",
+      "sha256": "02963b9b31e1a90be674788dbada3b82f42fe9647d1c49b6c732e3aebe13e4bf"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/05-overhead.png",
+      "sha256": "9c39527d82fc04798327f9e35f8a250b018dc3499421c947ed955d8ed5dbdd6f"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/06-cursor-speech.png",
+      "sha256": "35d564501b8a29854f81a8d6169b096b4b0a9700924504a4f0755eee9bec91c3"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/07-events.png",
+      "sha256": "e7973bfd948dec30f6f2aeca8cd32202144910125532ceea0a6c813fc98baef1"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/08-final-no-summary.png",
+      "sha256": "a445fccb22789db5423b829fb719305673d2090561fbe278774657ceeaa4cedd"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/09-jev.png",
+      "sha256": "ec494f596a4f7eccb3cb35ad9432b25c2af353fd553800f4ce7ab6de45253f88"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/10-evaluation.png",
+      "sha256": "3f336649b6840f912a3f843f96ac1722cda9ff3cba5cab8e12d76e60c0578935"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/11-selected-trial.png",
+      "sha256": "b1620213ed575dfadc1fb65a7f9365950e500666a2a55d5a8b13a144970070ab"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/12-light-first-person.png",
+      "sha256": "ca03da6cf5aceb09a3602fe31c7795bbdab14ab1a3a24636eac669955c235627"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/13-light-jev.png",
+      "sha256": "a4ea3f5c4c107fd19c9ecdddb1c8e52212f25fe99034e79bc8521a1bdfbff980"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/14-open-run.png",
+      "sha256": "38380ecc9250dacc143bae526e4ac3061e8dacf85d5089c234f7a7bfa8b63839"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/15-dataset.png",
+      "sha256": "2b102ef2738df8f633998a7613b62d1d4a80e7baec5106d0dcb75488cfa31e07"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/16-empty.png",
+      "sha256": "52de162e4be3f08286d9d28286ac0b78823136c35b13859d1ab55fb02c25e6df"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/17-loading.png",
+      "sha256": "f93bc829b069dbf8f5231e107f595e559aba050847074f8815e500e814e5be26"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/18-intake-reserve.png",
+      "sha256": "b2f54c6b29a4ca4a677fba23db655dd0f85e62b9f99c63bcab9327ef1f6e162f"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/19-intake-consent.png",
+      "sha256": "f76e1d80b29d2198bd0202c33f85ae5fda8767570a232e44ce945e31ba446d08"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/20-intake-voice.png",
+      "sha256": "7d603df817d0d8c99967cdfc09c6cb68bf66bd8f79a3eda9109ad2b7c6d946a1"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/21-intake-interview.png",
+      "sha256": "771e5cfbeafbd9508b0dce74b66d5816add0ffc7bc8f0e4f22b1ba82cb2b833b"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/22-intake-eligibility.png",
+      "sha256": "290e0c3d71ea3727517f910b7800b3f3ca41e0303863172c7760c273c1ad39e3"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/23-intake-cache.png",
+      "sha256": "6ea51b0d6a45990127c8d82461c3254cb967aae1052a42316419e96bfb9aeae5"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/24-intake-ready.png",
+      "sha256": "ad9e8b14e9ef692b2ac561fd7c9a5a0a135c7926d386922f212c35d0a8cd8ce9"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/25-file-menu.png",
+      "sha256": "b5f9833ff0b9d49892b426149263b4b62855991d433e2419c7d02ab1b30b67fc"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/26-layers.png",
+      "sha256": "1e1d9b86a6fb1cc8eeaa77e745251ad378b0752572c5b3660e23b51f49e5222e"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/27-trial-search.png",
+      "sha256": "595806585d53b7bd6bc1ca6e997f35cd150c84c60036a6b395bfd4a832a22e57"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/28-cursor-details.png",
+      "sha256": "81780ed753f580171ee1a755ca007ef25a7418e97f408735aee3205ab4d0ba7f"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/29-cursor-collapsed.png",
+      "sha256": "b31007c2f0b2011f50e2ebbb6e9fc84100808a245dd07b0dd00d5be5476b16d1"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/30-shortcuts.png",
+      "sha256": "0dec72a3547acd8112d5dacd4993178ead1275b578cd7375b5faabf4ef5c48e7"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/31-jev-alternatives.png",
+      "sha256": "7524824cd14669af976952d8a255807dcab748c8cfb6a071e5d9bd147bf65dd0"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/32-light-intake-consent.png",
+      "sha256": "69b0a06398e3e336faa2395ff60b6755b1a94e69f2b81fa4fa0d5814914336f9"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/33-light-intake-interview.png",
+      "sha256": "3ab854ea97a4aff277ef29cd5a36df7b323800b775905ab0773841ffa554e1a0"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/34-intake-clone-error.png",
+      "sha256": "25e15dd95ae1c9d011168b049235d1f4bdd52dd0b24002f5644073cd19ffa238"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/35-intake-screening-stopped.png",
+      "sha256": "5aaa6b98ad33d51d9d2f3164949e1a07a6ed4a72e273447f314e4481d728c554"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/36-intake-withdrawn.png",
+      "sha256": "fa01208f3362fa2d1e4f917314e5e193d48de6f2681a0d51faab84cfb5ef0d91"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/37-intake-historical.png",
+      "sha256": "0aebbe24eba221bda4b050ec51a3085d972eef5cd97dcdc057727a2053a0e4e6"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/38-intake-recording.png",
+      "sha256": "61671cc308b95eb4809a9b161a512646a4788cac312dc59ef9e2030c4b0d83fa"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/39-intake-submitting.png",
+      "sha256": "87ef016ed7c91d5351109e2096e1c7535ac9400fb6ee9ae5c00e6977d337187d"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/40-intake-prompt-playing.png",
+      "sha256": "d15d4b0b93045e2001dc0963a1515171b653ef03725da608f630ee4bd54a762d"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/41-startup.png",
+      "sha256": "af6127306363ddc29ffa0a3b2f489975335e0359406748fb553745de0e09103f"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/42-layers-wifi-panel.png",
+      "sha256": "ce362c435066c9734236d28b88dba196a133a49e51d85691428d762e8316faf4"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/43-intake-fallback-available.png",
+      "sha256": "9ab293126d4b192555415ac2f14c1d3c008e86be7300a72023ba4c8a0d532832"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/44-intake-fallback.png",
+      "sha256": "28cbf7e5995900d8e41b050d20a931eb894ac78724cf9d1a4f3ed6c49e36ed91"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/45-light-intake-eligibility.png",
+      "sha256": "105c05c0cb987a50f3a3307e4b2c730fbc3985fbb7dded063f81603f4d0eabf5"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/46-intake-reviewed-awaiting-clone.png",
+      "sha256": "66cbdd6bc4a929af6ef83e22926747dcee06bc40e1b83a856d6210f7741eb285"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/47-intake-paused.png",
+      "sha256": "f1d40ef443b1763be1323676c6a0f14b11df9faaa475d783ea9cd288308803e9"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/48-intake-transcription-failed.png",
+      "sha256": "b4378418c68cb0478dd67b8265b79ffa245871a043de0f564ed744bcdc501601"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/49-intake-identifier-flag.png",
+      "sha256": "75a670bedc2d6138cf1c8a5592dd0dce0deca0537c87a4549cf45a8c0182246e"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/50-intake-directional-speech.png",
+      "sha256": "2a7d249a358452c326ceeeef89f4649bf3c0f20f310c2d37e814b9dac4915698"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/51-intake-reserve-study.png",
+      "sha256": "d8b68382e5d6f7fad1d8312725ef2f3b0c461beeccdfc0fc0f0965de4d4ccae4"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/52-intake-reserve-duplicate.png",
+      "sha256": "7e9a7ee795641f051f1c9394f881b7f8ea693f5460140be6d149c65695dd2a80"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/53-intake-fit-change.png",
+      "sha256": "e9f196575ec171d262f113e4e612ce6be823167df640c273de0a5dba4d9ad4ce"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/54-intake-fit-no-change.png",
+      "sha256": "56bba90c7b86ad4cb072f306d36474f819b1bb26fd230ca0e7523d8b534c934f"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/55-intake-fit-missing.png",
+      "sha256": "f8ec4d85dec4baf17a30b4cafe5745273d2a1d7b2b0870979a13d76e458b69ae"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/56-monitor-confirm.png",
+      "sha256": "6276ae986bc86f78d57a856bab9c88948bf0da7942d2813c9003df97a371a1ca"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/57-monitor-calibration.png",
+      "sha256": "09615d57a043bd70b32d1ed1a1158f43feb5aab463d537c75224e90f84e7035a"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/58-monitor-practice.png",
+      "sha256": "3cdb8faeb232ea2cfb0646c674da44c861b750d9d5eaa7a78108647e74bd2f8e"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/59-monitor-search.png",
+      "sha256": "33caa26ea17ade4ff6693fef8df0bf5a8ce822d3d4312af8a96da6a4e7b6b099"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/60-monitor-block-break.png",
+      "sha256": "2075d2e598feb47f2cf6264ffa3d9c7cebcc28f0f6b01b5da5a340ec2c3bd962"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/61-monitor-finished.png",
+      "sha256": "37649af5390371b077e1e504b6b8979f3c6602025ee5e0b2f279cc5a55883834"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/62-monitor-stale.png",
+      "sha256": "3addb83a2a5404f1486aa937ae3a1b80c9dcc803c92333d759260a120a33333b"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/63-monitor-intake.png",
+      "sha256": "e6ef254e263a780a43f7a4b7d5284f3c407093977215eb086d9aeab54ef04921"
+    },
+    {
+      "path": "/Users/pedro.poveda/.codex/worktrees/thesis-main-sync/Gaze Contingency Project/.context/coordination/trial-viewer-shots/intake-v4-20261101/1280/64-intake-fit-fallback.png",
+      "sha256": "8a9971b83d4e9f97b2b147998425f44140299f1ba1bb75c32c95e0d4e53ce187"
+    }
+  ]
+}

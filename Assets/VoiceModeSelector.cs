@@ -36,6 +36,7 @@ public class VoiceModeSelector : MonoBehaviour
 
     public event System.Action SelectionCompleted;
     public bool IsComplete => m_Phase == Phase.Done;
+    public string MonitorScreen { get; private set; } = "Waiting for participant assignment";
 
     enum Phase { ConfirmDesktop, WaitingToStart, Choosing, ChoosingNeutral, ChoosingNeutralVoice, Enrolling, EnrollmentFailed, Preparing, PreparationFailed, PreparingQuickTest, QuickTestFailed, CheckingNeutral, CheckingSelf, Cancelled, Done }
     NeutralVoiceProfile m_ChosenGender;
@@ -329,6 +330,8 @@ public class VoiceModeSelector : MonoBehaviour
 
     void SetText(string s)
     {
+        MonitorScreen = System.Text.RegularExpressions.Regex.Replace(s.Split('\n')[0], "<[^>]+>", "");
+        m_LiveStatus?.RefreshScreen();
         if (m_Text != null) m_Text.text = s;
         if (m_LoadingBar != null) m_LoadingBar.SetActive(false);
     }

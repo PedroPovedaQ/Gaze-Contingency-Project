@@ -33,6 +33,18 @@ class Remote:
 
 
 class LiveBridgeTests(unittest.TestCase):
+    def test_monitor_fields_survive_bridge_without_commands(self):
+        value=dict(schema=1,sessionId='synthetic',phase='trial',updatedUtc=100,progress01=0,progressKnown=False,
+                   screen='Trial 49 of 96 · Active search',voiceBlock='Block 2 · Selected Voice',
+                   trialsCompleted=48,trialTotal=96,screenElapsedSeconds=3,sessionElapsedSeconds=700,
+                   appFocused=True,appPaused=False,presenceKnown=True,userPresent=False,
+                   gazeStatus='Tracking',audioFault='Synthetic audio error',modelFault='Guidance model unavailable')
+        result=validate_headset_state(value)
+        for field in ('screen','voiceBlock','trialsCompleted','trialTotal','screenElapsedSeconds','sessionElapsedSeconds',
+                      'appFocused','appPaused','presenceKnown','userPresent','gazeStatus','audioFault','modelFault'):
+            self.assertEqual(result[field],value[field])
+        self.assertEqual(validate_headset_state(dict(value,screenElapsedSeconds=float('nan')))['screenElapsedSeconds'],0)
+
     def test_assistance_status_is_explicit_bounded_and_not_inferred(self):
         self.assertIsNone(validate_assistance_status(None))
         state = dict(mode='adaptive', provider='local_minilm', modelVersion='20261026-minilm-adaptive-v2',

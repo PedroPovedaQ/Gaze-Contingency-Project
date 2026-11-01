@@ -6,6 +6,13 @@ public static class TrialReviewCaptureChecks
 {
     public static void Run()
     {
+        var heartbeat=new TrialReviewHeadsetState {schema=1,sessionId="synthetic",appFocused=true,presenceKnown=true,userPresent=true};
+        string Warning(bool fresh)=>(string)typeof(TrialReviewApp).GetMethod("MonitorWarning",BindingFlags.Static|BindingFlags.NonPublic).Invoke(null,new object[]{heartbeat,fresh});
+        if(!TrialReviewHeadsetState.Fresh(heartbeat,true,100,99) || TrialReviewHeadsetState.Fresh(heartbeat,true,106,99))throw new Exception("Stale heartbeat must not appear live");
+        if(!Warning(false).Contains("No fresh updates"))throw new Exception("Missing stale-link warning");
+        heartbeat.userPresent=false;if(!Warning(true).Contains("removed"))throw new Exception("Missing wear warning");
+        heartbeat.appPaused=true;if(!Warning(true).Contains("paused"))throw new Exception("Missing pause warning");
+        Debug.Log("TRIAL_REVIEW_MONITOR_PASS freshness, stale link, wear and pause warnings; read-only display");
         var go=new GameObject("Capture isolation checks");
         try
         {
@@ -27,12 +34,12 @@ public static class TrialReviewCaptureChecks
             {
                 var state=fixture.Invoke(app,new object[]{phase});intake.SetValue(app,state);
                 bool reviewed=phase=="interview_complete";
-                if(Property("CanCloneIntake")!=reviewed||Property("CanCacheIntake")!=reviewed)
+                if(Property("CanCloneIntake")!=(reviewed||phase=="eligibility_review")||Property("CanCacheIntake")!=reviewed)
                     throw new Exception("Clone/cache eligibility gate: "+phase);
                 bool audioComplete=reviewed||phase=="eligibility_review"||phase=="screening_stopped";
                 if(Property("AudioIntakeComplete")!=audioComplete)throw new Exception("Audio intake completion tick: "+phase);
-                if(audioComplete&&((Array)state.GetType().GetField("answers").GetValue(state)).Length!=10)
-                    throw new Exception("Completed capture must include all ten answers");
+                if(audioComplete&&((Array)state.GetType().GetField("answers").GetValue(state)).Length!=9)
+                    throw new Exception("Completed capture must include all nine answers");
                 if(reviewed)
                 {
                     Field(state,"cloneState","not_started");
@@ -42,7 +49,7 @@ public static class TrialReviewCaptureChecks
                     Field(state,"speechSeconds",30f);Field(state,"sampleWords",49);
                     if(Property("CanCloneIntake"))throw new Exception("Word threshold changed");
                     Field(state,"sampleWords",50);Field(state,"eligibility",null);
-                    if(Property("CanCloneIntake"))throw new Exception("Missing review must block clone");
+                    if(!Property("CanCloneIntake"))throw new Exception("Consent and complete speech allow clone before review");
                 }
                 Field(state,"withdrawnUtc",1d);
                 if(Property("CanCloneIntake")||Property("CanCacheIntake"))throw new Exception("Withdrawal must block clone/cache");
@@ -77,7 +84,7 @@ public static class TrialReviewCaptureChecks
             if(Property("AutomaticCaptureAllowed"))throw new Exception("Withdrawal must close capture gate immediately");
             AppField("m_CaptureMode",true);
             Debug.Log("TRIAL_REVIEW_AUTOMATIC_INTAKE_PASS consent/pause/withdrawal guards before microphone permission; exactly one no-speech repeat per question");
-            Debug.Log("TRIAL_REVIEW_INTAKE_STEPPER_PASS ten answers then optional fallback then review; audio tick and clone/cache/withdrawal gates; capture microphone bypass");
+            Debug.Log("TRIAL_REVIEW_INTAKE_STEPPER_PASS nine answers then optional fallback then review; audio tick and clone/cache/withdrawal gates; capture microphone bypass");
             Debug.Log("TRIAL_REVIEW_CAPTURE_ISOLATION_PASS no jobs, polling, live, catalog or intake folder");
         }
         finally { UnityEngine.Object.DestroyImmediate(go); }

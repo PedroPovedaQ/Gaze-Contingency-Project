@@ -1,6 +1,6 @@
 # Local intake transcript data
 
-**Implemented — November 1, 2026.** `audio-intake-v3-20261101` has ten fixed questions. Older sessions retain their own version and question count. The private participant session folder is `~/Documents/Trial Review Intake/<session UUID>/`; P###, not a name, is the participant key. All files below are participant data, excluded from git and thesis outputs.
+**Implemented — November 1, 2026.** `audio-intake-v4-20261101` has nine fixed questions. Older sessions retain their own version and question count. The private participant session folder is `~/Documents/Trial Review Intake/<session UUID>/`; P###, not a name, is the participant key. All files below are participant data, excluded from git and thesis outputs.
 
 | File | Contents |
 | --- | --- |
@@ -15,7 +15,7 @@
 | Answer field | Meaning |
 | --- | --- |
 | `participantCode`, `protocol`, `id`, `topic` | Coded participant, immutable protocol version, unique answer ID, fixed question topic. |
-| `questionIndex`, `question` | One-based index and exact question text. Optional fallback follows the ten fixed questions; topic is `reading_fallback`. |
+| `questionIndex`, `question` | One-based index and exact question text. Optional fallback follows the nine fixed questions; topic is `reading_fallback`. |
 | `audio`, `audioSha256` | Audio filename relative to the linked private intake folder and original WAV hash; blank for an unanswered question. |
 | `transcript` | Full current text, with no silent redaction or narrative interpretation. |
 | `machineTranscript` | Original successful machine text, retained after correction. Empty when no successful ASR exists. |
@@ -43,3 +43,7 @@
 **Implemented:** `fitCaptureId`, `fitStartedUtc`, `fitEndedUtc`, `setupSampleCount`, `fitWarning` describe acquisition. `autoIpdStatus=unavailable`; `separationChange` is `change_observed`, `no_change_observed` or `insufficient_observation`. `separationChangeMm`/`separationChangeUtc` describe the largest signed stable view-median deviation from the first stable baseline, not a device adjustment event. Manual fallback retains the measurement source and adds `manualRecordedUtc`. See [automatic fit](research/automatic-headset-fit.md).
 
 **Implemented:** `~/Documents/Trial Review Intake/participant-codes.json` retains reserved codes (including stopped/withdrawn/deleted-folder reservations) and known development codes. Study suggestions start at P001; new rehearsals start at P900000000001. Both satisfy the existing P-plus-3–12-digits contract. A headset suggestion is already unused and therefore forms a floor, not an extra increment. Local inventory is the boundary: records unknown to this computer/headset cannot be checked. No allocation migrates existing IDs or modifies participant data.
+
+**Implemented v4 additions:** no handedness prompt or category is generated in new transcript JSON/CSV exports. Historical answer records, including handedness, remain unchanged. `cloneAnswerIds`, `cloneInputSha256` and clone timestamp identify the audio snapshot made before eligibility review; later audited transcript/coding corrections do not rewrite that snapshot. `cleanupState`, `cleanupError`, `cloneDeletedUtc` and `clone-deletion.json` record provider cleanup after stopped screening or withdrawal. `cacheState=stopped` cannot be overwritten by a late worker result.
+
+**Implemented monitor record:** `PreparationLogs/session-<desktop session UUID>/screen-transitions.jsonl` stores UTC, desktop session ID, headset process/session ID, participant code, plain-language screen, elapsed seconds since assignment, completed trials and voice block. Heartbeats also expose screen elapsed seconds, gaze status, audio/model faults, app focus/pause and presence availability/value. These are operational telemetry, not validated gaze measures or proof that a participant saw/heard a screen. Older sessions have no inferred transitions.

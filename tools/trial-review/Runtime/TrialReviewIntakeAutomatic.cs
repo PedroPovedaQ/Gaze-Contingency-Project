@@ -4,8 +4,8 @@ using UnityEngine;
 
 public sealed partial class TrialReviewApp
 {
-    const string IntakeProtocol = "audio-intake-v3-20261101";
-    const int IntakeQuestionCount = 10;
+    const string IntakeProtocol = "audio-intake-v4-20261101";
+    const int IntakeQuestionCount = 9;
     bool m_IntakeAutomatic, m_IntakePaused = true, m_WithdrawRequested;
     int m_IntakeEpoch, m_NoSpeechIndex = -1, m_NoSpeechRepeats, m_ActivityOffset;
     string m_QueuedIntakeControl;

@@ -18,7 +18,7 @@ public sealed partial class TrialReviewApp
     [Serializable] sealed class IntakeState
     {
         public string id, participantCode, configuration, neutralGender, phase, prompt, promptAudio, cloneState, cloneVoiceId, cloneError;
-        public string cacheState, cacheError, cacheManifestSha256, previewAudio, protocol;
+        public string cacheState, cacheError, cacheManifestSha256, previewAudio, protocol, cleanupState, cleanupError;
         public int cacheCompleted, cacheTotal;
         public bool eligible, selectedVoiceConfirmed, development;
         public double withdrawnUtc, previewRevision;
@@ -34,7 +34,7 @@ public sealed partial class TrialReviewApp
     {
         public string action, folder, keysPath, participantCode, configuration, neutralGender, audio;
         public int neutralOption;
-        public bool skip;
+        public bool skip, saveCorrection;
         public bool study, voiceCloud, development;
         public string @operator, reference;
         public string answerId, transcript, structuredValue;
@@ -81,6 +81,7 @@ public sealed partial class TrialReviewApp
     {
         if(m_CaptureMode) { m_IntakeOpen=true; return; }
         m_IntakeOpen = true;
+        if(!m_DetachedReview && !ReceiverRunning)ConnectLive();
         m_IntakePaused = true;
         if (m_IntakeFolder == null)
         {
@@ -122,6 +123,7 @@ public sealed partial class TrialReviewApp
                 study = m_StudyConsent, voiceCloud = m_IntakeConsent, development = m_IntakeDevelopment,
                 @operator = m_ConsentOperator, reference = m_ConsentReference,
                 answerId=m_EditAnswerId, transcript=m_EditTranscript, structuredValue=m_EditCategory,
+                saveCorrection=action=="review" && TranscriptEditPending,
                 eligibilityValues = Array.ConvertAll(m_Eligibility, x => EligibilityValues[x]),
                 fit = action == "sync_fit" ? m_LiveStatus?.headsetState?.fit : null,
                 participantSessionId = m_Intake?.id,
@@ -145,6 +147,10 @@ public sealed partial class TrialReviewApp
         if (m_Intake == null) return;
         SyncHeadsetFit();
         PollParticipantAudio();
+        if((m_Intake.phase=="screening_stopped" || m_Intake.withdrawnUtc>0) &&
+            !string.IsNullOrEmpty(m_Intake.cloneVoiceId) && m_Intake.cleanupState!="deleted" &&
+            string.IsNullOrEmpty(m_Intake.cleanupError) && m_IntakeJob==null && m_CloneJob==null && m_WithdrawalJob==null)
+            m_IntakeJob=StartIntakeJob("cleanup_clone");
         if (CanCloneIntake && m_Intake.cloneState == "not_started" && m_CloneJob == null)
             m_CloneJob = StartIntakeJob("clone");
         if (CanCacheIntake && m_Intake.cacheState == "not_started" && string.IsNullOrEmpty(m_Intake.cacheError) && m_IntakeAudioJob == null)
@@ -263,6 +269,7 @@ public sealed partial class TrialReviewApp
             File.WriteAllText(path + ".tmp", JsonUtility.ToJson(command));
             if (File.Exists(path)) File.Replace(path + ".tmp", path, null); else File.Move(path + ".tmp", path);
             m_HeadsetCommand = command;
+            m_FollowLive=true;m_JoinLive=true;m_LiveSignalActive=false;
         }
         catch (Exception e) { m_IntakeError = "Could not send session: " + e.Message; }
     }
@@ -279,7 +286,7 @@ public sealed partial class TrialReviewApp
                 case "select_voice":return 2;
                 case "interview":case "fallback":case "fallback_available":return 3;
                 case "eligibility_review":case "screening_stopped":return 4;
-                case "interview_complete":return m_Intake.cacheState=="ready"||m_Intake.cacheState=="transferred"?6:5;
+                case "interview_complete":return 5;
                 default:return -1;
             }
         }
@@ -287,9 +294,9 @@ public sealed partial class TrialReviewApp
     bool PrimaryButton(string label,params GUILayoutOption[] options)=>GUILayout.Button(HelpContent(label),m_ActiveChip,options);
     void IntakeStepper()
     {
-        string[] steps={"Reserve","Consent","Selected Voice","Audio intake","Eligibility review","Clone & cache","Send to headset"};
+        string[] steps={"Reserve","Consent","Selected Voice","Audio intake","Eligibility review","Send to headset"};
         bool[] complete={m_Intake!=null,Consented,m_Intake?.selectedVoiceConfirmed==true,AudioIntakeComplete,
-            m_Intake?.eligible==true,m_Intake?.cloneState=="ready"&&(m_Intake.cacheState=="ready"||m_Intake.cacheState=="transferred"),false};
+            m_Intake?.eligible==true,false};
         GUILayout.BeginHorizontal();
         for(int i=0;i<steps.Length;i++)
         {
@@ -305,7 +312,8 @@ public sealed partial class TrialReviewApp
         Fill(new Rect(0,0,width,height),new Color(0,0,0,.70f));
         string phase=m_Intake?.phase??"reserve";
         if(m_IntakeRenderedPhase!=phase){m_IntakeRenderedPhase=phase;m_IntakeScroll=Vector2.zero;m_MicMenu=false;}
-        var rect = new Rect(width / 2 - 520, 40, 1040, height - 80);
+        float monitorSpace=SessionMonitorVisible?178:0;
+        var rect = new Rect(width / 2 - 520, 40+monitorSpace, 1040, height - 80-monitorSpace);
         Fill(rect,m_Border);Panel(new Rect(rect.x+1,rect.y+1,rect.width-2,rect.height-2));
         GUILayout.BeginArea(new Rect(rect.x + 24, rect.y + 18, rect.width - 48, rect.height - 36));
         GUILayout.Label("Audio intake · River",m_Heading);
@@ -329,22 +337,22 @@ public sealed partial class TrialReviewApp
             if((phase=="interview"||phase=="fallback") && m_Intake.protocol==IntakeProtocol)DrawIntakeQuestion(busy);
             if(phase=="fallback_available" && m_Intake.protocol==IntakeProtocol)
             {
-                GUILayout.Label("All ten questions are complete. Speech is below the cloning threshold. Read the optional fallback, or continue to researcher review; cloning stays disabled below the threshold.",m_Label);
+                GUILayout.Label("All nine questions are complete. Speech is below the cloning threshold. Read the optional fallback, or continue to researcher review; cloning stays disabled below the threshold.",m_Label);
                 GUI.enabled=!busy&&Consented;
                 if(PrimaryButton("Read fallback passage / add more speech"))m_IntakeJob=StartIntakeJob("fallback");
                 if(Button("Continue to eligibility review"))m_IntakeJob=StartIntakeJob("finish_audio");
                 GUI.enabled=true;
             }
-            if(IntakeStep>=3)DrawIntakeReadiness();
+            if(IntakeStep>=3 || phase=="withdrawn")DrawIntakeReadiness();
             else if(!string.IsNullOrEmpty(m_Intake.cloneError))IntakeErrorCard(m_Intake.cloneError);
-            if(phase=="interview_complete"||m_Intake.cloneState!="not_started")
+            if(phase=="interview_complete")
             {
-                GUILayout.BeginVertical(m_Card);GUILayout.Label(IntakeStep==6?"SEND TO HEADSET":"CLONE & CACHE",m_Heading);
-                if(IntakeStep==6)
+                GUILayout.BeginVertical(m_Card);GUILayout.Label(IntakeStep==5?"SEND TO HEADSET":"BACKGROUND AUDIO PREPARATION",m_Heading);
+                if(IntakeStep==5)
                     GUILayout.Label($"{m_Intake.participantCode} · Configuration {m_Intake.configuration} · Selected Voice + Self-Similar Voice",m_Label);
                 DrawIntakeCloneControls(busy);
                 GUI.enabled=true;DrawParticipantAudio();
-                if(IntakeStep==6)DrawIntakeSend(busy);
+                if(IntakeStep==5)DrawIntakeSend(busy);
                 GUILayout.EndVertical();
             }
             if(phase=="interview_complete")DrawFinalSurveyHandoff();
@@ -425,8 +433,6 @@ public sealed partial class TrialReviewApp
     }
     void DrawIntakeCloneControls(bool busy)
     {
-        GUI.enabled = CanCloneIntake && m_CloneJob == null && m_Intake.cloneState == "not_started";
-        if (m_Intake.cloneState=="not_started" && Button("Prepare voice from recorded answers")) m_CloneJob = StartIntakeJob("clone");
         GUI.enabled = CanCloneIntake && m_CloneJob == null && m_Intake.cloneState == "uncertain";
         if (m_Intake.cloneState=="uncertain" && Button("Retry failed cloning (may create a duplicate provider voice)")) m_CloneJob = StartIntakeJob("retry_clone");
         GUI.enabled = Consented && !busy && m_CloneJob == null && m_Intake.cloneState == "cloning";
@@ -463,6 +469,25 @@ public sealed partial class TrialReviewApp
         var cache=GUILayoutUtility.GetRect(10,28,GUILayout.ExpandWidth(true));StatusChip(cache,$"Cache: {m_Intake.cacheState} · {(m_Intake.cacheTotal>0?100f*m_Intake.cacheCompleted/m_Intake.cacheTotal:0):0}%",m_Intake.cacheState=="ready"||m_Intake.cacheState=="transferred"?m_Ok:m_Info);
         GUILayout.EndHorizontal();
         if(!string.IsNullOrEmpty(m_Intake.cloneError))IntakeErrorCard(m_Intake.cloneError);
+        if(m_Intake.phase=="eligibility_review")
+        {
+            DrawIntakeCloneControls(m_IntakeJob!=null);
+            if(!string.IsNullOrEmpty(m_Intake.cacheError) || m_Intake.cacheState=="preparing" && m_IntakeAudioJob==null)
+            {
+                if(!string.IsNullOrEmpty(m_Intake.cacheError))IntakeErrorCard(m_Intake.cacheError);
+                GUI.enabled=m_IntakeAudioJob==null && CanCacheIntake;
+                if(Button("Retry / resume audio cache"))StartParticipantAudio("prepare");
+                GUI.enabled=true;
+            }
+        }
+        if(!string.IsNullOrEmpty(m_Intake.cleanupState))GUILayout.Label("Clone cleanup: "+m_Intake.cleanupState,m_MutedLabel);
+        if(!string.IsNullOrEmpty(m_Intake.cleanupError))
+        {
+            IntakeErrorCard(m_Intake.cleanupError);
+            GUI.enabled=m_IntakeJob==null;
+            if(Button("Retry clone deletion"))m_IntakeJob=StartIntakeJob("cleanup_clone");
+            GUI.enabled=true;
+        }
         GUILayout.EndVertical();
     }
     void IntakeMeter(string label,float fraction)

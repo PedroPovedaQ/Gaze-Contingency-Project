@@ -248,6 +248,14 @@ def validate_headset_state(value):
     result.update(intakeAvailable=value.get('intakeAvailable') is True)
     for key in ('participantSessionId', 'participantCode', 'configuration', 'assignmentState', 'nextParticipantCode'):
         result[key] = value.get(key, '') if isinstance(value.get(key, ''), str) else ''
+    for key in ('screen', 'voiceBlock', 'gazeStatus', 'audioFault', 'modelFault', 'message'):
+        text = value.get(key, '')
+        result[key] = text[:1024] if isinstance(text, str) else ''
+    for key in ('screenElapsedSeconds', 'sessionElapsedSeconds', 'trialsCompleted', 'trialTotal'):
+        number = value.get(key, 0)
+        result[key] = number if type(number) in (int, float) and math.isfinite(number) and number >= 0 else 0
+    for key in ('appPaused', 'appFocused', 'presenceKnown', 'userPresent'):
+        result[key] = value.get(key) is True
     return result
 
 
@@ -262,7 +270,7 @@ def validate_assignment(value):
     extra = {'consentId','intakeProtocol','eligibilityReviewed','cacheManifestSha256','development'} if value['schema'] == 2 else set()
     if set(value) - {'fit'} - extra != {'schema','id','participantCode','configuration','neutralGender','neutralOption','cloneVoiceId'}:
         raise ValueError('Assignment must not contain interview data')
-    if value['schema'] == 2 and (value.get('intakeProtocol') not in ('audio-intake-v2-20261028', 'audio-intake-v3-20261101') or
+    if value['schema'] == 2 and (value.get('intakeProtocol') not in ('audio-intake-v2-20261028', 'audio-intake-v3-20261101', 'audio-intake-v4-20261101') or
             value.get('eligibilityReviewed') is not True or type(value.get('development')) is not bool or
             not re.fullmatch('[a-f0-9]{32}', str(value.get('consentId', ''))) or
             not re.fullmatch('[a-f0-9]{64}', str(value.get('cacheManifestSha256', '')))):

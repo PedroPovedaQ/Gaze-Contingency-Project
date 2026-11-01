@@ -52,7 +52,8 @@ public sealed partial class TrialReviewApp
     void DrawValidation(float width,float height)
     {
         if(!m_ValidationOpen)return;
-        var rect=new Rect(Mathf.Max(12,(width-850)/2),40,Mathf.Min(850,width-24),height-80);
+        float monitorSpace=SessionMonitorVisible?178:0;
+        var rect=new Rect(Mathf.Max(12,(width-850)/2),40+monitorSpace,Mathf.Min(850,width-24),height-80-monitorSpace);
         Panel(rect);GUILayout.BeginArea(new Rect(rect.x+18,rect.y+18,rect.width-36,rect.height-36));
         GUILayout.BeginHorizontal();GUILayout.Label("Eye measurement validation",m_Heading);GUILayout.FlexibleSpace();
         if(Button("Close",GUILayout.Width(90)))m_ValidationOpen=false;GUILayout.EndHorizontal();

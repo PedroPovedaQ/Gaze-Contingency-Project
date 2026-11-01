@@ -1,0 +1,1468 @@
+Unity Editor version:    6000.3.10f1 (e35f0c77bd8e)
+Branch:                  6000.3/staging
+Build type:              Release
+Batch mode:              YES
+macOS version:           Version 27.2 (Build 26B123)
+Darwin version:          27.2.0
+Architecture:            arm64
+Running under Rosetta:   NO
+Available memory:        32768 MB
+Date:                    2026-11-01T15:23:51Z
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-pedro.poveda" at "2026-11-01T15:23:51.551248Z"
+Launching external process: /Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/PackageManager/Server/UnityPackageManager
+
+COMMAND LINE ARGUMENTS:
+/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/MacOS/Unity
+-batchmode
+-nographics
+-quit
+-projectPath
+/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project
+-executeMethod
+StudyVerificationChecks.Run
+-logFile
+/tmp/intake-v4-unity-integration.log
+Successfully changed project path to: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project
+/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gfx=262144"
+Player connection [8769213184]  Target information:
+
+Player connection [8769213184]  * "[IP] 192.168.1.220 [Port] 55505 [Flags] 2 [Guid] 3425576399 [EditorId] 3425576399 [Version] 1048832 [Id] OSXEditor(0,MacBook-Air-4.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
+
+Player connection [8769213184] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [8769213184] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              f1eb1f88eae54052ac148f59f3fade16
+  Correlation Id:          4f954eb97fbc611e65e77fb4e22107f4
+  External correlation Id: 3439554440976771772
+  Machine Id:              3ZLu9LlBboVc02UTamMvk5FNIv4=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-pedro.poveda" (connect: 0.00s, validation: 0.00s, handshake: 0.96s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-pedro.poveda-notifications" at "2026-11-01T15:23:52.50974Z"
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 2474567024715-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.01
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Licensing Background thread has ended after 0.97s
+[Package Manager] Connected to IPC stream "Upm-65484" after 0.6 seconds.
+[Licensing::Client] Successfully resolved entitlement details
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+[Licensing::Client] Successfully resolved entitlement details
+Refreshing native plugins compatible for Editor in 1.32 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 6000.3.10f1 (e35f0c77bd8e)
+[Subsystems] Discovering subsystems at path /Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Assets
+Forcing GfxDevice: Null
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+Initialize mono
+Mono path[0] = '/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/Scripting/Managed'
+Mono path[1] = '/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/Scripting/MonoBleedingEdge/lib/mono/unityjit-macos'
+Mono config path = '/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/Scripting/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56484
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: /Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/PlaybackEngines/MacStandaloneSupport/UnityEditor.OSXStandalone.Extensions.dll
+Register platform support module: /Applications/Unity/Hub/Editor/6000.3.10f1/PlaybackEngines/AndroidPlayer/UnityEditor.Android.Extensions.dll
+Registered in 0.002453 seconds.
+- Loaded All Assemblies, in  0.750 seconds
+Native extension for Android target not found
+Android Extension - Scanning For ADB Devices 3250 ms
+Native extension for OSXStandalone target not found
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  4.259 seconds
+Domain Reload Profiling: 5008ms
+	BeginReloadAssembly (171ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (0ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (17ms)
+	RebuildCommonClasses (75ms)
+	RebuildNativeTypeToScriptingClass (27ms)
+	initialDomainReloadingComplete (103ms)
+	LoadAllAssembliesAndSetupDomain (372ms)
+		LoadAssemblies (155ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (364ms)
+			TypeCache.Refresh (360ms)
+				TypeCache.ScanAssembly (331ms)
+			BuildScriptInfoCaches (0ms)
+			ResolveRequiredComponents (1ms)
+	FinalizeReload (4260ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (4169ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (3409ms)
+			SetLoadedEditorAssemblies (8ms)
+			BeforeProcessingInitializeOnLoad (362ms)
+			ProcessInitializeOnLoadAttributes (228ms)
+			ProcessInitializeOnLoadMethodAttributes (162ms)
+			AfterProcessingInitializeOnLoad (0ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (0ms)
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Client] Successfully resolved entitlement details
+Application.AssetDatabase Initial Refresh Start
+Package Manager log level set to [2]
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 73 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.ide.rider@3.0.39 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.ide.rider@4504839d03f7)
+    com.unity.inputsystem@1.18.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.inputsystem@57d0e36f6123)
+    com.unity.learn.iet-framework@5.0.2 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.learn.iet-framework@c18a35c1d1a1)
+    com.unity.mobile.android-logcat@1.4.7 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.mobile.android-logcat@a8a404f035b3)
+    com.unity.nuget.newtonsoft-json@3.2.2 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.nuget.newtonsoft-json@4dfd81071c64)
+    com.unity.xr.androidxr-openxr@1.1.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.xr.androidxr-openxr@06acef508aa4)
+    com.unity.xr.arfoundation@6.3.3 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.xr.arfoundation@7ee87c4f5245)
+    com.unity.xr.core-utils@2.5.3 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.xr.core-utils@f0450cbac8d6)
+    com.unity.xr.hands@1.7.3 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.xr.hands@3e241be20642)
+    com.unity.xr.interaction.toolkit@3.3.1 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.xr.interaction.toolkit@5f736ad4ccd8)
+    com.unity.xr.management@4.5.4 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.xr.management@e3a3882b360a)
+    com.unity.xr.meta-openxr@2.3.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.xr.meta-openxr@a8b13ad920dd)
+    com.unity.xr.openxr@1.16.1 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.xr.openxr@ef0033a586bf)
+    com.unity.xr.legacyinputhelpers@2.1.13 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.xr.legacyinputhelpers@9535ff2c27ac)
+    com.unity.xr.compositionlayers@2.3.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.xr.compositionlayers@d683872db661)
+    com.unity.mathematics@1.3.3 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.mathematics@19a9377c4ffa)
+    com.unity.editorcoroutines@1.0.1 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.editorcoroutines@54394ed3283c)
+    com.unity.settings-manager@2.1.1 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.settings-manager@0b8638c5ce86)
+    com.unity.ide.visualstudio@2.0.26 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.ide.visualstudio@a99d56dec63f)
+    com.unity.performance.profile-analyzer@1.3.1 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.performance.profile-analyzer@311968ce4be7)
+    com.unity.testtools.codecoverage@1.3.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.testtools.codecoverage@19a841221620)
+    com.unity.searcher@4.9.4 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.searcher@d45a78918735)
+    com.unity.burst@1.8.28 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.burst@07790c2d06d9)
+    com.unity.collections@2.6.2 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.collections@aea9d3bd5e19)
+    com.unity.nuget.mono-cecil@1.11.6 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.nuget.mono-cecil@ecb9724e46ff)
+    com.unity.test-framework.performance@3.2.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.test-framework.performance@0840f58e4562)
+  Built-in packages:
+    com.unity.feature.development@1.0.2 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.feature.development@767aadbc6eb7)
+    com.unity.multiplayer.center@1.0.1 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.multiplayer.center@f01f4ba8d00a)
+    com.unity.render-pipelines.universal@17.3.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.render-pipelines.universal@37e0d4fc2503)
+    com.unity.test-framework@1.6.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.test-framework@0b7a23ab2e1d)
+    com.unity.modules.accessibility@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.accessibility)
+    com.unity.modules.adaptiveperformance@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.adaptiveperformance)
+    com.unity.modules.ai@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.physics2d)
+    com.unity.modules.screencapture@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.terrainphysics)
+    com.unity.modules.tilemap@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.tilemap)
+    com.unity.modules.ui@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vectorgraphics@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.vectorgraphics)
+    com.unity.modules.vehicles@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.video)
+    com.unity.modules.vr@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.vr)
+    com.unity.modules.wind@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.xr)
+    com.unity.modules.subsystems@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.modules.hierarchycore)
+    com.unity.ugui@2.0.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.ugui@bb329a87fcdc)
+    com.unity.ext.nunit@2.0.5 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.ext.nunit@d8c07649098d)
+    com.unity.render-pipelines.core@17.3.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.render-pipelines.core@04ab0eefa0c3)
+    com.unity.shadergraph@17.3.0 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.shadergraph@c8830f61858d)
+    com.unity.render-pipelines.universal-config@17.0.3 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.render-pipelines.universal-config@8dc1aab4af1d)
+  Embedded packages:
+    com.coplaydev.unity-mcp@file:/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Packages/com.coplaydev.unity-mcp (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Packages/com.coplaydev.unity-mcp)
+  Git packages:
+    com.htc.upm.vive.openxr@https://github.com/ViveSoftware/VIVE-OpenXR-Unity.git?path=/com.htc.upm.vive.openxr#versions/2.5.1 (location: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.htc.upm.vive.openxr@e099ad12dbab)
+[Subsystems] Looking for new subsystems at path /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.xr.arfoundation@7ee87c4f5245
+[Subsystems] Novel subsystem found at Library/PackageCache/com.unity.xr.arfoundation@7ee87c4f5245/Runtime/UnitySubsystemsManifest.json
+[Subsystems] Discovering subsystems at path /Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Assets
+[Subsystems] Discovering subsystems at path /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.xr.arfoundation@7ee87c4f5245
+[Subsystems] No descriptors matched for  examples in Library/PackageCache/com.unity.xr.arfoundation@7ee87c4f5245/Runtime/UnitySubsystemsManifest.json.
+[Subsystems] 1 'inputs' descriptors matched in Library/PackageCache/com.unity.xr.arfoundation@7ee87c4f5245/Runtime/UnitySubsystemsManifest.json
+[Subsystems] No descriptors matched for  displays in Library/PackageCache/com.unity.xr.arfoundation@7ee87c4f5245/Runtime/UnitySubsystemsManifest.json.
+[Subsystems] 1 'meshings' descriptors matched in Library/PackageCache/com.unity.xr.arfoundation@7ee87c4f5245/Runtime/UnitySubsystemsManifest.json
+[Subsystems] Discovering subsystems at path /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.xr.meta-openxr@a8b13ad920dd
+[Subsystems] No descriptors matched for  examples in Library/PackageCache/com.unity.xr.meta-openxr@a8b13ad920dd/Runtime/UnitySubsystemsManifest.json.
+[Subsystems] No descriptors matched for  inputs in Library/PackageCache/com.unity.xr.meta-openxr@a8b13ad920dd/Runtime/UnitySubsystemsManifest.json.
+[Subsystems] No descriptors matched for  displays in Library/PackageCache/com.unity.xr.meta-openxr@a8b13ad920dd/Runtime/UnitySubsystemsManifest.json.
+[Subsystems] 1 'meshings' descriptors matched in Library/PackageCache/com.unity.xr.meta-openxr@a8b13ad920dd/Runtime/UnitySubsystemsManifest.json
+[Subsystems] Discovering subsystems at path /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Library/PackageCache/com.unity.xr.openxr@ef0033a586bf
+[Subsystems] No descriptors matched for  examples in Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Runtime/UnitySubsystemsManifest.json.
+[Subsystems] 1 'inputs' descriptors matched in Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Runtime/UnitySubsystemsManifest.json
+[Subsystems] 1 'displays' descriptors matched in Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Runtime/UnitySubsystemsManifest.json
+[Subsystems] No descriptors matched for  meshings in Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Runtime/UnitySubsystemsManifest.json.
+[Package Manager] Done registering packages in 0.03 seconds
+Assets/StreamingAssets/api_keys.json is a symbolic link. Using symlinks in Unity projects may cause your project to become corrupted if you create multiple references to the same asset, use recursive symlinks or use symlinks to share assets between projects used with different versions of Unity. Make sure you know what you are doing.
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://unix:/tmp/ilpp.sock-35656050f52a76e65a37acb066298081
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Content root path: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc -
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc - - 200 - application/grpc 124.7788ms
+Starting: /Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/BuildPipeline/bee_backend --ipc --defer-dag-verification --dagfile="Library/Bee/1300b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: /Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project
+DisplayProgressbar: Compiling Scripts
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc -
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+[40m[1m[33mwarn[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.runtime.interopservices.windowsruntime has duplicate hint path. Ignoring "/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/Scripting/UnityReferenceAssemblies/unity-4.8-api/Facades/System.Runtime.InteropServices.WindowsRuntime.dll" in favor of "/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/Scripting/NetStandard/Extensions/2.0.0/System.Runtime.InteropServices.WindowsRuntime.dll"
+[40m[1m[33mwarn[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.componentmodel.composition has duplicate hint path. Ignoring "/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/Scripting/UnityReferenceAssemblies/unity-4.8-api/System.ComponentModel.Composition.dll" in favor of "/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/Resources/Scripting/NetStandard/compat/2.1.0/shims/netfx/System.ComponentModel.Composition.dll"
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Unity.Burst.Cecil, Version=0.11.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library/PackageCache/com.unity.burst@07790c2d06d9/Unity.Burst.CodeGen/Unity.Burst.Cecil.dll
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Mono.Cecil, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library/PackageCache/com.unity.nuget.mono-cecil@ecb9724e46ff/Mono.Cecil.dll
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+[40m[32minfo[39m[22m[49m: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc - - 200 - application/grpc 61.0838ms
+ExitCode: 0 Duration: 3s801ms
+[ 937/1320  0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+*** Tundra build success (3.75 seconds), 1 items updated, 1320 evaluated
+AssetDatabase: script compilation time: 5.312663s
+Begin MonoManager ReloadAssembly
+Symbol file LoadedFromMemory is not a mono symbol file
+- Loaded All Assemblies, in  1.301 seconds
+Refreshing native plugins compatible for Editor in 17.83 ms, found 10 plugins.
+Native extension for Android target not found
+Native extension for OSXStandalone target not found
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  6.052 seconds
+Domain Reload Profiling: 7351ms
+	BeginReloadAssembly (350ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (6ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (218ms)
+	RebuildCommonClasses (54ms)
+	RebuildNativeTypeToScriptingClass (19ms)
+	initialDomainReloadingComplete (38ms)
+	LoadAllAssembliesAndSetupDomain (838ms)
+		LoadAssemblies (484ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (447ms)
+			TypeCache.Refresh (314ms)
+				TypeCache.ScanAssembly (280ms)
+			BuildScriptInfoCaches (110ms)
+			ResolveRequiredComponents (19ms)
+	FinalizeReload (6052ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (5731ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (43ms)
+			SetLoadedEditorAssemblies (5ms)
+			BeforeProcessingInitializeOnLoad (322ms)
+			ProcessInitializeOnLoadAttributes (5041ms)
+			ProcessInitializeOnLoadMethodAttributes (319ms)
+			AfterProcessingInitializeOnLoad (1ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (4ms)
+Asset Pipeline Refresh (id=a5705f99929d64ac99f01105392965d6): Total: 14.850 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	Summary:
+		Imports: total=0 (actual=0, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=8063 ms
+		Asset DB Callback time: managed=42 ms, native=40 ms
+		Scripting: domain reloads=1, domain reload time=1302 ms, compile time=5315 ms, other=86 ms
+		Project Asset Count: scripts=1849, non-scripts=2713
+		Asset File Changes: new=0, changed=0, moved=0, deleted=0
+		Scan Filter Count: 1
+	InvokeCustomDependenciesCallbacks: 0.001ms
+	InvokePackagesCallback: 42.351ms
+	ApplyChangesToAssetFolders: 0.936ms
+	Scan: 1279.200ms
+	OnSourceAssetsModified: 0.001ms
+	CategorizeAssetsWithTransientArtifact: 108.527ms
+	ProcessAssetsWithTransientArtifactChanges: 156.755ms
+	CategorizeAssets: 113.896ms
+	ImportOutOfDateAssets: 6094.300ms (776.626ms without children)
+		CompileScripts: 5314.608ms
+		ReloadNativeAssets: 0.126ms
+		UnloadImportedAssets: 1.010ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 1.142ms
+		InitializingProgressBar: 0.000ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.788ms
+	PostProcessAllAssets: 42.235ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.000ms
+	UnloadStreamsBegin: 2.494ms
+	PersistCurrentRevisions: 0.199ms
+	UnloadStreamsEnd: 0.002ms
+	GenerateScriptTypeHashes: 7.986ms
+	Untracked: 7008.959ms
+
+Application.AssetDatabase Initial Refresh End
+Scanning for USB devices : 0.061ms
+Initializing Unity extensions:
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-Gaze Contingency Project
+Unloading 101 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 6793 unused Assets / (11.1 MB). Loaded Objects now: 7566.
+Memory consumption went from 278.7 MB to 267.6 MB.
+Total: 42.102000 ms (FindLiveObjects: 0.680750 ms CreateObjectMapping: 1.571708 ms MarkObjects: 28.211458 ms  DeleteObjects: 11.637542 ms)
+
+[ChallengeSet] Generated 96 balanced rounds: readiness-target-angle-v9-signed-steps-48-one-practice, seed=1535608244
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ChallengeSet:Generate () (at Assets/ChallengeSet.cs:345)
+ChallengeSet:get_Rounds () (at Assets/ChallengeSet.cs:121)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:34)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/ChallengeSet.cs Line: 345)
+
+[ScheduleChecks] ALLOCATION block=0 signed=0 above=3 below=3
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:60)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 60)
+
+[ScheduleChecks] ALLOCATION block=0 signed=45 above=3 below=3
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:60)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 60)
+
+[ScheduleChecks] ALLOCATION block=0 signed=-45 above=3 below=3
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:60)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 60)
+
+[ScheduleChecks] ALLOCATION block=0 signed=90 above=3 below=3
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:60)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 60)
+
+[ScheduleChecks] ALLOCATION block=0 signed=-90 above=3 below=3
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:60)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 60)
+
+[ScheduleChecks] ALLOCATION block=0 signed=135 above=3 below=3
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:60)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 60)
+
+[ScheduleChecks] ALLOCATION block=0 signed=-135 above=3 below=3
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:60)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 60)
+
+[ScheduleChecks] ALLOCATION block=0 signed=180 above=3 below=3
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:60)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 60)
+
+[ScheduleChecks] ALLOCATION block=1 signed=0 above=3 below=3
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:60)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 60)
+
+[ScheduleChecks] ALLOCATION block=1 signed=45 above=3 below=3
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:60)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 60)
+
+[ScheduleChecks] ALLOCATION block=1 signed=-45 above=3 below=3
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:60)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 60)
+
+[ScheduleChecks] ALLOCATION block=1 signed=90 above=3 below=3
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:60)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 60)
+
+[ScheduleChecks] ALLOCATION block=1 signed=-90 above=3 below=3
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:60)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 60)
+
+[ScheduleChecks] ALLOCATION block=1 signed=135 above=3 below=3
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:60)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 60)
+
+[ScheduleChecks] ALLOCATION block=1 signed=-135 above=3 below=3
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:60)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 60)
+
+[ScheduleChecks] ALLOCATION block=1 signed=180 above=3 below=3
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:60)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 60)
+
+Font Asset [LiberationSans SDF - Fallback] Units Per EM set to 2048. Please commit the newly serialized value.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TMPro.TMP_FontAsset:ReadFontAssetDefinition () (at ./Library/PackageCache/com.unity.ugui@bb329a87fcdc/Runtime/TMP/TMP_FontAsset.cs:819)
+TMPro.TMP_FontAsset:OnValidate () (at ./Library/PackageCache/com.unity.ugui@bb329a87fcdc/Runtime/TMP/TMP_FontAsset.cs:757)
+UnityEngine.ResourcesAPIInternal:Load (string,System.Type)
+UnityEngine.ResourcesAPI:Load (string,System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Resources/Resources.bindings.cs:113)
+UnityEngine.Resources:Load (string,System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Resources/Resources.bindings.cs:164)
+UnityEngine.Resources:Load<TMPro.TMP_Settings> (string) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Resources/Resources.bindings.cs:159)
+TMPro.TMP_Settings:get_instance () (at ./Library/PackageCache/com.unity.ugui@bb329a87fcdc/Runtime/TMP/TMP_Settings.cs:455)
+TMPro.TextMeshProUGUI:Awake () (at ./Library/PackageCache/com.unity.ugui@bb329a87fcdc/Runtime/TMP/TextMeshProUGUI.cs:789)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<TMPro.TextMeshProUGUI> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+StudyCheckpoint:Show (string,string) (at Assets/StudyCheckpoint.cs:22)
+FindObjectGameManager/<TransitionToNextRound>d__207:MoveNext () (at Assets/FindObjectGameManager.cs:1063)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:79)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: ./Library/PackageCache/com.unity.ugui@bb329a87fcdc/Runtime/TMP/TMP_FontAsset.cs Line: 819)
+
+[ScheduleChecks] PASS: 96-trial v9 schedule, realized pinned geometry, height allocation and actual 48-trial block break.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ScheduleChecks:Run () (at Assets/Editor/ScheduleChecks.cs:96)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:12)
+
+(Filename: Assets/Editor/ScheduleChecks.cs Line: 96)
+
+[ChallengeSet] Generated 96 balanced rounds: readiness-target-angle-v9-signed-steps-48-quick-origin0, seed=493092514
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ChallengeSet:Generate () (at Assets/ChallengeSet.cs:345)
+ChallengeSet:get_Rounds () (at Assets/ChallengeSet.cs:121)
+VoiceAssistantController:PhraseLibrary () (at Assets/VoiceAssistantController.cs:184)
+GazeQualityChecks:CheckAgentIntroduction () (at Assets/Editor/GazeQualityChecks.cs:60)
+GazeQualityChecks:Run () (at Assets/Editor/GazeQualityChecks.cs:27)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:13)
+
+(Filename: Assets/ChallengeSet.cs Line: 345)
+
+[GazeQualityChecks] PASS: native-eye readiness fallback, raw preservation and invalid/stale rejection
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GazeQualityChecks:CheckNativeReadinessFallback () (at Assets/Editor/GazeQualityChecks.cs:341)
+GazeQualityChecks:Run () (at Assets/Editor/GazeQualityChecks.cs:30)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:13)
+
+(Filename: Assets/Editor/GazeQualityChecks.cs Line: 341)
+
+[GazeLog] Logging to /var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/DefaultCompany/Gaze Contingency Project/GazeCsvChecks_38eb019e440c4411bf6d2ea8add0ba33/gaze_log.csv
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GazeDataLogger:OpenLog () (at Assets/GazeDataLogger.cs:75)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GazeQualityChecks:<CheckCsvIntegration>g__Call|14_0 (string,GazeQualityChecks/<>c__DisplayClass14_0&) (at Assets/Editor/GazeQualityChecks.cs:552)
+GazeQualityChecks:CheckCsvIntegration () (at Assets/Editor/GazeQualityChecks.cs:553)
+GazeQualityChecks:Run () (at Assets/Editor/GazeQualityChecks.cs:31)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:13)
+
+(Filename: Assets/GazeDataLogger.cs Line: 75)
+
+[GazeLog] Logging to /var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/DefaultCompany/Gaze Contingency Project/GazeCsvChecks_38eb019e440c4411bf6d2ea8add0ba33/gaze_log.csv
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GazeDataLogger:OpenLog () (at Assets/GazeDataLogger.cs:75)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GazeQualityChecks:<CheckCsvIntegration>g__Call|14_0 (string,GazeQualityChecks/<>c__DisplayClass14_0&) (at Assets/Editor/GazeQualityChecks.cs:552)
+GazeQualityChecks:CheckCsvIntegration () (at Assets/Editor/GazeQualityChecks.cs:565)
+GazeQualityChecks:Run () (at Assets/Editor/GazeQualityChecks.cs:31)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:13)
+
+(Filename: Assets/GazeDataLogger.cs Line: 75)
+
+[ChallengeSet] Generated 96 balanced rounds: readiness-target-angle-v9-signed-steps-48-one-practice, seed=493092514
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ChallengeSet:Generate () (at Assets/ChallengeSet.cs:345)
+ChallengeSet:get_Rounds () (at Assets/ChallengeSet.cs:121)
+TrialDataLogger:WriteSummary (single) (at Assets/TrialDataLogger.cs:682)
+TrialDataLogger:OnSessionStopped (string) (at Assets/TrialDataLogger.cs:271)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GazeQualityChecks:CheckStopAfterCapture () (at Assets/Editor/GazeQualityChecks.cs:444)
+GazeQualityChecks:Run () (at Assets/Editor/GazeQualityChecks.cs:33)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:13)
+
+(Filename: Assets/ChallengeSet.cs Line: 345)
+
+[TrialLog] Trial summary written to /var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/DefaultCompany/Gaze Contingency Project/TrialStopChecks_1b54ead16120422f9d2470bb72460927/trial_summary.json
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrialDataLogger:WriteSummary (single) (at Assets/TrialDataLogger.cs:718)
+TrialDataLogger:OnSessionStopped (string) (at Assets/TrialDataLogger.cs:271)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GazeQualityChecks:CheckStopAfterCapture () (at Assets/Editor/GazeQualityChecks.cs:444)
+GazeQualityChecks:Run () (at Assets/Editor/GazeQualityChecks.cs:33)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:13)
+
+(Filename: Assets/TrialDataLogger.cs Line: 718)
+
+[TrialLog] Trial summary written to /var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/DefaultCompany/Gaze Contingency Project/TrialStopChecks_1b54ead16120422f9d2470bb72460927/trial_summary.json
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrialDataLogger:WriteSummary (single) (at Assets/TrialDataLogger.cs:718)
+TrialDataLogger:OnSessionStopped (string) (at Assets/TrialDataLogger.cs:271)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GazeQualityChecks:CheckStopAfterCapture () (at Assets/Editor/GazeQualityChecks.cs:444)
+GazeQualityChecks:Run () (at Assets/Editor/GazeQualityChecks.cs:33)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:13)
+
+(Filename: Assets/TrialDataLogger.cs Line: 718)
+
+[TrialLog] Trial summary written to /var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/DefaultCompany/Gaze Contingency Project/TrialStopChecks_1b54ead16120422f9d2470bb72460927/trial_summary.json
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrialDataLogger:WriteSummary (single) (at Assets/TrialDataLogger.cs:718)
+TrialDataLogger:OnSessionStopped (string) (at Assets/TrialDataLogger.cs:271)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GazeQualityChecks:CheckStopAfterCapture () (at Assets/Editor/GazeQualityChecks.cs:444)
+GazeQualityChecks:Run () (at Assets/Editor/GazeQualityChecks.cs:33)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:13)
+
+(Filename: Assets/TrialDataLogger.cs Line: 718)
+
+[TrialLog] Trial summary written to /var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/DefaultCompany/Gaze Contingency Project/TrialStopChecks_1b54ead16120422f9d2470bb72460927/trial_summary.json
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrialDataLogger:WriteSummary (single) (at Assets/TrialDataLogger.cs:718)
+TrialDataLogger:OnSessionStopped (string) (at Assets/TrialDataLogger.cs:271)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GazeQualityChecks:CheckStopAfterCapture () (at Assets/Editor/GazeQualityChecks.cs:444)
+GazeQualityChecks:Run () (at Assets/Editor/GazeQualityChecks.cs:33)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:13)
+
+(Filename: Assets/TrialDataLogger.cs Line: 718)
+
+[TrialLog] Trial summary written to /var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/DefaultCompany/Gaze Contingency Project/TrialStopChecks_1b54ead16120422f9d2470bb72460927/trial_summary.json
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrialDataLogger:WriteSummary (single) (at Assets/TrialDataLogger.cs:718)
+TrialDataLogger:OnSessionStopped (string) (at Assets/TrialDataLogger.cs:271)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GazeQualityChecks:CheckStopAfterCapture () (at Assets/Editor/GazeQualityChecks.cs:444)
+GazeQualityChecks:Run () (at Assets/Editor/GazeQualityChecks.cs:33)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:13)
+
+(Filename: Assets/TrialDataLogger.cs Line: 718)
+
+[TrialLog] Trial summary written to /var/folders/nx/rshb8w7x3fb5svqjk0xhchrm0000gn/T/DefaultCompany/Gaze Contingency Project/TrialStopChecks_1b54ead16120422f9d2470bb72460927/trial_summary.json
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrialDataLogger:WriteSummary (single) (at Assets/TrialDataLogger.cs:718)
+TrialDataLogger:OnSessionStopped (string) (at Assets/TrialDataLogger.cs:271)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GazeQualityChecks:CheckStopAfterCapture () (at Assets/Editor/GazeQualityChecks.cs:444)
+GazeQualityChecks:Run () (at Assets/Editor/GazeQualityChecks.cs:33)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:13)
+
+(Filename: Assets/TrialDataLogger.cs Line: 718)
+
+[GazeQualityChecks] PASS: first-cue trial/resume lifecycle and target-history serialization
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GazeQualityChecks:CheckOpeningLifecycleAndHistory () (at Assets/Editor/GazeQualityChecks.cs:398)
+GazeQualityChecks:Run () (at Assets/Editor/GazeQualityChecks.cs:35)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:13)
+
+(Filename: Assets/Editor/GazeQualityChecks.cs Line: 398)
+
+[GazeQualityChecks] PASS: hidden-target same-wall opening, diagonals, other-wall cue and invalid/stale gaze.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GazeQualityChecks:CheckSameWallOpening () (at Assets/Editor/GazeQualityChecks.cs:106)
+GazeQualityChecks:Run () (at Assets/Editor/GazeQualityChecks.cs:36)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:13)
+
+(Filename: Assets/Editor/GazeQualityChecks.cs Line: 106)
+
+[GazeQualityChecks] Vicinity capture skipped: Null graphics device; GPU verification required.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GazeQualityChecks:CaptureVicinityRing (UnityEngine.GameObject,UnityEngine.LineRenderer) (at Assets/Editor/GazeQualityChecks.cs:283)
+GazeQualityChecks:CheckPointingVicinity () (at Assets/Editor/GazeQualityChecks.cs:146)
+GazeQualityChecks:Run () (at Assets/Editor/GazeQualityChecks.cs:37)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:13)
+
+(Filename: Assets/Editor/GazeQualityChecks.cs Line: 283)
+
+[GazeQualityChecks] PASS: pointing vicinity, target identity, freshness, vertical arrival and development-only radius/ring controls
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GazeQualityChecks:CheckPointingVicinity () (at Assets/Editor/GazeQualityChecks.cs:261)
+GazeQualityChecks:Run () (at Assets/Editor/GazeQualityChecks.cs:37)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:13)
+
+(Filename: Assets/Editor/GazeQualityChecks.cs Line: 261)
+
+[GazeQualityChecks] PASS: coordinates, idempotent diagnostic flip, hidden target, shared wording, shared-stream CSV validity and append safety. Hardware accuracy/rate NOT validated.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GazeQualityChecks:Run () (at Assets/Editor/GazeQualityChecks.cs:39)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:13)
+
+(Filename: Assets/Editor/GazeQualityChecks.cs Line: 39)
+
+[GazeWallFilterChecks] PASS: real physics wall blocks default ray; configured gaze reaches target; gaze UI blocking disabled.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GazeWallFilterChecks:Run () (at Assets/Editor/GazeWallFilterChecks.cs:32)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:14)
+
+(Filename: Assets/Editor/GazeWallFilterChecks.cs Line: 32)
+
+[FindObjectGame] Rotational beta centered at (100.00, 3.20, -100.00), yaw=37.0, radius=1.50; 8 planes x 21 objects.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+FindObjectGameManager:CreateRotationalFrames () (at Assets/FindObjectGameManager.cs:787)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+StudyRoomChecks:Run () (at Assets/Editor/StudyRoomChecks.cs:26)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:15)
+
+(Filename: Assets/FindObjectGameManager.cs Line: 787)
+
+[StudyRoomChecks] PASS: hidden defaults, 10x10x6 room, 1.5 m muted yellow circle above existing floor/yaw, no colliders/shadows, all eight top/bottom rays, readiness geometry and independent debug toggle.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+StudyRoomChecks:Run () (at Assets/Editor/StudyRoomChecks.cs:77)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:15)
+
+(Filename: Assets/Editor/StudyRoomChecks.cs Line: 77)
+
+[ControllerSelectionChecks] PASS: right settings chord edges, hold, A release, timeout, reconnect and repeat.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ControllerSelectionChecks:CheckSettingsShortcut () (at Assets/Editor/ControllerSelectionChecks.cs:351)
+ControllerSelectionChecks:Run () (at Assets/Editor/ControllerSelectionChecks.cs:97)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:16)
+
+(Filename: Assets/Editor/ControllerSelectionChecks.cs Line: 351)
+
+[ControllerSelectionChecks] PASS: eye/settings launchers, open menus and Continue stay world-fixed through head movement; reopen reanchors upright.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ControllerSelectionChecks:CheckStationaryMenus () (at Assets/Editor/ControllerSelectionChecks.cs:313)
+ControllerSelectionChecks:Run () (at Assets/Editor/ControllerSelectionChecks.cs:99)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:16)
+
+(Filename: Assets/Editor/ControllerSelectionChecks.cs Line: 313)
+
+[VivePassthrough] Mixed reality requested: True
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+VivePassthrough:ApplyPassthrough (bool) (at Assets/VivePassthrough.cs:61)
+UnityEngine.Events.InvokableCall`1<bool>:Invoke (bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/UnityEvent/UnityEvent.cs:219)
+UnityEngine.Events.UnityEvent`1<bool>:Invoke (bool) (at /Users/bokken/build/output/unity/unity/artifacts/generated/UnityEvent/UnityEvent_1.cs:57)
+ControllerSelectionChecks:CheckMixedRealityToggle () (at Assets/Editor/ControllerSelectionChecks.cs:206)
+ControllerSelectionChecks:Run () (at Assets/Editor/ControllerSelectionChecks.cs:100)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:16)
+
+(Filename: Assets/VivePassthrough.cs Line: 61)
+
+[VivePassthrough] Mixed reality requested: False
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+VivePassthrough:ApplyPassthrough (bool) (at Assets/VivePassthrough.cs:61)
+UnityEngine.Events.InvokableCall`1<bool>:Invoke (bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/UnityEvent/UnityEvent.cs:219)
+UnityEngine.Events.UnityEvent`1<bool>:Invoke (bool) (at /Users/bokken/build/output/unity/unity/artifacts/generated/UnityEvent/UnityEvent_1.cs:57)
+ControllerSelectionChecks:CheckMixedRealityToggle () (at Assets/Editor/ControllerSelectionChecks.cs:209)
+ControllerSelectionChecks:Run () (at Assets/Editor/ControllerSelectionChecks.cs:100)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:16)
+
+(Filename: Assets/VivePassthrough.cs Line: 61)
+
+[VivePassthrough] Mixed reality requested: True
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+VivePassthrough:ApplyPassthrough (bool) (at Assets/VivePassthrough.cs:61)
+VivePassthrough:SetPassthroughEnabled (bool) (at Assets/VivePassthrough.cs:46)
+ControllerSelectionChecks:CheckMixedRealityToggle () (at Assets/Editor/ControllerSelectionChecks.cs:211)
+ControllerSelectionChecks:Run () (at Assets/Editor/ControllerSelectionChecks.cs:100)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:16)
+
+(Filename: Assets/VivePassthrough.cs Line: 61)
+
+[VivePassthrough] Mixed reality requested: True
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+VivePassthrough:ApplyPassthrough (bool) (at Assets/VivePassthrough.cs:61)
+VivePassthrough:SetPassthroughEnabled (bool) (at Assets/VivePassthrough.cs:46)
+VivePassthrough:OnEnable () (at Assets/VivePassthrough.cs:107)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+ControllerSelectionChecks:CheckMixedRealityToggle () (at Assets/Editor/ControllerSelectionChecks.cs:218)
+ControllerSelectionChecks:Run () (at Assets/Editor/ControllerSelectionChecks.cs:100)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:16)
+
+(Filename: Assets/VivePassthrough.cs Line: 61)
+
+[VivePassthrough] Mixed reality requested: False
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+VivePassthrough:ApplyPassthrough (bool) (at Assets/VivePassthrough.cs:61)
+UnityEngine.Events.InvokableCall`1<bool>:Invoke (bool) (at /Users/bokken/build/output/unity/unity/Runtime/Export/UnityEvent/UnityEvent.cs:219)
+UnityEngine.Events.UnityEvent`1<bool>:Invoke (bool) (at /Users/bokken/build/output/unity/unity/artifacts/generated/UnityEvent/UnityEvent_1.cs:57)
+ControllerSelectionChecks:CheckMixedRealityToggle () (at Assets/Editor/ControllerSelectionChecks.cs:219)
+ControllerSelectionChecks:Run () (at Assets/Editor/ControllerSelectionChecks.cs:100)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:16)
+
+(Filename: Assets/VivePassthrough.cs Line: 61)
+
+[ControllerSelectionChecks] PASS: wrist mixed-reality bridge, camera transparency, off state, restoration and reenable; native layer needs device verification.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ControllerSelectionChecks:CheckMixedRealityToggle () (at Assets/Editor/ControllerSelectionChecks.cs:221)
+ControllerSelectionChecks:Run () (at Assets/Editor/ControllerSelectionChecks.cs:100)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:16)
+
+(Filename: Assets/Editor/ControllerSelectionChecks.cs Line: 221)
+
+[ControllerSelectionChecks] PASS: ring shine, hue/alpha restoration, controller rim priority, hover rotation and hidden-object guards.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ControllerSelectionChecks:CheckHoverFeedback () (at Assets/Editor/ControllerSelectionChecks.cs:65)
+ControllerSelectionChecks:Run () (at Assets/Editor/ControllerSelectionChecks.cs:101)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:16)
+
+(Filename: Assets/Editor/ControllerSelectionChecks.cs Line: 65)
+
+Opening scene 'Assets/Scenes/GazeContingencyStudyScene.unity additively'
+Loaded scene 'Assets/Scenes/GazeContingencyStudyScene.unity'
+	Deserialize:            31.598 ms
+	Integration:            385.758 ms
+	Integration of assets:  1.061 ms
+	Thread Wait Time:       -0.017 ms
+	Total Operation Time:   418.401 ms
+[ControllerSelectionChecks] Controller ray: Near-Far Interactor, Left
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ControllerSelectionChecks:Run () (at Assets/Editor/ControllerSelectionChecks.cs:144)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:16)
+
+(Filename: Assets/Editor/ControllerSelectionChecks.cs Line: 144)
+
+[ControllerSelectionChecks] Controller ray: Near-Far Interactor, Right
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ControllerSelectionChecks:Run () (at Assets/Editor/ControllerSelectionChecks.cs:144)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:16)
+
+(Filename: Assets/Editor/ControllerSelectionChecks.cs Line: 144)
+
+[GazeWallFilterChecks] PASS: real physics wall blocks default ray; configured gaze reaches target; gaze UI blocking disabled.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GazeWallFilterChecks:Run () (at Assets/Editor/GazeWallFilterChecks.cs:32)
+ControllerSelectionChecks:Run () (at Assets/Editor/ControllerSelectionChecks.cs:150)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:16)
+
+(Filename: Assets/Editor/GazeWallFilterChecks.cs Line: 32)
+
+[ControllerSelectionChecks] PASS: trigger edges, pause/tracking gates, no gaze dwell, fixed objects, highlight cleanup, scene rig and right-only UI policy.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ControllerSelectionChecks:Run () (at Assets/Editor/ControllerSelectionChecks.cs:151)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:16)
+
+(Filename: Assets/Editor/ControllerSelectionChecks.cs Line: 151)
+
+[ChallengeSet] Generated 96 balanced rounds: readiness-target-angle-v9-signed-steps-48-quick-origin0, seed=1891181388
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ChallengeSet:Generate () (at Assets/ChallengeSet.cs:345)
+ChallengeSet:get_Rounds () (at Assets/ChallengeSet.cs:121)
+FindObjectGameManager/<BeginFirstRoundTransition>d__208:MoveNext () (at Assets/FindObjectGameManager.cs:1080)
+ReadinessGateChecks:CheckQuickTestTransitions () (at Assets/Editor/ReadinessGateChecks.cs:113)
+ReadinessGateChecks:Run () (at Assets/Editor/ReadinessGateChecks.cs:16)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:17)
+
+(Filename: Assets/ChallengeSet.cs Line: 345)
+
+[ReadinessGateChecks] PASS: all 32 quick-test transitions reach the planned wall; first cross is forward.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ReadinessGateChecks:CheckQuickTestTransitions () (at Assets/Editor/ReadinessGateChecks.cs:121)
+ReadinessGateChecks:Run () (at Assets/Editor/ReadinessGateChecks.cs:16)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:17)
+
+(Filename: Assets/Editor/ReadinessGateChecks.cs Line: 121)
+
+[VoiceAssist] Round 1 announcement ready; awaiting gaze gate: Blue Cube
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+VoiceAssistantController/<WaitForAnnouncementAndResumeTimer>d__73:MoveNext () (at Assets/VoiceAssistantController.cs:554)
+ReadinessGateChecks:Run () (at Assets/Editor/ReadinessGateChecks.cs:64)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:17)
+
+(Filename: Assets/VoiceAssistantController.cs Line: 554)
+
+[ReadinessGateChecks] PASS: continuous gaze, resets, audio gate, no timer bypass, fixed world cross, padded whole-cross region and search onset.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ReadinessGateChecks:Run () (at Assets/Editor/ReadinessGateChecks.cs:82)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:17)
+
+(Filename: Assets/Editor/ReadinessGateChecks.cs Line: 82)
+
+[ChallengeSet] Generated 96 balanced rounds: readiness-target-angle-v9-signed-steps-48-one-practice, seed=493092514
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ChallengeSet:Generate () (at Assets/ChallengeSet.cs:345)
+ChallengeSet:get_Rounds () (at Assets/ChallengeSet.cs:121)
+VoiceAssistantController:BeginRoundPerformance (int) (at Assets/VoiceAssistantController.Encouragement.cs:24)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+StudyFeedbackChecks:<CheckRoundPerformance>g__Call|4_1 (object,string,object[],StudyFeedbackChecks/<>c__DisplayClass4_0&) (at Assets/Editor/StudyFeedbackChecks.cs:197)
+StudyFeedbackChecks:CheckRoundPerformance () (at Assets/Editor/StudyFeedbackChecks.cs:205)
+StudyFeedbackChecks:Run () (at Assets/Editor/StudyFeedbackChecks.cs:20)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:18)
+
+(Filename: Assets/ChallengeSet.cs Line: 345)
+
+[VoiceAssist] Wrong capture: red instead of blue
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+VoiceAssistantController:HandleWrongCapture (string,string) (at Assets/VoiceAssistantController.cs:561)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+StudyFeedbackChecks:<CheckRoundPerformance>g__Call|4_1 (object,string,object[],StudyFeedbackChecks/<>c__DisplayClass4_0&) (at Assets/Editor/StudyFeedbackChecks.cs:197)
+StudyFeedbackChecks:CheckRoundPerformance () (at Assets/Editor/StudyFeedbackChecks.cs:210)
+StudyFeedbackChecks:Run () (at Assets/Editor/StudyFeedbackChecks.cs:20)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:18)
+
+(Filename: Assets/VoiceAssistantController.cs Line: 561)
+
+[StudyFeedbackChecks] PASS: round encouragement facts, immutable snapshots, practice identity, telemetry, missing client, repeated stop, restart, disable and prepared phrases.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+StudyFeedbackChecks:CheckRoundPerformance () (at Assets/Editor/StudyFeedbackChecks.cs:277)
+StudyFeedbackChecks:Run () (at Assets/Editor/StudyFeedbackChecks.cs:20)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:18)
+
+(Filename: Assets/Editor/StudyFeedbackChecks.cs Line: 277)
+
+[ModelRoutingChecks] PASS: MiniLM local speech routing and explicit Jev opt-in.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+StudyFeedbackChecks:CheckModelRouting () (at Assets/Editor/StudyFeedbackChecks.cs:189)
+StudyFeedbackChecks:Run () (at Assets/Editor/StudyFeedbackChecks.cs:21)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:18)
+
+(Filename: Assets/Editor/StudyFeedbackChecks.cs Line: 189)
+
+[StudyTimeoutChecks] PASS: deadline, pauses, one terminal event, no success/stop, next wall, prepared voices and replay boundary.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+StudyFeedbackChecks:CheckTimeout () (at Assets/Editor/StudyFeedbackChecks.cs:146)
+StudyFeedbackChecks:Run () (at Assets/Editor/StudyFeedbackChecks.cs:22)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:18)
+
+(Filename: Assets/Editor/StudyFeedbackChecks.cs Line: 146)
+
+[StudyFeedbackChecks] PASS: gaze-relative cross direction, prepared reminders, spherical 100-piece burst, 120 confetti pieces, no physics/RNG interference and cleanup.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+StudyFeedbackChecks:Run () (at Assets/Editor/StudyFeedbackChecks.cs:88)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:18)
+
+(Filename: Assets/Editor/StudyFeedbackChecks.cs Line: 88)
+
+[FindObjectGame] Rotational beta centered at (0.00, 0.00, 0.00), yaw=0.0, radius=1.50; 8 planes x 21 objects.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+FindObjectGameManager:CreateRotationalFrames () (at Assets/FindObjectGameManager.cs:787)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+GuidanceBoundaryChecks:Run () (at Assets/Editor/GuidanceBoundaryChecks.cs:28)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:19)
+
+(Filename: Assets/FindObjectGameManager.cs Line: 787)
+
+[GuidanceBoundaryChecks] PASS: all eight walls/labels, pre-spawn preference, wrist on/off, reopening/API sync, ray feedback and unchanged zone geometry.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+GuidanceBoundaryChecks:Run () (at Assets/Editor/GuidanceBoundaryChecks.cs:59)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:19)
+
+(Filename: Assets/Editor/GuidanceBoundaryChecks.cs Line: 59)
+
+[VoiceChoiceChecks] PASS: gender then voice, six options, switching/back, invalid choice and no-audio confirmation gate.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+VoiceChoiceChecks:Run () (at Assets/Editor/VoiceChoiceChecks.cs:92)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:20)
+
+(Filename: Assets/Editor/VoiceChoiceChecks.cs Line: 92)
+
+[FindObjectGame] Round 1 correct: Blue_Cube
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+FindObjectGameManager:OnObjectCaptured (UnityEngine.GameObject) (at Assets/FindObjectGameManager.cs:965)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+TrialReplayChecks:Call (object,string,object[]) (at Assets/Editor/TrialReplayChecks.cs:276)
+TrialReplayChecks:CheckLiveSelectionHook (string) (at Assets/Editor/TrialReplayChecks.cs:407)
+TrialReplayChecks:Run () (at Assets/Editor/TrialReplayChecks.cs:82)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:21)
+
+(Filename: Assets/FindObjectGameManager.cs Line: 965)
+
+[TrialReplay] Recording incomplete: Recording closed unexpectedly.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogError (object)
+TrialReplayRecorder:Fail (string) (at Assets/Replay/TrialReplayRecorder.cs:154)
+TrialReplayRecorder:Write (TrialReplayRecord) (at Assets/Replay/TrialReplayRecorder.cs:148)
+TrialReplayRecorder:Selection (UnityEngine.GameObject,bool) (at Assets/Replay/TrialReplayRecorder.cs:272)
+FindObjectGameManager:OnObjectCaptured (UnityEngine.GameObject) (at Assets/FindObjectGameManager.cs:961)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+TrialReplayChecks:Call (object,string,object[]) (at Assets/Editor/TrialReplayChecks.cs:276)
+TrialReplayChecks:CheckLiveSelectionHook (string) (at Assets/Editor/TrialReplayChecks.cs:454)
+TrialReplayChecks:Run () (at Assets/Editor/TrialReplayChecks.cs:82)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:21)
+
+(Filename: Assets/Replay/TrialReplayRecorder.cs Line: 154)
+
+[FindObjectGame] Round 1 correct: Blue_Cube
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+FindObjectGameManager:OnObjectCaptured (UnityEngine.GameObject) (at Assets/FindObjectGameManager.cs:965)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+TrialReplayChecks:Call (object,string,object[]) (at Assets/Editor/TrialReplayChecks.cs:276)
+TrialReplayChecks:CheckLiveSelectionHook (string) (at Assets/Editor/TrialReplayChecks.cs:454)
+TrialReplayChecks:Run () (at Assets/Editor/TrialReplayChecks.cs:82)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:21)
+
+(Filename: Assets/FindObjectGameManager.cs Line: 965)
+
+[TrialReplay] Recording to /Users/pedro.poveda/Library/Application Support/DefaultCompany/Gaze Contingency Project/GazeReplays/20261101T152416_d2f3b2baf4654588bcc610c03845ed03
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrialReplayRecorder:EnsureStarted () (at Assets/Replay/TrialReplayRecorder.cs:97)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+TrialReplayChecks:Call (object,string,object[]) (at Assets/Editor/TrialReplayChecks.cs:276)
+TrialReplayChecks:CheckRecorderHeader () (at Assets/Editor/TrialReplayChecks.cs:333)
+TrialReplayChecks:Run () (at Assets/Editor/TrialReplayChecks.cs:83)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:21)
+
+(Filename: Assets/Replay/TrialReplayRecorder.cs Line: 97)
+
+[TrialReplayChecks] PASS: pose freshness, phase boundaries, unknown tracking, exact sequence rewind and source snapshot.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrialReplayChecks:CheckReplayFreshnessAndSequences () (at Assets/Editor/TrialReplayChecks.cs:198)
+TrialReplayChecks:Run () (at Assets/Editor/TrialReplayChecks.cs:88)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:21)
+
+(Filename: Assets/Editor/TrialReplayChecks.cs Line: 198)
+
+[TrialReplayChecks] PASS: indexed seeks equal full-prefix reconstruction across 80 trials, exact boundaries and random rewinds.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrialReplayChecks:CheckIndexedSeek () (at Assets/Editor/TrialReplayChecks.cs:144)
+TrialReplayChecks:Run () (at Assets/Editor/TrialReplayChecks.cs:89)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:21)
+
+(Filename: Assets/Editor/TrialReplayChecks.cs Line: 144)
+
+[TrialReplayAudioChecks] PASS: WAV integrity, overlapping effects/speech, per-event gain, exact stop/seek, pause/speed/disposal and missing assets. Acoustic listening remains unverified.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrialReplayAudioChecks:Run () (at Assets/Editor/TrialReplayAudioChecks.cs:102)
+TrialReplayChecks:Run () (at Assets/Editor/TrialReplayChecks.cs:90)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:21)
+
+(Filename: Assets/Editor/TrialReplayAudioChecks.cs Line: 102)
+
+[TrialReplayChecks] PASS: roundtrip, 168 objects, wrong/correct choice, pause, rewind, motion, recovery, corruption, traversal, version, overwrite, controller tracking/trigger/hit, no dwell, legacy schema, audio.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrialReplayChecks:Run () (at Assets/Editor/TrialReplayChecks.cs:92)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:21)
+
+(Filename: Assets/Editor/TrialReplayChecks.cs Line: 92)
+
+[StudyVerificationChecks] PASS: offline study integration. Headset accuracy, rate, audio and interaction validation remain required.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+StudyVerificationChecks:Run () (at Assets/Editor/StudyVerificationChecks.cs:22)
+
+(Filename: Assets/Editor/StudyVerificationChecks.cs Line: 22)
+
+Batchmode quit successfully invoked - shutting down!
+<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: No process found listening on port 8080
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+MCPForUnity.Editor.Helpers.McpLog:Info (string,bool) (at ./Packages/com.coplaydev.unity-mcp/Editor/Helpers/McpLog.cs:40)
+MCPForUnity.Editor.Services.ServerManagementService:StopLocalHttpServerInternal (bool,System.Nullable`1<int>,bool) (at ./Packages/com.coplaydev.unity-mcp/Editor/Services/ServerManagementService.cs:703)
+MCPForUnity.Editor.Services.ServerManagementService:StopLocalHttpServer () (at ./Packages/com.coplaydev.unity-mcp/Editor/Services/ServerManagementService.cs:340)
+MCPForUnity.Editor.Services.McpEditorShutdownCleanup:OnEditorQuitting () (at ./Packages/com.coplaydev.unity-mcp/Editor/Services/McpEditorShutdownCleanup.cs:60)
+UnityEditor.EditorApplication:Internal_EditorApplicationQuit () (at /Users/bokken/build/output/unity/unity/Editor/Mono/EditorApplication.cs:128)
+
+(Filename: ./Packages/com.coplaydev.unity-mcp/Editor/Helpers/McpLog.cs Line: 40)
+
+Killing ADB server in 0.061679 seconds.
+Thread 0x16fb63000 may have been prematurely finalized
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+[Licensing::IpcConnector] LicenseClient-pedro.poveda-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-pedro.poveda channel disconnected successfully.
+Thread 0x170883000 may have been prematurely finalized
+Thread 0x170a27000 may have been prematurely finalized
+Thread 0x170ab3000 may have been prematurely finalized
+Thread 0x170b3f000 may have been prematurely finalized
+Thread 0x17099b000 may have been prematurely finalized
+Thread 0x170bcb000 may have been prematurely finalized
+Thread 0x170c57000 may have been prematurely finalized
+Thread 0x170ce3000 may have been prematurely finalized
+Thread 0x17090f000 may have been prematurely finalized
+AcceleratorClientConnectionCallback - disconnected - :0
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+Cleanup mono
+[40m[32minfo[39m[22m[49m: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      ALC ILPP context 1 is unloading
+debugger-agent: Unable to listen on 44
+Exiting batchmode successfully now!
+[Package Manager] Server process was shutdown

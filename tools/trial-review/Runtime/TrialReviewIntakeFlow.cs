@@ -46,18 +46,19 @@ public sealed partial class TrialReviewApp
         else if(!string.IsNullOrEmpty(m_FinalSurveyMessage)) GUILayout.Label(m_FinalSurveyMessage,m_MutedLabel);
     }
     bool Consented => m_Intake != null && !m_WithdrawRequested && m_Intake.protocol == IntakeProtocol &&
-        m_Intake.withdrawnUtc == 0 && m_Intake.consent != null && m_Intake.consent.study && m_Intake.consent.voiceCloud &&
+        m_Intake.withdrawnUtc == 0 && m_Intake.phase != "screening_stopped" && m_Intake.consent != null && m_Intake.consent.study && m_Intake.consent.voiceCloud &&
         m_Intake.consent.sessionId == m_Intake.id && m_Intake.consent.participantCode == m_Intake.participantCode;
     bool AudioIntakeComplete => m_Intake != null && (m_Intake.phase == "eligibility_review" ||
         m_Intake.phase == "screening_stopped" || m_Intake.phase == "interview_complete");
     bool ReviewedIntake => Consented && m_Intake.phase == "interview_complete" && m_Intake.eligible &&
         !string.IsNullOrEmpty(m_Intake.eligibility?.id) && m_Intake.answers != null && m_Intake.answers.Length >= IntakeQuestionCount;
-    bool CanCloneIntake => ReviewedIntake && m_Intake.speechSeconds >= 30 && m_Intake.sampleWords >= 50;
+    bool CanCloneIntake => Consented && AudioIntakeComplete && m_Intake.phase != "screening_stopped" &&
+        m_Intake.selectedVoiceConfirmed && m_Intake.speechSeconds >= 30 && m_Intake.sampleWords >= 50;
     bool CanCacheIntake => CanCloneIntake && m_Intake.cloneState == "ready";
 
     void DrawIntakeConsentAndReview()
     {
-        bool idle = m_IntakeJob == null && m_IntakeAudioJob == null && !m_IntakeStarting && m_AnswerClip == null && !m_PromptPlaying;
+        bool idle = m_IntakeJob == null && !m_IntakeStarting && m_AnswerClip == null && !m_PromptPlaying;
         if (m_Intake.protocol != IntakeProtocol)
         {
             GUILayout.Label("Historical intake: retained read-only in its original protocol. Start a new consented session with an unused code.", m_Label);
@@ -99,7 +100,8 @@ public sealed partial class TrialReviewApp
                     if(i%2==1)GUILayout.Space(16);
                     GUILayout.BeginVertical(new GUIStyle(m_Card){normal={background=m_ButtonTexture}},GUILayout.Width(448),GUILayout.MinHeight(168));
                     var answer = m_Intake.answers[i];
-                    GUILayout.Label(answer.question+"\n"+(answer.skipped ? "SKIPPED" : answer.transcript),m_Label,GUILayout.MinHeight(60));
+                    string reviewText=answer.question+"\n"+(answer.skipped ? "SKIPPED" : answer.transcript);
+                    GUILayout.Label(reviewText,m_Label,GUILayout.Height(Mathf.Max(60,m_Label.CalcHeight(new GUIContent(reviewText),410))));
                     GUI.enabled = idle;
                     if (!answer.skipped && Button("Listen to saved answer "+(i+1))) StartCoroutine(PlayIntakeFile(answer.audio,AudioType.WAV));
                     m_Eligibility[i] = GUILayout.SelectionGrid(m_Eligibility[i],new[] {"Unclear","Yes","No"},3,m_Button);
@@ -108,12 +110,11 @@ public sealed partial class TrialReviewApp
                 }
             GUILayout.Label("Reviewing researcher initials",m_Label); m_ConsentOperator=GUILayout.TextField(m_ConsentOperator,m_Field);
             DrawIntakeTranscriptReview(idle);
-            if(TranscriptEditPending)GUILayout.Label("Save the transcript / coding correction before the eligibility review.",m_Label);
-            GUI.enabled = idle && Consented && !TranscriptEditPending && !string.IsNullOrWhiteSpace(m_ConsentOperator);
+            GUI.enabled = idle && Consented && !string.IsNullOrWhiteSpace(m_ConsentOperator);
             if (PrimaryButton("Save eligibility review")) m_IntakeJob=StartIntakeJob("review");
             GUI.enabled = true;
         }
-        if (m_Intake.phase == "screening_stopped") GUILayout.Label("Screening stopped. Do not proceed to cloning or trials. Retain the answers and follow the approved study procedure.",m_Label);
+        if (m_Intake.phase == "screening_stopped") GUILayout.Label("Screening stopped. Audio preparation is stopped; clone deletion is recorded below. No session can be sent to the headset.",m_Label);
         if (m_Intake.phase == "withdrawn") GUILayout.Label("Consent withdrawn: capture and further preparation are disabled. Existing records are retained for the approved handling procedure.",m_Label);
     }
     void DrawIntakeWithdrawal()
@@ -188,7 +189,7 @@ public sealed partial class TrialReviewApp
         if (!string.IsNullOrEmpty(m_Intake.cacheError)) IntakeErrorCard(m_Intake.cacheError);
         bool idle=m_IntakeAudioJob==null && m_IntakeJob==null && m_AnswerClip==null && !m_IntakeStarting;
         GUI.enabled=idle && CanCacheIntake;
-        if (Button("Prepare / resume participant audio cache")) StartParticipantAudio("prepare");
+        if ((!string.IsNullOrEmpty(m_Intake.cacheError) || m_Intake.cacheState=="preparing" && m_IntakeAudioJob==null) && Button("Retry / resume audio cache")) StartParticipantAudio("prepare");
         GUI.enabled=idle && Consented && (m_Intake.cacheState=="ready" || m_Intake.cacheState=="transferred") && m_Intake.phase=="interview_complete";
         if (m_Intake.cacheState=="ready" ? PrimaryButton("Transfer and verify study audio on headset") : Button("Transfer and verify study audio on headset")) StartParticipantAudio("transfer");
         GUI.enabled=true;

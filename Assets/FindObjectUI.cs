@@ -60,6 +60,7 @@ public class FindObjectUI : MonoBehaviour
     }
 
     float m_WrongFeedbackEndTime;
+    public bool WrongFeedbackVisible => m_WrongFeedbackEndTime > Time.time;
     string m_RoundStatusText = "";
     bool m_ShowingPostSurveyStats;
     bool m_ShowingNasaTlxSurvey;

@@ -15,7 +15,7 @@ import tarfile
 import time
 import uuid
 
-from participant_intake import load, patch, atomic, require_consent, require_reviewed_eligibility, enough_speech, INTERVIEW_VOICE
+from participant_intake import load, patch, atomic, require_consent, require_consent_receipt, require_reviewed_eligibility, require_audio_complete, INTERVIEW_VOICE
 from neutral_audio import synthesize, decode, decoded_valid, MODEL, SUFFIX
 from live_bridge import Adb, wireless_endpoint
 
@@ -68,9 +68,9 @@ def jobs_for(template, state):
 
 def prepare(folder, remote, keys, ffmpeg):
     state = load(folder); consent = require_consent(state)
-    require_reviewed_eligibility(state)
-    if not enough_speech(state): raise ValueError('Collect at least 30 seconds of usable speech and 50 transcript words before caching.')
-    if not state.get('eligible') or not state.get('selectedVoiceConfirmed') or state['cloneState'] != 'ready': raise ValueError('Eligibility, Selected Voice and clone must be ready.')
+    require_consent_receipt(folder, state)
+    require_audio_complete(state)
+    if state['cloneState'] != 'ready': raise ValueError('Selected Voice and clone must be ready.')
     raw = remote.command('exec-out', 'cat ' + shlex.quote(remote.root+'PreparationLogs/study-audio-template.json'))
     template = json.loads(raw); jobs = jobs_for(template, state)
     cache = folder/'audio-cache'; cache.mkdir(exist_ok=True); os.chmod(cache, 0o700)
@@ -99,6 +99,7 @@ def prepare(folder, remote, keys, ffmpeg):
 
 def transfer(folder, remote):
     state = load(folder); require_consent(state)
+    require_reviewed_eligibility(state)
     if state.get('cacheState') not in ('ready','transferred'): raise ValueError('Prepare the entire study audio library first.')
     patch(folder,cacheState='ready',cacheError='')
     manifest_path = folder/state['cacheManifest']; manifest = json.loads(manifest_path.read_text())
@@ -125,7 +126,9 @@ def transfer(folder, remote):
         with tarfile.open(bundle,'w') as archive:
             for name in expected: archive.add(cache/name,arcname=name)
         remote.command('shell','mkdir -p '+shlex.quote(stage)+' '+shlex.quote(remote.root+'tts_cache'))
+        require_consent(load(folder)); require_reviewed_eligibility(load(folder))
         remote.command('push',str(bundle),stage+'/cache.tar',timeout=240)
+        require_consent(load(folder)); require_reviewed_eligibility(load(folder))
         remote.command('shell','cd '+shlex.quote(stage)+' && tar -xf cache.tar && for f in tts_*.mp3; do '
                        '[ -f "$f" ] || continue; [ -e ../tts_cache/"$f" ] || mv "$f" ../tts_cache/; done && '
                        'for f in tts_*.decoded-v1; do [ -f "$f" ] || continue; mv "$f" ../tts_cache/; done',timeout=240)

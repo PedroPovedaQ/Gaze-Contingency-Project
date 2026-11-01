@@ -29,6 +29,10 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
         public bool intakeAvailable;
         public ParticipantFitMeasurements fit;
         public string participantSessionId, participantCode, configuration, assignmentState, nextParticipantCode;
+        public string screen, voiceBlock, gazeStatus, audioFault, modelFault;
+        public double screenElapsedSeconds, sessionElapsedSeconds;
+        public int trialsCompleted, trialTotal = 96;
+        public bool appPaused, appFocused, presenceKnown, userPresent;
     }
 
     [Serializable]
@@ -60,6 +64,8 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
     double m_NextWrite;
     long m_MinCommandRevision;
     bool m_Paused, m_Unfocused, m_Warned;
+    string m_MonitorSession, m_LastScreen;
+    double m_ScreenSince, m_SessionSince;
 
     void Awake()
     {
@@ -74,6 +80,13 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
             m_Game.OnSearchStarted += SearchStarted;
             m_Game.OnSessionStopped += Stopped;
             m_Game.OnGameCompleted += Completed;
+#if UNITY_5_3_OR_NEWER
+            m_Game.OnReadinessEvent += Readiness;
+            m_Game.OnObjectFound += Selected;
+            m_Game.OnRoundTimedOut += TimedOut;
+            m_Game.OnCheckpoint += Checkpoint;
+            m_Game.OnWrongCapture += WrongSelection;
+#endif
         }
         Write();
     }
@@ -89,7 +102,7 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
         m_Status.progress01 = progress;
         // Progress callbacks can arrive every frame; phase changes still write promptly
         // and ordinary progress is coalesced into the half-second heartbeat.
-        if (changed) m_NextWrite = Math.Min(m_NextWrite, Time.realtimeSinceStartupAsDouble + .1);
+        if (changed) Write(); // Stage boundaries are rare; do not lose short screens between heartbeats.
     }
 
     void Update()
@@ -102,6 +115,9 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
     }
 
     static double UtcSeconds => (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds;
+
+    // Setup screens can change between heartbeats; record their boundary without commands.
+    public void RefreshScreen() => Write();
 
     void ReadCommand()
     {
@@ -167,10 +183,79 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
         }
     }
 
-    void Transition(int round, string color, string shape) => Set("ready", "Waiting for the next round");
-    void SearchStarted(int round) => Set("trial", "Trial in progress");
+    void Transition(int round, string color, string shape) => Set("ready", "Readiness cross");
+    void SearchStarted(int round) => Set("trial", "Active search");
     void Stopped(string reason) => Set("error", "Session stopped");
-    void Completed(float elapsed) => Set("ready", "Session complete");
+    void Completed(float elapsed) => Set("ready", "Finished · survey handoff");
+#if UNITY_5_3_OR_NEWER
+    void Selected(int round) => Set("ready", "Selection feedback");
+    void TimedOut(int round) => Set("ready", "Timeout feedback");
+    void Checkpoint(string stage)
+    {
+        switch(stage)
+        {
+            case "block_end": Set("ready","Block break · comfort and tracking check");break;
+            case "block_start": Set("ready","Block 2 · ready to begin");break;
+            case "search_paused": Set("paused","Session paused · researcher checkpoint");break;
+            case "readiness_resumed": Set("ready","Readiness cross");break;
+            case "search_resumed": Set("trial","Active search");break;
+        }
+    }
+    void WrongSelection(string selected, string target) => Write();
+    void Readiness(string stage)
+    {
+        if(stage == "readiness_completed") Set("ready", "Opening cue");
+        else if(stage == "readiness_started") Set("ready", "Readiness cross");
+    }
+    void UpdateMonitor(VoiceModeSelector selector, string currentMessage)
+    {
+        double now = Time.realtimeSinceStartupAsDouble;
+        if(m_MonitorSession != m_Status.participantSessionId)
+        { m_MonitorSession=m_Status.participantSessionId; m_SessionSince=now; m_LastScreen=null; }
+        string screen = selector != null && !selector.IsComplete ? selector.MonitorScreen : currentMessage;
+        var validation = m_Status.validation;
+        if(validation?.active == true) screen = "Verification · " + validation.stage + " · dot " + (validation.step+1) + " of " + validation.count;
+        bool practice = m_Game != null && m_Game.IsPractice;
+        if(m_Game?.SearchActive==true && GetComponent<FindObjectUI>()?.WrongFeedbackVisible==true)
+            screen="Wrong selection feedback · continue searching";
+        if(m_Game != null && (screen=="Readiness cross" || screen=="Opening cue" || screen=="Active search" || screen=="Selection feedback" || screen=="Timeout feedback"))
+            screen = (practice ? "Practice · " : "Trial " + (Math.Max(0,m_Game.PresentedRoundIndex)+1) + " of 96 · ") + screen;
+        m_Status.appPaused=m_Paused; m_Status.appFocused=!m_Unfocused;
+        var head=UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.Head);
+        m_Status.presenceKnown=head.TryGetFeatureValue(UnityEngine.XR.CommonUsages.userPresence,out m_Status.userPresent);
+        if(m_Paused) screen="Headset app paused / sleeping · " + screen;
+        else if(m_Unfocused) screen="Headset app out of focus · " + screen;
+        else if(m_Status.presenceKnown && !m_Status.userPresent) screen="Headset removed · " + screen;
+        m_Status.trialsCompleted=m_Game == null || practice ? 0 : Math.Min(96,Math.Max(0,m_Game.CurrentObjectiveIndex));
+        int round=Math.Max(0,m_Game?.PresentedRoundIndex ?? 0);
+        if(currentMessage=="Block 2 · ready to begin")round=48;
+        bool selected=(round<48)==(m_Status.configuration=="B");
+        m_Status.voiceBlock="Block " + (round/48+1) + " · " + (selected?"Selected Voice":"Self-Similar Voice");
+        m_Status.gazeStatus=SharedGazeStream.Instance?.TryGetValid(out _)==true ? "Tracking" : "Tracking unavailable or stale";
+        m_Status.audioFault=GetComponent<VoiceSynthesizer>()?.LastError ?? "";
+        m_Status.modelFault=m_Status.assistance?.connection=="unavailable" || m_Status.assistance?.connection=="not_configured" ? "Guidance model " + m_Status.assistance.ConnectionLabel : "";
+        if(screen != m_LastScreen)
+        {
+            m_LastScreen=screen; m_ScreenSince=now;
+            if(!string.IsNullOrEmpty(m_MonitorSession))
+            {
+                string folder=Path.Combine(Path.GetDirectoryName(m_Path),"session-"+m_MonitorSession);
+                Directory.CreateDirectory(folder);
+                File.AppendAllText(Path.Combine(folder,"screen-transitions.jsonl"),JsonUtility.ToJson(new ScreenTransition {
+                    utc=DateTime.UtcNow.ToString("O"),sessionId=m_MonitorSession,headsetSessionId=m_Status.sessionId,participantCode=m_Status.participantCode,
+                    screen=screen,sessionElapsedSeconds=now-m_SessionSince,trialsCompleted=m_Status.trialsCompleted,voiceBlock=m_Status.voiceBlock })+"\n");
+            }
+        }
+        m_Status.screen=screen; m_Status.screenElapsedSeconds=now-m_ScreenSince;
+        m_Status.sessionElapsedSeconds=string.IsNullOrEmpty(m_MonitorSession)?0:now-m_SessionSince;
+    }
+    [Serializable] sealed class ScreenTransition
+    {
+        public string utc, sessionId, headsetSessionId, participantCode, screen, voiceBlock;
+        public double sessionElapsedSeconds;
+        public int trialsCompleted;
+    }
+#endif
 
     void OnApplicationPause(bool paused) { m_Paused = paused; m_MinCommandRevision = m_Status.revision + 1; Write(); }
     void OnApplicationFocus(bool focused) { m_Unfocused = !focused; m_MinCommandRevision = m_Status.revision + 1; Write(); }
@@ -202,6 +287,9 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
             if (string.IsNullOrEmpty(m_Status.nextParticipantCode) || m_Status.participantCode == m_Status.nextParticipantCode)
                 m_Status.nextParticipantCode = SessionConfig.SuggestedParticipantId;
             m_Status.assistance = GetComponent<HintGenerator>()?.CaptureAssistanceStatus() ?? SessionConfig.CaptureAssistanceSelection();
+#if UNITY_5_3_OR_NEWER
+            UpdateMonitor(selector, message);
+#endif
             var eye=SharedGazeStream.Instance;
             var observation=eye?.Latest;
             double age=observation!=null ? Time.realtimeSinceStartupAsDouble-observation.htcQueryReceiptTime : double.PositiveInfinity;
@@ -248,6 +336,13 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
             m_Game.OnSearchStarted -= SearchStarted;
             m_Game.OnSessionStopped -= Stopped;
             m_Game.OnGameCompleted -= Completed;
+#if UNITY_5_3_OR_NEWER
+            m_Game.OnReadinessEvent -= Readiness;
+            m_Game.OnObjectFound -= Selected;
+            m_Game.OnRoundTimedOut -= TimedOut;
+            m_Game.OnCheckpoint -= Checkpoint;
+            m_Game.OnWrongCapture -= WrongSelection;
+#endif
         }
         m_Paused = true;
         Write();

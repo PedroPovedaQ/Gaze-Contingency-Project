@@ -33,7 +33,7 @@ public sealed partial class TrialReviewApp
         if(!string.IsNullOrEmpty(answer.transcriptionError))GUILayout.Label("Transcription failed; audio retained. Retry or type the answer. "+answer.transcriptionError,m_Label);
         m_EditTranscript=GUILayout.TextArea(m_EditTranscript,m_Field,GUILayout.MinHeight(72));
         string[] categories=answer.topic=="vr"||answer.topic=="voice_assistant"?new[]{"never","less_than_monthly","monthly","weekly","daily","unclear"}:
-            answer.topic=="eye_tracking"?new[]{"yes","no","unclear"}:answer.topic=="handedness"?new[]{"right","left","both_equally","unclear"}:
+            answer.topic=="eye_tracking"?new[]{"yes","no","unclear"}:
             answer.topic=="visual_correction"?new[]{"none","glasses","contact_lenses","other","unclear"}:null;
         if(categories!=null)
         {

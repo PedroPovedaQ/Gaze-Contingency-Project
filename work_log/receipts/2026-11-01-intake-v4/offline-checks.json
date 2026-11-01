@@ -1,0 +1,38 @@
+[
+  {
+    "script": "test-voice-isolation",
+    "exitCode": 0
+  },
+  {
+    "script": "test-headset-preparation",
+    "exitCode": 0
+  },
+  {
+    "script": "test-activation-exercise",
+    "exitCode": 0
+  },
+  {
+    "script": "test-eye-validation",
+    "exitCode": 0
+  },
+  {
+    "script": "test-rotational-layout",
+    "exitCode": 0
+  },
+  {
+    "script": "test-spatial-voice",
+    "exitCode": 0
+  },
+  {
+    "script": "test-trial-timeout",
+    "exitCode": 0
+  },
+  {
+    "script": "test-voice-enrollment",
+    "exitCode": 0
+  },
+  {
+    "script": "test-native-gaze",
+    "exitCode": 0
+  }
+]

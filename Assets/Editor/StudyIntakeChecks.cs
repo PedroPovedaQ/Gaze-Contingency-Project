@@ -14,6 +14,7 @@ public static class StudyIntakeChecks
     public static void Run()
     {
         ParticipantFitChecks.Run();
+        StudySessionMonitorChecks.Run();
         string root=Path.Combine(Path.GetTempPath(),"study-intake-check-"+Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Path.Combine(root,"PreparationLogs")); Directory.CreateDirectory(Path.Combine(root,"tts_cache"));
         var a=new ParticipantSessionAssignment {schema=2,id=Guid.NewGuid().ToString("N"),participantCode="P999999",configuration="A",
@@ -40,6 +41,7 @@ public static class StudyIntakeChecks
         {
             a.Validate();run();Check(!a.NeutralFirst,"Configuration A must be self-similar first");
             a.intakeProtocol="audio-intake-v3-20261101";a.Validate();run();
+            a.intakeProtocol="audio-intake-v4-20261101";a.Validate();run();
             a.intakeProtocol="audio-intake-unknown";
             bool unknownRejected=false;try{a.Validate();}catch(ArgumentException){unknownRejected=true;}
             Check(unknownRejected,"Unknown intake protocols must not be accepted");a.intakeProtocol="audio-intake-v3-20261101";

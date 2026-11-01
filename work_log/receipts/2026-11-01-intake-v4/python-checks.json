@@ -1,0 +1,13 @@
+{
+  "total": 630,
+  "passed": 629,
+  "skipped": 1,
+  "suites": {
+    "desktop-python.log": 156,
+    "analysis.log": 376,
+    "scripts.log": 14,
+    "script-tests.log": 22,
+    "local-model.log": 45,
+    "native-timing.log": 17
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "desktop": "/tmp/FollowMyVoice-IntakeV4-Monitor-20261101.app",
+  "packagedWorkers": {
+    "participant_intake.py": "fdc3abf6de05c57463b784f8c671d555fada2c42f66e66c3e48cbfeffa2e0e6c",
+    "participant_audio.py": "a4c239295225adbe85ed1d018b924944915b21107460d115deafc1dc679a3936",
+    "participant_codes.py": "f73432fc75c7cf4112c616fe09a70962d141d03b9c8b59f419e3e54727d93db6",
+    "live_bridge.py": "87dc9a2a49e55092fc16ce79a232be51e65e0332803ad08878f0717097ae9281"
+  },
+  "testHarnessBundled": false,
+  "installation": "WAITING",
+  "android": {
+    "path": "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/Builds/CodexAndroid/codex_build.apk",
+    "sha256": "89a33785cc9b32ef3fcdc49cdec468df3e4baa04dfceda490eaa752d5518f7fc",
+    "bytes": 72028553,
+    "result": "[CodexBuild] Build succeeded in 375.3s, size 1167.6 MB"
+  }
+}

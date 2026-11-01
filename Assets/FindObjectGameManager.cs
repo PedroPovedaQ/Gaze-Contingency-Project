@@ -140,6 +140,7 @@ public class FindObjectGameManager : MonoBehaviour
         if (!CanOpenSearch(round) || m_OpeningDirectionReady) return;
         var voice = GetComponent<VoiceAssistantController>();
         if (voice == null) { TechnicalStop("audio_failure: opening voice unavailable"); return; }
+        GetComponent<HeadsetPreparationStatus>()?.Set("ready", "Opening cue");
         voice.AnnounceSearchOpening(round);
     }
     bool CanOpenSearch(int round) => !m_TechnicallyStopped && m_State == GameState.Playing &&
@@ -519,6 +520,7 @@ public class FindObjectGameManager : MonoBehaviour
                 if(activation.RecalibrationRequested || !preparation.Ready)continue;
                 if(!activation.Completed)yield break;
             }
+            GetComponent<HeadsetPreparationStatus>()?.Set("ready", "Instructions · center and begin");
             m_Checkpoint.Show((SessionConfig.DevelopmentQuickTest ? "<b>" + SessionConfig.QuickTestTitle + " · DEVELOPMENT ONLY</b>\n" : "<b>360° SEARCH BETA</b>\n") +
                 "Sit at the center and face your chosen forward direction.\nEight planes will surround you, 21 objects on each.\nStay seated and turn to search.",
                 "Center and begin");
@@ -799,6 +801,7 @@ public class FindObjectGameManager : MonoBehaviour
         m_SpawnedObjects.Clear();
         m_UI.HideObjectiveDuringTransition();
         if (m_Checkpoint == null) m_Checkpoint = gameObject.AddComponent<StudyCheckpoint>();
+        GetComponent<HeadsetPreparationStatus>()?.Set("ready", "Practice complete · confirm understanding");
         m_Checkpoint.Show("Practice complete.\nConfirm task understanding before beginning the two study blocks.");
         while (m_Checkpoint.Waiting && !m_TechnicallyStopped) yield return null;
         if (m_TechnicallyStopped) yield break;
