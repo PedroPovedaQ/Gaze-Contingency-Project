@@ -8,8 +8,8 @@ the HTC VIVE with passthrough AR.
 
 - **`Assets/FindObjectGameManager.cs`** — game state machine, round flow,
   object spawning, capture logic
-- **`Assets/ChallengeSet.cs`** — deterministic 14-round challenge set,
-  fixed seed (42), gaze-contingent guidance in every round
+- **`Assets/ChallengeSet.cs`** — deterministic 64-trial schedule (v8),
+  participant-hashed seed, gaze-contingent guidance in every round
 - **`Assets/ShelfSpawner.cs`** — builds two bookcase units on the detected
   table, computes deterministic shelf spawn points
 - **`Assets/ShapeObjectFactory.cs`** — instantiates shape/color combos,
@@ -29,10 +29,11 @@ the HTC VIVE with passthrough AR.
 
 ## Experimental Design
 
-- **Implemented:** 14 deterministic rounds in two counterbalanced seven-trial voice blocks, following two uncounted practice trials; 56 objects per round (1 target, 13 same-color, 13 same-shape, 29 neutral).
+- **Implemented:** 64 measured trials in two counterbalanced 32-trial voice blocks after one uncounted practice trial, schedule `readiness-target-angle-v8-signed-steps-32-one-practice`: four trials at each of eight signed plane steps per block (|theta| 4/8/8/8/4), 16 targets above and 16 below the readiness cross, 168 objects per trial (21 per plane).
 - **Protocol proposal — user decision, 2026-09-10:** the agent is always gaze-contingent. Gaze awareness is not a factor; do not reintroduce an unaware control or toggle.
-- **Implemented:** voice is selected at launch. **Open work:** within-session voice counterbalancing, theta transitions, rotational layout, directional coaching and protocol reconciliation.
-- Keep the existing fixed-seed stimuli until the theta scheduler is implemented explicitly.
+- **Implemented:** the Selected Voice is chosen on the desktop during intake; the self-similar voice is cloned from the audio intake. Order A is self-similar first, Order B is neutral first. The self-similar clips keep the inner-thought audio treatment.
+- **Implemented:** room `neutral-room-v2` with invisible object planes at 1.5 m, gray floor and walls, and a muted yellow floor circle. Decision model `20261031-minilm-direction-v9`, served locally over ADB.
+- **Decision, 2026-11-01:** start with 20 participants, 10 per order.
 
 ## Data Output
 
@@ -102,8 +103,8 @@ Default output is `./results/` containing:
 
 - `HintGenerator` always uses its gaze-responsive policy. `CurrentRoundGazeAware`
   is always true; there is no `gazeAwareTips` toggle.
-- All challenge generation uses fixed seed 42. Don't introduce
-  `Random.Range` into round content — it would break determinism.
+- All challenge generation is seeded and deterministic. Don't introduce
+  `Random.Range` into round content.
 - The fixation cross between rounds pauses the timer (`m_UI.PauseTimer`)
   and the timer resumes only after the agent finishes announcing the new
   target. Data logging is also suspended during the transition.
