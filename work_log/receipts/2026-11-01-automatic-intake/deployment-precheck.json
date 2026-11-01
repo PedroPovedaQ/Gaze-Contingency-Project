@@ -1,0 +1,11 @@
+{
+  "checkedUtc": 1793541379.6365829,
+  "package": "com.DefaultCompany.MixedRealityTemplate",
+  "serial": "192.168.1.208:5555",
+  "online": true,
+  "asleep": true,
+  "activityStopped": true,
+  "assigned": false,
+  "statusAgeSeconds": 379428.7695851326,
+  "idleForDeployment": true
+}

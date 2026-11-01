@@ -19,7 +19,7 @@ class ParticipantAudioTests(unittest.TestCase):
         self.folder=Path(self.temp.name)/uuid.uuid4().hex
         create(self.folder,'P999','A',development=True)
         record_consent(self.folder,'TEST','synthetic consent fixture',True,True)
-        update(self.folder,answers=[{} for _ in range(9)],eligibility=dict(id='fixture-review',values=dict.fromkeys(ELIGIBILITY,'yes')),speechSeconds=30,sampleWords=50,eligible=True,selectedVoiceConfirmed=True,cloneState='ready',cloneVoiceId='synthetic_clone',phase='interview_complete')
+        update(self.folder,answers=[{} for _ in range(10)],eligibility=dict(id='fixture-review',values=dict.fromkeys(ELIGIBILITY,'yes')),speechSeconds=30,sampleWords=50,eligible=True,selectedVoiceConfirmed=True,cloneState='ready',cloneVoiceId='synthetic_clone',phase='interview_complete')
         self.template=dict(schema=1,model=audio.MODEL,contentVersion='matched-voice-v3',
             keyPrefix='matched-voice-v3|perspective-v9-shared-imperative|External|eleven_turbo_v2_5|',
             voices=[dict(gender='Male',option=0,voiceId='synthetic_selected',name='Fixture')],

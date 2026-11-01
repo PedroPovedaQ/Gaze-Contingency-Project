@@ -15,6 +15,28 @@ class DesktopRunExportTests(unittest.TestCase):
         self.recording = self.fixture.package / "recording.jsonl"
         self.output = self.fixture.root / "exports"
 
+    def test_intake_transcripts_join_by_code_and_session_and_change_export_identity(self):
+        import uuid
+        from participant_intake import create, patch as update, withdraw
+        intake_root = self.fixture.root/'intakes'
+        session_id = uuid.uuid4().hex
+        folder = intake_root/session_id
+        create(folder, 'P001', 'A')
+        (self.fixture.run/'desktop-session-id.txt').write_text(session_id)
+        update(folder, answers=[dict(id='fixture', question='Synthetic question', transcript='Fixture answer.',
+                                    audio='fixture.wav', questionIndex=1)])
+        exported = export_run.generate(self.recording, self.output, intake_root=intake_root)
+        data = json.loads((exported/'intake_transcripts.json').read_text())
+        self.assertEqual(data['participantCode'], 'P001')
+        self.assertEqual(data['answers'][0]['transcript'], 'Fixture answer.')
+        self.assertTrue((exported/'intake_transcripts.csv').exists())
+        update(folder, answers=[dict(id='fixture', question='Synthetic question', transcript='Corrected fixture answer.')])
+        revised = export_run.generate(self.recording, self.output, intake_root=intake_root)
+        self.assertNotEqual(revised, exported)
+        withdraw(folder)
+        with self.assertRaisesRegex(ValueError, 'withdrawn'):
+            export_run.generate(self.recording, self.output, intake_root=intake_root)
+
     def test_current_and_legacy_schedule_metadata_survive_export(self):
         for version,size in (("readiness-target-angle-v9-signed-steps-48-one-practice",48),
             ("readiness-target-angle-v8-signed-steps-32-one-practice",32),

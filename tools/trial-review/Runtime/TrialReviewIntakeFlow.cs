@@ -45,21 +45,25 @@ public sealed partial class TrialReviewApp
         }
         else if(!string.IsNullOrEmpty(m_FinalSurveyMessage)) GUILayout.Label(m_FinalSurveyMessage,m_MutedLabel);
     }
-    bool Consented => m_Intake != null && m_Intake.protocol == "audio-intake-v2-20261028" &&
+    bool Consented => m_Intake != null && !m_WithdrawRequested && m_Intake.protocol == IntakeProtocol &&
         m_Intake.withdrawnUtc == 0 && m_Intake.consent != null && m_Intake.consent.study && m_Intake.consent.voiceCloud &&
         m_Intake.consent.sessionId == m_Intake.id && m_Intake.consent.participantCode == m_Intake.participantCode;
     bool AudioIntakeComplete => m_Intake != null && (m_Intake.phase == "eligibility_review" ||
         m_Intake.phase == "screening_stopped" || m_Intake.phase == "interview_complete");
     bool ReviewedIntake => Consented && m_Intake.phase == "interview_complete" && m_Intake.eligible &&
-        !string.IsNullOrEmpty(m_Intake.eligibility?.id) && m_Intake.answers != null && m_Intake.answers.Length >= 9;
+        !string.IsNullOrEmpty(m_Intake.eligibility?.id) && m_Intake.answers != null && m_Intake.answers.Length >= IntakeQuestionCount;
     bool CanCloneIntake => ReviewedIntake && m_Intake.speechSeconds >= 30 && m_Intake.sampleWords >= 50;
     bool CanCacheIntake => CanCloneIntake && m_Intake.cloneState == "ready";
 
     void DrawIntakeConsentAndReview()
     {
         bool idle = m_IntakeJob == null && m_IntakeAudioJob == null && !m_IntakeStarting && m_AnswerClip == null && !m_PromptPlaying;
-        if (m_Intake.protocol != "audio-intake-v2-20261028")
-        { GUILayout.Label("Historical intake: retained read-only. Start a new consented session with an unused code.", m_Label); return; }
+        if (m_Intake.protocol != IntakeProtocol)
+        {
+            GUILayout.Label("Historical intake: retained read-only in its original protocol. Start a new consented session with an unused code.", m_Label);
+            if(m_Intake.answers!=null)foreach(var answer in m_Intake.answers)GUILayout.Label(answer.question+"\n"+answer.transcript,m_Label);
+            return;
+        }
         if (m_Intake.phase == "awaiting_consent")
         {
             GUILayout.Label("Researcher initials", m_Label); m_ConsentOperator = GUILayout.TextField(m_ConsentOperator, m_Field);
@@ -103,7 +107,9 @@ public sealed partial class TrialReviewApp
                     if(i%2==1||i==Math.Min(4,m_Intake.answers.Length)-1)GUILayout.EndHorizontal();
                 }
             GUILayout.Label("Reviewing researcher initials",m_Label); m_ConsentOperator=GUILayout.TextField(m_ConsentOperator,m_Field);
-            GUI.enabled = idle && Consented && !string.IsNullOrWhiteSpace(m_ConsentOperator);
+            DrawIntakeTranscriptReview(idle);
+            if(TranscriptEditPending)GUILayout.Label("Save the transcript / coding correction before the eligibility review.",m_Label);
+            GUI.enabled = idle && Consented && !TranscriptEditPending && !string.IsNullOrWhiteSpace(m_ConsentOperator);
             if (PrimaryButton("Save eligibility review")) m_IntakeJob=StartIntakeJob("review");
             GUI.enabled = true;
         }
@@ -112,12 +118,12 @@ public sealed partial class TrialReviewApp
     }
     void DrawIntakeWithdrawal()
     {
-        GUI.enabled = m_IntakeJob == null && !m_IntakeStarting && Consented;
+        GUI.enabled = m_Intake?.consent != null && m_Intake.withdrawnUtc == 0 && m_WithdrawalJob == null;
         if (WithdrawalButton("Stop intake / record withdrawal (no further answer upload)"))
         {
-            m_InterviewSpeaker?.Stop();
-            if (m_AnswerClip != null) StopAnswer(false);
-            m_IntakeJob = StartIntakeJob("withdraw");
+            PauseAutomaticIntake();m_WithdrawRequested=true;m_QueuedIntakeControl=null;
+            // Independent local worker persists withdrawal even while ASR is in flight.
+            m_WithdrawalJob = StartIntakeJob("withdraw");
         }
         GUI.enabled = true;
     }
@@ -126,18 +132,18 @@ public sealed partial class TrialReviewApp
     {
         if(m_CaptureMode) yield break;
         m_PromptPlaying = true;
-        string session = m_Intake.id;
+        string session = m_Intake.id; int epoch=m_IntakeEpoch;
         using (var request=UnityWebRequestMultimedia.GetAudioClip(new Uri(Path.Combine(m_IntakeFolder,name)).AbsoluteUri,type))
         {
             yield return request.SendWebRequest();
-            if (request.result == UnityWebRequest.Result.Success && m_IntakeOpen && m_Intake?.id == session && m_AnswerClip == null)
+            if (request.result == UnityWebRequest.Result.Success && m_IntakeOpen && m_Intake?.id == session && m_AnswerClip == null && epoch==m_IntakeEpoch && !m_WithdrawRequested)
             {
                 if (m_InterviewSpeaker == null) { m_InterviewSpeaker=gameObject.AddComponent<AudioSource>(); m_InterviewSpeaker.ignoreListenerVolume=true; }
                 m_InterviewSpeaker.Stop(); if (m_InterviewSpeaker.clip != null) Destroy(m_InterviewSpeaker.clip);
                 m_InterviewSpeaker.clip=DownloadHandlerAudioClip.GetContent(request); m_InterviewSpeaker.Play();
                 while (m_InterviewSpeaker != null && m_InterviewSpeaker.isPlaying) yield return null;
             }
-            else m_IntakeError="Could not play saved intake audio.";
+            else if(epoch==m_IntakeEpoch)m_IntakeError="Could not play saved intake audio. Intake paused.";
         }
         m_PromptPlaying=false;
     }

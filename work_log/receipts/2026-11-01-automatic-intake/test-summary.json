@@ -1,0 +1,26 @@
+{
+  "python-desktop-final": {
+    "tests": 137,
+    "skips": 0
+  },
+  "python-analysis-final": {
+    "tests": 375,
+    "skips": 1
+  },
+  "python-scripts": {
+    "tests": 14,
+    "skips": 0
+  },
+  "python-script-tests-final": {
+    "tests": 19,
+    "skips": 0
+  },
+  "python-local-model": {
+    "tests": 45,
+    "skips": 0
+  },
+  "python-native-timing": {
+    "tests": 17,
+    "skips": 0
+  }
+}

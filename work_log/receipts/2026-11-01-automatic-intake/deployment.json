@@ -1,0 +1,10 @@
+{
+  "package": "com.DefaultCompany.MixedRealityTemplate",
+  "serial": "192.168.1.208:5555",
+  "sha256": "7c572774669b8436978f64435602b50dfd46ea0c4dc2996e9c0bcae05c0eb326",
+  "installedSha256": "7c572774669b8436978f64435602b50dfd46ea0c4dc2996e9c0bcae05c0eb326",
+  "matchesBuild": true,
+  "installedUtc": 1793541417.976646,
+  "minilmReady": true,
+  "launchSucceeded": true
+}

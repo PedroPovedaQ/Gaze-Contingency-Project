@@ -1,0 +1,37 @@
+{
+  "checkedUtc": 1793541306.7957811,
+  "package": "com.DefaultCompany.MixedRealityTemplate",
+  "serial": "192.168.1.208:5555",
+  "online": true,
+  "packagePid": "25787",
+  "phase": "paused",
+  "intakeAvailable": true,
+  "stateAgeSeconds": 379356.43662810326,
+  "assigned": false,
+  "relevantActivityLines": [
+    "* Task{446317b #412 type=standard A=10090:com.DefaultCompany.MixedRealityTemplate U=0 visible=true visibleRequested=false mode=fullscreen translucent=false sz=1}",
+    "mLastPausedActivity: ActivityRecord{a3e86fe u0 com.DefaultCompany.MixedRealityTemplate/com.unity3d.player.UnityPlayerGameActivity t412}",
+    "* Hist  #0: ActivityRecord{a3e86fe u0 com.DefaultCompany.MixedRealityTemplate/com.unity3d.player.UnityPlayerGameActivity t412}",
+    "packageName=com.DefaultCompany.MixedRealityTemplate processName=com.DefaultCompany.MixedRealityTemplate",
+    "app=ProcessRecord{d7240ac 25787:com.DefaultCompany.MixedRealityTemplate/u0a90}",
+    "Intent { flg=0x10000000 cmp=com.DefaultCompany.MixedRealityTemplate/com.unity3d.player.UnityPlayerGameActivity }",
+    "rootOfTask=true task=Task{446317b #412 type=standard A=10090:com.DefaultCompany.MixedRealityTemplate U=0 visible=true visibleRequested=false mode=fullscreen translucent=false sz=1}",
+    "taskAffinity=10090:com.DefaultCompany.MixedRealityTemplate",
+    "mActivityComponent=com.DefaultCompany.MixedRealityTemplate/com.unity3d.player.UnityPlayerGameActivity",
+    "baseDir=/data/app/~~C44h5xkAqhD2Jk9yC4HqPA==/com.DefaultCompany.MixedRealityTemplate-AgNEoE_9oKKXsrYF-nWSNw==/base.apk",
+    "dataDir=/data/user/0/com.DefaultCompany.MixedRealityTemplate",
+    "windows=[Window{13f9ae0 u0 com.DefaultCompany.MixedRealityTemplate/com.unity3d.player.UnityPlayerGameActivity}]",
+    "Resumed: ActivityRecord{a3e86fe u0 com.DefaultCompany.MixedRealityTemplate/com.unity3d.player.UnityPlayerGameActivity t412}",
+    "ResumedActivity: ActivityRecord{a3e86fe u0 com.DefaultCompany.MixedRealityTemplate/com.unity3d.player.UnityPlayerGameActivity t412}",
+    "topDisplayFocusedRootTask=Task{446317b #412 type=standard A=10090:com.DefaultCompany.MixedRealityTemplate U=0 visible=true visibleRequested=false mode=fullscreen translucent=false sz=1}",
+    "mFocusedApp=ActivityRecord{a3e86fe u0 com.DefaultCompany.MixedRealityTemplate/com.unity3d.player.UnityPlayerGameActivity t412}",
+    "mPreferredTopFocusableRootTask=Task{446317b #412 type=standard A=10090:com.DefaultCompany.MixedRealityTemplate U=0 visible=true visibleRequested=false mode=fullscreen translucent=false sz=1}",
+    "mLastFocusedRootTask=Task{446317b #412 type=standard A=10090:com.DefaultCompany.MixedRealityTemplate U=0 visible=true visibleRequested=false mode=fullscreen translucent=false sz=1}",
+    "* Task{446317b #412 type=standard A=10090:com.DefaultCompany.MixedRealityTemplate U=0 visible=true visibleRequested=false mode=fullscreen translucent=false sz=1}",
+    "* ActivityRecord{a3e86fe u0 com.DefaultCompany.MixedRealityTemplate/com.unity3d.player.UnityPlayerGameActivity t412}",
+    "(fullscreen) Task{446317b #412 type=standard A=10090:com.DefaultCompany.MixedRealityTemplate U=0 visible=true visibleRequested=false mode=fullscreen translucent=false sz=1}"
+  ],
+  "powerLines": [
+    "mWakefulness=Asleep"
+  ]
+}

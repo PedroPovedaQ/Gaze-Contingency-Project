@@ -38,6 +38,10 @@ public static class StudyIntakeChecks
         try
         {
             a.Validate();run();Check(!a.NeutralFirst,"Configuration A must be self-similar first");
+            a.intakeProtocol="audio-intake-v3-20261101";a.Validate();run();
+            a.intakeProtocol="audio-intake-unknown";
+            bool unknownRejected=false;try{a.Validate();}catch(ArgumentException){unknownRejected=true;}
+            Check(unknownRejected,"Unknown intake protocols must not be accepted");a.intakeProtocol="audio-intake-v3-20261101";
             a.configuration="B";Check(a.NeutralFirst,"Configuration B must be selected first");
             a.participantCode="P888888";reject();a.participantCode="P999999";
             a.cacheManifestSha256=new string('b',64);reject();a.cacheManifestSha256=Hash(receipt);

@@ -106,3 +106,6 @@ tools/interactive-paper-podcast/**/__pycache__/
 # Unity performance-test build metadata (generated during Android builds)
 /Assets/Resources/PerformanceTestRunInfo.json*
 /Assets/Resources/PerformanceTestRunSettings.json*
+# Private participant transcript exports (including copies in generated run packages).
+intake_transcripts.json
+intake_transcripts.csv

@@ -1,0 +1,14 @@
+................................................................................................................F.......................
+======================================================================
+FAIL: test_manual_answer_after_asr_failure_and_coding_are_audited (test_participant_intake.IntakeTests.test_manual_answer_after_asr_failure_and_coding_are_audited)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/test_participant_intake.py", line 165, in test_manual_answer_after_asr_failure_and_coding_are_audited
+    self.assertEqual(entry['quality']['words'], 6)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 5 != 6
+
+----------------------------------------------------------------------
+Ran 136 tests in 13.695s
+
+FAILED (failures=1)

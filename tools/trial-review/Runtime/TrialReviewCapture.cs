@@ -34,9 +34,9 @@ public sealed partial class TrialReviewApp
     {
         var state = new IntakeState {
             id="development-capture-only", participantCode="P003", configuration="A", development=true,
-            protocol="audio-intake-v2-20261028", phase=phase, neutralGender="Male", neutralOption=0,
-            prompt="How often do you use virtual reality? Tell me about your experience and comfort with VR.",
-            promptRevision=1, cloneState="not_started", cacheState="not_started", speechSeconds=18,
+            protocol=IntakeProtocol, phase=phase, neutralGender="Male", neutralOption=0,
+            prompt="Tell me about any experience you have had with virtual reality. What have you tried, how often, and how did it feel? If you have never tried it, tell me what you imagine it is like.",
+            questionIndex=4, promptRevision=1, cloneState="not_started", cacheState="not_started", speechSeconds=18,
             recordedSeconds=25, sampleWords=41, cacheTotal=1132,
             answers=new [] {
                 new IntakeAnswer{question="Are you at least 18 years old?",transcript="Yes.",audio="fixture-only.wav"},
@@ -55,13 +55,29 @@ public sealed partial class TrialReviewApp
                 new IntakeAnswer{question="How often do you use voice assistants?",transcript="Daily, for reminders."},
                 new IntakeAnswer{question="Have you used eye tracking before?",transcript="No."},
                 new IntakeAnswer{question="Which hand do you usually prefer?",transcript="Right."},
-                new IntakeAnswer{question="What visual correction are you using?",transcript="Glasses."}
+                new IntakeAnswer{question="What visual correction are you using?",transcript="Glasses."},
+                new IntakeAnswer{question="Imagine you are helping a friend find something they lost in a room. Talk them through it for about thirty seconds, telling them where to look, which way to turn, and when they are getting close.",transcript="Turn left and look near the chair. You are getting close."}
             }).ToArray();
             if(phase!="fallback_available"&&phase!="fallback"){state.speechSeconds=34;state.sampleWords=72;state.recordedSeconds=42;}
         }
         if(phase=="fallback")state.prompt="Read the following passage in your natural voice after the tone. Locate the red sphere. Look toward the upper shelf. Move your gaze slowly to the right.";
         if(phase!="awaiting_consent")state.consent=new IntakeConsent{id="fixture",sessionId=state.id,participantCode=state.participantCode,study=true,voiceCloud=true};
         if(phase=="interview_complete") {state.eligible=true;state.eligibility=new IntakeEligibility{id="fixture-review"};state.cloneState="ready";state.cacheState="preparing";state.cacheCompleted=420;}
+        string[] exactQuestions={
+            "Are you 18 years of age or older? After the tone, please answer in a full sentence.",
+            "Can you hear and understand this voice at a comfortable volume? After the tone, please answer in a full sentence.",
+            "With your usual glasses or contact lenses if needed, can you see clearly enough to read and to find small objects? After the tone, please answer in a full sentence.",
+            "Can you safely stay seated, turn in a swivel chair, and use a controller in your right hand? After the tone, please answer in a full sentence. You do not need to give medical details.",
+            "Tell me about any experience you have had with virtual reality. What have you tried, how often, and how did it feel? If you have never tried it, tell me what you imagine it is like.",
+            "Tell me how you use voice assistants or spoken directions in everyday life, such as on your phone or while driving. What works well for you, and what is frustrating?",
+            "Have you used eye tracking before? If you have, describe it. If not, how would you feel about a system that knows where you are looking?",
+            "Which hand do you prefer for everyday tasks, and what is something you always do with that hand?",
+            "Are you wearing glasses, contact lenses, or no visual correction today? Tell me how they usually feel when you are looking at screens. No prescription details are needed.",
+            "Imagine you are helping a friend find something they lost in a room. Talk them through it for about thirty seconds, telling them where to look, which way to turn, and when they are getting close."
+        };
+        string[] topics={"adult","hearing","vision","seated_controller","vr","voice_assistant","eye_tracking","handedness","visual_correction","directional_speech"};
+        for(int i=0;i<state.answers.Length;i++)
+        {state.answers[i].id="fixture-"+i;state.answers[i].question=exactQuestions[i];state.answers[i].topic=topics[i];state.answers[i].structuredValue="unclear";state.answers[i].transcriptionStatus="complete";}
         return state;
     }
     void RunCaptureInputChecks()
@@ -104,13 +120,13 @@ public sealed partial class TrialReviewApp
         m_Dataset=m_Catalog.Register(m_Path,"synthetic-desktop-demo","SYNTHETIC","");
         m_DatasetDraft="Synthetic development demo";m_IdDraft="SYNTHETIC";
         m_IntakeMic="Development microphone (inactive)";
-        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu","layers","trial-search","cursor-details","cursor-collapsed","shortcuts","jev-alternatives","light-intake-consent","light-intake-interview","intake-clone-error","intake-screening-stopped","intake-withdrawn","intake-historical","intake-recording","intake-submitting","intake-prompt-playing","startup","layers-wifi-panel","intake-fallback-available","intake-fallback","light-intake-eligibility","intake-reviewed-awaiting-clone"};
+        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu","layers","trial-search","cursor-details","cursor-collapsed","shortcuts","jev-alternatives","light-intake-consent","light-intake-interview","intake-clone-error","intake-screening-stopped","intake-withdrawn","intake-historical","intake-recording","intake-submitting","intake-prompt-playing","startup","layers-wifi-panel","intake-fallback-available","intake-fallback","light-intake-eligibility","intake-reviewed-awaiting-clone","intake-paused","intake-transcription-failed","intake-identifier-flag","intake-directional-speech"};
         var timeline=m_Timeline;
         for(int i=0;i<states.Length;i++)
         {
             string state=states[i];
             m_Timeline=timeline; m_Playing=false; m_Tab=0; m_CameraMode=0; m_RunTimeline=true;
-            m_JevScroll=Vector2.zero;m_InspectScroll=Vector2.zero; m_IntakeScroll=Vector2.zero; m_CaptureIntakeActivity=null;m_IntakeOpen=false; m_Intake=null; m_IntakeFolder=null;
+            m_JevScroll=Vector2.zero;m_InspectScroll=Vector2.zero; m_IntakeScroll=Vector2.zero; m_CaptureIntakeActivity=null;m_IntakePaused=false;m_WithdrawRequested=false;m_EditAnswerId=null;m_IntakeOpen=false; m_Intake=null; m_IntakeFolder=null;
             m_TrialQuery=state=="trial-search"?"02":"";m_LivePanel=state=="layers-wifi-panel";m_LayersScroll=m_LivePanel?new Vector2(0,400):Vector2.zero;m_LayersOpen=state=="layers"||m_LivePanel;m_FileMenu=state=="file-menu";m_Browser=false;m_DatasetPanel=false;m_Loading=false;m_Ready=false;m_LightTheme=state.StartsWith("light-");
             m_ShortcutsOpen=state=="shortcuts";m_CollapsedCards.Clear();
             if(state=="cursor-details")m_InspectScroll=new Vector2(0,500);
@@ -148,12 +164,23 @@ public sealed partial class TrialReviewApp
                 if(intakeState=="intake-screening-stopped"){m_Intake.phase="screening_stopped";m_Intake.eligible=false;}
                 if(intakeState=="intake-withdrawn"){m_Intake.phase="withdrawn";m_Intake.withdrawnUtc=1;}
                 if(intakeState=="intake-historical")m_Intake.protocol="historical-fixture";
-                if(intakeState=="intake-recording")m_CaptureIntakeActivity="Recording ● 00:12";
+                if(intakeState=="intake-recording")m_CaptureIntakeActivity="Listening · speech detected · silence 2.0s / 5s";
                 if(intakeState=="intake-submitting")m_CaptureIntakeActivity="Submitting";
                 if(intakeState=="intake-prompt-playing")m_CaptureIntakeActivity="Prompt playing";
+                if(intakeState=="intake-paused"){m_IntakePaused=true;m_CaptureIntakeActivity="Paused · microphone off";}
+                if(intakeState=="intake-transcription-failed"||intakeState=="intake-identifier-flag")
+                {
+                    m_Intake=CaptureIntake("eligibility_review");m_TranscriptIndex=0;
+                    if(intakeState=="intake-transcription-failed"){m_Intake.answers[0].transcriptionStatus="failed";m_Intake.answers[0].transcriptionError="Synthetic offline fixture";m_Intake.answers[0].transcript="";}
+                    else{m_Intake.answers[0].possibleIdentifiers=true;m_Intake.answers[0].transcript="My name is Alex (synthetic fixture). I am over eighteen.";}
+                    m_IntakeScroll=new Vector2(0,450);
+                }
+                if(intakeState=="intake-directional-speech"){m_Intake.questionIndex=9;m_Intake.prompt=CaptureIntake("eligibility_review").answers[9].question;}
                 m_QuestionHeardRevision=1;
             }
             for(int frame=0;frame<3;frame++)yield return null;
+            if(intakeState=="intake-transcription-failed"||intakeState=="intake-identifier-flag")
+            {m_IntakeScroll=new Vector2(0,520);for(int frame=0;frame<3;frame++)yield return null;}
             yield return new WaitForEndOfFrame();
             string path=Path.Combine(m_CaptureDirectory,$"{i+1:00}-{state}.png");
             ScreenCapture.CaptureScreenshot(path);

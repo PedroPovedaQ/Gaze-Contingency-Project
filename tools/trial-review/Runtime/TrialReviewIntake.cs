@@ -7,7 +7,11 @@ using UnityEngine.Networking;
 
 public sealed partial class TrialReviewApp
 {
-    [Serializable] sealed class IntakeAnswer { public string question, transcript, audio, topic; public float seconds; public bool skipped; }
+    [Serializable] sealed class IntakeAnswer
+    {
+        public string id, question, transcript, machineTranscript, audio, topic, transcriptionStatus, transcriptionError, structuredValue;
+        public float seconds; public bool skipped, researcherCorrected, possibleIdentifiers;
+    }
     [Serializable] sealed class IntakeConsent { public string id, participantCode, sessionId; public bool study, voiceCloud; }
     [Serializable] sealed class IntakeEligibility { public string id; }
     [Serializable] sealed class IntakeCapture { public string prompt, consentId; }
@@ -20,7 +24,7 @@ public sealed partial class TrialReviewApp
         public double withdrawnUtc, previewRevision;
         public IntakeConsent consent;
         public IntakeEligibility eligibility;
-        public int neutralOption, promptRevision;
+        public int neutralOption, promptRevision, questionIndex;
         public float recordedSeconds, speechSeconds;
         public int sampleWords;
         public IntakeAnswer[] answers;
@@ -33,6 +37,7 @@ public sealed partial class TrialReviewApp
         public bool skip;
         public bool study, voiceCloud, development;
         public string @operator, reference;
+        public string answerId, transcript, structuredValue;
         public string[] eligibilityValues;
         public ParticipantFitMeasurements fit;
     }
@@ -74,6 +79,7 @@ public sealed partial class TrialReviewApp
     {
         if(m_CaptureMode) { m_IntakeOpen=true; return; }
         m_IntakeOpen = true;
+        m_IntakePaused = true;
         if (m_IntakeFolder == null)
         {
             string saved = PlayerPrefs.GetString("ParticipantIntakeFolder", "");
@@ -86,6 +92,7 @@ public sealed partial class TrialReviewApp
             foreach (string path in Directory.GetFiles(m_IntakeFolder,"answer-*.wav"))
             {
                 if (!File.Exists(path+".capture.json")) continue;
+                if (File.Exists(path+".end.json") && File.ReadAllText(path+".end.json").Contains("no_speech")) continue;
                 var capture=JsonUtility.FromJson<IntakeCapture>(File.ReadAllText(path+".capture.json"));
                 string name=Path.GetFileName(path);
                 if (capture.prompt==m_Intake.prompt && capture.consentId==m_Intake.consent.id &&
@@ -112,16 +119,18 @@ public sealed partial class TrialReviewApp
                 neutralGender = m_IntakeGender == 0 ? "Male" : "Female", neutralOption = m_IntakeOption, audio = audio, skip = skip,
                 study = m_StudyConsent, voiceCloud = m_IntakeConsent, development = m_IntakeDevelopment,
                 @operator = m_ConsentOperator, reference = m_ConsentReference,
+                answerId=m_EditAnswerId, transcript=m_EditTranscript, structuredValue=m_EditCategory,
                 eligibilityValues = Array.ConvertAll(m_Eligibility, x => EligibilityValues[x]),
                 fit = action == "create" ? ReadIntakeFit() : null }));
             var process = Process.Start(new ProcessStartInfo("/usr/bin/python3", Argument(Path.Combine(Application.streamingAssetsPath, "participant_intake.py")) + " --request " + Argument(request)) { UseShellExecute = false, CreateNoWindow = true });
             return new IntakeJob { process = process, action = action, result = Path.ChangeExtension(request, ".result.json") };
         }
-        catch (Exception e) { m_IntakeError = "Could not start interview worker: " + e.Message; return null; }
+        catch (Exception e) { m_IntakePaused=true; m_IntakeError = "Could not start interview worker: " + e.Message; return null; }
     }
     void PollIntake()
     {
         if(m_CaptureMode) return;
+        PollIntakeCapture();
         if (m_IntakeStarting || m_AnswerClip != null) return;
         if (Time.realtimeSinceStartupAsDouble < m_IntakePoll) return;
         m_IntakePoll = Time.realtimeSinceStartupAsDouble + .3;
@@ -134,8 +143,7 @@ public sealed partial class TrialReviewApp
             m_CloneJob = StartIntakeJob("clone");
         if (CanCacheIntake && m_Intake.cacheState == "not_started" && string.IsNullOrEmpty(m_Intake.cacheError) && m_IntakeAudioJob == null)
             StartParticipantAudio("prepare");
-        if (m_IntakeOpen && m_IntakeJob == null && (m_Intake.phase == "interview" || m_Intake.phase == "fallback") && m_Intake.promptRevision > m_IntakePlayedRevision && !string.IsNullOrEmpty(m_Intake.promptAudio))
-        { m_IntakePlayedRevision = m_Intake.promptRevision; StartCoroutine(PlayInterviewPrompt()); }
+        AdvanceAutomaticIntake();
     }
     void FinishIntakeJob(ref IntakeJob job)
     {
@@ -144,36 +152,43 @@ public sealed partial class TrialReviewApp
         try
         {
             var result = JsonUtility.FromJson<IntakeResult>(File.ReadAllText(done.result));
-            if (!result.ok) { m_IntakeError = result.error; return; }
+            if (!result.ok) { m_IntakePaused=true; m_IntakeError = "Paused: "+result.error; return; }
             m_IntakeError = null;
             if (done.action == "answer") m_PendingAnswer = null;
             if (done.action == "create")
-            { PlayerPrefs.SetString("ParticipantIntakeFolder", m_IntakeFolder); PlayerPrefs.Save(); }
-            if (done.action == "authorize_recording") StartCoroutine(StartAnswer());
+            { Array.Clear(m_Eligibility,0,m_Eligibility.Length); PlayerPrefs.SetString("ParticipantIntakeFolder", m_IntakeFolder); PlayerPrefs.Save(); }
+            if (done.action == "authorize_recording" && AutomaticCaptureAllowed) StartCoroutine(StartAnswer());
             if (done.action == "select_voice" || done.action == "fallback")
-                m_IntakeJob = StartIntakeJob("prompt");
+            { m_IntakeAutomatic=true; m_IntakePaused=false; m_IntakePlayedRevision=0; }
+            if(done.action=="correct_transcript"||done.action=="retry_transcript")m_EditAnswerId=null;
             if (done.action == "ticket") SendIntake();
         }
-        catch (Exception) { m_IntakeError = "Interview worker stopped without a result. Recordings remain saved locally."; }
+        catch (Exception) { m_IntakePaused=true; m_IntakeError = "Paused: interview worker stopped without a result. Recordings remain saved locally."; }
     }
     IEnumerator PlayInterviewPrompt()
     {
         if (m_AnswerClip != null || m_IntakeStarting || m_Intake == null || string.IsNullOrEmpty(m_Intake.promptAudio)) yield break;
-        int revision = m_Intake.promptRevision; string sessionId = m_Intake.id;
+        int revision = m_Intake.promptRevision, epoch=m_IntakeEpoch; string sessionId = m_Intake.id;
         m_IntakeError = null;
         yield return PlayIntakeFile(m_Intake.promptAudio,AudioType.MPEG);
-        if (m_IntakeOpen && m_Intake?.id == sessionId && m_Intake.promptRevision == revision && string.IsNullOrEmpty(m_IntakeError))
+        if (AutomaticCaptureAllowed && epoch==m_IntakeEpoch && m_Intake?.id == sessionId && m_Intake.promptRevision == revision && string.IsNullOrEmpty(m_IntakeError))
+        {
             m_QuestionHeardRevision = revision;
+            m_CaptureName="answer-"+Guid.NewGuid().ToString("N")+".wav";
+            m_IntakeJob=StartIntakeJob("authorize_recording",m_CaptureName);
+        }
+        else if(!string.IsNullOrEmpty(m_IntakeError))m_IntakePaused=true;
     }
     IEnumerator StartAnswer()
     {
         if(m_CaptureMode) yield break;
-        if (!Consented || m_PromptPlaying || m_QuestionHeardRevision != m_Intake.promptRevision || string.IsNullOrEmpty(m_CaptureName)) yield break;
+        if (!AutomaticCaptureAllowed || m_PromptPlaying || m_QuestionHeardRevision != m_Intake.promptRevision || string.IsNullOrEmpty(m_CaptureName)) yield break;
+        int epoch=m_IntakeEpoch;
         m_IntakeStarting = true; m_InterviewSpeaker?.Stop(); m_Audio?.Stop(); m_Playing = false;
         yield return Application.RequestUserAuthorization(UserAuthorization.Microphone);
         if (!Application.HasUserAuthorization(UserAuthorization.Microphone) || Microphone.devices.Length == 0)
             m_IntakeError = "Enable microphone access for Trial Review in macOS Privacy settings.";
-        else if (m_IntakeOpen && Consented)
+        else if (AutomaticCaptureAllowed && epoch==m_IntakeEpoch)
         {
             if (m_InterviewSpeaker == null) { m_InterviewSpeaker = gameObject.AddComponent<AudioSource>(); m_InterviewSpeaker.ignoreListenerVolume = true; }
             var tone = AudioClip.Create("Intake speak cue", 4320, 1, 24000, false);
@@ -182,12 +197,15 @@ public sealed partial class TrialReviewApp
             tone.SetData(cue, 0); m_InterviewSpeaker.PlayOneShot(tone);
             yield return new WaitForSecondsRealtime(.25f); Destroy(tone);
             // Cue and prompt are excluded from the participant-only sample.
-            if (!m_IntakeOpen || !Consented) { m_IntakeStarting = false; yield break; }
+            if (!AutomaticCaptureAllowed || epoch!=m_IntakeEpoch) { m_IntakeStarting = false; yield break; }
             if (string.IsNullOrEmpty(m_IntakeMic)) m_IntakeMic = Microphone.devices[0];
             m_AnswerClip = Microphone.Start(m_IntakeMic, false, 120, 24000);
+            m_VoiceActivity=new TrialReviewVoiceActivity(m_Intake.questionIndex>=4);m_ActivityOffset=0;
+            if(m_NoSpeechIndex!=m_Intake.questionIndex){m_NoSpeechIndex=m_Intake.questionIndex;m_NoSpeechRepeats=0;}
             if (m_AnswerClip == null) m_IntakeError = "The microphone could not start.";
         }
         m_IntakeStarting = false;
+        if(!string.IsNullOrEmpty(m_IntakeError))m_IntakePaused=true;
     }
     void StopAnswer(bool submit = true)
     {
@@ -197,7 +215,7 @@ public sealed partial class TrialReviewApp
         Microphone.End(m_IntakeMic);
         try
         {
-            if (samples < 2400) throw new InvalidOperationException("Record an answer before submitting.");
+            if (samples == 0) throw new InvalidOperationException("No microphone samples were received. Intake paused.");
             var pcm = new float[samples * m_AnswerClip.channels]; m_AnswerClip.GetData(pcm, 0);
             string name = m_CaptureName;
             if (m_AnswerClip.channels > 1)
@@ -211,16 +229,15 @@ public sealed partial class TrialReviewApp
             }
             using (var output = new FileStream(Path.Combine(m_IntakeFolder, name), FileMode.CreateNew))
             { var data = TrialReplayAudio.Encode(pcm, 1, m_AnswerClip.frequency); output.Write(data,0,data.Length); }
-            m_PendingAnswer = name;
-            if (submit) m_IntakeJob = StartIntakeJob("answer", name);
+            m_PendingAnswer = samples>=2400?name:null;
+            if (submit && m_PendingAnswer!=null) m_IntakeJob = StartIntakeJob("answer", name);
         }
-        catch (Exception e) { m_IntakeError = e.Message; }
+        catch (Exception e) { m_IntakePaused=true; m_IntakeError = e.Message; }
         Destroy(m_AnswerClip); m_AnswerClip = null;
     }
     void StopIntake()
     {
-        m_InterviewSpeaker?.Stop();
-        if (m_AnswerClip != null) StopAnswer(false);
+        PauseAutomaticIntake();
         // Provider jobs finish independently and persist results; do not kill an in-flight clone.
         m_IntakeJob?.process.Dispose(); m_CloneJob?.process.Dispose();
     }
@@ -294,19 +311,19 @@ public sealed partial class TrialReviewApp
         m_IntakeScroll=GUILayout.BeginScrollView(m_IntakeScroll);
         if(phase=="interview"||phase=="fallback")
         {
-            GUILayout.Label("Consent first. Hear each question, then select Record. Speak after the tone; select Stop when finished. Use headphones to prevent speaker spill.",m_MutedLabel);
+            GUILayout.Label("Automatic interview: listen, then speak after the tone. Capture ends after 3 seconds of silence for eligibility or 5 seconds for open answers. Use headphones to prevent speaker spill.",m_MutedLabel);
             GUILayout.Space(12);
         }
         if(m_Intake==null)DrawIntakeReserve();
         else
         {
             bool busy=m_IntakeJob!=null||m_IntakeStarting||m_CaptureMode&&m_CaptureIntakeActivity=="Submitting";
-            if(phase!="interview"&&phase!="fallback"&&phase!="fallback_available"&&phase!="interview_complete"||m_Intake.protocol!="audio-intake-v2-20261028")
+            if(phase!="interview"&&phase!="fallback"&&phase!="fallback_available"&&phase!="interview_complete"||m_Intake.protocol!=IntakeProtocol)
             {GUILayout.BeginVertical(m_Card);DrawIntakeConsentAndReview();GUILayout.EndVertical();}
-            if(phase=="interview"||phase=="fallback")DrawIntakeQuestion(busy);
-            if(phase=="fallback_available")
+            if((phase=="interview"||phase=="fallback") && m_Intake.protocol==IntakeProtocol)DrawIntakeQuestion(busy);
+            if(phase=="fallback_available" && m_Intake.protocol==IntakeProtocol)
             {
-                GUILayout.Label("All nine questions are complete. Speech is below the cloning threshold. Read the optional fallback, or continue to researcher review; cloning stays disabled below the threshold.",m_Label);
+                GUILayout.Label("All ten questions are complete. Speech is below the cloning threshold. Read the optional fallback, or continue to researcher review; cloning stays disabled below the threshold.",m_Label);
                 GUI.enabled=!busy&&Consented;
                 if(PrimaryButton("Read fallback passage / add more speech"))m_IntakeJob=StartIntakeJob("fallback");
                 if(Button("Continue to eligibility review"))m_IntakeJob=StartIntakeJob("finish_audio");
@@ -329,18 +346,24 @@ public sealed partial class TrialReviewApp
             var fit=m_Intake.fit;
             GUILayout.Label(fit!=null&&fit.ipdRecorded?$"Participant IPD: {fit.participantIpdMm:0.##} mm · {fit.ipdSource}":"Participant IPD: not recorded",m_MutedLabel);
             GUILayout.Label(fit!=null&&fit.headsetIpdRecorded?$"Headset lens spacing: {fit.headsetIpdMm:0.##} mm (manual entry)":"Headset lens spacing: not recorded",m_MutedLabel);
-            if(m_Intake.answers!=null&&m_Intake.answers.Length>0)GUILayout.Label("Last answer: "+m_Intake.answers[m_Intake.answers.Length-1].transcript,m_MutedLabel);
+            if(m_Intake.answers!=null&&m_Intake.answers.Length>0)
+            {
+                GUILayout.Label("Last answer: "+m_Intake.answers[m_Intake.answers.Length-1].transcript,m_MutedLabel);
+                if(Array.Exists(m_Intake.answers,x=>x.possibleIdentifiers))GUILayout.Label("Possible identifying name in an answer · review transcripts before eligibility approval.",new GUIStyle(m_Label){normal={textColor=m_Warn}});
+                if(Array.Exists(m_Intake.answers,x=>x.transcriptionStatus=="failed"))GUILayout.Label("A transcription failed · audio is saved. Retry or type the answer during review.",new GUIStyle(m_Label){normal={textColor=m_Warn}});
+            }
         }
         if(!m_CaptureMode&&!File.Exists(IntakeKeys))GUILayout.Label("API configuration missing: "+IntakeKeys,m_Label);
         if(!string.IsNullOrEmpty(m_IntakeError))IntakeErrorCard(m_IntakeError);
         GUILayout.EndScrollView();GUILayout.Space(8);
         if(m_Intake!=null)
         {
+            if((phase=="interview"||phase=="fallback") && m_Intake.protocol==IntakeProtocol)DrawAutomaticIntakeControls();
             GUILayout.BeginHorizontal();DrawIntakeWithdrawal();GUILayout.FlexibleSpace();
-            DrawIntakeFinish(m_IntakeJob!=null||m_IntakeStarting||m_CaptureMode&&(m_CaptureIntakeActivity=="Submitting"||m_CaptureIntakeActivity?.StartsWith("Recording")==true));GUILayout.EndHorizontal();
+            DrawIntakeFinish(m_IntakeJob!=null||m_IntakeStarting||m_CaptureMode&&(m_CaptureIntakeActivity=="Submitting"||m_CaptureIntakeActivity?.StartsWith("Listening")==true));GUILayout.EndHorizontal();
         }
-        GUI.enabled=m_AnswerClip==null&&!m_IntakeStarting&&!(m_CaptureMode&&m_CaptureIntakeActivity?.StartsWith("Recording")==true);
-        if(GUILayout.Button(HelpContent("Close interview panel"),new GUIStyle(m_MutedLabel){alignment=TextAnchor.MiddleCenter},GUILayout.Height(32))){m_IntakeOpen=false;m_InterviewSpeaker?.Stop();}
+        GUI.enabled=m_AnswerClip==null&&!m_IntakeStarting&&!(m_CaptureMode&&m_CaptureIntakeActivity?.StartsWith("Listening")==true);
+        if(GUILayout.Button(HelpContent("Close interview panel"),new GUIStyle(m_MutedLabel){alignment=TextAnchor.MiddleCenter},GUILayout.Height(32))){PauseAutomaticIntake();m_IntakeOpen=false;}
         GUI.enabled=true;GUILayout.EndArea();
     }
     bool IntakeCheck(bool value,string label,bool warning=false)
@@ -385,33 +408,18 @@ public sealed partial class TrialReviewApp
     {
         GUILayout.BeginVertical(m_Card);
         GUILayout.Label(m_Intake.prompt??"",new GUIStyle(m_Label){fontSize=18},GUILayout.MinHeight(64));
-        GUILayout.Label("Listen → tone → speak",m_MutedLabel);
-        string activity=m_PromptPlaying?"Prompt playing":m_IntakeJob!=null?"Submitting":m_IntakeStarting?"Preparing the next question…":m_AnswerClip!=null?
-            "Recording ● "+Clock(Microphone.IsRecording(m_IntakeMic)?(double)Microphone.GetPosition(m_IntakeMic)/m_AnswerClip.frequency:m_AnswerClip.length):
-            m_QuestionHeardRevision==m_Intake.promptRevision&&m_QuestionHeardRevision>0?"Ready to record":"Listen to the question before recording";
+        GUILayout.Label(m_Intake.phase=="fallback"?"Optional reading fallback":$"Question {m_Intake.questionIndex+1} of {IntakeQuestionCount} · Listen → tone → speak",m_MutedLabel);
+        string activity=m_IntakePaused?"Paused · microphone off":m_PromptPlaying?"River is speaking":m_IntakeJob!=null?"Saving / preparing":m_IntakeStarting?"Tone / preparing microphone":m_AnswerClip!=null?
+            (m_VoiceActivity?.SpeechDetected==true?$"Listening · speech detected · silence {m_VoiceActivity.SilentSeconds:0.0}s / {m_VoiceActivity.SilenceSeconds:0}s":"Listening · waiting for speech (10 s)"):"Ready for automatic intake";
         if(m_CaptureMode&&!string.IsNullOrEmpty(m_CaptureIntakeActivity))activity=m_CaptureIntakeActivity;
-        var status=GUILayoutUtility.GetRect(10,32,GUILayout.ExpandWidth(true));StatusChip(status,activity,activity.StartsWith("Recording")?m_ErrorColor:m_Info);
-        if(m_AnswerClip==null&&!busy&&!(m_CaptureMode&&m_CaptureIntakeActivity?.StartsWith("Recording")==true))
+        var status=GUILayoutUtility.GetRect(10,32,GUILayout.ExpandWidth(true));StatusChip(status,activity,activity.StartsWith("Listening")?m_ErrorColor:m_Info);
+        if(m_AnswerClip==null&&!busy&&!(m_CaptureMode&&m_CaptureIntakeActivity?.StartsWith("Listening")==true))
         {
             string[] devices=m_CaptureMode?new[]{"Development microphone (inactive)"}:Microphone.devices;
             string selected=m_IntakeMic??(devices.Length>0?devices[0]:"No microphone available");
             if(Button("Microphone: "+selected+" ▾"))m_MicMenu=!m_MicMenu;
             if(m_MicMenu)foreach(string device in devices)if(Button(device)){m_IntakeMic=device;m_MicMenu=false;}
         }
-        GUI.enabled = !busy && !m_PromptPlaying && Consented && m_QuestionHeardRevision == m_Intake.promptRevision && m_QuestionHeardRevision > 0;
-        if(m_CaptureMode&&(activity=="Submitting"||activity=="Prompt playing"))GUI.enabled=false;
-        GUILayout.BeginHorizontal();GUILayout.FlexibleSpace();
-        if (PrimaryButton(m_AnswerClip != null || m_CaptureMode&&activity.StartsWith("Recording") ? "Stop and submit answer" : "Record participant answer"))
-        { if (m_AnswerClip != null) StopAnswer(); else { m_CaptureName = "answer-"+Guid.NewGuid().ToString("N")+".wav"; m_IntakeJob = StartIntakeJob("authorize_recording",m_CaptureName); } }
-        GUILayout.EndHorizontal();
-        GUI.enabled = !busy && m_AnswerClip == null && !m_PromptPlaying && Consented;
-        if(m_CaptureMode&&(activity=="Submitting"||activity=="Prompt playing"||activity.StartsWith("Recording")))GUI.enabled=false;
-        GUILayout.BeginHorizontal();
-        if (Button("Skip this question")) { m_InterviewSpeaker?.Stop(); m_IntakeJob = StartIntakeJob("answer", skip: true); }
-        if (Button("Retry spoken prompt")) m_IntakeJob = StartIntakeJob("prompt");
-        if (m_PendingAnswer != null && Button("Retry saved answer")) m_IntakeJob = StartIntakeJob("answer", m_PendingAnswer);
-        GUILayout.EndHorizontal();GUI.enabled = true;
-
         if(busy)GUILayout.Label("Preparing the next question…",m_MutedLabel);
         GUILayout.EndVertical();
     }
@@ -440,8 +448,8 @@ public sealed partial class TrialReviewApp
     void DrawIntakeFinish(bool busy)
     {
         var headset=m_LiveStatus?.headsetState;
-        GUI.enabled = !busy && m_CloneJob == null && m_IntakeAudioJob == null && m_AnswerClip == null;
-        if (Button("Finish here / create another session")) { m_InterviewSpeaker?.Stop(); m_Intake = null; m_IntakeFolder = null; m_IntakePlayedRevision = 0; m_IntakeConsent = false; m_PendingAnswer = null; m_IntakeIpd = m_IntakeHeadsetIpd = ""; m_IntakeIpdSource = 0; PlayerPrefs.DeleteKey("ParticipantIntakeFolder"); m_IntakeCode = headset?.nextParticipantCode ?? "P001"; }
+        GUI.enabled = !busy && m_CloneJob == null && m_IntakeAudioJob == null && m_WithdrawalJob == null && m_AnswerClip == null && !m_PromptPlaying;
+        if (Button("Finish here / create another session")) { PauseAutomaticIntake();m_IntakeAutomatic=false;m_WithdrawRequested=false;m_EditAnswerId=null; m_Intake = null; m_IntakeFolder = null; m_IntakePlayedRevision = 0; m_IntakeConsent = false; m_PendingAnswer = null; m_IntakeIpd = m_IntakeHeadsetIpd = ""; m_IntakeIpdSource = 0; PlayerPrefs.DeleteKey("ParticipantIntakeFolder"); m_IntakeCode = headset?.nextParticipantCode ?? "P001"; }
         GUI.enabled = true;
 
     }

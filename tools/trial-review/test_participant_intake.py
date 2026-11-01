@@ -94,6 +94,96 @@ class IntakeTests(unittest.TestCase):
     def test_invalid_code_does_not_create_session(self):
         with self.assertRaises(ValueError): create(self.folder/'other','../private','A')
 
+    def test_v3_exact_count_and_legacy_read_only(self):
+        self.assertEqual(len(QUESTIONS), 10)
+        self.assertEqual(QUESTIONS[-1][1], 'Imagine you are helping a friend find something they lost in a room. Talk them through it for about thirty seconds, telling them where to look, which way to turn, and when they are getting close.')
+        patch(self.folder, protocol='audio-intake-v2-20261028')
+        self.assertEqual(load(self.folder)['protocol'], 'audio-intake-v2-20261028')
+        with self.assertRaises(ValueError): self.recording()
+
+    def test_failed_transcription_advances_preserves_audio_and_can_retry_and_correct(self):
+        from participant_intake import retry_transcript, correct_transcript
+        import json
+        name = self.recording()
+        def failed(data): raise RuntimeError('offline')
+        self.provider.transcribe = failed
+        state = answer(self.folder, self.provider, name)
+        item = state['answers'][0]
+        self.assertEqual(state['questionIndex'], 1)
+        self.assertTrue((self.folder/name).exists())
+        self.assertEqual(item['transcriptionStatus'], 'failed')
+        self.provider.transcribe = lambda data: 'Yes, I am over eighteen.'
+        state = retry_transcript(self.folder, self.provider, item['id'])
+        state = correct_transcript(self.folder, item['id'], 'Yes, I am eighteen.', 'TEST')
+        row = state['answers'][0]
+        self.assertTrue(row['researcherCorrected'])
+        self.assertEqual(row['machineTranscript'], 'Yes, I am over eighteen.')
+        self.assertEqual(len(state['answers']), 1)
+        exported = json.loads((self.folder/'intake_transcripts.json').read_text())
+        self.assertEqual(exported['participantCode'], 'P101')
+        self.assertEqual(exported['answers'][0]['transcript'], 'Yes, I am eighteen.')
+        self.assertTrue((self.folder/'intake_transcripts.csv').is_file())
+
+    def test_names_flagged_without_silent_redaction_and_no_frequency_guess(self):
+        self.provider.transcribe = lambda data: 'My name is Alex. I tried VR and liked it.'
+        state = answer(self.folder, self.provider, self.recording())
+        self.assertTrue(state['answers'][0]['possibleIdentifiers'])
+        self.assertIn('Alex', state['answers'][0]['transcript'])
+        for _ in range(4): state = answer(self.folder, self.provider, self.recording())
+        self.assertEqual(state['answers'][4]['structuredValue'], 'unclear')
+
+    def test_cached_river_prompt_replay_never_calls_provider(self):
+        from participant_intake import speak_prompt
+        speak_prompt(self.folder, self.provider)
+        self.provider.fail_speech = True
+        speak_prompt(self.folder, self.provider)
+        self.assertEqual(len(self.provider.prompts), 1)
+
+    def test_withdrawal_during_transcription_keeps_result_without_next_prompt(self):
+        from participant_intake import withdraw
+        def transcribe(data):
+            withdraw(self.folder)
+            return 'Synthetic answer already sent before withdrawal.'
+        self.provider.transcribe = transcribe
+        state = answer(self.folder, self.provider, self.recording())
+        self.assertEqual(state['phase'], 'withdrawn')
+        self.assertTrue(state['withdrawnUtc'])
+        self.assertEqual(len(state['answers']), 1)
+        self.assertEqual(self.provider.prompts, [])
+        self.assertEqual(patch(self.folder, phase='interview')['phase'], 'withdrawn')
+
+    def test_unanswered_question_retains_both_silent_attempt_references(self):
+        import json
+        names = [self.recording(), self.recording()]
+        for repeat, name in enumerate(names):
+            (self.folder/(name+'.end.json')).write_text(json.dumps(dict(reason='no_speech', repeat=repeat)))
+        state = answer(self.folder, self.provider, skip=True)
+        entry = state['answers'][0]
+        self.assertEqual(entry['transcriptionStatus'], 'unanswered')
+        self.assertEqual({x['audio'] for x in entry['captureAttempts']}, set(names))
+        self.assertEqual(state['questionIndex'], 1)
+        self.assertEqual(state['sampleWords'], 0)
+
+    def test_manual_answer_after_asr_failure_and_coding_are_audited(self):
+        from participant_intake import correct_transcript
+        self.provider.transcribe = lambda data: ''
+        for _ in range(5): state = answer(self.folder, self.provider, self.recording())
+        entry = state['answers'][4]
+        state = correct_transcript(self.folder, entry['id'], 'I tried virtual reality once.', 'TEST', 'unclear')
+        entry = state['answers'][4]
+        self.assertEqual(entry['machineTranscript'], '')
+        self.assertEqual(entry['structuredValue'], 'unclear')
+        self.assertTrue(entry['researcherCorrected'])
+        self.assertEqual(entry['corrections'][0]['operator'], 'TEST')
+        self.assertEqual(entry['quality']['words'], 5)
+
+    def test_generated_followup_is_disabled_for_direct_callers(self):
+        from participant_intake import Provider as RealProvider
+        provider = RealProvider('/nonexistent-fixture-keys')
+        provider.call = lambda *a, **k: self.fail('No provider call allowed for followups')
+        self.assertEqual(provider.followup('vr', 'fixture answer'), '')
+        self.assertFalse(load(self.folder)['generatedFollowups'])
+
     def test_ipd_persists_with_provenance_and_separate_lens_setting(self):
         fit = dict(ipdRecorded=True, participantIpdMm=63.5, ipdSource='pupillometer', headsetIpdRecorded=True, headsetIpdMm=64)
         folder = self.folder / uuid.uuid4().hex
@@ -136,12 +226,12 @@ class IntakeTests(unittest.TestCase):
         with self.assertRaises(ValueError): self.recording()
         with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
 
-    def test_unclear_eligibility_after_nine_answers_stops_screening(self):
+    def test_unclear_eligibility_after_ten_answers_stops_screening(self):
         for _ in QUESTIONS: answer(self.folder,self.provider,self.recording())
         review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'unclear'),'TEST')
         self.assertEqual(load(self.folder)['phase'],'screening_stopped')
         with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
-        self.assertEqual(len(load(self.folder)['answers']),9)
+        self.assertEqual(len(load(self.folder)['answers']),10)
         self.assertEqual(load(self.folder)['cacheState'],'not_started')
         self.assertEqual(self.provider.clones,[])
 
@@ -151,24 +241,24 @@ class IntakeTests(unittest.TestCase):
         review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
         self.assertFalse(load(self.folder)['eligible'])
 
-    def test_all_nine_answers_precede_review_and_clone(self):
-        for index in range(9):
+    def test_all_ten_answers_precede_review_and_clone(self):
+        for index in range(10):
             state=answer(self.folder,self.provider,self.recording())
-            self.assertEqual(state['phase'],'interview' if index < 8 else 'eligibility_review')
+            self.assertEqual(state['phase'],'interview' if index < 9 else 'eligibility_review')
             with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
-            if index < 8:
+            if index < 9:
                 with self.assertRaises(ValueError): review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
         self.assertEqual(self.provider.prompts,[prompt for _,prompt in QUESTIONS[1:]])
         self.assertEqual(self.provider.clones,[])
         state=review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
         self.assertEqual(state['phase'],'interview_complete')
-        self.assertEqual(len(state['eligibility']['answerIds']),9)
+        self.assertEqual(len(state['eligibility']['answerIds']),10)
         with self.assertRaises(ValueError): review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
         clone_answers(self.folder,self.provider)
         self.assertEqual(len(self.provider.clones),1)
-        self.assertEqual(load(self.folder)['cloneAnswerCount'],9)
+        self.assertEqual(load(self.folder)['cloneAnswerCount'],10)
 
-    def test_negative_review_retains_all_nine_answers_without_clone_or_cache(self):
+    def test_negative_review_retains_all_ten_answers_without_clone_or_cache(self):
         for _ in QUESTIONS: answer(self.folder,self.provider,self.recording())
         before=load(self.folder)['answers']
         values=dict.fromkeys(ELIGIBILITY,'yes');values['adult']='no'
@@ -197,11 +287,11 @@ class IntakeTests(unittest.TestCase):
         state=answer(self.folder,self.provider,self.recording())
         self.assertEqual(state['phase'],'eligibility_review')
         self.assertEqual(state['answers'][-1]['topic'],'reading_fallback')
-        self.assertEqual(len(state['answers']),10)
+        self.assertEqual(len(state['answers']),11)
         with self.assertRaises(ValueError): clone_answers(self.folder,self.provider)
         review_eligibility(self.folder,dict.fromkeys(ELIGIBILITY,'yes'),'TEST')
         clone_answers(self.folder,self.provider)
-        self.assertEqual(load(self.folder)['cloneAnswerCount'],10)
+        self.assertEqual(load(self.folder)['cloneAnswerCount'],11)
         with self.assertRaises(ValueError): finish_audio_intake(self.folder,use_fallback=True)
 
     def test_insufficient_speech_offers_fallback_before_review(self):

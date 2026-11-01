@@ -259,7 +259,7 @@ def validate_assignment(value):
     extra = {'consentId','intakeProtocol','eligibilityReviewed','cacheManifestSha256','development'} if value['schema'] == 2 else set()
     if set(value) - {'fit'} - extra != {'schema','id','participantCode','configuration','neutralGender','neutralOption','cloneVoiceId'}:
         raise ValueError('Assignment must not contain interview data')
-    if value['schema'] == 2 and (value.get('intakeProtocol') != 'audio-intake-v2-20261028' or
+    if value['schema'] == 2 and (value.get('intakeProtocol') not in ('audio-intake-v2-20261028', 'audio-intake-v3-20261101') or
             value.get('eligibilityReviewed') is not True or type(value.get('development')) is not bool or
             not re.fullmatch('[a-f0-9]{32}', str(value.get('consentId', ''))) or
             not re.fullmatch('[a-f0-9]{64}', str(value.get('cacheManifestSha256', '')))):

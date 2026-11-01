@@ -22,7 +22,7 @@ public sealed class ParticipantSessionAssignment
             !Regex.IsMatch(cloneVoiceId ?? "", @"^[A-Za-z0-9_-]{8,128}$"))
             throw new ArgumentException("Invalid participant session assignment.");
         if (schema == 2 && (!Guid.TryParseExact(consentId, "N", out _) || !eligibilityReviewed ||
-            intakeProtocol != "audio-intake-v2-20261028" || !Regex.IsMatch(cacheManifestSha256 ?? "", @"^[a-f0-9]{64}$")))
+            (intakeProtocol != "audio-intake-v2-20261028" && intakeProtocol != "audio-intake-v3-20261101") || !Regex.IsMatch(cacheManifestSha256 ?? "", @"^[a-f0-9]{64}$")))
             throw new ArgumentException("Consent, eligibility review and prepared audio receipt are required.");
     }
 }

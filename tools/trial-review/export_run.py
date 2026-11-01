@@ -16,6 +16,7 @@ from mega_csv import replay_rows
 from trial_csv import export, fingerprint
 from trial_column_dictionary import definition
 from guidance_eval import evaluate_recording
+from participant_intake import export_transcripts
 
 
 # A projection of the authoritative trial export, not another measurement engine.
@@ -101,7 +102,22 @@ def resolve_run(recording, chosen=None):
     return matches[0], participant
 
 
-def generate(recording, root, name="", chosen=None, assigned_id="", dataset_id="", dataset_name=""):
+def linked_intake(run, participant, intake_root=None):
+    link = run / 'desktop-session-id.txt'
+    if not link.is_file(): return None
+    session_id = link.read_text().strip()
+    if not re.fullmatch(r'[a-f0-9]{32}', session_id): raise ValueError('Invalid intake session link')
+    folder = (Path(intake_root) if intake_root else Path.home()/'Documents'/'Trial Review Intake') / session_id
+    source = folder/'session.json'
+    if not source.is_file(): return None
+    state = json.loads(source.read_text())
+    if state.get('id') != session_id or state.get('participantCode') != participant:
+        raise ValueError('Intake does not match the recorded participant/session')
+    if state.get('withdrawnUtc'): raise ValueError('Intake withdrawn: follow the approved data handling process before export')
+    return source
+
+
+def generate(recording, root, name="", chosen=None, assigned_id="", dataset_id="", dataset_name="", intake_root=None):
     recording, root = Path(recording).resolve(), Path(root).resolve()
     name = name.strip()
     if len(name) > 120 or any(ord(c) < 32 for c in name):
@@ -113,9 +129,11 @@ def generate(recording, root, name="", chosen=None, assigned_id="", dataset_id="
         raise ValueError("Dataset labels must be at most 120 characters without line breaks")
     inputs = [recording] + sorted(p for p in (run / filename for filename in (
         "trial_summary.json", "trial_schedule.csv", "object_manifest.csv", "trial_events.csv",
-        "voice-library-manifest.json", "nasa_tlx.csv")) if p.is_file())
+        "voice-library-manifest.json", "nasa_tlx.csv", "desktop-session-id.txt")) if p.is_file())
+    intake = linked_intake(run, participant, intake_root)
+    if intake: inputs.append(intake)
     before = [fingerprint(p) for p in inputs]
-    code = [HERE / "export_run.py"] + sorted(ANALYSIS.glob("*.py"))
+    code = [HERE / "export_run.py", HERE / "participant_intake.py"] + sorted(ANALYSIS.glob("*.py"))
     identity = json.dumps([before, labels, [fingerprint(p)["sha256"] for p in code]], sort_keys=True)
     key = hashlib.sha256(identity.encode()).hexdigest()[:20]
     slug = re.sub(r"[^\w-]+", "_", name or participant, flags=re.UNICODE).strip("_")[:60] or "participant"
@@ -143,6 +161,11 @@ def generate(recording, root, name="", chosen=None, assigned_id="", dataset_id="
                     writer.writerow({**labels, **row})
         condensed = write_condensed(package)
         evaluation = evaluate_recording(recording, package)
+        if intake:
+            export_transcripts(package, json.loads(intake.read_text()))
+        manifest['intake_transcripts'] = {'status': 'included' if intake else 'unavailable',
+            'files': ['intake_transcripts.json', 'intake_transcripts.csv'] if intake else [],
+            'privacy': 'Local participant data. Do not commit or include in thesis outputs. Audio references are relative to the linked intake session folder.'}
         manifest.update(labels)
         manifest["condensed_export"] = condensed
         manifest["guidance_evaluation"] = {

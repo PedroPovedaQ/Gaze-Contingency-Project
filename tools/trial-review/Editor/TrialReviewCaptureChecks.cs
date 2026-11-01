@@ -31,8 +31,8 @@ public static class TrialReviewCaptureChecks
                     throw new Exception("Clone/cache eligibility gate: "+phase);
                 bool audioComplete=reviewed||phase=="eligibility_review"||phase=="screening_stopped";
                 if(Property("AudioIntakeComplete")!=audioComplete)throw new Exception("Audio intake completion tick: "+phase);
-                if(audioComplete&&((Array)state.GetType().GetField("answers").GetValue(state)).Length!=9)
-                    throw new Exception("Completed capture must include all nine answers");
+                if(audioComplete&&((Array)state.GetType().GetField("answers").GetValue(state)).Length!=10)
+                    throw new Exception("Completed capture must include all ten answers");
                 if(reviewed)
                 {
                     Field(state,"cloneState","not_started");
@@ -56,7 +56,28 @@ public static class TrialReviewCaptureChecks
                 if(typeof(TrialReviewApp).GetField(name,flags).GetValue(app)!=null)throw new Exception("Capture started work: "+name);
             var answer=(System.Collections.IEnumerator)typeof(TrialReviewApp).GetMethod("StartAnswer",flags).Invoke(app,null);
             if(answer.MoveNext())throw new Exception("Capture requested microphone authorization");
-            Debug.Log("TRIAL_REVIEW_INTAKE_STEPPER_PASS nine answers then optional fallback then review; audio tick and clone/cache/withdrawal gates; capture microphone bypass");
+            // Exercise guards before the first coroutine yield: no microphone or provider calls.
+            var current=fixture.Invoke(app,new object[]{"interview"});intake.SetValue(app,current);
+            void AppField(string name,object value)=>typeof(TrialReviewApp).GetField(name,flags).SetValue(app,value);
+            AppField("m_CaptureMode",false);AppField("m_IntakeOpen",true);AppField("m_IntakeAutomatic",true);AppField("m_IntakePaused",false);
+            if(!Property("AutomaticCaptureAllowed"))throw new Exception("Consented started interview must allow automation");
+            call("PauseAutomaticIntake",null);
+            if(Property("AutomaticCaptureAllowed"))throw new Exception("Pause must close capture gate immediately");
+            answer=(System.Collections.IEnumerator)typeof(TrialReviewApp).GetMethod("StartAnswer",flags).Invoke(app,null);
+            if(answer.MoveNext())throw new Exception("Pause requested microphone permission");
+            AppField("m_IntakePaused",false);Field(current,"consent",null);
+            answer=(System.Collections.IEnumerator)typeof(TrialReviewApp).GetMethod("StartAnswer",flags).Invoke(app,null);
+            if(answer.MoveNext())throw new Exception("Missing consent requested microphone permission");
+            intake.SetValue(app,fixture.Invoke(app,new object[]{"interview"}));
+            var repeat=typeof(TrialReviewApp).GetMethod("RepeatAfterNoSpeech",flags);
+            if(!(bool)repeat.Invoke(app,null)||(bool)repeat.Invoke(app,null))throw new Exception("No speech must repeat exactly once");
+            Field(intake.GetValue(app),"questionIndex",5);
+            if(!(bool)repeat.Invoke(app,null))throw new Exception("Next question needs its own no-speech retry");
+            AppField("m_WithdrawRequested",true);
+            if(Property("AutomaticCaptureAllowed"))throw new Exception("Withdrawal must close capture gate immediately");
+            AppField("m_CaptureMode",true);
+            Debug.Log("TRIAL_REVIEW_AUTOMATIC_INTAKE_PASS consent/pause/withdrawal guards before microphone permission; exactly one no-speech repeat per question");
+            Debug.Log("TRIAL_REVIEW_INTAKE_STEPPER_PASS ten answers then optional fallback then review; audio tick and clone/cache/withdrawal gates; capture microphone bypass");
             Debug.Log("TRIAL_REVIEW_CAPTURE_ISOLATION_PASS no jobs, polling, live, catalog or intake folder");
         }
         finally { UnityEngine.Object.DestroyImmediate(go); }
