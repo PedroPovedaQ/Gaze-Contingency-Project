@@ -1,7 +1,7 @@
 """System setup figure: two voice conditions feeding one shared guidance system.
 
 Colors match the study procedure figure and voice-condition panels:
-neutral (generic agent) voice gold, self-similar voice blue.
+Selected Agent Voice gold, self-similar voice blue.
 Run: DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib uv run --no-project --with cairosvg --with pypdf python docs/thesis/figures/generate-system-setup.py
 """
 import subprocess, sys
@@ -39,7 +39,7 @@ def arrow(x1, y1, x2, y2):
 
 
 BW, BH, TOP = 420, 110, 20
-box(30, TOP, BW, BH, NEUTRAL_LIGHT, NEUTRAL, 'Generic Agent Voice', '(User chooses from a catalog of voices)')
+box(30, TOP, BW, BH, NEUTRAL_LIGHT, NEUTRAL, 'Selected Agent Voice', '(User chooses from a catalog of voices)')
 box(W - 30 - BW, TOP, BW, BH, SELF_LIGHT, SELF, 'Self-Similar Voice', '(Voice is matched to the user)')
 SY, SW, SH = 205, 640, 110
 SX = (W - SW) / 2

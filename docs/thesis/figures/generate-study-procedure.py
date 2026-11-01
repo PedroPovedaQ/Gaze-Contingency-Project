@@ -1,7 +1,7 @@
 """Study procedure figure: shared setup, color-coded counterbalanced voice orders, and trial timing.
 
 Colors match the voice-condition panels (analysis/thesis_voice_condition_plots.py):
-neutral voice gold, self-similar voice blue. The 1000-px canvas prints at text width,
+Selected Agent Voice gold, self-similar voice blue. The 1000-px canvas prints at text width,
 so 15-px body text is about 7 pt on the page.
 Run: DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib uv run --no-project --with cairosvg --with pypdf python docs/thesis/figures/generate-study-procedure.py
 """
@@ -63,7 +63,7 @@ def row_of_cards(y, h, items, numbered):
 text(20, 30, '(a) Study procedure', 22, True)
 SY, SH = 46, 126
 row_of_cards(SY, SH, [('Consent', ['Signed consent before', 'any voice capture']),
-                      ('Selected Voice', ['Audition the catalog;', 'choose the neutral voice']),
+                      ('Selected Agent Voice', ['Audition the catalog;', 'choose a voice']),
                       ('Audio intake', ['Nine spoken prompts;', 'clone and cache voice;', 'eligibility review']),
                       ('Headset setup', ['Fit, vendor calibration,', 'spatial validation'])], True)
 
@@ -75,8 +75,8 @@ B2 = BK + KW + 12
 FX = B2 + BW + 14
 FW = W - 20 - FX
 arrow(W / 2, SY + SH + 3, W / 2, RY - 6)
-rows = [('Order A', ['Self-similar', 'first'], (SELF, SELF_LIGHT, 'Self-similar voice'), (NEUTRAL, 'Neutral voice')),
-        ('Order B', ['Neutral', 'first'], (NEUTRAL, NEUTRAL_LIGHT, 'Neutral voice'), (SELF, 'Self-similar voice'))]
+rows = [('Order A', ['Self-similar', 'first'], (SELF, SELF_LIGHT, 'Self-similar voice'), (NEUTRAL, 'Selected Agent Voice')),
+        ('Order B', ['Selected', 'Agent Voice', 'first'], (NEUTRAL, NEUTRAL_LIGHT, 'Selected Agent Voice'), (SELF, 'Self-similar voice'))]
 for r, (name, sub, (c1, l1, v1), (c2, v2)) in enumerate(rows):
     y = RY + r * (RH + RG)
     text(20, y + 36, name, 19, True)
@@ -102,8 +102,8 @@ text(FX + 12, RY + 70, ['Both voices rated', 'side by side;', 'preference;', 'de
 LY = RY + 2 * RH + RG + 34
 x = 20
 for fill, edge, dash, label in ((SELF, SELF, False, 'Self-similar voice (participant’s clone)'),
-                                (NEUTRAL, NEUTRAL, False, 'Neutral voice (Selected Voice)'),
-                                (SELF_LIGHT, LINE, True, 'Practice: first assigned voice, excluded')):
+                                (NEUTRAL, NEUTRAL, False, 'Selected Agent Voice'),
+                                (SELF_LIGHT, LINE, True, 'Practice: first voice, excluded')):
     box(x, LY - 15, 26, 19, fill, edge, dash, 1.8)
     text(x + 34, LY, label, 14)
     x += 34 + len(label) * 7.4 + 34
