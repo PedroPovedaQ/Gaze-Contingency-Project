@@ -11,15 +11,12 @@ from participant_intake import (create, load, answer, clone_answers, patch, tick
 from live_bridge import validate_control
 
 class Provider:
-    def __init__(self): self.clones=[]; self.prompts=[]; self.followups=0; self.fail_speech=False
+    def __init__(self): self.clones=[]; self.prompts=[]; self.fail_speech=False
     def speech(self, text):
         self.prompts.append(text)
         if self.fail_speech: raise RuntimeError('speech unavailable')
         return b'prompt mp3'
     def transcribe(self, data): return 'I use VR weekly. I enjoy exploring different environments and listening to spoken instructions when learning how the controls work.'
-    def followup(self, topic, text):
-        if topic in ('vr', 'experience'): self.followups+=1; return 'What do you use it for?'
-        return ''
     def clone(self, code, data): self.clones.append((code,data)); return 'fixture_voice_id'
 
 class IntakeTests(unittest.TestCase):
@@ -50,10 +47,10 @@ class IntakeTests(unittest.TestCase):
         self.assertEqual(len(self.provider.clones),1)
         with wave.open(io.BytesIO(self.provider.clones[0][1])) as wav: self.assertEqual(wav.getnframes(),24000*4*len(QUESTIONS))
         self.assertEqual(load(self.folder)['cloneAnswerCount'],len(QUESTIONS))
-    def test_one_followup_per_topic_and_minimal_handoff(self):
+    def test_fixed_questions_and_minimal_handoff(self):
         self.completed()
         state=load(self.folder);self.assertEqual(state['phase'],'interview_complete')
-        self.assertEqual(self.provider.followups,0)
+        self.assertEqual([row['question'] for row in state['answers']], [q[1] for q in QUESTIONS])
         clone_answers(self.folder,self.provider); assignment=ticket(load(self.folder))
         self.assertEqual(set(assignment),{'schema','id','participantCode','configuration','neutralGender','neutralOption','cloneVoiceId','fit','consentId','intakeProtocol','eligibilityReviewed','cacheManifestSha256','development'})
         self.assertNotEqual(INTERVIEW_VOICE,assignment['cloneVoiceId'])
@@ -177,12 +174,12 @@ class IntakeTests(unittest.TestCase):
         self.assertEqual(entry['corrections'][0]['operator'], 'TEST')
         self.assertEqual(entry['quality']['words'], 5)
 
-    def test_generated_followup_is_disabled_for_direct_callers(self):
+    def test_generated_followup_interface_and_options_are_absent(self):
         from participant_intake import Provider as RealProvider
         provider = RealProvider('/nonexistent-fixture-keys')
-        provider.call = lambda *a, **k: self.fail('No provider call allowed for followups')
-        self.assertEqual(provider.followup('vr', 'fixture answer'), '')
-        self.assertFalse(load(self.folder)['generatedFollowups'])
+        self.assertFalse(hasattr(provider, 'followup'))
+        self.assertNotIn('generatedFollowups', load(self.folder))
+        self.assertNotIn('followup', load(self.folder))
 
     def test_ipd_persists_with_provenance_and_separate_lens_setting(self):
         fit = dict(ipdRecorded=True, participantIpdMm=63.5, ipdSource='pupillometer', headsetIpdRecorded=True, headsetIpdMm=64)

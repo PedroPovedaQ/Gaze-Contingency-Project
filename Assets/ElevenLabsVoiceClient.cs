@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 /// <summary>ElevenLabs instant voice cloning and speech. Enrollment uploads the
-/// new microphone sample to ElevenLabs; existing Voxtral clones are not migrated.</summary>
+/// new microphone sample to ElevenLabs; legacy provider clones are not migrated.</summary>
 public class ElevenLabsVoiceClient : MonoBehaviour
 {
     public const string Model = "eleven_turbo_v2_5";

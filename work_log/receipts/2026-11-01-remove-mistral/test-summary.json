@@ -1,0 +1,51 @@
+{
+  "desktop": {
+    "tests": 137,
+    "skips": 0
+  },
+  "analysis": {
+    "tests": 375,
+    "skips": 1
+  },
+  "scripts": {
+    "tests": 14,
+    "skips": 0
+  },
+  "script-tests": {
+    "tests": 22,
+    "skips": 0
+  },
+  "local-model": {
+    "tests": 45,
+    "skips": 0
+  },
+  "native-timing": {
+    "tests": 17,
+    "skips": 0
+  },
+  "unity-integration": {
+    "passMarkers": 27,
+    "exit": 0,
+    "fullLog": "/tmp/provider-cleanup-unity-integration.log"
+  },
+  "unity-preparation": {
+    "passMarkers": 5,
+    "exit": 0,
+    "fullLog": "/tmp/provider-cleanup-unity-preparation.log"
+  },
+  "unity-intake": {
+    "passMarkers": 1,
+    "exit": 0,
+    "fullLog": "/tmp/provider-cleanup-unity-intake.log"
+  },
+  "unity-desktop": {
+    "passMarkers": 27,
+    "exit": 0,
+    "fullLog": "/tmp/trial-review-provider-cleanup-20261101/build.log"
+  },
+  "secretUnchanged": true,
+  "apk": {
+    "installed": false,
+    "reason": "No headset behavior change; only C# documentation comment. Retained automatic-intake APK per conditional instruction."
+  }
+}

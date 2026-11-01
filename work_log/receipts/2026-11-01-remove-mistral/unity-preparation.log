@@ -1,0 +1,6 @@
+[QuickGazeAlignmentChecks] PASS: independent checks, head-relative bias, immutable raw gaze, source change, gaps, duplicates, timeout, large bias and zero bias. Hardware validation remains required.
+[EntryGazeAlignmentChecks] PASS: explicit start, countdown/red centers, three-dot mean, three independent shapes, preview-only correction, manual OK and interruption.
+[ValidationAlignmentChecks] PASS: scoped participant, distinct fit rows, target preservation, remote acceptance guards, compatible requests.
+[StudyGazeAccuracyChecks] PASS: settling, known angles, deduplication, incomplete checks, residual error and alignment loss.
+[StudyPreparationChecks] PASS: calibration UI/guards, accuracy math, explicit skip, participant isolation, stale correction guard.
+Exiting batchmode successfully now!

@@ -322,11 +322,11 @@ def create(folder, participant, configuration, neutral_gender='Male', neutral_op
         if (folder / 'session.json').exists(): raise ValueError('This session already exists; resume it instead.')
         state = dict(schema=2, protocol=PROTOCOL, development=bool(development), id=folder.name, participantCode=participant, configuration=configuration,
                      neutralGender=neutral_gender, neutralOption=neutral_option, phase='awaiting_consent',
-                     questionIndex=0, followup=False, prompt=QUESTIONS[0][1], promptRevision=0,
+                     questionIndex=0, prompt=QUESTIONS[0][1], promptRevision=0,
                      interviewVoiceId=INTERVIEW_VOICE, interviewVoiceName=INTERVIEW_NAME,
                      fit=fit, answers=[], cloneState='not_started', cloneVoiceId='', error='', cloneError='',
                      consent=None, eligible=False, speechSeconds=0, sampleWords=0, cacheState='not_started',
-                     recordedSeconds=0, captureSettings=CAPTURE_SETTINGS, generatedFollowups=False,
+                     recordedSeconds=0, captureSettings=CAPTURE_SETTINGS,
                      updatedUtc=time.time())
         atomic(folder / 'session.json', state)
     return state
@@ -363,10 +363,6 @@ class Provider:
     def transcribe(self, data):
         return self.multipart('https://api.elevenlabs.io/v1/speech-to-text', {'model_id':'scribe_v2', 'language_code':'en'},
                               [('file', 'answer.wav', data)]).get('text', '')
-
-    def followup(self, topic, answer):
-        # Disabled even for direct callers: no participant text may leave for Mistral.
-        return ''
 
     def clone(self, code, data):
         result = self.multipart('https://api.elevenlabs.io/v1/voices/add', {'name':'study_'+code,'remove_background_noise':'false'},
@@ -424,7 +420,7 @@ def answer(folder, provider, filename=None, skip=False):
     quality = sample_quality(data, transcript) if not skip else dict(seconds=0, speechSeconds=0, words=0, usable=False)
     seconds = quality['seconds']
     index = state['questionIndex']; topic = QUESTIONS[index][0] if index < len(QUESTIONS) else 'reading_fallback'
-    response = dict(id=uuid.uuid4().hex, question=state['prompt'],topic=topic,followup=False,audio=filename,
+    response = dict(id=uuid.uuid4().hex, question=state['prompt'],topic=topic,audio=filename,
                     seconds=seconds,transcript=transcript,skipped=skip, quality=quality, recordedUtc=time.time(),
                     consentId=consent['id'], audioSha256=hashlib.sha256(data).hexdigest() if not skip else '',
                     transcriptSource='elevenlabs_scribe_v2' if not skip else 'skipped',
@@ -458,7 +454,7 @@ def answer(folder, provider, filename=None, skip=False):
         current.update(answers=current['answers']+[response], recordedSeconds=current['recordedSeconds']+seconds,
                        speechSeconds=current['speechSeconds']+quality['speechSeconds'], sampleWords=current['sampleWords']+quality['words'])
         if not current.get('withdrawnUtc'):
-            current.update(questionIndex=next_index, followup=False, prompt=next_prompt, promptAudio='',
+            current.update(questionIndex=next_index, prompt=next_prompt, promptAudio='',
                            promptRevision=current['promptRevision']+1, phase=phase, error='')
         atomic(folder/'session.json', current)
         export_transcripts(folder, current)
