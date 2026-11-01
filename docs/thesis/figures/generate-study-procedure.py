@@ -64,7 +64,7 @@ text(20, 30, '(a) Study procedure', 22, True)
 SY, SH = 46, 126
 row_of_cards(SY, SH, [('Consent', ['Signed consent before', 'any voice capture']),
                       ('Selected Voice', ['Audition the catalog;', 'choose the neutral voice']),
-                      ('Audio intake', ['Ten spoken prompts;', 'eligibility review;', 'clone and cache voice']),
+                      ('Audio intake', ['Nine spoken prompts;', 'clone and cache voice;', 'eligibility review']),
                       ('Headset setup', ['Fit, vendor calibration,', 'spatial validation'])], True)
 
 RY, RH, RG = 206, 96, 12

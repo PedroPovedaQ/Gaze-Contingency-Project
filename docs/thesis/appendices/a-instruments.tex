@@ -33,17 +33,17 @@ Participants will complete one practice trial in the first assigned voice, follo
 \begin{tabularx}{\linewidth}{@{}p{0.27\linewidth}X@{}}\toprule
 Stage & Measures \\\midrule
 After consent & Selected Voice audition ratings and choice \\
-Audio intake & Four researcher-reviewed eligibility questions and five background questions spoken by a generic intake agent; answers supply voice-cloning samples \\
+Audio intake & Four researcher-reviewed eligibility questions, four background questions, and one speech sample prompt spoken by a generic intake agent; answers supply voice-cloning samples \\
 Between voice blocks & Rest break, immediate comfort and tracking checks; no questionnaire \\
 Final survey after both blocks & One side-by-side set rated for each voice (6 workload, 24 IMI, 21 agent-perception, 5 ARQ and 14 voice/assistance ratings per voice), technical checks, optional comments, demographics, voice comparison and debrief \\\bottomrule
 \end{tabularx}
 Each voice column in the final survey contains 70 numeric responses (140 across both columns) before technical checks and optional text. Setup will include a separate liking rating for each auditioned voice, including the self-similar voice.
 
 \section{Audio Intake Survey}
-After the signed-consent attestation and the choice of the Selected Voice, the intake runs automatically after a single start. A generic intake agent (the ElevenLabs voice River, which is not part of the neutral-voice catalog and cannot be assigned to either condition) reads ten fixed prompts aloud: four closed eligibility questions, five open-ended background questions, and one open speaking prompt of about thirty seconds. After each prompt, a 180-ms, 880-Hz tone cues the participant to answer and capture begins automatically. Capture ends after 3 seconds of silence following speech on the eligibility questions and 5 seconds on the open prompts, with a limit of 120 seconds per answer. If no speech is detected within 10 seconds, the prompt is repeated once and is then marked unanswered. These are engineering settings rather than validated speech-segmentation thresholds. The researcher can pause, repeat, skip, or stop at any time. Every answer is transcribed with ElevenLabs Scribe, and the full transcripts are stored in the participant's local data under the coded study identifier, with the machine transcript retained alongside any researcher correction. If the answers contain less than 30 seconds of estimated speech or fewer than 50 transcribed words, the participant may read the fallback passage at the end of this appendix. After all prompts and any fallback reading, the researcher reviews the four eligibility answers once and records them as Yes, No, or Unclear with the reviewer's initials; all four must be Yes, otherwise screening stops without cloning. The researcher also confirms the background categories shown below; a frequency that was not stated remains Unclear. Background items may be skipped and remain missing. Cloning starts only after a positive review and once the speech threshold is met, from a frozen, hashed snapshot of the recorded answers.
+After the signed-consent attestation and the choice of the Selected Voice, the intake runs automatically after a single start. A generic intake agent (the ElevenLabs voice River, which is not part of the neutral-voice catalog and cannot be assigned to either condition) reads nine fixed prompts aloud: four closed eligibility questions, four background questions, and one open speaking prompt of about thirty seconds. After each prompt, a 180-ms, 880-Hz tone cues the participant to answer and capture begins automatically. Capture ends after 3 seconds of silence following speech on the eligibility questions and 5 seconds on the open prompts, with a limit of 120 seconds per answer. If no speech is detected within 10 seconds, the prompt is repeated once and is then marked unanswered. These are engineering settings rather than validated speech-segmentation thresholds. The researcher can pause, repeat, skip, or stop at any time. Every answer is transcribed with ElevenLabs Scribe, and the full transcripts are stored in the participant's local data under the coded study identifier, with the machine transcript retained alongside any researcher correction. If the answers contain less than 30 seconds of estimated speech or fewer than 50 transcribed words, the participant may read the fallback passage at the end of this appendix. After all prompts and any fallback reading, and once the speech threshold is met, cloning starts automatically from a frozen, hashed snapshot of the recorded answers, and phrase library preparation follows without researcher action. While it runs, the researcher reviews the four eligibility answers once and records them as Yes, No, or Unclear with the reviewer's initials; saving the review also saves any pending transcript or coding correction. All four must be Yes. Otherwise screening stops, library preparation stops, the clone is deleted from ElevenLabs, and a deletion receipt is stored with the session. The researcher also confirms the background categories shown below; a frequency that was not stated remains Unclear. Background items may be skipped and remain missing. The session can be sent to the headset only after a positive review and a complete phrase library.
 
 \par\medskip\noindent
-Study code (assigned by the researcher; not asked aloud):
+Study code (proposed automatically as the next unused number and confirmed by the researcher; not asked aloud):
 \textit{Response:} Coded identifier (P\#\#\#); no name or contact details.\surveywrite
 
 \subsection*{Eligibility (researcher-reviewed)}
@@ -54,7 +54,7 @@ Study code (assigned by the researcher; not asked aloud):
 \par\nopagebreak \surveychoice{Yes}\surveychoice{No}\surveychoice{Unclear}
 \item With your usual glasses or contact lenses if needed, can you see clearly enough to read and to find small objects? After the tone, please answer in a full sentence.
 \par\nopagebreak \surveychoice{Yes}\surveychoice{No}\surveychoice{Unclear}
-\item Can you safely stay seated, turn in a swivel chair, and use a controller in your right hand? After the tone, please answer in a full sentence. You do not need to give medical details.
+\item For this experiment, you will be required to stay seated, turn in a swivel chair, and use a controller in your right hand. Can you safely do this? After the tone, please answer in a full sentence. You do not need to give medical details.
 \par\nopagebreak \surveychoice{Yes}\surveychoice{No}\surveychoice{Unclear}
 \end{enumerate}
 
@@ -66,14 +66,12 @@ Study code (assigned by the researcher; not asked aloud):
 \par\nopagebreak \surveychoice{Never}\surveychoice{Less than monthly}\surveychoice{Monthly}\surveychoice{Weekly}\surveychoice{Daily}\surveychoice{Unclear}
 \item Have you used eye tracking before? If you have, describe it. If not, how would you feel about a system that knows where you are looking?
 \par\nopagebreak \surveychoice{Yes}\surveychoice{No}\surveychoice{Unclear}
-\item Which hand do you prefer for everyday tasks, and what is something you always do with that hand?
-\par\nopagebreak \surveychoice{Right}\surveychoice{Left}\surveychoice{Both equally}\surveychoice{Unclear}
-\item Are you wearing glasses, contact lenses, or no visual correction today? Tell me how they usually feel when you are looking at screens. No prescription details are needed.
+\item Are you wearing glasses, contact lenses, or no visual correction today? No prescription details are needed.
 \par\nopagebreak \surveychoice{None}\surveychoice{Glasses}\surveychoice{Contact lenses}\surveychoice{Other}\surveychoice{Unclear}
 \end{enumerate}
 
 \subsection*{Speech sample}
-\begin{enumerate}\setcounter{enumi}{9}
+\begin{enumerate}\setcounter{enumi}{8}
 \item Imagine you are helping a friend find something they lost in a room. Talk them through it for about thirty seconds, telling them where to look, which way to turn, and when they are getting close.
 \end{enumerate}
 Age range and gender identity are collected separately in the final survey.

@@ -16,9 +16,11 @@ Block and trial & Referenced measured block, within-block trial, global trial in
 Voice condition & Neutral or self-similar; actual voice ID, provider, synthesis model and configuration.\\
 Assigned order & Neutral-first or self-similar-first; practice uses the first assigned voice.\\
 Build and policy & Application revision, configuration, state-machine policy, phrase semantics, and library version.\\
+Headset fit & Automatic view-separation and eye-origin estimates, each with source, method, UTC time, sample count, duration, range, and warnings; observed change in view separation (change observed, no change observed, or insufficient observation) with its size, source, and time; any manual fallback entry and its source.\\
 Schedule & Seed, schedule version, nominal plane assignment, direction and height assignment, realized geometry, and attempt status.\\
 Survey scope & Administration phase and timestamp, recorded separately from the referenced participant, block, and voice; each side-by-side rating carries its voice column (Selected Voice or Self-Similar Voice).\\
-Intake & Audio intake answers (eligibility, background, and speech sample), intake protocol version, the intake agent voice ID, full transcripts with machine original, corrections, and provenance (\texttt{intake\_transcripts.json} and \texttt{.csv}), and the identifiers of the speech samples used for cloning, linked to the participant's study ID.\\\bottomrule
+Intake & Audio intake answers (eligibility, background, and speech sample), intake protocol version, the intake agent voice ID, full transcripts with machine original, corrections, and provenance (\texttt{intake\_transcripts.json} and \texttt{.csv}), the identifiers of the speech samples used for cloning, and the deletion receipt for any clone removed after a stopped screening or withdrawal, linked to the participant's study ID.\\
+Screen transitions & Pre-trial screen sequence with UTC time, desktop and headset process identifiers, screen, elapsed time, trial count, and voice (\texttt{screen-transitions.jsonl}).\\\bottomrule
 \end{longtable}
 \endgroup
 
