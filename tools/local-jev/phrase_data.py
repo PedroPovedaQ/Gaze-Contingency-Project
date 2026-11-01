@@ -4,7 +4,8 @@ import math
 import random
 import adaptive_data as actions
 
-VERSION = 'adaptive-phrase-ranker-v2'
+LEGACY_VERSION = 'adaptive-phrase-ranker-v2'
+VERSION = 'adaptive-phrase-ranker-v3-direction'
 SCOPE = 'assistance_phrase'
 ARRIVAL_PHRASES = ("You're in the correct area. Keep looking.", "This is the correct area. Keep looking.",
                    "Stay in this area and keep looking.", "Keep searching in this area.")
@@ -52,10 +53,11 @@ def unpack(request):
     return state, choices, history, action_request
 
 
-def features(request):
+def features(request, version=VERSION):
     state, choices, history, action_request = unpack(request)
     by_phrase = {h['phrase']: h for h in history}
-    context = actions.text(action_request)
+    if version not in (VERSION, LEGACY_VERSION): raise ValueError('Unsupported phrase features')
+    context = actions.text(action_request, actions.FEATURE_VERSION if version == VERSION else actions.PROGRESS_FEATURE_VERSION)
     result = []
     for phrase in choices:
         played = by_phrase.get(phrase)
@@ -78,14 +80,18 @@ def reference_scores(request):
 
 def examples(menus, count, seed, seen):
     rng = random.Random(seed); result = []
-    unique = {(m['action'], tuple(m['phrases'])) for m in menus if len(m['phrases']) > 1}
+    unique = {(m['action'], tuple(m['phrases']), m.get('needed','unknown')) for m in menus if len(m['phrases']) > 1}
     unique = sorted(unique)
     for i in range(count * 20):
-        action, phrases = rng.choice(unique)
+        action, phrases, needed = rng.choice(unique)
         phrases = list(phrases); rng.shuffle(phrases)
         row = actions.example(rng, i, 'train')
         state = copy.deepcopy(row['payload']['state'])
         state['selected_action'] = action
+        state['direction']['needed'] = needed
+        # Scalar trajectories do not contain motion axes for a newly selected menu.
+        state['direction']['moving'] = 'unknown'
+        if action == 'encourage' and needed != 'unknown': state['direction']['moving'] = needed+' toward'
         state['runtime']['playback'] = {'is_busy': False, 'is_speaking': False}
         state['runtime']['locally_qualified'] = True
         e = state['runtime']['evidence']

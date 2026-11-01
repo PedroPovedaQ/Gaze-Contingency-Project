@@ -1,0 +1,186 @@
+{
+  "v8": [
+    {
+      "id": "paired-0-along",
+      "expected": [
+        "observe_1s"
+      ],
+      "raw": "orient_explicit",
+      "masked": "orient_explicit",
+      "gated": "orient_explicit",
+      "blocked": false,
+      "direction": [
+        "left",
+        "left away",
+        "large turn left"
+      ]
+    },
+    {
+      "id": "paired-0-opposed",
+      "expected": [
+        "orient_explicit"
+      ],
+      "raw": "orient_explicit",
+      "masked": "orient_explicit",
+      "gated": "orient_explicit",
+      "blocked": false,
+      "direction": [
+        "left",
+        "right away",
+        "large turn left"
+      ]
+    },
+    {
+      "id": "paired-1-along",
+      "expected": [
+        "observe_1s"
+      ],
+      "raw": "orient_explicit",
+      "masked": "orient_explicit",
+      "gated": "orient_explicit",
+      "blocked": false,
+      "direction": [
+        "right",
+        "right away",
+        "large turn right"
+      ]
+    },
+    {
+      "id": "paired-1-opposed",
+      "expected": [
+        "orient_explicit"
+      ],
+      "raw": "orient_explicit",
+      "masked": "orient_explicit",
+      "gated": "orient_explicit",
+      "blocked": false,
+      "direction": [
+        "right",
+        "left away",
+        "large turn right"
+      ]
+    },
+    {
+      "id": "paired-2-along",
+      "expected": [
+        "observe_1s"
+      ],
+      "raw": "orient_explicit",
+      "masked": "orient_explicit",
+      "gated": "orient_explicit",
+      "blocked": false,
+      "direction": [
+        "right",
+        "right away",
+        "behind"
+      ]
+    },
+    {
+      "id": "paired-2-opposed",
+      "expected": [
+        "orient_explicit"
+      ],
+      "raw": "orient_explicit",
+      "masked": "orient_explicit",
+      "gated": "orient_explicit",
+      "blocked": false,
+      "direction": [
+        "right",
+        "left away",
+        "behind"
+      ]
+    }
+  ],
+  "v9": [
+    {
+      "id": "paired-0-along",
+      "expected": [
+        "observe_1s"
+      ],
+      "raw": "orient_explicit",
+      "masked": "orient_explicit",
+      "gated": "orient_explicit",
+      "blocked": false,
+      "direction": [
+        "left",
+        "left away",
+        "large turn left"
+      ]
+    },
+    {
+      "id": "paired-0-opposed",
+      "expected": [
+        "orient_explicit"
+      ],
+      "raw": "orient_explicit",
+      "masked": "orient_explicit",
+      "gated": "orient_explicit",
+      "blocked": false,
+      "direction": [
+        "left",
+        "right away",
+        "large turn left"
+      ]
+    },
+    {
+      "id": "paired-1-along",
+      "expected": [
+        "observe_1s"
+      ],
+      "raw": "orient_explicit",
+      "masked": "orient_explicit",
+      "gated": "orient_explicit",
+      "blocked": false,
+      "direction": [
+        "right",
+        "right away",
+        "large turn right"
+      ]
+    },
+    {
+      "id": "paired-1-opposed",
+      "expected": [
+        "orient_explicit"
+      ],
+      "raw": "orient_explicit",
+      "masked": "orient_explicit",
+      "gated": "orient_explicit",
+      "blocked": false,
+      "direction": [
+        "right",
+        "left away",
+        "large turn right"
+      ]
+    },
+    {
+      "id": "paired-2-along",
+      "expected": [
+        "observe_1s"
+      ],
+      "raw": "orient_explicit",
+      "masked": "orient_explicit",
+      "gated": "orient_explicit",
+      "blocked": false,
+      "direction": [
+        "right",
+        "right away",
+        "behind"
+      ]
+    },
+    {
+      "id": "paired-2-opposed",
+      "expected": [
+        "orient_explicit"
+      ],
+      "raw": "orient_explicit",
+      "masked": "orient_explicit",
+      "gated": "orient_explicit",
+      "blocked": false,
+      "direction": [
+        "right",
+        "left away",
+        "behind"
+      ]
+    }
+  ]
+}

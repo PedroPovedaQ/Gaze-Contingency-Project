@@ -200,7 +200,7 @@ public static class SessionConfig
         return true;
     }
     public static bool JevLedGuidance => s_JevLedGuidance;
-    public static string GuidancePolicy => JevLedGuidance ? "jev_adaptive_assistance_v4" : "baseline_local_priority_v2_target_fast";
+    public static string GuidancePolicy => JevLedGuidance ? "jev_adaptive_assistance_v5" : "baseline_local_priority_v2_target_fast";
     public static bool TrySetJevLedGuidance(bool enabled)
     {
         if (!DevelopmentQuickTest) return false;

@@ -14,7 +14,7 @@ from test_shadow import trace
 
 
 class AdaptiveChecks(unittest.TestCase):
-    def setUp(self): self.request=data.example(random.Random(8),0,'train')['payload']
+    def setUp(self): self.request=data.legacy_example(random.Random(8),0,'train')['payload']
 
     def test_shared_contract_and_all_classes(self):
         rng=random.Random(4)

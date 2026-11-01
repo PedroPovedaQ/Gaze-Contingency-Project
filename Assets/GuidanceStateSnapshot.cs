@@ -21,7 +21,7 @@ public sealed class GuidanceStateSnapshot
 [Serializable]
 public sealed class AssistanceRuntimeSnapshot
 {
-    public const string LocalModelVersion = "20261026-minilm-reassurance-v8";
+    public const string LocalModelVersion = "20261031-minilm-direction-v9";
     public string mode, provider, modelVersion, policy, connection;
     public string lastDecisionId, lastDecisionProvider, lastStrategy, lastOutcome;
     public double capturedAtSeconds, lastDecisionAtSeconds;

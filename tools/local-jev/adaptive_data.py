@@ -13,8 +13,10 @@ SOURCE = ROOT/'Assets/SpatialVoice/JevDecisionClient.Adaptive.cs'
 LABELS = ['observe_1s', 'orient_brief', 'orient_explicit',
           'refine_brief', 'refine_explicit', 'correct', 'encourage']
 LEGACY_FEATURE_VERSION = 'adaptive-v2-measured-v1'
-FEATURE_VERSION = 'adaptive-v4-progress-v3'
-POLICY = 'jev_adaptive_assistance_v4'
+PROGRESS_FEATURE_VERSION = 'adaptive-v4-progress-v3'
+FEATURE_VERSION = 'adaptive-v5-direction-v1'
+LEGACY_POLICY = 'jev_adaptive_assistance_v4'
+POLICY = 'jev_adaptive_assistance_v5'
 
 
 def contract():
@@ -22,7 +24,7 @@ def contract():
     source = SOURCE.read_text()
     strategies = dict(re.findall(r'\["([a-z0-9_]+)"\] = "([^"\n]+)"', source.split('public static JObject AdaptivePayload')[0]))
     instructions = re.search(r'\["instructions"\] = "([^"\n]+)"', source)
-    if set(strategies) != set(LABELS) or not instructions or f'AdaptivePolicy = "{POLICY}"' not in source:
+    if set(strategies) != set(LABELS) or not instructions or not any(f'AdaptivePolicy = "{policy}"' in source for policy in (POLICY, LEGACY_POLICY)):
         raise ValueError('Production adaptive contract changed; review local adapter')
     return strategies, instructions[1]
 
@@ -53,7 +55,7 @@ def unpack(request):
         raise ValueError('Unsupported assistance choices')
     if any(not isinstance(v, str) or len(v)>1024 for v in choices.values()): raise ValueError('Invalid criteria')
     state = request.get('state')
-    if not isinstance(state, dict) or state.get('schema') != 'adaptive-assistance-v1' or state.get('policy') != POLICY:
+    if not isinstance(state, dict) or state.get('schema') != 'adaptive-assistance-v1' or state.get('policy') not in (LEGACY_POLICY, POLICY):
         raise ValueError('Expected adaptive v4 state')
     runtime, behavior = state.get('runtime'), state.get('behavior')
     if not isinstance(runtime, dict) or not isinstance(behavior, dict): raise ValueError('Missing state')
@@ -148,15 +150,51 @@ def text(request, version=FEATURE_VERSION):
               f'cue count: {m["cues"]}; wrong selections: {b.get("wrong_selections",0)}',
               'previous outcomes: '+','.join(str(t.get('outcome','unknown')) for t in b.get('previous_trials',[])),
               'offered: '+','.join(sorted(choices))]
-    if version == FEATURE_VERSION:
+    if version in (FEATURE_VERSION, PROGRESS_FEATURE_VERSION):
         parts.append('elapsed silence: '+silence_band(request))
         parts.append('current measured progress: '+boolean(m['progressing']))
     elif version != LEGACY_FEATURE_VERSION:
         raise ValueError('Unsupported adaptive feature version')
+    if version == FEATURE_VERSION:
+        needed, moving, started = direction_words(request)
+        parts.insert(0, f'needed: {needed}; moving: {moving}; started: {started}')
     return '. '.join(parts)
 
 
-def reference(request):
+DIRECTIONS = ('left', 'right', 'up', 'down', 'up left', 'up right', 'down left', 'down right')
+STARTS = ('unknown', 'same plane', 'behind', 'small turn left', 'small turn right', 'medium turn left',
+          'medium turn right', 'large turn left', 'large turn right')
+
+
+def direction_words(request):
+    """Only Unity's bounded words enter the encoder; legacy recordings stay unknown."""
+    d = request['state'].get('direction')
+    if d is None: return ('unknown',) * 3
+    if not isinstance(d, dict) or d.get('schema') != 'adaptive-direction-v1':
+        raise ValueError('Unsupported direction schema')
+    needed, moving, started = (d.get(k, 'unknown') for k in ('needed', 'moving', 'started'))
+    motions = {'unknown', 'still'} | {x+' '+r for x in DIRECTIONS for r in ('toward', 'away', 'across')}
+    if needed not in (*DIRECTIONS, 'aligned', 'unknown') or moving not in motions or started not in STARTS:
+        raise ValueError('Invalid direction words')
+    return needed, moving, started
+
+
+def direction_rule(request):
+    needed, moving, started = direction_words(request)
+    # A committed long turn can temporarily increase shortest-angle error. Briefly
+    # observe motion along Unity's cue; never invent an encouragement capability.
+    along = needed in DIRECTIONS and moving == needed+' away'
+    if (along and needed in ('left', 'right') and not request['state']['runtime']['evidence'].get('insideTargetWall')
+            and started in ('behind', 'large turn '+needed)):
+        return 'long_way'
+    axes = set(needed.split())
+    opposite = {'left':'right', 'right':'left', 'up':'down', 'down':'up'}
+    if moving.endswith(' away') and any(opposite.get(x) in axes for x in moving.split()[:-1]):
+        return 'wrong_way'
+    return None
+
+
+def reference(request, policy=POLICY):
     """Authored supervision approximating v4, NOT human ground truth or model inference."""
     _, _, e, _, choices = unpack(request)
     m = measurements(request)
@@ -164,6 +202,12 @@ def reference(request):
     if 'correct' in choices and (e.get('targetReturnPending') is True or e['guidanceState'].get('allowedAction') in ('ReturnTarget','ReturnWall','ReturnBearing')):
         return 'correct'
     silence = silence_band(request)
+    if policy not in (POLICY, LEGACY_POLICY): raise ValueError("Unsupported reference policy")
+    rule = direction_rule(request) if policy == POLICY else None
+    if rule == 'long_way' and silence == 'recent': return 'observe_1s'
+    if rule == 'wrong_way':
+        family = 'refine' if e.get('insideTargetWall') else 'orient'
+        return next((x for x in (family+'_explicit', family+'_brief') if x in choices), 'observe_1s')
     if m['progressing'] and 'encourage' in choices:
         return 'observe_1s' if m['last_strategy']=='encourage' and silence=='recent' else 'encourage'
     if m['trend']=='unknown': return 'observe_1s'
@@ -176,7 +220,7 @@ def reference(request):
     return next((s for s in preferred if s in choices),'observe_1s')
 
 
-def example(rng, index, split):
+def legacy_example(rng, index, split):
     mode = rng.choice(['stall','recede','oscillate','steady','mixed','insufficient'])
     departure = rng.random()<.28
     inside = rng.random()<.5
@@ -233,12 +277,77 @@ def example(rng, index, split):
                 basis='Authored synthetic policy, not participant helpfulness or Jev distillation')
 
 
+def example(rng, index, split):
+    row = legacy_example(rng, index, split)
+    req = row['payload']; state = req['state']; e = state['runtime']['evidence']
+    # Recent wrong-way motion can follow earlier improvement in the same window.
+    if rng.random() < .12:
+        error = max(10, math.hypot(e['yawErrorDegrees'],e['pitchErrorDegrees']))
+        for sample in state['behavior']['recent']['samples']:
+            age = sample['age_seconds']
+            if age <= 4:
+                sample['angular_error_degrees'] = round(error-2*age if age <= 2 else error-4+8*(age-2),2)
+        e['yawErrorDegrees'] = 0 if e['insideTargetWall'] else error
+        e['pitchErrorDegrees'] = error if e['insideTargetWall'] else 0
+        if 'vicinityErrorDegrees' in e: e['vicinityErrorDegrees'] = error
+        row['family'] += ':recent_reversal'
+    needed = rng.choice(DIRECTIONS if e['insideTargetWall'] else ('left', 'right'))
+    started = rng.choice(STARTS)
+    m = measurements(req)
+    opposite = {'left':'right', 'right':'left', 'up':'down', 'down':'up'}
+    reverse = ' '.join(opposite[x] for x in needed.split())
+    motion = (needed+' toward' if m['trend']=='approaching' else reverse+' away' if m['trend']=='receding'
+              else 'still' if m['trend']=='little_change' else 'unknown')
+    # Cross direction/start with all existing gates, histories, menus and classes.
+    # Long-way commitment follows Unity's direction while shortest error increases.
+    if m['trend']=='receding' and not e['insideTargetWall'] and rng.random()<.5:
+        started = rng.choice(('large turn '+needed, 'behind'))
+        motion = needed+' away'
+        row['family'] += ':long_way'
+    # Unity only retains a turn opposite the shortest bearing at |yaw| >= 150.
+    # Use a continuous rear-seam trajectory, not an impossible near-target turn.
+    long_way = ':long_way' in row['family']
+    if long_way:
+        error = rng.uniform(168,178)
+        for sample in state['behavior']['recent']['samples']:
+            sample['angular_error_degrees'] = round(error-2*sample['age_seconds'],2)
+        if 'vicinityErrorDegrees' in e: e['vicinityErrorDegrees'] = round(error,2)
+        state['behavior']['recent']['error_reduction_degrees'] = round(-2*state['behavior']['recent']['samples'][0]['age_seconds'],2)
+    else:
+        error = math.hypot(e['yawErrorDegrees'],e['pitchErrorDegrees'])
+    axes = needed.split()
+    magnitude = error / math.sqrt(len(axes))
+    e['yawErrorDegrees'] = round(magnitude * (-1 if 'left' in axes else 1 if 'right' in axes else 0) * (-1 if long_way else 1),2)
+    e['pitchErrorDegrees'] = round(magnitude * (1 if 'up' in axes else -1 if 'down' in axes else 0),2)
+    # Match runtime's two-second net motion, not its separate four-second trend.
+    recent = [s for s in state['behavior']['recent']['samples'] if s['age_seconds'] <= 2]
+    if (len(recent) < 2 or recent[-1]['age_seconds'] > .75 or
+            recent[0]['age_seconds']-recent[-1]['age_seconds'] < .5):
+        motion = 'unknown'
+    else:
+        reduction = recent[0]['angular_error_degrees']-recent[-1]['angular_error_degrees']
+        if abs(reduction)/math.sqrt(len(axes)) < 1:
+            motion = 'still'
+        else:
+            along = reduction > 0 if not long_way else reduction < 0
+            motion = (needed if along else reverse)+(' toward' if reduction > 0 else ' away')
+    if e.get('valid') is not True or e.get('geometryAvailable') is not True:
+        motion = 'unknown'; needed = 'unknown'
+    if rng.random()<.15: motion = 'unknown'
+    if rng.random()<.15: needed = 'unknown'
+    state['direction'] = dict(schema='adaptive-direction-v1', needed=needed, moving=motion, started=started)
+    # Direction names in scalar history denote the offered cue, not gaze motion.
+    for sample in state['behavior']['recent']['samples']: sample['direction'] = needed
+    row['label'] = reference(req)
+    return row
+
+
 def generate(output):
     output.mkdir(parents=True,exist_ok=False)
-    manifest=dict(policy=POLICY,features=FEATURE_VERSION,supervision='seven-actions-reassurance-v8-history-coverage',source_sha256=hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
+    manifest=dict(policy=POLICY,features=FEATURE_VERSION,supervision='seven-actions-direction-v9',source_sha256=hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
                   interpretation='Synthetic authored policy. Test holds different sample cadences and triple guard conflicts; no device cases used for training or selection.',files={})
     seen=set()
-    for split,count,seed in [('train',2240,26102681),('valid',448,26102682),('test',448,26102683)]:
+    for split,count,seed in [('train',2240,261031111),('valid',448,261031112),('test',448,261031113)]:
         rng=random.Random(seed); rows=[]; counts=Counter()
         for i in range(100000):
             row=example(rng,i,split); key=text(row['payload'])

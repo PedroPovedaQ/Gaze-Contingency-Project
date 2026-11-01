@@ -13,7 +13,17 @@ public partial class HintGenerator
     Func<bool> m_WallArrivalRelevant;
     double m_NextWallArrivalRequest;
 
-    bool TryAdaptiveWallArrival(bool valid, bool inside, Func<GuidanceAction,bool> allows)
+    JObject AdaptiveDirectionState(string direction, double now)
+    {
+        var start = m_GameManager != null ? m_GameManager.PreCueTheta : null;
+        return new JObject { ["schema"] = AdaptiveDirectionWords.Version,
+            ["needed"] = AdaptiveDirectionWords.Needed(direction),
+            ["moving"] = m_AdaptiveHistory.Moving(now,m_YawError,m_PitchError),
+            ["started"] = AdaptiveDirectionWords.Started(start != null && start.round == HistoryTrial
+                ? start.realizedSignedDegrees : double.NaN) };
+    }
+
+    bool TryAdaptiveWallArrival(string direction, bool valid, bool inside, Func<GuidanceAction,bool> allows)
     {
         bool Eligible() => SessionConfig.JevLedGuidance && !m_AdaptiveHistory.WallArrivalSpoken && !m_State.TargetAcknowledged &&
             m_State.Allows(GuidanceAction.Arrival) && m_State.WallStable;
@@ -58,6 +68,7 @@ public partial class HintGenerator
         var state=new JObject { ["schema"]="adaptive-assistance-v1",["policy"]=JevDecisionClient.AdaptivePolicy,
             ["decision_id"]=id,["override_reason"]=AdaptiveGuidancePipeline.WallArrivalOverride,
             ["runtime"]=JObject.Parse(m_Voice.CaptureTransmissionContext()),["behavior"]=m_AdaptiveHistory.Snapshot(now) };
+        state["direction"] = AdaptiveDirectionState(direction,now);
         m_NextWallArrivalRequest=now+1;
         m_Navigation.TryAdaptiveRequest(state,new Dictionary<string,IReadOnlyList<string>>{{"refine_explicit",phrases}},Relevant,decision => {
             if(!Relevant())return false;
@@ -162,6 +173,7 @@ public partial class HintGenerator
         runtime.Remove("maximum_deferral_seconds"); runtime.Remove("deferred_seconds");
         var state = new JObject { ["schema"] = "adaptive-assistance-v1", ["policy"] = JevDecisionClient.AdaptivePolicy,
             ["decision_id"] = id, ["runtime"] = runtime, ["behavior"] = m_AdaptiveHistory.Snapshot(now) };
+        state["direction"] = AdaptiveDirectionState(direction,now);
         bool requested = m_Navigation != null && m_Navigation.TryAdaptiveRequest(state,options,Relevant, decision => {
             if (!Relevant()) return false;
             if (!decision.Speak) { m_AdaptiveSchedule.Decided(Time.realtimeSinceStartupAsDouble,decision); return true; }

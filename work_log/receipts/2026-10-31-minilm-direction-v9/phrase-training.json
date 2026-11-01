@@ -1,0 +1,73 @@
+{
+  "initialization": "continued scalar ranker",
+  "sizes": {
+    "train": 768,
+    "valid": 160,
+    "test": 160
+  },
+  "data_sha256": {
+    "train": "47db0b22d804f1dfbb9680d43a3d8069759d66700f6e4f724ce2484d922d82af",
+    "valid": "8ca92d703bec1afd0b238d0eb82092ffd24d347d3d8f7f633099a316da65bba3",
+    "test": "d76374ca3d3e2ee2d4f4c44d17b84d22b3df2d47d2d39b8cb71497b1e748f313"
+  },
+  "supervision": "Authored synthetic preferences, not Jev distillation or human outcomes",
+  "features": "adaptive-phrase-ranker-v3-direction",
+  "parent": "/Users/pedro.poveda/.local/share/follow-my-voice-models/20261026-minilm-reassurance-v8/phrase/model",
+  "parent_sha256": "18b0b0f5c2e9b73e5b89e028dd3192874c036a4dda5df70cbbb15c2f36f80f35",
+  "menus_sha256": "645f75f7156c9614e5a30a2aa06c3fc352f3aa046b763c0584a20491e9ba7be4",
+  "device": "mps",
+  "epochs": [
+    {
+      "epoch": 1,
+      "loss": 0.6535953053583702,
+      "validation": {
+        "n": 160,
+        "top_choice_agreement": 0.95,
+        "repeat_opportunities": 103,
+        "avoided_repeats": 101,
+        "repeat_avoidance": 0.9805825242718447
+      }
+    },
+    {
+      "epoch": 2,
+      "loss": 0.555464842201521,
+      "validation": {
+        "n": 160,
+        "top_choice_agreement": 0.93125,
+        "repeat_opportunities": 103,
+        "avoided_repeats": 97,
+        "repeat_avoidance": 0.941747572815534
+      }
+    },
+    {
+      "epoch": 3,
+      "loss": 0.5119655014326175,
+      "validation": {
+        "n": 160,
+        "top_choice_agreement": 0.96875,
+        "repeat_opportunities": 103,
+        "avoided_repeats": 103,
+        "repeat_avoidance": 1.0
+      }
+    },
+    {
+      "epoch": 4,
+      "loss": 0.4889992404108246,
+      "validation": {
+        "n": 160,
+        "top_choice_agreement": 0.96875,
+        "repeat_opportunities": 103,
+        "avoided_repeats": 103,
+        "repeat_avoidance": 1.0
+      }
+    }
+  ],
+  "training_seconds": 413.578993916999,
+  "test": {
+    "n": 160,
+    "top_choice_agreement": 0.95625,
+    "repeat_opportunities": 78,
+    "avoided_repeats": 78,
+    "repeat_avoidance": 1.0
+  }
+}

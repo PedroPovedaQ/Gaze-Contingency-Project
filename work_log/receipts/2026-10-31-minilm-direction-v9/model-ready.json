@@ -1,0 +1,8 @@
+{
+  "health_check": "ready; both stages",
+  "stage_hashes": [
+    "f9a7ace47b324b9192167a9c54f146a14b40a93607ec4b0017e2c7ab747be36f",
+    "539ae466807135b48bf653943af086b25db0ee68ff60cf3f68916c115767580b"
+  ],
+  "note": "Two separate synthetic readiness calls, no audio/trial activity. Not the warmed latency benchmark."
+}

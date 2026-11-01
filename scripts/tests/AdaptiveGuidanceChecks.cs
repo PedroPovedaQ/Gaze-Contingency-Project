@@ -8,6 +8,24 @@ partial class SpatialVoiceChecks
 {
     static void CheckAdaptiveGuidance()
     {
+        var motion = new AdaptiveGuidanceHistory();
+        motion.BeginTrial("direction-test",0,0,false);
+        motion.Observe(0,true,80,DirectionalHintPolicy.RightPhrase,179,0);
+        motion.Observe(.5,true,82,DirectionalHintPolicy.RightPhrase,-177,0);
+        Check(motion.Moving(.5,-82,0)=="right away", "unwrap gaze yaw and retain long-way receding motion");
+        Check(motion.Moving(2,-82,0)=="unknown", "stale motion is unknown");
+        motion.Observe(.6,false,0,null);
+        Check(motion.Moving(.6,0,0)=="unknown", "tracking loss clears motion");
+        motion.BeginTrial("direction-test",1,3,false);
+        motion.Observe(3,true,20,DirectionalHintPolicy.UpRightPhrase,0,0);
+        motion.Observe(3.5,true,16,DirectionalHintPolicy.UpRightPhrase,2,3);
+        Check(motion.Moving(3.5,10,10)=="up right toward", "diagonal gaze motion has positive elevation");
+        motion.BreakObservation();
+        Check(motion.Moving(3.5,10,10)=="unknown", "pause loses motion evidence");
+        Check(AdaptiveDirectionWords.Started(double.NaN)=="unknown", "missing pre-cue never guesses a start");
+        Check(AdaptiveDirectionWords.Started(-135)=="large turn left", "signed pre-cue start band");
+        Check(AdaptiveDirectionWords.Started(180)=="behind", "behind start");
+        Check(AdaptiveDirectionWords.Needed(DirectionalHintPolicy.UpLeftPhrase)=="up left", "same Unity diagonal");
         foreach (string direction in new[] { DirectionalHintPolicy.LeftPhrase, DirectionalHintPolicy.RightPhrase })
         foreach (float remaining in new[] { 20f, 45f, 60f, 110f })
         {
@@ -357,7 +375,7 @@ partial class SpatialVoiceChecks
             if (action.StartsWith("orient") && inside) continue;
             var phrases = AdaptiveGuidanceGrounding.Phrases(action, direction, inside, remaining, fraction,
                 DirectionalHintPolicy.ReturnToTarget(direction), true);
-            if (phrases.Count > 0) result.Add(new JObject { ["action"] = action, ["phrases"] = new JArray(phrases) });
+            if (phrases.Count > 0) result.Add(new JObject { ["action"] = action, ["needed"] = AdaptiveDirectionWords.Needed(direction), ["phrases"] = new JArray(phrases) });
         }
         return result;
     }

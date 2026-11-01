@@ -1,0 +1,22 @@
+{
+  "serial": "192.168.1.208:5555",
+  "device": "VIVE Focus Vision",
+  "package": "com.DefaultCompany.MixedRealityTemplate",
+  "apk": "Builds/CodexAndroid/codex_build.apk",
+  "sha256": "ed39726c99ece50b47257a6788586516ef4011df739586849aa85ce1bf0c6a07",
+  "installed_sha256": "ed39726c99ece50b47257a6788586516ef4011df739586849aa85ce1bf0c6a07",
+  "installed_path": "/data/app/~~DJryfJUTIeUu9xtue9kpZQ==/com.DefaultCompany.MixedRealityTemplate-R__r2wr0oLl-yXyydaXZHw==/base.apk",
+  "build_seconds": 76.1,
+  "launch_status": "ok",
+  "model_health": {
+    "status": "ready",
+    "scope": "assistance",
+    "device": "cpu",
+    "model_version": "20261031-minilm-direction-v9",
+    "stages": [
+      "assistance",
+      "assistance_phrase"
+    ]
+  },
+  "tunnel": "host-18 tcp:8766 tcp:8766"
+}

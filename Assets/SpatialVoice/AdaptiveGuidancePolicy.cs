@@ -140,10 +140,39 @@ namespace SpatialVoice
         public void Decided(double now, AdaptiveGuidanceDecision decision) { m_Next = now + decision.ReassessSeconds; }
     }
 
+    public static class AdaptiveDirectionWords
+    {
+        public const string Version = "adaptive-direction-v1";
+        public static string Needed(string direction)
+        {
+            if (direction == DirectionalHintPolicy.AlignedPhrase) return "aligned";
+            if (string.IsNullOrEmpty(direction)) return "unknown";
+            if (direction == DirectionalHintPolicy.LeftPhrase || direction == DirectionalHintPolicy.FarLeftPhrase) return "left";
+            if (direction == DirectionalHintPolicy.RightPhrase || direction == DirectionalHintPolicy.FarRightPhrase) return "right";
+            if (direction == DirectionalHintPolicy.UpPhrase) return "up";
+            if (direction == DirectionalHintPolicy.DownPhrase) return "down";
+            if (direction == DirectionalHintPolicy.UpLeftPhrase) return "up left";
+            if (direction == DirectionalHintPolicy.UpRightPhrase) return "up right";
+            if (direction == DirectionalHintPolicy.DownLeftPhrase) return "down left";
+            if (direction == DirectionalHintPolicy.DownRightPhrase) return "down right";
+            return "unknown";
+        }
+
+        public static string Started(double signedDegrees)
+        {
+            if (double.IsNaN(signedDegrees) || double.IsInfinity(signedDegrees)) return "unknown";
+            double a = Math.Abs(signedDegrees);
+            if (a < 22.5) return "same plane";
+            if (a >= 157.5) return "behind";
+            return (a <= 67.5 ? "small" : a <= 112.5 ? "medium" : "large") +
+                " turn " + (signedDegrees < 0 ? "left" : "right");
+        }
+    }
+
     // Local, participant-scoped measured history. No demographics, identity or inferred mental state leave this class.
     public sealed class AdaptiveGuidanceHistory
     {
-        sealed class Sample { public double Time, Error; public string Direction; }
+        sealed class Sample { public double Time, Error, Yaw, Pitch; public string Direction; }
         readonly List<Sample> m_Samples = new List<Sample>();
         readonly List<JObject> m_Interventions = new List<JObject>();
         readonly Queue<JObject> m_Trials = new Queue<JObject>();
@@ -186,7 +215,7 @@ namespace SpatialVoice
                 if (item["error_reduction_after_3s"].Type == JTokenType.Null) item["response_status"] = "unavailable_discontinuity";
         }
         public void WrongSelection() { m_Wrong++; }
-        public void Observe(double now, bool valid, double angularError, string direction)
+        public void Observe(double now, bool valid, double angularError, string direction, double gazeYaw = double.NaN, double gazePitch = double.NaN)
         {
             double gap = m_LastObservation < 0 ? 0 : now - m_LastObservation;
             if (gap < 0 || gap > 1.25) { BreakObservation(); gap = 0; }
@@ -198,7 +227,7 @@ namespace SpatialVoice
             m_LastSample = now;
             m_Samples.RemoveAll(s => now - s.Time > 12);
             if (m_Samples.Count == 25) m_Samples.RemoveAt(0);
-            m_Samples.Add(new Sample { Time = now, Error = angularError, Direction = direction });
+            m_Samples.Add(new Sample { Time = now, Error = angularError, Direction = direction, Yaw = gazeYaw, Pitch = gazePitch });
             foreach (var item in m_Interventions)
             {
                 double age = now - (double)item["at_seconds"];
@@ -261,6 +290,33 @@ namespace SpatialVoice
                 first = sample; newer = sample;
             }
             return last.Time-first.Time >= .5 && first.Error-last.Error >= 1;
+        }
+        // Net gaze motion over the latest two seconds, with wrapped yaw steps.
+        // Positive yaw is right, positive elevation is up. Relation uses current
+        // shortest signed target error, independently of Unity's committed turn cue.
+        public string Moving(double now, double targetYaw, double targetPitch)
+        {
+            var recent = m_Samples.FindAll(s => now-s.Time <= 2);
+            if (recent.Count < 2 || now-recent[recent.Count-1].Time > .75 ||
+                recent[recent.Count-1].Time-recent[0].Time < .5) return "unknown";
+            double yaw = 0, pitch = 0;
+            for (int i=0;i<recent.Count;i++)
+            {
+                var s = recent[i];
+                if (double.IsNaN(s.Yaw) || double.IsNaN(s.Pitch) || double.IsInfinity(s.Yaw) || double.IsInfinity(s.Pitch)) return "unknown";
+                if (i==0) continue;
+                var before = recent[i-1];
+                if (s.Time-before.Time > 1.25) return "unknown";
+                yaw += ((s.Yaw-before.Yaw+540)%360)-180;
+                pitch += s.Pitch-before.Pitch;
+            }
+            if (Math.Sqrt(yaw*yaw+pitch*pitch) < 1) return "still";
+            string h = Math.Abs(yaw) < 1 ? "" : yaw > 0 ? "right" : "left";
+            string v = Math.Abs(pitch) < 1 ? "" : pitch > 0 ? "up" : "down";
+            if (h.Length == 0 && v.Length == 0) return "still";
+            double norm = Math.Sqrt((yaw*yaw+pitch*pitch)*(targetYaw*targetYaw+targetPitch*targetPitch));
+            double alignment = norm > 0 ? (yaw*targetYaw+pitch*targetPitch)/norm : 0;
+            return (v+" "+h).Trim()+" "+(alignment > .25 ? "toward" : alignment < -.25 ? "away" : "across");
         }
         public string Trend(double now)
         {

@@ -22,10 +22,10 @@ class Policy:
         self.tokenizer = AutoTokenizer.from_pretrained(path, local_files_only=True)
         self.model = AutoModelForSequenceClassification.from_pretrained(path, local_files_only=True).to(device).eval()
         self.feature_version = getattr(self.model.config, 'local_jev_feature_version', None)
-        self.adaptive = self.feature_version in (adaptive_data.LEGACY_FEATURE_VERSION, adaptive_data.FEATURE_VERSION)
+        self.adaptive = self.feature_version in (adaptive_data.LEGACY_FEATURE_VERSION, adaptive_data.PROGRESS_FEATURE_VERSION, adaptive_data.FEATURE_VERSION)
         self.scope = 'assistance' if self.adaptive else 'navigation_action'
         self.labels = adaptive_data.LABELS if self.adaptive else LABELS
-        if self.adaptive and getattr(self.model.config, 'local_jev_policy', None) != adaptive_data.POLICY:
+        if self.adaptive and getattr(self.model.config, 'local_jev_policy', None) != (adaptive_data.POLICY if self.feature_version == adaptive_data.FEATURE_VERSION else adaptive_data.LEGACY_POLICY):
             raise ValueError('Checkpoint assistance policy does not match the adapter')
         if [self.model.config.id2label[i] for i in range(len(self.labels))] != self.labels:
             raise ValueError('Checkpoint label mapping does not match its contract')

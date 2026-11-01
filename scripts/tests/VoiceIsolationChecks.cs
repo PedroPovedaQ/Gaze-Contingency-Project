@@ -1395,7 +1395,7 @@ partial class VoiceIsolationChecks
                 "New participant clears previous Jev opt-in");
             Check(SessionConfig.TrySetLocalAdaptiveModel(false) && SessionConfig.TrySetLocalAdaptiveModel(true) && SessionConfig.LocalAdaptiveModel,
                 "Study can switch back from Jev to MiniLM");
-            Check(SessionConfig.JevLedGuidance && SessionConfig.GuidancePolicy == "jev_adaptive_assistance_v4" && !SessionConfig.TrySetJevLedGuidance(false),
+            Check(SessionConfig.JevLedGuidance && SessionConfig.GuidancePolicy == "jev_adaptive_assistance_v5" && !SessionConfig.TrySetJevLedGuidance(false),
                 "New participant uses active adaptive guidance; baseline override is development-only");
             SessionConfig.ParticipantId = "DEV_NEUTRAL"; // Same seed: mode must still invalidate cached geometry.
             var studyPlan = ChallengeSet.Rounds;

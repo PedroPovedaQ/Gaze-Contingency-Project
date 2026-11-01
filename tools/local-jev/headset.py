@@ -12,7 +12,7 @@ import time
 import urllib.error
 import urllib.request
 
-VERSION = '20261026-minilm-reassurance-v8'
+VERSION = '20261031-minilm-direction-v9'
 ROOT = Path.home() / '.local/share/follow-my-voice-models'
 ADB = Path('/Applications/Unity/Hub/Editor/6000.3.10f1/PlaybackEngines/AndroidPlayer/SDK/platform-tools/adb')
 

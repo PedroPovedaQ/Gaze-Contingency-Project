@@ -55,7 +55,7 @@ def main():
     policy.model_version = args.model.resolve().parent.name
     policy.checkpoint_sha256 = hashlib.sha256((args.model / 'model.safetensors').read_bytes()).hexdigest()
     phrase_policy = None
-    if getattr(policy.model.config, 'local_jev_policy', None) == 'jev_adaptive_assistance_v4':
+    if getattr(policy.model.config, 'local_jev_policy', None) in ('jev_adaptive_assistance_v4', 'jev_adaptive_assistance_v5'):
         phrase_path = args.model.parent / 'phrase' / 'model'
         phrase_policy = PhrasePolicy(phrase_path, args.device)
         phrase_policy.checkpoint_sha256 = hashlib.sha256((phrase_path / 'model.safetensors').read_bytes()).hexdigest()

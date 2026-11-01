@@ -1,0 +1,20 @@
+{
+  "train": {
+    "n": 2240,
+    "long_way": 101,
+    "recent_reversal": 278,
+    "unknown_motion": 409
+  },
+  "valid": {
+    "n": 448,
+    "long_way": 20,
+    "recent_reversal": 46,
+    "unknown_motion": 94
+  },
+  "test": {
+    "n": 448,
+    "long_way": 15,
+    "recent_reversal": 61,
+    "unknown_motion": 85
+  }
+}

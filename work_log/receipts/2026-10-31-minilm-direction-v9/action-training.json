@@ -1,0 +1,195 @@
+{
+  "policy": "jev_adaptive_assistance_v5",
+  "features": "adaptive-v5-direction-v1",
+  "dataset": {
+    "policy": "jev_adaptive_assistance_v5",
+    "features": "adaptive-v5-direction-v1",
+    "supervision": "seven-actions-direction-v9",
+    "source_sha256": "b3532f8da89a99e1598902c4032a91f8e91c6de9dde2689831ce3e9f13a878c7",
+    "interpretation": "Synthetic authored policy. Test holds different sample cadences and triple guard conflicts; no device cases used for training or selection.",
+    "files": {
+      "train": {
+        "n": 2240,
+        "labels": {
+          "refine_explicit": 320,
+          "observe_1s": 320,
+          "correct": 320,
+          "refine_brief": 320,
+          "orient_brief": 320,
+          "orient_explicit": 320,
+          "encourage": 320
+        },
+        "seed": 261031111,
+        "sha256": "3adb195f90cb75c80d0c52d006ba9a2533f0fd2edda2ee9864231e970bba3382"
+      },
+      "valid": {
+        "n": 448,
+        "labels": {
+          "correct": 64,
+          "orient_brief": 64,
+          "orient_explicit": 64,
+          "observe_1s": 64,
+          "refine_explicit": 64,
+          "encourage": 64,
+          "refine_brief": 64
+        },
+        "seed": 261031112,
+        "sha256": "6e5999c5d7f6ce7a4f26054e0560d37b934ae663fb300130799ad3a2a8da50d7"
+      },
+      "test": {
+        "n": 448,
+        "labels": {
+          "refine_explicit": 64,
+          "correct": 64,
+          "observe_1s": 64,
+          "orient_explicit": 64,
+          "refine_brief": 64,
+          "orient_brief": 64,
+          "encourage": 64
+        },
+        "seed": 261031113,
+        "sha256": "27f4a89de4efe787ece421e3b82618dc82fdef55148ab7724c4a92b2e9c170be"
+      }
+    }
+  },
+  "provenance": {
+    "parent": "/Users/pedro.poveda/.local/share/follow-my-voice-models/20261026-minilm-reassurance-v8",
+    "parent_sha256": "659e0bd470e2a686e7b2b45f7b0a6aaac09466172eb08f6cc99f8a2d5f0ddfaf",
+    "seed": 26102604,
+    "learning_rate": 2e-05,
+    "head_learning_rate": 2e-05,
+    "batch_size": 24,
+    "epochs": 6,
+    "max_seconds": 1200.0,
+    "initialization": "parent encoder and matching action rows transferred; full fine-tune",
+    "selection": "validation masked accuracy only, first tie retained",
+    "packages": {
+      "torch": "2.10.0",
+      "transformers": "4.57.6",
+      "numpy": "2.4.6",
+      "safetensors": "0.8.0"
+    },
+    "code_sha256": {
+      "continue_train.py": "3b5be197f194bd302f13aa4d204bbdae636a8e5e0dab66ba1f7b2137de6ee015",
+      "phrase_model.py": "79f05a103be03ee91ef8959ff8b173592a88829838089b68a98ebfdff74fe20a",
+      "train_phrase.py": "db82e2b767e0deb3dc6f5b0df8649720972ffecf19ad373e700dda2da8a25fa5",
+      "train_adaptive.py": "49877cc46d0c88882c3e6020b9fe82d02a4872ac5ffe62afc3d4afeff9b7bc51",
+      "benchmark.py": "08b77c99370bb2d875982f1b62b58b42a7fc4da1e942113f96729c33a0b3a607",
+      "adaptive_data.py": "b3b32c5d9fb86a0810c290e09c417163815f1edec9046656a20a71a8cc2e6c11",
+      "test_shadow.py": "dbeba7b5cfcc3656bc881237b57b8a32e07d6ddcae8531a8ee6507cc19a5aa44",
+      "serve.py": "a98beef2d3443db94d4756e2cc5825426d20586213da56356b08737bfb7f2c60",
+      "phrase_data.py": "7cd79025e8adf4f853e93603ee23b0a781dca5ce497177f9f6b12afd1929846c",
+      "model.py": "e14fceefdfe2788033632bec774cce6956f12c8ff2ee207bb5d981b6b3c12d5f",
+      "compare_adaptive.py": "6a20707d03c8184b5c729d0561b89b10590326b6be14223c15d85b779338ebd8",
+      "test_direction.py": "9dac6e8b086d2018ee5c94824fa8df85e588f35ddeb245d5d67ea71aece6d51f",
+      "test_server.py": "08572c6a8057ce2dbb94fdd44630e4aa97db438b1d6bf1b47fec74dd14f6be43",
+      "test_continuation.py": "b6834e0c99e8bfae675144729378e30973e92f936ff108562371447acfcb24ab",
+      "train.py": "746734cc12ca208bd9ad1ef8b5faa547c69ae778ff0856257786a02f408ffa03",
+      "continuation_data.py": "e83dd81ef87e80da276ee8f396a35f37d93adffe1c0fe7dcabc01a2e49d2de97",
+      "compare_direction.py": "015f6388bdd4abf139a662d3d6675ba22a3236bba1e73626d087ddd344cd7377",
+      "test_data.py": "c1f86f5ec900b7c1df3e1b8d31f8ae477dd2907af5a2d159d1ee867f3dcd2d33",
+      "headset.py": "89f87e4239b232c1af88ef3c0e673de3533c4ade418330832552ee1c2e3da82d",
+      "test_adaptive.py": "f117bdbe131e70589c4423faffccf1205e487f4d071c7d9d972c231c9a642bdc",
+      "compare_local.py": "aeefa36ab7e9e44c7296bd872bfc0d21a7fd65555f59adbc6ed3a7976eb2efdc",
+      "shadow.py": "bae1c4b4e1ae384e28aa839547aa8fa322175d113045d188937f706ccf6c94b5",
+      "data.py": "1ad828f1bfcc7ec307daeefdb845bba510c315c4e7919028df9c3d4098b88342",
+      "test_phrase.py": "1cf2d008152fbd9c406af0c00590696e6d41388fccc49840326c8db74a9eaa72"
+    }
+  },
+  "device": "mps",
+  "training_seconds": 265.03630200000043,
+  "epochs": [
+    {
+      "epoch": 1,
+      "loss": 1.2959493290870747,
+      "validation": 0.8415178571428571,
+      "elapsed_seconds": 44.0660816669988
+    },
+    {
+      "epoch": 2,
+      "loss": 0.40140340294926724,
+      "validation": 0.9174107142857143,
+      "elapsed_seconds": 88.27692849999949
+    },
+    {
+      "epoch": 3,
+      "loss": 0.2985472910581751,
+      "validation": 0.921875,
+      "elapsed_seconds": 131.76882337500138
+    },
+    {
+      "epoch": 4,
+      "loss": 0.2592697033381208,
+      "validation": 0.9241071428571429,
+      "elapsed_seconds": 174.99285637499997
+    },
+    {
+      "epoch": 5,
+      "loss": 0.22965568761797028,
+      "validation": 0.9263392857142857,
+      "elapsed_seconds": 217.72785333399952
+    },
+    {
+      "epoch": 6,
+      "loss": 0.2243582511796279,
+      "validation": 0.9330357142857143,
+      "elapsed_seconds": 260.2198473749995
+    }
+  ],
+  "best_epoch": 6,
+  "stopped_by_cap": false,
+  "initial_validation": 0.14285714285714285,
+  "weights_sha256": "f9a7ace47b324b9192167a9c54f146a14b40a93607ec4b0017e2c7ab747be36f",
+  "results": {
+    "valid": {
+      "n": 448,
+      "raw_accuracy": 0.9330357142857143,
+      "masked_accuracy": 0.9330357142857143,
+      "gated_accuracy": 0.984375,
+      "model_gate_violations": 23,
+      "confusion": {
+        "orient_brief->orient_brief": 64,
+        "observe_1s->observe_1s": 40,
+        "orient_explicit->orient_explicit": 61,
+        "encourage->encourage": 64,
+        "refine_explicit->refine_explicit": 62,
+        "refine_brief->refine_brief": 63,
+        "orient_explicit->orient_brief": 3,
+        "observe_1s->correct": 10,
+        "correct->correct": 64,
+        "refine_explicit->refine_brief": 2,
+        "observe_1s->orient_brief": 3,
+        "observe_1s->refine_explicit": 4,
+        "observe_1s->encourage": 4,
+        "observe_1s->refine_brief": 1,
+        "refine_brief->refine_explicit": 1,
+        "observe_1s->orient_explicit": 2
+      }
+    },
+    "test": {
+      "n": 448,
+      "raw_accuracy": 0.9665178571428571,
+      "masked_accuracy": 0.9665178571428571,
+      "gated_accuracy": 0.9709821428571429,
+      "model_gate_violations": 2,
+      "confusion": {
+        "encourage->encourage": 64,
+        "orient_explicit->orient_explicit": 62,
+        "refine_brief->refine_brief": 61,
+        "orient_brief->orient_brief": 60,
+        "refine_explicit->refine_explicit": 61,
+        "correct->correct": 64,
+        "observe_1s->observe_1s": 61,
+        "refine_brief->refine_explicit": 2,
+        "orient_brief->observe_1s": 4,
+        "refine_brief->observe_1s": 1,
+        "observe_1s->correct": 1,
+        "orient_explicit->orient_brief": 2,
+        "refine_explicit->refine_brief": 1,
+        "observe_1s->orient_brief": 1,
+        "observe_1s->refine_brief": 1,
+        "refine_explicit->observe_1s": 2
+      }
+    }
+  }
+}

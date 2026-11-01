@@ -12,7 +12,8 @@ class PhrasePolicy:
         self.device = device
         self.tokenizer = AutoTokenizer.from_pretrained(path, local_files_only=True)
         self.model = AutoModelForSequenceClassification.from_pretrained(path, local_files_only=True).to(device).eval()
-        if getattr(self.model.config, 'phrase_feature_version', None) != phrase_data.VERSION or self.model.config.num_labels != 1:
+        self.feature_version = getattr(self.model.config, 'phrase_feature_version', None)
+        if self.feature_version not in (phrase_data.VERSION, phrase_data.LEGACY_VERSION) or self.model.config.num_labels != 1:
             raise ValueError('Phrase checkpoint contract mismatch')
 
     def predict(self, request):
@@ -20,7 +21,7 @@ class PhrasePolicy:
         state, choices, _, action_request = phrase_data.unpack(request)
         if adaptive_data.blocked(action_request, allow_playback=phrase_data.wall_arrival_override(state, choices)):
             raise ValueError('Phrase request no longer permits speech')
-        encoded = self.tokenizer(phrase_data.features(request), padding=True, truncation=False, return_tensors='pt')
+        encoded = self.tokenizer(phrase_data.features(request, getattr(self, 'feature_version', phrase_data.VERSION)), padding=True, truncation=False, return_tensors='pt')
         if encoded['input_ids'].shape[1] > 384: raise ValueError('Refusing phrase context truncation')
         with torch.inference_mode():
             scores = self.model(**{k:v.to(self.device) for k,v in encoded.items()}).logits[:,0].cpu().numpy()

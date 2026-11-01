@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import random
+import shutil
 import time
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
@@ -14,15 +15,20 @@ def main():
     p=argparse.ArgumentParser(); p.add_argument('--parent',type=Path,required=True); p.add_argument('--output',type=Path,required=True)
     p.add_argument('--menus',type=Path,required=True); p.add_argument('--epochs',type=int,default=4)
     a=p.parse_args(); a.output.mkdir(exist_ok=False); (a.output/'data').mkdir()
-    torch.set_num_threads(4); torch.manual_seed(26102660); random.seed(26102660)
+    torch.set_num_threads(4); torch.manual_seed(26103190); random.seed(26103190)
+    (a.output/'code').mkdir()
+    for path in Path(__file__).parent.glob('*.py'): shutil.copy2(path,a.output/'code'/path.name)
     seen=set(); menus=json.loads(a.menus.read_text())
-    splits={name:data.examples(menus,n,seed,seen) for name,n,seed in [('train',768,26102661),('valid',160,26102662),('test',160,26102663)]}
+    splits={name:data.examples(menus,n,seed,seen) for name,n,seed in [('train',768,26103191),('valid',160,26103192),('test',160,26103193)]}
     for name,rows in splits.items(): (a.output/'data'/f'{name}.jsonl').write_text(''.join(json.dumps(r)+'\n' for r in rows))
     tokenizer=AutoTokenizer.from_pretrained(a.parent,local_files_only=True)
     model=AutoModelForSequenceClassification.from_pretrained(a.parent,local_files_only=True)
-    model.classifier=torch.nn.Linear(model.classifier.in_features,1); model.num_labels=1
+    continued = model.config.num_labels == 1
+    if not continued: model.classifier=torch.nn.Linear(model.classifier.in_features,1)
+    model.num_labels=1
     model.config.num_labels=1; model.config.id2label={0:'suitability'}; model.config.label2id={'suitability':0}
     model.config.phrase_feature_version=data.VERSION
+    model.config.local_jev_policy=data.actions.POLICY
     device='mps' if torch.backends.mps.is_available() else 'cpu'; model.to(device)
     # All candidates for each state stay in one ranking group.
     def encode(rows):
@@ -66,7 +72,10 @@ def main():
         if report['validation']['top_choice_agreement']>best:
             best=report['validation']['top_choice_agreement']; model.save_pretrained(a.output/'model'); tokenizer.save_pretrained(a.output/'model')
     model=AutoModelForSequenceClassification.from_pretrained(a.output/'model',local_files_only=True).to(device).eval()
-    report=dict(supervision='Authored synthetic preferences, not Jev distillation or human outcomes',features=data.VERSION,
+    report=dict(initialization='continued scalar ranker' if continued else 'new scalar head',
+                sizes={name:len(rows) for name,rows in splits.items()},
+                data_sha256={name:hashlib.sha256((a.output/'data'/f'{name}.jsonl').read_bytes()).hexdigest() for name in splits},
+                supervision='Authored synthetic preferences, not Jev distillation or human outcomes',features=data.VERSION,
                 parent=str(a.parent),parent_sha256=hashlib.sha256((a.parent/'model.safetensors').read_bytes()).hexdigest(),
                 menus_sha256=hashlib.sha256(a.menus.read_bytes()).hexdigest(),device=device,epochs=reports,
                 training_seconds=time.perf_counter()-start,test=evaluate(splits['test'],encoded['test']))

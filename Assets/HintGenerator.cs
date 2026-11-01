@@ -123,7 +123,9 @@ public partial class HintGenerator : MonoBehaviour
         }
         UpdateSpeechEvidence(valid, inside, looking);
         m_AdaptiveHistory.Observe(Time.realtimeSinceStartupAsDouble, valid,
-            System.Math.Sqrt(m_YawError*m_YawError + m_PitchError*m_PitchError), desired);
+            System.Math.Sqrt(m_YawError*m_YawError + m_PitchError*m_PitchError), desired,
+            m_EvaluatedSample == null ? double.NaN : Mathf.Atan2(m_EvaluatedSample.worldDirection.x, m_EvaluatedSample.worldDirection.z)*Mathf.Rad2Deg,
+            m_EvaluatedSample == null ? double.NaN : Mathf.Asin(Mathf.Clamp(m_EvaluatedSample.worldDirection.y,-1,1))*Mathf.Rad2Deg);
         if (m_ControllerEvidenceValid && m_ControllerOnTarget)
             m_Voice.SuppressSearchGuidanceForControllerTarget();
         if (!valid)
@@ -187,7 +189,7 @@ public partial class HintGenerator : MonoBehaviour
             }
             return; // Let the person hold gaze within the target region without nudging it away.
         }
-        if (TryAdaptiveWallArrival(valid,inside,Allows)) return;
+        if (TryAdaptiveWallArrival(desired,valid,inside,Allows)) return;
         if (TryAdaptiveGuidance(desired, valid, inside, far, looking, Allows)) return;
         // Remember a qualified target visit, even though the narrow crossing
         // history is cleared by confirmation. A blink cannot manufacture a departure.

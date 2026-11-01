@@ -1,6 +1,35 @@
-## Current two-stage provider — October 26, 2026
+## Direction candidate v9 — October 31, 2026
 
-**Implemented:** `20261026-minilm-reassurance-v8` serves action → phrase decisions. Policy `jev_adaptive_assistance_v4` has seven actions; `observe_2s` and `observe_4s` are no longer offered or accepted. Observation ends after stage one. Speaking actions invoke a separate MiniLM candidate ranker through `questions.assistance_phrase`, on the same service/provider. Unity does not choose the winning phrase.
+`20261031-minilm-direction-v9` adds Unity-authored `state.direction.needed`,
+`moving` and `started` word bands to both MiniLM stages. See the
+[direction contract, policy rules and paired evaluation](../../work_log/2026-10-31-minilm-direction-v9.md).
+The action format is `adaptive-v5-direction-v1`; the phrase format is
+`adaptive-phrase-ranker-v3-direction`; candidate policy is
+`jev_adaptive_assistance_v5`. Legacy formats and absent direction fields remain
+supported. Training remains authored synthetic supervision. V9 passed the paired adoption checks and is now the default; the report also records
+its three unresolved long-way probe failures. The headset helper pins this bundle.
+
+Reproduce a **new** candidate in an unused external directory, using exported
+Unity menus (including their authoritative `needed` words), then compare both
+frozen stages without any live Jev calls:
+
+```sh
+bash scripts/test-spatial-voice.sh --export-phrase-menus /tmp/direction-menus.json
+# Run the two training jobs sequentially on this Mac.
+~/.local/share/follow-my-voice-models/venv/bin/python tools/local-jev/train_adaptive.py \
+  --parent ~/.local/share/follow-my-voice-models/20261026-minilm-reassurance-v8 \
+  --output /absolute/path/to/new-candidate --epochs 6
+~/.local/share/follow-my-voice-models/venv/bin/python tools/local-jev/train_phrase.py \
+  --parent ~/.local/share/follow-my-voice-models/20261026-minilm-reassurance-v8/phrase/model \
+  --output /absolute/path/to/new-candidate/phrase --menus /tmp/direction-menus.json --epochs 4
+~/.local/share/follow-my-voice-models/venv/bin/python tools/local-jev/compare_direction.py \
+  --before ~/.local/share/follow-my-voice-models/20261026-minilm-reassurance-v8 \
+  --after /absolute/path/to/new-candidate --output /absolute/path/to/new-comparison
+```
+
+## Preserved v8 provider — October 26, 2026
+
+**Historical, still supported:** `20261026-minilm-reassurance-v8` serves action → phrase decisions. Policy `jev_adaptive_assistance_v4` has seven actions; `observe_2s` and `observe_4s` are no longer offered or accepted. Observation ends after stage one. Speaking actions invoke a separate MiniLM candidate ranker through `questions.assistance_phrase`, on the same service/provider. Unity does not choose the winning phrase.
 
 `behavior.phrase_history` carries actual current-round playback counts and last-start ages, including canonical and rendered text. It survives pause/resume, clears on a new round/participant, and excludes proposals or playback cancelled before onset. Both providers receive it. The ranker uses candidate-specific repeat features; Jev receives the exact counts and an explicit repetition-discouraging instruction. Repetition remains possible when necessary, especially singleton correction menus.
 
@@ -8,7 +37,7 @@
 - `train_phrase.py`: full MiniLM fine-tuning with a scalar scoring head and listwise loss; validation checkpoint selection.
 - `phrase_model.py`: learned candidate scores and uncalibrated offered-choice softmax. No runtime teacher or lexical fallback.
 - `serve.py`: loads both checkpoints once; health advertises both stages; each response records the actual stage weight hash.
-- `headset.py`: pins this bundle and tunnels the Mac CPU service over authorized ADB.
+- `headset.py`: pins the current default v9 bundle and tunnels the Mac CPU service over authorized ADB; v8 remains loadable explicitly through `serve.py --model`.
 
 Training still uses **authored synthetic supervision**, not Jev distillation, expert labels, or participant outcomes. The phrase teacher discourages exact repeats, then prefers concision or detail according to the selected action and prior cues. Test agreement establishes imitation only. Live model selection is advisory until Unity rechecks spatial truth, tracking, trial identity, prepared audio and request freshness. No automatic cloud or rules fallback replaces a failed phrase decision.
 

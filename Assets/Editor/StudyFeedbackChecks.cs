@@ -165,6 +165,16 @@ public static class StudyFeedbackChecks
             SessionConfig.TrySetLocalAdaptiveModel(true); bridge.RefreshDecisionProvider();
             Check(typeof(VoiceSynthesizer).GetField("<TransmissionAdvisor>k__BackingField", flags).GetValue(synth) == null && typeof(VoiceSynthesizer).GetField("<InterruptionAdvisor>k__BackingField", flags).GetValue(synth) == null,
                 "Switching back to MiniLM detaches Jev advisors.");
+            var hints = host.AddComponent<HintGenerator>();
+            var directionState = (Newtonsoft.Json.Linq.JObject)typeof(HintGenerator)
+                .GetMethod("AdaptiveDirectionState",flags).Invoke(hints,new object[] { DirectionalHintPolicy.DownRightPhrase, 10d });
+            Check((string)directionState["needed"] == "down right" && (string)directionState["moving"] == "unknown" &&
+                (string)directionState["started"] == "unknown", "Runtime preserves Unity direction and missing evidence stays unknown.");
+            var requestState = new Newtonsoft.Json.Linq.JObject { ["direction"] = directionState };
+            var first = SpatialVoice.JevDecisionClient.AdaptivePayload(requestState,new[] { "refine_brief" });
+            var second = SpatialVoice.JevDecisionClient.AssistancePhrasePayload(requestState,"refine_brief",new[] { "Look down." });
+            Check(Newtonsoft.Json.Linq.JToken.DeepEquals(first["state"]["direction"],second["state"]["direction"]),
+                "Both stages receive the same direction snapshot.");
             var voice = host.AddComponent<VoiceAssistantController>();
             typeof(VoiceAssistantController).GetField("m_EncouragementClient", flags).SetValue(voice,
                 new SpatialVoice.JevDecisionClient("test-not-a-real-key"));

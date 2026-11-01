@@ -1,0 +1,12 @@
+{
+  "skill": "ce-code-review",
+  "status": "complete",
+  "mode": "default",
+  "execution": "sequential main thread per repository instruction",
+  "independent_review": false,
+  "head_sha": "08892293928c99de5ad8df44174434d28c5d2648",
+  "branch": "experiment/local-jev-20261025",
+  "artifact_path": "docs/reviews/2026-11-01-minilm-direction-v9/report.md",
+  "findings": [],
+  "scope": "Owned direction v9 working-tree changes; inherited progress.md excluded"
+}

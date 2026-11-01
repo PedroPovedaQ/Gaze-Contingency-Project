@@ -1,0 +1,107 @@
+{
+  "python_suites": [
+    {
+      "suite": "analysis",
+      "log": "/tmp/direction-analysis-tests.log",
+      "ran": 370,
+      "seconds": 9.999,
+      "skip": 1,
+      "ok": true
+    },
+    {
+      "suite": "desktop",
+      "log": "/tmp/direction-desktop-tests.log",
+      "ran": 128,
+      "seconds": 4.689,
+      "skip": 0,
+      "ok": true
+    },
+    {
+      "suite": "script",
+      "log": "/tmp/direction-script-tests.log",
+      "ran": 19,
+      "seconds": 1.56,
+      "skip": 0,
+      "ok": true
+    },
+    {
+      "suite": "native",
+      "log": "/tmp/direction-native-tests.log",
+      "ran": 17,
+      "seconds": 0.011,
+      "skip": 0,
+      "ok": true
+    },
+    {
+      "suite": "podcast",
+      "log": "/tmp/direction-podcast-tests.log",
+      "ran": 18,
+      "seconds": 0.012,
+      "skip": 0,
+      "ok": true
+    },
+    {
+      "suite": "interactive",
+      "log": "/tmp/direction-interactive-tests.log",
+      "ran": 21,
+      "seconds": 0.628,
+      "skip": 0,
+      "ok": true
+    },
+    {
+      "suite": "sync",
+      "log": "/tmp/direction-sync-tests.log",
+      "ran": 14,
+      "seconds": 0.017,
+      "skip": 0,
+      "ok": true
+    },
+    {
+      "suite": "local-jev",
+      "log": "/tmp/direction-python-adoption.log",
+      "ran": 45,
+      "seconds": 4.49,
+      "skip": 0,
+      "ok": true
+    }
+  ],
+  "total_run": 632,
+  "total_skipped": 1,
+  "unity_integration_passes": 27,
+  "desktop_build_check_passes": 25,
+  "offline_checks": [
+    {
+      "check": "test-activation-exercise",
+      "exit": 0
+    },
+    {
+      "check": "test-eye-validation",
+      "exit": 0
+    },
+    {
+      "check": "test-gaze-quality",
+      "exit": 0
+    },
+    {
+      "check": "test-headset-preparation",
+      "exit": 0
+    },
+    {
+      "check": "test-native-gaze",
+      "exit": 0
+    },
+    {
+      "check": "test-rotational-layout",
+      "exit": 0
+    },
+    {
+      "check": "test-trial-timeout",
+      "exit": 0
+    },
+    {
+      "check": "test-voice-enrollment",
+      "exit": 0
+    }
+  ],
+  "scope": "All active Python unittest suites; optional statsmodels skipped. Provider/microphone live smoke and archived thesis copies excluded."
+}
