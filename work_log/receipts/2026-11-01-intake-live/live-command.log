@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/e2e_intake.py", line 283, in <module>
+    if __name__=='__main__': main()
+                             ~~~~^^
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/e2e_intake.py", line 250, in main
+    run(args.receipts)
+    ~~~^^^^^^^^^^^^^^^
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/e2e_live.py", line 361, in run
+    provider.preflight()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/e2e_live.py", line 89, in preflight
+    before, _ = self.account()
+                ~~~~~~~~~~~~^^
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/e2e_live.py", line 71, in account
+    sub = json.loads(self.call(API+'user/subscription'))
+                     ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project/tools/trial-review/participant_intake.py", line 458, in call
+    raise RuntimeError(f'Provider request failed (HTTP {e.code}); check connection, permissions or quota.') from None
+RuntimeError: Provider request failed (HTTP 401); check connection, permissions or quota.

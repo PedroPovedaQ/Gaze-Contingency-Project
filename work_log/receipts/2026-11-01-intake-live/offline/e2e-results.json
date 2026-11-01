@@ -1,0 +1,256 @@
+{
+  "mode": "offline synthetic development",
+  "liveProviderCalls": 0,
+  "providerCharacters": 0,
+  "providerCredits": 0,
+  "microphoneUsed": false,
+  "realHeadsetUsed": false,
+  "protocol": "audio-intake-v4-20261101",
+  "scenarios": [
+    {
+      "scenario": "happy_path_offline",
+      "status": "PASS",
+      "seconds": 1.83,
+      "detail": {
+        "protocol": "audio-intake-v4-20261101",
+        "prompts": 9,
+        "cacheClips": 20,
+        "headset": "fake receipt only; real headset untouched",
+        "automaticIpd": "missing remains unavailable; physical device check not run",
+        "nextDevelopmentCode": "P900000000002"
+      }
+    },
+    {
+      "scenario": "too_little_speech",
+      "status": "PASS",
+      "seconds": 0.72,
+      "detail": "Insufficient answers -> optional reading takes -> threshold -> clone -> cleanup"
+    },
+    {
+      "scenario": "ineligible",
+      "status": "PASS",
+      "seconds": 1.69,
+      "detail": "Negative review stops cache, deletes clone, blocks every transfer"
+    },
+    {
+      "scenario": "withdrawal",
+      "status": "PASS",
+      "seconds": 2.03,
+      "detail": "Withdrawal before next capture and during synthesis; no handoff"
+    },
+    {
+      "scenario": "failures_restart",
+      "status": "PASS",
+      "seconds": 2.03,
+      "detail": "River/ASR/clone failures, explicit retry, silent repeat input, worker reload/resume; desktop Pause UI covered separately by Unity checks"
+    }
+  ],
+  "captures": [
+    {
+      "reason": "sustained_silence",
+      "samples": 164640,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 157920,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 180480,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 201600,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 325920,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 329280,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 291840,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 154080,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 604320,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 569760,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 569760,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 164640,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 157920,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 180480,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 201600,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 325920,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 329280,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 291840,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 154080,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 604320,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 164640,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 164640,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 157920,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 180480,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 201600,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 325920,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 329280,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 291840,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 154080,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 604320,
+      "speechDetected": true
+    },
+    {
+      "reason": "no_speech",
+      "samples": 240000,
+      "speechDetected": false
+    },
+    {
+      "reason": "no_speech",
+      "samples": 240000,
+      "speechDetected": false
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 164640,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 157920,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 180480,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 201600,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 325920,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 329280,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 291840,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 154080,
+      "speechDetected": true
+    },
+    {
+      "reason": "sustained_silence",
+      "samples": 604320,
+      "speechDetected": true
+    }
+  ],
+  "testClonesRemaining": 0
+}

@@ -1,0 +1,56 @@
+{
+  "status": "complete",
+  "verdict": "Harness ready for authorized retry; requested live and restart validation remain incomplete",
+  "scope": {
+    "base": "72c6d97",
+    "branch": "experiment/local-jev-20261025",
+    "files": [
+      "tools/trial-review/e2e_intake.py",
+      "tools/trial-review/e2e_live.py",
+      "tools/trial-review/test_e2e_live.py",
+      "tools/trial-review/test_e2e_live_flow.py",
+      "tools/trial-review/test_prepare.py",
+      "tools/trial-review/README.md"
+    ]
+  },
+  "intent": "Add an isolated live synthetic intake harness without shipping test flags; obey quota, clone, deletion, and protected desktop boundaries.",
+  "coverage": {
+    "execution": "Sequential main-thread review under agents.md tool mapping",
+    "independentPeer": false,
+    "externalReview": "Not run: only ElevenLabs is an authorized outside recipient",
+    "lenses": [
+      "correctness",
+      "security",
+      "testing",
+      "reliability",
+      "maintainability",
+      "project-standards",
+      "adversarial fidelity"
+    ],
+    "evidence": [
+      "168 Python tests passed",
+      "Full offline E2E passed",
+      "Live orchestration with fake provider passed",
+      "Actual API preflight failed closed on missing user_read",
+      "Final desktop workers matched checkout; no unsafe process launched"
+    ]
+  },
+  "actionable_findings": [],
+  "findings": [],
+  "resolved": [
+    "Synthetic WAV receipt incorrectly inherited operator_selected microphone provenance; now explicitly marks no microphone and hashes the synthetic source.",
+    "Test subprocess mock initially captured the patched callable and recursed; fixed before successful final test run.",
+    "Removed redundant TTS character aggregation; preserved safety checks and proof tests."
+  ],
+  "residual_risks": [
+    "Live audio/ASR/cloning/cache/deletion have not run against ElevenLabs because quota cannot be read.",
+    "Desktop controller/process restart is not covered by worker harness or capture mode.",
+    "If a clone POST has an unknown outcome, recorded intent blocks retry but operator account inspection is required; no such call occurred here.",
+    "Review was sequential in the author context; no independent review claim."
+  ],
+  "standards": [
+    "agents.md",
+    "Current user live limits and protected PID boundary"
+  ],
+  "completedAt": "2026-11-01T15:59:55.465458+00:00"
+}

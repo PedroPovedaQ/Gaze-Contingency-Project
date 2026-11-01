@@ -1,0 +1,51 @@
+{
+  "mode": "live ElevenLabs synthetic development",
+  "microphoneUsed": false,
+  "realHeadsetUsed": false,
+  "protocol": "audio-intake-v4-20261101",
+  "calls": [
+    {
+      "method": "GET",
+      "path": "/v1/voices",
+      "startedUtc": 1793548577.453096,
+      "status": 200,
+      "completedUtc": 1793548577.737778
+    },
+    {
+      "method": "GET",
+      "path": "/v1/user/subscription",
+      "startedUtc": 1793548577.8274298,
+      "status": 401,
+      "completedUtc": 1793548577.955797
+    },
+    {
+      "method": "GET",
+      "path": "/v1/voices",
+      "startedUtc": 1793548577.957852,
+      "status": 200,
+      "completedUtc": 1793548578.139785
+    },
+    {
+      "method": "GET",
+      "path": "/v1/user/subscription",
+      "startedUtc": 1793548578.2231119,
+      "status": 401,
+      "completedUtc": 1793548578.360084
+    }
+  ],
+  "clones": [],
+  "cloneAttempts": 0,
+  "scenarios": [],
+  "promptGenerations": [],
+  "playbacks": [],
+  "quotaDeltaScope": "account-wide; concurrent account activity may contribute",
+  "lastVoiceList": {
+    "total": 28,
+    "nonPremade": 7,
+    "observedUtc": 1793548578.222094
+  },
+  "error": "RuntimeError: Provider request failed (HTTP 401); check connection, permissions or quota.",
+  "afterError": "RuntimeError: Provider request failed (HTTP 401); check connection, permissions or quota.",
+  "ttsCharactersSubmitted": 0,
+  "temporaryDevelopmentDataRemoved": true
+}

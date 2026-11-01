@@ -1,0 +1,16 @@
+test_account_counts_nonpremade_conservatively (test_e2e_live.LiveBoundaryChecks.test_account_counts_nonpremade_conservatively) ... ok
+test_cleanup_failure_retains_id_and_never_claims_success (test_e2e_live.LiveBoundaryChecks.test_cleanup_failure_retains_id_and_never_claims_success) ... ok
+test_cleanup_verifies_exact_id_absent (test_e2e_live.LiveBoundaryChecks.test_cleanup_verifies_exact_id_absent) ... ok
+test_delete_cannot_target_another_voice (test_e2e_live.LiveBoundaryChecks.test_delete_cannot_target_another_voice) ... ok
+test_live_cli_requires_development_session_before_any_network (test_e2e_live.LiveBoundaryChecks.test_live_cli_requires_development_session_before_any_network) ... ok
+test_network_fails_closed_before_preflight_and_for_other_recipient (test_e2e_live.LiveBoundaryChecks.test_network_fails_closed_before_preflight_and_for_other_recipient) ... ok
+test_non_development_and_outside_root_rejected (test_e2e_live.LiveBoundaryChecks.test_non_development_and_outside_root_rejected) ... ok
+test_one_clone_attempt_and_verification_id_survives_error (test_e2e_live.LiveBoundaryChecks.test_one_clone_attempt_and_verification_id_survives_error) ... ok
+test_quota_and_slots_stop_before_mutations (test_e2e_live.LiveBoundaryChecks.test_quota_and_slots_stop_before_mutations) ... ok
+test_receipt_cannot_be_overwritten_for_accidental_rerun (test_e2e_live.LiveBoundaryChecks.test_receipt_cannot_be_overwritten_for_accidental_rerun) ... ok
+test_unknown_clone_outcome_not_retried (test_e2e_live.LiveBoundaryChecks.test_unknown_clone_outcome_not_retried) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.470s
+
+OK

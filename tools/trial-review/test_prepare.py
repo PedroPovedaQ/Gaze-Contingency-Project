@@ -29,6 +29,8 @@ class PrepareChecks(unittest.TestCase):
                              (ROOT / 'Assets/StudyRoomEnvironment.cs').read_text())
             self.assertTrue((root / 'Assets/Runtime/TrialReviewGuidanceState.cs').exists())
             self.assertFalse((root / 'Assets/StreamingAssets/api_keys.json').exists())
+            for name in ('e2e_intake.py', 'e2e_live.py', 'IntakeWavInput.cs'):
+                self.assertFalse(list((root / 'Assets').rglob(name)), name)
             self.assertFalse((root / 'Assets/Scenes/GazeContingencyStudyScene.unity').exists())
             for source in (root / 'Assets/SharedReplay').glob('*.cs'):
                 text = source.read_text()

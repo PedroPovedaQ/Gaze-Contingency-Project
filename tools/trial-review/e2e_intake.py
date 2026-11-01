@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Offline development E2E: real intake/audio workers, Piper WAVs, real C# activity detector.
+"""Development E2E: real intake/audio workers, Piper WAVs, real C# activity detector.
 
-No microphone or network. Provider and headset boundaries are fakes. This harness and
+Offline by default. Live ElevenLabs requires both explicit live and development-session flags.
+No microphone; the headset boundary is always fake. This harness and
 its explicit WAV input are not packaged by prepare.py into study applications.
 """
 import argparse
@@ -125,16 +126,23 @@ class Harness:
         if not state['development'] or participant_codes.number(state['participantCode']) < participant_codes.DEV_BASE:
             raise ValueError('Prepared audio is restricted to development sessions and codes')
         intake.speak_prompt(folder,self.provider)
+        self.before_capture(folder)
         result=json.loads(subprocess.check_output([str(MONO/'bin/mono'),str(self.exe),'--development-audio',str(source or self.wavs[index]),'open' if index>=4 else 'eligibility']))
         self.captures.append(result)
         if result['reason']=='no_speech': return None
         assert result['reason']=='sustained_silence' and result['speechDetected'],result
         name='answer-'+uuid.uuid4().hex+'.wav';intake.authorize_recording(folder,name)
+        receipt=folder/(name+'.capture.json')
+        intake.atomic(receipt,{**json.loads(receipt.read_text()),'microphone':'none_development_wav_input',
+                              'syntheticSourceSha256':hashlib.sha256((source or self.wavs[index]).read_bytes()).hexdigest()})
         with wave.open(str(source or self.wavs[index])) as inp, wave.open(str(folder/name),'wb') as out:
             out.setparams(inp.getparams());out.writeframes(inp.readframes(result['samples']))
         intake.atomic(folder/(name+'.end.json'),result)
         self.provider.text=(ANSWERS+[intake.READING_PASSAGE])[index]
         return intake.answer(folder,self.provider,name)
+
+    def before_capture(self, folder):
+        pass
 
     def complete_audio(self, folder):
         for i in range(9):
@@ -235,7 +243,15 @@ def main():
     parser.add_argument('--development-audio',action='store_true',required=True)
     parser.add_argument('--receipts',type=Path,required=True)
     parser.add_argument('--monitor-receipt',type=Path,help='Actual Unity StudySessionMonitorChecks JSON, never participant data')
+    parser.add_argument('--live-elevenlabs',action='store_true',help='Spend ElevenLabs quota on synthetic development audio only')
+    parser.add_argument('--development-session',action='store_true',help='Required additional opt-in for live development sessions')
     args=parser.parse_args();os.umask(0o077)
+    if args.live_elevenlabs:
+        if not args.development_session:
+            parser.error('--live-elevenlabs requires --development-session')
+        from e2e_live import run
+        run(args.receipts)
+        return
     result=dict(mode='offline synthetic development',liveProviderCalls=0,providerCharacters=0,providerCredits=0,
                 microphoneUsed=False,realHeadsetUsed=False,protocol=intake.PROTOCOL)
     args.receipts.mkdir(parents=True,exist_ok=True)

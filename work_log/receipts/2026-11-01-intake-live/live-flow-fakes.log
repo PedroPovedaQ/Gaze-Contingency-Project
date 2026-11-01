@@ -1,0 +1,6 @@
+test_happy_and_negative_checkpoint_use_one_clone (test_e2e_live_flow.LiveFlowChecks.test_happy_and_negative_checkpoint_use_one_clone) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 93.898s
+
+OK

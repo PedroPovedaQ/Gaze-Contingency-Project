@@ -632,3 +632,44 @@ area size (PNG excludes the original 56-pixel native title bar). The current UI 
 The exact-source preset rejects gaze-correction profiles and verifies source hash and
 absence of catalog/export/live jobs after capture. Delete the temporary recording/audio
 copy after verifying both PNGs and `RECORDED_SCENE_CAPTURE_PASS` in the log.
+
+## Synthetic intake E2E
+
+The harness exercises the intake/audio workers and the real C# voice activity detector
+with locally generated Ryan/Piper WAVs. It does not drive the desktop UI. It never
+uses a microphone or a real headset. Temporary audio, sessions and exports are removed;
+only receipts remain. Offline fake providers are the default:
+
+```sh
+python3 tools/trial-review/e2e_intake.py --development-audio --receipts /tmp/FMV-DEVELOPMENT-offline-receipts
+```
+
+Explicitly authorized live ElevenLabs testing requires both additional flags:
+
+```sh
+python3 tools/trial-review/e2e_intake.py --development-audio --development-session --live-elevenlabs --receipts /tmp/FMV-DEVELOPMENT-live-receipts
+```
+
+Live mode reads `~/.config/follow-my-voice/api_keys.json` without printing or modifying
+it. The key must allow voice-list and subscription (`user_read`) reads before any
+billable operation. A free clone slot and at least 30,000 remaining characters are
+required. It attempts one `DEV-E2E-` clone, records its ID immediately, prepares only
+20 clips through the harness's fake headset template, and deletes only that ID in
+`finally`, verifying absence with the voice list. Never rerun a live test before
+checking its receipt for uncertain creation or failed deletion. Existing receipt
+files are refused rather than overwritten.
+
+The live flow generates the nine current River questions through `speak_prompt`,
+checks exact-text cache reuse, plays prompt/tone audio through `afplay`, transcribes
+Piper answers with Scribe v2, starts clone/cache before review, saves a correction
+with positive review, validates fake-headset handoff and exports, then replays a
+saved pre-review checkpoint on the same clone for the negative path without new
+billable POST calls. This checkpoint replay is not a second participant session or
+an actual desktop restart. Account quota deltas may include concurrent account activity.
+
+`prepare.py` excludes the harness, live flag and WAV input from study builds. Desktop
+restart validation additionally needs isolated preferences/catalog/session storage,
+fake provider/headset boundaries and a WAV capture entry point in a separate process;
+`--capture` disables the workers and is not restart evidence. See
+[the November 1 live-validation receipt](../../work_log/2026-11-01-intake-live.md)
+for what actually ran and the remaining blockers.

@@ -1,0 +1,26 @@
+{
+  "scenario": "B_full_desktop_process_restart",
+  "status": "NOT RUN",
+  "reason": "No safe full-intake isolation or fake-provider/WAV-input entry point in the final desktop build. Capture mode bypasses the workers and cannot test restart.",
+  "protectedPid": 5228,
+  "protectedPidAlive": true,
+  "testAppLaunched": false,
+  "buildPath": "/tmp/FollowMyVoice-IntakeV4-Monitor-20261101.app",
+  "workersMatch": {
+    "participant_intake.py": true,
+    "participant_audio.py": true,
+    "neutral_audio.py": true,
+    "participant_codes.py": true,
+    "live_bridge.py": true
+  },
+  "evidence": [
+    "Runtime/TrialReviewApp.cs Start reads shared PlayerPrefs; --intake calls OpenIntake.",
+    "Runtime/TrialReviewIntake.cs OpenIntake restores ParticipantIntakeFolder from shared PlayerPrefs and calls ConnectLive.",
+    "Runtime/TrialReviewIntake.cs StartAnswer requests microphone authorization and calls Microphone.Start; no WAV input hook.",
+    "Runtime/TrialReviewLive.cs InitializeLive defaults to Documents/Trial Review Live; --live-output only isolates bridge output, not PlayerPrefs/catalog/session or keys.",
+    "Runtime/TrialReviewCapture.cs capture-only path disables jobs and capture, so it cannot validate resumable intake.",
+    "prepare.py packages real workers, with no fake-provider mode."
+  ],
+  "executableSha256": "ef5b6260a69655013d3ae5559353d0e40806e16d97a142f0fa43e466a27fd86d",
+  "harnessPackaged": false
+}
