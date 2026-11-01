@@ -27,6 +27,7 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
         public string eyeRecordingId, eyeCaptureStatus;
         public bool eyeGazeTimestampAvailable, eyePupilTimestampAvailable, eyeHeadPoseTimeMatched;
         public bool intakeAvailable;
+        public ParticipantFitMeasurements fit;
         public string participantSessionId, participantCode, configuration, assignmentState, nextParticipantCode;
     }
 
@@ -40,6 +41,8 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
         public bool wallsVisible;
         public ParticipantSessionAssignment assignment;
         public EyeValidationRequest validation;
+        public ParticipantFitMeasurements fit;
+        public string participantSessionId;
     }
 
     [Serializable]
@@ -62,6 +65,9 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
     {
         m_Path = Path.Combine(Application.persistentDataPath, "PreparationLogs", "live-headset-state.json");
         m_Game = GetComponent<FindObjectGameManager>();
+#if UNITY_5_3_OR_NEWER
+        if (GetComponent<ParticipantFitCapture>() == null) gameObject.AddComponent<ParticipantFitCapture>();
+#endif
         if (m_Game != null)
         {
             m_Game.OnRoundTransitionStarted += Transition;
@@ -120,6 +126,20 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
                 return;
             }
             if (EyeValidationSession.Instance?.Active==true) return;
+            if (command.action == "set_fit_fallback")
+            {
+                if (command.participantSessionId != SessionConfig.DesktopSessionId || string.IsNullOrEmpty(command.participantSessionId) || command.fit == null) return;
+                command.fit.Validate();
+                var fit = SessionConfig.ParticipantFit;
+                if (command.fit.ipdRecorded && fit.eyeSeparation?.recorded == true || command.fit.headsetIpdRecorded && fit.viewSeparation?.recorded == true) return;
+                if (command.fit.ipdRecorded)
+                { fit.ipdRecorded = true; fit.participantIpdMm = command.fit.participantIpdMm; fit.ipdSource = command.fit.ipdSource; }
+                if (command.fit.headsetIpdRecorded)
+                { fit.headsetIpdRecorded = true; fit.headsetIpdMm = command.fit.headsetIpdMm; }
+                fit.manualRecordedUtc = DateTime.UtcNow.ToString("O"); SessionConfig.SaveParticipantFit();
+                m_Status.commandResult = "applied";
+                return;
+            }
             if (command.action == "assign_session")
             {
                 var selector = GetComponent<VoiceModeSelector>();
@@ -178,6 +198,7 @@ public sealed class HeadsetPreparationStatus : MonoBehaviour
             m_Status.participantCode = selector?.DesktopAssignmentCode ?? "";
             m_Status.configuration = selector?.DesktopConfiguration ?? "";
             m_Status.assignmentState = selector?.DesktopAssignmentState ?? "none";
+            m_Status.fit = SessionConfig.DesktopSessionId == m_Status.participantSessionId ? SessionConfig.ParticipantFit.Copy() : null;
             if (string.IsNullOrEmpty(m_Status.nextParticipantCode) || m_Status.participantCode == m_Status.nextParticipantCode)
                 m_Status.nextParticipantCode = SessionConfig.SuggestedParticipantId;
             m_Status.assistance = GetComponent<HintGenerator>()?.CaptureAssistanceStatus() ?? SessionConfig.CaptureAssistanceSelection();

@@ -814,6 +814,7 @@ public class VoiceModeSelector : MonoBehaviour
 
     void Finish(string message)
     {
+        GetComponent<ParticipantFitCapture>()?.Finish();
         m_Phase = Phase.Done;
         m_LiveStatus?.Set("ready", "Experiment ready", true, 1);
         RefreshChoices();

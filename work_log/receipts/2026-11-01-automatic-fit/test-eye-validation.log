@@ -1,0 +1,11 @@
+PASS: validation schedule, counterbalance, stale commands and terminal state
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 0.001s
+
+OK
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 0.002s
+
+OK

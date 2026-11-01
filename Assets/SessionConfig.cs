@@ -157,6 +157,19 @@ public static class SessionConfig
     public static bool StudyModelLocked => DesktopIntake != null && !DesktopIntake.development;
     public static ParticipantFitMeasurements ParticipantFit { get; private set; } = new ParticipantFitMeasurements();
     public static string SuggestedParticipantId => FindNextParticipantId();
+    public static void SaveParticipantFit()
+    {
+        if (string.IsNullOrEmpty(ParticipantId)) return;
+        string directory = Path.Combine(RootPath, ParticipantId);
+        Directory.CreateDirectory(directory);
+        string path = Path.Combine(directory, "participant-fit-v1.json");
+        string json = JsonUtility.ToJson(ParticipantFit, true);
+        File.WriteAllText(path + ".tmp", json);
+        if (File.Exists(path)) File.Replace(path + ".tmp", path, null); else File.Move(path + ".tmp", path);
+        if (!string.IsNullOrEmpty(ParticipantFit.fitCaptureId))
+            File.WriteAllText(Path.Combine(directory, "fit-result-" + ParticipantFit.fitCaptureId + ".json"), json);
+        if (!string.IsNullOrEmpty(CurrentRunFolder)) File.WriteAllText(Path.Combine(CurrentRunFolder, "participant-fit-v1.json"), json);
+    }
     public static void ConfigureDesktopSession(ParticipantSessionAssignment assignment)
     {
         assignment.Validate();
@@ -470,11 +483,11 @@ public static class SessionConfig
             return "P001";
         }
 
-        int maxId = 0;
+        long maxId = 0;
         foreach (var dir in Directory.GetDirectories(root))
         {
             string name = Path.GetFileName(dir);
-            if (name.StartsWith("P") && int.TryParse(name.Substring(1), out int id))
+            if (name.StartsWith("P") && long.TryParse(name.Substring(1), out long id) && id < 900000000000L)
             {
                 if (id > maxId) maxId = id;
             }

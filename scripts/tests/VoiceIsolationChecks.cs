@@ -1443,6 +1443,12 @@ partial class VoiceIsolationChecks
             SessionConfig.ResetForNewParticipant();
             Check(SessionConfig.DesktopSessionId == "", "Participant reset clears desktop identity");
             Check(!SessionConfig.ParticipantFit.ipdRecorded && !SessionConfig.ParticipantFit.headsetIpdRecorded, "Participant reset clears IPD and lens spacing");
+            string suggested = SessionConfig.SuggestedParticipantId;
+            desktop.id = Guid.NewGuid().ToString("N"); desktop.participantCode = "P900000000001"; desktop.development = true;
+            SessionConfig.ConfigureDesktopSession(desktop);
+            Check(SessionConfig.DevelopmentIntake && SessionConfig.ParticipantId == "P900000000001", "Development sequence passes the actual headset assignment and condition-order path");
+            Check(SessionConfig.SuggestedParticipantId == suggested, "Development intake does not consume study numbers");
+            SessionConfig.ResetForNewParticipant();
             foreach (float value in new[] { float.NaN, float.PositiveInfinity, 0, -1, 630 })
             {
                 bool ipdRejected = false;

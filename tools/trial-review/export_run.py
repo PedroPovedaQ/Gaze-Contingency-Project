@@ -129,7 +129,7 @@ def generate(recording, root, name="", chosen=None, assigned_id="", dataset_id="
         raise ValueError("Dataset labels must be at most 120 characters without line breaks")
     inputs = [recording] + sorted(p for p in (run / filename for filename in (
         "trial_summary.json", "trial_schedule.csv", "object_manifest.csv", "trial_events.csv",
-        "voice-library-manifest.json", "nasa_tlx.csv", "desktop-session-id.txt")) if p.is_file())
+        "voice-library-manifest.json", "nasa_tlx.csv", "desktop-session-id.txt", "participant-fit-v1.json")) if p.is_file())
     intake = linked_intake(run, participant, intake_root)
     if intake: inputs.append(intake)
     before = [fingerprint(p) for p in inputs]

@@ -1,0 +1,38 @@
+{
+  "ipdRecorded": false,
+  "headsetIpdRecorded": false,
+  "participantIpdMm": 0.0,
+  "headsetIpdMm": 0.0,
+  "ipdSource": "not_recorded",
+  "viewSeparation": {
+    "recorded": false,
+    "millimetres": 0.0,
+    "rangeMm": 0.0,
+    "windowSeconds": 0.0,
+    "samples": 0,
+    "source": "",
+    "method": "median_stable_window_v1",
+    "recordedUtc": ""
+  },
+  "eyeSeparation": {
+    "recorded": false,
+    "millimetres": 0.0,
+    "rangeMm": 0.0,
+    "windowSeconds": 0.0,
+    "samples": 0,
+    "source": "",
+    "method": "median_stable_window_v1",
+    "recordedUtc": ""
+  },
+  "fitCaptureId": "",
+  "fitStartedUtc": "",
+  "fitEndedUtc": "",
+  "fitWarning": "",
+  "autoIpdStatus": "unavailable",
+  "separationChange": "change_observed",
+  "separationChangeUtc": "changed",
+  "separationChangeSource": "fixture",
+  "manualRecordedUtc": "",
+  "separationChangeMm": 0.5999984741210938,
+  "setupSampleCount": 0
+}

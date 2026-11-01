@@ -199,6 +199,24 @@ class TrialCSVTests(unittest.TestCase):
         self.save()
         with self.assertRaises(ValueError): self.read('invalid-ipd')
 
+    def test_automatic_fit_export_is_separate_from_legacy_ipd(self):
+        self.summary['participant_fit'] = dict(viewSeparation=dict(recorded=True,millimetres=64.2,
+            samples=42,source='Unity_OpenXR_head_leftEyePosition_rightEyePosition',method='median_stable_window_v1',
+            recordedUtc='2026-11-01T15:00:00Z',windowSeconds=2.1,rangeMm=.2),
+            eyeSeparation=dict(recorded=True,millimetres=63.8,samples=42,source='XR_HTC_eye_tracker_gazePose_position',
+            method='median_stable_window_v1',recordedUtc='2026-11-01T15:00:00Z',windowSeconds=2.1,rangeMm=.4),
+            autoIpdStatus='unavailable',separationChange='change_observed',separationChangeMm=1.2,separationChangeUtc='2026-11-01T14:59:57Z')
+        self.save();rows,_=self.read('automatic-fit');row=rows[0]
+        self.assertEqual(row['headset_view_separation_mm'],'64.2')
+        self.assertEqual(row['wearer_eye_separation_mm'],'63.8')
+        self.assertEqual(row['headset_view_separation_samples'],'42')
+        self.assertEqual(row['ipd_change_mm'],'1.2')
+        self.assertEqual(row['auto_ipd_status'],'unavailable')
+        self.assertEqual(row['participant_ipd_mm'],'')
+        self.assertEqual(row['headset_lens_spacing_mm'],'')
+        self.summary['participant_fit']['separationChange']='no_change_observed'
+        self.save();rows,_=self.read('no-fit-change');self.assertEqual(rows[0]['ipd_change_mm'],'')
+
     def test_exact_precue_snapshot_export_and_legacy_blanks(self):
         from test_theta_snapshot import snapshot
         self.summary["objectives"][0]["pre_cue_theta"] = snapshot()

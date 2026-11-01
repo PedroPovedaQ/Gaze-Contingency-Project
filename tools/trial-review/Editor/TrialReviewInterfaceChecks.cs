@@ -8,6 +8,7 @@ public static class TrialReviewInterfaceChecks
     static void Check(bool value,string message){if(!value)throw new Exception("Replay interface: "+message);}
     public static void Run(TrialReplayTimeline timeline)
     {
+        File.WriteAllText(Path.Combine(Path.GetTempPath(),"auto-fit-desktop-csharp-fixture.json"),JsonUtility.ToJson(new ParticipantFitMeasurements()));
         var tracks=new TrialReviewTracks();tracks.Refresh(timeline);
         var first=tracks.For(timeline.Trials[0]);
         Check(tracks.Trials.Count==3&&first.Completed,"Trial index and completion come from records");

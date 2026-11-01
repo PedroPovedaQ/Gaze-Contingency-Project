@@ -95,6 +95,26 @@ DEFINITIONS = {
     "source_trial_json": "Unmodified objective content serialized as JSON; legacy event labels are not validation.",
 }
 
+for _prefix, _description in (("headset_view_separation", "Headset render/view separation; physical lens agreement unverified"),
+                              ("wearer_eye_separation", "HTC per-eye gaze-origin separation estimate; not validated anatomical IPD")):
+    for _suffix, _meaning in (("mm","median millimetres"),("source","API source"),("method","aggregation method"),
+                             ("utc","last window UTC time"),("samples","acquisition snapshot count, not independent sensor samples"),
+                             ("window_s","window duration in seconds"),("range_mm","maximum minus minimum within window in millimetres")):
+        DEFINITIONS[_prefix+"_"+_suffix] = _description + "; " + _meaning + ". Blank for missing/legacy values."
+DEFINITIONS.update({
+    "fit_capture_id":"Headset setup fit capture UUID; links setup JSONL and result sidecars.",
+    "fit_started_utc":"Start of passive pre-calibration fit capture, UTC.",
+    "fit_ended_utc":"End of passive fit capture before calibration, UTC.",
+    "fit_warning":"Non-blocking missing, implausible, unstable or storage warning; earlier readings may be retained.",
+    "fit_setup_samples":"Setup polling snapshot count, including invalid observations; not sensor cadence.",
+    "auto_ipd_status":"unavailable: no real adjustment-run status was found. Never inferred from separation changes.",
+    "ipd_change_observation":"change_observed, no_change_observed or insufficient_observation. None proves whether automatic adjustment ran.",
+    "ipd_change_mm":"Signed largest stable view-median deviation from first stable baseline (at least 0.5 mm); blank unless change observed.",
+    "ipd_change_utc":"UTC time the reported stable separation change was observed; not a device adjustment timestamp.",
+    "ipd_change_source":"View-position API used for the reported change; sources are never compared against one another.",
+    "manual_ipd_recorded_utc":"Researcher fallback entry time; absent for legacy manual records without timestamps."
+})
+
 
 def definition(field: str) -> str:
     if field in DEFINITIONS:

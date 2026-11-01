@@ -1,0 +1,4 @@
+[ParticipantFitChecks] PASS stable median, invalid/missing/unstable windows, bounds and copy isolation (synthetic only)
+[StudyIntakeChecks] PASS: consent/eligibility contract, both condition orders, participant isolation, manifest/template integrity, incomplete transfer and legacy intake rejection. Synthetic development data only.
+exit=0
+fullLog=/tmp/auto-fit-final-unity-intake.log

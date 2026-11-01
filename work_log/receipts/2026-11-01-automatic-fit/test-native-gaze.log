@@ -1,0 +1,9 @@
+PASS binding orders and replacement
+PASS output chain and result preservation
+PASS timestamp fidelity and bounded overflow
+PASS lifecycle and handle reuse
+PASS concurrent drain and locate
+PASS restart discards in-flight old epoch
+PASS HTC stream timestamp provenance
+PASS matching head pose and session lifetime
+8 native interception suites passed; these do not establish sensor timing or headset compatibility.

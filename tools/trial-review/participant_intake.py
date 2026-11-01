@@ -17,6 +17,7 @@ import urllib.error
 import urllib.request
 import uuid
 import wave
+import participant_codes
 
 INTERVIEW_VOICE = 'SAz9YHcvj6GT2YYXdXww'  # River, separate from the study catalog.
 INTERVIEW_NAME = 'River'
@@ -296,7 +297,10 @@ def patch(folder, **fields):
 def validate_fit(fit):
     if fit is None:
         return dict(ipdRecorded=False, participantIpdMm=0, ipdSource='not_recorded', headsetIpdRecorded=False, headsetIpdMm=0)
-    if not isinstance(fit, dict) or set(fit) != {'ipdRecorded', 'participantIpdMm', 'ipdSource', 'headsetIpdRecorded', 'headsetIpdMm'}:
+    legacy = {'ipdRecorded', 'participantIpdMm', 'ipdSource', 'headsetIpdRecorded', 'headsetIpdMm'}
+    extra = {'viewSeparation', 'eyeSeparation', 'fitCaptureId', 'fitStartedUtc', 'fitEndedUtc', 'fitWarning',
+             'autoIpdStatus', 'separationChange', 'separationChangeUtc', 'separationChangeSource', 'separationChangeMm', 'manualRecordedUtc', 'setupSampleCount'}
+    if not isinstance(fit, dict) or not legacy <= set(fit) or set(fit) - legacy - extra:
         raise ValueError('Invalid IPD metadata fields.')
     for flag, number in [('ipdRecorded', 'participantIpdMm'), ('headsetIpdRecorded', 'headsetIpdMm')]:
         value = fit[number]
@@ -306,18 +310,46 @@ def validate_fit(fit):
             raise ValueError('Enter IPD in millimetres (greater than 0, at most 100), or leave it blank.')
     if fit['ipdSource'] not in (('pupillometer', 'ruler', 'participant_report') if fit['ipdRecorded'] else ('not_recorded',)):
         raise ValueError('Choose the participant IPD measurement source.')
+    for key in ('viewSeparation', 'eyeSeparation'):
+        value = fit.get(key)
+        if value is None: continue
+        if not isinstance(value, dict) or set(value) != {'recorded','millimetres','rangeMm','windowSeconds','samples','source','method','recordedUtc'}:
+            raise ValueError('Invalid automatic fit measurement.')
+        # Unity's inline serializer may materialize a null class as an inactive object.
+        if value['recorded'] is False:
+            if any(value[k] != 0 for k in ('millimetres','rangeMm','windowSeconds','samples')):
+                raise ValueError('Unrecorded automatic fit must not carry a value.')
+            continue
+        if value['recorded'] is not True or type(value['samples']) is not int or value['samples'] < 40:
+            raise ValueError('Automatic fit measurement needs a stable sample window.')
+        for field, lo, hi in [('millimetres',40,85),('rangeMm',0,1),('windowSeconds',2,3)]:
+            v = value[field]
+            if type(v) not in (float,int) or not math.isfinite(v) or not lo <= v <= hi: raise ValueError('Invalid automatic fit window.')
+        if value['method'] != 'median_stable_window_v1' or not all(isinstance(value[k],str) and value[k] for k in ('source','recordedUtc')):
+            raise ValueError('Automatic fit provenance is missing.')
+    for key in extra - {'viewSeparation','eyeSeparation','separationChangeMm','setupSampleCount'}:
+        if fit.get(key) is not None and (not isinstance(fit[key],str) or len(fit[key]) > 512): raise ValueError('Invalid fit text.')
+    if 'separationChangeMm' in fit and (type(fit['separationChangeMm']) not in (float,int) or not math.isfinite(fit['separationChangeMm']) or abs(fit['separationChangeMm']) > 45): raise ValueError('Invalid fit change.')
+    if 'setupSampleCount' in fit and (type(fit['setupSampleCount']) is not int or fit['setupSampleCount'] < 0): raise ValueError('Invalid fit count.')
     return dict(fit)
 
 
-def create(folder, participant, configuration, neutral_gender='Male', neutral_option=0, fit=None, development=False):
+def create(folder, participant, configuration, neutral_gender='Male', neutral_option=0, fit=None, development=False, catalog=None, archives=(), known=()):
     fit = validate_fit(fit)
     if not re.fullmatch(r'P[0-9]{3,12}', participant): raise ValueError('Use a participant code such as P001.')
     if configuration not in ('A', 'B'): raise ValueError('Choose configuration A or B.')
     if neutral_gender not in ('Male', 'Female') or not 0 <= neutral_option < 6: raise ValueError('Choose a neutral study voice.')
     with locked(folder.parent):
-        for other in folder.parent.glob('*/session.json'):
-            if json.loads(other.read_text()).get('participantCode') == participant:
-                raise ValueError('This participant code already has an intake. Resume it or assign an unused code.')
+        used, dev = participant_codes.known_codes(folder.parent, catalog, archives, known)
+        if participant_codes.duplicate(participant, used):
+            raise ValueError('Duplicate participant code. Choose an unused code; stopped and withdrawn sessions retain theirs.')
+        if not development and participant_codes.number(participant) >= participant_codes.DEV_BASE:
+            raise ValueError('P900000000001 and above are reserved for development rehearsals.')
+        if development and participant_codes.number(participant) < participant_codes.DEV_BASE:
+            raise ValueError('Use the separate P900000000001 development sequence for new rehearsals.')
+        used.add(participant)
+        if development: dev.add(participant)
+        atomic(folder.parent / 'participant-codes.json', {'used':sorted(used), 'development':sorted(dev)})
         folder.mkdir(parents=True, exist_ok=True); os.chmod(folder, 0o700)
         if (folder / 'session.json').exists(): raise ValueError('This session already exists; resume it instead.')
         state = dict(schema=2, protocol=PROTOCOL, development=bool(development), id=folder.name, participantCode=participant, configuration=configuration,
@@ -330,6 +362,16 @@ def create(folder, participant, configuration, neutral_gender='Male', neutral_op
                      updatedUtc=time.time())
         atomic(folder / 'session.json', state)
     return state
+
+
+def sync_fit(folder, session_id, participant, fit):
+    with locked(folder):
+        state = load(folder)
+        if state['id'] != session_id or state['participantCode'] != participant or state.get('withdrawnUtc'):
+            raise ValueError('Fit record does not belong to this active intake.')
+        state['fit'] = validate_fit(fit)
+        state['updatedUtc'] = time.time()
+        atomic(folder / 'session.json', state)
 
 
 class Provider:
@@ -513,7 +555,14 @@ def main():
     args=parser.parse_args();req=json.loads(args.request.read_text());folder=Path(req['folder'])
     try:
         action=req['action'];provider=Provider(req['keysPath']) if action in ('prompt','answer','clone','retry_clone','retry_transcript') else None
-        if action=='create': create(folder,req['participantCode'],req['configuration'],req['neutralGender'],req['neutralOption'],req.get('fit'),req.get('development',False))
+        if action=='codes':
+            used, dev = participant_codes.known_codes(folder, req.get('catalog'), req.get('archives') or (), req.get('knownCodes') or ())
+            result = dict(ok=True, suggested=participant_codes.suggest(used,dev,req.get('development',False),req.get('headsetSuggestion')),
+                          duplicate=participant_codes.duplicate(req.get('participantCode'),used))
+            atomic(args.request.with_suffix('.result.json'),result); return
+        elif action=='create': create(folder,req['participantCode'],req['configuration'],req['neutralGender'],req['neutralOption'],req.get('fit'),req.get('development',False),req.get('catalog'),req.get('archives') or (),req.get('knownCodes') or ())
+        elif action=='sync_fit':
+            sync_fit(folder,req.get('participantSessionId'),req.get('participantCode'),req.get('fit'))
         elif action=='consent': record_consent(folder,req['operator'],req['reference'],req['study'],req['voiceCloud'])
         elif action=='select_voice':
             state=load(folder);require_consent(state)

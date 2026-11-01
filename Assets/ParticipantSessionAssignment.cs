@@ -27,13 +27,19 @@ public sealed class ParticipantSessionAssignment
     }
 }
 
-/// <summary>Manually entered binocular distance IPD; never inferred from tracked eye origins.</summary>
+/// <summary>Legacy manual measurements and separately labelled, unvalidated automatic estimates.</summary>
 [Serializable]
 public sealed class ParticipantFitMeasurements
 {
     public bool ipdRecorded, headsetIpdRecorded;
     public float participantIpdMm, headsetIpdMm;
     public string ipdSource = "not_recorded";
+    public FitSeparationMeasurement viewSeparation, eyeSeparation;
+    public string fitCaptureId, fitStartedUtc, fitEndedUtc, fitWarning;
+    public string autoIpdStatus = "unavailable", separationChange = "insufficient_observation";
+    public string separationChangeUtc, separationChangeSource, manualRecordedUtc;
+    public float separationChangeMm;
+    public int setupSampleCount;
     public void Validate()
     {
         bool sourceKnown = ipdSource == "pupillometer" || ipdSource == "ruler" || ipdSource == "participant_report";
@@ -44,5 +50,20 @@ public sealed class ParticipantFitMeasurements
     }
     // Broad input/unit sanity bound, not a physiological inclusion criterion.
     static bool ValidMm(float value) => !float.IsNaN(value) && !float.IsInfinity(value) && value > 0 && value <= 100;
-    public ParticipantFitMeasurements Copy() => (ParticipantFitMeasurements)MemberwiseClone();
+    public ParticipantFitMeasurements Copy()
+    {
+        var copy = (ParticipantFitMeasurements)MemberwiseClone();
+        copy.viewSeparation = viewSeparation?.Copy(); copy.eyeSeparation = eyeSeparation?.Copy();
+        return copy;
+    }
+}
+
+[Serializable]
+public sealed class FitSeparationMeasurement
+{
+    public bool recorded;
+    public float millimetres, rangeMm, windowSeconds;
+    public int samples;
+    public string source, method = "median_stable_window_v1", recordedUtc;
+    public FitSeparationMeasurement Copy() => (FitSeparationMeasurement)MemberwiseClone();
 }

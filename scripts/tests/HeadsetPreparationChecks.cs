@@ -42,6 +42,9 @@ public class VoiceModeSelector
     public bool StageDesktopSession(ParticipantSessionAssignment value) { value.Validate(); return true; }
 }
 public static class SessionConfig {
+    public static string DesktopSessionId = "";
+    public static ParticipantFitMeasurements ParticipantFit = new ParticipantFitMeasurements();
+    public static void SaveParticipantFit() {}
     public static string SuggestedParticipantId => "P001";
     public static AssistanceRuntimeSnapshot CaptureAssistanceSelection() => new AssistanceRuntimeSnapshot {
         mode="adaptive", provider="jev", modelVersion="typesafe-ai/jev", connection="not_checked" };
@@ -161,6 +164,25 @@ static class HeadsetPreparationChecks
             Require((string)Read(path)["commandId"] == (string)acknowledged["commandId"] &&
                 (string)Read(path)["commandResult"] == "applied", "Malformed input preserves the last acknowledged result");
             Require(game.Changes == 2, "Malformed input is ignored without changing state");
+            SessionConfig.DesktopSessionId = "fit-session";
+            SessionConfig.ParticipantFit = new ParticipantFitMeasurements { ipdRecorded=true,participantIpdMm=62,ipdSource="ruler" };
+            Action<string, ParticipantFitMeasurements> sendFit = (owner, fit) =>
+            {
+                var current=Read(path);
+                File.WriteAllText(commandPath,UnityEngine.JsonUtility.ToJson(new {schema=1,id=Guid.NewGuid().ToString("N"),
+                    sessionId,observedRevision=Convert.ToInt64(current["revision"]),observedUtc=Convert.ToDouble(current["updatedUtc"]),
+                    action="set_fit_fallback",participantSessionId=owner,fit}));
+                Call(status,"ReadCommand");Call(status,"Write");
+            };
+            sendFit("fit-session",new ParticipantFitMeasurements {headsetIpdRecorded=true,headsetIpdMm=64});
+            Require((string)Read(path)["commandResult"]=="applied"&&SessionConfig.ParticipantFit.participantIpdMm==62&&SessionConfig.ParticipantFit.headsetIpdMm==64,
+                "Manual lens fallback must preserve existing participant IPD");
+            Require(!string.IsNullOrEmpty(SessionConfig.ParticipantFit.manualRecordedUtc),"Manual fallback needs entry time");
+            sendFit("other-participant",new ParticipantFitMeasurements {headsetIpdRecorded=true,headsetIpdMm=65});
+            Require((string)Read(path)["commandResult"]=="rejected"&&SessionConfig.ParticipantFit.headsetIpdMm==64,"Fallback must stay participant-bound");
+            SessionConfig.ParticipantFit.viewSeparation=new FitSeparationMeasurement {recorded=true,millimetres=64};
+            sendFit("fit-session",new ParticipantFitMeasurements {headsetIpdRecorded=true,headsetIpdMm=65});
+            Require((string)Read(path)["commandResult"]=="rejected","Automatic view separation must prevent manual replacement");
             Call(status, "OnDestroy");
             Require((string)Read(path)["phase"] == "paused", "Destroyed producer must retire live status");
             Require(!File.Exists(path + ".tmp"), "Atomic replacement must not leave a partial reader file");

@@ -1,0 +1,4 @@
+PASS: early finish, automatic deadline, duplicate/idle input, exact captured length and interrupted microphone.
+Assets/ElevenLabsVoiceClient.cs(89,57): warning CS0649: Field 'ElevenLabsVoiceClient.CloneResponse.voice_id' is never assigned to, and will always have its default value null
+Assets/ElevenLabsVoiceClient.cs(89,79): warning CS0649: Field 'ElevenLabsVoiceClient.CloneResponse.requires_verification' is never assigned to, and will always have its default value false
+PASS: ElevenLabs multipart/auth, clone ID, verification/malformed/access failures, speech model, and non-audio/empty/quota rejection.

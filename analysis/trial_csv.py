@@ -37,6 +37,12 @@ BASE_FIELDS = [
     "participant_ipd_mm",
     "participant_ipd_source",
     "headset_lens_spacing_mm",
+    "headset_view_separation_mm", "headset_view_separation_source", "headset_view_separation_method",
+    "headset_view_separation_utc", "headset_view_separation_samples", "headset_view_separation_window_s", "headset_view_separation_range_mm",
+    "wearer_eye_separation_mm", "wearer_eye_separation_source", "wearer_eye_separation_method",
+    "wearer_eye_separation_utc", "wearer_eye_separation_samples", "wearer_eye_separation_window_s", "wearer_eye_separation_range_mm",
+    "fit_capture_id", "fit_started_utc", "fit_ended_utc", "fit_warning", "fit_setup_samples",
+    "auto_ipd_status", "ipd_change_observation", "ipd_change_mm", "ipd_change_utc", "ipd_change_source", "manual_ipd_recorded_utc",
     "run_number",
     "session_id",
     "trial_id",
@@ -258,6 +264,20 @@ def participant_fit_fields(summary: dict) -> dict:
         if source not in ("pupillometer", "ruler", "participant_report"):
             raise ValueError("Recorded participant IPD is missing its measurement source.")
         result["participant_ipd_source"] = source
+    for key, prefix in (("viewSeparation", "headset_view_separation"), ("eyeSeparation", "wearer_eye_separation")):
+        measurement = fit.get(key) or {}
+        for field, suffix in (("millimetres","mm"),("source","source"),("method","method"),("recordedUtc","utc"),
+                              ("samples","samples"),("windowSeconds","window_s"),("rangeMm","range_mm")):
+            result[prefix + "_" + suffix] = measurement.get(field) if measurement.get("recorded") is True else None
+        if measurement.get("recorded") is True:
+            value = measurement.get("millimetres")
+            if type(value) not in (int,float) or not math.isfinite(value) or not 40 <= value <= 85:
+                raise ValueError("Invalid automatic fit separation.")
+    for field, column in (("fitCaptureId","fit_capture_id"),("fitStartedUtc","fit_started_utc"),("fitEndedUtc","fit_ended_utc"),
+                          ("fitWarning","fit_warning"),("setupSampleCount","fit_setup_samples"),("autoIpdStatus","auto_ipd_status"),
+                          ("separationChange","ipd_change_observation"),("separationChangeUtc","ipd_change_utc"),("separationChangeSource","ipd_change_source"),("manualRecordedUtc","manual_ipd_recorded_utc")):
+        result[column] = fit.get(field)
+    result["ipd_change_mm"] = fit.get("separationChangeMm") if fit.get("separationChange") == "change_observed" else None
     return result
 
 

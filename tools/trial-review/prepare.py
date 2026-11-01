@@ -128,6 +128,7 @@ def prepare(project):
     shutil.copyfile(HERE / 'live_bridge.py', assets / 'StreamingAssets/live_bridge.py')
     shutil.copyfile(HERE / 'neutral_audio.py', assets / 'StreamingAssets/neutral_audio.py')
     shutil.copyfile(HERE / 'participant_intake.py', assets / 'StreamingAssets/participant_intake.py')
+    shutil.copyfile(HERE / 'participant_codes.py', assets / 'StreamingAssets/participant_codes.py')
     shutil.copyfile(HERE / 'participant_audio.py', assets / 'StreamingAssets/participant_audio.py')
     shutil.copyfile(HERE / 'export_run.py', assets / 'StreamingAssets/export_run.py')
     analysis = assets / 'StreamingAssets/Analysis'

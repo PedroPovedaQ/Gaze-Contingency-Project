@@ -1,0 +1,16 @@
+Assets/HeadsetPreparationStatus.cs(42,45): warning CS0649: Field 'HeadsetPreparationStatus.Command.assignment' is never assigned to, and will always have its default value null
+scripts/tests/HeadsetPreparationChecks.cs(33,32): warning CS0067: The event 'FindObjectGameManager.OnGameCompleted' is never used
+Assets/HeadsetPreparationStatus.cs(40,23): warning CS0649: Field 'HeadsetPreparationStatus.Command.observedUtc' is never assigned to, and will always have its default value 0
+Assets/HeadsetPreparationStatus.cs(41,21): warning CS0649: Field 'HeadsetPreparationStatus.Command.wallsVisible' is never assigned to, and will always have its default value false
+scripts/tests/HeadsetPreparationChecks.cs(32,33): warning CS0067: The event 'FindObjectGameManager.OnSessionStopped' is never used
+Assets/HeadsetPreparationStatus.cs(45,23): warning CS0649: Field 'HeadsetPreparationStatus.Command.participantSessionId' is never assigned to, and will always have its default value null
+Assets/HeadsetPreparationStatus.cs(39,21): warning CS0649: Field 'HeadsetPreparationStatus.Command.observedRevision' is never assigned to, and will always have its default value 0
+scripts/tests/HeadsetPreparationChecks.cs(31,30): warning CS0067: The event 'FindObjectGameManager.OnSearchStarted' is never used
+Assets/HeadsetPreparationStatus.cs(44,43): warning CS0649: Field 'HeadsetPreparationStatus.Command.fit' is never assigned to, and will always have its default value null
+Assets/HeadsetPreparationStatus.cs(38,38): warning CS0649: Field 'HeadsetPreparationStatus.Command.action' is never assigned to, and will always have its default value null
+Assets/HeadsetPreparationStatus.cs(37,20): warning CS0649: Field 'HeadsetPreparationStatus.Command.schema' is never assigned to, and will always have its default value 0
+Assets/HeadsetPreparationStatus.cs(38,23): warning CS0649: Field 'HeadsetPreparationStatus.Command.id' is never assigned to, and will always have its default value null
+Assets/HeadsetPreparationStatus.cs(43,37): warning CS0649: Field 'HeadsetPreparationStatus.Command.validation' is never assigned to, and will always have its default value null
+scripts/tests/HeadsetPreparationChecks.cs(30,46): warning CS0067: The event 'FindObjectGameManager.OnRoundTransitionStarted' is never used
+Assets/HeadsetPreparationStatus.cs(38,27): warning CS0649: Field 'HeadsetPreparationStatus.Command.sessionId' is never assigned to, and will always have its default value null
+Headset preparation heartbeat checks passed.

@@ -33,7 +33,7 @@ public sealed partial class TrialReviewApp
     IntakeState CaptureIntake(string phase)
     {
         var state = new IntakeState {
-            id="development-capture-only", participantCode="P003", configuration="A", development=true,
+            id="development-capture-only", participantCode="P900000000003", configuration="A", development=true,
             protocol=IntakeProtocol, phase=phase, neutralGender="Male", neutralOption=0,
             prompt="Tell me about any experience you have had with virtual reality. What have you tried, how often, and how did it feel? If you have never tried it, tell me what you imagine it is like.",
             questionIndex=4, promptRevision=1, cloneState="not_started", cacheState="not_started", speechSeconds=18,
@@ -120,11 +120,13 @@ public sealed partial class TrialReviewApp
         m_Dataset=m_Catalog.Register(m_Path,"synthetic-desktop-demo","SYNTHETIC","");
         m_DatasetDraft="Synthetic development demo";m_IdDraft="SYNTHETIC";
         m_IntakeMic="Development microphone (inactive)";
-        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu","layers","trial-search","cursor-details","cursor-collapsed","shortcuts","jev-alternatives","light-intake-consent","light-intake-interview","intake-clone-error","intake-screening-stopped","intake-withdrawn","intake-historical","intake-recording","intake-submitting","intake-prompt-playing","startup","layers-wifi-panel","intake-fallback-available","intake-fallback","light-intake-eligibility","intake-reviewed-awaiting-clone","intake-paused","intake-transcription-failed","intake-identifier-flag","intake-directional-speech"};
+        string[] states={"first-person","playing-subtitles","missing-pose","third-person","overhead","cursor-speech","events","final-no-summary","jev","evaluation","selected-trial","light-first-person","light-jev","open-run","dataset","empty","loading","intake-reserve","intake-consent","intake-voice","intake-interview","intake-eligibility","intake-cache","intake-ready","file-menu","layers","trial-search","cursor-details","cursor-collapsed","shortcuts","jev-alternatives","light-intake-consent","light-intake-interview","intake-clone-error","intake-screening-stopped","intake-withdrawn","intake-historical","intake-recording","intake-submitting","intake-prompt-playing","startup","layers-wifi-panel","intake-fallback-available","intake-fallback","light-intake-eligibility","intake-reviewed-awaiting-clone","intake-paused","intake-transcription-failed","intake-identifier-flag","intake-directional-speech","intake-reserve-study","intake-reserve-duplicate","intake-fit-change","intake-fit-no-change","intake-fit-missing"};
         var timeline=m_Timeline;
+        states=states.Concat(new[]{"intake-fit-fallback"}).ToArray();
         for(int i=0;i<states.Length;i++)
         {
             string state=states[i];
+            m_LiveStatus=null;
             m_Timeline=timeline; m_Playing=false; m_Tab=0; m_CameraMode=0; m_RunTimeline=true;
             m_JevScroll=Vector2.zero;m_InspectScroll=Vector2.zero; m_IntakeScroll=Vector2.zero; m_CaptureIntakeActivity=null;m_IntakePaused=false;m_WithdrawRequested=false;m_EditAnswerId=null;m_IntakeOpen=false; m_Intake=null; m_IntakeFolder=null;
             m_TrialQuery=state=="trial-search"?"02":"";m_LivePanel=state=="layers-wifi-panel";m_LayersScroll=m_LivePanel?new Vector2(0,400):Vector2.zero;m_LayersOpen=state=="layers"||m_LivePanel;m_FileMenu=state=="file-menu";m_Browser=false;m_DatasetPanel=false;m_Loading=false;m_Ready=false;m_LightTheme=state.StartsWith("light-");
@@ -151,13 +153,31 @@ public sealed partial class TrialReviewApp
             string intakeState=state.StartsWith("light-")?state.Substring(6):state;
             if(intakeState.StartsWith("intake-"))
             {
-                m_IntakeOpen=true;m_IntakeDevelopment=true;m_IntakeCode="P003";
+                m_IntakeOpen=true;m_IntakeDevelopment=true;m_IntakeCode="P900000000003";m_CheckedCode=m_IntakeCode;m_CodeDuplicate=false;m_CodeError=null;
                 string phase=intakeState=="intake-consent"?"awaiting_consent":intakeState=="intake-voice"?"select_voice":intakeState=="intake-eligibility"?"eligibility_review":intakeState=="intake-cache"||intakeState=="intake-ready"||intakeState=="intake-clone-error"?"interview_complete":"interview";
                 if(intakeState=="intake-screening-stopped")phase="screening_stopped";
                 if(intakeState=="intake-fallback-available")phase="fallback_available";
                 if(intakeState=="intake-fallback")phase="fallback";
                 if(intakeState=="intake-reviewed-awaiting-clone")phase="interview_complete";
-                if(intakeState!="intake-reserve")m_Intake=CaptureIntake(phase);
+                if(!intakeState.StartsWith("intake-reserve"))m_Intake=CaptureIntake(phase);
+                if(intakeState=="intake-reserve-study" || intakeState=="intake-reserve-duplicate")
+                {m_IntakeDevelopment=false;m_IntakeCode=m_CheckedCode="P015";m_CodeDuplicate=intakeState.EndsWith("duplicate");}
+                if(intakeState.StartsWith("intake-fit-"))
+                {
+                    m_Intake=CaptureIntake("awaiting_consent");m_IntakeScroll=new Vector2(0,1000);
+                    m_Intake.fit=new ParticipantFitMeasurements {autoIpdStatus="unavailable",fitEndedUtc="2026-11-01T15:00:00Z",
+                        separationChange=intakeState=="intake-fit-change"?"change_observed":"no_change_observed",separationChangeMm=1.2f,separationChangeUtc="2026-11-01T14:59:57Z",
+                        viewSeparation=new FitSeparationMeasurement{recorded=true,millimetres=64.2f,samples=42,windowSeconds=2.15f,rangeMm=.2f,source="Unity_OpenXR_head_leftEyePosition_rightEyePosition",recordedUtc="2026-11-01T15:00:00Z"},
+                        eyeSeparation=new FitSeparationMeasurement{recorded=true,millimetres=63.8f,samples=42,windowSeconds=2.15f,rangeMm=.4f,source="XR_HTC_eye_tracker_gazePose_position",recordedUtc="2026-11-01T15:00:00Z"}};
+                    if(intakeState=="intake-fit-missing"||intakeState=="intake-fit-fallback")m_Intake.fit=new ParticipantFitMeasurements{fitEndedUtc="2026-11-01T15:00:00Z",fitWarning="Missing or implausible separation; inspect fit or use manual fallback."};
+                    if(intakeState=="intake-fit-fallback")
+                    {
+                        m_IntakeIpd="63.5";m_IntakeIpdSource=1;m_IntakeHeadsetIpd="64";
+                        m_LiveStatus=new LiveStatus{state="connected",updatedUtc=UtcSeconds,headsetStateObservedUtc=UtcSeconds,
+                            headsetState=new TrialReviewHeadsetState{schema=1,sessionId="synthetic-fit",revision=10,phase="ready",updatedUtc=UtcSeconds,
+                                participantSessionId=m_Intake.id,participantCode=m_Intake.participantCode,fit=m_Intake.fit}};
+                    }
+                }
                 if(intakeState=="intake-reviewed-awaiting-clone"){m_Intake.cloneState="not_started";m_Intake.cacheState="not_started";m_Intake.cacheCompleted=0;}
                 if(intakeState=="intake-ready"){m_Intake.cacheState="ready";m_Intake.cacheCompleted=1132;}
                 if(intakeState=="intake-clone-error"){m_Intake.cloneState="uncertain";m_Intake.cacheState="not_started";m_Intake.cacheCompleted=0;m_Intake.cloneError="Development fixture: interrupted clone request. Review the provider result before retrying.";}
@@ -179,6 +199,8 @@ public sealed partial class TrialReviewApp
                 m_QuestionHeardRevision=1;
             }
             for(int frame=0;frame<3;frame++)yield return null;
+            if(intakeState.StartsWith("intake-fit-"))
+            {m_IntakeScroll=new Vector2(0,1000);for(int frame=0;frame<3;frame++)yield return null;}
             if(intakeState=="intake-transcription-failed"||intakeState=="intake-identifier-flag")
             {m_IntakeScroll=new Vector2(0,520);for(int frame=0;frame<3;frame++)yield return null;}
             yield return new WaitForEndOfFrame();

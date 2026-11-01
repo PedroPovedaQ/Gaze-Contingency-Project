@@ -1,0 +1,58 @@
+{
+  "utc": "2026-11-01T14:40:08.119765+00:00",
+  "readOnly": true,
+  "model": "VIVE Focus Vision",
+  "queries": [
+    {
+      "query": "getprop",
+      "exit": 1,
+      "matches": [],
+      "stderr": "adb: device '192.168.1.208:5555' not found"
+    },
+    {
+      "query": "settings list system",
+      "exit": 1,
+      "matches": [],
+      "stderr": "adb: device '192.168.1.208:5555' not found"
+    },
+    {
+      "query": "settings list secure",
+      "exit": 1,
+      "matches": [],
+      "stderr": "adb: device '192.168.1.208:5555' not found"
+    },
+    {
+      "query": "settings list global",
+      "exit": 1,
+      "matches": [],
+      "stderr": "adb: device '192.168.1.208:5555' not found"
+    },
+    {
+      "query": "dumpsys display",
+      "exit": 1,
+      "matches": [],
+      "stderr": "adb: device '192.168.1.208:5555' not found"
+    },
+    {
+      "query": "dumpsys vrmanager",
+      "exit": 1,
+      "matches": [],
+      "stderr": "adb: device '192.168.1.208:5555' not found"
+    }
+  ],
+  "physicalLensComparison": "not performed; potential live rehearsal; no settings UI opened",
+  "runtimeValues": "new code not deployed or queried",
+  "initialSuccessfulQueries": {
+    "evidence": "earlier tool output in this session, before headset disconnected",
+    "queries": [
+      "getprop",
+      "settings list system",
+      "settings list secure",
+      "settings list global",
+      "dumpsys display"
+    ],
+    "exit": 0,
+    "usableIpdOrAutoAdjustmentMatches": [],
+    "excludedFalsePositive": "lipdaemon.pid (substring match only)"
+  }
+}

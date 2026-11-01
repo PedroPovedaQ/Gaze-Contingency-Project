@@ -212,6 +212,8 @@ public sealed partial class TrialReviewApp
         public bool wallsVisible;
         public ParticipantSessionAssignment assignment;
         public EyeValidationRequest validation;
+        public ParticipantFitMeasurements fit;
+        public string participantSessionId;
     }
     HeadsetCommand m_HeadsetCommand;
     string m_ControlError;
@@ -312,6 +314,7 @@ public sealed partial class TrialReviewApp
 [Serializable]
 public sealed class TrialReviewHeadsetState
 {
+    public ParticipantFitMeasurements fit;
     public EyeValidationStatus validation;
     public bool validationAvailable;
     public string eyeRecordingId, eyeCaptureStatus;

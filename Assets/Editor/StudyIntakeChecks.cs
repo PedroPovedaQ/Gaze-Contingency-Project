@@ -13,6 +13,7 @@ public static class StudyIntakeChecks
     [MenuItem("Tools/Codex/Check Study Intake")]
     public static void Run()
     {
+        ParticipantFitChecks.Run();
         string root=Path.Combine(Path.GetTempPath(),"study-intake-check-"+Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Path.Combine(root,"PreparationLogs")); Directory.CreateDirectory(Path.Combine(root,"tts_cache"));
         var a=new ParticipantSessionAssignment {schema=2,id=Guid.NewGuid().ToString("N"),participantCode="P999999",configuration="A",

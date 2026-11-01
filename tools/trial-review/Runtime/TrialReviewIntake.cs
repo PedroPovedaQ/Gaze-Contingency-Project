@@ -40,8 +40,10 @@ public sealed partial class TrialReviewApp
         public string answerId, transcript, structuredValue;
         public string[] eligibilityValues;
         public ParticipantFitMeasurements fit;
+        public string catalog, headsetSuggestion, participantSessionId;
+        public string[] archives, knownCodes;
     }
-    [Serializable] sealed class IntakeResult { public bool ok; public string error; }
+    [Serializable] sealed class IntakeResult { public bool ok, duplicate; public string error, suggested; }
     sealed class IntakeJob { public Process process; public string result, action; }
     bool m_IntakeOpen, m_IntakeConsent, m_IntakeStarting;
     bool m_StudyConsent, m_IntakeDevelopment, m_PromptPlaying;
@@ -84,7 +86,7 @@ public sealed partial class TrialReviewApp
         {
             string saved = PlayerPrefs.GetString("ParticipantIntakeFolder", "");
             if (File.Exists(Path.Combine(saved, "session.json"))) m_IntakeFolder = saved;
-            m_IntakeCode = m_LiveStatus?.headsetState?.nextParticipantCode ?? "P001";
+            RefreshParticipantCode(true);
         }
         ReloadIntake();
         if (Consented && m_PendingAnswer == null && (m_Intake.phase == "interview" || m_Intake.phase == "fallback"))
@@ -115,13 +117,15 @@ public sealed partial class TrialReviewApp
             Directory.CreateDirectory(m_IntakeFolder);
             string request = Path.Combine(m_IntakeFolder, "request-" + Guid.NewGuid().ToString("N") + ".json");
             File.WriteAllText(request, JsonUtility.ToJson(new IntakeRequest { action = action, folder = m_IntakeFolder,
-                keysPath = IntakeKeys, participantCode = m_IntakeCode, configuration = m_IntakeConfiguration == 0 ? "A" : "B",
+                keysPath = IntakeKeys, participantCode = action == "sync_fit" ? m_Intake.participantCode : m_IntakeCode, configuration = m_IntakeConfiguration == 0 ? "A" : "B",
                 neutralGender = m_IntakeGender == 0 ? "Male" : "Female", neutralOption = m_IntakeOption, audio = audio, skip = skip,
                 study = m_StudyConsent, voiceCloud = m_IntakeConsent, development = m_IntakeDevelopment,
                 @operator = m_ConsentOperator, reference = m_ConsentReference,
                 answerId=m_EditAnswerId, transcript=m_EditTranscript, structuredValue=m_EditCategory,
                 eligibilityValues = Array.ConvertAll(m_Eligibility, x => EligibilityValues[x]),
-                fit = action == "create" ? ReadIntakeFit() : null }));
+                fit = action == "sync_fit" ? m_LiveStatus?.headsetState?.fit : null,
+                participantSessionId = m_Intake?.id,
+                catalog = CatalogPath, archives = NumberingArchives, knownCodes = new[]{m_LiveStatus?.headsetState?.participantCode} }));
             var process = Process.Start(new ProcessStartInfo("/usr/bin/python3", Argument(Path.Combine(Application.streamingAssetsPath, "participant_intake.py")) + " --request " + Argument(request)) { UseShellExecute = false, CreateNoWindow = true });
             return new IntakeJob { process = process, action = action, result = Path.ChangeExtension(request, ".result.json") };
         }
@@ -130,6 +134,7 @@ public sealed partial class TrialReviewApp
     void PollIntake()
     {
         if(m_CaptureMode) return;
+        PollParticipantCodes();
         PollIntakeCapture();
         if (m_IntakeStarting || m_AnswerClip != null) return;
         if (Time.realtimeSinceStartupAsDouble < m_IntakePoll) return;
@@ -138,6 +143,7 @@ public sealed partial class TrialReviewApp
         if (m_IntakeFolder == null) return;
         ReloadIntake();
         if (m_Intake == null) return;
+        SyncHeadsetFit();
         PollParticipantAudio();
         if (CanCloneIntake && m_Intake.cloneState == "not_started" && m_CloneJob == null)
             m_CloneJob = StartIntakeJob("clone");
@@ -343,9 +349,7 @@ public sealed partial class TrialReviewApp
             }
             if(phase=="interview_complete")DrawFinalSurveyHandoff();
             GUILayout.Space(12);
-            var fit=m_Intake.fit;
-            GUILayout.Label(fit!=null&&fit.ipdRecorded?$"Participant IPD: {fit.participantIpdMm:0.##} mm · {fit.ipdSource}":"Participant IPD: not recorded",m_MutedLabel);
-            GUILayout.Label(fit!=null&&fit.headsetIpdRecorded?$"Headset lens spacing: {fit.headsetIpdMm:0.##} mm (manual entry)":"Headset lens spacing: not recorded",m_MutedLabel);
+            DrawParticipantFit();
             if(m_Intake.answers!=null&&m_Intake.answers.Length>0)
             {
                 GUILayout.Label("Last answer: "+m_Intake.answers[m_Intake.answers.Length-1].transcript,m_MutedLabel);
@@ -374,28 +378,24 @@ public sealed partial class TrialReviewApp
     void DrawIntakeReserve()
     {
         GUILayout.BeginHorizontal();GUILayout.BeginVertical(m_Card,GUILayout.Width(472));
-        GUILayout.Label("PARTICIPANT & FIT",m_Heading);
+        GUILayout.Label(m_IntakeDevelopment ? "DEVELOPMENT REHEARSAL" : "STUDY PARTICIPANT",m_Heading);
         GUILayout.Label("Participant code",m_Label);m_IntakeCode=GUILayout.TextField(m_IntakeCode,m_Field);
-        GUILayout.Label("Participant binocular distance IPD (mm) · blank = not recorded",m_Label);
-        m_IntakeIpd=GUILayout.TextField(m_IntakeIpd,m_Field);
-        string[] sources={"Not recorded","Pupillometer","Ruler","Participant report"};
-        for(int row=0;row<2;row++)
-        {
-            GUILayout.BeginHorizontal();
-            for(int col=0;col<2;col++){int i=row*2+col;if(SelectionCard(sources[i],m_IntakeIpdSource==i,40))m_IntakeIpdSource=i;}
-            GUILayout.EndHorizontal();
-        }
-        GUILayout.Label("Headset lens spacing (mm) · optional, entered separately",m_Label);
-        m_IntakeHeadsetIpd=GUILayout.TextField(m_IntakeHeadsetIpd,m_Field);
-        GUILayout.Label("Confirm these measurements before beginning. They are saved with this session; eye tracking does not measure them automatically.",m_MutedLabel);
+        GUILayout.Label(m_IntakeDevelopment ? "Separate rehearsal sequence · excluded from study data" : "Next unused study code · stopped and withdrawn codes remain reserved",m_MutedLabel);
+        if(m_CodeDuplicate)GUILayout.Label("Duplicate code — choose an unused code.",new GUIStyle(m_Label){normal={textColor=m_Warn}});
+        if(!string.IsNullOrEmpty(m_CodeError))GUILayout.Label(m_CodeError,m_MutedLabel);
+        GUILayout.Space(20);
+        GUILayout.Label("AUTOMATIC HEADSET FIT",m_Heading);
+        GUILayout.Label("After the headset is worn, setup records view separation and an eye-origin separation estimate. Values and warnings appear here before calibration; no IPD entry is needed to reserve.",m_Label);
+        GUILayout.Label("These are unvalidated estimates. Manual fallback is available after headset setup if an automatic value is missing.",m_MutedLabel);
         GUILayout.EndVertical();GUILayout.Space(16);GUILayout.BeginVertical(m_Card);
         GUILayout.Label("COUNTERBALANCE",m_Heading);
         string[] orders={"A · Self-Similar first","B · Selected Voice first"};
         for(int i=0;i<2;i++)if(SelectionCard(orders[i],m_IntakeConfiguration==i,56))m_IntakeConfiguration=i;
         GUILayout.Label("Use the assigned counterbalance order. Do not choose based on participant preferences.",m_MutedLabel);GUILayout.Space(24);
-        m_IntakeDevelopment=IntakeCheck(m_IntakeDevelopment,"Development rehearsal — exclude from study data",true);
+        bool development=IntakeCheck(m_IntakeDevelopment,"Development rehearsal — exclude from study data",true);
+        if(development!=m_IntakeDevelopment){m_IntakeDevelopment=development;RefreshParticipantCode(true);}
         GUILayout.EndVertical();GUILayout.EndHorizontal();GUILayout.Space(16);
-        GUI.enabled=m_IntakeJob==null;
+        GUI.enabled=m_IntakeJob==null&&!m_CodeDuplicate&&m_CodeJob==null&&string.IsNullOrEmpty(m_CodeError)&&m_CheckedCode==m_IntakeCode;
         GUILayout.BeginHorizontal();GUILayout.FlexibleSpace();
         if(PrimaryButton("Reserve participant session"))
         {
@@ -447,9 +447,8 @@ public sealed partial class TrialReviewApp
     }
     void DrawIntakeFinish(bool busy)
     {
-        var headset=m_LiveStatus?.headsetState;
         GUI.enabled = !busy && m_CloneJob == null && m_IntakeAudioJob == null && m_WithdrawalJob == null && m_AnswerClip == null && !m_PromptPlaying;
-        if (Button("Finish here / create another session")) { PauseAutomaticIntake();m_IntakeAutomatic=false;m_WithdrawRequested=false;m_EditAnswerId=null; m_Intake = null; m_IntakeFolder = null; m_IntakePlayedRevision = 0; m_IntakeConsent = false; m_PendingAnswer = null; m_IntakeIpd = m_IntakeHeadsetIpd = ""; m_IntakeIpdSource = 0; PlayerPrefs.DeleteKey("ParticipantIntakeFolder"); m_IntakeCode = headset?.nextParticipantCode ?? "P001"; }
+        if (Button("Finish here / create another session")) { PauseAutomaticIntake();m_IntakeAutomatic=false;m_WithdrawRequested=false;m_EditAnswerId=null; m_Intake = null; m_IntakeFolder = null; m_IntakePlayedRevision = 0; m_IntakeConsent = false; m_PendingAnswer = null; m_IntakeIpd = m_IntakeHeadsetIpd = ""; m_IntakeIpdSource = 0; PlayerPrefs.DeleteKey("ParticipantIntakeFolder"); RefreshParticipantCode(true); }
         GUI.enabled = true;
 
     }

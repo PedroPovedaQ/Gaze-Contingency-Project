@@ -17,7 +17,7 @@ class ParticipantAudioTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
         self.folder=Path(self.temp.name)/uuid.uuid4().hex
-        create(self.folder,'P999','A',development=True)
+        create(self.folder,'P900000000001','A',development=True)
         record_consent(self.folder,'TEST','synthetic consent fixture',True,True)
         update(self.folder,answers=[{} for _ in range(10)],eligibility=dict(id='fixture-review',values=dict.fromkeys(ELIGIBILITY,'yes')),speechSeconds=30,sampleWords=50,eligible=True,selectedVoiceConfirmed=True,cloneState='ready',cloneVoiceId='synthetic_clone',phase='interview_complete')
         self.template=dict(schema=1,model=audio.MODEL,contentVersion='matched-voice-v3',
@@ -73,7 +73,7 @@ class ParticipantAudioTests(unittest.TestCase):
         self.assertEqual(jobs[1]['file'],'tts_'+hashlib.sha256(key.encode()).hexdigest()+'.mp3')
 
     def test_end_to_end_fake_provider_receipts_and_transfer(self):
-        manifest=self.prepare(); self.assertEqual(manifest['participantCode'],'P999')
+        manifest=self.prepare(); self.assertEqual(manifest['participantCode'],'P900000000001')
         self.assertTrue(manifest['development'])
         audio.transfer(self.folder,self.remote)
         state=load(self.folder); self.assertEqual(state['cacheState'],'transferred')

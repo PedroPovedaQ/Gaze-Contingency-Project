@@ -242,6 +242,9 @@ def validate_headset_state(value):
     for key in ('eyeGazeTimestampAvailable', 'eyePupilTimestampAvailable', 'eyeHeadPoseTimeMatched'):
         result[key] = value.get(key) is True
     result['assistance'] = validate_assistance_status(value.get('assistance'))
+    if value.get('fit') is not None:
+        try: result['fit'] = validate_fit(value['fit'])
+        except ValueError: result['fit'] = None
     result.update(intakeAvailable=value.get('intakeAvailable') is True)
     for key in ('participantSessionId', 'participantCode', 'configuration', 'assignmentState', 'nextParticipantCode'):
         result[key] = value.get(key, '') if isinstance(value.get(key, ''), str) else ''
@@ -269,7 +272,7 @@ def validate_assignment(value):
 
 
 def validate_control(command, state, now):
-    if not isinstance(command, dict) or command.get('schema') != 1 or command.get('action') not in ('set_walls', 'assign_session', 'validation_start', 'validation_next', 'validation_answer', 'validation_stop'):
+    if not isinstance(command, dict) or command.get('schema') != 1 or command.get('action') not in ('set_walls', 'assign_session', 'set_fit_fallback', 'validation_start', 'validation_next', 'validation_answer', 'validation_stop'):
         raise ValueError('Unsupported headset control')
     if not isinstance(command.get('id'), str) or not re.fullmatch(r'[0-9a-f]{32}', command['id']):
         raise ValueError('Invalid control ID')
@@ -288,6 +291,13 @@ def validate_control(command, state, now):
     if command['action'] == 'set_walls':
         if state.get('wallControlAvailable') is not True or type(command.get('wallsVisible')) is not bool:
             raise ValueError('Walls unavailable')
+    elif command['action'] == 'set_fit_fallback':
+        if not command.get('participantSessionId') or command['participantSessionId'] != state.get('participantSessionId'):
+            raise ValueError('Fit fallback belongs to another participant session.')
+        fit = validate_fit(command.get('fit'))
+        current = state.get('fit') or {}
+        if fit['ipdRecorded'] and (current.get('eyeSeparation') or {}).get('recorded') or fit['headsetIpdRecorded'] and (current.get('viewSeparation') or {}).get('recorded'):
+            raise ValueError('Automatic value is available; manual fallback is unnecessary.')
     elif command['action'] == 'assign_session':
         assignment = validate_assignment(command.get('assignment'))
         if state.get('intakeAvailable') is not True and state.get('participantSessionId') != assignment['id']:
