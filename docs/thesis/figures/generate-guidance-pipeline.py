@@ -1,0 +1,199 @@
+"""Guidance pipeline figure: real application screens along the path from gaze to spoken cue.
+
+Application screens come from the synthetic end-to-end session and the search scene from the Unity room render,
+so the figure shows software, not participant data.
+Text sizes follow the other thesis figures: the 1000-px canvas prints at text width.
+Run: DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib uv run --no-project --with cairosvg --with pypdf --with pillow python docs/thesis/figures/generate-guidance-pipeline.py
+"""
+import base64
+import io
+import subprocess
+import sys
+from pathlib import Path
+from xml.sax.saxutils import escape
+import cairosvg
+from PIL import Image
+
+F = Path(__file__).resolve().parent
+EXPERIMENT = Path('/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project')
+SHOTS = EXPERIMENT / 'trial-viewer-shots/full-synthetic-run'
+AVATARS = EXPERIMENT / 'Assets/Resources/VoiceAvatars'
+INK, MUTED, LINE, PALE = '#2a3034', '#6b7479', '#3f464a', '#eef1f3'
+SELF, NEUTRAL, TEAL = '#7199D6', '#E8B44F', '#2f7f83'
+W, H = 1000, 770
+s = [f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{W}" height="{H}" viewBox="0 0 {W} {H}">',
+     f'<rect width="{W}" height="{H}" fill="white"/>',
+     f'<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="{LINE}"/></marker>'
+     f'<marker id="t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="{TEAL}"/></marker></defs>']
+
+
+def text(x, y, lines, size=14, bold=False, anchor='middle', color=INK, italic=False):
+    for i, line in enumerate([lines] if isinstance(lines, str) else lines):
+        s.append(f'<text x="{x}" y="{y + i * size * 1.22:.1f}" text-anchor="{anchor}" font-family="Helvetica,Arial,sans-serif" '
+                 f'font-size="{size}" font-weight="{"bold" if bold else "normal"}" font-style="{"italic" if italic else "normal"}" fill="{color}">{escape(line)}</text>')
+
+
+def label(x, y, title, detail=None):
+    titles = [title] if isinstance(title, str) else title
+    text(x, y, titles, 14, True, color='#4a5155')
+    if detail:
+        text(x, y + len(titles) * 17, detail, 12.5, color=MUTED)
+
+
+def image(source, crop, x, y, w, h, border=True):
+    picture = Image.open(source).convert('RGB')
+    if crop:
+        picture = picture.crop(crop)
+    scale = min(w * 3 / picture.width, 1) if picture.width > w * 3 else 1
+    picture = picture.resize((round(picture.width * scale), round(picture.height * scale)), Image.LANCZOS)
+    data = io.BytesIO()
+    picture.save(data, 'JPEG', quality=90)
+    encoded = base64.b64encode(data.getvalue()).decode()
+    s.append(f'<image x="{x}" y="{y}" width="{w}" height="{h}" preserveAspectRatio="xMidYMid slice" xlink:href="data:image/jpeg;base64,{encoded}"/>')
+    if border:
+        s.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="none" stroke="{INK}" stroke-width="1.6"/>')
+
+
+def portrait(name, x, y, size, color):
+    picture = Image.open(AVATARS / f'{name}.png').convert('RGBA').resize((size * 3, size * 3), Image.LANCZOS)
+    background = Image.new('RGBA', picture.size, 'white')
+    background.alpha_composite(picture)
+    data = io.BytesIO()
+    background.convert('RGB').save(data, 'JPEG', quality=92)
+    encoded = base64.b64encode(data.getvalue()).decode()
+    s.append(f'<image x="{x}" y="{y}" width="{size}" height="{size}" xlink:href="data:image/jpeg;base64,{encoded}"/>')
+    s.append(f'<rect x="{x}" y="{y}" width="{size}" height="{size}" rx="5" fill="none" stroke="{color}" stroke-width="3"/>')
+
+
+def route(points, dashed=False, color=LINE, radius=9, marker='a'):
+    """Orthogonal connector with rounded corners."""
+    d = [f'M{points[0][0]},{points[0][1]}']
+    for i in range(1, len(points) - 1):
+        (ax, ay), (bx, by), (cx, cy) = points[i - 1], points[i], points[i + 1]
+        r1 = min(radius, (abs(bx - ax) + abs(by - ay)) / 2)
+        r2 = min(radius, (abs(cx - bx) + abs(cy - by)) / 2)
+        ux, uy = (bx > ax) - (bx < ax), (by > ay) - (by < ay)
+        vx, vy = (cx > bx) - (cx < bx), (cy > by) - (cy < by)
+        d.append(f'L{bx - ux * r1},{by - uy * r1} Q{bx},{by} {bx + vx * r2},{by + vy * r2}')
+    d.append(f'L{points[-1][0]},{points[-1][1]}')
+    style = ' stroke-dasharray="6 4"' if dashed else ''
+    s.append(f'<path d="{" ".join(d)}" fill="none" stroke="{color}" stroke-width="2"{style} marker-end="url(#{marker})"/>')
+
+
+def stroke(body, width=3):
+    s.append(f'<g fill="none" stroke="{INK}" stroke-width="{width}" stroke-linecap="round" stroke-linejoin="round">{body}</g>')
+
+
+def eye(cx, cy):
+    stroke(f'<path d="M{cx - 26},{cy} Q{cx},{cy - 22} {cx + 26},{cy} Q{cx},{cy + 22} {cx - 26},{cy} z"/><circle cx="{cx}" cy="{cy}" r="8"/>')
+    s.append(f'<circle cx="{cx}" cy="{cy}" r="3.5" fill="{INK}"/>')
+
+
+def headset(cx, cy):
+    stroke(f'<rect x="{cx - 24}" y="{cy - 12}" width="48" height="24" rx="9"/><path d="M{cx - 24},{cy - 2} h-7 M{cx + 24},{cy - 2} h7"/>'
+           f'<circle cx="{cx - 10}" cy="{cy}" r="4.5"/><circle cx="{cx + 10}" cy="{cy}" r="4.5"/>')
+
+
+def controller(cx, cy):
+    stroke(f'<circle cx="{cx}" cy="{cy - 7}" r="13"/><path d="M{cx - 6},{cy + 5} l-3,17 h18 l-3,-17"/><circle cx="{cx}" cy="{cy - 7}" r="3"/>')
+
+
+def cloud(cx, cy):
+    stroke(f'<path d="M{cx - 34},{cy + 18} h66 a17,17 0 0 0 3,-34 a24,24 0 0 0 -45,-9 a18,18 0 0 0 -27,14 a15,15 0 0 0 3,29 z"/>')
+    bars = ''.join(f'<path d="M{cx - 15 + i * 7.5},{cy + 3 - h} v{2 * h}"/>' for i, h in enumerate((3, 8, 11, 6, 3)))
+    stroke(bars, 2.6)
+
+
+def speaker(cx, cy):
+    stroke(f'<circle cx="{cx - 20}" cy="{cy}" r="4"/>' + ''.join(
+        f'<path d="M{cx - 15 + i * 9},{cy - 8 - i * 7} q{9 + i * 2},{8 + i * 7} 0,{16 + i * 14}"/>' for i in range(3)))
+
+
+def table(cx, cy):
+    stroke(f'<rect x="{cx - 26}" y="{cy - 20}" width="52" height="40" rx="3"/><path d="M{cx - 26},{cy - 7} h52 M{cx - 26},{cy + 7} h52 M{cx - 9},{cy - 20} v40 M{cx + 9},{cy - 20} v40"/>', 2.6)
+
+
+def band(y, h, name):
+    s.append(f'<rect x="10" y="{y}" width="{W - 20}" height="{h}" rx="10" fill="{PALE}" opacity="0.55"/>')
+    text(24, y + 21, name, 14, True, 'start', MUTED)
+
+
+# Bands
+band(10, 196, 'Before the session')
+band(218, 322, 'During each trial')
+band(552, 208, 'After the session')
+
+# Row 1: voice preparation
+image(SHOTS / 'intake-question-04.png', (202, 50, 1238, 640), 190, 38, 190, 108)
+label(285, 165, 'Audio Intake', '(Nine spoken prompts, Trial Review)')
+route([(380, 92), (470, 92)])
+cloud(520, 90)
+label(520, 138, 'Clone and Synthesize', ['(ElevenLabs)'])
+route([(572, 92), (680, 92)])
+portrait('Eric', 690, 56, 62, NEUTRAL)
+portrait('Janet', 760, 56, 62, NEUTRAL)
+text(725, 136, 'Selected Agent Voice', 12.5, True, color='#9a6f12')
+s.append(f'<rect x="864" y="56" width="62" height="62" rx="5" fill="white" stroke="{SELF}" stroke-width="3"/>')
+stroke('<circle cx="887" cy="76" r="9"/><path d="M871,110 q2,-20 16,-20 q14,0 16,20"/><path d="M906,72 q5,6 0,12 M913,67 q9,11 0,22"/>', 2.6)
+text(895, 136, 'Self-Similar Voice', 12.5, True, color='#3f6fb5')
+label(825, 170, 'Prepared Phrase Libraries', '(Sent to the headset ahead of time)')
+
+# Row 2: guidance loop
+image(F / 'virtual-room.png', (90, 66, 1858, 1150), 22, 268, 170, 104)
+label(107, 392, ['Search Scene'], ['(Unity on the HTC', 'VIVE Focus Vision)'])
+route([(192, 320), (222, 320)])
+s.append(f'<rect x="222" y="240" width="74" height="176" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
+eye(259, 268)
+headset(259, 322)
+controller(259, 378)
+label(259, 434, ['Gaze, Head,', 'Controller'], '(Headset sensors)')
+route([(296, 320), (330, 320)])
+s.append(f'<rect x="332" y="238" width="146" height="164" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
+text(405, 262, ['Guidance State'], 14, True)
+for i, item in enumerate(['Gaze valid and recent', 'Angle to target, trend', 'Direction to target', 'Recent gaze direction', 'Last cue and response', 'Past cues and trials', 'Allowed strategies']):
+    s.append(f'<circle cx="344" cy="{280 + i * 16:.1f}" r="2.3" fill="{TEAL}"/>')
+    text(352, 284 + i * 16, item, 12, anchor='start', color=MUTED)
+label(405, 422, ['Summarize, Then Ask'], '(Unity on the headset)')
+text(516, 292, ['Compact state,', 'not raw gaze'], 11, color=TEAL, italic=True)
+text(516, 344, ['Wireless', 'ADB link'], 11, color=TEAL, italic=True)
+s.append(f'<rect x="555" y="229" width="164" height="257" rx="10" fill="#fff6dc" stroke="{NEUTRAL}" stroke-width="2" stroke-dasharray="7 4"/>')
+s.append(f'<rect x="562" y="238" width="150" height="164" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
+text(637, 260, ['Two Decisions'], 14, True)
+text(637, 281, '1. Strategy', 12.5, True, color=TEAL)
+text(637, 298, ['Choose one allowed:', 'stay silent, orient, refine,', 'correct, or encourage'], 12, color=MUTED)
+text(637, 351, '2. Phrase', 12.5, True, color=TEAL)
+text(637, 368, ['Rank the prepared phrases', 'using their recent use'], 12, color=MUTED)
+label(637, 422, ['Decision Model'], ['(Local MiniLM on', 'the lab computer)'])
+text(637, 474, 'On our computer, no cloud', 12, True, color='#8a6410')
+route([(478, 320), (560, 320)])
+route([(712, 320), (878, 320)])
+text(795, 306, 'Chosen phrase', 11.5, color=TEAL, italic=True)
+speaker(905, 320)
+headset(950, 320)
+label(925, 368, ['Spoken Cue'], ['(Assigned voice)'])
+route([(925, 196), (925, 288)])
+route([(925, 405), (925, 512), (405, 512), (405, 450)], color=TEAL, marker='t')
+text(665, 505, 'What actually played feeds back into memory', 12, color=TEAL, italic=True)
+
+# Row 3: review and analysis
+route([(259, 472), (259, 610)])
+text(267, 515, ['Logged every frame', 'Starting angle θ₀ saved each trial'], 12, anchor='start', color=TEAL, italic=True)
+table(258, 640)
+label(258, 680, ['Session Recordings'], ['(Gaze, events, replay)'])
+route([(290, 640), (442, 640)])
+text(366, 629, 'Transfer', 11.5, color=TEAL, italic=True)
+image(SHOTS / 'replay-first-person.png', (0, 70, 1440, 890), 444, 584, 178, 110)
+label(533, 713, ['Trial Review'], ['(Replay and live monitor)'])
+route([(622, 640), (756, 640)])
+text(689, 629, 'Export', 11.5, color=TEAL, italic=True)
+table(788, 640)
+label(788, 680, ['Trial CSVs'])
+s.append('</svg>')
+
+svg = ''.join(s)
+name = 'guidance-pipeline'
+(F / f'{name}.svg').write_text(svg)
+cairosvg.svg2pdf(bytestring=svg.encode(), write_to=str(F / f'{name}.pdf'))
+cairosvg.svg2png(bytestring=svg.encode(), write_to=f'/tmp/{name}.png', output_width=2000)
+subprocess.run([sys.executable, str(F / 'normalize-pdf-font-maps.py'), str(F / f'{name}.pdf')], check=True)
+print('wrote', name)
