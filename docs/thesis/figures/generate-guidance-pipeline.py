@@ -1,7 +1,7 @@
 """Guidance pipeline figure: real application screens along the path from gaze to spoken cue.
 
-Application screens come from the synthetic end-to-end session and the search scene from the Unity room render,
-so the figure shows software, not participant data.
+Intake screens come from the synthetic end-to-end session, the search scene from the Unity room render,
+and Trial Review from a development recording, so the figure shows software, not participant data.
 Text sizes follow the other thesis figures: the 1000-px canvas prints at text width.
 Run: DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib uv run --no-project --with cairosvg --with pypdf --with pillow python docs/thesis/figures/generate-guidance-pipeline.py
 """
@@ -182,7 +182,7 @@ table(258, 640)
 label(258, 680, ['Session Recordings'], ['(Gaze, events, replay)'])
 route([(290, 640), (442, 640)])
 text(366, 629, 'Transfer', 11.5, color=TEAL, italic=True)
-image(SHOTS / 'replay-first-person.png', (0, 70, 1440, 890), 444, 584, 178, 110)
+image(EXPERIMENT / 'trial-viewer-shots/real-dev-20261103/01-first-person-guidance.png', (0, 70, 1440, 890), 444, 584, 178, 110)
 label(533, 713, ['Trial Review'], ['(Replay and live monitor)'])
 route([(622, 640), (756, 640)])
 text(689, 629, 'Export', 11.5, color=TEAL, italic=True)
