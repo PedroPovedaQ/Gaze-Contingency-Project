@@ -2,7 +2,7 @@
 
 Intake screens come from the synthetic end-to-end session, the search scene from the Unity room render,
 and Trial Review from a development recording, so the figure shows software, not participant data.
-Text sizes follow the other thesis figures: the 1000-px canvas prints at text width.
+The 1000-px canvas prints at text width and is nearly square, so it fills most of a page.
 Run: DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib uv run --no-project --with cairosvg --with pypdf --with pillow python docs/thesis/figures/generate-guidance-pipeline.py
 """
 import base64
@@ -20,9 +20,10 @@ SHOTS = EXPERIMENT / 'trial-viewer-shots/full-synthetic-run'
 AVATARS = EXPERIMENT / 'Assets/Resources/VoiceAvatars'
 INK, MUTED, LINE, PALE = '#2a3034', '#6b7479', '#3f464a', '#eef1f3'
 SELF, NEUTRAL, TEAL = '#7199D6', '#E8B44F', '#2f7f83'
-W, H = 1000, 770
-s = [f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{W}" height="{H}" viewBox="0 0 {W} {H}">',
-     f'<rect width="{W}" height="{H}" fill="white"/>',
+W, H, TOP = 1000, 968, 6
+TS, DS = 17, 15
+s = [f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{W}" height="{H}" viewBox="0 {TOP} {W} {H}">',
+     f'<rect y="{TOP}" width="{W}" height="{H}" fill="white"/>',
      f'<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="{LINE}"/></marker>'
      f'<marker id="t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="{TEAL}"/></marker></defs>']
 
@@ -35,9 +36,9 @@ def text(x, y, lines, size=14, bold=False, anchor='middle', color=INK, italic=Fa
 
 def label(x, y, title, detail=None):
     titles = [title] if isinstance(title, str) else title
-    text(x, y, titles, 14, True, color='#4a5155')
+    text(x, y, titles, TS, True, color='#4a5155')
     if detail:
-        text(x, y + len(titles) * 17, detail, 12.5, color=MUTED)
+        text(x, y + len(titles) * TS * 1.22, detail, DS, color=MUTED)
 
 
 def image(source, crop, x, y, w, h, border=True):
@@ -115,79 +116,87 @@ def table(cx, cy):
 
 def band(y, h, name):
     s.append(f'<rect x="10" y="{y}" width="{W - 20}" height="{h}" rx="10" fill="{PALE}" opacity="0.55"/>')
-    text(24, y + 21, name, 14, True, 'start', MUTED)
+    text(24, y + 25, name, 17, True, 'start', MUTED)
+
+
+def scaled(k, cx, cy, draw):
+    s.append(f'<g transform="translate({cx},{cy}) scale({k}) translate({-cx},{-cy})">')
+    draw(cx, cy)
+    s.append('</g>')
 
 
 # Bands
-band(10, 196, 'Before the session')
-band(218, 322, 'During each trial')
-band(552, 208, 'After the session')
+band(10, 280, 'Before the session')
+band(302, 428, 'During each trial')
+band(742, 228, 'After the session')
 
 # Row 1: voice preparation
-image(SHOTS / 'intake-question-04.png', (202, 50, 1238, 640), 190, 38, 190, 108)
-label(285, 165, 'Audio Intake', '(Nine spoken prompts, Trial Review)')
-route([(380, 92), (470, 92)])
-cloud(520, 90)
-label(520, 138, 'Clone and Synthesize', ['(ElevenLabs)'])
-route([(572, 92), (680, 92)])
-portrait('Eric', 690, 56, 62, NEUTRAL)
-portrait('Janet', 760, 56, 62, NEUTRAL)
-text(725, 136, 'Selected Agent Voice', 12.5, True, color='#9a6f12')
-s.append(f'<rect x="864" y="56" width="62" height="62" rx="5" fill="white" stroke="{SELF}" stroke-width="3"/>')
+image(SHOTS / 'intake-question-04.png', (202, 50, 1238, 640), 40, 48, 290, 165)
+label(185, 240, 'Audio Intake', '(Nine spoken prompts, Trial Review)')
+route([(330, 130), (428, 130)])
+scaled(1.25, 480, 125, cloud)
+label(480, 180, 'Clone and Synthesize', ['(ElevenLabs)'])
+route([(535, 130), (632, 130)])
+portrait('Eric', 640, 90, 80, NEUTRAL)
+portrait('Janet', 730, 90, 80, NEUTRAL)
+text(725, 192, 'Selected Agent Voice', 15, True, color='#9a6f12')
+s.append(f'<rect x="850" y="90" width="80" height="80" rx="5" fill="white" stroke="{SELF}" stroke-width="3"/>')
+s.append(f'<g transform="translate(850,90) scale({80 / 62}) translate(-864,-56)">')
 stroke('<circle cx="887" cy="76" r="9"/><path d="M871,110 q2,-20 16,-20 q14,0 16,20"/><path d="M906,72 q5,6 0,12 M913,67 q9,11 0,22"/>', 2.6)
-text(895, 136, 'Self-Similar Voice', 12.5, True, color='#3f6fb5')
-label(825, 170, 'Prepared Phrase Libraries', '(Sent to the headset ahead of time)')
+s.append('</g>')
+text(890, 192, 'Self-Similar Voice', 15, True, color='#3f6fb5')
+label(790, 232, 'Prepared Phrase Libraries', '(Sent to the headset ahead of time)')
 
 # Row 2: guidance loop
-image(F / 'virtual-room.png', (90, 66, 1858, 1150), 22, 268, 170, 104)
-label(107, 392, ['Search Scene'], ['(Unity on the HTC', 'VIVE Focus Vision)'])
-route([(192, 320), (222, 320)])
-s.append(f'<rect x="222" y="240" width="74" height="176" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
-eye(259, 268)
-headset(259, 322)
-controller(259, 378)
-label(259, 434, ['Gaze, Head,', 'Controller'], '(Headset sensors)')
-route([(296, 320), (330, 320)])
-s.append(f'<rect x="332" y="238" width="146" height="164" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
-text(405, 262, ['Guidance State'], 14, True)
+image(F / 'virtual-room.png', (90, 66, 1858, 1150), 25, 395, 180, 112)
+label(115, 535, ['Search Scene'], ['(Unity on the HTC', 'VIVE Focus Vision)'])
+route([(205, 450), (230, 450)])
+s.append(f'<rect x="230" y="350" width="85" height="205" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
+scaled(1.15, 272, 390, eye)
+scaled(1.15, 272, 450, headset)
+scaled(1.15, 272, 512, controller)
+label(272, 582, ['Gaze, Head,', 'Controller'], '(Headset sensors)')
+route([(315, 450), (333, 450)])
+s.append(f'<rect x="335" y="345" width="185" height="215" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
+text(428, 372, ['Guidance State'], 17, True)
 for i, item in enumerate(['Gaze valid and recent', 'Angle to target, trend', 'Direction to target', 'Recent gaze direction', 'Last cue and response', 'Past cues and trials', 'Allowed strategies']):
-    s.append(f'<circle cx="344" cy="{280 + i * 16:.1f}" r="2.3" fill="{TEAL}"/>')
-    text(352, 284 + i * 16, item, 12, anchor='start', color=MUTED)
-label(405, 422, ['Summarize, Then Ask'], '(Unity on the headset)')
-text(516, 292, ['Compact state,', 'not raw gaze'], 11, color=TEAL, italic=True)
-text(516, 344, ['Wireless', 'ADB link'], 11, color=TEAL, italic=True)
-s.append(f'<rect x="555" y="229" width="164" height="257" rx="10" fill="#fff6dc" stroke="{NEUTRAL}" stroke-width="2" stroke-dasharray="7 4"/>')
-s.append(f'<rect x="562" y="238" width="150" height="164" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
-text(637, 260, ['Two Decisions'], 14, True)
-text(637, 281, '1. Strategy', 12.5, True, color=TEAL)
-text(637, 298, ['Choose one allowed:', 'stay silent, orient, refine,', 'correct, or encourage'], 12, color=MUTED)
-text(637, 351, '2. Phrase', 12.5, True, color=TEAL)
-text(637, 368, ['Rank the prepared phrases', 'using their recent use'], 12, color=MUTED)
-label(637, 422, ['Decision Model'], ['(Local MiniLM on', 'the lab computer)'])
-text(637, 474, 'On our computer, no cloud', 12, True, color='#8a6410')
-route([(478, 320), (560, 320)])
-route([(712, 320), (878, 320)])
-text(795, 306, 'Chosen phrase', 11.5, color=TEAL, italic=True)
-speaker(905, 320)
-headset(950, 320)
-label(925, 368, ['Spoken Cue'], ['(Assigned voice)'])
-route([(925, 196), (925, 288)])
-route([(925, 405), (925, 512), (405, 512), (405, 450)], color=TEAL, marker='t')
-text(665, 505, 'What actually played feeds back into memory', 12, color=TEAL, italic=True)
+    s.append(f'<circle cx="349" cy="{395 + i * 22:.1f}" r="2.8" fill="{TEAL}"/>')
+    text(358, 400 + i * 22, item, 14, anchor='start', color=MUTED)
+label(428, 585, ['Summarize, Then Ask'], '(Unity on the headset)')
+text(570, 425, ['Compact state,', 'not raw gaze'], 13.5, color=TEAL, italic=True)
+text(570, 477, ['Wireless', 'ADB link'], 13.5, color=TEAL, italic=True)
+s.append(f'<rect x="620" y="328" width="180" height="352" rx="10" fill="#fff6dc" stroke="{NEUTRAL}" stroke-width="2" stroke-dasharray="7 4"/>')
+s.append(f'<rect x="628" y="340" width="164" height="235" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
+text(710, 366, ['Two Decisions'], 17, True)
+text(710, 392, '1. Strategy', 15, True, color=TEAL)
+text(710, 413, ['Choose one allowed:', 'stay silent, orient,', 'refine, correct,', 'or encourage'], 14, color=MUTED)
+text(710, 500, '2. Phrase', 15, True, color=TEAL)
+text(710, 521, ['Rank the prepared', 'phrases using', 'their recent use'], 14, color=MUTED)
+label(710, 605, ['Decision Model'], ['(Local MiniLM on', 'the lab computer)'])
+text(710, 668, 'On our computer, no cloud', 13, True, color='#8a6410')
+route([(520, 450), (626, 450)])
+route([(792, 450), (862, 450)])
+text(831, 418, ['Chosen', 'phrase'], 13.5, color=TEAL, italic=True)
+scaled(1.15, 893, 450, speaker)
+scaled(1.15, 950, 450, headset)
+label(925, 505, ['Spoken Cue'], ['(Assigned voice)'])
+route([(925, 262), (925, 420)])
+route([(925, 540), (925, 712), (428, 712), (428, 620)], color=TEAL, marker='t')
+text(680, 703, 'What actually played feeds back into memory', 14, color=TEAL, italic=True)
 
-# Row 3: review and analysis
-route([(259, 472), (259, 610)])
-text(267, 515, ['Logged every frame', 'Starting angle θ₀ saved each trial'], 12, anchor='start', color=TEAL, italic=True)
-table(258, 640)
-label(258, 680, ['Session Recordings'], ['(Gaze, events, replay)'])
-route([(290, 640), (442, 640)])
-text(366, 629, 'Transfer', 11.5, color=TEAL, italic=True)
-image(EXPERIMENT / 'trial-viewer-shots/real-dev-20261103/01-first-person-guidance.png', (0, 70, 1440, 890), 444, 584, 178, 110)
-label(533, 713, ['Trial Review'], ['(Replay and live monitor)'])
-route([(622, 640), (756, 640)])
-text(689, 629, 'Export', 11.5, color=TEAL, italic=True)
-table(788, 640)
-label(788, 680, ['Trial CSVs'])
+# Row 3: review and export
+route([(272, 630), (272, 812)])
+text(262, 660, ['Logged every frame', 'Starting angle θ₀', 'saved each trial'], 14, anchor='end', color=TEAL, italic=True)
+scaled(1.2, 272, 840, table)
+label(272, 895, ['Session Recordings'], ['(Gaze, events, replay)'])
+route([(305, 840), (422, 840)])
+text(363, 828, 'Transfer', 13.5, color=TEAL, italic=True)
+image(EXPERIMENT / 'trial-viewer-shots/real-dev-20261103/01-first-person-guidance.png', (0, 70, 1440, 890), 425, 772, 240, 137)
+label(545, 933, ['Trial Review'], ['(Replay and live monitor)'])
+route([(665, 840), (795, 840)])
+text(730, 828, 'Export', 13.5, color=TEAL, italic=True)
+scaled(1.2, 830, 840, table)
+label(830, 895, ['Trial CSVs'])
 s.append('</svg>')
 
 svg = ''.join(s)
