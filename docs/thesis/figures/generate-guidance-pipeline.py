@@ -35,7 +35,7 @@ def text(x, y, lines, size=14, bold=False, anchor='middle', color=INK, italic=Fa
 
 def label(x, y, title, detail=None):
     titles = [title] if isinstance(title, str) else title
-    text(x, y, titles, TS, True, color='#4a5155')
+    text(x, y, titles, TS, True, color='#000000')
     if detail:
         text(x, y + len(titles) * TS * 1.22, detail, DS, color=MUTED)
 
@@ -154,7 +154,7 @@ s.append(f'<g transform="translate(850,90) scale({80 / 62}) translate(-864,-56)"
 stroke('<circle cx="887" cy="76" r="9"/><path d="M871,110 q2,-20 16,-20 q14,0 16,20"/><path d="M906,72 q5,6 0,12 M913,67 q9,11 0,22"/>', 2.6)
 s.append('</g>')
 text(890, 192, 'Self-Similar Voice', 15, True, color='#3f6fb5')
-label(790, 232, 'Prepared Phrase Libraries')
+label(790, 232, 'Voice Conditions')
 
 # Row 2: guidance loop
 image(F / 'virtual-room.png', (90, 66, 1858, 1150), 25, 395, 180, 112)
@@ -167,22 +167,21 @@ scaled(1.15, 272, 512, controller)
 label(272, 582, ['Gaze, Head,', 'Controller'])
 route([(315, 450), (333, 450)])
 s.append(f'<rect x="335" y="345" width="185" height="215" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
-text(428, 372, ['Guidance State'], 17, True)
+text(428, 372, ['Guidance State'], 17, True, color='#000000')
 for i, item in enumerate(['Gaze valid and recent', 'Angle to target, trend', 'Direction to target', 'Recent gaze direction', 'Last cue and response', 'Past cues and trials', 'Allowed strategies']):
     s.append(f'<circle cx="349" cy="{395 + i * 22:.1f}" r="2.8" fill="{TEAL}"/>')
     text(358, 400 + i * 22, item, 14, anchor='start', color=MUTED)
 label(428, 585, ['Summarize, Then Ask'])
-text(570, 425, ['Compact state,', 'not raw gaze'], 13.5, color=TEAL, italic=True)
-text(570, 477, ['Wireless', 'ADB link'], 13.5, color=TEAL, italic=True)
+text(570, 425, ['Wireless', 'ADB link'], 13.5, color=TEAL, italic=True)
 s.append(f'<rect x="620" y="328" width="180" height="320" rx="10" fill="#fff6dc" stroke="{NEUTRAL}" stroke-width="2" stroke-dasharray="7 4"/>')
 s.append(f'<rect x="628" y="340" width="164" height="235" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
-text(710, 366, ['Two Decisions'], 17, True)
+text(710, 366, ['Two Decisions'], 17, True, color='#000000')
 text(710, 392, '1. Strategy', 15, True, color=TEAL)
 text(710, 413, ['Choose one allowed:', 'stay silent, orient,', 'refine, correct,', 'or encourage'], 14, color=MUTED)
 text(710, 500, '2. Phrase', 15, True, color=TEAL)
 text(710, 521, ['Rank the prepared', 'phrases using', 'their recent use'], 14, color=MUTED)
 label(710, 605, ['Decision Model'])
-text(710, 636, 'On our computer, no cloud', 13, True, color='#8a6410')
+text(710, 636, 'Local LLM', 14, True, color='#8a6410')
 route([(520, 450), (626, 450)])
 route([(792, 450), (862, 450)])
 text(831, 418, ['Chosen', 'phrase'], 13.5, color=TEAL, italic=True)
