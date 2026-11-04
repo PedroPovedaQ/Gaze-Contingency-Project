@@ -1,7 +1,7 @@
 """Guidance pipeline figure: real application screens along the path from gaze to spoken cue.
 
-Intake screens come from the synthetic end-to-end session, the search scene from the Unity room render,
-and Trial Review from a development recording, so the figure shows software, not participant data.
+The search scene comes from the Unity room render and Trial Review from a development recording,
+so the figure shows software, not participant data.
 The 1000-px canvas prints at text width and is nearly square, so it fills most of a page.
 Run: DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib uv run --no-project --with cairosvg --with pypdf --with pillow python docs/thesis/figures/generate-guidance-pipeline.py
 """
@@ -16,7 +16,6 @@ from PIL import Image
 
 F = Path(__file__).resolve().parent
 EXPERIMENT = Path('/Users/pedro.poveda/.codex/worktrees/gaze-recovered/Gaze Contingency Project')
-SHOTS = EXPERIMENT / 'trial-viewer-shots/full-synthetic-run'
 AVATARS = EXPERIMENT / 'Assets/Resources/VoiceAvatars'
 INK, MUTED, LINE, PALE = '#2a3034', '#6b7479', '#3f464a', '#eef1f3'
 SELF, NEUTRAL, TEAL = '#7199D6', '#E8B44F', '#2f7f83'
@@ -105,6 +104,19 @@ def cloud(cx, cy):
     stroke(bars, 2.6)
 
 
+def form_mic(cx, cy):
+    """Intake form with a microphone badge."""
+    x, y = cx - 46, cy - 64
+    s.append(f'<rect x="{x}" y="{y}" width="84" height="112" rx="6" fill="white"/>')
+    stroke(f'<rect x="{x}" y="{y}" width="84" height="112" rx="6"/>' + ''.join(
+        f'<rect x="{x + 12}" y="{y + 18 + i * 22}" width="9" height="9" rx="1.5"/><path d="M{x + 28},{y + 22.5 + i * 22} h{40 - 12 * (i == 2)}"/>'
+        for i in range(3)), 2.6)
+    mx, my = cx + 34, cy + 40
+    s.append(f'<circle cx="{mx}" cy="{my}" r="28" fill="white" stroke="{INK}" stroke-width="2.6"/>')
+    stroke(f'<rect x="{mx - 7}" y="{my - 18}" width="14" height="24" rx="7"/>'
+           f'<path d="M{mx - 13},{my - 3} q0,16 13,16 q13,0 13,-16 M{mx},{my + 13} v6 M{mx - 7},{my + 19} h14"/>', 2.4)
+
+
 def speaker(cx, cy):
     stroke(f'<circle cx="{cx - 20}" cy="{cy}" r="4"/>' + ''.join(
         f'<path d="M{cx - 15 + i * 9},{cy - 8 - i * 7} q{9 + i * 2},{8 + i * 7} 0,{16 + i * 14}"/>' for i in range(3)))
@@ -131,12 +143,9 @@ band(302, 428, 'During each trial')
 band(742, 228, 'After the session')
 
 # Row 1: voice preparation
-image(SHOTS / 'intake-question-04.png', (202, 50, 1238, 640), 40, 48, 290, 165)
-label(185, 240, 'Audio Intake', '(Nine spoken prompts, Trial Review)')
-route([(330, 130), (428, 130)])
-scaled(1.25, 480, 125, cloud)
-label(480, 180, 'Clone and Synthesize', ['(ElevenLabs)'])
-route([(535, 130), (632, 130)])
+form_mic(350, 118)
+label(350, 222, ['Audio Intake,', 'Clone and Synthesize'], '(ElevenLabs)')
+route([(420, 130), (632, 130)])
 portrait('Eric', 640, 90, 80, NEUTRAL)
 portrait('Janet', 730, 90, 80, NEUTRAL)
 text(725, 192, 'Selected Agent Voice', 15, True, color='#9a6f12')
