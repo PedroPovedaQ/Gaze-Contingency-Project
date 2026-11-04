@@ -195,18 +195,18 @@ for i, item in enumerate(['Gaze valid and recent', 'Angle to target, trend', 'Di
     text(358, 400 + i * 22, item, 14, anchor='start', color='#000000')
 label(428, 585, ['Summarize, Then Ask'])
 text(570, 425, ['Wireless', 'ADB link'], 13.5, color='#000000', italic=True)
-s.append(f'<rect x="628" y="334" width="164" height="272" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
+s.append(f'<rect x="628" y="334" width="164" height="290" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
 text(710, 357, ['Decision LLM', 'Pipeline'], 16, True, color='#000000')
 # Inner pipeline: the strategy is chosen first, then a phrase within it.
-for top, height in ((390, 110), (522, 72)):
+for top, height in ((390, 126), (538, 72)):
     s.append(f'<rect x="638" y="{top}" width="144" height="{height}" rx="6" fill="#f7f8f9" stroke="{LINE}" stroke-width="1.3"/>')
 text(710, 410, '1. Strategy', 14, True)
-for i, item in enumerate(['Stay silent', 'Orient', 'Refine', 'Correct', 'Encourage']):
+for i, item in enumerate(['Stay silent', 'Orient', 'Refine', 'Correct', 'Encourage', 'Interrupt']):
     s.append(f'<circle cx="668" cy="{424 + i * 16:.1f}" r="2.3" fill="#000000"/>')
     text(676, 428 + i * 16, item, 13, anchor='start')
-route([(710, 500), (710, 520)])
-text(710, 542, '2. Phrase', 14, True)
-text(710, 561, ['Choose the most', 'natural phrase'], 13)
+route([(710, 516), (710, 536)])
+text(710, 558, '2. Phrase', 14, True)
+text(710, 577, ['Choose the most', 'natural phrase'], 13)
 label(563, 688, ['Gaze-Contingent Guidance Agent'])
 text(563, 710, 'Local LLM', 14, True, color='#000000')
 route([(520, 450), (626, 450)])
@@ -218,7 +218,7 @@ label(925, 505, ['Spoken Cue'])
 # Both voice conditions feed the spoken cue.
 s.append(f'<path d="M725,202 V250 H925 M890,202 V250" fill="none" stroke="{LINE}" stroke-width="2"/>')
 route([(925, 250), (925, 420)])
-route([(710, 606), (710, 648), (428, 648), (428, 600)], color='#000000', marker='k')
+route([(710, 624), (710, 648), (428, 648), (428, 600)], color='#000000', marker='k')
 text(560, 640, 'Result sent back to memory', 14, color='#000000', italic=True)
 emoji('\U0001F9E0', 652, 623, 22)
 
