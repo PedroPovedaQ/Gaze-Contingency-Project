@@ -12,6 +12,11 @@ Usage:
   python generate-results-figures.py --data <GazeData exports> [--model rq1_time_ratio.json] [--flow flow.json]
   python generate-results-figures.py --data <synthetic exports> --development
 
+Model estimates (results-stats.tex, used by Chapter 4's text) need statsmodels, which the project environment
+does not include:
+  uv run --no-project --with statsmodels --with pandas --with scipy --with matplotlib --with pypdf \
+      python generate-results-figures.py --simulated
+
 rq1_time_ratio.json holds the mixed-model contrast: {"estimate": 0.95, "low": 0.90, "high": 1.01}.
 flow.json holds participant-flow counts keyed like FLOW_KEYS below.
 """
@@ -73,6 +78,12 @@ def load(folders, development):
     for measure in ('ipa_candidate_hz', 'fixation_count', 'saccade_frequency_hz'):
         df[measure] = pd.concat([pd.to_numeric(df[f'eye_{eye}__{measure}'], errors='coerce') for eye in ('left', 'right')], axis=1).mean(axis=1)
     df['completion'] = df.time_to_final_selection_seconds.where(df.missed_target == 0)
+    # Model covariates: period (block 1 or 2), position within the block, and order (A = SSV first).
+    if 'pre_cue_theta_absolute_deg' in df:
+        df['absolute_theta_deg'] = pd.to_numeric(df.pre_cue_theta_absolute_deg, errors='coerce')
+    df['period'] = pd.to_numeric(df.block_index, errors='coerce') + 1
+    df['position'] = df.sort_values('trial_index').groupby(['participant_id', 'period']).cumcount()
+    df['order'] = df.voice_order.map({'selfsimilar_then_neutral': 'A', 'neutral_then_selfsimilar': 'B'})
     return df
 
 
@@ -104,14 +115,14 @@ def simulate(n=20, seed=20261103):
         for period, voice in enumerate(order):
             ssv = voice == 'SSV'
             fix_block, ipa_block, validity_block = rng.normal(0, .15), rng.normal(0, .05), rng.normal(0, .06)
-            for theta in rng.permutation(angles):
+            for position, theta in enumerate(rng.permutation(angles)):
                 log_t = np.log(9.2) + intercept + .0042 * theta - .07 * period + (slope_ if ssv else 0) + rng.normal(0, .42)
                 time = float(np.exp(log_t))
                 missed = int(time >= 25)
                 time = min(time, 25.0)
                 fix_rate = max(fix_mean + fix_block + rng.normal(0, .3), .8)
                 hints = rng.poisson(hint_rate * time)
-                rows.append(dict(participant_id=pid, voice=voice, period=period + 1, order='A' if p % 2 == 0 else 'B',
+                rows.append(dict(participant_id=pid, voice=voice, period=period + 1, position=position, order='A' if p % 2 == 0 else 'B',
                                  absolute_theta_deg=theta, missed_target=missed, time_to_final_selection_seconds=time,
                                  hint_count=hints, gaze_validity_rate=np.clip(validity + validity_block + rng.normal(0, .04), 0, 1),
                                  interrupted_instruction_count=rng.poisson(.04 * hints),
@@ -128,9 +139,9 @@ def simulate(n=20, seed=20261103):
                        nasa_tlx_frustration=r(3.6 + workload - .3 * ssv, 1, 0, 10))
             tlx['nasa_tlx_score'] = np.mean([v if k != 'nasa_tlx_performance' else 10 - v for k, v in tlx.items()])
             tlx.update(nasa_tlx_scale_max=10, nasa_tlx_performance_direction='high_is_good')
-            sub = lambda mean, k, shift: float(np.clip(rng.normal(mean + imi[k] + shift * ssv, .5), 1, 7))
+            sub = lambda mean, k, shift: float(np.clip(rng.normal(mean + imi[k] + shift * ssv, .65), 1, 7))
             block = dict(participant_id=pid, voice=voice, **tlx,
-                         imi_enjoyment_mean=sub(4.9, 0, .3), imi_effort_mean=sub(5.3, 1, 0),
+                         imi_enjoyment_mean=sub(4.9, 0, .2), imi_effort_mean=sub(5.3, 1, 0),
                          imi_pressure_mean=sub(3.1, 2, -.1), imi_value_mean=sub(5.0, 3, .2),
                          agent_copresence_mean=float(np.clip(rng.normal(4.4 + likert_person[0] + .3 * ssv, .6), 1, 7)),
                          agent_intelligence_mean=float(np.clip(rng.normal(4.8 + likert_person[1] + .1 * ssv, .6), 1, 7)),
@@ -142,14 +153,6 @@ def simulate(n=20, seed=20261103):
     df = pd.DataFrame(rows).merge(pd.DataFrame(blocks_), on=['participant_id', 'voice'])
     df['completion'] = df.time_to_final_selection_seconds.where(df.missed_target == 0)
     return df
-
-
-def simulated_contrast(df):
-    """Participant-level SSV/SAV ratio of geometric mean completion time with a t interval; a stand-in for the model."""
-    table = paired(df, df.completion, geomean)
-    log_ratio = np.log(table.SSV / table.SAV)
-    mean, half = ci(log_ratio)
-    return {'estimate': np.exp(mean), 'low': np.exp(mean - half), 'high': np.exp(mean + half)}
 
 
 def paired(df, values, how='mean'):
@@ -331,7 +334,7 @@ def rq1_time(df, model, out, development):
     ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
     ax.spines['left'].set_visible(False)
     ax.axvline(1, color=MUTED, lw=.8, ls='--')
-    ax.set_title('(c) Paired ratio (unadjusted)' if development == 'simulated' else '(c) Adjusted contrast', fontsize=8.5, loc='left')
+    ax.set_title('(c) Adjusted contrast', fontsize=8.5, loc='left')
     ax.text(.82, -.85, 'SSV faster', fontsize=7, color=COLOR['SSV'])
     ax.text(1.22, -.85, 'SAV faster', fontsize=7, color=COLOR['SAV'], ha='right')
     if model:
@@ -431,6 +434,79 @@ def delivery(df, out, development):
     save(fig, 'results-guidance-delivery', out)
 
 
+def fmt(value, digits=2):
+    # \ensuremath gives a true minus sign whether the macro is used in text or in math.
+    return f'{value:.{digits}f}'.replace('-', '\\ensuremath{-}')
+
+
+def p_text(p):
+    return '< .001' if p < .001 else '= ' + f'{p:.3f}'.lstrip('0')
+
+
+def model_stats(df):
+    """Fit the planned models and return LaTeX macro values; needs statsmodels.
+
+    Trial level: log completion time (completed searches) and the eye measures use linear mixed models with voice,
+    period, order, position in the block and |theta0| as fixed effects and a participant random intercept and
+    random voice slope; missed targets use a GEE logistic model clustered by participant.
+    Participant-by-block scores (similarity, NASA-TLX overall, IMI interest/enjoyment) use paired t-tests.
+    Missed targets and NASA-TLX form the RQ1 secondary family and are Holm-adjusted.
+    """
+    import statsmodels.formula.api as smf
+    import statsmodels.api as sm
+    from statsmodels.stats.multitest import multipletests
+    d = df.assign(ssv=(df.voice == 'SSV').astype(float), period2=(df.period == 2).astype(float),
+                  orderB=(df.order == 'B').astype(float),
+                  position_c=df.position - df.position.mean(), theta_c=(df.absolute_theta_deg - 90) / 45)
+    fixed = 'ssv + period2 + orderB + position_c + theta_c'
+    macros = {'N': str(d.participant_id.nunique()), 'Trials': str(len(d))}
+
+    def lmm(name, y, rows):
+        # A random voice slope keeps trials from counting as independent evidence about the voice effect.
+        fit = smf.mixedlm(f'{y} ~ {fixed}', rows, groups=rows.participant_id, re_formula='~ssv').fit(reml=True)
+        b, (lo, hi) = fit.params['ssv'], fit.conf_int().loc['ssv']
+        macros.update({name + 'B': fmt(b, 3), name + 'Lo': fmt(lo, 3), name + 'Hi': fmt(hi, 3),
+                       name + 'Z': fmt(fit.tvalues['ssv']), name + 'P': p_text(fit.pvalues['ssv']), name + 'Obs': str(len(rows))})
+        return b, lo, hi
+
+    done = d[d.completion.notna()].assign(log_t=lambda x: np.log(x.completion))
+    b, lo, hi = lmm('Time', 'log_t', done)
+    macros.update(TimeRatio=fmt(np.exp(b)), TimeRatioLo=fmt(np.exp(lo)), TimeRatioHi=fmt(np.exp(hi)))
+    for name, column in (('Ipa', 'ipa_candidate_hz'), ('Fix', 'fixation_count'), ('Sacc', 'saccade_frequency_hz')):
+        lmm(name, column, d[d[column].notna()])
+
+    gee = smf.gee(f'missed_target ~ {fixed}', 'participant_id', d, family=sm.families.Binomial(),
+                  cov_struct=sm.cov_struct.Exchangeable()).fit()
+    bounds = gee.conf_int().loc['ssv']
+    macros.update(MissOR=fmt(np.exp(gee.params['ssv'])), MissORLo=fmt(np.exp(bounds.iloc[0])), MissORHi=fmt(np.exp(bounds.iloc[1])),
+                  MissZ=fmt(gee.tvalues['ssv']))
+    secondary = [gee.pvalues['ssv']]
+
+    def paired_t(name, table):
+        diff = table.SSV - table.SAV
+        t, p = stats.ttest_rel(table.SSV, table.SAV)
+        mean, half = ci(diff)
+        macros.update({name + 'SAV': fmt(table.SAV.mean()), name + 'SSV': fmt(table.SSV.mean()), name + 'Diff': fmt(mean),
+                       name + 'Lo': fmt(mean - half), name + 'Hi': fmt(mean + half), name + 'T': fmt(t), name + 'Df': str(len(diff) - 1),
+                       name + 'P': p_text(p), name + 'Dz': fmt(diff.mean() / diff.std(ddof=1))})
+        return p
+
+    b_ = blocks(df)
+    paired_t('Sim', paired(b_, survey(b_, '__voice_item_1')))
+    secondary.append(paired_t('Tlx', paired(b_, tlx_0_10(b_).nasa_tlx_score)))
+    paired_t('Imi', paired(b_, pd.to_numeric(b_.imi_enjoyment_mean, errors='coerce')))
+    holm = multipletests(secondary, method='holm')[1]
+    macros.update(MissP=p_text(secondary[0]), MissPHolm=p_text(holm[0]), TlxPHolm=p_text(holm[1]))
+    return macros
+
+
+def write_stats(macros, path):
+    lines = ['% Generated by generate-results-figures.py; do not edit by hand.']
+    lines += [f'\\newcommand{{\\res{k}}}{{{v}}}' for k, v in macros.items()]
+    path.write_text('\n'.join(lines) + '\n')
+    print('wrote', path)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data', nargs='+')
@@ -440,7 +516,15 @@ def main():
     parser.add_argument('--simulated', action='store_true')
     args = parser.parse_args()
     df = load(args.data, args.development) if args.data else simulate() if args.simulated else None
-    model = json.loads(Path(args.model).read_text()) if args.model else simulated_contrast(df) if args.simulated else None
+    model, macros = None, None
+    if df is not None:
+        try:
+            macros = model_stats(df)
+            model = {'estimate': float(macros['TimeRatio']), 'low': float(macros['TimeRatioLo']), 'high': float(macros['TimeRatioHi'])}
+        except ImportError:
+            print('statsmodels not installed: skipping model estimates; run with uv run --with statsmodels')
+    if args.model:
+        model = json.loads(Path(args.model).read_text())
     flow = json.loads(Path(args.flow).read_text()) if args.flow else None
     out = Path('/tmp/results-preview') if args.development else F
     out.mkdir(exist_ok=True)
@@ -454,6 +538,8 @@ def main():
     rq3_imi(df, out, mode)
     exploratory(df, out, mode)
     delivery(df, out, mode)
+    if macros:
+        write_stats(macros, out / 'results-stats.tex')
 
 
 if __name__ == '__main__':
