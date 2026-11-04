@@ -206,7 +206,7 @@ for i, item in enumerate(['Stay silent', 'Orient', 'Refine', 'Correct', 'Encoura
     text(676, 428 + i * 16, item, 13, anchor='start')
 route([(710, 516), (710, 536)])
 text(710, 558, '2. Phrase', 14, True)
-text(710, 577, ['Choose the most', 'natural phrase'], 13)
+text(710, 577, ['Choose the most', 'eligible phrase'], 13)
 label(563, 688, ['Gaze-Contingent Guidance Agent'])
 text(563, 710, 'Local LLM', 14, True, color='#000000')
 route([(520, 450), (626, 450)])
