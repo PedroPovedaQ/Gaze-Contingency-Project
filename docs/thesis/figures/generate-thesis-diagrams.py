@@ -54,18 +54,22 @@ d.line(260,285,420,350);d.line(740,285,580,350)
 d.box(250,350,500,95,'Immutable request snapshot',['Current evidence + eligible choices + memory'],gold)
 d.line(500,445,500,490);d.text(500,525,'Recheck live state before any returned choice plays',22,True,'middle');d.save('bounded-memory')
 
-d=Drawing(650);d.title('Nominal wall category versus exact target bearing','Conceptual overhead geometry; target position within a wall changes the realized angle.')
+# Starting geometry: no title or footer; signed plane steps around the octagon (positive is clockwise, to the right of the cross).
+d=Drawing(522);d.s.append('<g transform="translate(0,-88)">')
 cx,cy=285,350;r=215
 pts=[(cx+r*math.sin(math.radians(a)),cy-r*math.cos(math.radians(a))) for a in [22.5+45*k for k in range(8)]]
 d.path('M'+'L'.join(f'{x},{y}' for x,y in pts)+'Z',color='#adb9bd')
-d.circle(cx,cy,12,fill=B);d.text(cx-15,cy+43,'o',21,True)
-d.line(cx,cy,cx,151,color=B);d.text(210,100,'Cross reference c',19)
-d.line(cx,cy,426,209,color=grey,dash=True);d.text(455,180,'Plane center',18)
-d.line(cx,cy,465,249,color=G);d.circle(465,249,7,fill=gold,stroke=G);d.text(480,272,'Target p',19)
+for a,label in zip(range(0,360,45),['0°','+45°','+90°','+135°','180°','−135°','−90°','−45°']):
+ lx,ly=cx+232*math.sin(math.radians(a)),cy-232*math.cos(math.radians(a))
+ d.text(lx,ly+7,label,18,True,'middle',color=grey)
+d.circle(cx,cy,12,fill=B)
+d.line(cx,cy,cx,151,color=B);d.text(274,246,'Cross reference c',18,anchor='end')
+d.line(cx,cy,426,209,color=grey,dash=True);d.text(412,196,'Plane center',17,anchor='end')
+d.line(cx,cy,465,249,color=G);d.circle(465,249,7,fill=gold,stroke=G);d.text(472,284,'Target p',18)
 d.path('M285 275 A75 75 0 0 1 347 308',G);d.text(318,261,'θ₀',24,True,color=G)
-d.box(570,110,390,155,'Allocation category',['0°, 45°, 90°, 135°, or 180°','Eight trials per category per block','Uses nominal wall relationship'])
-d.box(570,310,390,155,'Exact starting bearing',['Saved origin → cross versus target','Horizontal projection; signed angle','Pre-cue snapshot is still required'],gold)
-d.text(45,610,'An octagon and target are schematic; this is not a recorded layout.',19,color=grey);d.save('starting-geometry')
+d.box(570,170,390,155,'Allocation category',['0°, 45°, 90°, 135°, or 180°','Six trials per signed step per block','6/12/12/12/6 across 0–180 degrees'])
+d.box(570,370,390,155,'Exact starting bearing',['Saved origin to cross versus target','Horizontal projection; signed angle','Saved at readiness, before the cue'],gold)
+d.s.append('</g>');d.save('starting-geometry')
 
 d=Drawing(550);d.title('Vertical demand has an explicit reference','Proposed allocation uses cross-relative height, distinct from live eye-to-target guidance.')
 d.line(80,440,520,440,arrow=False);d.text(80,475,'Side elevation',18,color=grey)

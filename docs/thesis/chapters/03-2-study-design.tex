@@ -20,28 +20,21 @@ The study uses a within-participant comparison of two voice conditions: an SAV a
 The researcher assigns each participant to Order A (self-similar first) or Order B (SAV first) from a roster kept outside the application, 10 per order; the application records the assignment but does not randomize it or enforce the quota. Counterbalancing the order distributes possible carryover from the first block across the two voices~\cite{williams1949residual}, although it does not remove carryover. Each participant completes one practice trial followed by two measured blocks of 48 trials, one per voice. The practice trial uses the first voice in the assigned order (the SSV for Order A, or the SAV for Order B) and is excluded from measured outcomes. A seed makes the trial schedule reproducible. Nominal horizontal-angle quotas are identical across blocks, with trial order and left/right assignments randomized subject to those quotas. Within each block, each bilateral angle category (45, 90 and 135 degrees) has six left and six right assignments. Each block is divided into six shuffled groups of eight trials, each of which contains every signed plane step. Trial order is further constrained so that each of the eight object planes is the target on exactly six trials per block. Because every complete group advances four planes, this constraint makes the 0-degree and 180-degree steps less common as the first or last step of a group, although their totals do not change. Each of the 24 shape-and-color identities appears twice in every block.
 
 \begin{table}[htbp]\centering
-\caption[Study allocation]{Study allocation. Nominal plane angles are schedule categories, not exact object bearings or accumulated head rotation.}
+\caption[Study allocation]{Study allocation.}
 \tagpdfsetup{table/header-rows={1}}
 \begin{tabularx}{\linewidth}{@{}lX@{}}\toprule
 Parameter & Allocation \\\midrule
 Voice conditions & SAV; SSV \\
 Measured trials & 48 per block; 96 per participant \\
-Practice & One trial; excluded from outcomes \\
-Absolute nominal plane step & Per block, six trials each at 0 and 180 degrees and twelve each at 45, 90 and 135 degrees, so that each of the eight signed plane steps occurs six times \\
-Target plane & Six targets on each of the eight object planes per block \\
-Vertical allocation & 24 targets above and 24 below readiness-cross height per block; three above and three below at each signed plane step \\
-Local clutter & Within 0.50~m of the target: 5 to 8 objects, of which 2 to 4 share its color or shape \\
-Condition order & Counterbalanced Order A and Order B \\
-Active search limit & 25 seconds, excluding explicit pauses \\
-Selection & Right-controller ray and a trigger press \\\bottomrule
+Practice & One trial; excluded from outcomes \\\bottomrule
 \end{tabularx}
 \end{table}
 
 Objects vary in position within each plane of the shared layout, so each trial specifies the exact starting angle and target height in addition to the assigned object plane. Vertical allocation is defined by target-center height relative to the readiness cross rather than the participant's seated eye height. The cross is placed at the midpoint of the permitted object-height range, and each assigned target center lies between 10 and 45 percent of that range above or below it. The lower bound keeps every target clearly above or below the cross, and the upper bound keeps targets away from the floor and the top of the object plane. Pilot sessions will assess target visibility and seated comfort at both extremes.
 
 \begin{figure}[htbp]\centering
-\IfFileExists{figures/study-procedure-current.pdf}{\includegraphics[width=\linewidth,alt={Consent, Selected Agent Voice choice, audio intake and headset setup precede two counterbalanced orders. Order A runs a self-similar practice trial, a blue 48-trial self-similar block, a break and a gold 48-trial Selected Agent Voice block; Order B reverses the colors. Both end with a side-by-side final survey. Each trial separates readiness, opening cue, reveal and trigger selection.}]{figures/study-procedure-current.pdf}}{\fbox{\parbox{0.94\linewidth}{Consent $\rightarrow$ SAV $\rightarrow$ audio intake $\rightarrow$ headset setup $\rightarrow$ practice $\rightarrow$ 48-trial voice block $\rightarrow$ break $\rightarrow$ 48-trial voice block $\rightarrow$ survey and debrief. Within each trial: readiness cross $\rightarrow$ opening cue $\rightarrow$ object reveal and active search $\rightarrow$ correct trigger selection.}}}
-\caption[Study procedure and trial timing]{Study procedure and trial timing. (a) Shared setup precedes the two counterbalanced orders; color marks the voice heard in each block, blue for the SSV and gold for the SAV. The practice trial uses the first assigned voice and is excluded from outcomes. (b) Opening guidance precedes object reveal; active completion time ends at correct right-trigger selection. The success path shown here is bounded by a 25-second active-search deadline; expiry ends the attempt without a successful completion time. Questionnaires and breaks remain outside active-search timing.}
+\IfFileExists{figures/study-procedure-current.pdf}{\includegraphics[width=\linewidth,alt={Two counterbalanced orders. Order A runs a self-similar practice trial, a blue 48-trial self-similar block, a break and a gold 48-trial Selected Agent Voice block; Order B reverses the colors. Both end with a side-by-side final survey. Each trial separates readiness, opening cue, reveal and trigger selection.}]{figures/study-procedure-current.pdf}}{\fbox{\parbox{0.94\linewidth}{Consent $\rightarrow$ SAV $\rightarrow$ audio intake $\rightarrow$ headset setup $\rightarrow$ practice $\rightarrow$ 48-trial voice block $\rightarrow$ break $\rightarrow$ 48-trial voice block $\rightarrow$ survey and debrief. Within each trial: readiness cross $\rightarrow$ opening cue $\rightarrow$ object reveal and active search $\rightarrow$ correct trigger selection.}}}
+\caption[Study procedure and trial timing]{Study procedure and trial timing. Top: the two counterbalanced orders; color marks the voice heard in each block, blue for the SSV and gold for the SAV. The practice trial uses the first assigned voice and is excluded from outcomes. Bottom: within each trial, opening guidance precedes object reveal; active completion time ends at correct right-trigger selection. The success path shown here is bounded by a 25-second active-search deadline; expiry ends the attempt without a successful completion time. Questionnaires and breaks remain outside active-search timing.}
 \label{fig:study-procedure}
 \end{figure}
 
@@ -65,35 +58,12 @@ Its sign gives the direction of the turn, and its magnitude $|\theta_0|$ gives t
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth,alt={Overhead octagonal layout with origin, cross reference, nominal plane center, and an offset target showing distinct bearings.}]{figures/starting-geometry.pdf}
-\caption[Nominal plane assignment and exact starting angle]{Conceptual overhead geometry. The target is placed on its assigned object plane where the assigned angle from the origin-to-cross bearing meets the object plane, so it is generally offset from the plane center. The pre-cue snapshot saves the origin, cross and target used for this placement.}
+\includegraphics[width=\linewidth,alt={Overhead octagonal layout with the eight object planes labeled by signed plane step, 0 degrees toward the cross, plus 45, 90 and 135 degrees clockwise, minus 45, 90 and 135 degrees counterclockwise, and 180 degrees behind; arrows from the origin to the cross, a plane center and an offset target show the starting angle theta zero.}]{figures/starting-geometry.pdf}
+\caption[Nominal plane assignment and exact starting angle]{Conceptual overhead geometry. The target is placed on its assigned object plane where the assigned angle from the origin-to-cross bearing meets the object plane, so it is generally offset from the plane center. The pre-cue snapshot saves the origin, cross and target used for this placement. Labels give each object plane's signed plane step; positive steps are clockwise, to the right of the cross.}
 \label{fig:starting-geometry}
 \end{figure}
 
-Table~\ref{tab:measures-overview} lists what is measured for each research question, where it comes from, and the unit at which it is analyzed. Section~\ref{sec:scoring} gives the scoring of each measure.
-
-\begin{table}[htbp]
-\centering
-\caption[Measures by research question]{Measures by research question. Fixation, saccade, and pupil measures remain exploratory until the eye-event detectors are validated.}
-\label{tab:measures-overview}
-\small
-\tagpdfsetup{table/header-rows={1}}
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.2\linewidth}>{\raggedright\arraybackslash}p{0.16\linewidth}>{\raggedright\arraybackslash}p{0.17\linewidth}@{}}
-\toprule
-Role & Measure & Unit & Source & Analysis unit \\\midrule
-RQ1 (primary) & Active completion time & Seconds, log-transformed & Application events & Trial \\
-RQ1 & Missed targets & Percent of searches & Application events & Participant by block \\
-RQ1 & Perceived workload (NASA-TLX) & Mean of six 0--10 ratings & Final survey & Participant by voice block \\
-RQ2 & Index of Pupillary Activity & Extrema per second & Eye tracker & Search \\
-RQ2 & Fixation count & Count & Eye tracker & Search \\
-RQ2 & Saccade frequency & Events per second & Eye tracker & Search \\
-RQ3 & IMI interest/enjoyment & Subscale mean & Final survey & Participant by voice block \\
-Manipulation check & Perceived voice similarity & 1--7 rating & Final survey & Participant by voice block \\
-Exploratory & Agent perception, eeriness, ARQ, custom voice items & 1--7 ratings & Final survey & Participant by voice block \\
-Exploratory & Search behavior (head rotation, object planes visited, revisits) & Degrees, counts & Application records & Trial \\
-Adjustment & Starting angle $|\theta_0|$ & Degrees & Pre-cue snapshot & Trial \\\bottomrule
-\end{tabularx}
-\end{table}
+Section~\ref{sec:scoring} gives the scoring of each measure.
 
 \subsection{Research Questions and Outcomes}
 Each research question in Section~\ref{sec:research-questions} maps onto specific outcomes. RQ1 uses active completion time as the primary outcome, with missed targets and perceived workload, measured with an adaptation of NASA-TLX~\cite{hart1988nasatlx}, as secondary outcomes. RQ2 uses the Index of Pupillary Activity~\cite{duchowski2018ipa}, fixation count, and saccade frequency, which remain exploratory until the eye-event detectors are validated on the headset. RQ3 uses the interest/enjoyment subscale of the Intrinsic Motivation Inventory (IMI)~\cite{ryan1982control,mcauley1989imi}, with the other three IMI subscales reported alongside it. Agent perception, eeriness, voice experience, reliance, search behavior, and variation in the voice contrast with starting angle are exploratory. The hypotheses are directional, favoring the SSV, but the voice contrasts are tested two-sided so that an advantage for the SAV would also be detected. Repeated trials are treated as within-participant observations, not as independent participants.

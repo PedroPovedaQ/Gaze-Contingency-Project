@@ -23,8 +23,12 @@ def text(x, y, lines, size=15, bold=False, color=INK):
                  f'font-size="{size}" font-weight="{"bold" if bold else "normal"}" fill="{color}">{escape(line)}</text>')
 
 
-def card(x, y, w, h, title, note, quotes):
-    s.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="8" fill="{FILL}" stroke="{EDGE}" stroke-width="1.4"/>')
+# One tint per row so the coarse, fine and as-needed stages read as groups; voice colors (blue/gold) are avoided.
+ROW_TINTS = [('#e1efee', '#8fbab5'), ('#ebe7f4', '#a99cc9'), ('#f8eadc', '#d1aa83')]
+
+
+def card(x, y, w, h, title, note, quotes, fill=FILL, edge=EDGE):
+    s.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="8" fill="{fill}" stroke="{edge}" stroke-width="1.4"/>')
     text(x + 12, y + 24, title, 17, True)
     text(x + 12, y + 44, note, 13, color=MUTED)
     text(x + 12, y + 68, quotes, 15)
@@ -45,11 +49,11 @@ rows = [(34, 'Coarse: find the object plane', [
             ('Progress', 'After measured progress', ['“Keep going to the left.”', '“A bit more.”']),
             ('On target', 'Gaze or pointing', ['“Right there.”', '“Yep, that\'s it!”']),
             ('Trigger reminder', 'Target held at the deadline', ['“Time up. Almost! Don\'t', 'forget to press the right', 'trigger to select the object.”'])])]
-for y, label, cards in rows:
+for (y, label, cards), (fill, edge) in zip(rows, ROW_TINTS):
     text(20, y - 10, label, 18, True)
     for i, (t, n, q) in enumerate(cards):
         x = X0 + i * (CW + GAP)
-        card(x, y, CW, CH, t, n, q)
+        card(x, y, CW, CH, t, n, q, fill, edge)
         if i < 3:
             arrow(x + CW + 1, y + CH / 2, x + CW + GAP - 1, y + CH / 2)
 Y = 374
@@ -59,7 +63,7 @@ for i, (t, n, q) in enumerate([
         ('Wrong selection', 'A tone, then speech', ['“Try another object.”']),
         ('Timeout', '25-second deadline', ['“Time up. Let\'s shake', 'that round off and start', 'the next.”']),
         ('Success', 'Correct selection', ['“Nice work. You found it', 'on your first selection.”'])]):
-    card(X0 + i * (CW + GAP), Y, CW, CH, t, n, q)
+    card(X0 + i * (CW + GAP), Y, CW, CH, t, n, q, *ROW_TINTS[2])
 s.append('</svg>')
 svg = ''.join(s)
 name = 'phrase-stages'

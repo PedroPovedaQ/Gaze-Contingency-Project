@@ -1,4 +1,4 @@
-"""Study procedure figure: shared setup, color-coded counterbalanced voice orders, and trial timing.
+"""Study procedure figure: color-coded counterbalanced voice orders and trial timing.
 
 Colors match the voice-condition panels (analysis/thesis_voice_condition_plots.py):
 Selected Agent Voice gold, self-similar voice blue. The 1000-px canvas prints at text width,
@@ -15,7 +15,7 @@ INK, MUTED, LINE = '#1f2a30', '#56636b', '#8a969c'
 SETUP, SETUP_EDGE = '#eef1f3', '#a9b4ba'
 SELF, SELF_LIGHT = '#7199D6', '#d4e1f4'
 NEUTRAL, NEUTRAL_LIGHT = '#E8B44F', '#f8e6c0'
-W, H = 1000, 715
+W, H = 1000, 410
 s = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">',
      f'<rect width="{W}" height="{H}" fill="white"/>',
      '<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">'
@@ -59,22 +59,13 @@ def row_of_cards(y, h, items, numbered):
             arrow(x + CW + 1, y + h / 2, x + CW + GAP - 1, y + h / 2)
 
 
-# (a) Study procedure
-text(20, 30, '(a) Study procedure', 22, True)
-SY, SH = 46, 126
-row_of_cards(SY, SH, [('Consent', ['Signed consent before', 'any voice capture']),
-                      ('Selected Agent Voice', ['Audition the catalog;', 'choose a voice']),
-                      ('Audio intake', ['Nine spoken prompts;', 'clone and cache voice;', 'eligibility review']),
-                      ('Headset setup', ['Fit, vendor calibration,', 'spatial validation'])], True)
-
-RY, RH, RG = 206, 96, 12
+RY, RH, RG = 16, 96, 12
 PX, PW = 118, 104
 B1, BW = PX + PW + 12, 228
 BK, KW = B1 + BW + 12, 86
 B2 = BK + KW + 12
 FX = B2 + BW + 14
 FW = W - 20 - FX
-arrow(W / 2, SY + SH + 3, W / 2, RY - 6)
 rows = [('Order A', ['Self-similar', 'first'], (SELF, SELF_LIGHT, 'Self-similar voice'), (NEUTRAL, 'Selected Agent Voice')),
         ('Order B', ['Selected', 'Agent Voice', 'first'], (NEUTRAL, NEUTRAL_LIGHT, 'Selected Agent Voice'), (SELF, 'Self-similar voice'))]
 for r, (name, sub, (c1, l1, v1), (c2, v2)) in enumerate(rows):
@@ -95,9 +86,8 @@ for r, (name, sub, (c1, l1, v1), (c2, v2)) in enumerate(rows):
     for a, b in ((PX + PW, B1), (B1 + BW, BK), (BK + KW, B2), (B2 + BW, FX)):
         arrow(a + 1, y + RH / 2, b - 1, y + RH / 2)
 box(FX, RY, FW, 2 * RH + RG, SETUP, SETUP_EDGE)
-text(FX + 12, RY + 24, '05', 13, True, color=MUTED)
-text(FX + 12, RY + 46, 'Final survey', 17, True)
-text(FX + 12, RY + 70, ['Both voices rated', 'side by side;', 'preference;', 'debrief'], 14)
+text(FX + 12, RY + 30, 'Final survey', 17, True)
+text(FX + 12, RY + 54, ['Both voices rated', 'side by side;', 'preference;', 'debrief'], 14)
 
 LY = RY + 2 * RH + RG + 34
 x = 20
@@ -108,18 +98,13 @@ for fill, edge, dash, label in ((SELF, SELF, False, 'Self-similar voice (partici
     text(x + 34, LY, label, 14)
     x += 34 + len(label) * 7.4 + 34
 
-# (b) Within each trial
-TY = LY + 30
+# Within each trial
+TY = LY + 24
 s.append(f'<line x1="20" y1="{TY}" x2="{W - 20}" y2="{TY}" stroke="#d5dbde" stroke-width="1.2"/>')
-text(20, TY + 34, '(b) Within each trial', 22, True)
-row_of_cards(TY + 50, 92, [('Readiness cross', ['Valid gaze sets readiness;', 'target stays hidden']),
+row_of_cards(TY + 22, 92, [('Readiness cross', ['Valid gaze sets readiness;', 'target stays hidden']),
                            ('Opening cue', ['Objects hidden; cue plays', 'before search timing']),
                            ('Reveal and search', ['Objects appear; timer', 'starts; agent guides']),
                            ('Trigger selection', ['Correct right-trigger', 'press stops the timer'])], False)
-FY = TY + 50 + 92 + 30
-text(20, FY, 'Primary outcome: active search-completion time, adjusted for pre-cue starting theta.', 15, True)
-text(20, FY + 22, ['A 25-second active-search deadline ends unsuccessful attempts. Questionnaires and breaks are outside',
-                   'active-search timing. Height delta = target Y − readiness-cross Y.'], 14, color=MUTED)
 s.append('</svg>')
 
 svg = ''.join(s)
