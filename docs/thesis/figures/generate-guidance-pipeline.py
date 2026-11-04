@@ -96,18 +96,26 @@ def stroke(body, width=3):
     s.append(f'<g fill="none" stroke="{INK}" stroke-width="{width}" stroke-linecap="round" stroke-linejoin="round">{body}</g>')
 
 
-def eye(cx, cy):
-    stroke(f'<path d="M{cx - 26},{cy} Q{cx},{cy - 22} {cx + 26},{cy} Q{cx},{cy + 22} {cx - 26},{cy} z"/><circle cx="{cx}" cy="{cy}" r="8"/>')
-    s.append(f'<circle cx="{cx}" cy="{cy}" r="3.5" fill="{INK}"/>')
+def headset_front(cx, cy):
+    """Front view of a standalone headset: strap, visor shell, faceplate and its cameras."""
+    s.append(f'<path d="M{cx - 30},{cy - 16} Q{cx},{cy - 40} {cx + 30},{cy - 16}" fill="none" stroke="#5b6368" stroke-width="5" stroke-linecap="round"/>')
+    s.append(f'<rect x="{cx - 37}" y="{cy - 22}" width="74" height="46" rx="15" fill="#2f3539"/>')
+    s.append(f'<rect x="{cx - 32}" y="{cy - 17}" width="64" height="36" rx="11" fill="#454d53" stroke="#6b757b" stroke-width="1"/>')
+    s.append(f'<path d="M{cx - 8},{cy + 24} Q{cx},{cy + 14} {cx + 8},{cy + 24} z" fill="#f4f6f7"/>')
+    for x in (cx - 10, cx + 10):
+        s.append(f'<circle cx="{x}" cy="{cy - 2}" r="6" fill="#111417" stroke="#8a949a" stroke-width="1.4"/>')
+        s.append(f'<circle cx="{x - 1.8}" cy="{cy - 3.8}" r="1.6" fill="#c9d1d5"/>')
+    s.append(f'<rect x="{cx - 4}" y="{cy + 8}" width="8" height="3.5" rx="1.5" fill="#111417"/>')
+    for x in (cx - 26, cx + 26):
+        for y in (cy - 10, cy + 12):
+            s.append(f'<circle cx="{x}" cy="{y}" r="2.6" fill="#111417" stroke="#8a949a" stroke-width=".8"/>')
+    s.append(f'<circle cx="{cx + 16}" cy="{cy - 12}" r="1.2" fill="#7ad3a8"/>')
 
 
-def headset(cx, cy):
-    stroke(f'<rect x="{cx - 24}" y="{cy - 12}" width="48" height="24" rx="9"/><path d="M{cx - 24},{cy - 2} h-7 M{cx + 24},{cy - 2} h7"/>'
-           f'<circle cx="{cx - 10}" cy="{cy}" r="4.5"/><circle cx="{cx + 10}" cy="{cy}" r="4.5"/>')
-
-
-def controller(cx, cy):
-    stroke(f'<circle cx="{cx}" cy="{cy - 7}" r="13"/><path d="M{cx - 6},{cy + 5} l-3,17 h18 l-3,-17"/><circle cx="{cx}" cy="{cy - 7}" r="3"/>')
+def ear(cx, cy, k=2.4):
+    """Ear outline (24-unit icon grid, scaled)."""
+    s.append(f'<g transform="translate({cx - 12 * k},{cy - 12 * k}) scale({k})" fill="none" stroke="{INK}" stroke-width="{2.6 / k:.3f}" stroke-linecap="round" stroke-linejoin="round">'
+             '<path d="M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0"/><path d="M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4"/></g>')
 
 
 def cloud(cx, cy):
@@ -172,11 +180,9 @@ label(790, 74, 'Voice Conditions')
 image(F / 'virtual-room.png', (90, 66, 1858, 1150), 25, 395, 180, 112)
 label(115, 535, ['Search Scene'])
 route([(205, 450), (230, 450)])
-s.append(f'<rect x="230" y="350" width="85" height="205" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
-scaled(1.15, 272, 390, eye)
-scaled(1.15, 272, 450, headset)
-scaled(1.15, 272, 512, controller)
-label(272, 582, ['Gaze, Head,', 'Controller'])
+s.append(f'<rect x="230" y="395" width="85" height="110" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
+headset_front(272, 452)
+label(272, 535, ['Gaze, Head,', 'Controller'])
 route([(315, 450), (333, 450)])
 s.append(f'<rect x="335" y="345" width="185" height="215" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
 text(428, 372, ['Guidance State'], 17, True, color='#000000')
@@ -196,9 +202,9 @@ label(710, 605, ['Decision Model'])
 text(710, 636, 'Local LLM', 14, True, color='#8a6410')
 route([(520, 450), (626, 450)])
 route([(792, 450), (862, 450)])
-text(831, 418, ['Chosen', 'phrase'], 13.5, color='#000000', italic=True)
+text(835, 418, ['Agent', 'Guidance'], 13, color='#000000', italic=True)
 scaled(1.15, 893, 450, speaker)
-scaled(1.15, 950, 450, headset)
+ear(950, 450)
 label(925, 505, ['Spoken Cue'])
 # Both voice conditions feed the spoken cue.
 s.append(f'<path d="M725,202 V250 H925 M890,202 V250" fill="none" stroke="{LINE}" stroke-width="2"/>')
@@ -208,7 +214,7 @@ text(668, 703, 'Result sent back to memory', 14, color='#000000', italic=True)
 emoji('\U0001F9E0', 762, 686, 22)
 
 # Row 3: review and export
-route([(272, 612), (272, 840), (422, 840)])
+route([(272, 565), (272, 840), (422, 840)])
 text(363, 828, 'Transfer', 13.5, color='#000000', italic=True)
 image(EXPERIMENT / 'trial-viewer-shots/real-dev-20261103/01-first-person-guidance.png', (0, 70, 1440, 890), 425, 772, 240, 137)
 label(545, 933, ['Trial Review'])
