@@ -127,6 +127,7 @@ def simulate(n=20, seed=20261103):
                        nasa_tlx_effort=r(5.5 + workload - .3 * ssv, 1, 0, 10),
                        nasa_tlx_frustration=r(3.6 + workload - .3 * ssv, 1, 0, 10))
             tlx['nasa_tlx_score'] = np.mean([v if k != 'nasa_tlx_performance' else 10 - v for k, v in tlx.items()])
+            tlx.update(nasa_tlx_scale_max=10, nasa_tlx_performance_direction='high_is_good')
             sub = lambda mean, k, shift: float(np.clip(rng.normal(mean + imi[k] + shift * ssv, .5), 1, 7))
             block = dict(participant_id=pid, voice=voice, **tlx,
                          imi_enjoyment_mean=sub(4.9, 0, .3), imi_effort_mean=sub(5.3, 1, 0),
@@ -167,6 +168,17 @@ def blocks(df):
 
 
 # Panels
+def boxes(ax, samples, positions, voices, width):
+    """Filled box per voice: median, quartiles, whiskers to 1.5 IQR, hollow circles for outliers."""
+    parts = ax.boxplot([np.asarray(v, float)[~np.isnan(np.asarray(v, float))] for v in samples], positions=positions,
+                       widths=width, patch_artist=True, manage_ticks=False, zorder=2,
+                       medianprops=dict(color=INK, lw=1.1), whiskerprops=dict(color='#5b6266', lw=.9),
+                       capprops=dict(color='#5b6266', lw=.9),
+                       flierprops=dict(marker='o', ms=4, mfc='white', mec='#5b6266', mew=.8))
+    for patch, voice in zip(parts['boxes'], voices):
+        patch.set(facecolor=COLOR[voice], alpha=.6, edgecolor='#5b6266', lw=.9)
+
+
 def slope(ax, table, ylabel, ylim, log=False, title=None, note=''):
     ax.set(xlim=(-.45, 1.45), xticks=[0, 1], xticklabels=VOICES, ylabel=ylabel, ylim=ylim)
     if log:
@@ -183,18 +195,11 @@ def slope(ax, table, ylabel, ylim, log=False, title=None, note=''):
     if table is None or table.empty:
         pending(ax)
         return
-    # Small fixed jitter keeps tied ratings and percentages visible.
-    jitter = np.random.default_rng(0).uniform(-.06, .06, (len(table), 2))
+    # Faint lines join each participant's two values behind the boxes; small jitter separates ties.
+    jitter = np.random.default_rng(0).uniform(-.05, .05, (len(table), 2))
     for (_, row), dx in zip(table.iterrows(), jitter):
-        ax.plot([dx[0], 1 + dx[1]], row[list(VOICES)], color='#b4babe', lw=.8, zorder=1)
-    for x, voice in enumerate(VOICES):
-        ax.scatter(x + jitter[:, x], table[voice], s=12, color=COLOR[voice], alpha=.75, lw=0, zorder=2)
-        if log:  # geometric mean and its interval, computed on the log scale
-            mean, half = ci(np.log(table[voice]))
-            centre, err = np.exp(mean), [[np.exp(mean) - np.exp(mean - half)], [np.exp(mean + half) - np.exp(mean)]]
-        else:
-            centre, err = ci(table[voice])
-        ax.errorbar(x + (.24 if x else -.24), centre, yerr=err, fmt='D', ms=4.5, color=INK, capsize=2.5, lw=1.1, zorder=3)
+        ax.plot([dx[0], 1 + dx[1]], row[list(VOICES)], color='#c9ced1', lw=.6, zorder=1)
+    boxes(ax, [table[voice] for voice in VOICES], [0, 1], VOICES, width=.42)
     ax.set_xlabel(f'n = {len(table)}{note}', fontsize=7, color=MUTED)
 
 
@@ -204,15 +209,12 @@ def grouped(ax, df, columns, labels, ylabel, ylim, highlight=None):
     ax.set_xticklabels(labels)
     if highlight is not None:
         ax.axvspan(highlight - .45, highlight + .45, color='#eef1f3', zorder=0)
-    for offset, voice in ((-.13, 'SAV'), (.13, 'SSV')):
-        ax.errorbar([], [], fmt='o', color=COLOR[voice], label=voice)
-        if df is None:
-            continue
-        rows = df[df.voice == voice]
-        for i, column in enumerate(columns):
-            mean, half = ci(rows[column])
-            ax.errorbar(i + offset, mean, yerr=half, fmt='o', ms=4.5, color=COLOR[voice], capsize=2.5, lw=1.1)
-    ax.legend(frameon=False, ncol=2, loc='upper right', fontsize=7.5, handletextpad=.2)
+    for offset, voice in ((-.19, 'SAV'), (.19, 'SSV')):
+        ax.add_patch(plt.Rectangle((0, 0), 0, 0, facecolor=COLOR[voice], alpha=.6, edgecolor='#5b6266', label=voice))
+        if df is not None:
+            rows = df[df.voice == voice]
+            boxes(ax, [rows[column] for column in columns], x + offset, [voice] * len(columns), width=.34)
+    ax.legend(frameon=False, ncol=2, loc='upper right', fontsize=7.5, handletextpad=.4, handlelength=1.2)
     if df is None:
         pending(ax)
 
@@ -341,18 +343,30 @@ def rq1_time(df, model, out, development):
     save(fig, 'results-rq1-completion-time', out)
 
 
+def tlx_0_10(data):
+    """NASA-TLX on a common 0–10 scale with Performance oriented so higher means more successful.
+
+    Each response carries its own scale (0–10 from the final survey, 0–100 allowed for nasa_tlx.csv) and
+    Performance direction. Responses without both are left out rather than guessed; nasa_tlx_score is already
+    reversed correctly by analysis/tlx_scoring.py."""
+    data = data.copy()
+    scale = pd.to_numeric(data.nasa_tlx_scale_max, errors='coerce').where(lambda m: m.isin([10, 100]))
+    direction = data.nasa_tlx_performance_direction.where(data.nasa_tlx_performance_direction.isin(['high_is_good', 'high_is_poor']))
+    scale = scale.where(direction.notna())
+    for column in ('nasa_tlx_mental', 'nasa_tlx_physical', 'nasa_tlx_temporal', 'nasa_tlx_performance', 'nasa_tlx_effort',
+                   'nasa_tlx_frustration', 'nasa_tlx_score'):
+        data[column] = pd.to_numeric(data[column], errors='coerce') * 10 / scale
+    data['nasa_tlx_performance'] = data.nasa_tlx_performance.where(direction == 'high_is_good', 10 - data.nasa_tlx_performance)
+    return data
+
+
 def rq1_secondary(df, out, development):
     fig, axes = plt.subplots(1, 2, figsize=(6.5, 2.7), constrained_layout=True, gridspec_kw={'width_ratios': [1, 2.6]})
     table = None if df is None else paired(df, df.missed_target * 100)
     slope(axes[0], table, 'Missed targets (% of searches)', (-2, 50), title='(a) Missed targets')
     columns = ['nasa_tlx_mental', 'nasa_tlx_physical', 'nasa_tlx_temporal', 'nasa_tlx_performance', 'nasa_tlx_effort', 'nasa_tlx_frustration', 'nasa_tlx_score']
     labels = ['Mental', 'Physical', 'Temporal', 'Perfor-\nmance*', 'Effort', 'Frustra-\ntion', 'Overall']
-    data = None
-    if df is not None:
-        data = blocks(df)
-        for column in columns:
-            data[column] = pd.to_numeric(data[column], errors='coerce')
-    grouped(axes[1], data, columns, labels, 'NASA-TLX rating (0–10)', (0, 10), highlight=6)
+    grouped(axes[1], None if df is None else tlx_0_10(blocks(df)), columns, labels, 'NASA-TLX rating (0–10)', (0, 10), highlight=6)
     axes[1].set_title('(b) Perceived workload', fontsize=8.5, loc='left')
     stamp(fig, development)
     save(fig, 'results-rq1-workload', out)
