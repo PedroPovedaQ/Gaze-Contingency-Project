@@ -72,9 +72,10 @@ for r, (name, sub, (c1, l1, v1), (c2, v2)) in enumerate(rows):
     y = RY + r * (RH + RG)
     text(20, y + 36, name, 19, True)
     text(20, y + 58, sub, 14, color=MUTED)
-    box(PX, y, PW, RH, l1, c1, dash=True, width=2)
-    text(PX + 10, y + 28, 'Practice', 16, True)
-    text(PX + 10, y + 50, ['1 trial,', 'not analyzed'], 13)
+    # Practice is the voice-free shape exercise after calibration, the same in both orders.
+    box(PX, y, PW, RH, SETUP, LINE, dash=True, width=2)
+    text(PX + 10, y + 26, 'Practice', 16, True)
+    text(PX + 10, y + 46, ['Calibrate, then', 'select each', 'shape once'], 13)
     for bx, label, voice, color in ((B1, 'Block 1', v1, c1), (B2, 'Block 2', v2, c2)):
         box(bx, y, BW, RH, color, color)
         text(bx + 12, y + 30, label, 17, True)
@@ -93,7 +94,7 @@ LY = RY + 2 * RH + RG + 34
 x = 20
 for fill, edge, dash, label in ((SELF, SELF, False, 'Self-similar voice (participant’s clone)'),
                                 (NEUTRAL, NEUTRAL, False, 'Selected Agent Voice'),
-                                (SELF_LIGHT, LINE, True, 'Practice: first voice, excluded')):
+                                (SETUP, LINE, True, 'Practice: no voice, not analyzed')):
     box(x, LY - 15, 26, 19, fill, edge, dash, 1.8)
     text(x + 34, LY, label, 14)
     x += 34 + len(label) * 7.4 + 34
