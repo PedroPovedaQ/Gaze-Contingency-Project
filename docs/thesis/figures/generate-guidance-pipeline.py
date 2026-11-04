@@ -54,6 +54,18 @@ def image(source, crop, x, y, w, h, border=True):
         s.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="none" stroke="{INK}" stroke-width="1.6"/>')
 
 
+def emoji(char, x, y, size):
+    """Apple Color Emoji glyph as an embedded bitmap; SVG renderers do not draw color emoji."""
+    from PIL import ImageDraw, ImageFont
+    font = ImageFont.truetype('/System/Library/Fonts/Apple Color Emoji.ttc', 160)
+    picture = Image.new('RGBA', (160, 160), (0, 0, 0, 0))
+    ImageDraw.Draw(picture).text((0, 0), char, font=font, embedded_color=True)
+    data = io.BytesIO()
+    picture.save(data, 'PNG')
+    encoded = base64.b64encode(data.getvalue()).decode()
+    s.append(f'<image x="{x}" y="{y}" width="{size}" height="{size}" xlink:href="data:image/png;base64,{encoded}"/>')
+
+
 def portrait(name, x, y, size, color):
     picture = Image.open(AVATARS / f'{name}.png').convert('RGBA').resize((size * 3, size * 3), Image.LANCZOS)
     background = Image.new('RGBA', picture.size, 'white')
@@ -128,7 +140,7 @@ def table(cx, cy):
 
 def band(y, h, name):
     s.append(f'<rect x="10" y="{y}" width="{W - 20}" height="{h}" rx="10" fill="{PALE}" opacity="0.55"/>')
-    text(24, y + 25, name, 17, True, 'start', MUTED)
+    text(24, y + 25, name, 17, True, 'start', '#000000')
 
 
 def scaled(k, cx, cy, draw):
@@ -154,7 +166,7 @@ s.append(f'<g transform="translate(850,90) scale({80 / 62}) translate(-864,-56)"
 stroke('<circle cx="887" cy="76" r="9"/><path d="M871,110 q2,-20 16,-20 q14,0 16,20"/><path d="M906,72 q5,6 0,12 M913,67 q9,11 0,22"/>', 2.6)
 s.append('</g>')
 text(890, 192, 'Self-Similar Voice', 15, True, color='#3f6fb5')
-label(790, 232, 'Voice Conditions')
+label(790, 74, 'Voice Conditions')
 
 # Row 2: guidance loop
 image(F / 'virtual-room.png', (90, 66, 1858, 1150), 25, 395, 180, 112)
@@ -172,37 +184,36 @@ for i, item in enumerate(['Gaze valid and recent', 'Angle to target, trend', 'Di
     s.append(f'<circle cx="349" cy="{395 + i * 22:.1f}" r="2.8" fill="{TEAL}"/>')
     text(358, 400 + i * 22, item, 14, anchor='start', color=MUTED)
 label(428, 585, ['Summarize, Then Ask'])
-text(570, 425, ['Wireless', 'ADB link'], 13.5, color=TEAL, italic=True)
+text(570, 425, ['Wireless', 'ADB link'], 13.5, color='#000000', italic=True)
 s.append(f'<rect x="620" y="328" width="180" height="320" rx="10" fill="#fff6dc" stroke="{NEUTRAL}" stroke-width="2" stroke-dasharray="7 4"/>')
 s.append(f'<rect x="628" y="340" width="164" height="235" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
 text(710, 366, ['Two Decisions'], 17, True, color='#000000')
-text(710, 392, '1. Strategy', 15, True, color=TEAL)
+text(710, 392, '1. Strategy', 15, True, color='#000000')
 text(710, 413, ['Choose one allowed:', 'stay silent, orient,', 'refine, correct,', 'or encourage'], 14, color=MUTED)
-text(710, 500, '2. Phrase', 15, True, color=TEAL)
+text(710, 500, '2. Phrase', 15, True, color='#000000')
 text(710, 521, ['Rank the prepared', 'phrases using', 'their recent use'], 14, color=MUTED)
 label(710, 605, ['Decision Model'])
 text(710, 636, 'Local LLM', 14, True, color='#8a6410')
 route([(520, 450), (626, 450)])
 route([(792, 450), (862, 450)])
-text(831, 418, ['Chosen', 'phrase'], 13.5, color=TEAL, italic=True)
+text(831, 418, ['Chosen', 'phrase'], 13.5, color='#000000', italic=True)
 scaled(1.15, 893, 450, speaker)
 scaled(1.15, 950, 450, headset)
 label(925, 505, ['Spoken Cue'])
-route([(925, 244), (925, 420)])
+# Both voice conditions feed the spoken cue.
+s.append(f'<path d="M725,202 V250 H925 M890,202 V250" fill="none" stroke="{LINE}" stroke-width="2"/>')
+route([(925, 250), (925, 420)])
 route([(925, 520), (925, 712), (428, 712), (428, 600)], color=TEAL, marker='t')
-text(680, 703, 'What actually played feeds back into memory', 14, color=TEAL, italic=True)
+text(668, 703, 'Result sent back to memory', 14, color='#000000', italic=True)
+emoji('\U0001F9E0', 762, 686, 22)
 
 # Row 3: review and export
-route([(272, 612), (272, 812)])
-text(262, 660, ['Logged every frame', 'Starting angle θ₀', 'saved each trial'], 14, anchor='end', color=TEAL, italic=True)
-scaled(1.2, 272, 840, table)
-label(272, 895, ['Session Recordings'])
-route([(305, 840), (422, 840)])
-text(363, 828, 'Transfer', 13.5, color=TEAL, italic=True)
+route([(272, 612), (272, 840), (422, 840)])
+text(363, 828, 'Transfer', 13.5, color='#000000', italic=True)
 image(EXPERIMENT / 'trial-viewer-shots/real-dev-20261103/01-first-person-guidance.png', (0, 70, 1440, 890), 425, 772, 240, 137)
 label(545, 933, ['Trial Review'])
 route([(665, 840), (795, 840)])
-text(730, 828, 'Export', 13.5, color=TEAL, italic=True)
+text(730, 828, 'Export', 13.5, color='#000000', italic=True)
 scaled(1.2, 830, 840, table)
 label(830, 895, ['Trial CSVs'])
 s.append('</svg>')
