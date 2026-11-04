@@ -204,7 +204,7 @@ text(710, 429, ['Choose one allowed:', 'stay silent, orient,', 'refine, correct,
 route([(710, 486), (710, 506)])
 text(710, 528, '2. Phrase', 14, True, color='#000000')
 text(710, 547, ['Rank the prepared', 'phrases using', 'their recent use'], 13, color=MUTED)
-label(563, 688, ['Decision Model'])
+label(563, 688, ['Guidance Agent'])
 text(563, 710, 'Local LLM', 14, True, color='#8a6410')
 route([(520, 450), (626, 450)])
 route([(792, 450), (862, 450)])
