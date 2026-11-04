@@ -2,19 +2,12 @@
 \label{ch:evaluation}
 This chapter is organized around the three research questions introduced in Section~\ref{sec:research-questions} and closes with a discussion of how the possible outcomes would be interpreted. Each section states what will be reported for its question and how that evidence tests the corresponding hypothesis. Participant data have not yet been collected, so no voice-condition results are reported here; the development evidence that supports the apparatus appears in Appendix~\ref{app:development}.
 
-\section{Analysis Plan}
+\section{Analysis}
 \label{sec:analysis-plan}
-Because every participant hears both voices, each research question is analyzed within participants. For RQ1, the primary outcome is active completion time, analyzed with a trial-level mixed-effects model of log completion time that includes voice condition, period, assigned voice order, trial position within the block, and the absolute pre-cue starting angle $|\theta_0|$; participant random effects are chosen from the design and simulation rather than from statistical significance~\cite{barr2013random}. The primary result is the voice contrast, reported as a time ratio standardized over a common distribution of starting angles and tested two-sided, so that an advantage for either voice can be detected. Missed targets and NASA-TLX workload~\cite{hart1988nasatlx} are secondary outcomes. For RQ2, IPA, fixation counts, and saccade rates are compared in the same within-participant way once the eye-event detectors pass the validation in Section~\ref{sec:measure-validation}. For RQ3, the IMI interest/enjoyment subscale~\cite{mcauley1989imi} measures engagement, with the other IMI subscales reported alongside it. Questionnaire scores are treated as one observation per participant and voice block rather than as trial-level data. Secondary comparisons are grouped into prespecified families and adjusted with Holm's procedure~\cite{holm1979simple}, while agent-perception and custom items are exploratory and reported with effect estimates and uncertainty. Searches that reach the 25-second deadline have no completion time and are excluded from this model, which pulls its estimate toward no effect if one voice also reduces timeouts. A complementary completion-probability or time-to-event analysis will therefore be specified before confirmatory analysis. Section~\ref{sec:participants} reports the simulation used to plan the sample size.
+Because every participant hears both voices, each research question is analyzed within participants. For RQ1, the primary outcome is active completion time, analyzed with a trial-level mixed-effects model of log completion time that includes voice condition, period, assigned voice order, trial position within the block, and the absolute pre-cue starting angle $|\theta_0|$; participant random effects are chosen from the design and simulation rather than from statistical significance~\cite{barr2013random}. The primary result is the voice contrast, reported as a time ratio standardized over a common distribution of starting angles and tested two-sided, so that an advantage for either voice can be detected. Missed targets and NASA-TLX workload~\cite{hart1988nasatlx} are secondary outcomes. For RQ2, IPA, fixation counts, and saccade rates are compared in the same within-participant way once the eye-event detectors are validated. For RQ3, the IMI interest/enjoyment subscale~\cite{mcauley1989imi} measures engagement, with the other IMI subscales reported alongside it. Questionnaire scores are treated as one observation per participant and voice block rather than as trial-level data. Secondary comparisons are grouped into prespecified families and adjusted with Holm's procedure~\cite{holm1979simple}, while agent-perception and custom items are exploratory and reported with effect estimates and uncertainty. Searches that reach the 25-second deadline have no completion time and are excluded from this model, which pulls its estimate toward no effect if one voice also reduces timeouts. A complementary completion-probability or time-to-event analysis will therefore be specified before confirmatory analysis. Section~\ref{sec:participants} reports the simulation used to plan the sample size.
 
 \section{Participant Flow and Manipulation Check}
-Participant reporting begins with participant flow, exclusions, incomplete sessions, and data coverage by condition and order. It then describes the realized starting geometry and the similarity manipulation check, which shows whether participants heard the SSV as resembling their own, before any research question is answered. Each table states its denominator and identifies missing observations. Figure~\ref{fig:results-flow} will show how many participants were assigned to each order and how many completed both blocks, and Figure~\ref{fig:results-manipulation} will show the similarity rating each participant gave the two voices.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\linewidth,alt={Flow diagram: consented and completed audio intake, a side branch for ineligible or withdrawn participants, a split into Order A with the SSV block first and Order B with the SAV block first, stopped or incomplete counts under each order, and a final box for participants included in the voice comparison. All counts are blank.}]{figures/results-participant-flow.pdf}
-\caption[Planned participant flow]{Planned participant flow. Participants who complete the audio intake are assigned to Order A (SSV block first) or Order B (SAV block first); those who complete both blocks enter the voice comparison. Panels remain empty until participant data are collected; the same script then draws them from the trial export.}
-\label{fig:results-flow}
-\end{figure}
+Participant reporting begins with participant flow, exclusions, incomplete sessions, and data coverage by condition and order. It then describes the realized starting geometry and the similarity manipulation check, which shows whether participants heard the SSV as resembling their own, before any research question is answered. Each table states its denominator and identifies missing observations. Figure~\ref{fig:results-manipulation} will show the similarity rating each participant gave the two voices.
 
 \begin{figure}[htbp]
 \centering
@@ -22,23 +15,6 @@ Participant reporting begins with participant flow, exclusions, incomplete sessi
 \caption[Planned manipulation check]{Planned manipulation check. Each line joins one participant's rating of ``The agent's voice is similar to mine'' (1--7) for the SAV and the SSV; diamonds show the mean with its 95\% confidence interval. Panels remain empty until participant data are collected; the same script then draws them from the trial export.}
 \label{fig:results-manipulation}
 \end{figure}
-
-\begin{table}[htbp]
-\centering\caption{Planned result families and their status. No confirmatory participant outcomes are reported here.}
-\small\tagpdfsetup{table/header-rows={1}}
-\begin{tabularx}{\linewidth}{@{}p{0.27\linewidth}XX@{}}\toprule
-Result family & Required evidence & Present status \\\midrule
-Participant flow & Consented, started, completed, stopped; reasons & Not available \\
-Manipulation check & Similarity by voice with paired scope & Not available \\
-RQ1: performance and perceived workload & Adjusted time contrast, missed targets, NASA-TLX & Not estimated \\
-RQ2: eye-tracking indicators & IPA, fixation count, saccade frequency after detector validation & Development pipeline only (Section~\ref{sec:development-eye-measures}) \\
-RQ3: engagement & IMI interest/enjoyment & Not collected for this report \\
-Other IMI subscales & Complete subscale scores & Not collected for this report \\
-Agent experience & Individual and construct-specific ratings & Not collected for this report \\
-Guidance quality & Sequence-level playback and evidence & Development traces reported; study comparison pending \\
-Debrief themes & Recorded responses and coding audit & Not available \\\bottomrule
-\end{tabularx}
-\end{table}
 
 \section{RQ1: Performance and Perceived Workload}
 RQ1 asks whether voice self-similarity impacts performance and perceived workload. The primary result is the adjusted contrast in active search-completion time. Its estimand is the marginal time contrast standardized over a common starting-difficulty distribution, and here \emph{standardized} refers to that common distribution rather than to a standardized effect size. The estimate is reported with its uncertainty, the eligible participant and trial counts, and model diagnostics, following the analysis plan finalized before confirmatory recruitment. Missed targets, incorrect trigger selections, and valid gaze and controller contact latencies are reported by voice condition alongside paired participant summaries. Perceived workload is reported from the six NASA-TLX dimensions and their unweighted mean~\cite{hart1988nasatlx} at the participant-by-block level. Together, these results test H1: that the SSV improves search performance and lowers perceived workload. Figure~\ref{fig:results-rq1-time} presents completion time, and Figure~\ref{fig:results-rq1-workload} presents missed targets and workload.
@@ -131,52 +107,3 @@ Object search was chosen because it is a common task in VR, and the question beh
 The practical value of the study depends on how its outcomes combine. Faster search accompanied by acceptable workload and a comfortable voice experience would support considering self-similar guidance for comparable tasks. A favorable experience without a detected speed difference could still motivate offering the clone as an optional voice, without supporting a claim that it makes search more efficient. Slower search, discomfort, intelligibility problems, or a preference for the SAV would instead mark limits to that option.
 
 Transfer also depends on how much information users already have. In Follow My Voice, the participant must use spatial guidance to infer an initially unnamed target, whereas in Zhang et al.'s book task the target title was supplied~\cite{zhang2023seehear}. A known-target task may allow people to continue independently and encounter the voice less often. Real work can additionally require recognizing meaningful parts, remembering procedural steps, moving through space, or coordinating with another person. Replication in those contexts would need to establish both the quality of guidance and the effect of voice choice.
-
-\subsection{Limitations}
-The study design and apparatus carry several limitations that bound what the results can show.
-
-\subsubsection{Voice Identity and Acoustic Confounds}
-The voice conditions may differ in acoustic properties as well as in perceived resemblance. The SSV depends on recording quality and synthesis, whereas the SAV comes from a heterogeneous catalog, and the two may differ in pitch, prosody, speaking rate, pronunciation, and clip duration. Identical wording and a shared provider do not guarantee matched acoustics. The self-similar clips also carry a deliberate inner-voice treatment that the SAV clips lack, so any difference between conditions reflects the treated clone as a whole and cannot be attributed to resemblance alone. The study therefore documents these properties and the intelligibility observed in pilot sessions at comfortable playback levels, without assuming exact equivalence. Such differences can matter for experience as well as intelligibility: in a study of virtual health assistants, voice naturalness was the strongest driver of perceived realism~\cite{maxim2025realism}.
-
-Participants may also judge the clone differently because the voice it imitates is their own. Rosi et al. found that listeners familiar with a speaker rated that speaker's cloned voice the same as or less favorably than the recording on trustworthiness, attractiveness, and competence, whereas unfamiliar listeners rated clones higher, and clones closer to the original speaker were rated higher~\cite{mcgettigan2025cloned}. Because every participant is highly familiar with their own voice, ratings of the SSV may depend on how faithfully the clone reproduces it.
-
-The variety of SAVs is a deliberate consequence of the design. Requiring every participant to hear the same voice would replace the comparison with a preferred alternative by a comparison with a fixed one. The analysis retains chosen voice identifiers and describes their distribution, but it does not fit voice-specific estimates that sparsely chosen voices cannot support. An exploratory association between a particular SAV and performance may reflect who selected it as well as its acoustic properties.
-
-We apply no pitch shift or panning to the SSV. Its inner-voice treatment (Section~\ref{sec:voices}) is used in that condition only, so it is part of the manipulation.
-
-IPA requires a continuous eye-tracking segment of at least 2 seconds, so a short or interrupted trial may have no value. In three development recordings it could be computed for only 20 of 44 eye-by-trial rows. Missing values are reported as unavailable, not as zero, and pilot sessions will need to establish how often IPA is available before it can support RQ2.
-
-\subsubsection{Adaptive Guidance as a Shared Mechanism}
-Gaze-dependent sonification, staged spatial cues, and audiovisual assistance investigate different ways to connect a cue with a search target~\cite{losing2014guiding,kwok2022twostep,binetti2021outofview,tanaka2026coarse}, and visual cueing has also aided search for multiple targets in a 360-degree VR environment~\cite{kelley2025cueing}. Follow My Voice adapts these precedents into spoken orientation and refinement, so the assigned voice participates throughout the task. Because the participant design compares only voices, a difference between conditions would not show that speech outperforms those techniques or that the decision model improves search.
-
-A shared policy does not produce identical spoken sequences. Participants turn, pause, look, and point differently, so the policy supplies different directions and can emit different numbers of hints.
-
-Policy drift, however, would threaten the comparison. Changes to phrases, timers, or provider behavior during data collection could alter assistance quality. The study therefore fixes the application build, configuration, phrase semantics, voice preparation settings, and decision-provider version where possible. Any unavoidable service change will be documented and accounted for in the analysis.
-
-Centralizing guidance evidence and transitions in a single local state machine makes guidance auditable, but it does not guarantee that guidance is correct. Calibration error can produce an incorrect observation, an unclear reference frame can produce an unhelpful phrase, and a stale response can pass an incomplete check.
-
-\subsubsection{Practice, Learning, and Order}
-One practice trial reduces setup burden but provides limited exposure to a complex interaction. The participant must learn to hold gaze on the readiness cross, follow speech, use the chair comfortably, aim the right controller, and press the trigger to select. A single trial cannot ensure that all participants acquire these skills equally, and a practice-proficiency criterion will be established in pilot sessions.
-
-Practice uses the first assigned voice. This aligns initial exposure with the first block but also couples practice familiarity with period. Counterbalancing helps distribute this coupling across voice conditions~\cite{williams1949residual}, but it does not prevent fatigue, learning, novelty, or asymmetric carryover. These are reported with period and order effects and any relevant sensitivity analysis.
-
-\subsubsection{Retrospective Questionnaires and Burden}
-A single final survey avoids interrupting the two-block search sequence with a long questionnaire, but it also requires participants to recall Block 1 after completing Block 2. Ratings may therefore reflect recency, contrast, or imperfect recall. The side-by-side format makes the comparison explicit: rating both voices on the same item encourages participants to contrast them, which can sharpen differences they noticed but can also exaggerate small ones. The column labels name the Self-Similar Voice, which helps participants recall which voice is which but may also cue expectations about it.
-
-The side-by-side battery contains 140 numeric responses across both voice columns, in addition to setup ratings, comparison questions, and debrief. Pilot sessions will therefore measure its completion time, missingness, and comprehension. Because participants may be tired or uncomfortable after exposure, researchers check whether they are comfortable continuing before administering the retrospective sets.
-
-Adapting an embodied-agent measure to a voice agent can alter its meaning. Co-presence or anthropomorphism items may be understood differently without a visible character. The thesis documents source attribution and wording changes, reports the adaptation, and makes no claim of new psychometric validation from a small experimental sample. Eeriness, for example, is rated with a single item rather than with multi-item indices such as those refined by Ho and MacDorman~\cite{homacdorman2017eeriness}. Custom reliance and naturalness items remain individual exploratory measures.
-
-\subsubsection{Gaze Quality and Feedback Coupling}
-Gaze serves both as an input to assistance and as a recorded behavioral signal. Tracking gaps can therefore change the participant's experience and reduce measurement coverage at the same time, affecting both the outcome being measured and the evidence available to interpret it. Coverage and technical events are interpreted alongside performance rather than treated automatically as pre-existing participant characteristics.
-
-A highlighted vicinity candidate can help indicate what the system currently attends to, but it can also suggest a reference object that differs from the mathematical gaze ray. For example, an instruction to look lower can be consistent with a gaze ray above the target yet confusing if the target appears higher than a highlighted neighbor. Cues are therefore evaluated in their visible interaction context, not solely against the sign of a geometric delta. Development-only rings and diagnostic markers will be excluded from the participant condition.
-
-The proposed validity-aware stream and independent calibration checks address these risks, but headset-specific spatial performance and the rate of distinct gaze observations remain empirical questions. Validation results for the Vive Pro Eye cannot be assumed to hold for the Focus Vision, and an interaction threshold chosen for usability is not a validated measure of cognition.
-
-\subsubsection{Privacy, Consent, and Reproducibility}
-Coding participant identifiers does not make voice recordings anonymous, because both natural and synthesized speech can remain recognizable. Before participant use, the consent and data-management documents will be revised to describe recording, synthesis, cloud processing by ElevenLabs, storage, access, and deletion.
-
-The thesis reports the relevant processing stages without including credentials or identifiable recordings. A reproducibility package can provide code, versioned schemas, example synthetic records, and de-identified summaries where authorized. Consent to participate does not extend to distributing cloned voices or raw participant audio, which would require a separate basis.
-
-Cloud dependencies also affect replication. A future researcher may not obtain the same voice model. Preserving prepared-library metadata and actual playback records helps describe the original exposure, and a constrained phrase interface makes alternative voice providers testable, although provider changes must still be reported.
