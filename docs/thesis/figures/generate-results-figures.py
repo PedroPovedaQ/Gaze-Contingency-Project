@@ -57,8 +57,14 @@ def ci(values):
 
 # Data
 def survey(df, suffix):
+    """One survey item across every survey file; the column prefix carries the file name, which can differ by run."""
     names = [c for c in df.columns if c.startswith('survey__') and c.endswith(suffix)]
-    return pd.to_numeric(df[names[0]], errors='coerce') if names else pd.Series(np.nan, index=df.index)
+    if not names:
+        return pd.Series(np.nan, index=df.index)
+    values = df[names].apply(pd.to_numeric, errors='coerce')
+    if (values.notna().sum(axis=1) > 1).any():
+        sys.exit(f'more than one survey answer for {suffix} in a row: {names}')
+    return values.bfill(axis=1).iloc[:, 0]
 
 
 def load(folders, development):
@@ -84,6 +90,10 @@ def load(folders, development):
     df['period'] = pd.to_numeric(df.block_index, errors='coerce') + 1
     df['position'] = df.sort_values('trial_index').groupby(['participant_id', 'period']).cumcount()
     df['order'] = df.voice_order.map({'selfsimilar_then_neutral': 'A', 'neutral_then_selfsimilar': 'B'})
+    # Every participant contributes one run; a second run must be adjudicated before analysis, not pooled.
+    runs = df.groupby('participant_id').run_number.nunique()
+    if (runs > 1).any() and not development:
+        sys.exit('participants with more than one run: ' + ', '.join(runs[runs > 1].index))
     return df
 
 
@@ -166,7 +176,7 @@ def geomean(values):
 
 
 def blocks(df):
-    """One row per participant and voice block for questionnaire scores."""
+    """One row per participant and voice block for questionnaire scores (block answers repeat on every trial row)."""
     return df.groupby(['participant_id', 'voice'], as_index=False).first()
 
 
