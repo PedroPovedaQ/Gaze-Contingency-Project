@@ -37,6 +37,7 @@ F = Path(__file__).resolve().parent
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 8.5, 'pdf.fonttype': 42,
                      'axes.spines.top': False, 'axes.spines.right': False})
 VOICES = ('SAV', 'SSV')
+MIN_GEE_CLUSTERS = 10
 COLOR = {'SAV': '#C8962A', 'SSV': '#3F6FB5'}
 INK, MUTED = '#2a3034', '#8a9296'
 PENDING = 'Awaiting\nparticipant data'
@@ -79,17 +80,29 @@ def load(folders, development):
     voice = df.voice_condition.astype(str)
     df = df.assign(voice=np.where(voice.str.startswith('neutral'), 'SAV', np.where(voice == 'selfsimilar', 'SSV', None))).dropna(subset=['voice']).copy()
     for column in ('time_to_final_selection_seconds', 'missed_target', 'absolute_theta_deg', 'hint_count',
-                   'gaze_validity_rate', 'interrupted_instruction_count'):
+                   'interrupted_instruction_count'):
         df[column] = pd.to_numeric(df[column], errors='coerce')
+    # Gaze validity from distinct source observations per eye (export v3); older exports only have the frame rate.
+    if 'eye_left__source_observation_validity_rate' in df:
+        df['gaze_validity_rate'] = pd.concat([pd.to_numeric(df[f'eye_{eye}__source_observation_validity_rate'], errors='coerce')
+                                              for eye in ('left', 'right')], axis=1).mean(axis=1)
+    else:
+        df['gaze_validity_rate'] = pd.to_numeric(df.get('gaze_validity_rate'), errors='coerce')
     for measure in ('ipa_candidate_hz', 'fixation_count', 'saccade_frequency_hz'):
         df[measure] = pd.concat([pd.to_numeric(df[f'eye_{eye}__{measure}'], errors='coerce') for eye in ('left', 'right')], axis=1).mean(axis=1)
     df['completion'] = df.time_to_final_selection_seconds.where(df.missed_target == 0)
     # Model covariates: period (block 1 or 2), position within the block, and order (A = SSV first).
     if 'pre_cue_theta_absolute_deg' in df:
         df['absolute_theta_deg'] = pd.to_numeric(df.pre_cue_theta_absolute_deg, errors='coerce')
-    df['period'] = pd.to_numeric(df.block_index, errors='coerce') + 1
-    df['position'] = df.sort_values('trial_index').groupby(['participant_id', 'period']).cumcount()
-    df['order'] = df.voice_order.map({'selfsimilar_then_neutral': 'A', 'neutral_then_selfsimilar': 'B'})
+    # Export v3 records period, position and order; derive them for older exports.
+    if 'position_within_block' in df:
+        df['period'] = pd.to_numeric(df.period, errors='coerce')
+        df['position'] = pd.to_numeric(df.position_within_block, errors='coerce') - 1
+        df['order'] = df.condition_order
+    else:
+        df['period'] = pd.to_numeric(df.block_index, errors='coerce') + 1
+        df['position'] = df.sort_values('trial_index').groupby(['participant_id', 'period']).cumcount()
+        df['order'] = df.voice_order.map({'selfsimilar_then_neutral': 'A', 'neutral_then_selfsimilar': 'B'})
     # Every participant contributes one run; a second run must be adjudicated before analysis, not pooled.
     runs = df.groupby('participant_id').run_number.nunique()
     if (runs > 1).any() and not development:
@@ -437,7 +450,7 @@ def exploratory(df, out, development):
 def delivery(df, out, development):
     fig, axes = plt.subplots(1, 3, figsize=(6.5, 2.6), constrained_layout=True)
     for ax, (column, scale, label, ylim, title) in zip(axes, (('hint_count', 1, 'Spoken hints per search', (0, 15), '(a) Hints'),
-                                                              ('gaze_validity_rate', 100, 'Valid gaze samples (%)', (0, 100), '(b) Gaze availability'),
+                                                              ('gaze_validity_rate', 100, 'Valid gaze observations (%)', (0, 100), '(b) Gaze availability'),
                                                               ('interrupted_instruction_count', 1, 'Interrupted cues per search', (0, 1.5), '(c) Interruptions'))):
         slope(ax, None if df is None else paired(df, df[column] * scale), label, ylim, title=title)
     stamp(fig, development)
@@ -450,6 +463,8 @@ def fmt(value, digits=2):
 
 
 def p_text(p):
+    if not np.isfinite(p):
+        return '= n/a'
     return '< .001' if p < .001 else '= ' + f'{p:.3f}'.lstrip('0')
 
 
@@ -485,15 +500,25 @@ def model_stats(df):
     for name, column in (('Ipa', 'ipa_candidate_hz'), ('Fix', 'fixation_count'), ('Sacc', 'saccade_frequency_hz')):
         lmm(name, column, d[d[column].notna()])
 
-    gee = smf.gee(f'missed_target ~ {fixed}', 'participant_id', d, family=sm.families.Binomial(),
-                  cov_struct=sm.cov_struct.Exchangeable()).fit()
-    bounds = gee.conf_int().loc['ssv']
-    macros.update(MissOR=fmt(np.exp(gee.params['ssv'])), MissORLo=fmt(np.exp(bounds.iloc[0])), MissORHi=fmt(np.exp(bounds.iloc[1])),
-                  MissZ=fmt(gee.tvalues['ssv']))
-    secondary = [gee.pvalues['ssv']]
+    # A GEE's sandwich standard errors need enough clusters; with fewer the model is not reported.
+    if d.participant_id.nunique() >= MIN_GEE_CLUSTERS:
+        gee = smf.gee(f'missed_target ~ {fixed}', 'participant_id', d, family=sm.families.Binomial(),
+                      cov_struct=sm.cov_struct.Exchangeable()).fit()
+        bounds = gee.conf_int().loc['ssv']
+        macros.update(MissOR=fmt(np.exp(gee.params['ssv'])), MissORLo=fmt(np.exp(bounds.iloc[0])),
+                      MissORHi=fmt(np.exp(bounds.iloc[1])), MissZ=fmt(gee.tvalues['ssv']))
+        secondary = [gee.pvalues['ssv']]
+    else:
+        macros.update({k: 'n/a' for k in ('MissOR', 'MissORLo', 'MissORHi', 'MissZ')})
+        secondary = [np.nan]
 
     def paired_t(name, table):
         diff = table.SSV - table.SAV
+        if len(diff) < 2 or diff.std(ddof=1) < 1e-9:  # no spread in the differences: the test is undefined
+            macros.update({name + k: 'n/a' for k in ('Lo', 'Hi', 'T', 'Dz')}, **{name + 'P': '= n/a'})
+            macros.update({name + 'SAV': fmt(table.SAV.mean()), name + 'SSV': fmt(table.SSV.mean()),
+                           name + 'Diff': fmt(diff.mean()), name + 'Df': str(len(diff) - 1)})
+            return np.nan
         t, p = stats.ttest_rel(table.SSV, table.SAV)
         mean, half = ci(diff)
         macros.update({name + 'SAV': fmt(table.SAV.mean()), name + 'SSV': fmt(table.SSV.mean()), name + 'Diff': fmt(mean),
@@ -505,7 +530,9 @@ def model_stats(df):
     paired_t('Sim', paired(b_, survey(b_, '__voice_item_1')))
     secondary.append(paired_t('Tlx', paired(b_, tlx_0_10(b_).nasa_tlx_score)))
     paired_t('Imi', paired(b_, pd.to_numeric(b_.imi_enjoyment_mean, errors='coerce')))
-    holm = multipletests(secondary, method='holm')[1]
+    finite = [p for p in secondary if np.isfinite(p)]
+    adjusted = iter(multipletests(finite, method='holm')[1]) if finite else iter(())
+    holm = [next(adjusted) if np.isfinite(p) else np.nan for p in secondary]
     macros.update(MissP=p_text(secondary[0]), MissPHolm=p_text(holm[0]), TlxPHolm=p_text(holm[1]))
     return macros
 
