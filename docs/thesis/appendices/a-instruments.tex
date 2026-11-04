@@ -401,16 +401,17 @@ I was motivated to complete the task without the agent's guidance.
 \end{minipage}
 \end{enumerate}
 \par\medskip\noindent
-How much did you like each voice?
-\textit{Response:} 0--100 for each voice; 0 = Do not like at all, 100 = Like extremely; Unable to rate.\par\noindent Selected Voice (0--100): \rule{0.15\linewidth}{0.3pt}\quad\surveychoice{Unable to rate}\par\noindent Self-Similar Voice (0--100): \rule{0.15\linewidth}{0.3pt}\quad\surveychoice{Unable to rate}
-\par\medskip\noindent
-For each voice, what percentage of the time did you use the agent's guidance to decide where to search?
-\textit{Response:} 0--100\% for each voice; 0 = None of the time, 100 = All of the time; Unable to estimate.\par\noindent Selected Voice (0--100): \rule{0.15\linewidth}{0.3pt}\,\%\quad\surveychoice{Unable to estimate}\par\noindent Self-Similar Voice (0--100): \rule{0.15\linewidth}{0.3pt}\,\%\quad\surveychoice{Unable to estimate}
-\par\noindent\begin{minipage}{\linewidth}
-\par\medskip\noindent
-How would you describe the gender presentation of each agent's voice? Asked separately for the Selected Voice and the Self-Similar Voice.
-\textit{Response:} Optional free text for each voice.\par\noindent Selected Voice: \surveywrite\par\noindent Self-Similar Voice: \surveywrite
-\end{minipage}\par
+Rate each statement for each voice. Use 1 = Strongly disagree and 7 = Strongly agree; intermediate points are numbered 2--6.
+\begin{enumerate}\setcounter{enumi}{12}
+\item \begin{minipage}[t]{\linewidth}
+I liked this voice.
+\surveysevenpair{Strongly disagree}{}{Strongly agree}
+\end{minipage}
+\item \begin{minipage}[t]{\linewidth}
+I used the agent's guidance to decide where to search.
+\surveysevenpair{Strongly disagree}{}{Strongly agree}
+\end{minipage}
+\end{enumerate}
 \subsection{Technical and comfort checks}
 Each check is answered separately for the Selected Voice and the Self-Similar Voice, with Yes, No, or Unsure in each column.
 \par\medskip\noindent

@@ -172,6 +172,10 @@ def simulate(n=20, seed=20261103):
             for k, (suffix, sav, shift) in enumerate(likert_items):
                 person = similarity_person if k == 0 else likert_person[k]
                 block['survey' + suffix] = r(sav + person + shift * ssv, .9 if k else 1.1, 1, 7)
+            # Liking and guidance use (instrument v2026-11-04b) draw from their own stream so earlier values stay put.
+            extra = np.random.default_rng([seed, p, period])
+            block['survey__voice_liking_1_7'] = float(np.clip(np.round(extra.normal(4.9 + .3 * ssv + likert_person[3] * .5, 1.0)), 1, 7))
+            block['survey__guidance_use_1_7'] = float(np.clip(np.round(extra.normal(5.3 + .1 * ssv, 1.0)), 1, 7))
             blocks_.append(block)
     df = pd.DataFrame(rows).merge(pd.DataFrame(blocks_), on=['participant_id', 'voice'])
     df['completion'] = df.time_to_final_selection_seconds.where(df.missed_target == 0)
@@ -430,7 +434,8 @@ EXPLORATORY = [('agent_copresence_mean', 'Co-presence'), ('agent_intelligence_me
                ('__arq_appropriate', 'Appropriate (ARQ)'), ('__arq_likeability', 'Likeable (ARQ)'),
                ('__arq_interact_again', 'Interact again (ARQ)'), ('__voice_item_6', 'Trusted the guidance'),
                ('__voice_item_9', 'Relied on the hints'), ('__voice_item_10', 'Voice sounded natural'),
-               ('__voice_item_7', 'Comfortable hearing the voice'), ('__voice_item_8', 'Uncanny or unsettling')]
+               ('__voice_item_7', 'Comfortable hearing the voice'), ('__voice_item_8', 'Uncanny or unsettling'),
+               ('__voice_liking_1_7', 'Liked the voice'), ('__guidance_use_1_7', 'Used the guidance')]
 
 
 def exploratory(df, out, development):
