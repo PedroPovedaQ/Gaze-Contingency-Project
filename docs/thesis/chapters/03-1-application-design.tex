@@ -65,14 +65,20 @@ The Follow My Voice system continuously collects eye-gaze origin, direction, and
 
 \subsubsection{From Gaze to Spoken Direction}
 \label{sec:guidance-geometry}
-The direction for the next voice cue is first computed geometrically by the application before the decision model is ever consulted. Each valid gaze sample supplies an eye origin $\mathbf{o}$ and a gaze direction $\mathbf{g}$, and the target's position $\mathbf{p}$ is known at the start of each trial round. Both $\mathbf{g}$ and the target vector $\mathbf{d}=\mathbf{p}-\mathbf{o}$ are expressed relative to the seated forward direction, so the computation does not depend on how the room is oriented. A sample whose direction lies within about $12^\circ$ of straight up or down is treated as unusable rather than as a departure from the object plane, because left and right are undefined there. The eight object planes form a ring at $45^\circ$ intervals around the chair. 
+The direction for the next voice cue is first computed geometrically by the application before the decision model is ever consulted. Each valid gaze sample supplies an eye origin $\mathbf{o}$ and a gaze direction $\mathbf{g}$, and the target's position $\mathbf{p}$ is known at the start of each trial round. Both $\mathbf{g}$ and the target vector $\mathbf{d}=\mathbf{p}-\mathbf{o}$ are expressed relative to the seated forward direction, so the computation does not depend on how the room is oriented. A sample whose direction lies within about $12^\circ$ of straight up or down is treated as unusable rather than as a departure from the object plane, because left and right are undefined there. The eight object planes form a ring at $45^\circ$ intervals around the chair.
 
-\paragraph{Angular error.} The horizontal, or yaw, error $\psi$ is the signed angle about the world up axis between the horizontal projections of $\mathbf{g}$ and $\mathbf{d}$; it is positive when the target lies to the participant's right. The starting angle $\theta_0$ (Section~\ref{sec:theta-measures}) gives the yaw separating the readiness cross from the target before a trial begins, whereas $\psi$ tracks the remaining yaw error from the current gaze throughout the search. The vertical, or pitch, error is the difference in elevation,
+\paragraph{Notation.} Positions and directions are expressed in the world frame, whose $y$ axis points up, and all angles are reported in degrees. Two operations recur. The horizontal projection of a vector $\mathbf{v}$ is $\Pi(\mathbf{v})=(v_x,0,v_z)$, and its elevation above the horizontal plane is $\operatorname{elev}(\mathbf{v})=\operatorname{atan2}\bigl(v_y,\sqrt{v_x^2+v_z^2}\bigr)$. For two horizontal vectors $\mathbf{a}$ and $\mathbf{b}$, the signed horizontal angle from $\mathbf{a}$ to $\mathbf{b}$ is
 \begin{equation}
-\phi=\operatorname{elev}(\mathbf{d})-\operatorname{elev}(\mathbf{g}),\qquad
-\operatorname{elev}(\mathbf{v})=\operatorname{atan2}\!\left(v_y,\sqrt{v_x^2+v_z^2}\right)\frac{180}{\pi},
+\operatorname{yaw}(\mathbf{a},\mathbf{b})=\operatorname{atan2}\!\bigl(\hat{\mathbf{y}}\cdot(\mathbf{a}\times\mathbf{b}),\;\mathbf{a}\cdot\mathbf{b}\bigr),
 \end{equation}
-which is positive when the target is higher than the point of regard.
+which lies between $-180^\circ$ and $180^\circ$ and is positive when $\mathbf{b}$ lies to the right of $\mathbf{a}$, that is, clockwise when seen from above. The same convention is used for every horizontal angle in this thesis.
+
+\paragraph{Angular error.} During the search, the remaining horizontal (yaw) and vertical (pitch) errors between the gaze direction and the target are
+\begin{equation}
+\psi=\operatorname{yaw}\bigl(\Pi(\mathbf{g}),\Pi(\mathbf{d})\bigr),\qquad
+\phi=\operatorname{elev}(\mathbf{d})-\operatorname{elev}(\mathbf{g}).
+\end{equation}
+The yaw error $\psi$ is positive when the target lies to the participant's right of the current gaze, and the pitch error $\phi$ is positive when the target is higher than the point of regard. Both are recomputed for every valid gaze sample. The starting angle $\theta_0$ of Section~\ref{sec:theta-measures} applies the same yaw measure once, from the readiness cross to the target, before the trial begins.
 
 \paragraph{Turning toward the object plane.} Outside the target plane, the sign of $\psi$ selects ``left'' or ``right.'' When the target is nearly behind the participant ($|\psi|\geq150^\circ$), the first chosen direction is retained, so small head movements across the rear seam cannot reverse an instruction already given, and the remaining turn is measured along that route. Progress cues are earned in $45^\circ$ steps, one object plane at a time: crossing the same step again after turning back does not produce another ``keep going.''
 

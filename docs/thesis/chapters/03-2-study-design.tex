@@ -45,16 +45,11 @@ Layouts remain random, but local clutter around the target is bounded so that tr
 
 \subsection{Starting Angle and Measures}
 \label{sec:theta-measures}
-Each trial is characterized by its starting angle $\theta_0$, the horizontal angle between the direction of the readiness cross and the direction of the target, as seen from the participant's eye position. Let $\mathbf{o}$ be the eye origin saved when readiness completes, $\mathbf{c}$ the readiness-cross center, and $\mathbf{p}$ the target center, all in the same world coordinate frame. With $\Pi(\mathbf{v})=(v_x,0,v_z)$ projecting a vector onto the horizontal plane, define
+Each trial is characterized by its starting angle $\theta_0$, the horizontal angle between the direction of the readiness cross and the direction of the target, as seen from the participant's eye position. Let $\mathbf{o}$ be the eye origin saved when readiness completes, $\mathbf{c}$ the readiness-cross center, and $\mathbf{p}$ the target center, all in the world frame. Using the horizontal projection $\Pi$ and the signed angle $\operatorname{yaw}$ defined in Section~\ref{sec:guidance-geometry}, the starting angle is the horizontal angle from the direction of the cross to the direction of the target:
 \begin{equation}
-\mathbf{a}=\Pi(\mathbf{c}-\mathbf{o}),\qquad
-\mathbf{b}=\Pi(\mathbf{p}-\mathbf{o}).
+\theta_0=\operatorname{yaw}\bigl(\Pi(\mathbf{c}-\mathbf{o}),\,\Pi(\mathbf{p}-\mathbf{o})\bigr).
 \end{equation}
-The starting angle is then
-\begin{equation}
-\theta_0=\operatorname{atan2}\!\left(\hat{\mathbf{y}}\cdot(\mathbf{a}\times\mathbf{b}),\,\mathbf{a}\cdot\mathbf{b}\right)\frac{180}{\pi}.
-\end{equation}
-Its sign gives the direction of the turn, and its magnitude $|\theta_0|$ gives the horizontal turn demand of the trial (Figure~\ref{fig:starting-geometry}). Each block schedules six trials at each of the eight signed plane steps, which gives six trials each at $0$ and $180$ degrees and twelve each at $45$, $90$, and $135$ degrees, and the target is placed so that the realized angle matches the assigned one. Because a larger angle requires a larger turn, the analysis adjusts for $|\theta_0|$ rather than dividing completion time by degrees. Appendix~\ref{app:measurement-definitions} gives the remaining details of the snapshot and the height and distance measures.
+A positive $\theta_0$ means the target lies to the right of the cross, and its magnitude $|\theta_0|$ is the horizontal turn the trial demands (Figure~\ref{fig:starting-geometry}). Each block schedules six trials at each of the eight signed plane steps, which gives six trials each at $0$ and $180$ degrees and twelve each at $45$, $90$, and $135$ degrees, and the target is placed so that the realized angle matches the assigned one. Because a larger angle requires a larger turn, the analysis adjusts for $|\theta_0|$ rather than dividing completion time by degrees. Appendix~\ref{app:measurement-definitions} gives the remaining details of the snapshot and the height and distance measures.
 
 \begin{figure}[htbp]
 \centering
