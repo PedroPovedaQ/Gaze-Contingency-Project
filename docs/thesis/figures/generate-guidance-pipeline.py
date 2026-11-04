@@ -216,7 +216,7 @@ scaled(1.15, 893, 450, speaker)
 ear(950, 450)
 label(925, 505, ['Spoken Cue'])
 # Example cue, quoted exactly from the prepared phrase library.
-s.append(f'<path d="M846,536 H917 L925,526 L933,536 H984 Q990,536 990,542 V588 Q990,594 984,594 H846 Q840,594 840,588 V542 Q840,536 846,536 Z" fill="white" stroke="{INK}" stroke-width="1.6"/>')
+s.append(f'<path d="M846,536 H917 L925,526 L933,536 H984 Q990,536 990,542 V588 Q990,594 984,594 H846 Q840,594 840,588 V542 Q840,536 846,536 Z" fill="#fff6dc" stroke="{INK}" stroke-width="1.6"/>')
 text(915, 560, ['\u201cRight area.', 'Look lower and right.\u201d'], 13.5, italic=True)
 # Both voice conditions feed the spoken cue.
 s.append(f'<path d="M725,202 V250 H925 M890,202 V250" fill="none" stroke="{LINE}" stroke-width="2"/>')
