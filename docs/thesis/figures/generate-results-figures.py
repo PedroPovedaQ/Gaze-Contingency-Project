@@ -1,12 +1,14 @@
 """Chapter 4 result figures, drawn from the trial exports or as empty templates until participant data exist.
 
-Without --data every panel keeps its axes, units and conditions and says that data are pending; nothing is simulated.
+Without --data every panel keeps its axes, units and conditions and says that data are pending. --simulated instead
+draws an illustrative 20-participant dataset (see simulate()) with "Simulated – Awaiting Participant Data" behind it.
 With --data the same figures are drawn from every full_run_measures.csv under the given folders. Rows flagged
 exclude_from_study_analysis are dropped unless --development is given, which stamps each figure as development
 data and writes to /tmp/results-preview instead of the thesis figures folder.
 
 Usage:
   python generate-results-figures.py                                  # templates
+  python generate-results-figures.py --simulated                      # illustrative simulated data
   python generate-results-figures.py --data <GazeData exports> [--model rq1_time_ratio.json] [--flow flow.json]
   python generate-results-figures.py --data <synthetic exports> --development
 
@@ -72,6 +74,70 @@ def load(folders, development):
         df[measure] = pd.concat([pd.to_numeric(df[f'eye_{eye}__{measure}'], errors='coerce') for eye in ('left', 'right')], axis=1).mean(axis=1)
     df['completion'] = df.time_to_final_selection_seconds.where(df.missed_target == 0)
     return df
+
+
+def simulate(n=20, seed=20261103):
+    """Illustrative 20-participant dataset in the load() schema, with search measures scaled to the October 25
+    development recordings (median search about 14.5 s, timeouts 3 of 22, about 40 fixations per search,
+    0.6-0.8 saccades/s, IPA 0.4-0.9 extrema/s, 82% valid gaze, about 0.5 hints/s). Questionnaire ratings and the
+    SSV effects are assumptions; development recordings contain no paired voices or questionnaires."""
+    rng = np.random.default_rng(seed)
+    angles = np.repeat([0, 45, 90, 135, 180], [6, 12, 12, 12, 6])
+    rows, blocks_ = [], []
+    for p in range(n):
+        pid, intercept, slope_ = f'SIM{p + 1:03d}', rng.normal(0, .22), rng.normal(-.05, .07)
+        order = ('SSV', 'SAV') if p % 2 == 0 else ('SAV', 'SSV')
+        validity = np.clip(rng.beta(16, 3.2), .55, .99)
+        # Person-level rates: people differ more in eye behavior and hint exposure than trials do.
+        fix_mean, sacc_mean, ipa_mean = rng.normal(2.7, .45), max(rng.normal(.78, .35), .15), rng.normal(.64, .14)
+        hint_rate, interrupt_rate = max(rng.normal(.48, .1), .15), rng.gamma(2.5, .1)
+        for period, voice in enumerate(order):
+            ssv = voice == 'SSV'
+            for theta in rng.permutation(angles):
+                log_t = np.log(9.2) + intercept + .0042 * theta - .07 * period + (slope_ if ssv else 0) + rng.normal(0, .42)
+                time = float(np.exp(log_t))
+                missed = int(time >= 25)
+                time = min(time, 25.0)
+                fix_rate, sacc = rng.normal(fix_mean - (.1 if ssv else 0), .3), max(rng.normal(sacc_mean, .25), .05)
+                rows.append(dict(participant_id=pid, voice=voice, absolute_theta_deg=theta, missed_target=missed,
+                                 time_to_final_selection_seconds=time, hint_count=rng.poisson(hint_rate * time),
+                                 gaze_validity_rate=np.clip(validity + rng.normal(0, .04), 0, 1),
+                                 interrupted_instruction_count=rng.poisson(interrupt_rate),
+                                 fixation_count=rng.poisson(max(fix_rate, .5) * time), saccade_frequency_hz=sacc,
+                                 ipa_candidate_hz=max(rng.normal(ipa_mean - (.03 if ssv else 0), .12), .1) if time > 4 else np.nan))
+            r = lambda mean, sd, lo, hi: float(np.clip(np.round(rng.normal(mean, sd)), lo, hi))
+            tlx = dict(nasa_tlx_mental=r(5.6 - .3 * ssv, 1.8, 0, 10), nasa_tlx_physical=r(2.4, 1.6, 0, 10),
+                       nasa_tlx_temporal=r(5.2 - .2 * ssv, 2, 0, 10), nasa_tlx_performance=r(6.6 + .2 * ssv, 1.7, 0, 10),
+                       nasa_tlx_effort=r(5.5 - .3 * ssv, 1.8, 0, 10), nasa_tlx_frustration=r(3.6 - .4 * ssv, 2, 0, 10))
+            tlx['nasa_tlx_score'] = np.mean([v if k != 'nasa_tlx_performance' else 10 - v for k, v in tlx.items()])
+            likert = lambda mean, sd=1.1: r(mean, sd, 1, 7)
+            block = dict(participant_id=pid, voice=voice, **tlx,
+                         imi_enjoyment_mean=np.clip(rng.normal(4.9 + .35 * ssv, .9), 1, 7),
+                         imi_effort_mean=np.clip(rng.normal(5.3, .8), 1, 7),
+                         imi_pressure_mean=np.clip(rng.normal(3.1 - .1 * ssv, 1), 1, 7),
+                         imi_value_mean=np.clip(rng.normal(5.0 + .2 * ssv, .9), 1, 7),
+                         agent_copresence_mean=np.clip(rng.normal(4.4 + .4 * ssv, 1), 1, 7),
+                         agent_intelligence_mean=np.clip(rng.normal(4.8 + .1 * ssv, .9), 1, 7),
+                         agent_anthropomorphism_mean=np.clip(rng.normal(3.9 + .3 * ssv, 1), 1, 7))
+            for suffix, sav, ssv_mean in (('__voice_item_1', 2.3, 5.3), ('__guo_Q20', 4.6, 4.7), ('__guo_Q21', 2.4, 3.1),
+                                          ('__guo_Q22', 3.2, 5.0), ('__arq_helpfulness', 5.4, 5.6), ('__arq_relatability', 4.0, 4.8),
+                                          ('__arq_appropriate', 5.3, 5.3), ('__arq_likeability', 4.9, 4.8),
+                                          ('__arq_interact_again', 4.8, 4.9), ('__voice_item_6', 5.2, 5.4),
+                                          ('__voice_item_9', 5.0, 5.3), ('__voice_item_10', 5.1, 4.5),
+                                          ('__voice_item_7', 5.6, 5.0), ('__voice_item_8', 2.0, 2.9)):
+                block['survey' + suffix] = likert(ssv_mean if ssv else sav)
+            blocks_.append(block)
+    df = pd.DataFrame(rows).merge(pd.DataFrame(blocks_), on=['participant_id', 'voice'])
+    df['completion'] = df.time_to_final_selection_seconds.where(df.missed_target == 0)
+    return df
+
+
+def simulated_contrast(df):
+    """Participant-level SSV/SAV ratio of geometric mean completion time with a t interval; a stand-in for the model."""
+    table = paired(df, df.completion, geomean)
+    log_ratio = np.log(table.SSV / table.SAV)
+    mean, half = ci(log_ratio)
+    return {'estimate': np.exp(mean), 'low': np.exp(mean - half), 'high': np.exp(mean + half)}
 
 
 def paired(df, values, how='mean'):
@@ -150,7 +216,16 @@ def forest(ax, diffs, labels, xlabel, xlim):
 
 
 def stamp(fig, development):
-    if development:
+    if development == 'simulated':
+        # Behind the data: clear axes backgrounds so the figure-level text shows through.
+        for ax in fig.axes:
+            ax.set_facecolor('none')
+            for patch in ax.patches:
+                patch.set_alpha(.55)
+        width = fig.get_figwidth()
+        fig.text(.5, .5, 'Simulated – Awaiting Participant Data', ha='center', va='center', rotation=18 if width > 6 else 26,
+                 fontsize=min(17, 2.2 * width + 2), fontweight='bold', color='#dfe3e6', zorder=-1)
+    elif development:
         fig.suptitle('DEVELOPMENT DATA · NOT STUDY RESULTS', color='#b3261e', fontsize=8, fontweight='bold')
 
 
@@ -328,20 +403,23 @@ def main():
     parser.add_argument('--model')
     parser.add_argument('--flow')
     parser.add_argument('--development', action='store_true')
+    parser.add_argument('--simulated', action='store_true')
     args = parser.parse_args()
-    df = load(args.data, args.development) if args.data else None
-    model = json.loads(Path(args.model).read_text()) if args.model else None
+    df = load(args.data, args.development) if args.data else simulate() if args.simulated else None
+    model = json.loads(Path(args.model).read_text()) if args.model else simulated_contrast(df) if args.simulated else None
     flow = json.loads(Path(args.flow).read_text()) if args.flow else None
     out = Path('/tmp/results-preview') if args.development else F
     out.mkdir(exist_ok=True)
-    participant_flow(flow, out)
-    manipulation_check(df, out, args.development)
-    rq1_time(df, model, out, args.development)
-    rq1_secondary(df, out, args.development)
-    rq2_eye(df, out, args.development)
-    rq3_imi(df, out, args.development)
-    exploratory(df, out, args.development)
-    delivery(df, out, args.development)
+    mode = 'simulated' if args.simulated and not args.data else args.development
+    if not args.simulated:
+        participant_flow(flow, out)
+    manipulation_check(df, out, mode)
+    rq1_time(df, model, out, mode)
+    rq1_secondary(df, out, mode)
+    rq2_eye(df, out, mode)
+    rq3_imi(df, out, mode)
+    exploratory(df, out, mode)
+    delivery(df, out, mode)
 
 
 if __name__ == '__main__':
