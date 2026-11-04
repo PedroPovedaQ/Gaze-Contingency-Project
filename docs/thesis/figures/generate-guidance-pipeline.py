@@ -24,6 +24,7 @@ TS, DS = 17, 15
 s = [f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{W}" height="{H}" viewBox="0 {TOP} {W} {H}">',
      f'<rect y="{TOP}" width="{W}" height="{H}" fill="white"/>',
      f'<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="{LINE}"/></marker>'
+     f'<marker id="k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#000000"/></marker>'
      f'<marker id="t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="{TEAL}"/></marker></defs>']
 
 
@@ -185,12 +186,12 @@ route([(205, 450), (230, 450)])
 s.append(f'<rect x="230" y="395" width="85" height="110" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
 headset_front(272, 452)
 label(272, 535, ['Headset', 'Tracking'])
-text(272, 578, ['(Head Position,', 'Gaze,', 'Controller Ray)'], 14, color=MUTED)
+text(272, 578, ['(Head Position,', 'Gaze,', 'Controller Ray)'], 14, color='#000000')
 route([(315, 450), (333, 450)])
 s.append(f'<rect x="335" y="345" width="185" height="215" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
 text(428, 372, ['Guidance State'], 17, True, color='#000000')
 for i, item in enumerate(['Gaze valid and recent', 'Angle to target, trend', 'Direction to target', 'Recent gaze direction', 'Last cue and response', 'Past cues and trials', 'Allowed strategies']):
-    s.append(f'<circle cx="349" cy="{395 + i * 22:.1f}" r="2.8" fill="{TEAL}"/>')
+    s.append(f'<circle cx="349" cy="{395 + i * 22:.1f}" r="2.8" fill="#000000"/>')
     text(358, 400 + i * 22, item, 14, anchor='start', color=MUTED)
 label(428, 585, ['Summarize, Then Ask'])
 text(570, 425, ['Wireless', 'ADB link'], 13.5, color='#000000', italic=True)
@@ -215,7 +216,7 @@ label(925, 505, ['Spoken Cue'])
 # Both voice conditions feed the spoken cue.
 s.append(f'<path d="M725,202 V250 H925 M890,202 V250" fill="none" stroke="{LINE}" stroke-width="2"/>')
 route([(925, 250), (925, 420)])
-route([(710, 606), (710, 648), (428, 648), (428, 600)], color=TEAL, marker='t')
+route([(710, 606), (710, 648), (428, 648), (428, 600)], color='#000000', marker='k')
 text(560, 640, 'Result sent back to memory', 14, color='#000000', italic=True)
 emoji('\U0001F9E0', 652, 623, 22)
 
