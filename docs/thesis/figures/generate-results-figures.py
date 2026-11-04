@@ -77,55 +77,66 @@ def load(folders, development):
 
 
 def simulate(n=20, seed=20261103):
-    """Illustrative 20-participant dataset in the load() schema, with search measures scaled to the October 25
-    development recordings (median search about 14.5 s, timeouts 3 of 22, about 40 fixations per search,
-    0.6-0.8 saccades/s, IPA 0.4-0.9 extrema/s, 82% valid gaze, about 0.5 hints/s). Questionnaire ratings and the
-    SSV effects are assumptions; development recordings contain no paired voices or questionnaires."""
+    """Illustrative 20-participant dataset in the load() schema. Search time, timeouts, fixation rate, IPA, hints and
+    gaze validity are scaled to the October 25 development recordings (median search about 14.5 s, 3 of 22 timeouts,
+    about 2.6 fixations/s, IPA 0.4-0.9 extrema/s, 82% valid gaze, about 0.4 hints/s). Saccade rate follows fixation
+    rate, as in Chiossi et al. 2024 (about 2.6-3 Hz); the development detector counts only low-head-speed intervals.
+    Questionnaire levels, person-level spreads and all SSV effects are assumptions: the development recordings contain
+    no paired voices or questionnaires."""
     rng = np.random.default_rng(seed)
     angles = np.repeat([0, 45, 90, 135, 180], [6, 12, 12, 12, 6])
     rows, blocks_ = [], []
+    likert_items = (('__voice_item_1', 2.3, 2.5), ('__guo_Q20', 4.6, .1), ('__guo_Q21', 2.4, .4), ('__guo_Q22', 3.2, 1.0),
+                    ('__arq_helpfulness', 5.4, .2), ('__arq_relatability', 4.0, .4), ('__arq_appropriate', 5.3, 0),
+                    ('__arq_likeability', 4.9, -.1), ('__arq_interact_again', 4.8, .1), ('__voice_item_6', 5.2, .2),
+                    ('__voice_item_9', 5.0, .2), ('__voice_item_10', 5.1, -.4), ('__voice_item_7', 5.6, -.3),
+                    ('__voice_item_8', 2.0, .5))  # (column, SAV mean, SSV shift)
     for p in range(n):
-        pid, intercept, slope_ = f'SIM{p + 1:03d}', rng.normal(0, .22), rng.normal(-.05, .07)
+        pid, intercept, slope_ = f'SIM{p + 1:03d}', rng.normal(0, .22), rng.normal(-.03, .07)
         order = ('SSV', 'SAV') if p % 2 == 0 else ('SAV', 'SSV')
+        # Person-level levels: people differ more in eye behavior, exposure and ratings than blocks or trials do.
         validity = np.clip(rng.beta(16, 3.2), .55, .99)
-        # Person-level rates: people differ more in eye behavior and hint exposure than trials do.
-        fix_mean, sacc_mean, ipa_mean = rng.normal(2.7, .45), max(rng.normal(.78, .35), .15), rng.normal(.64, .14)
-        hint_rate, interrupt_rate = max(rng.normal(.48, .1), .15), rng.gamma(2.5, .1)
+        fix_mean, ipa_mean = rng.normal(2.6, .4), rng.normal(.66, .08)
+        hint_rate = max(rng.normal(.40, .09), .12)
+        workload, imi = rng.normal(0, 1.4), rng.normal(0, .7, 4)
+        likert_person = rng.normal(0, .8, len(likert_items))
+        similarity_person = rng.normal(0, 1.2)
         for period, voice in enumerate(order):
             ssv = voice == 'SSV'
+            fix_block, ipa_block, validity_block = rng.normal(0, .15), rng.normal(0, .05), rng.normal(0, .06)
             for theta in rng.permutation(angles):
                 log_t = np.log(9.2) + intercept + .0042 * theta - .07 * period + (slope_ if ssv else 0) + rng.normal(0, .42)
                 time = float(np.exp(log_t))
                 missed = int(time >= 25)
                 time = min(time, 25.0)
-                fix_rate, sacc = rng.normal(fix_mean - (.1 if ssv else 0), .3), max(rng.normal(sacc_mean, .25), .05)
-                rows.append(dict(participant_id=pid, voice=voice, absolute_theta_deg=theta, missed_target=missed,
-                                 time_to_final_selection_seconds=time, hint_count=rng.poisson(hint_rate * time),
-                                 gaze_validity_rate=np.clip(validity + rng.normal(0, .04), 0, 1),
-                                 interrupted_instruction_count=rng.poisson(interrupt_rate),
-                                 fixation_count=rng.poisson(max(fix_rate, .5) * time), saccade_frequency_hz=sacc,
-                                 ipa_candidate_hz=max(rng.normal(ipa_mean - (.03 if ssv else 0), .12), .1) if time > 4 else np.nan))
+                fix_rate = max(fix_mean + fix_block + rng.normal(0, .3), .8)
+                hints = rng.poisson(hint_rate * time)
+                rows.append(dict(participant_id=pid, voice=voice, period=period + 1, order='A' if p % 2 == 0 else 'B',
+                                 absolute_theta_deg=theta, missed_target=missed, time_to_final_selection_seconds=time,
+                                 hint_count=hints, gaze_validity_rate=np.clip(validity + validity_block + rng.normal(0, .04), 0, 1),
+                                 interrupted_instruction_count=rng.poisson(.04 * hints),
+                                 fixation_count=rng.poisson(fix_rate * time),
+                                 saccade_frequency_hz=fix_rate * rng.uniform(.85, .98),
+                                 # IPA needs a 2-s clean pupil segment; about half the searches have none.
+                                 ipa_candidate_hz=max(rng.normal(ipa_mean + ipa_block - (.02 if ssv else 0), .1), .2)
+                                 if time > 4 and rng.random() < .55 else np.nan))
             r = lambda mean, sd, lo, hi: float(np.clip(np.round(rng.normal(mean, sd)), lo, hi))
-            tlx = dict(nasa_tlx_mental=r(5.6 - .3 * ssv, 1.8, 0, 10), nasa_tlx_physical=r(2.4, 1.6, 0, 10),
-                       nasa_tlx_temporal=r(5.2 - .2 * ssv, 2, 0, 10), nasa_tlx_performance=r(6.6 + .2 * ssv, 1.7, 0, 10),
-                       nasa_tlx_effort=r(5.5 - .3 * ssv, 1.8, 0, 10), nasa_tlx_frustration=r(3.6 - .4 * ssv, 2, 0, 10))
+            tlx = dict(nasa_tlx_mental=r(5.6 + workload - .3 * ssv, 1, 0, 10), nasa_tlx_physical=r(2.4 + .5 * workload, 1, 0, 10),
+                       nasa_tlx_temporal=r(5.2 + workload - .2 * ssv, 1, 0, 10),
+                       nasa_tlx_performance=r(6.6 - .6 * workload + .2 * ssv, 1, 0, 10),
+                       nasa_tlx_effort=r(5.5 + workload - .3 * ssv, 1, 0, 10),
+                       nasa_tlx_frustration=r(3.6 + workload - .3 * ssv, 1, 0, 10))
             tlx['nasa_tlx_score'] = np.mean([v if k != 'nasa_tlx_performance' else 10 - v for k, v in tlx.items()])
-            likert = lambda mean, sd=1.1: r(mean, sd, 1, 7)
+            sub = lambda mean, k, shift: float(np.clip(rng.normal(mean + imi[k] + shift * ssv, .5), 1, 7))
             block = dict(participant_id=pid, voice=voice, **tlx,
-                         imi_enjoyment_mean=np.clip(rng.normal(4.9 + .35 * ssv, .9), 1, 7),
-                         imi_effort_mean=np.clip(rng.normal(5.3, .8), 1, 7),
-                         imi_pressure_mean=np.clip(rng.normal(3.1 - .1 * ssv, 1), 1, 7),
-                         imi_value_mean=np.clip(rng.normal(5.0 + .2 * ssv, .9), 1, 7),
-                         agent_copresence_mean=np.clip(rng.normal(4.4 + .4 * ssv, 1), 1, 7),
-                         agent_intelligence_mean=np.clip(rng.normal(4.8 + .1 * ssv, .9), 1, 7),
-                         agent_anthropomorphism_mean=np.clip(rng.normal(3.9 + .3 * ssv, 1), 1, 7))
-            for suffix, sav, ssv_mean in (('__voice_item_1', 2.3, 5.3), ('__guo_Q20', 4.6, 4.7), ('__guo_Q21', 2.4, 3.1),
-                                          ('__guo_Q22', 3.2, 5.0), ('__arq_helpfulness', 5.4, 5.6), ('__arq_relatability', 4.0, 4.8),
-                                          ('__arq_appropriate', 5.3, 5.3), ('__arq_likeability', 4.9, 4.8),
-                                          ('__arq_interact_again', 4.8, 4.9), ('__voice_item_6', 5.2, 5.4),
-                                          ('__voice_item_9', 5.0, 5.3), ('__voice_item_10', 5.1, 4.5),
-                                          ('__voice_item_7', 5.6, 5.0), ('__voice_item_8', 2.0, 2.9)):
-                block['survey' + suffix] = likert(ssv_mean if ssv else sav)
+                         imi_enjoyment_mean=sub(4.9, 0, .3), imi_effort_mean=sub(5.3, 1, 0),
+                         imi_pressure_mean=sub(3.1, 2, -.1), imi_value_mean=sub(5.0, 3, .2),
+                         agent_copresence_mean=float(np.clip(rng.normal(4.4 + likert_person[0] + .3 * ssv, .6), 1, 7)),
+                         agent_intelligence_mean=float(np.clip(rng.normal(4.8 + likert_person[1] + .1 * ssv, .6), 1, 7)),
+                         agent_anthropomorphism_mean=float(np.clip(rng.normal(3.9 + likert_person[2] + .2 * ssv, .6), 1, 7)))
+            for k, (suffix, sav, shift) in enumerate(likert_items):
+                person = similarity_person if k == 0 else likert_person[k]
+                block['survey' + suffix] = r(sav + person + shift * ssv, .9 if k else 1.1, 1, 7)
             blocks_.append(block)
     df = pd.DataFrame(rows).merge(pd.DataFrame(blocks_), on=['participant_id', 'voice'])
     df['completion'] = df.time_to_final_selection_seconds.where(df.missed_target == 0)
@@ -156,7 +167,7 @@ def blocks(df):
 
 
 # Panels
-def slope(ax, table, ylabel, ylim, log=False, title=None):
+def slope(ax, table, ylabel, ylim, log=False, title=None, note=''):
     ax.set(xlim=(-.45, 1.45), xticks=[0, 1], xticklabels=VOICES, ylabel=ylabel, ylim=ylim)
     if log:
         ax.set_yscale('log')
@@ -172,13 +183,19 @@ def slope(ax, table, ylabel, ylim, log=False, title=None):
     if table is None or table.empty:
         pending(ax)
         return
-    for _, row in table.iterrows():
-        ax.plot([0, 1], row[list(VOICES)], color='#c3c8cb', lw=.8, zorder=1)
+    # Small fixed jitter keeps tied ratings and percentages visible.
+    jitter = np.random.default_rng(0).uniform(-.06, .06, (len(table), 2))
+    for (_, row), dx in zip(table.iterrows(), jitter):
+        ax.plot([dx[0], 1 + dx[1]], row[list(VOICES)], color='#b4babe', lw=.8, zorder=1)
     for x, voice in enumerate(VOICES):
-        ax.scatter(np.full(len(table), x), table[voice], s=12, color=COLOR[voice], alpha=.75, lw=0, zorder=2)
-        mean, half = ci(table[voice])
-        ax.errorbar(x + (.22 if x else -.22), mean, yerr=half, fmt='D', ms=4.5, color=INK, capsize=2.5, lw=1.1, zorder=3)
-    ax.text(.98, .02, f'n = {len(table)}', transform=ax.transAxes, ha='right', va='bottom', fontsize=7, color=MUTED)
+        ax.scatter(x + jitter[:, x], table[voice], s=12, color=COLOR[voice], alpha=.75, lw=0, zorder=2)
+        if log:  # geometric mean and its interval, computed on the log scale
+            mean, half = ci(np.log(table[voice]))
+            centre, err = np.exp(mean), [[np.exp(mean) - np.exp(mean - half)], [np.exp(mean + half) - np.exp(mean)]]
+        else:
+            centre, err = ci(table[voice])
+        ax.errorbar(x + (.24 if x else -.24), centre, yerr=err, fmt='D', ms=4.5, color=INK, capsize=2.5, lw=1.1, zorder=3)
+    ax.set_xlabel(f'n = {len(table)}{note}', fontsize=7, color=MUTED)
 
 
 def grouped(ax, df, columns, labels, ylabel, ylim, highlight=None):
@@ -224,7 +241,7 @@ def stamp(fig, development):
                 patch.set_alpha(.55)
         width = fig.get_figwidth()
         fig.text(.5, .5, 'Simulated – Awaiting Participant Data', ha='center', va='center', rotation=18 if width > 6 else 26,
-                 fontsize=min(17, 2.2 * width + 2), fontweight='bold', color='#dfe3e6', zorder=-1)
+                 fontsize=min(17, 2.2 * width + 2), fontweight='bold', color='#e6e9eb', zorder=-1)
     elif development:
         fig.suptitle('DEVELOPMENT DATA · NOT STUDY RESULTS', color='#b3261e', fontsize=8, fontweight='bold')
 
@@ -277,7 +294,8 @@ def participant_flow(flow, out):
 def manipulation_check(df, out, development):
     fig, ax = plt.subplots(figsize=(3.2, 2.7), constrained_layout=True)
     table = None if df is None else paired(blocks(df), survey(blocks(df), '__voice_item_1'))
-    slope(ax, table, 'Voice is similar to mine (1–7)', (1, 7))
+    slope(ax, table, 'Voice is similar to mine (1–7)', (.6, 7.4))
+    ax.set_yticks(range(1, 8))
     stamp(fig, development)
     save(fig, 'results-manipulation-check', out)
 
@@ -285,7 +303,7 @@ def manipulation_check(df, out, development):
 def rq1_time(df, model, out, development):
     fig, axes = plt.subplots(1, 3, figsize=(6.5, 2.6), constrained_layout=True, gridspec_kw={'width_ratios': [1, 1.5, 1.1]})
     table = None if df is None else paired(df, df.completion, geomean)
-    slope(axes[0], table, 'Active completion time (s)', (1, 25), log=True, title='(a) Participant means')
+    slope(axes[0], table, 'Active completion time (s)', (4, 25), log=True, title='(a) Participants')
     ax = axes[1]
     ax.set(xticks=[0, 45, 90, 135, 180], xlim=(-12, 192), ylim=(0, 25), xlabel=r'Starting angle $|\theta_0|$ (°)',
            ylabel='Active completion time (s)')
@@ -311,7 +329,7 @@ def rq1_time(df, model, out, development):
     ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
     ax.spines['left'].set_visible(False)
     ax.axvline(1, color=MUTED, lw=.8, ls='--')
-    ax.set_title('(c) Adjusted contrast', fontsize=8.5, loc='left')
+    ax.set_title('(c) Paired ratio (unadjusted)' if development == 'simulated' else '(c) Adjusted contrast', fontsize=8.5, loc='left')
     ax.text(.82, -.85, 'SSV faster', fontsize=7, color=COLOR['SSV'])
     ax.text(1.22, -.85, 'SAV faster', fontsize=7, color=COLOR['SAV'], ha='right')
     if model:
@@ -326,7 +344,7 @@ def rq1_time(df, model, out, development):
 def rq1_secondary(df, out, development):
     fig, axes = plt.subplots(1, 2, figsize=(6.5, 2.7), constrained_layout=True, gridspec_kw={'width_ratios': [1, 2.6]})
     table = None if df is None else paired(df, df.missed_target * 100)
-    slope(axes[0], table, 'Missed targets (% of searches)', (0, 100), title='(a) Missed targets')
+    slope(axes[0], table, 'Missed targets (% of searches)', (-2, 50), title='(a) Missed targets')
     columns = ['nasa_tlx_mental', 'nasa_tlx_physical', 'nasa_tlx_temporal', 'nasa_tlx_performance', 'nasa_tlx_effort', 'nasa_tlx_frustration', 'nasa_tlx_score']
     labels = ['Mental', 'Physical', 'Temporal', 'Perfor-\nmance*', 'Effort', 'Frustra-\ntion', 'Overall']
     data = None
@@ -342,10 +360,12 @@ def rq1_secondary(df, out, development):
 
 def rq2_eye(df, out, development):
     fig, axes = plt.subplots(1, 3, figsize=(6.5, 2.6), constrained_layout=True)
-    for ax, (column, label, ylim, title) in zip(axes, (('ipa_candidate_hz', 'IPA (extrema / s)', (0, 2), '(a) Pupillary activity'),
+    for ax, (column, label, ylim, title) in zip(axes, (('ipa_candidate_hz', 'IPA (extrema / s)', (0, 1.5), '(a) Pupillary activity'),
                                                        ('fixation_count', 'Fixations per search', (0, 60), '(b) Fixations'),
                                                        ('saccade_frequency_hz', 'Saccades per second', (0, 5), '(c) Saccades'))):
-        slope(ax, None if df is None else paired(df, df[column]), label, ylim, title=title)
+        # Coverage: the share of searches with a value for this measure.
+        note = '' if df is None else f' · {df[column].notna().mean():.0%} of searches'
+        slope(ax, None if df is None else paired(df, df[column]), label, ylim, title=title, note=note)
     stamp(fig, development)
     save(fig, 'results-rq2-eye-measures', out)
 
@@ -389,9 +409,9 @@ def exploratory(df, out, development):
 
 def delivery(df, out, development):
     fig, axes = plt.subplots(1, 3, figsize=(6.5, 2.6), constrained_layout=True)
-    for ax, (column, scale, label, ylim, title) in zip(axes, (('hint_count', 1, 'Spoken hints per search', (0, 20), '(a) Hints'),
+    for ax, (column, scale, label, ylim, title) in zip(axes, (('hint_count', 1, 'Spoken hints per search', (0, 15), '(a) Hints'),
                                                               ('gaze_validity_rate', 100, 'Valid gaze samples (%)', (0, 100), '(b) Gaze availability'),
-                                                              ('interrupted_instruction_count', 1, 'Interrupted cues per search', (0, 3), '(c) Interruptions'))):
+                                                              ('interrupted_instruction_count', 1, 'Interrupted cues per search', (0, 1.5), '(c) Interruptions'))):
         slope(ax, None if df is None else paired(df, df[column] * scale), label, ylim, title=title)
     stamp(fig, development)
     save(fig, 'results-guidance-delivery', out)
