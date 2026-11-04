@@ -177,6 +177,8 @@ text(890, 192, 'Self-Similar Voice', 15, True, color='#3f6fb5')
 label(790, 74, 'Voice Conditions')
 
 # Row 2: guidance loop
+# The decision model region encloses state, link, LLM pipeline and its memory loop.
+s.append(f'<rect x="326" y="324" width="474" height="400" rx="12" fill="#fff6dc" stroke="{NEUTRAL}" stroke-width="2" stroke-dasharray="7 4"/>')
 image(F / 'virtual-room.png', (90, 66, 1858, 1150), 25, 395, 180, 112)
 label(115, 535, ['Search Scene'])
 route([(205, 450), (230, 450)])
@@ -192,7 +194,6 @@ for i, item in enumerate(['Gaze valid and recent', 'Angle to target, trend', 'Di
     text(358, 400 + i * 22, item, 14, anchor='start', color=MUTED)
 label(428, 585, ['Summarize, Then Ask'])
 text(570, 425, ['Wireless', 'ADB link'], 13.5, color='#000000', italic=True)
-s.append(f'<rect x="620" y="324" width="180" height="350" rx="10" fill="#fff6dc" stroke="{NEUTRAL}" stroke-width="2" stroke-dasharray="7 4"/>')
 s.append(f'<rect x="628" y="334" width="164" height="272" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
 text(710, 357, ['Decision LLM', 'Pipeline'], 16, True, color='#000000')
 # Inner pipeline: the strategy is chosen first, then a phrase within it.
@@ -203,8 +204,8 @@ text(710, 429, ['Choose one allowed:', 'stay silent, orient,', 'refine, correct,
 route([(710, 486), (710, 506)])
 text(710, 528, '2. Phrase', 14, True, color='#000000')
 text(710, 547, ['Rank the prepared', 'phrases using', 'their recent use'], 13, color=MUTED)
-label(710, 632, ['Decision Model'])
-text(710, 660, 'Local LLM', 14, True, color='#8a6410')
+label(563, 688, ['Decision Model'])
+text(563, 710, 'Local LLM', 14, True, color='#8a6410')
 route([(520, 450), (626, 450)])
 route([(792, 450), (862, 450)])
 text(835, 418, ['Agent', 'Guidance'], 13, color='#000000', italic=True)
@@ -214,9 +215,9 @@ label(925, 505, ['Spoken Cue'])
 # Both voice conditions feed the spoken cue.
 s.append(f'<path d="M725,202 V250 H925 M890,202 V250" fill="none" stroke="{LINE}" stroke-width="2"/>')
 route([(925, 250), (925, 420)])
-route([(925, 520), (925, 712), (428, 712), (428, 600)], color=TEAL, marker='t')
-text(668, 703, 'Result sent back to memory', 14, color='#000000', italic=True)
-emoji('\U0001F9E0', 762, 686, 22)
+route([(710, 606), (710, 648), (428, 648), (428, 600)], color=TEAL, marker='t')
+text(560, 640, 'Result sent back to memory', 14, color='#000000', italic=True)
+emoji('\U0001F9E0', 652, 623, 22)
 
 # Row 3: review and export
 route([(272, 620), (272, 840), (422, 840)])
