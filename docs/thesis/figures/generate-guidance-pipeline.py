@@ -28,7 +28,7 @@ s = [f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/19
      f'<marker id="t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="{TEAL}"/></marker></defs>']
 
 
-def text(x, y, lines, size=14, bold=False, anchor='middle', color=INK, italic=False):
+def text(x, y, lines, size=14, bold=False, anchor='middle', color='#000000', italic=False):
     for i, line in enumerate([lines] if isinstance(lines, str) else lines):
         s.append(f'<text x="{x}" y="{y + i * size * 1.22:.1f}" text-anchor="{anchor}" font-family="Helvetica,Arial,sans-serif" '
                  f'font-size="{size}" font-weight="{"bold" if bold else "normal"}" font-style="{"italic" if italic else "normal"}" fill="{color}">{escape(line)}</text>')
@@ -38,7 +38,7 @@ def label(x, y, title, detail=None):
     titles = [title] if isinstance(title, str) else title
     text(x, y, titles, TS, True, color='#000000')
     if detail:
-        text(x, y + len(titles) * TS * 1.22, detail, DS, color=MUTED)
+        text(x, y + len(titles) * TS * 1.22, detail, DS, color='#000000')
 
 
 def image(source, crop, x, y, w, h, border=True):
@@ -169,12 +169,12 @@ label(350, 222, ['Audio Intake,', 'Clone and Synthesize'])
 route([(420, 130), (632, 130)])
 portrait('Eric', 640, 90, 80, NEUTRAL)
 portrait('Janet', 730, 90, 80, NEUTRAL)
-text(725, 192, 'Selected Agent Voice', 15, True, color='#9a6f12')
+text(725, 192, 'Selected Agent Voice', 15, True, color='#000000')
 s.append(f'<rect x="850" y="90" width="80" height="80" rx="5" fill="white" stroke="{SELF}" stroke-width="3"/>')
 s.append(f'<g transform="translate(850,90) scale({80 / 62}) translate(-864,-56)">')
 stroke('<circle cx="887" cy="76" r="9"/><path d="M871,110 q2,-20 16,-20 q14,0 16,20"/><path d="M906,72 q5,6 0,12 M913,67 q9,11 0,22"/>', 2.6)
 s.append('</g>')
-text(890, 192, 'Self-Similar Voice', 15, True, color='#3f6fb5')
+text(890, 192, 'Self-Similar Voice', 15, True, color='#000000')
 label(790, 74, 'Voice Conditions')
 
 # Row 2: guidance loop
@@ -192,21 +192,23 @@ s.append(f'<rect x="335" y="345" width="185" height="215" rx="8" fill="white" st
 text(428, 372, ['Guidance State'], 17, True, color='#000000')
 for i, item in enumerate(['Gaze valid and recent', 'Angle to target, trend', 'Direction to target', 'Recent gaze direction', 'Last cue and response', 'Past cues and trials', 'Allowed strategies']):
     s.append(f'<circle cx="349" cy="{395 + i * 22:.1f}" r="2.8" fill="#000000"/>')
-    text(358, 400 + i * 22, item, 14, anchor='start', color=MUTED)
+    text(358, 400 + i * 22, item, 14, anchor='start', color='#000000')
 label(428, 585, ['Summarize, Then Ask'])
 text(570, 425, ['Wireless', 'ADB link'], 13.5, color='#000000', italic=True)
 s.append(f'<rect x="628" y="334" width="164" height="272" rx="8" fill="white" stroke="{INK}" stroke-width="1.8"/>')
 text(710, 357, ['Decision LLM', 'Pipeline'], 16, True, color='#000000')
 # Inner pipeline: the strategy is chosen first, then a phrase within it.
-for top, height in ((390, 96), (508, 88)):
+for top, height in ((390, 110), (522, 72)):
     s.append(f'<rect x="638" y="{top}" width="144" height="{height}" rx="6" fill="#f7f8f9" stroke="{LINE}" stroke-width="1.3"/>')
-text(710, 410, '1. Strategy', 14, True, color='#000000')
-text(710, 429, ['Choose one allowed:', 'stay silent, orient,', 'refine, correct,', 'or encourage'], 13, color=MUTED)
-route([(710, 486), (710, 506)])
-text(710, 528, '2. Phrase', 14, True, color='#000000')
-text(710, 547, ['Rank the prepared', 'phrases using', 'their recent use'], 13, color=MUTED)
-label(563, 688, ['Gaze-Contingent Agent'])
-text(563, 710, 'Local LLM', 14, True, color='#8a6410')
+text(710, 410, '1. Strategy', 14, True)
+for i, item in enumerate(['Stay silent', 'Orient', 'Refine', 'Correct', 'Encourage']):
+    s.append(f'<circle cx="668" cy="{424 + i * 16:.1f}" r="2.3" fill="#000000"/>')
+    text(676, 428 + i * 16, item, 13, anchor='start')
+route([(710, 500), (710, 520)])
+text(710, 542, '2. Phrase', 14, True)
+text(710, 561, ['Choose the most', 'natural phrase'], 13)
+label(563, 688, ['Gaze-Contingent Guidance Agent'])
+text(563, 710, 'Local LLM', 14, True, color='#000000')
 route([(520, 450), (626, 450)])
 route([(792, 450), (862, 450)])
 text(835, 418, ['Agent', 'Guidance'], 13, color='#000000', italic=True)
